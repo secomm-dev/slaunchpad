@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ThankYouPage
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="mageplaza_thankyoupage_templates" resource="default" engine="innodb" comment="mageplaza_thankyoupage_templates">
+    <column xsi:type="int" name="template_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Template Id"/>
+    <column xsi:type="varchar" name="name" nullable="true" length="255" comment="Name"/>
+    <column xsi:type="varchar" name="page_type" nullable="true" length="255" comment="Page Type"/>
+    <column xsi:type="int" name="status" padding="11" unsigned="false" nullable="false" identity="false" comment="Status"/>
+    <column xsi:type="varchar" name="store_ids" nullable="false" length="255" comment="Store"/>
+    <column xsi:type="varchar" name="customer_group_ids" nullable="false" length="255" comment="Customer Group"/>
+    <column xsi:type="int" name="priority" padding="11" unsigned="false" nullable="false" identity="false" comment="Priority"/>
+    <column xsi:type="mediumtext" name="conditions_serialized" nullable="true" comment="Conditions Serialized"/>
+    <column xsi:type="varchar" name="style" nullable="true" length="64" comment="Template Type"/>
+    <column xsi:type="int" name="custom_style" padding="11" unsigned="false" nullable="true" identity="false" comment="Custom Style"/>
+    <column xsi:type="varchar" name="title" nullable="true" length="255" comment="Title"/>
+    <column xsi:type="varchar" name="sub_title" nullable="true" length="255" comment="Sub Title"/>
+    <column xsi:type="mediumtext" name="description" nullable="true" comment="Description"/>
+    <column xsi:type="int" name="continue_button" padding="11" unsigned="false" nullable="true" identity="false" comment="Show continue shopping button"/>
+    <column xsi:type="varchar" name="block" nullable="true" length="64" comment="Enable Block(s)"/>
+    <column xsi:type="mediumtext" name="custom_html" nullable="true" comment="Custom HTML"/>
+    <column xsi:type="mediumtext" name="hyva_custom_html" nullable="true" comment="Custom HTML for Hyva theme"/>
+    <column xsi:type="mediumtext" name="custom_css" nullable="true" comment="Custom CSS"/>
+    <column xsi:type="mediumtext" name="hyva_custom_css" nullable="true" comment="Custom CSS for Hyva theme"/>
+    <column xsi:type="int" name="static_block_1" padding="11" unsigned="false" nullable="true" identity="false" comment="Static Block 1"/>
+    <column xsi:type="int" name="static_block_2" padding="11" unsigned="false" nullable="true" identity="false" comment="Static Block 2"/>
+    <column xsi:type="int" name="social_share" padding="11" unsigned="false" nullable="true" identity="false" comment="Enable Social Share"/>
+    <column xsi:type="int" name="enable_coupon" padding="11" unsigned="false" nullable="true" identity="false" comment="Enable coupon"/>
+    <column xsi:type="int" name="rule_id" padding="11" unsigned="false" nullable="true" identity="false" comment="Rule ID"/>
+    <column xsi:type="varchar" name="coupon_pattern" nullable="true" length="64" comment="Coupon Pattern"/>
+    <column xsi:type="mediumtext" name="coupon_label" nullable="true" comment="Coupon Label"/>
+    <column xsi:type="int" name="enable_faq" padding="11" unsigned="false" nullable="true" identity="false" comment="Enable FAQ"/>
+    <column xsi:type="varchar" name="faq_title" nullable="true" length="64" comment="FAQ Title"/>
+    <column xsi:type="int" name="faq_category" padding="11" unsigned="false" nullable="true" identity="false" comment="FAQ Title"/>
+    <column xsi:type="int" name="faq_limit" padding="11" unsigned="false" nullable="true" identity="false" default="5" comment="FAQ Limit"/>
+    <column xsi:type="int" name="enable_product_slider" padding="11" unsigned="false" nullable="true" identity="false" comment="Enable Product Slider"/>
+    <column xsi:type="varchar" name="product_slider_id" nullable="true" length="64" comment="Product Slider"/>
+    <column xsi:type="varchar" name="product_slider_title" nullable="true" length="255" comment="Product Slider Title"/>
+    <column xsi:type="int" name="product_slider_limit" padding="11" unsigned="false" nullable="true" identity="false" default="10" comment="Product limit"/>
+    <column xsi:type="varchar" name="product_slider_additional" nullable="true" length="255" comment="Product Slider Additional"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Creation Time"/>
+    <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Update Time"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="template_id"/>
+    </constraint>
+    <index referenceId="MAGEPLAZA_THANKYOUPAGE_TEMPLATES_STATUS_PRIORITY" indexType="btree">
+      <column name="status"/>
+      <column name="priority"/>
+    </index>
+  </table>
+</schema>

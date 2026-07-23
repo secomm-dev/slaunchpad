@@ -1,0 +1,66 @@
+<?php
+/**
+ * Template render information
+ */
+/** @var \Secomm\AddressDropdown\Block\Adminhtml\City\Information $block */
+if ($city = $block->getCityModel()) :
+    ?>
+    <main id="anchor-content" class="page-content">
+        <div id="page:main-container" class="page-columns">
+            <div id="container" class="main-col">
+                <div class="admin__old">
+                    <div class="entry-edit order-view">
+                        <div style="" class="ui-tabs-panel ui-widget-content ui-corner-bottom"
+                             role="tabpanel"
+                             aria-hidden="false">
+                            <section class="admin__page-section order-view-account-information">
+                                <div class="admin__page-section-title">
+                                    <span class="title"><?= $city->getData('default_name') ?></span>
+                                </div>
+                                <div class="admin__page-section-content">
+                                    <div class="admin__page-section-item order-information">
+                                        <div class="admin__page-section-item-title">
+                                            <span class="title"><?= __("Information") ?></span>
+                                        </div>
+                                        <div class="admin__page-section-item-content">
+                                            <table class="admin__table-secondary order-information-table">
+                                                <tbody>
+                                                <tr>
+                                                    <th><?= __("Default Name") ?></th>
+                                                    <td><?= $city->getDefaultName() ?></td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="admin__page-section-item order-account-information">
+                                        <div class="admin__page-section-item-title">
+                                            <span class="title"><?= __("Name") ?></span>
+                                            <div class="actions">
+                                            </div>
+                                        </div>
+                                        <?php if ($cityNameData = $block->getAllCityNamesByCityId()) : ?>
+                                            <div class="admin__page-section-item-content">
+                                                <table class="admin__table-secondary order-account-information-table">
+                                                    <tbody>
+                                                    <?php foreach ($cityNameData as $item) : ?>
+                                                        <tr>
+                                                            <th><?= __($item['locale']) ?></th>
+                                                            <td><?= $item['name'] ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+<?php
+endif;

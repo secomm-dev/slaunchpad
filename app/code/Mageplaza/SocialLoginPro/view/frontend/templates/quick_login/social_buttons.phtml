@@ -1,0 +1,49 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+use Mageplaza\SocialLogin\Model\System\Config\Source\Position;
+?>
+<?php
+/** @var \Mageplaza\SocialLogin\Block\Popup\Social $block */
+$availableSocials = $block->getAvailableSocials();
+?>
+<?php if ($block->canShow(Position::PAGE_POPUP) && sizeof($availableSocials)) : ?>
+    <div class="block social-login-authentication-channel col-mp mp-12">
+        <div class="block-content-social">
+            <?php foreach ($availableSocials as $key => $social) : ?>
+                <div class="actions-toolbar social-btn <?= /* @noEscape */ $key ?>-login col-mp mp-6 mp-xs-6">
+                    <a class="btn btn-block btn-social btn-<?= /* @noEscape */ $block->getBtnKey($key) ?>"
+                       data-mage-init='{"socialProvider": {"url": "<?= $escaper->escapeUrl($social['login_url']) ?>", "label": "<?= /* @noEscape */ __('Login By %1', $social['label']) ?>"}}'>
+                        <span class="fa fa-<?= /* @noEscape */ $block->getBtnKey($key) ?>"></span>
+                        <?= /* @noEscape */ __($social['label']) ?>
+                    </a>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php $authenConfig = $block->getSocialButtonsConfig();?>
+<?php if ($block->canShow(Position::PAGE_AUTHEN) && sizeof($availableSocials)) : ?>
+    <script>
+        window.socialAuthenticationPopup = <?= /* @noEscape */  \Mageplaza\Core\Helper\AbstractData::jsonEncode($authenConfig); ?>;
+    </script>
+<?php endif; ?>
+

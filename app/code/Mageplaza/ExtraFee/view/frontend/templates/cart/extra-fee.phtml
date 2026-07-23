@@ -1,0 +1,70 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var $block \Mageplaza\ExtraFee\Block\Cart\ExtraFee */
+?>
+
+<div id="block-extrafee" class="block shipping" style="display: none;">
+    <div id="block-extrafee-summary" data-bind="scope:'block-extrafee-summary'" style="position: relative">
+        <div id="extra-fee-loader" data-role="checkout-loader">
+            <div class="loader">
+                <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                     alt="<?= /* @noEscape */ __('Loading...') ?>" style="position: absolute;">
+            </div>
+        </div>
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <script type="text/x-magento-init">
+            {
+                "#block-extrafee-summary": {
+                    "Magento_Ui/js/core/app": <?= /* @noEscape */ $block->getJsLayout() ?>
+                }
+            }
+        </script>
+        <script>
+            require([
+                'mage/url',
+                'Magento_Ui/js/block-loader'
+            ], function(url, blockLoader) {
+                blockLoader("<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>");
+                return url.setBaseUrl('<?= /* @noEscape */ $block->getBaseUrl() ?>');
+            })
+        </script>
+        <style>
+            #block-extrafee-summary .message.notice > *:first-child:before{
+                display: unset;
+            }
+            #block-extrafee-summary .message.notice{
+                padding-left: 45px;
+            }
+            #extra-fee-loader {
+                top: 0;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                z-index: 99;
+                position: absolute;
+                background: rgba(255, 255, 255, 0.5);
+                text-align: center;
+            }
+        </style>
+    </div>
+</div>

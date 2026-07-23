@@ -1,0 +1,205 @@
+<div class="mp-complex">
+    <div class="col-mp mp-7">
+        <div class="mpthankyoupage-title">
+            <div class="page-title">Thank you for your purchase!</div>
+        </div>
+        <div class="mpthankyoupage-details">
+            <div class="mp-subtitle">
+                <h4>Your order has been placed and will be processed as soon as possible.</h4>
+            </div>
+            <div class="mp-description">
+                <div class="info">
+                    <p>Your order number: <b>#<a href="{{ store.base_url }}sales/order/view/order_id/{{ order.entity_id }}">{{ order.increment_id }}</a></b></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-mp mp-5">
+        <div class="additional">
+            <div class="sharethis-button">
+                <div class="sharethis-inline-share-buttons"></div>
+                <script type="text/javascript">
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var script = document.createElement('script');
+                        script.src = "https://platform-api.sharethis.com/js/sharethis.js#property={{ sharethis_key }}&product=inline-share-buttons&source=platform";
+                        script.async = true;
+                        document.body.appendChild(script);
+                    });
+                </script>
+            </div>
+            <div class="order-coupons">
+                <div>Use this coupon code: <strong class="mp-coupon">{{ coupon.code }}</strong> to get <strong
+                        class="mp-coupon">{{ coupon.discount_amount }}</strong> on your next order.
+                </div>
+            </div>
+            <div class="mp-actions-toolbar">
+                <div class="primary" style="float: none;">
+                    <a class="action primary continue" href="{{ store.base_url }}"><span>Continue Shopping</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if static_block_2 %}
+    <div class="col-mp mp-7">
+        <div class="col-mp">
+            <div class="order-addresses">
+                <div class="mp-order-detail">
+                    <div class="order-details col-mp">
+                        <h3 class="mp-block-heading">Order Details</h3>
+                        <p>Order Number: <b>#{{ order.increment_id }}</b></p>
+                        <p>Total: <b>{{ total }}</b></p>
+                        <p>Order create at: <b>{{ created_at_formatted }}</b></p>
+                    </div>
+                    <div class="mp-billing-address col-mp">
+                        <h3 class="mp-block-heading">Billing Address</h3>
+                        <p>{{formattedBillingAddress}}</p>
+                    </div>
+                    {% if order.is_virtual == 0 %}
+                    <div class="mp-shipping-method col-mp">
+                        <h3 class="mp-block-heading">Shipping Method</h3>
+                        <p>{{ order.shipping_description }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="mp-payment-method col-mp">
+                        <h3 class="mp-block-heading">Payment Method</h3>
+                        <table class="paymentTable">
+                            <tbody>
+                            <tr>
+                                <td>{{ payment_html }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-mp">
+            {% unless customer.entity_id %}
+            <div id="registration" class="col-mp mp-xs-12 mp-5">
+                <div>
+                    <h4>Create an Account</h4>
+                    <p>You can track your order status by creating an account.</p>
+                    <p><span>Email Address</span>: <span>{{email_address}}</span></p>
+                    <form method="get" action="{{create_account_url}}">
+                        <input type="submit" class="action primary" value="Create an Account">
+                    </form>
+                </div>
+            </div>
+            {% endunless %}
+            <div class="mp-newsletter col-mp mp-xs-12 mp-5">
+                <h4>Sign Up for Our Newsletter</h4>
+                <p>For every updated news, events, promotion or loyalty programs</p>
+                <div class="content">
+                    <form class="form subscribe"
+                          novalidate
+                          action="{{form_action_url}}"
+                          method="post"
+                          data-mage-init='{"validation": {"errorClass": "mage-error"}}'
+                          id="newsletter-validate-detail">
+                        <div class="field newsletter">
+                            <div class="control">
+                                <label for="newsletter"></label><input name="email" type="email" id="newsletter"
+                                                                       value="{{email_address}}"
+                                                                       data-validate="{required:true, 'validate-email':true}"/>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="action subscribe primary" title="Subscribe" type="submit">
+                                <span>Subscribe</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-mp">
+            <div class="mp-block-1">
+                {{static_block_1}}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-mp mp-5">
+        <div class="mp-block-2">
+            {{static_block_2}}
+        </div>
+    </div>
+    {% else %}
+    <div class="col-mp mp-12">
+        <div class="order-addresses container">
+            <div class="mp-order-detail">
+                <div class="order-details col-mp">
+                    <h3 class="mp-block-heading">Order Details</h3>
+                    <p>Order Number: <b>#{{ order.increment_id }}</b></p>
+                    <p>Total: <b>{{ total }}</b></p>
+                    <p>Order create at: <b>{{ created_at_formatted }}</b></p>
+                </div>
+                <div class="mp-billing-address col-mp">
+                    <h3 class="mp-block-heading">Billing Address</h3>
+                    <p>{{formattedBillingAddress}}</p>
+                </div>
+                {% if order.is_virtual == 0 %}
+                <div class="mp-shipping-method col-mp">
+                    <h3 class="mp-block-heading">Shipping Method</h3>
+                    <p>{{ order.shipping_description }}</p>
+                </div>
+                {% endif %}
+                <div class="mp-payment-method col-mp">
+                    <h3 class="mp-block-heading">Payment Method</h3>
+                    <table class="paymentTable">
+                        <tbody>
+                        <tr>
+                            <td>{{ payment_html }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-mp mp-12">
+        {% unless customer.entity_id %}
+        <div id="registration" class="col-mp mp-xs-12 mp-5">
+            <div>
+                <h4>Create an Account</h4>
+                <p>You can track your order status by creating an account.</p>
+                <p><span>Email Address</span>: <span>{{email_address}}</span></p>
+                <form method="get" action="{{create_account_url}}">
+                    <input type="submit" class="action primary" value="Create an Account">
+                </form>
+            </div>
+        </div>
+        {% endunless %}
+        <div class="mp-newsletter col-mp mp-xs-12 mp-5">
+            <h4>Sign Up for Our Newsletter</h4>
+            <p>For every updated news, events, promotion or loyalty programs</p>
+            <div class="content">
+                <form class="form subscribe"
+                      novalidate
+                      action="{{form_action_url}}"
+                      method="post"
+                      data-mage-init='{"validation": {"errorClass": "mage-error"}}'
+                      id="newsletter-validate-detail">
+                    <div class="field newsletter">
+                        <div class="control">
+                            <label for="newsletter"></label><input name="email" type="email" id="newsletter"
+                                                                   value="{{email_address}}"
+                                                                   data-validate="{required:true, 'validate-email':true}"/>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="action subscribe primary" title="Subscribe" type="submit">
+                            <span>Subscribe</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-mp">
+        <div class="mp-block-1">
+            {{static_block_1}}
+        </div>
+    </div>
+    {% endif %}
+</div>

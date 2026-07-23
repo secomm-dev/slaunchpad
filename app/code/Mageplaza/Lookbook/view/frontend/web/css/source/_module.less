@@ -1,0 +1,117 @@
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+.mp-lookbook-slider-container .slick-initialized.slick-slider.slick-dotted .slick-dots li button{
+    position: absolute;
+    top: 40%;
+    font-size: 80px;
+}
+.mp-lookbook-slider-container button.slick-arrow:before{
+    color: #00000059;
+    font-size: 26px;
+}
+.mp-lookbook-slider-container .slick-initialized.slick-slider.slick-dotted .slick-prev{
+    left: 1%;
+    z-index: 999;
+}
+.mp-lookbook-slider-container .slick-initialized.slick-slider.slick-dotted .slick-next{
+    right: 1%;
+    z-index: 999;
+}
+.mp-lookbook-slider-container .slick-initialized.slick-slider.slick-dotted .slick-dots{
+    position: absolute;
+    top: 88%;
+    left: 0;
+}
+.mp-lookbook-slider-container .slick-initialized.slick-slider.slick-dotted .slick-dots li.slick-active button:before{
+    font-size: 12px;
+}
+
+@media only screen and (max-width: 764px) {
+    .mp-lookbook-slider-container .slick-initialized.slick-slider.slick-dotted .slick-dots{
+        top: 72%;
+    }
+}
+
+@media only screen and (max-width: 1024px) and (min-width: 768px) {
+    .mp-lookbook-slider-container .slick-initialized.slick-slider.slick-dotted .slick-dots{
+        top: 82%;
+    }
+}
+.mplookbook-exPopoverContainer {
+    border: 1px solid #f0f0f0;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px 0 #d1d1d180;
+}
+.mplookbook-popBody {
+    position: relative;
+    padding: 0 5px 5px 5px;
+    z-index: 999;
+}
+
+.mplookbook-lookbook .arrow-down {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid #FFF;
+    opacity: 0.9;
+}
+
+.mplookbook-lookbook .popBg {
+    background-color: #fff;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+.mplookbook-lookbook .borderRadius {
+    border-radius: 7px;
+}
+
+.mplookbook-lookbook .exPopoverContainer {
+    left: -10px;
+}
+
+.mplookbook-lookbook .product-item .price-box {
+    margin: 10px 0 10px;
+}
+
+.mplookbook-lookbook .easypin-marker:hover .easypin-popover {
+    opacity: 1;
+    visibility: visible;
+    display: block !important;
+    z-index: 999;
+}
+.mplookbook-lookbook.mplookbook-marker-popup .easypin-popover {
+    border: none;
+}
+.mp-lookbook-slider-container button.slick-arrow:before {
+    color: black;
+}
+.white-popup {
+    position: relative;
+    background: #FFF;
+    padding: 20px;
+    width: auto;
+    max-width: 500px;
+    margin: 20px auto;
+}

@@ -1,0 +1,113 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+use Mageplaza\ExtraFee\Block\Multishipping\Checkout\AbstractExtraFee;
+use Mageplaza\ExtraFee\Helper\Data;
+use Mageplaza\ExtraFee\Model\Config\Source\DisplayArea;
+
+/** @var AbstractExtraFee $block */
+/** @var SecureHtmlRenderer $secureRenderer */
+$addresses              = $block->getAddresses();
+$payments               = $block->getActivePaymentMethods();
+$rules                  = [];
+$selectedOptions        = [];
+$virtualRules           = [];
+$virtualSelectedOptions = [];
+if ($block->hasVirtualItems()) {
+    $billingAddress = $block->getBillingAddress();
+    $block->fetch($billingAddress, implode(',', [DisplayArea::PAYMENT_METHOD, DisplayArea::SHIPPING_METHOD]));
+    $virtualRules[$billingAddress->getId()] = array_merge(
+        $block->getAllApplyRule($billingAddress, DisplayArea::PAYMENT_METHOD),
+        $block->getAllApplyRule($billingAddress, DisplayArea::SHIPPING_METHOD)
+    );
+    [$applyRule, $selectedOption] = $block->getAppliedRule(
+        $billingAddress,
+        implode(',', [DisplayArea::SHIPPING_METHOD, DisplayArea::PAYMENT_METHOD])
+    );
+    foreach ($selectedOption as $select) {
+        foreach ($select as $sl) {
+            foreach ($sl as $k => $s) {
+                $virtualSelectedOptions[$billingAddress->getId()]['rule'][$k] = $s;
+            }
+        }
+    }
+}
+
+foreach ($addresses as $_index => $address) {
+    $block->fetch($address, DisplayArea::PAYMENT_METHOD);
+    $rules[$address->getId()] = $block->getAllApplyRule($address, DisplayArea::PAYMENT_METHOD);
+    [$applyRule, $selectedOption] = $block->getAppliedRule($address, DisplayArea::PAYMENT_METHOD);
+    [$applyRule, $selectedOption] = [$applyRule[0], $selectedOption[0]];
+    $selectedOptions[$address->getId()] = $selectedOption;
+}
+
+?>
+<div id="mp-extra-fee-multishipping-billing" data-bind="scope: 'mp-extra-fee-multishipping-billing'">
+    <!-- ko template: getTemplate() --><!-- /ko -->
+</div>
+<script type="text/x-magento-init">
+    {
+        "#mp-extra-fee-multishipping-billing": {
+            "Magento_Ui/js/core/app": {
+                "components": {
+                    "mp-extra-fee-multishipping-billing": {
+                        "component": "Mageplaza_ExtraFee/js/view/checkout/multishipping/extra-fee-billing",
+                        "config": {
+                            "ruleMultiShipping": <?= /** @noEscape */ Data::jsonEncode($rules) ?>,
+                            "selectedOptionsMultiShipping": <?= /** @noEscape */ Data::jsonEncode($selectedOptions) ?>,
+                            "ruleVirtualMultiShipping": <?= /** @noEscape */ Data::jsonEncode($virtualRules) ?>,
+                            "selectedOptionsVirtualMultiShipping": <?= /** @noEscape */ Data::jsonEncode($virtualSelectedOptions) ?>
+                        }
+                    }
+                }
+            }
+        }
+    }
+</script>
+<?php foreach ($payments as $code => $payment) : ?>
+    <?php if (!in_array($code, ['checkmo', 'braintree', 'braintree_paypal'])) : ?>
+        <?php $scriptString = <<<script
+        require([
+            'uiLayout',
+            'jquery'
+        ], function (layout, $) {
+            $(function () {
+                var paymentMethodData = {
+                    method: '{$code}'
+                };
+                layout([
+                    {
+                        component: 'Magento_Checkout/js/view/payment/default',
+                        name: 'payment_method_{$code}',
+                        method: paymentMethodData.method,
+                        item: paymentMethodData
+                    }
+                ]);
+
+                $('body').trigger('contentUpdated');
+            })
+        })
+script;
+        ?>
+        <?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
+    <?php endif; ?>
+<?php endforeach; ?>

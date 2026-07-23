@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+* @author Secomm Team
+* @copyright Copyright (c) 2022 Secomm
+*/
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="secomm" translate="label" sortOrder="5000" class="secomm-tab secomm-tab-container">
+            <label>Secomm Extensions</label>
+        </tab>
+
+        <section id="secomm_storefront" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Storefront</label>
+            <tab>secomm</tab>
+            <group id="announcement" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Announcement</label>
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Announcement</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>When enabled, a storefront announcement bar is rendered above the main content. Default: No.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

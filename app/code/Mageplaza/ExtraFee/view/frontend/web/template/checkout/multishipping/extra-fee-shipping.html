@@ -1,0 +1,103 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<div id="mp-extra-fee-shipping" data-bind="visible: getRuleMultiShipping().length">
+    <div class="mp-extra-fee-shipping" data-bind="foreach: { data: getRuleMultiShipping(), as: 'address' }">
+        <div data-bind="visible: $parent.convertObjectToArray(address).length, css: 'mp-extra-fee-shipping mp-extra-fee-shipping-' + $index()">
+            <div class="mp-extra-fee-billing"
+                 data-bind="foreach: { data : $parent.convertObjectToArray(address), as: 'rule' }">
+                <div class="mp-extra-fee-billing">
+                    <dt class="item-title field">
+                        <!-- ko if: (rule.is_required === '1') -->
+                        <input type="hidden"
+                               data-bind="attr: {name: 'rule_required[' + rule.address_id + '][]', value: rule.rule_id}">
+                        <!-- /ko -->
+                        <div data-bind="css: rule.is_required === '1' ? 'mp-extra-fee-required' :''">
+                            <label class="label"><span data-bind="text: $parents[1].getTitle(rule)"></span></label>
+                        </div>
+                        <div data-bind="style: {margin: '10px 0'}, visible: $parents[1].getDescription(rule)">
+                            <label class="label" data-bind="style: {fontWeight: '400'}">
+                                <span data-bind="text: $parents[1].getDescription(rule)"></span>
+                            </label>
+                        </div>
+                    </dt>
+                    <!-- ko if: (rule.display_type !== '3') -->
+                    <dd class="item-options"
+                        data-bind="foreach: { data: $parents[1].getOptions(rule) },afterRender: $parents[1].afterRenderOptions">
+                        <div class="rule">
+                            <!-- ko if: ($parents[0].display_type == '1') -->
+                            <input type="radio"
+                                   class="radio"
+                                   data-bind="
+                    attr: {
+                        name: 'rule[' + $parents[0].address_id + '][' + rule_id + ']',
+                        value: value,
+                        id: 's_rule_billing_' + rule_id + '_' + value,
+                        rule_id: rule_id,
+                        }
+                    ">
+                            <label class="label" data-bind="attr: {for: 's_rule_billing_' + rule_id + '_' + value}, html: title"></label>
+                            <!-- /ko -->
+                            <!-- ko if: ($parents[0].display_type == '2') -->
+                            <input type="checkbox"
+                                   class="checkbox"
+                                   data-bind="
+                    attr: {
+                        name: 'rule[' + $parents[0].address_id + '][' + rule_id + '][' + value + ']',
+                        value: value,
+                        id: 's_rule_billing_' + rule_id + '_' + value,
+                        rule_id: rule_id
+                        }
+                    ">
+                            <label class="label" data-bind="attr: {for: 's_rule_billing_' + rule_id + '_' + value}, html: title"></label>
+                            <!-- /ko -->
+                        </div>
+                    </dd>
+                    <!-- /ko -->
+                    <!-- ko if: (rule.display_type === '3') -->
+                    <select class="item-options"
+                            data-bind="
+                        attr: {
+                            rule_id: rule_id,
+                            name: 'rule[' + rule.address_id + '][' + rule_id + ']',
+                        },
+                        foreach: { data: $parents[1].getOptions(rule) }">
+                        <option data-bind=" value: value,afterRender: $parents[1].afterRenderOptions, html: title"></option>
+                    </select>
+                    <!-- /ko -->
+                    <!-- ko if: rule.allow_note_message > 0 -->
+                    <dd>
+                        <label data-bind="text: rule.message_title, attr: {for: 'mp-extrafee-note-' + rule_id}"></label>
+                        <textarea cols="30" rows="2"
+                                  data-bind=" attr: {
+                            id: 'mp-extrafee-note-' + rule_id + '-' + rule.address_id,
+                            name: 'mp-extrafee-note-' + rule_id + '-' + rule.address_id
+                          },
+                          event: {change: $parents[1].changeOption},
+                          afterRender: $parents[1].getNoteMessage(rule.address_id, 'mp-extrafee-note-' + rule_id + '-' + rule.address_id)"></textarea>
+                    </dd>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<span data-bind="afterRender: loadJsAfterKoRender"></span>

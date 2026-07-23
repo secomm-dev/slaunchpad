@@ -1,0 +1,49 @@
+{
+    "mageplaza_thankyoupage_templates": {
+        "column": {
+            "template_id": true,
+            "name": true,
+            "page_type": true,
+            "status": true,
+            "store_ids": true,
+            "customer_group_ids": true,
+            "priority": true,
+            "conditions_serialized": true,
+            "style": true,
+            "custom_style": true,
+            "title": true,
+            "sub_title": true,
+            "description": true,
+            "continue_button": true,
+            "block": true,
+            "custom_html": true,
+            "custom_css": true,
+            "static_block_1": true,
+            "static_block_2": true,
+            "social_share": true,
+            "enable_coupon": true,
+            "rule_id": true,
+            "coupon_pattern": true,
+            "coupon_label": true,
+            "enable_faq": true,
+            "faq_title": true,
+            "faq_category": true,
+            "faq_limit": true,
+            "enable_product_slider": true,
+            "product_slider_id": true,
+            "product_slider_title": true,
+            "product_slider_limit": true,
+            "product_slider_additional": true,
+            "created_at": true,
+            "updated_at": true,
+            "hyva_custom_html": true,
+            "hyva_custom_css": true
+        },
+        "index": {
+            "MAGEPLAZA_THANKYOUPAGE_TEMPLATES_STATUS_PRIORITY": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

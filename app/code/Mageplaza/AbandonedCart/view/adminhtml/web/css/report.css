@@ -1,0 +1,120 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+.mp-abandonedcart-report {
+    margin: 20px 5px 5px 0;
+    width: 100%;
+    display: flex;
+}
+.mp-abandonedcart-report .statistics {
+    width: 20%;
+}
+.statistics ul li {
+    padding: 6px 6px 6px 0;
+}
+.mp-abandonedcart-report .statistics ul {
+    list-style-type: none;
+}
+.period {
+    display: none;
+}
+.menu-select {
+    display: none;
+}
+.mp-abandonedcart-report .top-products {
+    width: 80%;
+}
+.top-products {
+    padding-bottom: 30px;
+}
+.top-products table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.top-products  th, td {
+    padding: 6px;
+    text-align: left;
+}
+.top-products tbody  th, td {
+    border-top: 1px solid #ddd;
+}
+.top-products img {
+    max-width: 50px;
+    max-height: 50px;
+}
+.mp-table-center {
+    text-align: center !important;
+}
+.top-products .title{
+    margin: 0 0 2rem;
+    color: #41362f;
+    font-weight: 600;
+    line-height: 1.2;
+    font-size: 1.7rem;
+}
+.ace-grid-status {
+    width: 70%;
+    display: flex;
+    justify-content: center;
+    font-weight: 600;
+}
+.severity-sent {
+    background-color: rgba(255, 240, 165, 1);
+    color: rgba(254, 160, 45, 1);
+    border: 1px solid rgba(254, 160, 45, 1);
+}
+.severity-recover {
+    background-color: rgba(208, 229, 169, 1);
+    color: rgba(24, 91, 0, 1);
+    border: 1px solid rgba(24, 91, 0, 1);
+}
+.severity-error {
+    background-color: rgba(255, 165, 170, 1);
+    color: rgba(244, 39, 50, 1);
+    border: 1px solid rgba(244, 39, 50, 1);
+}
+
+.mp-loader {
+    background-color: #FFFFFF;
+    height: 100vh;
+    text-align: center;
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+    position: fixed;
+    cursor: wait;
+    width: 100vw;
+    z-index: 555;
+    display: none;
+    top: 0;
+    left: 0;
+}
+
+.mp-loader img {
+    margin-top: 300px;
+    left: 45%;
+    display: block;
+    position: fixed;
+}
+
+.mp_menu .scroll-title {
+    font-weight: 600 !important;
+}
+

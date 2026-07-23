@@ -1,0 +1,56 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscUltimate
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+
+<!-- ko foreach: getRegion('estimation') -->
+<!-- ko template: getTemplate() --><!-- /ko -->
+<!--/ko-->
+
+<!-- ko foreach: getRegion('authentication') -->
+<!-- ko template: getTemplate() --><!-- /ko -->
+<!--/ko-->
+
+<!-- ko foreach: getRegion('messages') -->
+<!-- ko template: getTemplate() --><!-- /ko -->
+<!--/ko-->
+
+<div class="opc-wrapper one-step-checkout-wrapper">
+    <div class="opc one-step-checkout-container mp-columns-colspan" id="checkoutSteps">
+        <div class="mp-col-1 mp-4">
+            <!-- ko template: window[window.checkoutConfig.oscUltimateConfig[0]] --><!-- /ko -->
+        </div>
+        <div class="columns-colspan mp-8">
+            <div class="mp-col-2">
+                <div class="mp-left">
+                <!-- ko template: window[window.checkoutConfig.oscUltimateConfig[1]] --><!-- /ko -->
+                </div>
+                <div class="mp-right">
+                <!-- ko template: window[window.checkoutConfig.oscUltimateConfig[2]] --><!-- /ko -->
+                </div>
+            </div>
+            <div class="mp-col-3">
+                <!-- ko template: window[window.checkoutConfig.oscUltimateConfig[3]] --><!-- /ko -->
+            </div>
+        </div>
+        <div class="mp-clear"></div>
+    </div>
+    <div class="mp-clear"></div>
+</div>

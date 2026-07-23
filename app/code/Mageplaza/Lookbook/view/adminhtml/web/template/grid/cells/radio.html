@@ -1,0 +1,32 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<label class="data-grid-checkbox-cell-inner">
+    <input class="admin__control-radio mp-check" data-action="select-row" data-bind="
+            staticChecked: $col.selected,
+            disable: $col.disabled.indexOf($row()[$col.indexField]) != -1 ,
+            checkedValue: $row()[$col.indexField],
+            attr: {
+                id: index + 'check' + $row()[$col.indexField]
+            }"
+           type="radio">
+    <label attr="for: index + 'check' + $row()[$col.indexField]"></label>
+</label>

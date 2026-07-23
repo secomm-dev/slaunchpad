@@ -1,0 +1,169 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ThankYouPage
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var Mageplaza\ThankYouPage\Block\Product\CrossSell $block */
+/** @var \Mageplaza\ThankYouPage\Helper\Data $helper */
+?>
+
+<?php
+if ($block->isOrderSuccessPageEnable()):?>
+    <?php
+    $mode  = 'grid';
+    $title = $block->getTitleProductSlider();
+
+    $showCart          = $block->canShow(\Mageplaza\ThankYouPage\Model\Config\Source\Additional::SHOW_CART);
+    $showAddToWishlist = $block->canShow(\Mageplaza\ThankYouPage\Model\Config\Source\Additional::SHOW_WISHLIST);
+    $showAddToCompare  = $block->canShow(\Mageplaza\ThankYouPage\Model\Config\Source\Additional::SHOW_COMPARE);
+    $items             = $block->getProductCollection();
+    if (!empty($items)): ?>
+        <div class="mp-crossell-slider">
+            <div class="mp-product-slider-block block widget block-products-list <?=/** @noEscape */  $mode ?>">
+                <h2 class="mp-product-slider-title"><?= $block->escapeHtml($title) ?></h2>
+            </div>
+            <div class="block-content">
+                <div class="products-<?=/** @noEscape */  $mode ?> <?= /** @noEscape */  $mode ?>">
+                    <ol class="product-items widget-viewed-grid">
+                        <?php $iterator = 1; ?>
+                        <div id="mp-list-items" class="owl-carousel owl-theme">
+                            <?php foreach ($items as $product): ?>
+                                <?= /** @noEscape */  ($iterator++ === 1) ?
+                                    '<li class="product-item product-slider"">' :
+                                    '</li><li class="product-item product-slider"">' ?>
+                                <div class="slider-product-item-info">
+                                    <a href="<?= $block->escapeUrl($block->getProductUrl($product)) ?>"
+                                       class="product photo slider-product-item-photo">
+                                        <?php echo $block->getImage(
+                                            $product,
+                                            'recently_viewed_products_grid_content_widget'
+                                        )->toHtml(); ?>
+                                    </a>
+                                    <div class="product details slider-product-item-details">
+                                        <strong class="product name product-item-name">
+                                            <a title="<?= $block->escapeHtml($product->getName()) ?>"
+                                               href="<?= $block->escapeUrl($block->getProductUrl($product)) ?>">
+                                                <?= $block->escapeHtml($product->getName()) ?>
+                                            </a>
+                                        </strong>
+
+                                        <?php if ($block->canShow(\Mageplaza\ThankYouPage\Model\Config\Source\Additional::SHOW_REVIEW)): ?>
+                                            <?= /** @noEscape */ $block->getReviewsSummaryHtml($product, 'short', true) ?>
+                                        <?php endif; ?>
+
+                                        <?= /** @noEscape */ $block->getProductPrice($product) ?>
+
+                                        <?php if ($showCart || $showAddToWishlist || $showAddToCompare): ?>
+                                            <div class="product actions product-item-actions">
+                                                <?php if ($showCart): ?>
+                                                    <div class="actions-primary">
+                                                        <?php if ($product->isSaleable()): ?>
+                                                            <?php if ($product->getTypeInstance()->hasRequiredOptions($product)): ?>
+                                                                <button class="action tocart primary"
+                                                                        data-mage-init='{"redirectUrl": {"url": "<?= $block->escapeUrl($block->getAddToCartUrl($product)) ?>"}}'
+                                                                        type="button"
+                                                                        title="<?=/** @noEscape */  __('Add to Cart') ?>">
+                                                                    <span><?=/** @noEscape */ __('Add to Cart') ?></span>
+                                                                </button>
+                                                            <?php else: ?>
+                                                                <?php
+                                                                /** @var \Magento\Framework\Data\Helper\PostHelper $postDataHelper */
+                                                                $postDataHelper = $this->helper(\Magento\Framework\Data\Helper\PostHelper::class);
+                                                                $postData       = $postDataHelper->getPostData(
+                                                                    $block->getAddToCartUrl($product),
+                                                                    ['product' => $product->getEntityId()]
+                                                                )
+                                                                ?>
+                                                                <button class="action tocart primary"
+                                                                        data-post='<?= /** @noEscape */ $postData; ?>'
+                                                                        type="button"
+                                                                        title="<?=/** @noEscape */ __('Add to Cart') ?>">
+                                                                    <span><?=/** @noEscape */  __('Add to Cart') ?></span>
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        <?php else: ?>
+                                                            <?php if ($product->getIsSalable()): ?>
+                                                                <div class="stock available">
+                                                                    <span><?=/** @noEscape */ __('In stock') ?></span></div>
+                                                            <?php else: ?>
+                                                                <div class="stock unavailable">
+                                                                    <span><?=/** @noEscape */  __('Out of stock') ?></span></div>
+                                                            <?php endif; ?>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <?php if ($showAddToWishlist || $showAddToCompare): ?>
+                                                    <div class="secondary-addto-links actions-secondary"
+                                                         data-role="add-to-links">
+                                                        <?php if ($this->helper('Magento\Wishlist\Helper\Data')->isAllow() && $showAddToWishlist): ?>
+                                                            <a href="#"
+                                                               data-post='<?=/** @noEscape */  $block->getAddToWishlistParams($product) ?>'
+                                                               class="action towishlist" data-action="add-to-wishlist"
+                                                               title="<?=/** @noEscape */  __('Add to Wish List') ?>">
+                                                                <span><?=/** @noEscape */ __('Add to Wish List') ?></span>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                        <?php if ($block->getAddToCompareUrl() && $showAddToCompare): ?>
+                                                            <?php
+                                                            /** @var \Magento\Catalog\Helper\Product\Compare $compareHelper */
+                                                            $compareHelper = $this->helper('Magento\Catalog\Helper\Product\Compare');
+                                                            ?>
+                                                            <a href="#" class="action tocompare"
+                                                               data-post='<?=/** @noEscape */  $compareHelper->getPostDataParams($product) ?>'
+                                                               data-role="add-to-links"
+                                                               title="<?=/** @noEscape */  __('Add to Compare'); ?>">
+                                                                <span><?=/** @noEscape */  __('Add to Compare') ?></span>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <?= ($iterator === count($items) + 1) ? '</li>' : '' ?>
+                            <?php endforeach ?>
+                        </div>
+                    </ol>
+                </div>
+                <?= /** @noEscape */ $block->getPagerHtml() ?>
+            </div>
+        </div>
+        <script>
+            require(['jquery', 'mageplaza/core/owl.carousel'], function ($) {
+                $('#mp-list-items').owlCarousel({
+                    margin: 10,
+                    nav: true,
+                    responsive: {
+                        0: {
+                            items: 1
+                        },
+                        600: {
+                            items: 3
+                        },
+                        1000: {
+                            items: 5
+                        }
+                    }
+                });
+            });
+        </script>
+    <?php endif; ?>
+<?php endif; ?>
+

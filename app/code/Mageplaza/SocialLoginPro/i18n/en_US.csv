@@ -1,0 +1,86 @@
+Social,Social
+"Social Id","Social Id"
+"Is Send Password Email","Is Send Password Email"
+Yes,Yes
+No,No
+"Social Login Manager","Social Login Manager"
+"Template Information","Template Information"
+"Social Login Chart","Social Login Chart"
+"Top Social Login","Top Social Login"
+"This %s account is already linked to 1 other admin account. Please try again.","This %s account is already linked to 1 other admin account. Please try again."
+"Ooophs, we got an error: %1","Ooophs, we got an error: %1"
+"Can't change status. Please try again!","Can't change status. Please try again!"
+"Login successful.","Login successful."
+"Invalid login or password.","Invalid login or password."
+"The response parameter is missing.","The response parameter is missing."
+"The request is invalid or malformed.","The request is invalid or malformed."
+Left,Left
+Right,Right
+Top,Top
+Bottom,Bottom
+"Use store default Captcha","Use store default Captcha"
+"Use Google ReCaptcha","Use Google ReCaptcha"
+Login,Login
+"Create user","Create user"
+"Forgot password","Forgot password"
+"reCAPTCHA V2","reCAPTCHA V2"
+"Invisible reCAPTCHA","Invisible reCAPTCHA"
+"Customer Dashboard","Customer Dashboard"
+"Home page","Home page"
+"CMS Pages","CMS Pages"
+"Custom URL","Custom URL"
+"Previous Page","Previous Page"
+"Connect Social Channel (for admin login)","Connect Social Channel (for admin login)"
+"This social channel has been already used by another store account.","This social channel has been already used by another store account."
+"Quick Login","Quick Login"
+"Popup Slide","Popup Slide"
+"Login By %1","Login By %1"
+label,label
+"We couldn't find any records.","We couldn't find any records."
+"Social Channel","Social Channel"
+Percent,Percent
+Users,Users
+Orders,Orders
+Amount,Amount
+"connected' 'Disconnect' 'label","connected' 'Disconnect' 'label"
+"Sign In","Sign In"
+"* Required Fields","* Required Fields"
+Email,Email
+Password,Password
+"Forgot Your Password?","Forgot Your Password?"
+"Create New Account?","Create New Account?"
+"Activate Social Login Connect","Activate Social Login Connect"
+"Are you sure to disconnect to this social channel?","Are you sure to disconnect to this social channel?"
+Cancel,Cancel
+Ok,Ok
+OK,OK
+"Ajax is error. Please try again!","Ajax is error. Please try again!"
+"This is a required field.","This is a required field."
+"Social Button Position","Social Button Position"
+"The position of social buttons on the login popup.","The position of social buttons on the login popup."
+"Redirect Page After Successful Login","Redirect Page After Successful Login"
+"Ex: ""http://localhost.com/customer/account""","Ex: ""http://localhost.com/customer/account"""
+"CMS Page","CMS Page"
+"Sign In As Admin","Sign In As Admin"
+"If Yes, the admin can sign in the store backend via this social account","If Yes, the admin can sign in the store backend via this social account"
+"Enable One tap sign up and sign in","Enable One tap sign up and sign in"
+Disqus,Disqus
+Enable,Enable
+"Create app <a href=""http://disqus.com/api/applications/"" target=""_bank"">here</a>","Create app <a href=""http://disqus.com/api/applications/"" target=""_bank"">here</a>"
+"API Key","API Key"
+"API Secret","API Secret"
+"Return URL","Return URL"
+"Sort Order","Sort Order"
+Mailru,Mailru
+"Create app <a href=""https://api.mail.ru/sites/"" target=""_bank"">here</a>","Create app <a href=""https://api.mail.ru/sites/"" target=""_bank"">here</a>"
+Odnoklassniki,Odnoklassniki
+"Create app <a href=""https://apiok.ru/en/dev/app/create"" target=""_bank"">here</a>","Create app <a href=""https://apiok.ru/en/dev/app/create"" target=""_bank"">here</a>"
+"Application ID","Application ID"
+"Secret Key","Secret Key"
+"Public Key","Public Key"
+Steam,Steam
+"Get API Key <a href=""https://steamcommunity.com/dev/apikey"" target=""_bank"">here</a>","Get API Key <a href=""https://steamcommunity.com/dev/apikey"" target=""_bank"">here</a>"
+Pinterest,Pinterest
+"Get API Key <a href=""https://developers.pinterest.com/manage/"" target=""_bank"">here</a>","Get API Key <a href=""https://developers.pinterest.com/manage/"" target=""_bank"">here</a>"
+"APP Secret","APP Secret"
+"Redirect URIs","Redirect URIs"

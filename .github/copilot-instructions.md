@@ -1,0 +1,47 @@
+# Copilot Instructions for Secomm Launchpad
+
+## Project
+
+New Magento 2.4.8-p5 storefront for a fashion/apparel retailer targeting the Vietnam market, built on Hyvä 3.x (Tailwind CSS v4 + Alpine.js + Magewire). Bilingual vi_VN/en_US; VNPAY + Mollie payments; Mageplaza commerce suite (One Step Checkout, TableRate shipping); custom Secomm Vietnam hierarchical address dropdown modules.
+
+## Stack
+
+magento — magento-hyva (Magento 2.4.8-p5 · Hyvä 3.x default theme 1.5.2 · Tailwind CSS v4 · Magewire 1.13 · PHP 8.2 · MySQL 8.0)
+
+## Coding Standards
+
+- [BLOCK] No business logic in controllers/handlers — validate, delegate to a service/action, respond
+- [BLOCK] No `ObjectManager`; use constructor DI; repositories/collections (explicit fields) over models; no N+1 queries
+- [BLOCK] Never trust a client-supplied price/stock/coupon — revalidate server-side; mask PII in logs
+- [BLOCK] Never swallow exceptions; catch the specific type; parameterized queries only
+- Hyvä / Tailwind v4: **CSS-first config via `@theme`/`@source` in `tailwind-source.css` — there is NO `tailwind.config.js`** (do not create one)
+- Alpine.js + Magewire 1.13 for components (no jQuery / RequireJS / Knockout); ViewModels preferred over Blocks
+- Custom vendor prefixes: `Secomm_`, `Vnpayment_`; `Mageplaza_*` are third-party — extend via plugin/preference, never edit in place
+- PHP 8.2+ `strict_types` + PSR-12 / Magento coding standard
+- Storefront strings added to both `vi_VN.csv` and `en_US.csv`
+
+## Restrictions
+
+See `.ai/AGENTS.md` §12 (High-Risk Areas — Mollie/VNPAY payment, Mageplaza OSC checkout, TableRate shipping, order, customer data, DB schema, auth, the Hyvä Packagist token, deployment scripts) and §8.2 (AI Must-NOT). Do not generate changes in those areas; if a task touches one, flag it for **Tier-2 escalation** instead of generating.
+- Do not introduce new dependencies without explicit request
+- Do not refactor code outside the current function/method
+- Follow existing patterns in the file/module
+
+## Key Patterns
+
+- Use repositories/collections (explicit fields) for data access, not models directly
+- Plugins (`before`/`after`; `around` only when necessary) to extend — never edit `vendor/` or `Mageplaza_*` in place
+- ViewModels for template data; Hyvä `.phtml` in `Hyva_*` / theme namespace
+- Magewire for stateful frontend components (checkout, address forms)
+
+## Testing
+
+- Suggest unit tests for any new functions
+- Follow existing test patterns: PHPUnit (`vendor/bin/phpunit`)
+- Hyvä theme build: `npm run build` in `app/design/frontend/Secomm/launchpad/web/tailwind/`
+
+## Context Files
+
+For more context, read:
+- `.ai/AGENTS.md` — full project rules (single source of truth)
+- `.ai/project-context/` — business rules, architecture, module map, integrations

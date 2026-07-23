@@ -1,0 +1,321 @@
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscUltimate
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+#field-position-sortable .suggest-position {
+    background: #cccccc;
+    height: 4rem;
+    float: left;
+}
+
+.field-wrapper.sorted-wrapper {
+    background-color: #fafafa;
+    border-left: none;
+}
+
+.field-wrapper.available-wrapper {
+    background-color: #e3e3e3;
+    border-right: none;
+}
+
+.field-wrapper {
+    display: table-cell;
+    vertical-align: top;
+    float: unset;
+    border: 1px solid #adadad;
+    border-top: none;
+}
+
+.field-wrapper ul {
+    width: 100%;
+    min-height: 450px;
+    padding-top: 5px;
+    list-style-type: none;
+}
+
+.field-wrapper ul li {
+    width: 48%;
+    margin: 1%;
+}
+
+.field-wrapper ul li.wide {
+    width: 98%;
+}
+
+.field-wrapper ul li.medium {
+    width: 72%;
+}
+
+.field-wrapper ul li.short {
+    width: 23%;
+}
+
+.field-wrapper.available-wrapper ul li {
+    width: 96%;
+    margin: 2%;
+}
+
+.field-wrapper ul li .attribute-label {
+    border: 1px solid #cccccc;
+    text-align: center;
+    padding: 10px 10px;
+    cursor: move;
+    background: #ffffff;
+    height: 20px !important;
+    box-sizing: content-box;
+}
+
+.field-wrapper ul li.ui-state-disabled {
+    opacity: 1;
+}
+
+.field-wrapper ul li.ui-state-disabled .attribute-label {
+    background-color: #514943;
+    border-color: #514943;
+    color: #ffffff;
+}
+
+.available-wrapper .ui-resizable-handle {
+    display: none !important;
+}
+
+#field-position-sortable .ui-resizable-s {
+    display: none !important;
+}
+
+/* Containment area */
+
+.ui-resizable-border {
+    border: 1px dotted #cccccc;
+}
+
+#mposc-field-tabs a {
+    padding: 5px;
+    font-size: 2rem;
+    line-height: 1.5;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#mposc-field-tabs a._active {
+    background-color: #1979c3;
+    border-color: #1979c3;
+    color: #ffffff;
+}
+
+#field-position-sortable .attribute-required {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+}
+
+.available-wrapper .attribute-required, .mposc-field-container {
+    display: none;
+}
+
+.mposc-field-container .containment.row {
+    display: flex;
+}
+
+.f-left {
+    float: left;
+}
+
+#field-position-sortable > .mposc-field-container > .messages > .message:last-child {
+    margin: 0;
+}
+
+div#manage-block {
+    width: 100%;
+    background: #F6F6F4;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.layout {
+    margin-top: 2%;
+    width: 70%;
+    display: flex;
+    align-items: baseline;
+    flex-direction: row;
+}
+
+.layout select {
+    height: 35px;
+    padding-left: 1%;
+    font-weight: 500;
+    width: 45%;
+}
+
+.layout select option {
+    font-weight: 500;
+}
+
+div#mposc-layout-block {
+    width: 100%;
+}
+
+.page-layout ul {
+    display: flex;
+    border: 2px dashed #767676;
+    border-radius: 10px;
+    background-color: #FFFFFF;
+    flex-direction: column;
+    width: 100%;
+    list-style-type: none;
+    margin: 2%;
+    padding: 3%;
+    justify-content: space-around;
+}
+
+.page-layout ul li {
+    font-size: 20px;
+    background-color: #050084;
+    color: #FFFFFF;
+    margin: 2%;
+    display: flex;
+    height: 50px;
+    align-items: center;
+    padding-left: 10px;
+}
+
+.page-layout._active {
+    width: 80%;
+    display: flex;
+    align-items: stretch
+}
+
+.page-layout {
+    width: 80%;
+    display: none;
+    flex-direction: row;
+    align-items: center;
+}
+
+.page-layout i.fa.fa-grip-vertical {
+    padding-right: 32%;
+    font-size: 12px;
+}
+
+.three-columns i.fa.fa-grip-vertical {
+    padding-right: 10%;
+    font-size: 12px;
+}
+
+.columns-colspan .mp-col-2 {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    padding: 3%;
+}
+
+a.button.action-default {
+    font-size: 16px;
+    height: 50px;
+}
+
+.columns-colspan .columns-details {
+    display: flex;
+}
+
+.columns-colspan .mp-col-1 {
+    width: 100%;
+}
+
+.columns-colspan .mp-col-1 {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+}
+
+ul.sortable-list._require {
+    border: 2px dashed #FF0000;
+}
+
+ul.sortable-list.ui-sortable.columns-colspan i.fa, ul.sortable-list.ui-sortable.default i.fa {
+    padding-right: 2%;
+    font-size: 16px
+}
+
+.columns-floating {
+    align-items: flex-start !important;
+}
+
+ul.ui-sortable.disabled {
+    padding: 1%;
+    border: 2px solid #767676;
+}
+
+ul.ui-sortable.disabled span.title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+ul.ui-sortable.disabled i {
+    padding-left: 32%;
+}
+
+#manage-block .sortable-item span {
+    font-size: 16px;
+    font-weight: 600;
+    padding-left: 10px;
+}
+
+#manage-block .columns-details span {
+    font-size: 14px;
+    font-weight: 600;
+    padding-left: 0 !important;
+}
+
+#manage-block .store-switcher {
+    width: 25%;
+    padding-left: 10px;
+    border: 1px solid;
+    margin: 10px;
+}
+
+.column-null {
+    pointer-events: none;
+    text-align: center;
+    display: none;
+    color: #FF0000;
+    opacity: 0.6;
+}
+
+._require .column-null {
+    display: unset;
+}
+
+.use-system select#layout-checkout-page, .use-system ul.sortable-list {
+    background-color: #E3E3E3;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.dropdown-menu .current {
+    pointer-events: none;
+    background-color: #c2c2c2
+}
+#mposc-manage .col-m-6{
+    justify-content: space-around;
+}

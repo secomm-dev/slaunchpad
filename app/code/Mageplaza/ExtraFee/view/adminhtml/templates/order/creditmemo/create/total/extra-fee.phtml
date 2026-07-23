@@ -1,0 +1,94 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+/** @var \Mageplaza\ExtraFee\Block\Adminhtml\Order\Total\ExtraFee $block */
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$registry = $objectManager->get(\Magento\Framework\Registry::class);
+$isRendered = $registry->registry('mp_extra_fee_rendered');
+if ($isRendered) {
+    return;
+}
+$registry->register('mp_extra_fee_rendered', true);
+$_source = $block->getSource();
+if ($_source) : ?>
+    <?php foreach ($block->getExtraFeeTotals($block->getParentBlock()->getSource(), $block->getOrder()) as $total) :
+        if (!$total['rf']) {
+            continue;
+        }
+        $feeRule   = $block->getParentBlock()->getSource()[$total['code']];
+        $maxFee    = $block->getExtraFeeAmount($total);
+        $feeAmount = (isset($feeRule) && $feeRule < $maxFee) ? $feeRule : $maxFee;
+        ?>
+        <tr>
+            <td class="label">
+                <?= $block->escapeHtml(/* @noEscape */ $block->getExtraFeeLabel($total)) ?>
+                <div id="mp_extra_fee_amount_adv"></div>
+            </td>
+            <td>
+                <input type="text"
+                       name="creditmemo[<?= /* @noEscape */ $total['code'] ?>]"
+                       value="<?= /* @noEscape */
+                       $block->formatValue($feeAmount) ?>"
+                       class="input-text admin__control-text not-negative-amount"
+                       id="<?= /* @noEscape */ $total['code'] ?>"/><?php $scriptString = <<<script
+                require(['prototype'], function(){
+
+                //<![CDATA[
+                Validation.addAllThese([
+                    [
+                        'not-negative-amount',
+                        '{$block->escapeJs(__('Please enter a positive number in this field.'))}',
+                        function (v) {
+                            if (v.length)
+                                return /^\s*\d+([,.]\d+)*\s*%?\s*$/.test(v);
+                            else
+                                return true;
+                        }
+                    ]
+                ]);
+
+                if ($('mp_extra_fee_rule')) {
+                    $('mp_extra_fee_rule').advaiceContainer = $('mp_extra_fee_amount_adv');
+                    unblockSubmit('mp_extra_fee_rule');
+                }
+
+                function unblockSubmit(id) {
+                    $(id).observe('focus', function(event) {
+                        if ($$('button[class="scalable update-button disabled"]').size() > 0) {
+                            enableElements('submit-button');
+                        }
+                    });
+                    $(id).observe('change', function (event) {
+                        enableElements('submit-button');
+                    });
+                }
+                //]]>
+
+                });
+script;
+                ?>
+                <?= /* @noEscape */
+                $secureRenderer->renderTag('script', [], $scriptString, false) ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+<?php endif; ?>

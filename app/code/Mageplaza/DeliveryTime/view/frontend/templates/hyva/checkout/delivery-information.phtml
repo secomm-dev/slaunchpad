@@ -1,0 +1,191 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_DeliveryTime
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\DeliveryTime\Magewire\Checkout\DeliveryInformation as Magewire;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Magewire $magewire */
+
+$helperData = $this->helper('Mageplaza\DeliveryTime\Helper\Data');
+$isEnabled  = $helperData->isEnabled();
+if (!$isEnabled) {
+    return '';
+}
+$isEnabledDeliveryTime      = $helperData->isEnabledDeliveryTime();
+$isEnabledHouseSecurityCode = $helperData->isEnabledHouseSecurityCode();
+$isEnabledDeliveryComment   = $helperData->isEnabledDeliveryComment();
+$deliveryDateFormat         = $helperData->getDateFormat();
+$daysOff                    = array_unique(explode(',', $helperData->getDaysOff()));
+$dateOff                    = array_unique(array_column($helperData->getDateOff(), 'date_off'));
+$deliveryDaysOff            = json_encode($daysOff);
+$deliveryDateOff            = json_encode($helperData->getDateOff());
+$deliveryTime               = json_encode($helperData->getDeliveryTIme());
+$cutoffTime                 = json_encode($helperData->getCutoffTime());
+
+?>
+
+<div class="delivery-information mt-6" x-data="deliveryInformationComponent($wire)">
+    <div class="delivery-date mb-4">
+        <div class="title label text-sm text-slate-700 mb-2">
+            <?= /* @noEscape */
+            __('Delivery Date') ?>
+        </div>
+        <div class="control relative">
+            <input type="text" class="form-input w-full" wire:model="deliveryDate" readonly x-ref="deliveryDateInput">
+            <div style="top: 14px" class="remove-delivery-date absolute right-2 cursor-pointer" x-show="deliveryDate" @click="clearDeliveryDate">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="#ff5622" viewBox="0 0 24 24" stroke-width="2" stroke="#ff5622" class="w-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <?php if ($isEnabledDeliveryTime) : ?>
+        <div class="delivery-time mb-4">
+            <div class="title label text-sm text-slate-700 mb-2">
+                <?= /* @noEscape */
+                __('Delivery Time') ?>
+            </div>
+            <div class="control">
+                <select class="select form-input w-full" wire:model="deliveryTime">
+                    <option value=""><?= /* @noEscape */
+                        __('-- Please select a delivery time--') ?></option>
+                    <template x-for="time in deliveryTimeOptions" :key="time">
+                        <option :value="time" x-text="time" :selected="time == deliveryTime"></option>
+                    </template>
+                </select>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($isEnabledHouseSecurityCode) : ?>
+        <div class="house-security-code mb-4">
+            <div class="title label text-sm text-slate-700 mb-2">
+                <?= /* @noEscape */
+                __('House Security Code') ?>
+            </div>
+            <div class="control">
+                <input class="form-input w-full" wire:model.lazy="houseSecurityCode" type="text">
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($isEnabledDeliveryComment) : ?>
+        <div class="delivery-comment mb-4">
+            <div class="title label text-sm text-slate-700 mb-2">
+                <?= /* @noEscape */
+                __('Delivery Comment') ?>
+            </div>
+            <div class="control">
+                <textarea
+                    wire:model.lazy="deliveryComment"
+                    class="form-input w-full" rows="3"></textarea>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <script>
+        function deliveryInformationComponent (wire) {
+            return {
+                deliveryDate: wire.entangle('deliveryDate'),
+                deliveryTime: wire.entangle('deliveryTime'),
+                houseSecurityCode: wire.entangle('houseSecurityCode'),
+                deliveryComment: wire.entangle('deliveryComment'),
+                deliveryTimeOptions: [],
+
+                /**
+                 * initial function
+                 */
+                init () {
+                    this.setupDatepicker();
+                    this.loadDeliveryTimes();
+                },
+
+                /**
+                 * convert format date to flatpickr
+                 * @param format
+                 * @returns {*}
+                 */
+                convertDateFormat (format) {
+                    const formatMap = {
+                        'dd': 'd',
+                        'mm': 'm',
+                        'yy': 'Y',
+                        'M': 'M',
+                        'MM': 'F',
+                        'D': 'D',
+                        'DD': 'l'
+                    };
+                    return format.replace(/dd|mm|yy|M{1,2}|D{1,2}/g, (match) => formatMap[match] || match);
+                },
+
+                /**
+                 * handle delivery date
+                 */
+                setupDatepicker () {
+                    const daysOff             = <?= /* @noEscape */ $deliveryDaysOff ?>;
+                    const dateOff             = Object.values(<?= /* @noEscape */ $deliveryDateOff ?>).map(d => d.date_off);
+                    const cutoffTime          = <?= /* @noEscape */ $cutoffTime ?>;
+                    const flatpickrDateFormat = this.convertDateFormat("<?= /* @noEscape */ $deliveryDateFormat ?>");
+
+                    flatpickr(this.$refs.deliveryDateInput, {
+                        dateFormat: flatpickrDateFormat,
+                        minDate: "today",
+                        disable: [
+                            function (date) {
+                                let day     = date.getDay();
+                                let dateStr = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+                                let now     = new Date();
+                                if (cutoffTime !== null) {
+                                    let cutoff = new Date();
+                                    cutoff.setHours(cutoffTime[0], cutoffTime[1], cutoffTime[2]);
+                                    return daysOff.includes(day.toString()) || dateOff.includes(dateStr) || (date.toDateString() === now.toDateString() && now > cutoff);
+                                } else {
+                                    return daysOff.includes(day.toString()) || dateOff.includes(dateStr);
+                                }
+                            }
+                        ],
+                        onChange: (selectedDates, dateStr) => {
+                            this.deliveryDate = dateStr;
+                        }
+                    });
+                },
+
+                /**
+                 * delivery time data
+                 */
+                loadDeliveryTimes () {
+                    const timeData           = <?= /* @noEscape */ $deliveryTime ?>;
+                    this.deliveryTimeOptions = Object.values(timeData).map(time => `${time.from[0]}h${time.from[1]} - ${time.to[0]}h${time.to[1]}`);
+                },
+
+                /**
+                 * clear delivery date
+                 */
+                clearDeliveryDate () {
+                    this.deliveryDate = '';
+                    this.$refs.deliveryDateInput._flatpickr.clear();
+                }
+            };
+        }
+    </script>
+</div>

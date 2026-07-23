@@ -1,0 +1,69 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_DeliveryTime
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\Sales\PaymentInfo;
+use Magento\Framework\Escaper;
+use Magento\Sales\Block\Order\Info;
+
+/** @var Info $block */
+/** @var Escaper $escaper */
+/** @var PaymentInfo $paymentInfo */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+$order = $block->getOrder();
+$paymentInfo = $viewModels->require(PaymentInfo::class);
+?>
+<div class="mb-4 pb-4 border-b border-container">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+        <div class="w-full py-4">
+            <p class="font-semibold mb-2"><?= $escaper->escapeHtml(__('Billing Address')) ?></p>
+            <div class="box-content">
+                <address><?= /* @noEscape */ $block->getFormattedAddress($order->getBillingAddress()) ?></address>
+            </div>
+        </div>
+        <?php if (!$order->getIsVirtual()): ?>
+            <div class="w-full py-4">
+                <p class="font-semibold mb-2"><?= $escaper->escapeHtml(__('Shipping Address')) ?></p>
+                <div class="box-content">
+                    <address><?= /* @noEscape */ $block->getFormattedAddress($order->getShippingAddress()) ?></address>
+                </div>
+            </div>
+            <div class="w-full py-4 box box-order-shipping-method">
+                <p class="font-semibold mb-2"><?= $escaper->escapeHtml(__('Shipping Method')) ?></p>
+                <div class="box-content">
+                    <?php if ($order->getShippingDescription()): ?>
+                        <?= $escaper->escapeHtml($order->getShippingDescription()) ?>
+                    <?php else: ?>
+                        <?= $escaper->escapeHtml(__('No shipping information available')) ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+        <div class="w-full py-4 box box-order-billing-method">
+            <p class="font-semibold mb-2"><?= $escaper->escapeHtml(__('Payment Method')) ?></p>
+            <div class="box-content">
+                <?= $escaper->escapeHtml($paymentInfo->getPaymentTitle($order)) ?>
+            </div>
+        </div>
+    </div>
+</div>

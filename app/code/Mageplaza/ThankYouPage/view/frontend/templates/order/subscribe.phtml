@@ -1,0 +1,53 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ThankYouPage
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var Mageplaza\ThankYouPage\Block\OrderSuccess $block */
+?>
+<?php
+if (!$block->checkCustom() && $block->checkEnableBlock('subscribe')):?>
+    <div class="mp-newsletter mp-xs-12 col-mp mp-5">
+        <h4><?= $block->escapeHtml(__('Sign Up for Our Newsletter')) ?></h4>
+        <p><?= $block->escapeHtml(__("For every updated news, events, promotion or loyalty programs")); ?></p>
+        <div class="content">
+            <form class="form subscribe"
+                  novalidate
+                  action="<?= $block->escapeUrl($block->getFormActionUrl()) ?>"
+                  method="post"
+                  data-mage-init='{"validation": {"errorClass": "mage-error"}}'
+                  id="newsletter-validate-detail">
+                <div class="field newsletter">
+                    <div class="control">
+                        <label for="newsletter"></label>
+                        <input name="email" type="email" id="newsletter"
+                               value="<?= /** @noEscape */ $block->getEmailAddress() ?>"
+                               data-validate="{required:true, 'validate-email':true}"/>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="action subscribe primary" title="<?= $block->escapeHtml(__('Subscribe')) ?>"
+                            type="submit">
+                        <span><?= $block->escapeHtml(__('Subscribe')) ?></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+<?php endif; ?>

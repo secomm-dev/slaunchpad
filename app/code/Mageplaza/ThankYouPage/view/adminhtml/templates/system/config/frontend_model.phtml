@@ -1,0 +1,79 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ThankYouPage
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+?>
+<?php
+/** @var Mageplaza\ThankYouPage\Block\Adminhtml\Template\Edit\Tab\Display $block */
+$modifiersData = $block->getModifier();
+?>
+<?php echo $block->getFormHtml(); ?>
+<?php echo $block->getChildHtml('form_after'); ?>
+
+<div id="insert-variable-popup" class="admin__scope-old">
+    <div class="accordion">
+        <div class="entry-edit form-inline">
+            <?php foreach ($block->getTemplateVar() as $templateId => $groupAttr): ?>
+                <div class="section-config">
+                    <div class="entry-edit-head admin__collapsible-block">
+                        <span id="pf_variable_<?= /** @noEscape */ $templateId ?>-link" class="entry-edit-head-link"></span>
+                        <a id="pf_variable_<?= /** @noEscape */ $templateId ?>-head" href="#pf_variable_<?= /** @noEscape */ $templateId ?>-link"
+                           onclick="Fieldset.toggleCollapse('pf_variable_<?= /** @noEscape */ $templateId ?>'); return false;"><?= /** @noEscape */ $groupAttr['label'] ?></a>
+                    </div>
+                    <input id="smtp_provider_<?= /** @noEscape */ $templateId ?>-state" type="hidden">
+                    <fieldset class="config admin__collapsible-block admin__scope-old"
+                              id="pf_variable_<?= /** @noEscape */ $templateId ?>">
+                        <?php foreach ($groupAttr['values'] as $attr): ?>
+                            <div class="attr-code" id="<?= /** @noEscape */ $attr['value'] ?>"
+                                 data-code="<?= /** @noEscape */ $attr['value'] ?>">
+                                <div class="row">
+                                    <label class="attr-code-label"><?= /** @noEscape */ $attr['label']; ?></label>
+                                    <button class="insert"><?= /** @noEscape */ __('Add') ?></button>
+                                    <button class="add-modifier"><?= /** @noEscape */ __('Add Filter') ?></button>
+                                    <label class="liquid-variable">{{ <?= /** @noEscape */ $attr['value'] ?> }}</label>
+                                </div>
+                                <div class="row-modifier data-table">
+                                    <div class="modifier-group" data-code="<?= /** @noEscape */ $attr['value'] ?>"></div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </fieldset>
+                </div>
+                <script type="text/javascript">//<![CDATA[
+                    require(['prototype'], function () {
+                        Fieldset.applyCollapse('pf_variable_<?= /** @noEscape */ $templateId ?>');
+                    });
+                    //]]>
+                </script>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+
+<script type="text/x-magento-init">
+    {
+        "#mpthankyoupage_template_edit_tabs_display_content": {
+            "Mageplaza_ThankYouPage/js/view/thankyoupage":{
+                "url": "<?= /** @noEscape */ $block->getUrl('mpthankyoupage/managestyle/load', ['form_key' => $block->getFormKey()]) ?>",
+                "ImgUrls": "<?= $block->escapeJs($block->getImageUrls()); ?>",
+                "modifiersData": <?= /** @noEscape */ $modifiersData ?>
+            }
+        }
+    }
+</script>

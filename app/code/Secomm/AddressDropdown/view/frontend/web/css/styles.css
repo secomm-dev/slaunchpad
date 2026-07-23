@@ -1,0 +1,25 @@
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+#sub-city-select,#city-select,.sub-city,#sub-city-container{
+    display: none;
+}
+div[name="shippingAddress.custom_attributes.sub_city"]{
+    display: none;
+}
+div[name="billingAddress.customCity"],div[name="billingAddress.custom_attributes.sub_city"]{
+    display: none;
+}
+.billing-address-sub-city,
+#custom-city-error {
+    display: none;
+}
+.custom-error{
+    border-color: #ed8380;
+}
+#custom-city-select.error + #custom-city-error {
+    display: block;
+}

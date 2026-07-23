@@ -1,0 +1,87 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Magento\Catalog\Model\Product\Visibility;
+use Mageplaza\AbandonedCart\Block\Email\Template;
+
+/** @var Template $block */
+
+$i          = 0;
+$title      = $block->getTitle();
+$limit      = $block->getLimitNumberProduct();
+$items      = $block->getRelatedProductCollection();
+$visibility = [Visibility::VISIBILITY_IN_SEARCH, Visibility::VISIBILITY_IN_CATALOG, Visibility::VISIBILITY_BOTH];
+?>
+
+<?php if (count($items)): ?>
+    <table class="email-items">
+        <thead>
+        <tr>
+            <th style="text-align: center"><?= $block->escapeHtml($title) ?></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td style="border: unset">
+                <ol style="list-style: none;">
+                    <?php foreach ($items as $item): ?>
+                        <?php foreach ($item as $product): ?>
+                            <?php $product = $block->getProduct($product) ?>
+                            <?php if (in_array((int) $product->getVisibility(), $visibility, true)
+                                && (($limit && $i < $limit) || !$limit)): ?>
+                                <li style="width: 18%; display: inline-block;">
+                                    <div>
+                                        <a href="<?= $block->escapeUrl($block->getProductUrl($product)) ?>">
+                                            <img src="<?= $block->escapeUrl($block->getImage($product)) ?>"
+                                                 alt="<?= $block->escapeHtml($product->getName()) ?>"
+                                                 width="100px"
+                                                 height="100px"/>
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <strong>
+                                            <a href="<?= $block->escapeUrl($block->getProductUrl($product)) ?>">
+                                                <?= $block->escapeHtml($product->getName()) ?>
+                                            </a>
+                                        </strong>
+                                    </div>
+                                </li>
+                                <?php $i++; ?>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </ol>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+<?php endif; ?>
+
+<?php if ($block->isEnableUnsubscribeLink()): ?>
+    <div style="text-align: center">
+        <div>
+            <?= $block->escapeHtml(__('No longer want to receive these emails?')) ?>
+        </div>
+        <div>
+            <a href="<?= $block->escapeUrl($block->getUnsubscribeUrl()) ?>"><?= $block->escapeHtml(__('Unsubscribe here')) ?></a>
+        </div>
+    </div>
+<?php endif; ?>

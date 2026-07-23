@@ -1,0 +1,33 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\AbandonedCart\Block\Email\Template;
+
+/** @var Template $block */
+$baseUrl = $block->getBaseUrl();
+?>
+
+<p><?= $block->escapeHtml(__('You have successfully unsubscribed from our email list, and now you will be redirected to our homepage in 5 seconds.')) ?></p>
+<script type="text/javascript">
+    require(['jquery', 'mage/mage'], function ($) {
+        $($.mage.redirect('<?= $block->escapeUrl($baseUrl)?>', 'assign', 5000));
+    });
+</script>

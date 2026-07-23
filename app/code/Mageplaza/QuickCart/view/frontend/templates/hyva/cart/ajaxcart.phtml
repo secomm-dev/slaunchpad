@@ -1,0 +1,81 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_QuickCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\QuickCart\Helper\Data;
+
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var Data $helperData */
+$helperData = $this->helper('Mageplaza\QuickCart\Helper\Data');
+
+?>
+<?php if (!$helperData->isQuickView() ): ?>
+<script>
+    function ajaxCart() {
+        return {
+            isLoading: false,
+            isAutoOpen: <?= $helperData->isAutoOpen() ? 'true' : 'false' ?>,
+            initAjaxCart() {
+                document.body.addEventListener('submit', (e) => {
+                    if (e.target.matches('form.product_addtocart_form, form#product_addtocart_form') &&
+                        !document.querySelector('.checkout-cart-index')) {
+
+                        e.preventDefault();
+                        const form = e.target;
+                        let formAction = form.getAttribute('action').replace('%25uenc%25', hyva.getUenc());
+                        if (formAction.includes('checkout/cart/add')) {
+                            let formData = new FormData(form);
+                            formData.append('form_key', hyva.getFormKey());
+                            this.isLoading = true;
+
+                            fetch(formAction, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: formData,
+                                mode: "cors",
+                                credentials: "include"
+                            })
+                            .then(response => response.ok ? response.json() : form.submit())
+                            .then(data => {
+                                if (this.isAutoOpen) {
+                                    window.dispatchEvent(new CustomEvent("toggle-cart", { detail: { isOpen: true } }));
+                                }
+                                window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            }).finally(()=>{
+                                this.isLoading = false;
+                            });
+                        } else {
+                            form.submit();
+                        }
+                    }
+                })
+            }
+        }
+    }
+</script>
+<div x-data="ajaxCart()" x-init="initAjaxCart()">
+    <?= $block->getChildHtml('loading') ?>
+</div>
+<?php endif; ?>

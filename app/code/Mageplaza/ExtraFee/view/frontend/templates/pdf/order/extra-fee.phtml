@@ -1,0 +1,87 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\ExtraFee\Block\Sales\Order\View\ExtraFee;
+use Mageplaza\ExtraFee\Model\Config\Source\DisplayArea;
+
+/** @var ExtraFee $block */
+$paymentExtraFee  = $block->getExtraFeeInfo(DisplayArea::PAYMENT_METHOD);
+$shipmentExtraFee = $block->getExtraFeeInfo(DisplayArea::SHIPPING_METHOD);
+$extraFee         = $block->getExtraFeeInfo(DisplayArea::CART_SUMMARY);
+?>
+<?php if (count($extraFee)) : ?>
+    <div class="clr"></div>
+    <div class="address">
+        <h3 class="mp-row mp-heading"><?= $block->escapeHtml(__('Extra Fee Information')) ?></h3>
+        <div class="block-content">
+            <?php foreach ($block->getFrontendExtraFeeInfo() as $label => $fees) : ?>
+                <div class="box">
+                    <strong class="box-title">
+                        <span><?= $block->escapeHtml($label) ?></span>
+                    </strong>
+                    <div class="box-content">
+                        <?php foreach ($fees as $fee) : ?>
+                            <div class="box-content">
+                                <?= $block->escapeHtml($fee['label']) ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <div class="clr"></div>
+<?php endif; ?>
+<?php if (count($paymentExtraFee)) : ?>
+    <div id="mp_extra_fee_payment" style="margin-top: 20px">
+        <strong class="box-title">
+            <span><?= $block->escapeHtml(__('Extra Fee')) ?></span>
+        </strong>
+
+        <?php foreach ($paymentExtraFee as $fee) : ?>
+            <div class="box-content">
+                <?= $block->escapeHtml($block->getFrontendTitle($fee)) ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+<?php if (count($shipmentExtraFee)) : ?>
+    <div id="mp_extra_fee_shipment" style="margin-top: 20px">
+        <strong class="box-title">
+            <span><?= $block->escapeHtml(__('Extra Fee')) ?></span>
+        </strong>
+        <?php foreach ($shipmentExtraFee as $fee) : ?>
+            <div class="box-content">
+                <?= $block->escapeHtml($block->getFrontendTitle($fee)) ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+<script>
+    require([
+        'jquery'
+    ], function ($) {
+        debugger;
+        $('.box.box-order-shipping-method').append($('#mp_extra_fee_shipment'));
+        $('.box.box-order-billing-method').append($('#mp_extra_fee_payment'));
+        $('.block.block-order-details-view').after($('#mp_extra_fee'));
+    })
+</script>

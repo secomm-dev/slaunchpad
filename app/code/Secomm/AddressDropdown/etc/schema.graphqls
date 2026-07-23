@@ -1,0 +1,29 @@
+type Query {
+    GetListCity(input: RegionId): [ListCityGraphqlOutput] @resolver(class: "Secomm\\AddressDropdown\\Model\\Resolver\\GetListCityGraphql") @deprecated(reason: "Get list cities") @cache(cacheable: false)
+    GetListSubCity(input: DefaultName): [ListSubCityGraphqlOutput] @resolver(class: "Secomm\\AddressDropdown\\Model\\Resolver\\GetListSubCityGraphql") @deprecated(reason: "Get list sub-cities") @cache(cacheable: false)
+}
+
+input RegionId {
+    region_id: String,
+    area: String
+}
+
+input DefaultName {
+    default_name: String
+    area: String
+    region_id: String
+}
+
+type ListCityGraphqlOutput {
+    city_id: String
+    region_id: String
+    default_name: String
+    label: String
+}
+
+type ListSubCityGraphqlOutput {
+    sub_city_id: String
+    city_id: String
+    default_name: String
+    label: String
+}

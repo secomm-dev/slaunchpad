@@ -1,0 +1,90 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscUltimate
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var Block $block */
+
+use Mageplaza\OscUltimate\Block\Adminhtml\Layout\Block;
+
+?>
+<div id="<?= $block->escapeQuote($block->getBlockId()) ?>" class="mposc-field-container">
+    <?php if ($block->checkUseDefault()): ?>
+    <div id="manage-block" class="use-system">
+        <?php else: ?>
+        <div id="manage-block">
+            <?php endif; ?>
+            <div class="layout">
+                <label for="layout-checkout-page"
+                       style="font-weight: 600; color: #000000; font-size: 16px; padding-right: 10px;">
+                    Checkout Page Layout</label>
+                <select id="layout-checkout-page" value="<?= /* @noEscape */ $block->getDesignConfiguration() ?>">
+                    <?php foreach ($block->getLayoutCheckoutPage() as $item): ?>
+                        <?php if ($item['value'] === $block->getSystemConfigLayout()): ?>
+                            <option value="<?= /** @noEscape */
+                            $item['value'] ?>" selected>
+                                <?= /** @noEscape */
+                                $item['label'] ?>
+                            </option>
+                        <?php else: ?>
+                            <option value="<?= /** @noEscape */
+                            $item['value'] ?>">
+                                <?= /** @noEscape */
+                                $item['label'] ?>
+                            </option>
+                        <?php endif ?>
+                    <?php endforeach; ?>
+                </select>
+                <?= $block->getChildHtml('store_switcher') ?>
+                <?php if ($block->checkUseDefault()): ?>
+                    <input id="use-system-default" type="checkbox" class="use-default" checked/>
+                <?php else: ?>
+                    <input id="use-system-default" type="checkbox" class="use-default"/>
+                <?php endif; ?>
+                <label for="use-system-default" class="label-default" style="margin-left: 5px;">
+                    <?= /* @noEscape */ __('Use system Default') ?>
+                </label>
+            </div>
+            <div id="1column" class="page-layout one-column">
+                <?= $block->getChildHtml('mposc.block.1column') ?>
+            </div>
+            <div id="2columns" class="page-layout two-columns">
+                <?= $block->getChildHtml('mposc.block.2columns') ?>
+            </div>
+            <div id="2columns-floating" class="page-layout columns-floating">
+                <?= $block->getChildHtml('mposc.block.2columns-floating') ?>
+            </div>
+            <div id="3columns" class="page-layout three-columns">
+                <?= $block->getChildHtml('mposc.block.3columns') ?>
+            </div>
+            <div id="3columns-colspan" class="page-layout columns-colspan">
+                <?= $block->getChildHtml('mposc.block.3columns-colspan') ?>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/x-magento-init">
+        {
+            "*": {
+                "Mageplaza_OscUltimate/js/store-switcher": {
+                    "url": "<?= /** @noEscape */ $block->getUrl('oscultimate/store/switcher') ?>"
+                }
+            }
+        }
+</script>

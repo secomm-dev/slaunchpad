@@ -1,0 +1,3 @@
+ticket_id,description,mode,estimated_hours,actual_hours,variance,notes,date_completed
+PROJ-123,Fix checkout price display,C,4,5,+1,Needed extra testing due to B2B tier interaction,2026-06-20
+,,,0,0,0,,

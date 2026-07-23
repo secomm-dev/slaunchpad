@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Mageplaza_Lookbook::lookbookslider" title="Lookbook Sliders" module="Mageplaza_Lookbook"
+             sortOrder="100" resource="Mageplaza_Lookbook::lookbookslider" parent="Magento_Backend::content"/>
+        <add id="Mageplaza_Lookbook::lookbook" title="Manage Lookbooks" module="Mageplaza_Lookbook" sortOrder="20"
+             parent="Mageplaza_Lookbook::lookbookslider" action="mplookbook/lookbook/index"
+             resource="Mageplaza_Lookbook::lookbook"/>
+        <add id="Mageplaza_Lookbook::slider" title="Manage Sliders" module="Mageplaza_Lookbook" sortOrder="30"
+             parent="Mageplaza_Lookbook::lookbookslider" action="mplookbook/slider/index"
+             resource="Mageplaza_Lookbook::slider"/>
+        <add id="Mageplaza_Lookbook::configuration" title="Configuration" module="Mageplaza_Lookbook" sortOrder="70"
+             parent="Mageplaza_Lookbook::lookbookslider" action="adminhtml/system_config/edit/section/mplookbook"
+             resource="Mageplaza_Lookbook::configuration"/>
+    </menu>
+</config>

@@ -1,0 +1,508 @@
+#!/usr/bin/env bash
+# =============================================================================
+# project-ai-validate — validate the Project AI Toolkit capability contract
+# against the single source of truth (toolkit-capability-registry.yaml).
+#
+# Two modes (auto-detected by walking up from this script):
+#   TOOLKIT mode — finds shared-core/registry/  → validates the SOURCE contract
+#                  (templates vs registry, command maps, broken refs).
+#   PROJECT mode — finds .ai/registry/          → validates a GENERATED project
+#                  standalone (nav skills present, registry present, no broken
+#                  refs). Use this to prove a project works with only its own
+#                  repo open (Test J).
+#   Override: --project <path>   --root <toolkit-path>
+#
+# Zero-dependency bash (grep/sed/awk). python3+pyyaml optional (YAML syntax only).
+#
+# The rule enforced: anything documented as usable must have a discoverable,
+# valid implementation; anything implemented must be accurately documented.
+#
+# Usage:
+#   bin/project-ai-validate                 # auto-detect
+#   bin/project-ai-validate --check-adapters|--check-cheatsheet|--check-commands|--check-refs|--check-records|--check-modes|--check-project-state
+#   bin/project-ai-validate --project /path/to/generated/project
+#   bin/project-ai-validate --quiet
+# Exit: 0 = clean, 1 = material contract violation.
+# =============================================================================
+set -uo pipefail
+
+QUIET=0; PROJECT=""; ROOT_OVERRIDE=""
+RUN_ALL=1; C_ADAPTERS=0; C_CHEAT=0; C_CMDS=0; C_REFS=0; C_RECORDS=0; C_MODES=0; C_PSTATE=0; C_RSEP=0; C_CEFF=0; C_GOV=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --quiet) QUIET=1; shift ;;
+    --check-adapters) RUN_ALL=0; C_ADAPTERS=1; shift ;;
+    --check-cheatsheet) RUN_ALL=0; C_CHEAT=1; shift ;;
+    --check-commands) RUN_ALL=0; C_CMDS=1; shift ;;
+    --check-refs) RUN_ALL=0; C_REFS=1; shift ;;
+    --check-records) RUN_ALL=0; C_RECORDS=1; shift ;;
+    --check-modes) RUN_ALL=0; C_MODES=1; shift ;;
+    --check-project-state) RUN_ALL=0; C_PSTATE=1; shift ;;
+    --check-runtime-separation) RUN_ALL=0; C_RSEP=1; shift ;;
+    --check-context-efficiency) RUN_ALL=0; C_CEFF=1; shift ;;
+    --check-governance-dedup) RUN_ALL=0; C_GOV=1; shift ;;
+    --project) PROJECT="$2"; shift 2 ;;
+    --root) ROOT_OVERRIDE="$2"; shift 2 ;;
+    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+    *) echo "unknown flag: $1" >&2; exit 2 ;;
+  esac
+done
+[ $RUN_ALL -eq 1 ] && { C_ADAPTERS=1; C_CHEAT=1; C_CMDS=1; C_REFS=1; C_RECORDS=1; C_MODES=1; C_PSTATE=1; C_RSEP=1; }
+
+errors=0; warnings=0
+note(){ [ $QUIET -eq 0 ] && echo "ok:   $*" || true; }
+warn(){ echo "warn: $*"; warnings=$((warnings+1)); }
+fail(){ echo "FAIL: $*"; errors=$((errors+1)); }
+
+# --- locate toolkit root (shared-core/registry) ---
+__d="${ROOT_OVERRIDE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
+ROOT=""
+while [ "$__d" != "/" ]; do
+  [ -f "$__d/shared-core/registry/toolkit-capability-registry.yaml" ] && { ROOT="$__d"; break; }
+  __d="$(dirname "$__d")"
+done
+
+# --- locate registry + decide mode ---
+if [ -n "$PROJECT" ]; then
+  P="$(cd "$PROJECT" && pwd)"
+  REG="$P/.ai/registry/toolkit-capability-registry.yaml"
+  MODE="project"
+elif [ -n "$ROOT" ]; then
+  REG="$ROOT/shared-core/registry/toolkit-capability-registry.yaml"; MODE="toolkit"
+else
+  # standalone project: walk up for .ai/registry
+  __d="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  while [ "$__d" != "/" ]; do
+    if [ -f "$__d/.ai/registry/toolkit-capability-registry.yaml" ]; then P="$__d"; REG="$__d/.ai/registry/toolkit-capability-registry.yaml"; MODE="project"; break; fi
+    __d="$(dirname "$__d")"
+  done
+fi
+[ -n "${REG:-}" ] && [ -f "$REG" ] || { echo "FATAL: registry not found (no shared-core/registry in toolkit, no .ai/registry in project)" >&2; exit 2; }
+# in project mode without explicit ROOT, derive ROOT for source paths if available (optional)
+[ -z "${ROOT:-}" ] && ROOT=""
+
+# optional YAML syntax sanity
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import yaml' 2>/dev/null; then
+  python3 -c "import yaml; yaml.safe_load(open('$REG'))" 2>/dev/null && note "registry YAML parses (pyyaml)" || fail "registry YAML is syntactically invalid"
+else
+  warn "python3/pyyaml not available — skipping YAML syntax check (structural checks still run)"
+fi
+
+# resolve a registry adapter path to a real file path for the current mode
+resolve_adapter(){
+  local a="$1"
+  case "$MODE" in
+    toolkit) echo "$ROOT/$a" ;;                                 # path is toolkit-relative
+    project)
+      case "$a" in
+        skills-source/*) local n="${a#skills-source/}"; echo "$P/.claude/skills/$n" ;;   # skill copied into .claude/skills/
+        .ai/*) echo "$P/$a" ;;
+        *) echo "" ;;                                           # codex/copilot/shared-core adapters are provenance/NL in a project — not required standalone
+      esac ;;
+  esac
+}
+
+# -----------------------------------------------------------------------------
+# Check: every enabled hard-adapter file exists (skill/prompt-snippet).
+# In PROJECT mode only the always-present set (nav.*) is asserted — non-nav
+# skills are project-SELECTED, so their absence in a given project is valid.
+# -----------------------------------------------------------------------------
+if [ $C_ADAPTERS -eq 1 ]; then
+  echo "--- adapters ($MODE) ---"
+  # emit: cap|tool|invocation_type|adapter  (enabled=true only)
+  while IFS='|' read -r cap tool itype adapter; do
+    [ -n "$cap" ] || continue
+    if [ "$MODE" = "project" ]; then
+      case "$cap" in nav.*) ;; *) continue ;; esac   # project-selected skills are not asserted standalone
+    fi
+    case "$itype" in
+      skill|prompt-snippet)
+        if [ -z "$adapter" ]; then fail "$cap.$tool: enabled, invocation_type=$itype, but no adapter path"; continue; fi
+        rp="$(resolve_adapter "$adapter")"
+        if [ "$MODE" = "project" ] && [ -z "$rp" ]; then continue; fi   # codex/copilot/shared-core not required standalone
+        [ -n "$rp" ] && [ -f "$rp" ] || fail "$cap.$tool adapter missing ($MODE): $adapter" ;;
+      nl-only|function|gate|none|"") ;;
+      *) warn "$cap.$tool: unknown invocation_type '$itype' (adapter=$adapter)" ;;
+    esac
+  done < <(awk '
+    /^  [A-Za-z0-9._-]+:$/ { cap=$0; gsub(/[ :]/,"",cap); next }
+    /^[[:space:]]+(claude|codex|copilot):[[:space:]]*\{/ {
+      line=$0; tool=line; sub(/^[[:space:]]+/,"",tool); sub(/:.*/,"",tool)
+      en=(line ~ /enabled:[ ]*true/)
+      it=""; if (match(line,/invocation_type:[ ]*[a-z-]+/)){it=substr(line,RSTART,RLENGTH); sub(/invocation_type:[ ]*/,"",it)}
+      ad=""; if (match(line,/adapter:[ ]*"[^"]+"/)){ad=substr(line,RSTART,RLENGTH); sub(/adapter:[ ]*"/,"",ad); sub(/"$/,"",ad)}
+      if (en) print cap"|"tool"|"it"|"ad
+    }' "$REG")
+  note "adapter existence checked ($MODE)"
+fi
+
+# -----------------------------------------------------------------------------
+# Toolkit-only: CHEATSHEET nav table ↔ registry nav.* (drift).
+# -----------------------------------------------------------------------------
+if [ $C_CHEAT -eq 1 ] && [ "$MODE" = "toolkit" ]; then
+  echo "--- cheatsheet ---"
+  CHEAT="$ROOT/shared-core/enablement/templates/CHEATSHEET.template.md"
+  [ -f "$CHEAT" ] || fail "CHEATSHEET template missing: $CHEAT"
+  mapfile -t REG_NAV < <(awk '
+    /^  [A-Za-z0-9._-]+:$/ { cap=$0; gsub(/[ :]/,"",cap); next }
+    cap ~ /^nav\./ && /^      claude:/ && /invocation:/ {
+      l=$0; sub(/^.*invocation:[ ]*"/,"",l); sub(/".*/,"",l); sub(/[ ].*/,"",l); print l
+    }' "$REG" | sort -u)
+  mapfile -t CHEAT_NAV < <(awk '
+    /^## 🧭/{f=1;next} /^## /{f=0} f && /`\/[a-z]/ {
+      s=$0; while(match(s,/`\/[a-z][a-z-]+/)){print substr(s,RSTART+1,RLENGTH-1); s=substr(s,RSTART+RLENGTH)}
+    }' "$CHEAT" | sort -u)
+  drift=0
+  for c in "${REG_NAV[@]}"; do { found=0; for x in "${CHEAT_NAV[@]}"; do [ "$x" = "$c" ] && found=1; done; [ $found -eq 0 ] && { fail "registry nav $c missing from CHEATSHEET"; drift=1; }; }; done
+  for c in "${CHEAT_NAV[@]}"; do { found=0; for x in "${REG_NAV[@]}"; do [ "$x" = "$c" ] && found=1; done; [ $found -eq 0 ] && { fail "CHEATSHEET nav $c not in registry (drift)"; drift=1; }; }; done
+  [ $drift -eq 0 ] && note "CHEATSHEET nav table matches registry nav.* (${#REG_NAV[@]})"
+  grep -q '⚠️' "$CHEAT" || warn "CHEATSHEET: no mutating (⚠️) marker — /approve,/tbd guard may be missing"
+fi
+
+# -----------------------------------------------------------------------------
+# Toolkit-only: command-map consistency + no deprecated command advertised.
+# -----------------------------------------------------------------------------
+if [ $C_CMDS -eq 1 ] && [ "$MODE" = "toolkit" ]; then
+  echo "--- commands ---"
+  CMDIDX="$ROOT/shared-core/commands/commands-index.md"
+  SUPPORTED="$ROOT/shared-core/intents/supported-commands-template.md"
+  mapfile -t REG_IDS < <(awk '/^  [A-Za-z0-9._-]+:$/{ id=$0; gsub(/[ :]/,"",id); print id }' "$REG" | sort -u)
+  if [ -f "$CMDIDX" ]; then
+    while IFS= read -r cid; do
+      [ -z "$cid" ] && continue
+      ok=0; for x in "${REG_IDS[@]}"; do [ "$x" = "$cid" ] && ok=1; done
+      [ $ok -eq 0 ] && fail "commands-index references unknown Canonical ID: $cid"
+    done < <(grep -oE '`(delivery|nav)\.[a-z-]+`' "$CMDIDX" | tr -d '`' | sort -u)
+    note "commands-index Canonical IDs checked against registry"
+  fi
+  for f in "$CMDIDX" "$SUPPORTED"; do [ -f "$f" ] || continue
+    grep -nE '(^|[^~])`/tl-review`' "$f" >/dev/null 2>&1 && fail "$(basename "$f"): deprecated /tl-review advertised as a live command"
+  done
+  note "deprecated-command advertising checked"
+fi
+
+# -----------------------------------------------------------------------------
+# Check: no broken templates/*.md references (toolkit: repo; project: .ai/).
+# -----------------------------------------------------------------------------
+if [ $C_REFS -eq 1 ]; then
+  echo "--- references ($MODE) ---"
+  if [ "$MODE" = "toolkit" ]; then
+    refs_root="$ROOT"; tmplsub="templates"; tmplbase="$ROOT/templates"
+  else
+    refs_root="$P/.ai"; tmplsub="templates"; tmplbase="$P/.ai/templates"
+  fi
+  brokenc=0
+  if [ -d "$refs_root" ]; then
+    while IFS= read -r ref; do
+      f="$(printf '%s' "$ref" | sed -E "s#.*${tmplsub}/##")"
+      [ -f "$tmplbase/$f" ] || { fail "broken reference: $ref"; brokenc=$((brokenc+1)); }
+    done < <(grep -rhoE "${tmplsub}/[A-Za-z0-9_-]+\.md" --include='*.md' "$refs_root" 2>/dev/null | sort -u)
+  fi
+  [ $brokenc -eq 0 ] && note "no broken ${tmplsub}/*.md references ($MODE)"
+  if [ "$MODE" = "toolkit" ]; then
+    for d in .agents .codex .claude .github; do
+      [ -d "$ROOT/$d" ] && [ -z "$(find "$ROOT/$d" -type f 2>/dev/null | head -1)" ] && warn "empty tool dir present: $d/ (unused scaffolding)"
+    done
+  fi
+fi
+
+# -----------------------------------------------------------------------------
+# Check: canonical records contract (Phase 1a). Permissive when absent.
+#   toolkit mode → the 4 canonical record templates must exist in templates/.
+#   project mode → .ai/records/ frontmatter + decisions/components link resolve.
+# -----------------------------------------------------------------------------
+if [ $C_RECORDS -eq 1 ]; then
+  echo "--- records ($MODE) ---"
+  if [ "$MODE" = "toolkit" ]; then
+    for t in feature-record bug-record release-record decision-record; do
+      [ -f "$ROOT/templates/$t-template.md" ] || fail "missing canonical record template: templates/$t-template.md"
+    done
+    note "canonical record templates present (toolkit)"
+  else
+    REC="$P/.ai/records"
+    if [ ! -d "$REC" ]; then
+      note "no .ai/records/ (skipped — legacy project; Phase 1a permissive)"
+    elif ! command -v python3 >/dev/null 2>&1; then
+      warn "python3 unavailable — records contract check skipped at $REC (install python3 to verify)"
+    else
+      rec_out="$(python3 - "$REC" <<'PYREC'
+import sys, os, re
+rec = sys.argv[1]
+fails = []
+def frontmatter(path):
+    with open(path, encoding='utf-8') as fh: txt = fh.read()
+    m = re.match(r'^---\r?\n(.*?)\r?\n---(?:\r?\n|$)', txt, re.S)
+    return m.group(1) if m else ''
+def has_key(fm, key):
+    return re.search(r'^' + re.escape(key) + r':', fm, re.M) is not None
+def field_vals(fm, key):
+    vals = []; in_block = False
+    for line in fm.splitlines():
+        if re.match(r'^' + re.escape(key) + r':', line):
+            rest = line.split(':', 1)[1]
+            rest = re.sub(r'#.*$', '', rest).strip()   # strip inline comment, then trim
+            if rest.startswith('['):
+                vals = [v.strip().strip('\'"') for v in rest.strip('[]').split(',') if v.strip()]; in_block = False
+            elif rest == '':
+                in_block = True
+            else:
+                vals = [rest.strip().strip('\'"')]; in_block = False
+        elif in_block:
+            if re.match(r'^\s*-\s+', line):
+                vals.append(re.sub(r'^\s*-\s*', '', line).strip().strip('\'"'))
+            elif re.match(r'^[A-Za-z_]', line):
+                in_block = False
+    return vals
+req = {
+ 'features': ['id','status','mode','components','changes_project_state','verified_against_commit'],
+ 'bugs':      ['id','status','components','changes_project_state'],
+ 'releases':  ['id','status'],
+ 'decisions': ['id','status'],
+}
+prefix = {'features':'FEAT-','bugs':'BUG-','releases':'REL-','decisions':'DEC-'}
+_dec_md = os.path.join(rec, '..', 'project-context', 'memory', 'DECISIONS.md')
+_dec_md_text = ''
+if os.path.exists(_dec_md):
+    with open(_dec_md, encoding='utf-8') as _fh: _dec_md_text = _fh.read()
+for kind in req:
+    kd = os.path.join(rec, kind)
+    if not os.path.isdir(kd): continue
+    for fn in sorted(os.listdir(kd)):
+        if not fn.endswith('.md'): continue
+        rel = kind + '/' + fn
+        fm = frontmatter(os.path.join(kd, fn))
+        if not fm: fails.append(rel + ': no YAML frontmatter'); continue
+        for key in req[kind]:
+            if not has_key(fm, key): fails.append(rel + ': missing frontmatter ' + key)
+        iid = (field_vals(fm, 'id') or [''])[0]
+        if iid and not iid.startswith(prefix[kind]):
+            fails.append(rel + ': id ' + iid + ' should start with ' + prefix[kind])
+        for dv in field_vals(fm, 'decisions'):
+            m = re.search(r'(DEC-[A-Za-z0-9_-]+)', dv)
+            if m:
+                did = m.group(1)
+                _canonical = os.path.join(rec, 'decisions', did + '.md')
+                _in_index = re.search(re.escape(did) + r'(?![0-9A-Za-z_-])', _dec_md_text) is not None
+                if not os.path.exists(_canonical) and not _in_index:
+                    fails.append(rel + ': decisions link unresolved: ' + did + ' (not in records/decisions/ nor DECISIONS.md)')
+        # Mode A decision-coverage enforcement (Phase 1b correction)
+        _mode = (field_vals(fm, 'mode') or [''])[0]
+        if _mode == 'A':
+            if not has_key(fm, 'decision_assessment'):
+                fails.append(rel + ': Mode A record missing decision_assessment (Phase 1b; core/decision-assessment.md)')
+            elif (field_vals(fm, 'decision_assessment') or [''])[0] == 'material' and not field_vals(fm, 'decisions'):
+                fails.append(rel + ': Mode A decision_assessment=material but decisions empty (create DEC records)')
+        # decision_approval_summary consistency (B1) — feature/bug records
+        if kind in ('features', 'bugs'):
+            _fm_text = fm   # frontmatter() returns the frontmatter text (string)
+            if 'decision_approval_summary' in _fm_text:
+                def _summ_val(name):
+                    m = re.search(r'^[ \t]*' + name + r':[ \t]*\[([^\]]*)\]', _fm_text, re.M)
+                    if m:
+                        return [v.strip().strip('\'"') for v in m.group(1).split(',') if v.strip()]
+                    m2 = re.search(r'^[ \t]*' + name + r':[ \t]*(\S+)', _fm_text, re.M)
+                    return m2.group(1) if m2 else None
+                _total = _summ_val('total')
+                _ndec = len(field_vals(fm, 'decisions'))
+                try:
+                    if _total is not None and int(_total) != _ndec:
+                        fails.append(rel + ': decision_approval_summary.total=' + str(_total) + ' but decisions has ' + str(_ndec))
+                except ValueError:
+                    pass
+                _bsum = sum(len(_summ_val(b) or []) for b in ('pending_approval', 'approved', 'rejected', 'superseded'))
+                try:
+                    if _total is not None and int(_total) != _bsum:
+                        fails.append(rel + ': decision_approval_summary buckets sum to ' + str(_bsum) + ' but total=' + str(_total))
+                except ValueError:
+                    pass
+                _bucket_of = {'proposed': 'pending_approval', 'accepted': 'approved', 'rejected': 'rejected', 'superseded': 'superseded'}
+                for dv in field_vals(fm, 'decisions'):
+                    m = re.search(r'(DEC-[A-Za-z0-9_-]+)', dv)
+                    if not m:
+                        continue
+                    did = m.group(1)
+                    _dec_file = os.path.join(rec, 'decisions', did + '.md')
+                    if not os.path.exists(_dec_file):
+                        continue
+                    _dfm = frontmatter(_dec_file)
+                    if not _dfm:
+                        continue
+                    _st = (field_vals(_dfm, 'status') or [''])[0]
+                    _expected = _bucket_of.get(_st)
+                    if _expected is None:
+                        continue
+                    if did not in (_summ_val(_expected) or []):
+                        fails.append(rel + ': decision_approval_summary drift — ' + did + ' status=' + _st + ' ⇒ expected in ' + _expected)
+for x in fails: print('FAIL: ' + x)
+sys.exit(1 if fails else 0)
+PYREC
+)"
+      if [ $? -eq 0 ]; then
+        note "records contract OK (project)"
+      else
+        printf '%s\n' "$rec_out"
+        errors=$((errors + $(printf '%s\n' "$rec_out" | grep -c '^FAIL:')))
+      fi
+    fi
+  fi
+fi
+
+# -----------------------------------------------------------------------------
+# Check: per-work-item mode / risk-routing contract (Phase 1b). Toolkit-only.
+#   core routing/policy files (workflow-modes, risk-categories, escalation)
+#   must be free of hard-coded vendor names (RM-04) and workflow-modes.md must
+#   not route by effort band (RM-05). Skipped in project mode (project overlay
+#   legitimately carries vendor names).
+# -----------------------------------------------------------------------------
+if [ $C_MODES -eq 1 ]; then
+  echo "--- modes ($MODE) ---"
+  if [ "$MODE" != "toolkit" ]; then
+    note "modes check is toolkit-only (skipped in $MODE mode)"
+  else
+    _m_before=$errors
+    vendor_re='Mollie|VNPAY|Mageplaza|ExtraFee|Hyva|Hyvä|Braintree|PayPal|Klaviyo'
+    for f in core/workflow-modes.md core/risk-categories.md core/escalation-rules.md; do
+      if [ ! -f "$ROOT/$f" ]; then fail "missing core routing/policy file: $f"; continue; fi
+      hits="$(grep -nE "$vendor_re" "$ROOT/$f" 2>/dev/null || true)"
+      [ -z "$hits" ] || while IFS= read -r ln; do fail "$f: vendor name in core routing/policy (RM-04): $ln"; done <<< "$hits"
+    done
+    if [ -f "$ROOT/core/workflow-modes.md" ]; then
+      band_re='4[–-]16h|>[[:space:]]*16h|>[[:space:]]*4h|<[[:space:]]*4h'
+      hits="$(grep -nE "$band_re" "$ROOT/core/workflow-modes.md" 2>/dev/null || true)"
+      [ -z "$hits" ] || while IFS= read -r ln; do fail "core/workflow-modes.md: effort-band router (RM-05): $ln"; done <<< "$hits"
+    fi
+    [ $errors -eq $_m_before ] && note "core routing/policy generic + effort-free (toolkit)"
+  fi
+fi
+
+# -----------------------------------------------------------------------------
+# Check: durable project state + component index (Phase 1c). Permissive when
+#   .ai/project/ absent. Toolkit mode → templates exist. Project mode →
+#   COMPONENT_INDEX schema + component-ID resolution (records components: →
+#   CMP-* rows) + CURRENT_STATE present + 01-12 verification headers (warn).
+# -----------------------------------------------------------------------------
+if [ $C_PSTATE -eq 1 ]; then
+  echo "--- project-state ($MODE) ---"
+  if [ "$MODE" = "toolkit" ]; then
+    for t in component-index-template project-current-state-template; do
+      [ -f "$ROOT/templates/$t.md" ] || fail "missing Phase 1c template: templates/$t.md"
+    done
+    [ -f "$ROOT/core/verification-metadata.md" ] || fail "missing core/verification-metadata.md"
+    note "Phase 1c project-state templates present (toolkit)"
+  else
+    PROJ="$P/.ai/project"
+    if [ ! -d "$PROJ" ]; then
+      note "no .ai/project/ (skipped — legacy project; Phase 1c permissive)"
+    else
+      [ -f "$PROJ/COMPONENT_INDEX.md" ] || warn ".ai/project/COMPONENT_INDEX.md missing"
+      [ -f "$PROJ/CURRENT_STATE.md" ] || warn ".ai/project/CURRENT_STATE.md missing"
+      for ctx in "$P/.ai/project-context"/0*_*.md; do
+        [ -f "$ctx" ] || continue
+        grep -qE '^last_verified:' "$ctx" 2>/dev/null || warn "$(basename "$ctx"): missing verification header (core/verification-metadata.md)"
+      done
+      if [ -f "$PROJ/COMPONENT_INDEX.md" ] && command -v python3 >/dev/null 2>&1; then
+        ps_out="$(python3 - "$P/.ai" <<'PYP'
+import sys, os, re
+ai = sys.argv[1]
+ci = os.path.join(ai, 'project', 'COMPONENT_INDEX.md')
+cmp_set = set(re.findall(r'CMP-[A-Za-z0-9_-]+', open(ci, encoding='utf-8').read()))
+fails = []
+def fm(p):
+    t = open(p, encoding='utf-8').read()
+    m = re.match(r'^---\r?\n(.*?)\r?\n---(?:\r?\n|$)', t, re.S); return m.group(1) if m else ''
+def vals(fmk, key):
+    out=[]; block=False
+    for line in fmk.splitlines():
+        if re.match(r'^'+re.escape(key)+r':', line):
+            rest=re.sub(r'#.*$','',line.split(':',1)[1]).strip()
+            if rest.startswith('['): out=[v.strip().strip('\'"') for v in rest.strip('[]').split(',') if v.strip()]; block=False
+            elif rest=='': block=True
+            else: out=[rest.strip().strip('\'"')]; block=False
+        elif block:
+            if re.match(r'^\s*-\s+', line): out.append(re.sub(r'^\s*-\s*','',line).strip().strip('\'"'))
+            elif re.match(r'^[A-Za-z_]', line): block=False
+    return out
+for kind in ('features','bugs','releases','decisions'):
+    d = os.path.join(ai,'records',kind)
+    if not os.path.isdir(d): continue
+    for fn in sorted(os.listdir(d)):
+        if not fn.endswith('.md'): continue
+        f = fm(os.path.join(d,fn))
+        if not f: continue
+        for c in vals(f,'components'):
+            m = re.search(r'(CMP-[A-Za-z0-9_-]+)', c)
+            if m and m.group(1) not in cmp_set:
+                fails.append(kind+'/'+fn+': component ref unresolved: '+m.group(1)+' (not in COMPONENT_INDEX)')
+for x in fails: print('FAIL: '+x)
+sys.exit(1 if fails else 0)
+PYP
+)"
+        if [ $? -ne 0 ]; then printf '%s\n' "$ps_out"; errors=$((errors + $(printf '%s\n' "$ps_out" | grep -c '^FAIL:'))); else note "component refs resolve to COMPONENT_INDEX"; fi
+      fi
+    fi
+  fi
+fi
+
+if [ $C_RSEP -eq 1 ]; then
+  echo "--- runtime-separation ($MODE) ---"
+  if [ "$MODE" = "toolkit" ]; then
+    grep -q "Rule 17c" "$ROOT/generator-rules/output-file-rules.md" || fail "toolkit: output-file-rules Rule 17c (runtime/durable) missing"
+    for t in shared-core/navigator/templates/session-state.template.md shared-core/navigator/templates/next-action.template.md shared-core/workflows/current-workflow-state-template.md shared-core/workflows/workflow-history-template.md; do
+      [ -f "$ROOT/$t" ] || fail "toolkit: runtime template missing: $t"
+    done
+    note "Phase 1d runtime-separation contract present (toolkit)"
+  else
+    if [ ! -d "$P/.ai" ]; then
+      note "no .ai/ (skipped — Phase 1d permissive)"
+    else
+      if [ ! -f "$P/.ai/.gitignore" ]; then
+        fail ".ai/.gitignore missing (Phase 1d, RM-02 — runtime must be gitignored)"
+      else
+        grep -qE "^/runtime/" "$P/.ai/.gitignore" || fail ".ai/.gitignore lacks /runtime/ carve-out (Phase 1d)"
+        note ".ai/.gitignore runtime carve-out present"
+      fi
+      for f in CURRENT_WORKFLOW_STATE.md WORKFLOW_HISTORY.md; do
+        [ -f "$P/.ai/workflow/$f" ] && fail ".ai/workflow/$f must live under .ai/runtime/workflow/ (Phase 1d RM-02)"
+      done
+      for sd in session workflow evidence; do
+        [ -d "$P/.ai/runtime/$sd" ] || warn ".ai/runtime/$sd/ missing (recommended by Phase 1d)"
+      done
+      if command -v git >/dev/null 2>&1 && [ -d "$P/.git" ]; then
+        git -C "$P" check-ignore -q .ai/runtime/ 2>/dev/null || warn ".ai/runtime/ not git-ignored at repo root"
+      fi
+      note "Phase 1d runtime-separation check done (project)"
+    fi
+  fi
+fi
+
+if [ $C_CEFF -eq 1 ]; then
+  echo "--- context-efficiency ($MODE) [report] ---"
+  if [ "$MODE" = "toolkit" ]; then
+    grep -q "single response" "$ROOT/shared-core/functions/function-template.md" && note "function-template same-response guard present" || warn "function-template same-response guard absent"
+    [ -f "$ROOT/execution-policy/AGENT_EXECUTION_EFFICIENCY_POLICY.md" ] && note "efficiency policy present" || warn "efficiency policy missing"
+  else
+    if grep -rqE "4–16h|<4h|>16h|Max turns" "$P/.ai/" 2>/dev/null; then
+      warn "possible binding effort/max-turns clause in .ai/ (RM-05 expects validation-metric only)"
+    else
+      note "no binding effort-band/max-turns clause in .ai/ (RM-05)"
+    fi
+  fi
+fi
+
+if [ $C_GOV -eq 1 ]; then
+  echo "--- governance-dedup ($MODE) [report] ---"
+  if [ "$MODE" = "toolkit" ]; then
+    if grep -q "reference, not re-list" "$ROOT/shared-core/workflows/WORKFLOW_TRANSITIONS.md"; then
+      note "WORKFLOW_TRANSITIONS gate-re-listing removed (Phase 1f)"
+    else
+      warn "WORKFLOW_TRANSITIONS may still re-list gates (Phase 1f)"
+    fi
+    grep -q "Canonical source (Phase 1f dedup)" "$ROOT/core/quality-gates.md" && grep -q "Canonical source (Phase 1f dedup)" "$ROOT/core/delivery-governance.md" && note "quality-gates/delivery-governance canonical markers present" || warn "gate canonical markers missing"
+  else
+    note "governance dedup is toolkit-source; instance check = AGENTS.md distillation review"
+  fi
+fi
+
+echo "----------------------------------------"
+echo "result ($MODE): $errors FAIL, $warnings WARN"
+[ $errors -eq 0 ] && { echo "VALID"; exit 0; } || { echo "INVALID"; exit 1; }

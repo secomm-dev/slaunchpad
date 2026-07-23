@@ -1,0 +1,65 @@
+{
+    "mageplaza_lookbookslider_lookbook": {
+        "column": {
+            "lookbook_id": true,
+            "name": true,
+            "status": true,
+            "store_ids": true,
+            "marker_type": true,
+            "image": true,
+            "marker": true,
+            "width": true,
+            "height": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "MAGEPLAZA_LOOKBOOKSLIDER_LOOKBOOK_NAME": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mageplaza_lookbookslider_slider": {
+        "column": {
+            "slider_id": true,
+            "name": true,
+            "status": true,
+            "design": true,
+            "infinite": true,
+            "arrows": true,
+            "dots": true,
+            "lazyLoad": true,
+            "autoplay": true,
+            "pauseOnHover": true,
+            "autoplaySpeed": true,
+            "custom_css": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "MAGEPLAZA_LOOKBOOKSLIDER_SLIDER_NAME": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mageplaza_lookbookslider_slider_lookbook": {
+        "column": {
+            "link_id": true,
+            "slider_id": true,
+            "lookbook_id": true,
+            "position": true
+        },
+        "index": {
+            "MAGEPLAZA_LOOKBOOKSLIDER_SLIDER_LOOKBOOK_SLIDER_ID": true,
+            "MAGEPLAZA_LOOKBOOKSLIDER_SLIDER_LOOKBOOK_LOOKBOOK_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_779FC1F812F54F763A7C963B3439D4D3": true,
+            "FK_E4ADAABCD9005772F81012687C8F6A6E": true,
+            "MAGEPLAZA_LOOKBOOKSLIDER_SLIDER_LOOKBOOK_SLIDER_ID_LOOKBOOK_ID": true
+        }
+    }
+}

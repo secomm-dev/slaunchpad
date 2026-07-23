@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="mplookbook" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1"
+                 showInStore="1">
+            <class>separator-top</class>
+            <label>Lookbook</label>
+            <tab>mageplaza</tab>
+            <resource>Mageplaza_Lookbook::configuration</resource>
+            <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select Yes to enable this module</comment>
+                </field>
+                <field id="marker_icon" translate="label comment" type="image" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Marker Icon</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
+                    <upload_dir config="system/filesystem/media" scope_info="1">mageplaza/lookbook</upload_dir>
+                    <base_url type="media" scope_info="1">mageplaza/lookbook</base_url>
+                    <comment><![CDATA[Allowed file types: jpg, gif, png. Leave empty to use default icon.]]></comment>
+                </field>
+                <field id="marker_width" translate="label comment" type="text" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Marker Width</label>
+                    <validate>validate-no-empty validate-greater-than-zero validate-digits</validate>
+                    <comment>Default: 40px.</comment>
+                </field>
+                <field id="marker_height" translate="label comment" type="text" sortOrder="40" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Marker Height</label>
+                    <validate>validate-no-empty validate-greater-than-zero validate-digits</validate>
+                    <comment>Default: 40px.</comment>
+                </field>
+            </group>
+            <group id="mplookbook_design" translate="label" type="text" sortOrder="500" showInDefault="1"
+                   showInWebsite="1" showInStore="1">
+                <label>Slider Design Configuration</label>
+                <field id="infinite" translate="label comment" type="select" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Infinite Loop</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <validate>validate-digits</validate>
+                    <comment>Select Yes to enable infinite loop sliding</comment>
+                </field>
+                <field id="arrows" translate="label comment" type="select" sortOrder="60" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Show Next/Prev Buttons</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <validate>validate-digits</validate>
+                    <comment>Select Yes to display the Next/Pre buttons in the slider</comment>
+                </field>
+                <field id="dots" translate="label comment" type="select" sortOrder="70" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Show Dots Navigation</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <validate>validate-digits</validate>
+                    <comment>Select Yes to display dots navigation of the slider</comment>
+                </field>
+                <field id="lazyLoad" translate="label comment" type="select" sortOrder="80" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Lazy Loading Images</label>
+                    <source_model>Mageplaza\Lookbook\Model\Config\Source\LazyLoad</source_model>
+                    <comment>Select Yes to lazy loading images</comment>
+                </field>
+                <field id="autoplay" translate="label comment" type="select" sortOrder="90" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Autoplay</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <validate>validate-digits</validate>
+                    <comment>Select Yes to enables Autoplay</comment>
+                </field>
+                <field id="autoplaySpeed" translate="label comment" type="text" sortOrder="100" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Autoplay Speed</label>
+                    <validate>validate-greater-than-zero validate-digits</validate>
+                    <comment>The time (ms) in which an item is auto-moved to the left</comment>
+                    <depends>
+                        <field id="autoplay">1</field>
+                    </depends>
+                </field>
+                <field id="pauseOnHover" translate="label comment" type="select" sortOrder="110" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Pause On Mouse Hover</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <validate>validate-digits</validate>
+                    <comment>Select Yes to pause Autoplay On Hover</comment>
+                    <depends>
+                        <field id="autoplay">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

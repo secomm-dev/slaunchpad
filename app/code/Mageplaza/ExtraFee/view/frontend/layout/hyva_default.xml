@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="hyva_form_validation"/>
+    <body>
+        <referenceBlock name="product.info">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mageplaza_ExtraFee::hyva/product/view/product-info.phtml</argument>
+            </action>
+            <block class="Mageplaza\ExtraFee\Block\Product\View" name="product.info.addtocart"  template="Mageplaza_ExtraFee::hyva/product/view/addtocart.phtml"/>
+        </referenceBlock>
+
+        <referenceBlock name="checkout.cart.totals">
+            <block class="Mageplaza\ExtraFee\Block\Cart\ExtraFee"  name="mp_extra_fee_rule" template="Mageplaza_ExtraFee::hyva/cart/totals/extra-fee.phtml" after="-"/>
+        </referenceBlock>
+
+
+        <referenceBlock name="sales.order.view">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mageplaza_ExtraFee::hyva/order/view.phtml</argument>
+            </action>
+            <block class="Mageplaza\ExtraFee\Block\Sales\Order\View\ExtraFee" name="extra_fee_detail" template="Mageplaza_ExtraFee::hyva/order/view/extra-fee.phtml" ifconfig="mp_extra_fee/general/enabled" after="-"/>
+        </referenceBlock>
+
+
+        <referenceBlock name="sales.order.invoice">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mageplaza_ExtraFee::hyva/order/invoice.phtml</argument>
+            </action>
+            <block class="Mageplaza\ExtraFee\Block\Sales\Order\View\ExtraFee" name="extra_fee_detail_invoices" template="Mageplaza_ExtraFee::hyva/order/view/extra-fee.phtml" ifconfig="mp_extra_fee/general/enabled" after="-"/>
+        </referenceBlock>
+
+        <referenceBlock name="sales.order.shipment">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mageplaza_ExtraFee::hyva/order/view.phtml</argument>
+            </action>
+            <block class="Mageplaza\ExtraFee\Block\Sales\Order\View\ExtraFee" name="extra_fee_detail_shipment" template="Mageplaza_ExtraFee::hyva/order/view/extra-fee.phtml" ifconfig="mp_extra_fee/general/enabled" after="-"/>
+        </referenceBlock>
+
+
+        <referenceBlock name="sales.order.info">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mageplaza_ExtraFee::hyva/order/info.phtml</argument>
+            </action>
+        </referenceBlock>
+
+        <referenceBlock name="sales.order.creditmemo">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mageplaza_ExtraFee::hyva/order/creditmemo.phtml</argument>
+            </action>
+            <block class="Mageplaza\ExtraFee\Block\Sales\Order\View\ExtraFee" name="extra_fee_detail_creditmemo" template="Mageplaza_ExtraFee::hyva/order/view/extra-fee.phtml" ifconfig="mp_extra_fee/general/enabled" after="-"/>
+        </referenceBlock>
+
+        <referenceBlock name="checkout.cart.methods.onepage.bottom.php-cart">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mageplaza_ExtraFee::hyva/cart/onepage-link.phtml</argument>
+            </action>
+        </referenceBlock>
+
+
+        <referenceContainer name="cart.summary">
+            <block class="Mageplaza\ExtraFee\Block\Sales\Order\View\ExtraFee" name="checkout.cart.extra.fee" as="mp_extra_fee"  template="Mageplaza_ExtraFee::hyva/cart/extra-fee.phtml" ifconfig="mp_extra_fee/general/enabled" after="checkout.cart.shipping"/>
+        </referenceContainer>
+
+    </body>
+</page>

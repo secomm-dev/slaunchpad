@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Secomm\AddressDropdown\Api\Data\CityInterface" type="Secomm\AddressDropdown\Model\Data\CityData"/>
+    <preference for="Secomm\AddressDropdown\Api\Data\CityNameInterface"
+                type="Secomm\AddressDropdown\Model\Data\CityNameData"/>
+    <preference for="Secomm\AddressDropdown\Api\Data\SubCityInterface"
+                type="Secomm\AddressDropdown\Model\Data\SubCityData"/>
+    <preference for="Secomm\AddressDropdown\Api\Data\SubCityNameInterface"
+                type="Secomm\AddressDropdown\Model\Data\SubCityNameData"/>
+    <!-- SL-001 dual-theme: customer form template selected via layout handles
+         (customer_address_form.xml Luma + hyva_customer_address_form.xml Hyva).
+         Block preference + Helper\Theme removed — no PHP theme detection needed. -->
+    <preference for="Secomm\AddressDropdown\Api\Data\CountryInterface"
+                type="Secomm\AddressDropdown\Model\Data\Country"/>
+    <preference for="Secomm\AddressDropdown\Api\Data\RegionInterface"
+                type="Secomm\AddressDropdown\Model\Data\Region"/>
+
+    <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
+        <plugin name="checkout_custom_shipping_fields" type="Secomm\AddressDropdown\Plugin\Checkout\LayoutProcessorPlugin" sortOrder="20" />
+    </type>
+    <type name="Magento\Checkout\Block\Cart\LayoutProcessor">
+        <plugin name="checkout_custom_shipping_fields" type="Secomm\AddressDropdown\Plugin\Cart\LayoutProcessorPlugin" sortOrder="20" />
+    </type>
+    <type name="Magento\Checkout\Model\ShippingInformationManagement">
+        <plugin name="save_to_quote_table" type="Secomm\AddressDropdown\Plugin\Quote\SaveToQuote" sortOrder="10" />
+    </type>
+
+    <!--Import Sample File-->
+    <type name="Magento\ImportExport\Model\Import\SampleFileProvider">
+        <arguments>
+            <argument name="samples" xsi:type="array">
+                <item name="address_dropdown" xsi:type="string">Secomm_AddressDropdown</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Import -->
+    <preference for="Secomm\AddressDropdown\Model\Import\Validator\ValidatorInterface" type="Secomm\AddressDropdown\Model\Import\Validator\ValidatorChain"/>
+    <type name="Secomm\AddressDropdown\Model\Import\Validator\ValidatorChain">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country_id" xsi:type="object">Secomm\AddressDropdown\Model\Import\Validator\CountryValidator</item>
+                <item name="locale" xsi:type="object">Secomm\AddressDropdown\Model\Import\Validator\LocaleValidator</item>
+                <item name="region" xsi:type="object">Secomm\AddressDropdown\Model\Import\Validator\RegionValidator</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Customer\Api\AddressRepositoryInterface">
+        <plugin name="checkout-fields-repository-address" type="Secomm\AddressDropdown\Plugin\AddSubCityFieldToAddressEntity" />
+    </type>
+    <type name="Magento\Customer\Block\Address\Renderer\DefaultRenderer">
+        <plugin name="address_renderer_plugin" type="Secomm\AddressDropdown\Plugin\AddressRendererPlugin"/>
+    </type>
+    <preference for="Secomm\AddressDropdown\Api\CityRepositoryInterface" type="Secomm\AddressDropdown\Model\CityRepository" />
+    <type name="Magento\Customer\Block\Address\Grid">
+        <plugin name="address_grid_plugin" type="Secomm\AddressDropdown\Plugin\AddressGridPlugin"/>
+    </type>
+    <!-- Add subCity into CollectRates-->
+    <type name="Magento\Shipping\Model\Shipping">
+        <plugin name="secomm_collect_rates_address_dropdown" type="Secomm\AddressDropdown\Plugin\Model\Shipping" sortOrder="10" />
+    </type>
+</config>

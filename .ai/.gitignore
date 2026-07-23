@@ -1,0 +1,19 @@
+# SECOMM AI Toolkit — runtime only (Phase 1 carve-out, RM-02/RM-03)
+# Generated per binding design SECOMM_AI_TOOLKIT_PHASE1_TARGET_DESIGN_DECISION.md §8.4 (Phase 1d).
+# Scoped to .ai/ — does NOT modify the repo-root .gitignore.
+# Durable project truth (.ai/project/, .ai/records/, .ai/workflow/ definitions, .ai/agents/, …) stays committable.
+
+# Mutable runtime umbrella — session/, workflow/, evidence/, navigator workspace (RM-02/RM-03)
+/runtime/
+
+# Legacy session-cursor files (Phase 1d RM-09: superseded, not deleted) → canonical home is .ai/runtime/session/
+/project-context/memory/CURRENT_STATE.md
+/project-context/memory/NEXT_TASK.md
+/project-context/memory/RESEARCH_NOTES.md
+
+# Initialization scratch
+/initialization/draft.md
+/initialization/CURRENT_INITIALIZATION_STATE.md
+
+# Toolkit sync backups (transient — created by bin/project-ai-upgrade rollback safety)
+/toolkit/_pre-sync-backup-*/

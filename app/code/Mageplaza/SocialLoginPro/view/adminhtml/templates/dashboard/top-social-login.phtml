@@ -1,0 +1,56 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+use Mageplaza\SocialLoginPro\Block\Adminhtml\Report\TopSocialLogin;
+
+/** @var TopSocialLogin $block */
+?>
+<?php if ($data = $block->prepareData()) : ?>
+    <div class="dashboard-item-content">
+        <table class="admin__table-primary dashboard-data top-social-login"
+               id="mp_social_login_<?= /* @noEscape */ /* @noEscape */ $block->getTableId() ?>">
+            <thead>
+            <tr>
+                <th></th>
+                <th><?= /* @noEscape */ __('Social Channel') ?></th>
+                <th><?= /* @noEscape */ __('Percent') ?></th>
+                <th><?= /* @noEscape */ __('Users') ?></th>
+                <th><?= /* @noEscape */ __('Orders') ?></th>
+                <th><?= /* @noEscape */ __('Amount') ?></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($data as $key => $value) : ?>
+                <tr class="clickable-row">
+                    <td><?= /* @noEscape */ $key + 1 ?></td>
+                    <td><span><?= /* @noEscape */ $value['type'] . ' ' ?></span></td>
+                    <td><span><?= /* @noEscape */ $value['percent'] . '%' ?></span></td>
+                    </td>
+                    <td><span><?= /* @noEscape */ $value['user'] ?></span></td>
+                    <td><span><?= /* @noEscape */ $value['order'] ?></span></td>
+                    <td><span><?= /* @noEscape */ $block->formatPrice($value['amount']) ?></span></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+<?php else : ?>
+    <div class="empty-text"><?= /* @noEscape */ __('We could\'t find any records.') ?></div>
+<?php endif; ?>

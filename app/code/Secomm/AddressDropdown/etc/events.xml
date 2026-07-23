@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_quote_address_save_before">
+        <observer name="secomm_addressdropdown_sales_quote_address_save_sub_city"
+                  instance="Secomm\AddressDropdown\Observer\Quote\Address\SaveSubCity"/>
+    </event>
+    <event name="sales_order_address_save_before">
+        <observer name="secomm_addressdropdown_sales_order_address_save_sub_city"
+                  instance="Secomm\AddressDropdown\Observer\Order\Address\SaveSubCity"/>
+    </event>
+    <event name="customer_address_format">
+        <observer name="secomm_address_dropdown_address_format_observer" instance="Secomm\AddressDropdown\Observer\SetSubCityValueObserver" />
+    </event>
+
+    <event name="checkout_submit_all_after">
+        <observer name="secomm_addressDropdown_save_sub_city_to_address_book_observer"
+                  instance="Secomm\AddressDropdown\Observer\SaveSubCityToAddressBookObserver"/>
+    </event>
+</config>

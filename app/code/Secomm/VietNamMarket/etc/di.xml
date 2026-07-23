@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!--
+        Register `en_VN` as an allowed locale. `Magento\Framework\Locale\Config::__construct(array $data)`
+        merges `data.allowedLocales`, so `en_VN` is considered a valid locale for store-view config validation.
+    -->
+    <type name="Magento\Framework\Locale\Config">
+        <arguments>
+            <argument name="data" xsi:type="array">
+                <item name="allowedLocales" xsi:type="array">
+                    <item name="en_VN" xsi:type="string">en_VN</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!--
+        1) Locale DROPDOWN: ICU does not ship `en_VN`, so TranslatedLists (the dropdown source)
+        never lists it. This plugin injects `en_VN` into the options so admins can select it.
+    -->
+    <type name="Magento\Framework\Locale\TranslatedLists">
+        <plugin name="secomm_vietnammarket_add_envn_locale"
+                type="Secomm\VietNamMarket\Plugin\Locale\AddEnVnLocale"/>
+    </type>
+
+    <!--
+        2) Static-resource VALIDATION: Magento\Framework\App\StaticResource validates each static
+        request's locale via Magento\Framework\Validator\Locale::isValid() (ICU locales ∩ allowed).
+        `en_VN` is not ICU, so it is rejected ("Requested path ... is wrong") and served as text/plain
+        (browser blocks via X-Content-Type-Options nosniff). This plugin forces `en_VN` to validate,
+        so static assets (CSS/JS/images) serve with correct MIME types for the en_VN store-view.
+    -->
+    <type name="Magento\Framework\Validator\Locale">
+        <plugin name="secomm_vietnammarket_validate_envn"
+                type="Secomm\VietNamMarket\Plugin\Locale\ValidateEnVnLocale"/>
+    </type>
+</config>

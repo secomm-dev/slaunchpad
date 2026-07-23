@@ -1,0 +1,46 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+use Mageplaza\SocialLoginPro\Block\Adminhtml\Report\SocialLoginChart;
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var SocialLoginChart $block */
+?>
+<?php if ($data = $block->prepareChart()) : ?>
+<canvas id="social_login_chart"
+     data-mage-init='{"Mageplaza_SocialLoginPro/js/insertChart": {
+        "data" : "<?= $escaper->escapeJs($data) ?>"
+     }}'
+></canvas>
+
+
+<?php else : ?>
+    <div class="empty-text"><?= /* @noEscape */ __('We could\'t find any records.') ?></div>
+<?php endif; ?>
+
+<style type="text/css">
+    #social_login_chart {
+        width: 100%;
+        height: 250px;
+        max-height: 300px !important;
+    }
+    #socialLoginChart{
+        overflow: auto;
+    }
+</style>

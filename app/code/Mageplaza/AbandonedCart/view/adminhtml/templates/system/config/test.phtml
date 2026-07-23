@@ -1,0 +1,99 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (http://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/**
+ * @var TestSMS $block
+ */
+
+use Mageplaza\AbandonedCart\Block\Adminhtml\System\Config\TestSMS;
+
+$adminPhone  = $block->getAdminPhone();
+$twilioSID   = $block->getTwilioSID();
+$twilioToken = $block->getTwilioToken();
+?>
+<?= $block->getButtonHtml() ?>
+<span class="no-display" id="mp-notification-spinner">
+    <img
+        alt="spinner"
+        style="margin:0 5px"
+        src="<?= $block->escapeHtmlAttr($block->getViewFileUrl('images/loader-1.gif')) ?>"/>
+</span>
+<div id="mp-notification-messages"></div>
+<script type="text/javascript">
+    require([
+        'jquery'
+    ], function ($) {
+        var credentialButtonElement = $("#credential_button"),
+            smsNotificationSpinner  = $("#mp-notification-spinner"),
+            smsDelivery             = $("#abandonedcart_sms_notification_sms_provider"),
+            adminPhone              = '<?=  /* @noEscape */  $adminPhone ?>',
+            twilioSID               = '<?=  /* @noEscape */ $twilioSID ?>',
+            twilioToken             = '<?=  /* @noEscape */ $twilioToken ?>';
+
+        if (adminPhone.length && twilioSID.length && twilioToken.length) {
+            $('#abandonedcart_sms_notification_admin_phone_number').val(adminPhone);
+            $('#abandonedcart_sms_notification_twilio_sid').val(twilioSID);
+            $('#abandonedcart_sms_notification_twilio_token').val(twilioToken ? '******' : '');
+        }
+
+        /**
+         * Process send test SMS
+         */
+        credentialButtonElement.click(function () {
+            $(this).addClass('disabled');
+            smsNotificationSpinner.removeClass('no-display');
+            var data = {
+                delivery: smsDelivery.val(),
+                sender_phone: $('#abandonedcart_sms_notification_admin_phone_number').val(),
+                recipient_phone: $('#abandonedcart_sms_notification_recipient_phone_number').val(),
+                twilio_sid: $('#abandonedcart_sms_notification_twilio_sid').val(),
+                twilio_token: $('#abandonedcart_sms_notification_twilio_token').val()
+            };
+
+            $.ajax({
+                method: "POST",
+                url: "<?= $block->escapeJs($block->escapeUrl($block->getAjaxUrl())) ?>",
+                data: data,
+                success: function (response) {
+                    credentialButtonElement.removeClass('disabled');
+                    smsNotificationSpinner.addClass('no-display');
+                    var message = '<div class="message message-' + response.type + ' ' + response.type + ' ">' +
+                        '<span>' + response.message + '</span>' +
+                        '</div>';
+                    $("#mp-notification-messages").html(message);
+                },
+                error: function (response) {
+                    // Retry the token request if ajax call fails
+                    if (response.errorCode === 200 && testCount <= 2) {
+                        testCount++;
+                        testButton.trigger('click');
+                    } else if (response.errorMsg && response.errorMsg.length) {
+                        messages.append('<div class="message message-error error">' + response.errorMsg + '</div>');
+                    }
+
+                    credentialButtonElement.removeClass('disabled');
+                    smsNotificationSpinner.addClass('no-display');
+
+                }
+            });
+        });
+    });
+</script>

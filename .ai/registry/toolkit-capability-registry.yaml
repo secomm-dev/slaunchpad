@@ -1,0 +1,559 @@
+# ============================================================================
+# Secomm Production AI Toolkit — Capability Registry
+# ============================================================================
+# The single source of truth for every invokable capability the toolkit
+# advertises. Generated documentation (CHEATSHEET, COMMAND_REFERENCE,
+# supported-commands) is a RENDER of this file — never an independent list.
+#
+# Status contract (the rule this registry enforces):
+#   Anything with tools.{tool}.enabled: true MUST have an existing adapter at
+#   tools.{tool}.adapter. `bin/project-ai-validate` checks this and fails on
+#   any mismatch. Capabilities intentionally without an adapter on a tool use
+#   invocation_type: nl-only (natural language) and are advertised honestly.
+#
+# Supported tools: claude, codex, copilot. Cursor is NOT supported.
+#
+# invocation_type values:
+#   skill           = real registered adapter the tool discovers (Claude skill / generated file)
+#   prompt-snippet  = a prompt file the user pastes (Codex/Copilot convention)
+#   nl-only         = works via natural language only (no executable adapter)
+#   function        = backed by a function recipe (no direct invokable surface)
+#   gate            = an approval/workflow gate, NOT a command (must not be advertised as one)
+#   none            = not available on this tool
+# ============================================================================
+
+schema_version: 1
+project_toolkit_version: "4.x"
+generated_from: "audit/capability-implementation-matrix.md"
+
+# --------------------------------------------------------------------------
+# Phase 1 capabilities (B4) — single source of truth for the phase1_capabilities
+# block emitted into .ai/toolkit/toolkit-version.md. Mirrored verbatim by the
+# toolkit-version-template. Flip a flag to false only if a mechanism is reverted.
+# --------------------------------------------------------------------------
+phase1_capabilities:
+  canonical_records: true              # 1a — .ai/records/{features,bugs,releases,decisions}/
+  per_work_item_mode: true             # 1b — mode per work item (RM-04/RM-05)
+  project_memory: true                 # 1c — .ai/project/{CURRENT_STATE,COMPONENT_INDEX}.md
+  runtime_separation: true             # 1d — .ai/runtime/ + .ai/.gitignore carve-out (RM-02)
+  quota_optimization: true             # 1e — context-loading + quota (RM-05)
+  governance_deduplication: true       # 1f — one canonical source per governance concept
+
+# --------------------------------------------------------------------------
+# Group: navigator — always-available navigation intents (every role/project)
+# Backed by real Claude skills (skills-source/nav-*) + the canonical Navigator
+# engine (shared-core/navigator/). Codex/Copilot: natural language + optional
+# paste snippet (parity is NOT faked).
+# --------------------------------------------------------------------------
+capabilities:
+
+  nav.next:
+    purpose: "Show the one next action + the file/section to read now"
+    canonical_source: shared-core/intents/roles/navigator.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: ["DEC-ID context"] }
+    outputs: { paths: ["runtime/PROJECT_NAVIGATOR.md"], types: ["action-card"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/next/SKILL.md",       invocation: "/next",      invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: tiếp theo làm gì / what next", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: tiếp theo làm gì / what next", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "tiếp theo làm gì / what next" }
+    documentation: { sources: ["shared-core/enablement/templates/CHEATSHEET.template.md", "shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  nav.help:
+    purpose: "Orient the user: where am I, what to do, what blocks me"
+    canonical_source: shared-core/intents/roles/navigator.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: [] }
+    outputs: { paths: ["runtime/PROJECT_NAVIGATOR.md"], types: ["action-card"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/help-nav/SKILL.md",       invocation: "/help-nav",  invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: tôi đang ở đâu / bị kẹt", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: tôi đang ở đâu / bị kẹt", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "tôi đang ở đâu / bị kẹt" }
+    documentation: { sources: ["shared-core/enablement/templates/CHEATSHEET.template.md", "shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  nav.decisions:
+    purpose: "Show the open-decision queue (read-only)"
+    canonical_source: shared-core/intents/roles/navigator.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: [] }
+    outputs: { paths: ["runtime/DECISION_QUEUE.md"], types: ["decision-queue"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/decisions/SKILL.md",  invocation: "/decisions", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: xem các quyết định / phải approve gì", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: xem các quyết định / phải approve gì", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "xem các quyết định / phải approve gì" }
+    documentation: { sources: ["shared-core/enablement/templates/CHEATSHEET.template.md", "shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+    notes: "Read-only. Do NOT confuse with record-decision (write)."
+
+  nav.evidence:
+    purpose: "Show evidence backing a decision or state"
+    canonical_source: shared-core/intents/roles/navigator.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: ["DEC-ID"] }
+    outputs: { paths: [], types: ["evidence-summary"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/evidence/SKILL.md",   invocation: "/evidence",  invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: cho xem bằng chứng", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: cho xem bằng chứng", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "cho xem bằng chứng / có chứng cứ không" }
+    documentation: { sources: ["shared-core/enablement/templates/CHEATSHEET.template.md", "shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  nav.explain:
+    purpose: "Explain why the current step exists + expected outcome"
+    canonical_source: shared-core/intents/roles/navigator.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: [] }
+    outputs: { paths: [], types: ["explanation"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/explain/SKILL.md",    invocation: "/explain",   invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: bước này để làm gì", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: bước này để làm gì", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "bước này để làm gì / kết quả mong đợi" }
+    documentation: { sources: ["shared-core/enablement/templates/CHEATSHEET.template.md", "shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  nav.approve:
+    purpose: "Approve an open decision — record ADR + re-evaluate transition"
+    canonical_source: shared-core/intents/roles/navigator.md
+    aliases: []
+    mutating: true
+    approval_gate: "confirm-before-mutate; DEC-ID required (defaults to top open decision)"
+    inputs: { required: ["DEC-ID or top-open-decision"], optional: ["option"] }
+    outputs: { paths: ["runtime/project-state.yaml", "memory/DECISIONS.md"], types: ["state-mutation", "adr"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/approve/SKILL.md",    invocation: "/approve DEC-001 [opt-b]", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: tôi đồng ý / approve DEC-001 opt-b", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: tôi đồng ý / approve DEC-001 opt-b", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "tôi đồng ý / approve DEC-001 opt-b" }
+    documentation: { sources: ["shared-core/enablement/templates/CHEATSHEET.template.md", "shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  nav.tbd:
+    purpose: "Defer an open decision — record pause reason + re-evaluate"
+    canonical_source: shared-core/intents/roles/navigator.md
+    aliases: []
+    mutating: true
+    approval_gate: "confirm-before-mutate; DEC-ID required"
+    inputs: { required: ["DEC-ID or top-open-decision"], optional: ["reason"] }
+    outputs: { paths: ["runtime/project-state.yaml"], types: ["state-mutation"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/tbd/SKILL.md",        invocation: "/tbd DEC-002", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: để hỏi client / chưa quyết", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/intents/roles/navigator.md", invocation: "NL: để hỏi client / chưa quyết", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "để hỏi client / chưa quyết" }
+    documentation: { sources: ["shared-core/enablement/templates/CHEATSHEET.template.md", "shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  # --------------------------------------------------------------------------
+  # Group: delivery — the delivery-lifecycle capabilities. Canonical layer is
+  # the Intent layer; legacy shim names are aliases.
+  # --------------------------------------------------------------------------
+
+  delivery.spec:
+    purpose: "Draft a feature spec or mini-spec from a requirement/ticket"
+    canonical_source: skills-source/spec/SKILL.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["requirement or ticket"], optional: [] }
+    outputs: { paths: [".ai/records/features/", ".ai/specs/ (legacy)"], types: ["feature-record", "feature-spec", "mini-spec"] }
+    tools:
+      claude:  { enabled: true,  adapter: "skills-source/spec/SKILL.md", invocation: "/spec", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true,  adapter: "shared-core/intents/roles/ba.md",       invocation: "NL: write the feature spec", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true,  adapter: "shared-core/intents/roles/ba.md",       invocation: "NL: write the feature spec", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "write the feature spec" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/intents/supported-commands-template.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: implemented-and-correct
+
+  delivery.review-code:
+    purpose: "AI pre-review of code changes before TL review"
+    canonical_source: skills-source/review-code/SKILL.md
+    aliases: ["review"]          # legacy /review is an alias of canonical /review-code
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["diff or files"], optional: ["ticket"] }
+    outputs: { paths: [], types: ["review-report"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/review-code/SKILL.md",     invocation: "/review-code", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "codex/prompts/code-review.md",           invocation: "paste: codex/prompts/code-review.md", invocation_type: prompt-snippet, validation_status: validated }
+      copilot: { enabled: true, adapter: "copilot/prompts/code-review.prompt.md",  invocation: "run: code-review.prompt", invocation_type: prompt-snippet, validation_status: validated }
+    portable_fallback: { invocation: "review my code" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/intents/supported-commands-template.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: implemented-and-correct
+
+  delivery.testcase:
+    purpose: "Generate QC test cases (happy/edge/negative) from spec/AC"
+    canonical_source: skills-source/testcase/SKILL.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["spec or AC"], optional: [] }
+    outputs: { paths: [".ai/qc/"], types: ["test-cases"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/testcase/SKILL.md",          invocation: "/testcase", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "codex/prompts/test-case-generation.md",        invocation: "paste: test-case-generation.md", invocation_type: prompt-snippet, validation_status: validated }
+      copilot: { enabled: true, adapter: "copilot/prompts/test-case-generation.prompt.md", invocation: "run: test-case-generation.prompt", invocation_type: prompt-snippet, validation_status: validated }
+    portable_fallback: { invocation: "generate test cases" }
+    documentation: { sources: ["shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  delivery.task:
+    purpose: "Analyze a ticket: risks, affected areas, effort, escalation"
+    canonical_source: skills-source/task/SKILL.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["ticket"], optional: [] }
+    outputs: { paths: [], types: ["ticket-analysis"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/task/SKILL.md", invocation: "/task", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "codex/prompts/analyze-ticket.md",        invocation: "paste: task.md", invocation_type: prompt-snippet, validation_status: validated }
+      copilot: { enabled: true, adapter: "shared-core/intents/roles/developer.md", invocation: "NL: analyze this ticket", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "analyze this ticket" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: implemented-and-correct
+
+  delivery.plan:
+    purpose: "Produce an implementation plan (no code yet)"
+    canonical_source: codex/prompts/implementation-plan.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["ticket or spec"], optional: [] }
+    outputs: { paths: [], types: ["implementation-plan"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/functions/implement-task.md", invocation: "NL: make an implementation plan", invocation_type: function, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "codex/prompts/implementation-plan.md",      invocation: "paste: implementation-plan.md", invocation_type: prompt-snippet, validation_status: validated }
+      copilot: { enabled: true, adapter: "copilot/prompts/implementation-plan.prompt.md", invocation: "run: implementation-plan.prompt", invocation_type: prompt-snippet, validation_status: validated }
+    portable_fallback: { invocation: "make an implementation plan" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: partially-implemented
+    notes: "legacy shim references templates/implementation-plan-template.md (FIXED in B4)."
+
+  delivery.implement:
+    purpose: "Implement a feature/task following the plan"
+    canonical_source: shared-core/functions/implement-task.md
+    aliases: []
+    mutating: true
+    approval_gate: "plan-then-code (Hard Gate 3)"
+    inputs: { required: ["task or spec"], optional: [] }
+    outputs: { paths: [], types: ["code"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/functions/implement-task.md", invocation: "NL: implement this feature", invocation_type: function, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "shared-core/functions/implement-task.md",  invocation: "NL: implement this feature", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/implement-task.md",  invocation: "NL: implement this feature", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "implement this feature" }
+    documentation: { sources: ["shared-core/intents/supported-commands-template.md"] }
+    status: partially-implemented
+
+  delivery.fix-bug:
+    purpose: "Diagnose + fix a bug"
+    canonical_source: codex/prompts/bug-analysis.md
+    aliases: []
+    mutating: true
+    approval_gate: "planning-first (emergency-debug allowance)"
+    inputs: { required: ["bug report"], optional: [] }
+    outputs: { paths: [], types: ["code", "bug-analysis"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/incident-analysis/SKILL.md", invocation: "NL: fix this bug", invocation_type: skill, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "codex/prompts/bug-analysis.md",             invocation: "paste: bug-analysis.md", invocation_type: prompt-snippet, validation_status: validated }
+      copilot: { enabled: true, adapter: "copilot/prompts/bug-fix-analysis.prompt.md", invocation: "run: bug-fix-analysis.prompt", invocation_type: prompt-snippet, validation_status: validated }
+    portable_fallback: { invocation: "fix this bug" }
+    documentation: { sources: ["shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  delivery.deploy:
+    purpose: "Generate deployment checklist (pre/deploy/post/rollback)"
+    canonical_source: skills-source/deploy/SKILL.md
+    aliases: []
+    mutating: false
+    approval_gate: "Release Gate (Hard Gate 5)"
+    inputs: { required: ["release scope"], optional: [] }
+    outputs: { paths: [".ai/deployment/"], types: ["deploy"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/deploy/SKILL.md", invocation: "/deploy", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/functions/prepare-deployment-checklist.md", invocation: "NL: deploy to production", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/prepare-deployment-checklist.md", invocation: "NL: deploy to production", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "deploy to production" }
+    documentation: { sources: ["shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  delivery.status:
+    purpose: "Project-wide delivery status report"
+    canonical_source: skills-source/status/SKILL.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: [] }
+    outputs: { paths: [], types: ["status-report"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/status/SKILL.md", invocation: "/status", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/functions/summarize-progress.md", invocation: "NL: status update", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/summarize-progress.md", invocation: "NL: status update", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "status update" }
+    documentation: { sources: ["shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  delivery.continue:
+    purpose: "Reconstruct working state from memory at session start"
+    canonical_source: skills-source/continue/SKILL.md
+    aliases: ["continue"]      # legacy /resume-work is an alias of canonical /continue
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: [] }
+    outputs: { paths: [], types: ["state-reconstruction"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/continue/SKILL.md", invocation: "/continue", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/functions/resume-work.md", invocation: "NL: continue", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/resume-work.md", invocation: "NL: continue", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "continue / resume" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  delivery.estimate:
+    purpose: "Effort estimate from ticket analysis"
+    canonical_source: skills-source/task/SKILL.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["ticket or feature"], optional: [] }
+    outputs: { paths: [], types: ["estimate"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/task/SKILL.md", invocation: "NL: estimate this", invocation_type: nl-only, validation_status: nl-only }   # /estimate has no own skill — runs via the task skill's effort field
+      codex:   { enabled: true, adapter: "shared-core/functions/estimate-feature.md", invocation: "NL: estimate this", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/estimate-feature.md", invocation: "NL: estimate this", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "estimate this" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  delivery.review-spec:
+    purpose: "Review a spec/requirements (SA/TL)"
+    canonical_source: shared-core/intents/roles/tl.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["spec"], optional: [] }
+    outputs: { paths: [], types: ["spec-review"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/intents/roles/tl.md", invocation: "NL: review this spec", invocation_type: nl-only, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "shared-core/intents/roles/tl.md", invocation: "NL: review this spec", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/intents/roles/tl.md", invocation: "NL: review this spec", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "review this spec" }
+    documentation: { sources: ["shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  delivery.discovery:
+    purpose: "Prepare a discovery meeting (agenda + questions)"
+    canonical_source: shared-core/functions/create-discovery-questions.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: [] }
+    outputs: { paths: [], types: ["discovery-agenda"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/functions/create-discovery-questions.md", invocation: "NL: prepare discovery", invocation_type: function, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "shared-core/functions/create-discovery-questions.md", invocation: "NL: prepare discovery", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/create-discovery-questions.md", invocation: "NL: prepare discovery", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "prepare discovery meeting" }
+    documentation: { sources: ["shared-core/intents/supported-commands-template.md"] }
+    status: implemented-and-correct
+
+  delivery.audit:
+    purpose: "Run an audit workflow (architecture/security/perf/...)"
+    canonical_source: workflow-guides/audit-workflows.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["audit type"], optional: [] }
+    outputs: { paths: [".ai/audits/"], types: ["audit-report"] }
+    tools:
+      claude:  { enabled: true, adapter: "workflow-guides/audit-workflows.md", invocation: "NL: run the security audit", invocation_type: nl-only, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "workflow-guides/audit-workflows.md", invocation: "NL: run the security audit", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "workflow-guides/audit-workflows.md", invocation: "NL: run the security audit", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "run the {type} audit" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: implemented-and-correct
+
+  delivery.compact-context:
+    purpose: "Compact the session into memory files"
+    canonical_source: skills-source/compact-context/SKILL.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: [] }
+    outputs: { paths: ["memory/"], types: ["memory-diffs"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/compact-context/SKILL.md", invocation: "/compact-context", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/functions/compact-context.md", invocation: "NL: compact the session", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/compact-context.md", invocation: "NL: compact the session", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "compact the session" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: implemented-and-correct
+
+  delivery.update-memory:
+    purpose: "Refresh CURRENT_STATE/NEXT_TASK + project-context diff"
+    canonical_source: skills-source/update-memory/SKILL.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: [], optional: [] }
+    outputs: { paths: ["memory/", "project-context/"], types: ["memory-diffs", "context-diff"] }
+    tools:
+      claude:  { enabled: true, adapter: "skills-source/update-memory/SKILL.md", invocation: "/update-memory", invocation_type: skill, validation_status: validated }
+      codex:   { enabled: true, adapter: "shared-core/functions/compact-context.md", invocation: "NL: refresh memory + context diff", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/compact-context.md", invocation: "NL: refresh memory + context diff", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "refresh memory + context diff" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: implemented-and-correct
+
+  delivery.record-decision:
+    purpose: "Append an Architecture Decision Record"
+    canonical_source: shared-core/functions/record-decision.md
+    aliases: []
+    mutating: true
+    approval_gate: "human-review-before-commit"
+    inputs: { required: ["context", "decision", "rationale"], optional: ["consequences"] }
+    outputs: { paths: [".ai/records/decisions/", "memory/DECISIONS.md (index/compat pointer)"], types: ["decision-record", "adr"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/functions/record-decision.md", invocation: "NL: record an ADR", invocation_type: function, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "shared-core/functions/record-decision.md", invocation: "NL: record an ADR", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/record-decision.md", invocation: "NL: record an ADR", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "record an ADR for {decision}" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: implemented-and-correct
+    notes: "WRITE action. Do NOT confuse with nav.decisions (read)."
+
+  delivery.record-risk:
+    purpose: "Add a risk to project-context/06"
+    canonical_source: shared-core/functions/record-risk.md
+    aliases: []
+    mutating: true
+    approval_gate: "human-review-before-commit"
+    inputs: { required: ["risk", "area", "severity"], optional: ["owner", "mitigation"] }
+    outputs: { paths: ["project-context/06_KNOWN_CONSTRAINTS_AND_RISKS.md"], types: ["risk"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/functions/record-risk.md", invocation: "NL: add a risk", invocation_type: function, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "shared-core/functions/record-risk.md", invocation: "NL: add a risk", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/record-risk.md", invocation: "NL: add a risk", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "add a risk: {risk} in {area}" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: implemented-and-correct
+
+  delivery.record-lesson:
+    purpose: "Append a lesson to LESSONS_LEARNED / CONTINUOUS_LEARNING"
+    canonical_source: shared-core/functions/record-lesson.md
+    aliases: []
+    mutating: true
+    approval_gate: "human-review-before-commit"
+    inputs: { required: ["lesson", "source"], optional: ["type"] }
+    outputs: { paths: ["memory/LESSONS_LEARNED.md", "memory/CONTINUOUS_LEARNING.md"], types: ["lesson"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/functions/record-lesson.md", invocation: "NL: record a lesson", invocation_type: function, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "shared-core/functions/record-lesson.md", invocation: "NL: record a lesson", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/record-lesson.md", invocation: "NL: record a lesson", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "record a lesson: {lesson}" }
+    documentation: { sources: ["shared-core/commands/commands-index.md", "shared-core/commands/legacy-command-shims.md"] }
+    status: implemented-and-correct
+
+  # --- migration / conditional delivery capabilities (function-backed) ---
+  delivery.gap-analysis:
+    purpose: "Generate a migration gap analysis"
+    canonical_source: shared-core/functions/generate-migration-gap-analysis.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["source/target assessment"], optional: [] }
+    outputs: { paths: [".ai/initialization/"], types: ["gap-analysis"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/functions/generate-migration-gap-analysis.md", invocation: "NL: do the gap analysis", invocation_type: function, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "shared-core/functions/generate-migration-gap-analysis.md", invocation: "NL: do the gap analysis", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/generate-migration-gap-analysis.md", invocation: "NL: do the gap analysis", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "do the migration gap analysis" }
+    documentation: { sources: ["shared-core/intents/roles/sa.md"] }
+    status: implemented-and-correct
+    selection: conditional  # project_type = migration
+
+  delivery.assess-migration:
+    purpose: "Assess migration complexity"
+    canonical_source: shared-core/functions/assess-migration-complexity.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["assessment"], optional: [] }
+    outputs: { paths: [], types: ["complexity-assessment"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/functions/assess-migration-complexity.md", invocation: "NL: assess migration complexity", invocation_type: function, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "shared-core/functions/assess-migration-complexity.md", invocation: "NL: assess migration complexity", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/assess-migration-complexity.md", invocation: "NL: assess migration complexity", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "assess migration complexity" }
+    documentation: { sources: ["shared-core/intents/roles/sa.md"] }
+    status: implemented-and-correct
+    selection: conditional
+
+  delivery.features:
+    purpose: "Split a feature into implementation tasks"
+    canonical_source: shared-core/functions/split-feature-into-tasks.md
+    aliases: []
+    mutating: false
+    approval_gate: none
+    inputs: { required: ["feature spec"], optional: [] }
+    outputs: { paths: [], types: ["task-breakdown"] }
+    tools:
+      claude:  { enabled: true, adapter: "shared-core/functions/split-feature-into-tasks.md", invocation: "NL: split into tasks", invocation_type: function, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "shared-core/functions/split-feature-into-tasks.md", invocation: "NL: split into tasks", invocation_type: function, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "shared-core/functions/split-feature-into-tasks.md", invocation: "NL: split into tasks", invocation_type: function, validation_status: nl-only }
+    portable_fallback: { invocation: "split this feature into tasks" }
+    documentation: { sources: ["shared-core/intents/roles/tl.md"] }
+    status: implemented-and-correct
+
+  delivery.release:
+    purpose: "Run the release workflow/checklist"
+    canonical_source: checklists/release-checklist.md
+    aliases: []
+    mutating: true
+    approval_gate: "Release Gate (Hard Gate 5)"
+    inputs: { required: ["release scope"], optional: [] }
+    outputs: { paths: [], types: ["release-record"] }
+    tools:
+      claude:  { enabled: true, adapter: "checklists/release-checklist.md", invocation: "NL: release", invocation_type: nl-only, validation_status: nl-only }
+      codex:   { enabled: true, adapter: "checklists/release-checklist.md", invocation: "NL: release", invocation_type: nl-only, validation_status: nl-only }
+      copilot: { enabled: true, adapter: "checklists/release-checklist.md", invocation: "NL: release", invocation_type: nl-only, validation_status: nl-only }
+    portable_fallback: { invocation: "run the release" }
+    documentation: { sources: ["shared-core/intents/roles/devops.md"] }
+    status: implemented-and-correct
+
+# --------------------------------------------------------------------------
+# Deprecated: NOT a command. Kept so docs/validators can detect & refuse it.
+# --------------------------------------------------------------------------
+deprecated:
+
+  delivery.tl-review:
+    purpose: "(DEPRECATED as a command) TL review is an approval GATE, not an invokable command."
+    reason: "Advertised as /tl-review but it is a workflow gate; remove from command lists."
+    canonical_source: shared-core/intents/roles/tl.md
+    status: deprecated
+    action: "remove from supported-commands-template.md; do not advertise as a command."
+
+# --------------------------------------------------------------------------
+# Aliases summary (canonical -> accepted aliases). Resolves C2 collisions.
+# --------------------------------------------------------------------------
+aliases:
+  "/review":       "delivery.review-code"   # legacy shim name
+  "/resume-work":  "delivery.continue"      # legacy shim name
+  # /spec, /estimate, /decisions, /record-decision are canonical IDs themselves (no alias).

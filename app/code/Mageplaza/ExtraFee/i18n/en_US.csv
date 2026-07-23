@@ -1,0 +1,162 @@
+"Manage Rules","Manage Rules"
+"Add New Rule","Add New Rule"
+" (Incl. Tax "," (Incl. Tax "
+"rule_label - label (Incl. Tax)","rule_label - label (Incl. Tax)"
+"rule_label - label (Excl. Tax)","rule_label - label (Excl. Tax)"
+label,label
+"Save and Continue Edit","Save and Continue Edit"
+Actions,Actions
+"Apply Type","Apply Type"
+"Apply For","Apply For"
+"Fee Type","Fee Type"
+"Fee Amount","Fee Amount"
+"Display Area","Display Area"
+"Display Type","Display Type"
+"Is Required","Is Required"
+"Fee Tax","Fee Tax"
+"Cart Sort Order","Cart Sort Order"
+Refundable,Refundable
+"Stop further processing","Stop further processing"
+"Calculate Total Includes","Calculate Total Includes"
+"Apply for percentage fee type only","Apply for percentage fee type only"
+Conditions,Conditions
+"Conditions (don't add conditions if rule is applied to all products)","Conditions (don't add conditions if rule is applied to all products)"
+General,General
+Name,Name
+Status,Status
+Description,Description
+"Only apply the extra fee description for the manual type.","Only apply the extra fee description for the manual type."
+"Store Views","Store Views"
+"Customer Groups","Customer Groups"
+"Allow Customer Notes/Messages of Extra Fee","Allow Customer Notes/Messages of Extra Fee"
+"If yes, will display the message section with each extra fee in the frontend so that the customer can leave a note or message. Only apply to the Manual Type.","If yes, will display the message section with each extra fee in the frontend so that the customer can leave a note or message. Only apply to the Manual Type."
+"Message Title","Message Title"
+"Leave a message for the extra fee.","Leave a message for the extra fee."
+"From Date","From Date"
+"To Date","To Date"
+Priority,Priority
+"Manage Label & Options","Manage Label & Options"
+"RULE INFORMATION","RULE INFORMATION"
+"Incl. Tax ","Incl. Tax "
+" (Incl.Tax)"," (Incl.Tax)"
+" (Excl.Tax)"," (Excl.Tax)"
+"The profile no longer exists.","The profile no longer exists."
+"We found updated rules that are not applied. Please click ""Apply Rules"" to update your catalog.","We found updated rules that are not applied. Please click ""Apply Rules"" to update your catalog."
+Promotions,Promotions
+"The Rule has been deleted.","The Rule has been deleted."
+"The Rule to delete was not found.","The Rule to delete was not found."
+Rule,Rule
+"Edit %1 rule","Edit %1 rule"
+"New Rule","New Rule"
+"Please correct the data sent.","Please correct the data sent."
+"Something went wrong while saving the Rule.","Something went wrong while saving the Rule."
+"Something went wrong while deleting for %1.","Something went wrong while deleting for %1."
+"A total of %1 record(s) have been deleted.","A total of %1 record(s) have been deleted."
+"Something went wrong while updating status for %1.","Something went wrong while updating status for %1."
+"A total of %1 record(s) have been updated.","A total of %1 record(s) have been updated."
+"Leave a message with the extra fee.","Leave a message with the extra fee."
+"The Rule has been saved.","The Rule has been saved."
+"There are no extra fee can be applied","There are no extra fee can be applied"
+"Please choose at least one option for each require extra fee","Please choose at least one option for each require extra fee"
+"Totals calculation is not applicable to empty cart.","Totals calculation is not applicable to empty cart."
+"Module is disabled.","Module is disabled."
+"area is required.","area is required."
+"Could not add extra fee for this quote","Could not add extra fee for this quote"
+"Whole cart","Whole cart"
+"Each product in cart","Each product in cart"
+Automatic,Automatic
+Manual,Manual
+Discount,Discount
+"Shipping Fee","Shipping Fee"
+Tax,Tax
+"Payment Method","Payment Method"
+"Shipping Method","Shipping Method"
+"Cart Summary","Cart Summary"
+Radio,Radio
+"Check Box","Check Box"
+Select,Select
+"Fixed amount for each item","Fixed amount for each item"
+"Fixed amount for the whole cart","Fixed amount for the whole cart"
+"Percentage of cart total","Percentage of cart total"
+"Fix amount for item","Fix amount for item"
+"Percentage item amount","Percentage item amount"
+"Before Add To Cart Button","Before Add To Cart Button"
+"After Add To Cart Button","After Add To Cart Button"
+"Quantity In Stock","Quantity In Stock"
+"Billing Address Country","Billing Address Country"
+"Shipping Address Line","Shipping Address Line"
+City,City
+"Store View currency","Store View currency"
+"Product attribute combination","Product attribute combination"
+"Products subselection","Products subselection"
+"Conditions combination","Conditions combination"
+"Other Attribute","Other Attribute"
+"Cart Attribute","Cart Attribute"
+"Customer Attribute","Customer Attribute"
+"Product Attribute","Product Attribute"
+"Associate to Website","Associate to Website"
+"Created In","Created In"
+"Created At","Created At"
+"Customer ID","Customer ID"
+"Date of Birth","Date of Birth"
+Email,Email
+"First Name","First Name"
+Gender,Gender
+"Last Name","Last Name"
+"Middle Name","Middle Name"
+"Name Prefix","Name Prefix"
+"Name Suffix","Name Suffix"
+"Tax/VAT Number","Tax/VAT Number"
+"Updated At","Updated At"
+"Credit Memo # ","Credit Memo # "
+"Extra Fee Information","Extra Fee Information"
+"Payment Extra Fee","Payment Extra Fee"
+"Shipping Extra Fee","Shipping Extra Fee"
+"Extra Fee","Extra Fee"
+"Invoice # ","Invoice # "
+"Packing Slip # ","Packing Slip # "
+" (Excl. Tax)"," (Excl. Tax)"
+"Maximum %1 amount allowed to refund is: %2","Maximum %1 amount allowed to refund is: %2"
+Auto,Auto
+"Please agree to all Terms and Conditions before placing the order.","Please agree to all Terms and Conditions before placing the order."
+"All Customer Groups","All Customer Groups"
+"Please enter a positive number in this field.","Please enter a positive number in this field."
+"Customer Note Message: ","Customer Note Message: "
+"Manage Options","Manage Options"
+Type,Type
+Amount,Amount
+"Is Default","Is Default"
+"Add Option","Add Option"
+"Sort Option","Sort Option"
+Delete,Delete
+"The value of Admin must be unique.","The value of Admin must be unique."
+" (Incl. Tax)"," (Incl. Tax)"
+Loading...,Loading...
+"Extra Fee Information Address %1","Extra Fee Information Address %1"
+"Extra Fee Information For Other Items","Extra Fee Information For Other Items"
+"Add to Cart","Add to Cart"
+Qty,Qty
+"Calculate Extra Fee","Calculate Extra Fee"
+Manually,Manually
+"This is an not null field.","This is an not null field."
+"This is a required field","This is a required field"
+Enable,Enable
+"Select <b>Yes</b> to enable this module","Select <b>Yes</b> to enable this module"
+"Calculate Total includes","Calculate Total includes"
+"Show Extra Fee on the Order Grid","Show Extra Fee on the Order Grid"
+"If yes, will display the order's extra fee information in the order grid.","If yes, will display the order's extra fee information in the order grid."
+"Display Extra Fees on Product Page","Display Extra Fees on Product Page"
+"If yes, will display the Extra Fee information calculated for the product on the product page","If yes, will display the Extra Fee information calculated for the product on the product page"
+Tilte,Tilte
+"All Store Views","All Store Views"
+"Store View","Store View"
+"--Please Select--","--Please Select--"
+"Delete Rules","Delete Rules"
+"Are you sure you wan't to delete selected Rules?","Are you sure you wan't to delete selected Rules?"
+"Change status","Change status"
+Disable,Disable
+ID,ID
+Area,Area
+"Total Number of Orders","Total Number of Orders"
+"Total Extra Fee Revenue","Total Extra Fee Revenue"
+Edit,Edit

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="MenuSecomm_Base::menu"
+             title="Secomm"
+             module="Secomm_Base"
+             translate="title"
+             sortOrder="10"
+             resource="MenuSecomm_Base::menu"/>
+        <add id="MenuSecomm_Base::management" title="CORE" module="Secomm_Base"
+             sortOrder="0" resource="MenuSecomm_Base::management" parent="MenuSecomm_Base::menu" />
+    </menu>
+</config>

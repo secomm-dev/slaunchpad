@@ -1,0 +1,43 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var Pagination $block */
+use Mageplaza\AbandonedCart\Block\Adminhtml\Report\CartBoard\Pagination;
+$options = $block->getOptions();
+$pageSize = $block->getPageSize();
+?>
+
+<div class="pagination">
+    <div class="page-size" id="report-pagesize">
+        <select id="page-size" class="admin__control-select">
+            <?php foreach ($options as $option): ?>
+                <option value="<?= $block->escapeHtml($option['value']) ?>" <?php if ($option['value'] == $pageSize): ?> selected <?php endif; ?>><?= $block->escapeHtml($option['label']) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <label for="page-size"><?= $block->escapeHtml(__('per page')) ?></label>
+    </div>
+    <div class="page-navigation">
+        <button class="action-previous" disabled></button>
+        <input  type="text" class="admin__control-text" id="current-page" value="<?= $block->escapeHtml($block->getCurrentPage()) ?>">
+        <span><?= $block->escapeHtml(__('of')) ?></span> <span id="total-page"></span>
+        <button class="action-next"></button>
+    </div>
+</div>

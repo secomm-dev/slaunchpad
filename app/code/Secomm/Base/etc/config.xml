@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Secomm_Base default configuration.
+ * Default: storefront announcement disabled (enable=0). Toggled via admin
+ * (Stores > Configuration > Secomm > Storefront > Announcement > Enable).
+ * No DB table, no schema/data patch — value lives in core_config_data.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <secomm_storefront>
+            <announcement>
+                <enable>0</enable>
+            </announcement>
+        </secomm_storefront>
+    </default>
+</config>

@@ -1,0 +1,42 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscUltimate
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+/** @var OscUltimate $block */
+use Mageplaza\OscUltimate\Block\Adminhtml\Config\Backend\OscUltimate;
+
+?>
+<div class="osc_design_configuration_page_layout">
+    <span style="font-weight: 700"><?= /** @noEscape */
+        $block->getConfigValue(); ?></span>
+    <p style="margin-top:10px">
+            <span style="font-size: 12px">
+              Your OSC Ultimate-version is supported with advanced Checkout Page Layout management.
+                 <a style="font-weight: 700;: #0C51B8" href="<?= /* @noEscape */ $block->getUrl('onestepcheckout/field/position') ?>"
+                    target="_blank"> Click here</a>
+                 to select and edit a suitable layout for your Checkout page.
+            </span>
+    </p>
+</div>
+<style>
+    #row_osc_design_layout_and_style_page_layout .note,
+    #row_osc_design_layout_and_style_page_layout .use-default {
+        display: none;
+    }
+</style>

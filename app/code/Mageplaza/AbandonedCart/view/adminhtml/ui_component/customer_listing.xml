@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <listingToolbar name="listing_top">
+        <massaction name="listing_massaction" component="Magento_Ui/js/grid/tree-massactions">
+            <action name="update_blacklist_email">
+                <settings>
+                    <type>update_blacklist_email</type>
+                    <label translate="true">Change Abandoned Cart Email Blacklist</label>
+                    <actions>
+                        <action name="0">
+                            <type>inactive</type>
+                            <label translate="true">Inactive</label>
+                            <url path="abandonedcart/customer/massUpdateBlacklistEmail">
+                                <param name="mp_ace_blacklist">0</param>
+                            </url>
+                        </action>
+                        <action name="1">
+                            <type>active</type>
+                            <label translate="true">Active</label>
+                            <url path="abandonedcart/customer/massUpdateBlacklistEmail">
+                                <param name="mp_ace_blacklist">1</param>
+                            </url>
+                        </action>
+                    </actions>
+                </settings>
+            </action>
+        </massaction>
+    </listingToolbar>
+    <columns name="customer_columns">
+        <column name="mp_ace_blacklist" class="Mageplaza\AbandonedCart\Ui\Component\Listing\Column\IsBlacklistActive">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Mageplaza\AbandonedCart\Ui\Component\Listing\Column\IsBlacklistActive</item>
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">select</item>
+                    <item name="bodyTmpl" xsi:type="string">ui/grid/cells/html</item>
+                    <item name="sortable" xsi:type="boolean">true</item>
+                    <item name="dataType" xsi:type="string">select</item>
+                    <item name="label" xsi:type="string" translate="true">Blacklist Email</item>
+                    <item name="sortOrder" xsi:type="number">70</item>
+                </item>
+            </argument>
+        </column>
+    </columns>
+</listing>

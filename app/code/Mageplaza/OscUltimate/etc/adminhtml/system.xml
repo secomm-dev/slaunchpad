@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscUltimate
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="osc" translate="label comment" sortOrder="10" type="text" showInDefault="1" showInWebsite="1"
+                 showInStore="1">
+            <label>One Step Checkout</label>
+            <tab>mageplaza</tab>
+            <group id="design" translate="label comment" sortOrder="30" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Design</label>
+                <group id="layout_and_style" translate="label comment" sortOrder="30" type="text" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Layout and Style</label>
+                    <field id="page_layout" translate="label comment" sortOrder="1" type="select" showInDefault="1"
+                           showInWebsite="1" showInStore="1" canRestore="1">
+                        <label>Checkout Page Layout</label>
+                        <frontend_model>Mageplaza\OscUltimate\Block\Adminhtml\Config\Backend\OscUltimate</frontend_model>
+                    </field>
+                </group>
+            </group>
+
+        </section>
+    </system>
+</config>

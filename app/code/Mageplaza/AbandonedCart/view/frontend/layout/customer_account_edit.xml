@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SmsNotification
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="customer_form_template_handle"/>
+    <head>
+        <css src="Mageplaza_AbandonedCart::css/intlTelInput.min.css"/>
+        <script src="Mageplaza_AbandonedCart::js/utils.js"/>
+    </head>
+    <body>
+        <referenceContainer name="form.additional.info">
+            <block class="Mageplaza\AbandonedCart\Block\Customer\AbandonedCartPhone" name="abandon_cart_phone_edit" template="Mageplaza_AbandonedCart::form/create/phone.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

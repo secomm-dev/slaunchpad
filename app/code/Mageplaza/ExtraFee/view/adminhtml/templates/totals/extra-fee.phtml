@@ -1,0 +1,62 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+$total = $block->getTotal();
+$label = $total->getData('rule_label')
+    . (($total->getData('label') && strpos($total->getData('code'), 'auto') === false)
+        ? ' - ' . $total->getData('label') : '');
+?>
+<?php if ($block->displayBoth()) : ?>
+    <tr class="row-totals">
+        <td style="<?= /* @noEscape */ $block->getStyle() ?>" class="admin__total-mark" colspan="<?= /** @noEscape */ $block->getColspan(); ?>">
+            <?= /* @noEscape */ $label . __(' (Excl. Tax)') ?>
+        </td>
+        <td style="<?= /* @noEscape */ $block->getStyle() ?>" class="admin__total-amount">
+            <?= /* @noEscape */ $block->formatPrice($block->getTotal()->getValueExclTax()) ?>
+        </td>
+    </tr>
+    <tr class="row-totals">
+        <td style="<?= /* @noEscape */ $block->getStyle() ?>" class="admin__total-mark" colspan="<?= /* @noEscape */ $block->getColspan(); ?>">
+            <?= /* @noEscape */ $label . __(' (Incl. Tax)') ?>
+        </td>
+        <td style="<?= /* @noEscape */ $block->getStyle() ?>" class="admin__total-amount">
+            <?= /* @noEscape */ $block->formatPrice($block->getTotal()->getValueInclTax()) ?>
+        </td>
+    </tr>
+<?php elseif ($block->displayIncludeTax()) : ?>
+    <tr>
+        <td style="<?= /* @noEscape */ $block->getStyle() ?>" class="admin__total-mark" colspan="<?= /* @noEscape */ $block->getColspan(); ?>">
+            <?= $block->escapeHtml($label) ?>
+        </td>
+        <td style="<?= /* @noEscape */ $block->getStyle() ?>" class="admin__total-amount">
+            <?= /* @noEscape */ $block->formatPrice($block->getTotal()->getValueInclTax()) ?>
+        </td>
+    </tr>
+<?php else : ?>
+    <tr class="row-totals">
+        <td style="<?= /* @noEscape */ $block->getStyle() ?>" class="admin__total-mark" colspan="<?= /* @noEscape */ $block->getColspan(); ?>">
+            <?= $block->escapeHtml($label) ?>
+        </td>
+        <td style="<?= /* @noEscape */ $block->getStyle() ?>" class="admin__total-amount">
+            <?= /* @noEscape */ $block->formatPrice($block->getTotal()->getValueExclTax()) ?>
+        </td>
+    </tr>
+<?php endif;?>

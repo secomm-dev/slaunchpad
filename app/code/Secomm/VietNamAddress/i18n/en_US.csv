@@ -1,0 +1,126 @@
+Add New,Add New
+Back To Grid,Back To Grid
+Back,Back
+Delete,Delete
+Are you sure you want to delete this city?,Are you sure you want to delete this District?
+Save,Save
+Are you sure you want to delete this Region?,Are you sure you want to delete this City/Province?
+Are you sure you want to delete this subcity?,Are you sure you want to delete this Commune/Ward?
+Could not find City with id: `%id`,Could not find District with id: `%id`
+Could not delete City. Original message: {message},Could not delete District. Original message: {message}
+Could not delete City.,Could not delete District.
+Could not save City. Original message: {message},Could not save District. Original message: {message}
+Could not save City.,Could not save District.
+Could not save CityName.,Could not save CityName.
+Could not find Region with id: `%id`,Could not find City/Province with id: `%id`
+Could not delete Region with id: `%id`,Could not delete City/Province with id: `%id`
+Could not delete Region. Original message: {message},Could not delete City/Province. Original message: {message}
+Could not delete Region.,Could not delete City/Province.
+Could not save Region Name with locale %1.,Could not save City/Province Name with locale %1.
+Could not save Region. Original message: {message},Could not save City/Province. Original message: {message}
+Could not save Region.,Could not save City/Province.
+Country ID does not exist.,Country ID does not exist.
+Code already existed.,Code already existed.
+Code is required.,Code is required.
+Default Name is required.,Default Name is required.
+Could not save RegionName.,Could not save RegionName.
+Could not find SubCity with id: `%id`,Could not find Commune/Ward with id: `%id`
+Could not delete SubCity. Original message: {message},Could not delete Commune/Ward. Original message: {message}
+Could not delete SubCity.,Could not delete Commune/Ward.
+Could not save SubCity. Original message: {message},Could not save Commune/Ward. Original message: {message}
+Could not save SubCity.,Could not save Commune/Ward.
+Could not save SubCityName.,Could not save SubCityName.
+You have successfully deleted City entity,You have successfully deleted District entity
+Edit City,Edit District
+Manage Cities,Manage Cities
+City List,District List
+New City,New District
+The City data was saved successfully,The District data was saved successfully
+Countries,Countries
+You have successfully deleted Region entity,You have successfully deleted City/Province entity
+Edit States/Provinces,Edit States/Provinces
+States/Provinces,States/Provinces
+New States/Provinces,New States/Provinces
+The Region data was saved successfully (The default name of region cannot be changed).,The City/Province data was saved successfully (The default name of City/Province cannot be changed).
+The Region data was saved successfully,The City/Province data was saved successfully
+You have successfully deleted SubCity entity,You have successfully deleted Commune/Ward entity
+Edit SubCity,Edit Commune/Ward
+SubCity,Commune/Ward
+Manage SubCitys,Manage Commune/Ward
+SubCity List,Commune/Ward List
+New SubCity,New Commune/Ward
+SubCity data was saved successfully,Commune/Ward data was saved successfully
+"City with id ""%1"" does not exist.","District with id ""%1"" does not exist."
+"Missing required column ""%column""","Missing required column ""%column"""
+"Missing required value of column ""%column""","Missing required value of column ""%column"""
+"The ""%1"" country is incorrect. Verify the country and try again.","The ""%1"" country is incorrect. Verify the country and try again."
+"The ""%1"" locale is incorrect. Verify the locale and try again.","The ""%1"" locale is incorrect. Verify the locale and try again."
+"Region code value of column ""%column"" is exists","City/Province code value of column ""%column"" is exists"
+Row Validator must implement %interface.,Row Validator must implement %interface.
+View,View
+Edit,Edit
+Delete %1,Delete %1
+Are you sure you want to delete a %1 record?,Are you sure you want to delete a %1 record?
+Information,Information
+Default Name,Default Name
+Name,Name
+locale,locale
+Iso2 Code,Iso2 Code
+Iso3 Code,Iso3 Code
+en_US,en_US
+Code,Code
+SubCity Name,Commune/Ward Name
+* Required Fields,* Required Fields
+Contact Information,Contact Information
+Address,Address
+Street Address: Line %1,Street Address: Line %1
+Street Address %1,Street Address %1
+Sub City,Commune/Ward
+It's a default billing address.,It's a default billing address.
+Use as my default billing address,Use as my default billing address
+It's a default shipping address.,It's a default shipping address.
+Use as my default shipping address,Use as my default shipping address
+Save Address,Save Address
+Go back,Go back
+Ship Here,Ship Here
+This is a required field.,This is a required field.
+New Address,New Address
+Address Dropdown,Address Dropdown
+General Configuration,General Configuration
+Enable,Enable
+City Form,District Form
+General,General
+Entity ID,Entity ID
+Region Id,City/Province Id
+Local Name,Local Name
+Add Record,Add Record
+Locale,Locale
+-- Please Select --,-- Please Select --
+ID,ID
+Country ID,Country ID
+ISO2 Code,ISO2 Code
+ISO3 Code,ISO3 Code
+Are you sure you want to delete this address?,Are you sure you want to delete this address?
+Update Address,Update Address
+Default Billing Address,Default Billing Address
+Default Shipping Address,Default Shipping Address
+Name Prefix,Name Prefix
+First Name,First Name
+Last Name,Last Name
+Name Suffix,Name Suffix
+Middle Name/Initial,Middle Name/Initial
+Company,Company
+Area,Area
+Zip/Postal Code,Zip/Postal Code
+Phone Number,Phone Number
+VAT Number,VAT Number
+Are you sure you want to delete selected address?,Are you sure you want to delete selected address?
+Delete items,Delete items
+Country,Country
+Phone,Phone
+Region Form,City/Province Form
+Country Id,Country Id
+Code Region,Code City/Province
+Region ID,City/Province ID
+Sub City Form,Commune/Ward Form
+City Id,District Id

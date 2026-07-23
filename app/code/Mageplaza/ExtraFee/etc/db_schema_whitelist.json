@@ -1,0 +1,77 @@
+{
+    "mageplaza_extrafee_rule": {
+        "column": {
+            "rule_id": true,
+            "name": true,
+            "status": true,
+            "store_ids": true,
+            "customer_groups": true,
+            "priority": true,
+            "conditions_serialized": true,
+            "apply_type": true,
+            "fee_type": true,
+            "amount": true,
+            "area": true,
+            "display_type": true,
+            "is_required": true,
+            "fee_tax": true,
+            "sort_order": true,
+            "refundable": true,
+            "stop_further_processing": true,
+            "labels": true,
+            "options": true,
+            "created_at": true,
+            "updated_at": true,
+            "description": true,
+            "allow_note_message": true,
+            "message_title": true,
+            "from_date": true,
+            "to_date": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "quote": {
+        "column": {
+            "mp_extra_fee": true
+        }
+    },
+    "quote_address": {
+        "column": {
+            "mp_extra_fee": true
+        }
+    },
+    "sales_order": {
+        "column": {
+            "mp_extra_fee": true
+        }
+    },
+    "order_item": {
+        "column": {
+            "mp_extra_fee": true
+        }
+    },
+    "invoice_item": {
+        "column": {
+            "mp_extra_fee": true
+        }
+    },
+    "creditmemo_item": {
+        "column": {
+            "mp_extra_fee": true
+        }
+    },
+    "mageplaza_extrafee_stats": {
+        "column": {
+            "rule_id": true,
+            "order_count": true,
+            "revenue": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "MP_EXTRAFEE_STATS_PK": true,
+            "MP_EXTRAFEE_STATS_RULE_FK": true
+        }
+    }
+}

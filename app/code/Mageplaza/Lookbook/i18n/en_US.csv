@@ -1,0 +1,119 @@
+"Edit '%1'","Edit '%1'"
+"New Lookbook","New Lookbook"
+Save,Save
+"Save and Continue Edit","Save and Continue Edit"
+"Lookbook Information","Lookbook Information"
+Name,Name
+Status,Status
+"Store Views","Store Views"
+"Marker Type","Marker Type"
+"Image Width","Image Width"
+"If empty, width is auto.","If empty, width is auto."
+"Image Height","Image Height"
+"If empty, height is auto.","If empty, height is auto."
+Image,Image
+"Allowed file types: jpg, gif, png.","Allowed file types: jpg, gif, png."
+ID,ID
+Disabled,Disabled
+Enabled,Enabled
+Back,Back
+Delete,Delete
+"Are you sure you want to do this?","Are you sure you want to do this?"
+Lookbook,Lookbook
+"Manage Lookbooks","Manage Lookbooks"
+"This Lookbook no longer exists.","This Lookbook no longer exists."
+"The Lookbook has been deleted.","The Lookbook has been deleted."
+"Edit Lookbook","Edit Lookbook"
+Lookbooks,Lookbooks
+"Please correct the data sent.","Please correct the data sent."
+"The wrong lookbook is specified.","The wrong lookbook is specified."
+"A total of %1 record(s) have been deleted.","A total of %1 record(s) have been deleted."
+"Something went wrong while updating status for %1.","Something went wrong while updating status for %1."
+"A total of %1 record(s) have been updated.","A total of %1 record(s) have been updated."
+"Please upload image file. Allowed file types: jpg, gif, png.","Please upload image file. Allowed file types: jpg, gif, png."
+"The Lookbook has been saved.","The Lookbook has been saved."
+"Something went wrong while saving the Lookbook.","Something went wrong while saving the Lookbook."
+"Manage Sliders","Manage Sliders"
+"This slider no longer exists.","This slider no longer exists."
+"The Slider has been deleted.","The Slider has been deleted."
+"Edit Slider","Edit Slider"
+"New Slider","New Slider"
+Slider,Slider
+"The Slider has been saved.","The Slider has been saved."
+"Something went wrong while saving the Slider.","Something went wrong while saving the Slider."
+No,No
+"On Demand","On Demand"
+Progressive,Progressive
+Popup,Popup
+Tooltip,Tooltip
+"The module is disabled","The module is disabled"
+Edit,Edit
+"All Store Views","All Store Views"
+"The slider wasn't registered.","The slider wasn't registered."
+"What to show","What to show"
+Product,Product
+Custom,Custom
+"Select product","Select product"
+Template,Template
+"Save pin","Save pin"
+"Select Product","Select Product"
+Continue,Continue
+"Go to Details Page","Go to Details Page"
+"Mageplaza Lookbook","Mageplaza Lookbook"
+"Manage Lookbook","Manage Lookbook"
+"Create/Edit Lookbook","Create/Edit Lookbook"
+"Manage Lookbook Slider","Manage Lookbook Slider"
+"Create/Edit Slider","Create/Edit Slider"
+General,General
+Enable,Enable
+"Select Yes to enable this module","Select Yes to enable this module"
+"Marker Icon","Marker Icon"
+"Allowed file types: jpg, gif, png. Leave empty to use default icon.","Allowed file types: jpg, gif, png. Leave empty to use default icon."
+"Marker Width","Marker Width"
+"Default: 40px.","Default: 40px."
+"Marker Height","Marker Height"
+"Slider Design Configuration","Slider Design Configuration"
+"Infinite Loop","Infinite Loop"
+"Select Yes to enable infinite loop sliding","Select Yes to enable infinite loop sliding"
+"Show Next/Prev Buttons","Show Next/Prev Buttons"
+"Select Yes to display the Next/Pre buttons in the slider","Select Yes to display the Next/Pre buttons in the slider"
+"Show Dots Navigation","Show Dots Navigation"
+"Select Yes to display dots navigation of the slider","Select Yes to display dots navigation of the slider"
+"Lazy Loading Images","Lazy Loading Images"
+"Select Yes to lazy loading images","Select Yes to lazy loading images"
+Autoplay,Autoplay
+"Select Yes to enables Autoplay","Select Yes to enables Autoplay"
+"Autoplay Speed","Autoplay Speed"
+"The time (ms) in which an item is auto-moved to the left","The time (ms) in which an item is auto-moved to the left"
+"Pause On Mouse Hover","Pause On Mouse Hover"
+"Select Yes to pause Autoplay On Hover","Select Yes to pause Autoplay On Hover"
+"Mageplaza Lookbook Slider","Mageplaza Lookbook Slider"
+"Mageplaza Lookbook Slider List","Mageplaza Lookbook Slider List"
+"Select Slider...","Select Slider..."
+"Mageplaza Lookbook List","Mageplaza Lookbook List"
+"Select Lookbook...","Select Lookbook..."
+StatusText,StatusText
+"Store View","Store View"
+"Add New","Add New"
+"Delete Lookbook","Delete Lookbook"
+"Are you sure you wan't to delete selected Lookbooks?","Are you sure you wan't to delete selected Lookbooks?"
+"Change status","Change status"
+Disable,Disable
+Created,Created
+Modified,Modified
+Thumbnail,Thumbnail
+SKU,SKU
+Price,Price
+Quantity,Quantity
+"Slider Information","Slider Information"
+"General Information","General Information"
+Design,Design
+"Infinity Loop","Infinity Loop"
+"Custom Css","Custom Css"
+"Add Lookbooks","Add Lookbooks"
+Position,Position
+Remove,Remove
+"Add/Update Lookbook","Add/Update Lookbook"
+"Add Selected Lookbooks","Add Selected Lookbooks"
+"Delete Slider","Delete Slider"
+"Are you sure you wan't to delete selected sliders?","Are you sure you wan't to delete selected sliders?"

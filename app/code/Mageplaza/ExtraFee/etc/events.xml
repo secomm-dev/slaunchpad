@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_order_load_after">
+        <observer name="mp_extra_fee_load_order_with_extra_fee" instance="Mageplaza\ExtraFee\Observer\SalesOrderAfterLoad"/>
+    </event>
+    <event name="sales_model_service_quote_submit_before">
+        <observer name="mp_extra_fee_convert_quote_to_order" instance="Mageplaza\ExtraFee\Observer\ConvertQuoteToOrder"/>
+    </event>
+    <event name="sales_order_invoice_save_after">
+        <observer name="sales_order_invoice_save_after_extra_fee" instance="Mageplaza\ExtraFee\Observer\InvoiceSaveAfter"/>
+    </event>
+    <event name="sales_order_invoice_load_after">
+        <observer name="mp_extra_fee_sales_order_invoice_load_after" instance="Mageplaza\ExtraFee\Observer\InvoiceLoadAfter"/>
+    </event>
+    <event name="sales_order_creditmemo_load_after">
+        <observer name="mp_extra_fee_sales_order_creditmemo_load_after" instance="Mageplaza\ExtraFee\Observer\CreditmemoLoadAfter"/>
+    </event>
+    <event name="payment_cart_collect_items_and_amounts">
+        <observer name="efPaypalPrepareItems" instance="Mageplaza\ExtraFee\Observer\PaypalPrepareItems"/>
+    </event>
+    <event name="checkout_type_multishipping_create_orders_single">
+        <observer name="mp_extra_fee_multi_checkout_convert_quote_to_order" instance="Mageplaza\ExtraFee\Observer\MultiShippingConvertQuoteToOrder"/>
+    </event>
+    <event name="sales_order_save_commit_after">
+        <observer name="mp_extrafee_update_stats_order" instance="Mageplaza\ExtraFee\Observer\UpdateStatsOrder"/>
+    </event>
+    <event name="sales_order_invoice_save_commit_after">
+        <observer name="mp_extrafee_update_stats_invoice" instance="Mageplaza\ExtraFee\Observer\UpdateStatsInvoice"/>
+    </event>
+    <event name="sales_order_creditmemo_save_commit_after">
+        <observer name="mp_extrafee_update_stats_creditmemo" instance="Mageplaza\ExtraFee\Observer\UpdateStatsCreditmemo"/>
+    </event>
+</config>

@@ -1,0 +1,130 @@
+Add New,Thêm mới
+Back To Grid,Quay lại lưới
+Back,Quay lại
+Delete,Xóa
+Are you sure you want to delete this city?,Bạn có chắc chắn muốn xóa Quận/Huyện này?
+Save,Lưu
+Are you sure you want to delete this Region?,Bạn có chắc chắn muốn xóa Tỉnh/Thành Phố này không?
+Are you sure you want to delete this subcity?,Bạn có chắc chắn muốn xóa Phường/Xã này không?
+Could not find City with id: `%id`,Không thể tìm thấy Quận/Huyện có mã: `%id`
+Could not delete City. Original message: {message},Không thể xóa Quận/Huyện. Tin nhắn gốc: {message}
+Could not delete City.,Không thể xóa Quận/Huyện.
+Could not save City. Original message: {message},Không thể lưu Quận/Huyện. Tin nhắn gốc: {message}
+Could not save City.,Không thể lưu Quận/Huyện.
+Could not save CityName.,Không thể lưu Tên Quận/Huyện.
+Could not find Region with id: `%id`,Không thể tìm thấy Tỉnh/Thành Phố: `%id`
+Could not delete Region with id: `%id`,Không thể xóa Tỉnh/Thành Phố có id: `%id`
+Could not delete Region. Original message: {message},Không thể xóa Tỉnh/Thành Phố. Tin nhắn gốc:{message}
+Could not delete Region.,Không thể xóa Tỉnh/Thành Phố.
+Could not save Region Name with locale %1.,Không thể lưu Tên Tỉnh/Thành Phố với ngôn ngữ %1.
+Could not save Region. Original message: {message},Không thể lưu Tỉnh/Thành Phố. Tin nhắn gốc: {message}
+Could not save Region.,Không thể lưu Tỉnh/Thành Phố.
+Country ID does not exist.,Mã quốc gia không tồn tại.
+Code already existed.,Mã tồn tại
+Code is required.,Mã bị bắt buộc.
+Default Name is required.,Tên mặc định được bắt buộc.
+Could not save RegionName.,Không thể lưu Tỉnh/Thành Phố.
+Could not find SubCity with id: `%id`,Can't find Phường/Xã với id: `%id`
+Could not delete SubCity. Original message: {message},Không thể xóa Phường/Xã. Tin nhắn gốc: {message}
+Could not delete SubCity.,Không thể xóa Phường/Xã.
+Could not save SubCity. Original message: {message},Không thể lưu Phường/Xã. Tin nhắn gốc: {message}
+Could not save SubCity.,Không thể lưu Phường/Xã.
+Could not save SubCityName.,Không thể lưu Tên Phường/Xã.
+You have successfully deleted City entity,Bạn đã xóa thành công Quận/Huyện
+Edit City,Edit Quận/Huyện
+City,Phường/Xã
+Manage Cities,Quản lý Quận/Huyện
+City List,Danh sách Quận/Huyện
+New City,Quận/Huyện Mới
+The City data was saved successfully,Dữ liệu Quận/Huyện đã được lưu thành công
+Countries,Quốc gia
+You have successfully deleted Region entity,Bạn đã xóa thành công Tỉnh/Thành Phố
+Edit States/Provinces,Chỉnh sửa Tỉnh/Thành Phố
+States/Provinces,Tỉnh/Thành Phố
+New States/Provinces,Tỉnh/Thành Phố mới
+The Region data was saved successfully (The default name of region cannot be changed).,Dữ liệu Tỉnh/Thành Phố đã được lưu thành công (Không thể thay đổi tên mặc định của Tỉnh/Thành Phố).
+The Region data was saved successfully,Dữ liệu Tỉnh/Thành Phố đã được lưu thành công
+You have successfully deleted SubCity entity,Bạn đã xóa thành công Phường/Xã
+Edit SubCity,Chỉnh sửa Phường/Xã
+SubCity,Phường/Xã
+Manage SubCitys,Quản lý Phường/Xã
+SubCity List,Danh sách Phường/Xã
+New SubCity,Tạo mới Phường/Xã
+SubCity data was saved successfully,Dữ liệu Phường/Xã đã được lưu thành công
+"City with id ""%1"" does not exist."," Quận/Huyện có id ""%1"" không tồn tại."
+"Missing required column ""%column"""," Thiếu cột bắt buộc ""%column"""
+"Missing required value of column ""%column"""," Thiếu giá trị bắt buộc của cột ""%column"""
+"The ""%1"" country is incorrect. Verify the country and try again."," Quốc gia ""%1"" không chính xác. Hãy xác minh quốc gia và thử lại."
+"The ""%1"" locale is incorrect. Verify the locale and try again."," Ngôn ngữ ""%1"" không chính xác. Hãy xác minh ngôn ngữ và thử lại."
+"Region code value of column ""%column"" is exists","Giá trị mã Tỉnh/Thành Phố của cột ""%column"" tồn tại"
+Row Validator must implement %interface.,Trình xác thực hàng phải triển khai %interface.
+View,Xem
+Edit,Sửa
+Delete %1,Xóa %1
+Are you sure you want to delete a %1 record?,Bạn có chắc chắn muốn xóa bản ghi %1 không?
+Information,Thông tin
+Default Name,Tên mặc định
+Name, Tên
+locale,Địa phương
+Iso2 Code, Mã Iso2
+Iso3 Code, Mã Iso3
+en_US, en_US
+Code,Mã
+SubCity Name,Tên Phường/Xã
+* Required Fields,* Các trường bắt buộc
+Contact Information,Liên hệ thông tin
+Address,Địa chỉ
+Street Address: Line %1,Địa chỉ đường: Dòng %1
+Street Address %1,Địa chỉ đường %1
+Sub City,Phường/Xã
+It's a default billing address.,Đó là địa chỉ thanh toán mặc định.
+Use as my default billing address,Sử dụng làm địa chỉ thanh toán mặc định của tôi
+It's a default shipping address.,Đó là địa chỉ giao hàng mặc định.
+Use as my default shipping address,Sử dụng làm địa chỉ giao hàng mặc định của tôi
+Save Address,Lưu địa chỉ
+Go back,Quay lại
+Ship Here,Gửi hàng tới đây
+Please select a city,Vui lòng chọn Phường/Xã
+Sub-City,Phường/Xã
+Please select a sub-city,Chọn Phường/Xã
+This is a required field.,Đây là một trường bắt buộc.
+Select a city,Chọn Phường/Xã
+Select a sub-city,Chọn Phường/Xã
+Select a region,Chọn Tỉnh/Thành phố
+New Address,Địa chỉ mới
+Address Dropdown,Danh sách Địa chỉ chọn
+General Configuration,Cấu hình chung
+Enable,Cho phép
+City Form,Biểu mẫu Quận/Huyện
+General,Tổng quan
+Entity ID,Mã thực thể
+Region Id,Mã Tỉnh/Thành Phố
+Local Name,Tên địa phương
+Add Record,Thêm bản ghi
+Locale,Ngôn ngữ
+-- Please Select --,-- Vui lòng chọn --
+Country ID,Mã quốc gia
+Are you sure you want to delete this address?,Bạn có chắc chắn muốn xóa địa chỉ này?
+Update Address,Cập nhật địa chỉ
+Default Billing Address,Địa chỉ thanh toán mặc định
+Default Shipping Address,Địa chỉ giao hàng mặc định
+Middle Name/Initial,Tên đệm/Tên viết tắt
+Company,Công ty
+Area,Khu vực
+Zip/Postal Code,Mã Zip/Bưu Chính
+Phone Number,Số điện thoại
+VAT Number,Mã số thuế GTGT
+Are you sure you want to delete selected address?,Bạn có chắc chắn muốn xóa địa chỉ đã chọn không?
+Delete items,Xóa mục
+Country,Quốc gia
+Phone,Điện thoại
+Region Form,Biểu Mẫu Tỉnh/Thành Phố
+Country Id,Mã quốc gia
+Code Region,Mã Tỉnh/Thành Phố
+Region ID,Mã Tỉnh/Thành Phố
+Sub City Form,Biểu mẫu Phường/Xã
+City Id,Mã Quận/Huyện
+State/Province,Tỉnh/Thành phố
+"Please select a region, state or province.","Vui lòng chọn Tỉnh/Thành phố."
+Street Address,Địa chỉ Đường
+Please select an option.,Đây là một trường bắt buộc

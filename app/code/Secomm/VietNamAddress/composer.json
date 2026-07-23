@@ -1,0 +1,20 @@
+{
+    "name": "secomm/module-viet-nam-address",
+    "version": "1.0.0",
+    "description": "A module that auto import data Address of Viet Nam.",
+    "type": "magento2-module",
+    "license": "GPL-3.0",
+    "minimum-stability": "dev",
+    "require": {
+        "magento/framework": "*",
+        "secomm/module-addressdropdown": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Secomm\\VietNamAddress\\": ""
+        }
+    }
+}

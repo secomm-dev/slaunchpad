@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="checkout_cart_item_renderers"/>
+    <body>
+        <referenceBlock name="checkout.cart.totals">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="block-totals" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="mp_extra_fee" xsi:type="array">
+                                    <item name="component" xsi:type="string">Mageplaza_ExtraFee/js/view/cart/totals/extra-fee</item>
+                                    <item name="config" xsi:type="array">
+                                        <item name="title" xsi:type="string" translate="true">Extra Fee</item>
+                                        <item name="sortOrder" xsi:type="string">30</item>
+                                        <item name="componentDisabled" xsi:type="helper" helper="Mageplaza\ExtraFee\Helper\Data::isDisabled"/>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+        <referenceContainer name="cart.summary">
+            <block class="Mageplaza\ExtraFee\Block\Cart\ExtraFee" name="checkout.cart.extra.fee" as="mp_extra_fee" template="cart/extra-fee.phtml" after="checkout.cart.shipping">
+                <arguments>
+                    <argument name="jsLayout" xsi:type="array">
+                        <item name="components" xsi:type="array">
+                            <item name="block-extrafee-summary" xsi:type="array">
+                                <item name="component" xsi:type="string">Mageplaza_ExtraFee/js/view/cart/extra-fee</item>
+                                <item name="config" xsi:type="array">
+                                    <item name="componentDisabled" xsi:type="helper" helper="Mageplaza\ExtraFee\Helper\Data::isDisabled"/>
+                                </item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

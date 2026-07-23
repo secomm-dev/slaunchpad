@@ -1,0 +1,16 @@
+<?php
+/**
+ * Storefront announcement bar.
+ * Rendered only when layout `ifconfig` secomm_storefront/announcement/enable is truthy
+ * (Stores > Configuration > Secomm > Storefront > Announcement > Enable = Yes).
+ * Pure presentational — no PHP logic; output escaped. Inline style so it renders
+ * regardless of theme Tailwind/Alpine (no purge dependency).
+ *
+ * @var Magento\Framework\View\Element\Template $block
+ */
+?>
+<div class="secomm-announcement" style="background:#1e3a8a;color:#ffffff;">
+    <div style="max-width:1280px;margin:0 auto;padding:0.5rem 1rem;text-align:center;font-size:0.875rem;font-weight:500;">
+        <?= $block->escapeHtml(__('Welcome to our store!')) ?>
+    </div>
+</div>

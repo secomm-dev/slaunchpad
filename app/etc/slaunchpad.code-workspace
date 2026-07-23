@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../secomm-production-ai-toolkit"
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
+}

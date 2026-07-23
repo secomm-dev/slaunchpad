@@ -1,0 +1,360 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\ExtraFee\Block\Multishipping\Checkout\OverView\ExtraFee;
+use Mageplaza\ExtraFee\Model\Config\Source\DisplayArea;
+
+/** @var ExtraFee $block */
+$addresses      = $block->getShippingAddresses();
+$billingAddress = $block->getBillingAddress();
+$extraFeeNote   = $block->getExtraFeeNote();
+?>
+<?php foreach ($addresses as $_index => $_address) : ?>
+    <?php $shippingExtraFee = $block->getExtraFeeInfo($_address, DisplayArea::SHIPPING_METHOD) ?>
+    <?php if (count($shippingExtraFee)) : ?>
+        <div class="mp-extra-fee-multi-shipping-<?= $block->escapeHtmlAttr($_index + 1) ?>">
+            <div class="order-shipping-method" id="mp_extra_fee_shipment" style="margin-top: 20px">
+                <div class="admin__page-section-item-title">
+                    <span class="title"><?= $block->escapeHtml(__('Extra Fee Information')) ?></span>
+                </div>
+                <div class="admin__page-section-item-content">
+                    <?php foreach ($shippingExtraFee as $fee) : ?>
+                        <div class="order-payment-method-title">
+                            <?= /* @noEscape */ $block->getFeeTitle($fee) ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+    <?php $paymentExtraFee = $block->getExtraFeeInfo($_address, DisplayArea::PAYMENT_METHOD) ?>
+    <?php if (count($paymentExtraFee)) : ?>
+        <div class="mp-extra-fee-multi-payment-<?= $block->escapeHtmlAttr($_index + 1) ?>">
+            <div class="order-shipping-method" id="mp_extra_fee_shipment" style="margin-top: 20px">
+                <div class="admin__page-section-item-title">
+                    <span class="title"><?= $block->escapeHtml(__('Extra Fee Information Address %1', $_index + 1)) ?></span>
+                </div>
+                <div class="admin__page-section-item-content">
+                    <?php foreach ($paymentExtraFee as $fee) : ?>
+                        <div class="order-payment-method-title">
+                            <?= /* @noEscape */
+                            $block->getFeeTitle($fee) ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+    <?php
+    [$applyRule, $selectedOptions] = $block->getAppliedRule($_address, DisplayArea::CART_SUMMARY);
+    [$applyRule, $selectedOptions] = [$applyRule[0], $selectedOptions[0]];
+    ?>
+    <?php if ($block->getAllApplyRule($_address, DisplayArea::CART_SUMMARY)) : ?>
+    <div class="mp-extra-fee-multi-cart mp-extra-fee-multi-cart-<?= $block->escapeHtmlAttr($_index + 1) ?>">
+        <?php foreach ($block->getAllApplyRule($_address, DisplayArea::CART_SUMMARY) as $rule) : ?>
+            <?php if ($rule['is_required']) : ?>
+                <input name="rule_required[<?= $block->escapeHtmlAttr($_address->getId()) ?>][]"
+                       value="<?= /* @noEscape */ $rule['rule_id'] ?>" type="hidden">
+            <?php endif; ?>
+        <?php endforeach; ?>
+        <form class="mp-form-extra-fee-multi-cart">
+            <input name="address_id" value="<?= /* @noEscape */ $_address->getId() ?>" type="hidden">
+            <div class="order-shipping-method">
+                <strong class="box-title">
+                    <span class="title"><?= $block->escapeHtml(__('Extra Fee Information Address %1', $_index + 1)) ?></span>
+                </strong>
+                <div class="admin__page-section-item-content">
+                    <div class="mp-extra-fee-multi-shipping-cart-<?= $block->escapeHtmlAttr($_index + 1) ?>">
+                        <?php foreach ($block->getAllApplyRule($_address, DisplayArea::CART_SUMMARY) as $rule) : ?>
+                            <?php if ($rule['is_required']) : ?>
+                                <input name="rule_required[<?= $block->escapeHtmlAttr($_address->getId()) ?>][]"
+                                       value="<?= /* @noEscape */ $rule['rule_id'] ?>" type="hidden">
+                            <?php endif; ?>
+                            <?php $options = $block->getOptions($rule, $_address->getQuote()->getStoreId()) ?>
+                            <dl class="fieldset items methods">
+                                <div class="fieldset field">
+                                    <dt class="item-title field">
+                                        <div class="<?= /* @noEscape */
+                                        $rule['is_required'] ? ' mp_required' : '' ?>">
+                                            <label class="label">
+                                            <span>
+                                                <?= $block->escapeHtml(
+                                                    $block->getRuleTitle($rule, $_address->getQuote()->getStoreId())
+                                                ) ?>
+                                            </span>
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <label class="label"
+                                                   style="font-weight: 400">
+                                                <span><?= $block->escapeHtml($rule['description']) ?></span>
+                                            </label>
+                                        </div>
+                                    </dt>
+                                    <dd class="item-options">
+                                        <?php if ($rule['display_type'] === '1') : ?>
+                                            <?php foreach ($options as $option) : ?>
+                                                <?php $_checked = $block->isChecked($rule['rule_id'], $option['value'], $selectedOptions) ? 'checked' : '' ?>
+                                                <div class="rule">
+                                                    <input type="radio" class="radio"
+                                                           name="rule[<?= $block->escapeHtmlAttr($_address->getId()) ?>][<?= $block->escapeHtmlAttr($option['rule_id']) ?>]"
+                                                           value="<?= $block->escapeHtmlAttr($option['value']) ?>"
+                                                           id="s_rule_shipping_<?= $block->escapeHtmlAttr($option['rule_id']) ?>_<?= $block->escapeHtmlAttr($option['value']) ?>"
+                                                           <?= /* @noEscape */ $_checked ?>/>
+                                                    <label class="label"
+                                                           for="s_rule_shipping_<?= $block->escapeHtmlAttr($option['rule_id']) ?>_<?= $block->escapeHtmlAttr($option['value']) ?>">
+                                                        <?= /** @noEscape */ $option['title'] ?>
+                                                    </label>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                        <?php if ($rule['display_type'] === '2') : ?>
+                                            <?php foreach ($options as $option) : ?>
+                                                <?php $_checked = $block->isChecked($rule['rule_id'], $option['value'], $selectedOptions) ? 'checked="checked"' : '' ?>
+                                                <div class="rule">
+                                                    <input type="checkbox" class="checkbox"
+                                                           <?= /* @noEscape */ $_checked ?>
+                                                           name="rule[<?= $block->escapeHtmlAttr($_address->getId()) ?>][<?= $block->escapeHtmlAttr($option['rule_id']) ?>][<?= $block->escapeHtmlAttr($option['value']) ?>]"
+                                                           value="<?= $block->escapeHtmlAttr($option['value']) ?>"
+                                                           id="s_rule_shipping_<?= $block->escapeHtmlAttr($option['rule_id']) ?>_<?= $block->escapeHtmlAttr($option['value']) ?>"/>
+                                                    <label class="label"
+                                                           for="s_rule_shipping_<?= $block->escapeHtmlAttr($option['rule_id']) ?>_<?= $block->escapeHtmlAttr($option['value']) ?>">
+                                                        <?= /** @noEscape */ $option['title'] ?>
+                                                    </label>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                        <?php if ($rule['display_type'] === '3') : ?>
+                                            <div class="rule">
+                                                <select class="item-options"
+                                                        name="rule[<?= $block->escapeHtmlAttr($_address->getId()) ?>][<?= $block->escapeHtmlAttr($rule['rule_id']) ?>]">
+                                                    <?php foreach ($options as $option) : ?>
+                                                        <?php $_checked = $block->isChecked($rule['rule_id'], $option['value'], $selectedOptions) ? 'selected' : '' ?>
+                                                        <option <?= /* @noEscape */ $_checked ?>
+                                                                value="<?= $block->escapeHtmlAttr($option['value']) ?>">
+                                                            <?= /** @noEscape */ $option['title'] ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        <?php endif; ?>
+                                    </dd>
+                                    <dd>
+                                        <?php
+                                            $key = 'mp-extrafee-note-'. $rule['rule_id'] . '-' . $_address->getId();
+                                            $extraFeeNoteContent = isset ($extraFeeNote[$_address->getId()][$key])
+                                                ? $extraFeeNote[$_address->getId()][$key] : '';
+                                        ?>
+                                        <label for="<?= /* @noEscape */ '#' . $key ?>"><?= /* @noEscape */ $rule['message_title'] ?></label>
+                                        <textarea name="<?= /* @noEscape */ $key ?>" id="<?= /* @noEscape */ $key ?>" cols="30" rows="2"><?= /* @noEscape */ $extraFeeNoteContent ?></textarea>
+                                    </dd>
+                                </div>
+                            </dl>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <div class="primary">
+                <div class="apply-extra-fee-button"><span><?= $block->escapeHtml('Apply') ?></span></div>
+                <div class="mp-error-message message notice"></div>
+            </div>
+        </form>
+    </div>
+    <?php endif; ?>
+    <script>
+        require([
+            'jquery'
+        ], function ($) {
+            $('.mp-extra-fee-multi-payment-<?= $block->escapeHtmlAttr($_index + 1) ?>:not(:first)').remove();
+            $('.mp-extra-fee-multi-payment-<?= $block->escapeHtmlAttr($_index + 1) ?>').insertAfter($('.block.block-billing .block-content .box.box-billing-method .box-content'));
+            $('.mp-extra-fee-multi-shipping-<?= $block->escapeHtmlAttr($_index + 1) ?>:not(:first)').remove();
+            $('.mp-extra-fee-multi-shipping-<?= $block->escapeHtmlAttr($_index + 1) ?>').insertAfter($('.block.block-shipping .block-content:eq(<?= $block->escapeHtmlAttr($_index) ?>) .box.box-shipping-method .box-content'));
+            $('.mp-extra-fee-multi-cart-<?= $block->escapeHtmlAttr($_index + 1) ?>:not(:first)').remove();
+            $('.mp-extra-fee-multi-cart-<?= $block->escapeHtmlAttr($_index + 1) ?>').insertAfter($('.block.block-shipping .block-content:eq(<?= $block->escapeHtmlAttr($_index) ?>) .box.box-shipping-method'));
+        })
+    </script>
+<?php endforeach; ?>
+<?php $paymentExtraFeeForVirtualItems = $block->getExtraFeeInfo($billingAddress, DisplayArea::PAYMENT_METHOD) ?>
+<?php $shippingExtraFeeForVirtualItems = $block->getExtraFeeInfo($billingAddress, DisplayArea::SHIPPING_METHOD) ?>
+<?php
+[$applyRule, $selectedOptions] = $block->getAppliedRule($billingAddress, DisplayArea::CART_SUMMARY);
+[$applyRule, $selectedOptions] = [$applyRule[0], $selectedOptions[0]];
+?>
+<div class="mp-extra-fee-multi-payment-virtual">
+    <?php if (count($paymentExtraFeeForVirtualItems) || count($shippingExtraFeeForVirtualItems)
+        || (count($block->getAllApplyRule($billingAddress, DisplayArea::CART_SUMMARY))
+            && $billingAddress->getQuote()->hasVirtualItems())) : ?>
+        <div class="order-shipping-method" style="margin-top: 20px">
+            <strong class="box-title">
+                <span class="title"><?= $block->escapeHtml(__('Extra Fee Information For Other Items')) ?></span>
+            </strong>
+            <div class="admin__page-section-item-content">
+                <?php if (count($shippingExtraFeeForVirtualItems)) : ?>
+                    <?php foreach ($shippingExtraFeeForVirtualItems as $fee) : ?>
+                        <div class="order-payment-method-title">
+                            <?= /* @noEscape */ $block->getFeeTitle($fee) ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+                <?php if (count($paymentExtraFeeForVirtualItems)) : ?>
+                    <?php foreach ($paymentExtraFeeForVirtualItems as $fee) : ?>
+                        <div class="order-payment-method-title">
+                            <?= /* @noEscape */ $block->getFeeTitle($fee) ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+    <?php if ($block->getAllApplyRule($billingAddress, DisplayArea::CART_SUMMARY)
+        && $billingAddress->getQuote()->hasVirtualItems()) : ?>
+        <?php foreach ($block->getAllApplyRule($billingAddress, DisplayArea::CART_SUMMARY) as $rule) : ?>
+            <?php if ($rule['is_required']) : ?>
+                <input name="rule_required[<?= $block->escapeHtmlAttr($billingAddress->getId()) ?>][]"
+                       value="<?= /* @noEscape */ $rule['rule_id'] ?>" type="hidden">
+            <?php endif; ?>
+        <?php endforeach; ?>
+        <form class="mp-form-extra-fee-multi-cart" style="margin-top: 20px">
+            <input name="address_id" value="<?= /* @noEscape */ $billingAddress->getId() ?>" type="hidden">
+            <div class="order-shipping-method">
+                <div class="admin__page-section-item-content">
+                    <div class="mp-extra-fee-multi-shipping-cart-<?= $block->escapeHtmlAttr($_index + 1) ?>">
+                        <?php foreach ($block->getAllApplyRule($billingAddress, DisplayArea::CART_SUMMARY) as $rule) : ?>
+                            <?php if ($rule['is_required']) : ?>
+                                <input name="rule_required[<?= $block->escapeHtmlAttr($billingAddress->getId()) ?>][]"
+                                       value="<?= /* @noEscape */ $rule['rule_id'] ?>" type="hidden">
+                            <?php endif; ?>
+                            <?php $options = $block->getOptions($rule, $billingAddress->getQuote()->getStoreId()) ?>
+                            <dl class="fieldset items methods">
+                                <div class="fieldset field">
+                                    <dt class="item-title field">
+                                        <div class="<?= /* @noEscape */ $rule['is_required'] ? ' mp_required' : '' ?>">
+                                            <label class="label"><span><?= $block->escapeHtml($block->getRuleTitle($rule, $billingAddress->getQuote()->getStoreId())) ?></span></label>
+                                        </div>
+                                        <div>
+                                            <label class="label"
+                                                   style="font-weight: 400">
+                                                <span><?= $block->escapeHtml($rule['description']) ?></span>
+                                            </label>
+                                        </div>
+                                    </dt>
+                                    <dd class="item-options">
+                                        <?php if ($rule['display_type'] === '1') : ?>
+                                            <?php foreach ($options as $option) : ?>
+                                                <?php $_checked = $block->isChecked($rule['rule_id'], $option['value'], $selectedOptions) ? 'checked' : '' ?>
+                                                <div class="rule">
+                                                    <input type="radio" class="radio"
+                                                           name="rule[<?= $block->escapeHtmlAttr($billingAddress->getId()) ?>][<?= $block->escapeHtmlAttr($option['rule_id']) ?>]"
+                                                           value="<?= $block->escapeHtmlAttr($option['value']) ?>"
+                                                           id="s_rule_shipping_<?= $block->escapeHtmlAttr($option['rule_id']) ?>_<?= $block->escapeHtmlAttr($option['value']) ?>"
+                                                           <?= /* @noEscape */ $_checked ?>/>
+                                                    <label class="label"
+                                                           for="s_rule_shipping_<?= $block->escapeHtmlAttr($option['rule_id']) ?>_<?= $block->escapeHtmlAttr($option['value']) ?>">
+                                                        <?= /** @noEscape */ $option['title'] ?>
+                                                    </label>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                        <?php if ($rule['display_type'] === '2') : ?>
+                                            <?php foreach ($options as $option) : ?>
+                                                <?php $_checked = $block->isChecked($rule['rule_id'], $option['value'], $selectedOptions) ? 'checked="checked"' : '' ?>
+                                                <div class="rule">
+                                                    <input type="checkbox" class="checkbox"
+                                                           <?= /* @noEscape */ $_checked ?>
+                                                           name="rule[<?= $block->escapeHtmlAttr($billingAddress->getId()) ?>][<?= $block->escapeHtmlAttr($option['rule_id']) ?>][<?= $block->escapeHtmlAttr($option['value']) ?>]"
+                                                           value="<?= $block->escapeHtmlAttr($option['value']) ?>"
+                                                           id="s_rule_shipping_<?= $block->escapeHtmlAttr($option['rule_id']) ?>_<?= $block->escapeHtmlAttr($option['value']) ?>"/>
+                                                    <label class="label"
+                                                           for="s_rule_shipping_<?= $block->escapeHtmlAttr($option['rule_id']) ?>_<?= $block->escapeHtmlAttr($option['value']) ?>">
+                                                        <?= /** @noEscape */ $option['title'] ?>
+                                                    </label>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                        <?php if ($rule['display_type'] === '3') : ?>
+                                            <div class="rule">
+                                                <select class="item-options"
+                                                        name="rule[<?= $block->escapeHtmlAttr($billingAddress->getId()) ?>][<?= $block->escapeHtmlAttr($rule['rule_id']) ?>]">
+                                                    <?php foreach ($options as $option) : ?>
+                                                        <?php $_checked = $block->isChecked($rule['rule_id'], $option['value'], $selectedOptions) ? 'selected' : '' ?>
+                                                        <option <?= /* @noEscape */ $_checked ?>
+                                                                value="<?= $block->escapeHtmlAttr($option['value']) ?>">
+                                                            <?= /** @noEscape */ $option['title'] ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        <?php endif; ?>
+                                    </dd>
+                                    <dd>
+                                        <?php
+                                            $key = 'mp-extrafee-note-'. $rule['rule_id'] . '-' . $billingAddress->getId();
+                                            $extraFeeNoteContent = isset ($extraFeeNote[$billingAddress->getId()][$key])
+                                                ? $extraFeeNote[$billingAddress->getId()][$key] : '';
+                                        ?>
+                                        <label for="<?= /* @noEscape */ '#' . $key ?>"><?= /* @noEscape */ $rule['message_title'] ?></label>
+                                        <textarea name="<?= /* @noEscape */ $key ?>" id="<?= /* @noEscape */ $key ?>" cols="30" rows="2"><?= /* @noEscape */ $extraFeeNoteContent ?></textarea>
+                                    </dd>
+                                </div>
+                            </dl>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <div class="primary">
+                <div class="apply-extra-fee-button"><span><?= $block->escapeHtml('Apply') ?></span></div>
+                <div class="mp-error-message message notice"></div>
+            </div>
+        </form>
+    <?php endif; ?>
+</div>
+<script>
+    require([
+        'jquery'
+    ], function ($) {
+        $('.mp-extra-fee-multi-payment-virtual').insertBefore($('.block.block-other #virtual-overview-table'));
+        $('.mp-error-message').hide();
+        $('.apply-extra-fee-button').click(function () {
+            var self         = this,
+                form         = $(this).parents('form.mp-form-extra-fee-multi-cart'),
+                errorElement = form.find('.mp-error-message');
+
+            errorElement.hide();
+            $.ajax({
+                type: "POST",
+                url: "<?= $block->escapeUrl($block->getExtraFeeUrl()) ?>",
+                data: form.serialize(),
+                showLoader: true,
+                success: function (res) {
+                    if (!res.status) {
+                        $('html, body').animate({
+                            scrollTop: $(self).offset().top - 500
+                        }, 1000);
+                        errorElement.text(res.message);
+                        errorElement.show();
+                    } else {
+                        location.reload();
+                    }
+                }
+            });
+        });
+    })
+</script>

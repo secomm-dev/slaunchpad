@@ -1,0 +1,125 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\ExtraFee\Block\Adminhtml\Order\Create\ExtraFee;
+use Mageplaza\ExtraFee\Model\Config\Source\DisplayArea;
+
+/** @var ExtraFee $block */
+list($applyRule, $selectedOptions) = $block->getAppliedRule(DisplayArea::PAYMENT_METHOD);
+list($applyRule, $selectedOptions) = [$applyRule[0], $selectedOptions[0]];
+?>
+<?php if (is_array($applyRule) && count($applyRule)) : ?>
+<div class="admin__page-section-title" style="margin-top: 30px">
+    <span class="title"><?= $block->escapeHtml(__('Extra Fee')) ?></span>
+</div>
+<div id="order-billing-extra-fee">
+    <dl class="admin__order-payment-extra-fee">
+        <?php foreach ($applyRule as $rule) : ?>
+            <?php if ((int) $rule['area'] !== DisplayArea::PAYMENT_METHOD) {
+                continue;
+            } ?>
+            <dt class="admin__order-shipment-methods-title<?= $rule['is_required'] ? ' mp_required' : '' ?>">
+                <?= $block->escapeHtml($block->getRuleLabel($rule)) ?>
+            </dt>
+            <dd class="admin__order-shipment-methods-options">
+                <ul class="admin__order-shipment-extra-fee-options-list" style="list-style-type: none">
+                    <?php if ($rule['display_type'] === '3') : ?>
+                    <select name="<?= /* @noEscape */  'rule['.$rule['rule_id'].']' ?>"
+                            class="select admin__control-select mp-extra-fee" area="1">
+                        <?php foreach ($block->getRuleOptions($rule) as $key => $option) : ?>
+                            <?php $_checked = $block->isChecked($rule['rule_id'], $key, $selectedOptions) ?
+                                'selected' : '' ?>
+                        <option <?= /* @noEscape */ $_checked ?> value="<?= /* @noEscape */ $key ?>">
+                            <?= $block->escapeHtml($block->getOptionLabel($option)) ?> -
+                            <strong>
+                                <?= /* @noEscape */ $block->getOptionValueLabel($option) ?>
+                            </strong>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?php else : ?>
+                        <?php if ($rule['display_type'] === '1') : ?>
+                            <?php foreach ($block->getRuleOptions($rule) as $key => $option) : ?>
+                                <li class="admin__field-option">
+                                    <?php $_checked = $block->isChecked($rule['rule_id'], $key, $selectedOptions) ?
+                                        'checked="checked"' : '' ?>
+                                    <input  value="<?= /* @noEscape */ $key ?>"
+                                            type="radio"
+                                            onclick="order.selectMpExtraFee('1')"
+                                            name="<?= /* @noEscape */  'rule['.$rule['rule_id'].']' ?>"
+                                            id="s_rule_shipping_<?= /* @noEscape */ $rule['rule_id'].'_'.$key ?>"
+                                            <?= /* @noEscape */ $_checked ?>
+                                            class="admin__control-radio"/>
+                                    <label class="admin__field-label"
+                                           for="s_rule_shipping_<?= /* @noEscape */  $rule['rule_id'].'_'.$key ?>">
+                                        <?= $block->escapeHtml($block->getOptionLabel($option)) ?> -
+                                        <strong>
+                                            <?= /* @noEscape */ $block->getOptionValueLabel($option) ?>
+                                        </strong>
+                                    </label>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <?php foreach ($block->getRuleOptions($rule) as $key => $option) : ?>
+                                <li class="admin__field-option">
+                                    <?php $_checked = $block->isChecked($rule['rule_id'], $key, $selectedOptions) ?
+                                        'checked="checked"' : '' ?>
+                                    <input  value="<?= /* @noEscape */ $key ?>"
+                                            type="checkbox"
+                                            onclick="order.selectMpExtraFee('1')"
+                                            name="<?= /* @noEscape */  'rule['.$rule['rule_id'].']' ?>"
+                                            id="s_rule_shipping_<?= /* @noEscape */ $rule['rule_id'].'_'.$key ?>"
+                                            <?= /* @noEscape */  $_checked ?>
+                                            class="admin__control-checkbox"/>
+                                    <label class="admin__field-label"
+                                           for="s_rule_shipping_<?= /* @noEscape */ $rule['rule_id'].'_'.$key ?>">
+                                        <?= $block->escapeHtml($block->getOptionLabel($option)) ?> -
+                                        <strong>
+                                            <?= /* @noEscape */ $block->getOptionValueLabel($option) ?>
+                                        </strong>
+                                    </label>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        <?php if ($rule['is_required']) : ?>
+                            <input type="hidden" name="extra_fee_check_require[<?= /* @noEscape */ $rule['rule_id'] ?>]"
+                                   value="" class="mp_extra_fee_required required-entry required _required">
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </ul>
+            </dd>
+
+        <?php endforeach; ?>
+    </dl>
+</div>
+<?php endif; ?>
+<script type="text/javascript">
+    require(['jquery','Mageplaza_ExtraFee/js/view/order/create'], function ($) {
+        $('input.mp_extra_fee_required').each(function () {
+            if($(this).parent().find('input:checked').length){
+                $(this).val('checked');
+            }
+        });
+    });
+</script>
+
+
+

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!--
+  ~ Secomm_VietNamMarket — Vietnam market setup module.
+  ~ Owns market-level configuration (locale registration for `en_VN`, future: currency,
+  ~ store defaults). Address-specific translations stay in Secomm_VietNamAddress.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Secomm_VietNamMarket"/>
+</config>

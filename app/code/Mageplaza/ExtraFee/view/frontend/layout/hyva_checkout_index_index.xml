@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="hyva.checkout.api-v1.after">
+            <block class="Mageplaza\ExtraFee\Block\Cart\ExtraFee" name="hyva.checkout.alpinejs.order.summary.extra.fee"
+                   template="Mageplaza_ExtraFee::hyva/page/js/api/v1/alpinejs/extra-fee.phtml"
+                   ifconfig="mp_extra_fee/general/enabled">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        Mageplaza\ExtraFee\Magewire\Checkout\OrderSummary\ExtraFee
+                    </argument>
+                </arguments>
+                <container name="hyva.checkout.alpinejs.order.summary.extra.fee.after" as="after"/>
+            </block>
+            <block class="Mageplaza\ExtraFee\Block\Cart\ExtraFee" name="hyva.checkout.alpinejs.shipping.extra.fee"
+                   template="Mageplaza_ExtraFee::hyva/page/js/api/v1/alpinejs/shipping-extra-fee.phtml"
+                   ifconfig="mp_extra_fee/general/enabled">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        Mageplaza\ExtraFee\Magewire\Checkout\Shipping\ExtraFee
+                    </argument>
+                </arguments>
+                <container name="hyva.checkout.alpinejs.shipping.extra.fee.after" as="after"/>
+            </block>
+            <block class="Mageplaza\ExtraFee\Block\Cart\ExtraFee" name="hyva.checkout.alpinejs.payment.extra.fee"
+                   template="Mageplaza_ExtraFee::hyva/page/js/api/v1/alpinejs/payment-extra-fee.phtml"
+                   ifconfig="mp_extra_fee/general/enabled">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        Mageplaza\ExtraFee\Magewire\Checkout\Payment\ExtraFee
+                    </argument>
+                </arguments>
+                <container name="hyva.checkout.alpinejs.payment.extra.fee.after" as="after"/>
+            </block>
+        </referenceContainer>
+        <referenceBlock name="price-summary.total-segments">
+            <action method="setTemplate" ifconfig="mp_extra_fee/general/enabled">
+                <argument name="template" xsi:type="string">
+                    Mageplaza_ExtraFee::hyva/checkout/price-summary/total-segments.phtml
+                </argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>

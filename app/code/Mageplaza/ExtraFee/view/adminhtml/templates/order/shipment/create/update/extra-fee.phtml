@@ -1,0 +1,43 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\ExtraFee\Block\Sales\Order\Shipment\Create\ExtraFeeUpdateQty;
+use Mageplaza\ExtraFee\Model\Config\Source\DisplayArea;
+
+/** @var ExtraFeeUpdateQty $block */
+$extraFee = $block->getExtraFeeInfo(DisplayArea::CART_SUMMARY);
+?>
+<?php if (count($extraFee)) : ?>
+    <div class="admin__page-section-title">
+        <span class="title"><?= $block->escapeHtml(__('Extra Fee')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div class="admin__page-section-item">
+            <div class="admin__page-section-item-content">
+                <?php foreach ($extraFee as $fee) : ?>
+                    <div class="order-payment-method-title">
+                        <?= /* @noEscape */ $block->getFeeTitle($fee) ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>

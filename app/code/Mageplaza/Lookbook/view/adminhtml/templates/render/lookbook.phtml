@@ -1,0 +1,255 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+?>
+<?php
+$lookbook = $block->getData('lookbook');
+$params   = [
+    'area' => 'adminhtml'
+];
+$img_src  = $lookbook->getImage();
+$_width   = 0;
+$_height  = 0;
+if ($img_src) {
+    $imageInfo = $block->getImageInfo($img_src);
+    if ($imageInfo) {
+        $_width  = $lookbook->getWidth() ?: $imageInfo->getOriginalWidth();
+        if ($lookbook->getWidth()) {
+            $_height = $lookbook->getHeight() ?: $lookbook->getWidth() * $imageInfo->getOriginalHeight() / $imageInfo->getOriginalWidth();
+        } else {
+            $_height = $lookbook->getHeight() ?: $imageInfo->getOriginalHeight();
+        }
+    }
+    $img_src = $block->getImageUrl($img_src);
+}
+$marker = $lookbook->getMarker();
+if ($marker) {
+    $_optionsArr = json_decode($marker, true);
+    if (isset($_optionsArr['mplookbook_pin'])) {
+        foreach ($_optionsArr['mplookbook_pin'] as $key => $value) {
+            if (isset($value['template'])) {
+                $_optionsArr['mplookbook_pin'][$key]['template'] = $block->escapeJsQuote($value['template'], '"');
+            }
+        }
+    }
+    if (isset($_optionsArr['mplookbook_pin']['canvas'])) {
+        $_optionsArr['mplookbook_pin']['canvas'] = [
+            'src'    => $img_src,
+            'width'  => $_width,
+            'height' => $_height
+        ];
+    }
+
+    $marker = json_encode($_optionsArr);
+} else {
+    $marker = '{}';
+}
+$markerIcon = $block->getMarkerIconUrl();
+$editIcon   = $block->getIconUrl('Mageplaza_Lookbook::js/plugins/icon/edit.png');
+$removeIcon = $block->getIconUrl('Mageplaza_Lookbook::js/plugins/icon/remove.png');
+
+?>
+<div id="wrap-mplookbook"></div>
+<script id="wrap-mplookbook-pin" type="text/template">
+    <div class="container-wrap-pin admin__scope-old">
+        <input id="mplookbook_marker" type="hidden" name="marker" value='<?= /* @noEscape */
+        $marker ?>'/>
+        <div class="mplookbook_pin_image_wrap" style="width: <?= /* @noEscape */ $_width ?>px;">
+            <span class="mplookbook_wrap_image">
+                <img src="<?= /* @noEscape */
+                $img_src ?>" class="pin mplookbook_pin_image <?= /* @noEscape */
+                $img_src ? '' : 'no-image' ?>" width="<?= /* @noEscape */ $_width ?>" height="<?= /* @noEscape */ $_height ?>" easypin-id="mplookbook_pin"/>
+            </span>
+
+            <div class="easy-modal" style="display:none;" modal-position="free">
+                <div class="admin__fieldset">
+                    <div class="admin__field field-wts">
+                        <label class="label admin__field-label"><span><?= /* @noEscape */__('What to show') ?></span></label>
+                        <div class="admin__field-control control">
+                            <select name="wts" title="What to show" class=" select admin__control-select select_wts">
+                                <option value="product"><?= /* @noEscape */__('Product') ?></option>
+                                <option value="custom"><?= /* @noEscape */__('Custom') ?></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin__field field-product-id">
+                        <label class="label admin__field-label"><span><?= /* @noEscape */__('Product') ?></span></label>
+                        <div class="admin__field-control control" style="width: 60%;">
+                            <input class="select_product" name="product_id" type="text" value="" readonly="1"
+                                   style="width: 50%;"/>
+                            <a class="load-product-grid" class="btn"><?= /* @noEscape */__('Select product') ?></a>
+                        </div>
+                    </div>
+                    <div class="admin__field field-template">
+                        <label class="label admin__field-label"><span><?= /* @noEscape */ __('Template') ?></span></label>
+                        <div class="admin__field-control control" style="width: 60%;">
+                            <div class="admin__control-wysiwig">
+                                <textarea name="template" title="" class="textarea select_emplate" rows="2" cols="15"
+                                          style="" spellcheck="false"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="save-pin-btn"><input type="button" value="<?= /* @noEscape */ __('Save pin') ?>" class="easy-submit save primary"/></div>
+                </div>
+            </div>
+
+            <!-- popover -->
+            <div style="display:none; width: 200px;" shadow="true" popover>
+                <div style="width:100%;text-align:center;"></div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/javascript">
+    require([
+        'jquery',
+        'Magento_Ui/js/modal/modal',
+        'mage/translate',
+        'mplookbook/easing',
+        'mplookbook/easypin'
+    ], function ($, modal, $t) {
+
+        function initPopup () {
+            var options;
+
+            if (!this.popup) {
+                options = {
+                    type: 'popup',
+                    responsive: true,
+                    innerScroll: true,
+                    title: $t('Select Product'),
+                    buttons: [{
+                        text: $t('Continue'),
+                        class: '',
+                        click: function () {
+                            this.closeModal();
+                        }
+                    }]
+                };
+
+                var product_grid = $('div[data-component="mplookbook_product_listing.mplookbook_product_listing.product_columns"]');
+
+                this.popup = modal(options, product_grid.parent());
+            }
+
+            return this.popup;
+        }
+
+        $(document).ready(function ($) {
+            var _instance = null;
+
+            $('#mplookbook_image').parent().append($('#wrap-mplookbook-pin').html());
+            window.mppopup = initPopup();
+
+            if (!$('.mplookbook_pin_image').hasClass('no-image')) {
+                _instance = $('.pin').easypin({
+                    init: '<?= /* @noEscape */ $marker ?>',
+                    markerSrc: '<?= /* @noEscape */ $markerIcon ?>',
+                    editSrc: '<?= /* @noEscape */ $editIcon ?>',
+                    deleteSrc: '<?= /* @noEscape */ $removeIcon ?>',
+                    modalWidth: 500,
+
+                    /**
+                     * Fixed position when drop
+                     */
+                    drop: function (x, y, element) {
+                        x = x + 15;
+                        y = y + 48;
+                        element.attr('data-x', x);
+                        element.attr('data-y', y);
+                    },
+
+                    done: function () {
+                        return true;
+                    }
+                });
+            }
+
+            $("#edit_form").submit(function () {
+                if (_instance) {
+                    _instance.easypin.event("get.coordinates", function (_instance, data) {
+                        $('#mplookbook_marker').val(data);
+                    });
+                    _instance.easypin.fire("get.coordinates", {}, function (data) {
+                        return JSON.stringify(data);
+                    });
+                }
+            });
+        });
+
+        $(document).on('click', '.easy-edit', function () {
+            $('.mplookbook_wrap_image .select_wts').each(function () {
+                var sef              = $(this),
+                    parentElement    = sef.parents('.admin__fieldset'),
+                    productIdElement = parentElement.find('.field-product-id'),
+                    templateElem     = parentElement.find('.field-template');
+
+                if (sef.val() === 'custom') {
+                    productIdElement.hide();
+                    templateElem.show();
+                } else {
+                    productIdElement.show();
+                    templateElem.hide();
+                }
+                this.on('change', function () {
+                    if ($(this).val() === 'custom') {
+                        productIdElement.hide();
+                        templateElem.show();
+                    } else {
+                        productIdElement.show();
+                        templateElem.hide();
+                    }
+                });
+            });
+            $('.mplookbook_wrap_image .load-product-grid').each(function () {
+                var sef = $(this);
+                this.on('click', function () {
+                    window.mppopup.openModal();
+                    $('body').delegate('table.data-grid tbody tr', 'click', function () {
+                        var el     = $(this);
+                        var prodId = el.find('.mp-check').val();
+
+                        $('.mp-check').prop('checked', false);
+                        el.find('input.mp-check').prop('checked', true);
+
+                        sef.siblings('.select_product').val(prodId);
+                    });
+                });
+            });
+        });
+    });
+</script>
+<style type="text/css">
+    .load-product-grid {
+        background-color: #DBDBDB;
+        color: #514943;
+        border: 1px solid #adadad;
+        padding: .6rem 1em .6rem;
+        font-size: 1.4rem;
+        font-weight: 600;
+        line-height: 1.36;
+        cursor: pointer;
+    }
+
+    .save-pin-btn {
+        float: right;
+        margin-right: 30px;
+    }
+</style>

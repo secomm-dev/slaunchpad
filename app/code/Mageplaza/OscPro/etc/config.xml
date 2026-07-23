@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <osc>
+            <module>
+                <user_guide>magento/one-step-checkout-pro</user_guide>
+            </module>
+            <loading_speed_optimization>
+                <refresh_page>1</refresh_page>
+                <shipping_address_change>1,2</shipping_address_change>
+                <billing_address_change>1,2</billing_address_change>
+                <shipping_method_change>1,2</shipping_method_change>
+                <payment_method_change>1</payment_method_change>
+                <product_change>1,2</product_change>
+                <apply_coupon>1,2</apply_coupon>
+                <gift_wrap>1,2</gift_wrap>
+            </loading_speed_optimization>
+        </osc>
+    </default>
+</config>

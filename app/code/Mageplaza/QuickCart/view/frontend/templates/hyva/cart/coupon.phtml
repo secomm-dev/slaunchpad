@@ -1,0 +1,79 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_QuickCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+use Mageplaza\QuickCart\Helper\Data;
+
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var Data $helperData */
+
+$helperData = $this->helper('Mageplaza\QuickCart\Helper\Data');
+?>
+<?php if ($helperData->isShowCoupon()): ?>
+<div class="p-3 border-b border-container">
+    <form class="cart-discount" id="mpquickcart-coupon-form" method="post">
+        <div role="alert" class="text-sm message-error p-4" x-show="errorCouponMsg">
+            <div x-text="errorCouponMsg"></div>
+        </div>
+        <div role="success" class="text-sm message-success p-4" x-show="successCouponMsg">
+            <div x-text="successCouponMsg"></div>
+        </div>
+        <div class="fieldset coupon flex gap-4 items-baseline">
+            <div class="w-3/4">
+                <label for="mpquickcart-coupon-code" class="label"></label>
+                <div class="control">
+                    <input class="form-input disabled:opacity-75 disabled:bg-gray-100 disabled:pointer-events-none w-full"
+                           type="text"
+                           id="mpquickcart-coupon-code"
+                           name="coupon_code"
+                           x-model="couponCode"
+                           x-bind:disabled="isAppliedCoupon()"
+                           placeholder="<?= $escaper->escapeHtml(__('Enter discount code')) ?>"/>
+                </div>
+            </div>
+            <div class="w-1/4">
+                <div class="primary">
+                    <template x-if="isAppliedCoupon() === false">
+                        <button class="btn btn-secondary" type="button" x-on:click="applyCoupon()">
+                            <span><?= $escaper->escapeHtml(__('Apply')) ?></span>
+                        </button>
+                    </template>
+                    <template x-if="isAppliedCoupon()">
+                        <div>
+                            <input type="hidden" name="remove" id="remove-coupon" value="1"/>
+                            <button class="btn btn-secondary" type="button" x-on:click="cancelCoupon()">
+                                <span><?= $escaper->escapeHtml(__('Cancel')) ?></span>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<style>
+    #mpquickcart-coupon-form input:focus {
+        outline: none;
+        box-shadow: none;
+    }
+    #mpquickcart-coupon-form input.invalid {
+        border: 1px solid #e02b27;
+    }
+</style>
+<?php endif; ?>

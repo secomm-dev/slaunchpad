@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Sales\Block\Adminhtml\Order\Create\Data">
+        <plugin name="order_create_extra_fee" type="Mageplaza\ExtraFee\Plugin\Block\Adminhtml\OrderCreateData"/>
+    </type>
+    <type name="Magento\Sales\Model\Order">
+        <plugin name="mp_extra_fee_can_creditmemo" type="Mageplaza\ExtraFee\Plugin\Sales\Model\CanCreditmemo"/>
+    </type>
+    <type name="Magento\Sales\Model\Config">
+        <plugin name="mp_extra_fee_get_totals_renderer" type="Mageplaza\ExtraFee\Plugin\Sales\Model\Config"/>
+    </type>
+    <type name="Magento\Ui\Model\Export\MetadataProvider">
+        <plugin name="mp_extra_fee_export_csv" type="Mageplaza\ExtraFee\Plugin\Adminhtml\ExportCsv"/>
+    </type>
+    <type name="Magento\Sales\Block\Adminhtml\Order\Totals\Tax">
+        <plugin name="mp_extra_fee_tax" type="Mageplaza\ExtraFee\Plugin\Adminhtml\Order\Totals\TaxPlugin"/>
+    </type>
+</config>

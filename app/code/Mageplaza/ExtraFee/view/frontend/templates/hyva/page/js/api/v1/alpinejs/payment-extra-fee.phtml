@@ -1,0 +1,163 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Mageplaza\ExtraFee\ViewModel\Checkout\OrderSummary\ExtraFee as ViewModel;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Theme\ViewModel\Store;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var ViewModel $viewModel */
+/** @var Escaper $escaper */
+/** @var Store $storeViewModel */
+
+$viewModel = $viewModels->require(ViewModel::class);
+$storeViewModel = $viewModels->require(Store::class);
+$storeId = $storeViewModel->getStoreId();
+$listRule = $viewModel->getListRuleAreaOrderSummary()
+?>
+
+<script>
+    function initExtraFeePayment($wire) {
+        return {
+            ruleConfig: <?= /** @noEscape */ json_encode($listRule[0][0]) ?>,
+            selectedOptions: <?= /** @noEscape */ json_encode($listRule[1][0]) ?>,
+            area: '1',
+            store_id: '<?= /** @noEscape */ $storeId ?>',
+            getRuleConfig () {
+                return this.ruleConfig
+            },
+            getOptions: function (data) {
+                let rule =JSON.parse(JSON.stringify(data));
+                let self = this;
+                var options = JSON.parse(rule.options),
+                    result = [];
+                Object.keys(options.option.value).forEach(function (key) {
+                    var object = options.option.value[key];
+                    var title = (object[`${self.store_id}`] || object[0])
+                        + ' '
+                        + self.getFormattedPrice(object['calculated_amount']);
+                    result.push({
+                        rule_id: rule.rule_id,
+                        value: key,
+                        title: title,
+                        type: rule.display_type
+                    });
+                });
+                return result;
+            },
+            changeOption: function () {
+                this.collectTotal(this.area)
+            },
+            selectOption: function (e) {
+                let ruleParent = e.closest('.fieldset.items.methods'),
+                    inputs = ruleParent.querySelectorAll('input'),
+                    check = true;
+                inputs.forEach(inputElement => {
+                    if (check){
+                        if (inputElement.checked) {
+                            ruleParent.querySelector('.mp_extra_fee').value = inputElement.value;
+                            check = false;
+                        } else {
+                            ruleParent.querySelector('.mp_extra_fee').value = ''
+                            check = true;
+                        }
+                    }
+                });
+                this.collectTotal(this.area)
+            },
+            collectTotal: function (area) {
+                const paymentEl  = document.querySelector('#mp-extra-fee-payment');
+                let formData = new URLSearchParams(new FormData(paymentEl)).toString();
+                let payload = {
+                    formData: formData,
+                    area: area
+                };
+                $wire.call('collectTotal', payload);
+            },
+            checkRender() {
+                return this.ruleConfig.length > 0
+            },
+            getTitle: function (rule) {
+                var labels = JSON.parse(rule.labels);
+                return labels[this.store_id] || rule.name;
+            },
+            getDescription: function (rule) {
+                return rule.description;
+            },
+            getFormattedPrice: function (price) {
+                return hyva.formatPrice(price);
+            },
+            isAllowNote: function (rule) {
+                return rule.allow_note_message > 0;
+            },
+            getNoteTitle: function (rule) {
+                return rule.message_title;
+            },
+            getNoteMessage: function(key) {
+                var ele = document.getElementById(key);
+
+                if (this.ruleConfig && this.selectedOptions[key]) {
+                    ele.value = this.selectedOptions[key];
+                }
+                return ele.value;
+            },
+            afterRenderOptions (option, optionVal) {
+                let selectedOptions = JSON.parse(JSON.stringify(this.selectedOptions));
+
+
+                if(!selectedOptions?.rule) {
+                    return;
+                }
+                let data = selectedOptions?.rule,
+                    type = optionVal?.display_type || optionVal?.type;
+                if(type === '3') {
+                    if (data[optionVal?.rule_id] === optionVal?.value) {
+                        option.setAttribute('selected', true);
+                    }
+                } else {
+                    var inputs = option.querySelectorAll('input');
+                    inputs.forEach(function (inputElement) {
+                        let rule_id = inputElement.getAttribute('ruleId');
+                        let valueInput = inputElement.value;
+
+                        if (rule_id !== undefined) {
+                            if (data[rule_id] === valueInput) {
+                                inputElement.checked = true;
+                            }
+                            if (data[rule_id] && data[rule_id][valueInput] !== undefined) {
+                                inputElement.checked = data[rule_id][valueInput];
+                            }
+                            let el = inputElement.closest('.fieldset.items.methods').querySelector('.mp_extra_fee');
+                            if (!el.value && inputElement.checked) {
+                                el.value = valueInput;
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    }
+</script>
+
+<?= $block->getChildHtml('after') ?>

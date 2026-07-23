@@ -1,0 +1,84 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\ExtraFee\Block\Sales\Order\View\ExtraFee;
+use Mageplaza\ExtraFee\Model\Config\Source\DisplayArea;
+
+/** @var ExtraFee $block */
+$paymentExtraFee  = $block->getExtraFeeInfo(DisplayArea::PAYMENT_METHOD);
+$shipmentExtraFee = $block->getExtraFeeInfo(DisplayArea::SHIPPING_METHOD);
+$extraFee         = $block->getExtraFeeInfo(DisplayArea::CART_SUMMARY);
+?>
+<?php if (count($paymentExtraFee)) : ?>
+    <div class="admin__page-section-item order-payment-extra-fee" id="mp_extra_fee_payment" style="margin-top: 20px">
+        <div class="admin__page-section-item-title">
+            <span class="title"><?= $block->escapeHtml(__('Extra Fee Information')) ?></span>
+        </div>
+        <div class="admin__page-section-item-content">
+            <?php foreach ($paymentExtraFee as $fee) : ?>
+                <div class="order-payment-method-title">
+                    <?= /* @noEscape */ $block->getFeeTitle($fee) ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php endif; ?>
+<?php if (count($shipmentExtraFee)) : ?>
+    <div id="mp_extra_fee_shipment" style="margin-top: 20px">
+        <div class="admin__page-section-item-title">
+            <span class="title"><?= $block->escapeHtml(__('Extra Fee Information')) ?></span>
+        </div>
+        <div class="admin__page-section-item-content">
+            <?php foreach ($shipmentExtraFee as $fee) : ?>
+                <div class="order-payment-method-title">
+                    <?= /* @noEscape */ $block->getFeeTitle($fee) ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php endif; ?>
+<?php if (count($extraFee)) : ?>
+    <section class="admin__page-section order-view-extra-fee" id="mp_extra_fee">
+        <div class="admin__page-section-title">
+            <span class="title"><?= $block->escapeHtml(__('Extra Fee')) ?></span>
+        </div>
+        <div class="admin__page-section-content">
+            <div class="admin__page-section-item">
+                <div class="admin__page-section-item-content">
+                    <?php foreach ($extraFee as $fee) : ?>
+                        <div class="order-payment-method-title">
+                            <?= /* @noEscape */ $block->getFeeTitle($fee) ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
+<script>
+    require([
+        'jquery'
+    ], function ($) {
+        $('.admin__page-section.order-shipment-billing-shipping').after($('#mp_extra_fee'));
+        $('.admin__page-section-item-content > .shipping-description-wrapper').parent().after($('#mp_extra_fee_shipment'));
+        $('.admin__page-section-item.order-payment-method').append($('#mp_extra_fee_payment'));
+    })
+</script>

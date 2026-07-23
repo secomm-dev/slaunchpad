@@ -1,0 +1,101 @@
+{
+    "mageplaza_abandonedcart_logs": {
+        "column": {
+            "id": true,
+            "subject": true,
+            "customer_email": true,
+            "coupon_code": true,
+            "sender": true,
+            "customer_name": true,
+            "quote_id": true,
+            "sequent_number": true,
+            "recovery": true,
+            "email_content": true,
+            "status": true,
+            "display": true,
+            "created_at": true,
+            "updated_at": true,
+            "sms_content": true
+        },
+        "index": {
+            "MAGEPLAZA_ABANDONEDCART_LOGS_STATUS_SUBJECT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mageplaza_abandonedcart_logs_token": {
+        "column": {
+            "id": true,
+            "quote_id": true,
+            "config_id": true,
+            "checkout_token": true,
+            "checkout_token_created_at": true
+        },
+        "index": {
+            "MAGEPLAZA_ABANDONEDCART_LOGS_TOKEN_QUOTE_ID_CHECKOUT_TOKEN": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGEPLAZA_ABANDONEDCART_LOGS_TOKEN_QUOTE_ID_QUOTE_ENTITY_ID": true
+        }
+    },
+    "mageplaza_abandonedcart_reports_index": {
+        "column": {
+            "id": true,
+            "period": true,
+            "store_id": true,
+            "cart_abandon_rate": true,
+            "successful_cart_rate": true,
+            "total_abandoned_carts": true,
+            "total_abandoned_revenue": true,
+            "number_of_successful_carts": true,
+            "successful_carts_revenue": true,
+            "actionable_abandoned_carts": true,
+            "recapturable_revenue": true,
+            "recaptured_revenue": true,
+            "recaptured_rate": true,
+            "total_email_abandoned_sent": true,
+            "total_cart_checkout_sent": true,
+            "customer_group_id": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mageplaza_abandonedcart_product_reports_index": {
+        "column": {
+            "id": true,
+            "period": true,
+            "store_id": true,
+            "product_id": true,
+            "product_name": true,
+            "thumbnail": true,
+            "sku": true,
+            "price": true,
+            "abandoned_time": true,
+            "qty": true,
+            "abandoned_revenue": true,
+            "customer_group_id": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "quote": {
+        "column": {
+            "mp_abandoned_set_change": true
+        }
+    },
+    "salesrule_coupon": {
+        "column": {
+            "mp_generated_by_abandoned_cart": true,
+            "mp_ace_expires_at": true
+        }
+    },
+    "customer_entity": {
+        "column": {
+            "mp_ace_blacklist": true
+        }
+    }
+}

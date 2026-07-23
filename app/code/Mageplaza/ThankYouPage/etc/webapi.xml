@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ThankYouPage
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <route url="/V1/mpThankYouPage/rules" method="GET">
+        <service class="Mageplaza\ThankYouPage\Api\ThankYouPageRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mageplaza_ThankYouPage::thankyoupage" />
+        </resources>
+    </route>
+    <route url="/V1/mpThankYouPage/rules/:ruleId" method="GET">
+        <service class="Mageplaza\ThankYouPage\Api\ThankYouPageRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mageplaza_ThankYouPage::thankyoupage" />
+        </resources>
+    </route>
+    <route url="/V1/mpThankYouPage/order-page/:orderId" method="GET">
+        <service class="Mageplaza\ThankYouPage\Api\ThankYouPageRepositoryInterface" method="getOrderPage"/>
+        <resources>
+            <resource ref="Mageplaza_ThankYouPage::thankyoupage" />
+        </resources>
+    </route>
+    <route url="/V1/mpThankYouPage/subscribe-page/:email" method="GET">
+        <service class="Mageplaza\ThankYouPage\Api\ThankYouPageRepositoryInterface" method="getSubsPage"/>
+        <resources>
+            <resource ref="Mageplaza_ThankYouPage::thankyoupage" />
+        </resources>
+    </route>
+    <route url="/V1/mpThankYouPage/rules" method="POST">
+        <service class="Mageplaza\ThankYouPage\Api\ThankYouPageRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mageplaza_ThankYouPage::thankyoupage" />
+        </resources>
+    </route>
+    <route url="/V1/mpThankYouPage/rules/:ruleId" method="DELETE">
+        <service class="Mageplaza\ThankYouPage\Api\ThankYouPageRepositoryInterface" method="delete"/>
+        <resources>
+            <resource ref="Mageplaza_ThankYouPage::thankyoupage" />
+        </resources>
+    </route>
+</routes>

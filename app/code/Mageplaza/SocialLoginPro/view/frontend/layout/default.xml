@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mageplaza_SocialLoginPro::css/style.css"/>
+    </head>
+    <body>
+        <referenceBlock name="head.additional">
+            <block class="Mageplaza\SocialLoginPro\Block\OneTap" name="social-one-tap-lib" as="one.tap.login.lib" template="Mageplaza_SocialLoginPro::quick_login/add_lib.phtml"/>
+        </referenceBlock>
+        <referenceContainer name="social.login.form.additional.info.login">
+            <block class="Mageplaza\SocialLoginPro\Block\Captcha" name="social-pro-login-captcha" after="-">
+                <action method="setFormId">
+                    <argument name="formId" xsi:type="string">user_login</argument>
+                </action>
+                <action method="setImgWidth">
+                    <argument name="width" xsi:type="string">230</argument>
+                </action>
+                <action method="setImgHeight">
+                    <argument name="width" xsi:type="string">50</argument>
+                </action>
+            </block>
+            <referenceBlock name="social-login-captcha" remove="true"/>
+        </referenceContainer>
+        <referenceContainer name="social.login.form.additional.info.create">
+            <block class="Mageplaza\SocialLoginPro\Block\Captcha" name="social-pro-create-captcha" after="-">
+                <action method="setFormId">
+                    <argument name="formId" xsi:type="string">user_create</argument>
+                </action>
+                <action method="setImgWidth">
+                    <argument name="width" xsi:type="string">230</argument>
+                </action>
+                <action method="setImgHeight">
+                    <argument name="width" xsi:type="string">50</argument>
+                </action>
+            </block>
+            <referenceBlock name="social-create-captcha" remove="true"/>
+        </referenceContainer>
+        <referenceContainer name="social.login.form.additional.info.forgot">
+            <block class="Mageplaza\SocialLoginPro\Block\Captcha" name="social-pro-forgot-password-captcha" after="-">
+                <action method="setFormId">
+                    <argument name="formId" xsi:type="string">user_forgotpassword</argument>
+                </action>
+                <action method="setImgWidth">
+                    <argument name="width" xsi:type="string">230</argument>
+                </action>
+                <action method="setImgHeight">
+                    <argument name="width" xsi:type="string">50</argument>
+                </action>
+            </block>
+            <referenceBlock name="social-forgot-password-captcha" remove="true"/>
+        </referenceContainer>
+        <referenceContainer name="page.wrapper">
+            <block class="Mageplaza\SocialLogin\Block\Popup" name="social-quick-login" as="quick.login" template="Mageplaza_SocialLoginPro::quick_login/quick_login.phtml">
+                <block class="Mageplaza\SocialLogin\Block\Popup" name="social-quick-login-popup-email" before="-" as="quick.login.email" template="Mageplaza_SocialLogin::popup/form/email.phtml"/>
+                <block class="Mageplaza\SocialLogin\Block\Form\Login" name="social-quick-login-authentication" as="quick.login.authentication" template="Mageplaza_SocialLoginPro::quick_login/authentication.phtml"/>
+                <block class="Mageplaza\SocialLogin\Block\Popup\Social" name="social-quick-login-authentication-social" as="quick.login.authentication.social" template="Mageplaza_SocialLoginPro::quick_login/social_buttons.phtml"/>
+                <block class="Mageplaza\SocialLogin\Block\Form\Register" name="social-quick-login-popup-create" as="quick.login.create" template="Mageplaza_SocialLogin::popup/form/create.phtml"/>
+                <block class="Magento\Framework\View\Element\Template" name="social-quick-login-popup-forgot" as="quick.login.forgot" template="Mageplaza_SocialLogin::popup/form/forgot.phtml"/>
+            </block>
+            <block class="Mageplaza\SocialLoginPro\Block\OneTap" name="social-one-tap" as="one.tap.login" template="Mageplaza_SocialLoginPro::quick_login/one_tap.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

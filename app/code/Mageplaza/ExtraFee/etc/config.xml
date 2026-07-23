@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mp_extra_fee>
+            <module>
+                <user_guide>extra-fee</user_guide>
+            </module>
+            <general>
+                <enabled>1</enabled>
+                <enabled_order_grid>1</enabled_order_grid>
+                <display_on_product_page>1</display_on_product_page>
+                <display_product_page_title>Extra Fee Information</display_product_page_title>
+                <display_product_page_position>1</display_product_page_position>
+                <available_days>monday,tuesday,wednesday,thursday,friday,saturday,sunday</available_days>
+            </general>
+        </mp_extra_fee>
+    </default>
+</config>

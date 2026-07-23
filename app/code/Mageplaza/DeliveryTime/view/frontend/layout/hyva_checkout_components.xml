@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_DeliveryTime
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="hyva_mp_add_js_css" />
+    <body>
+        <referenceBlock name="mp_add_js_css">
+            <action method="setFiles">
+                <argument name="files" xsi:type="array">
+                    <item name="flatpickr_css" xsi:type="string">Mageplaza_DeliveryTime::css/flatpickr.min.css</item>
+                    <item name="flatpickr_js" xsi:type="string">Mageplaza_DeliveryTime::js/checkout/flatpickr.min.js</item>
+                </argument>
+            </action>
+        </referenceBlock>
+        <referenceContainer name="checkout.shipping.section">
+            <block after="checkout.shipping.methods" name="mp.checkout.delivery.information" template="Mageplaza_DeliveryTime::hyva/checkout/delivery-information.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        \Mageplaza\DeliveryTime\Magewire\Checkout\DeliveryInformation
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>
+

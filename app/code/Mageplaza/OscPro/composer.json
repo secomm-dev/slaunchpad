@@ -1,0 +1,27 @@
+{
+  "name": "mageplaza/module-one-step-checkout-pro",
+  "description": "Magento 2 One Step Checkout Pro",
+  "require": {
+	  "mageplaza/magento-2-one-step-checkout-extension": "^4.3.12",
+	  "mageplaza/module-abandoned-cart-email":"^4.6.5"
+  },
+  "type": "magento2-module",
+  "version": "4.3.12",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Mageplaza",
+      "email": "support@mageplaza.com",
+      "homepage": "https://www.mageplaza.com",
+      "role": "Technical Support"
+    }
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Mageplaza\\OscPro\\": ""
+    }
+  }
+}

@@ -1,0 +1,107 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<form id="mp-extra-fee" style="margin-bottom: 20px">
+    <fieldset class="fieldset rate">
+        <dl class="fieldset items methods" data-bind="foreach: ruleConfig">
+            <dt class="item-title field" data-bind="css: is_required == '1' ? 'required' :''" style="margin: unset">
+                <div><label class="label"><span data-bind="text: $parent.getTitle($data)"></span></label></div>
+                <div class="mp-description" data-bind="style: {margin: '10px 0'}">
+                    <label class="label" data-bind="style: {fontWeight: '400'}">
+                        <span data-bind="text: $parent.getDescription($data)"></span>
+                    </label>
+                </div>
+            </dt>
+            <!-- ko if: ($data.display_type !== '3') -->
+
+            <dd class="item-options"
+                data-bind="foreach: { data: $parent.getOptions($data) },afterRender: $parent.afterRenderOptions,css: is_required == '1' ? 'mp-extra-fee-required' :''">
+
+                <div class="rule">
+                    <!-- ko if: ($parents[0].display_type == '1') -->
+                    <input type="radio"
+                           class="radio"
+                           data-bind="
+                    click: function(data,event){$parents[1].selectOption(data,event)},
+                    attr: {
+                        name: 'rule[' + rule_id + ']',
+                        value: value,
+                        id: 's_rule_' + rule_id + '_' + value,
+                        rule_id: rule_id,
+                        }
+                    ">
+                    <label class="label" data-bind="attr: {for: 's_rule_' + rule_id + '_' + value}">
+                        <!-- ko text: title --><!-- /ko -->
+                    </label>
+                    <!-- /ko -->
+                    <!-- ko if: ($parents[0].display_type == '2') -->
+                    <input type="checkbox"
+                           class="checkbox"
+                           data-bind="
+                    click: function(data,event){$parents[1].selectOption(data,event)},
+                    attr: {
+                        name: 'rule[' + rule_id + '][' + value + ']',
+                        value: value,
+                        id: 's_rule_' + rule_id + '_' + value,
+                        rule_id: rule_id,
+                        required : $parents[0].is_required ? 'required' : false
+                        }
+                    ">
+                    <label class="label" data-bind="attr: {for: 's_rule_' + rule_id + '_' + value}">
+                        <!-- ko text: title --><!-- /ko -->
+                    </label>
+                    <!-- /ko -->
+                </div>
+            </dd>
+            <!-- /ko -->
+            <!-- ko if: ($data.display_type === '3') -->
+            <select class="item-options"
+                    data-bind="
+                        attr: {
+                            id: 'select_rule_' + rule_id,
+                            rule_id: rule_id,
+                            name: 'rule[' + rule_id + ']',
+                        },
+                        event: {change: $parent.changeOption } ,
+                        foreach: { data: $parent.getOptions($data)}">
+                <option data-bind="
+                            value: value,afterRender: $parents[1].afterRenderOptions
+                "><!-- ko text: title --><!-- /ko --></option>
+            </select>
+            <!-- /ko -->
+            <!-- ko if: $parent.isAllowNote($data) -->
+            <label data-bind="text: $parent.getNoteTitle($data), attr: {for: 'mp-extrafee-note-' + rule_id}"></label>
+            <textarea cols="30" rows="2"
+                      data-bind=" attr: {
+                        id: 'mp-extrafee-note-' + rule_id,
+                        name: 'mp-extrafee-note-' + rule_id
+                      },
+                      event: {change: $parent.changeOption},
+                      afterRender: $parent.getNoteMessage('mp-extrafee-note-' + rule_id)"></textarea>
+            <!-- /ko -->
+        </dl>
+    </fieldset>
+    <!-- ko if: errorValidationMessage().length > 0 -->
+    <div class="message notice">
+        <span><!-- ko i18n: errorValidationMessage()--><!-- /ko --></span>
+    </div>
+    <!-- /ko -->
+</form>

@@ -1,0 +1,42 @@
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<div class="shipping-address-item" css="'selected-item' : isSelected() , 'not-selected-item':!isSelected()">
+    <text args="address().prefix"></text> <text args="address().firstname"></text> <text args="address().middlename"></text>
+    <text args="address().lastname"></text> <text args="address().suffix"></text><br>
+    <if args="address().company">
+        <text args="address().company"></text><br>
+    </if>
+    <text args="_.values(_.compact(address().street)).join(', ')"></text><br>
+    <each args="data: address().customAttributes, as: 'element'">
+        <if args="element.attribute_code === 'sub_city'">
+            <text args="$parent.getSubCityName($parent, element.value)"></text>,
+        </if>
+    </each>
+    <text args="getCityName(address(),address().city)"></text>, <span text="address().region"></span> <text args="address().postcode"></text><br>
+    <text args="getCountryName(address().countryId)"></text><br>
+    <a if="address().telephone" attr="'href': 'tel:' + address().telephone" text="address().telephone"></a><br>
+    <if args="address().vatId">
+        VAT: <text args="address().vatId"></text><br>
+    </if>
+    <each args="data: address().customAttributes, as: 'element'">
+        <if args="!['city', 'sub_city', 'custom_city', 'custom_sub_city'].includes(element.attribute_code)">
+            <text args="$parent.getCustomAttributeLabel(element)"></text>
+            <br>
+        </if>
+    </each>
+
+    <button visible="address().isEditable()" type="button"
+            class="action edit-address-link"
+            click="editAddress">
+        <span translate="'Edit'"></span>
+    </button>
+    <!-- ko if: (!isSelected()) -->
+    <button type="button" click="selectAddress" class="action action-select-shipping-item">
+        <span translate="'Ship Here'"></span>
+    </button>
+    <!-- /ko -->
+</div>

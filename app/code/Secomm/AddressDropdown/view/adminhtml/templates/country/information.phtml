@@ -1,0 +1,70 @@
+<?php
+/**
+ * Template render information
+ */
+/** @var \Secomm\AddressDropdown\Block\Adminhtml\Country\Information $block */
+if ($country = $block->getCountry()) :
+    ?>
+    <main id="anchor-content" class="page-content">
+        <div id="page:main-container" class="page-columns">
+            <div id="container" class="main-col">
+                <div class="admin__old">
+                    <div class="entry-edit order-view">
+                        <div style="" class="ui-tabs-panel ui-widget-content ui-corner-bottom"
+                             role="tabpanel"
+                             aria-hidden="false">
+                            <section class="admin__page-section order-view-account-information">
+                                <div class="admin__page-section-title">
+                                    <span class="title"><?= $block->getCountryName() ?></span>
+                                </div>
+                                <div class="admin__page-section-content">
+                                    <div class="admin__page-section-item order-information">
+                                        <div class="admin__page-section-item-title">
+                                            <span class="title"><?= __("Information") ?></span>
+                                        </div>
+                                        <div class="admin__page-section-item-content">
+                                            <table class="admin__table-secondary order-information-table">
+                                                <tbody>
+                                                <tr>
+                                                    <th><?= __("Default Name") ?></th>
+                                                    <td><?= $block->getCountryName() ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <th><?= __("Iso2 Code") ?></th>
+                                                    <td><?= $country->getData('iso2_code') ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <th><?= __("Iso3 Code") ?></th>
+                                                    <td><?= $country->getData('iso3_code') ?></td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="admin__page-section-item order-account-information">
+                                        <div class="admin__page-section-item-title">
+                                            <span class="title"><?= __("Name") ?></span>
+                                            <div class="actions">
+                                            </div>
+                                        </div>
+                                        <div class="admin__page-section-item-content">
+                                            <table class="admin__table-secondary order-account-information-table">
+                                                <tbody>
+                                                <tr>
+                                                    <th><?= __("en_US") ?></th>
+                                                    <td><?= $block->getCountryName() ?></td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+<?php
+endif;

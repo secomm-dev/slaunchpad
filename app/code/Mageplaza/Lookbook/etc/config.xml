@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mplookbook>
+            <module>
+                <user_guide>magento/lookbook</user_guide>
+            </module>
+            <general>
+                <enabled>1</enabled>
+                <marker_width>40</marker_width>
+                <marker_height>40</marker_height>
+            </general>
+            <mplookbook_design>
+                <infinite>1</infinite>
+                <arrows>0</arrows>
+                <dots>0</dots>
+                <lazyLoad>0</lazyLoad>
+                <autoplay>1</autoplay>
+                <autoplaySpeed>5000</autoplaySpeed>
+                <pauseOnHover>1</pauseOnHover>
+            </mplookbook_design>
+        </mplookbook>
+    </default>
+</config>

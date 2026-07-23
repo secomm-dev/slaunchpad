@@ -1,0 +1,87 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\AbandonedCart\Block\Customer\AbandonedCartPhone;
+
+/** @var AbandonedCartPhone $block */
+
+$isAbandonedCartNumber = $block->isEnableAbandonedCartNumber();
+$abandonedCartNumber   = $block->getCustomerAbandonedCartPhone();
+?>
+
+<?php if ($isAbandonedCartNumber): ?>
+    <legend class="legend customer-attributes">
+        <span><?= $block->escapeHtml(__('Additional Information')) ?></span>
+    </legend>
+    <div class="field phone_number required">
+        <label class="label" for="phone_number">
+            <span><?= $block->escapeHtml(__('Abandonment Cart Phone Number')) ?></span>
+        </label>
+        <div class="control">
+            <input type="text" name="mp_abandoned_cart_phone" id="mp_abandoned_cart_phone"
+                   data-validate="{required: true}"
+                   title="<?= $block->escapeHtmlAttr(__('Abandonment Cart Phone Number')) ?>" class="input-text"
+                   mp-validate-phone-number="true" value="<?= /* @noEscape */ $abandonedCartNumber ?>">
+        </div>
+    </div>
+    <script>
+        require([
+            'jquery',
+            'Mageplaza_AbandonedCart/js/intlTelInput-jquery.min'
+        ], function ($) {
+            var phoneNumber     = $("#mp_abandoned_cart_phone"),
+                createCusForm   = $('.form-create-account'),
+                editCusForm     = $('.form-edit-account'),
+                initCountryCode = "";
+
+            $.ajax({
+                url: 'https://get.geojs.io/v1/ip/geo.js',
+                success: function (data) {
+                    initCountryCode = data.match(/"country_code":"([^"]+)"/)[1];
+                    initField();
+                }
+            });
+
+            function initField () {
+                phoneNumber.intlTelInput({
+                    onlyCountries: [],
+                    initialCountry: initCountryCode
+                });
+            }
+
+            createCusForm.submit(function () {
+                var telephone = phoneNumber.intlTelInput("getNumber");
+
+                document.getElementById('mp_abandoned_cart_phone').value = telephone;
+
+                return createCusForm.valid();
+            });
+
+            editCusForm.submit(function () {
+                var telephone = phoneNumber.intlTelInput("getNumber");
+
+                document.getElementById('mp_abandoned_cart_phone').value = telephone;
+
+                return editCusForm.valid();
+            });
+        });
+    </script>
+<?php endif; ?>

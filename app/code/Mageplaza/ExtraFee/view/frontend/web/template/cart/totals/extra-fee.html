@@ -1,0 +1,67 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+
+<!-- ko foreach: getExtraFee() -->
+<!-- ko if: $parent.isBothPricesDisplayed() -->
+<tr class="totals extra-fee excl">
+    <th class="mark" scope="row">
+        <span class="label" data-bind="text: $parent.getTitle($data) + '(Excl. Tax)'">
+        </span>
+    </th>
+    <td class="amount">
+        <span class="price"
+              data-bind="text: $parent.getValue(value)"></span>
+    </td>
+</tr>
+<tr class="totals extra-fee incl">
+    <th class="mark" scope="row">
+        <span class="label" data-bind="text: $parent.getTitle($data) + '(Incl. Tax)'"></span>
+    </th>
+    <td class="amount">
+        <span class="price"
+              data-bind="text: $parent.getValue(extension_attributes.value_incl_tax)"></span>
+    </td>
+</tr>
+<!-- /ko -->
+<!-- ko if: $parent.isIncludingDisplayed() -->
+<tr class="totals extra-fee incl">
+    <th class="mark" scope="row">
+        <span class="label" data-bind="i18n: $parent.getTitle($data)"></span>
+    </th>
+    <td class="amount">
+        <span class="price"
+              data-bind="text: $parent.getValue(extension_attributes.value_incl_tax), attr: {'data-th': title}"></span>
+    </td>
+</tr>
+<!-- /ko -->
+<!-- ko if: $parent.isExcludingDisplayed() -->
+<tr class="totals extra-fee excl">
+    <th class="mark" scope="row">
+        <span class="label" data-bind="i18n: $parent.getTitle($data)"></span>
+    </th>
+    <td class="amount">
+        <span class="price"
+              data-bind="text: $parent.getValue(value), attr: {'data-th': title}"></span>
+    </td>
+</tr>
+<!-- /ko -->
+<!-- /ko -->

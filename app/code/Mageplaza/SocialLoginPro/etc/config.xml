@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <sociallogin>
+            <module>
+                <type>0</type>
+                <user_guide>social-login-pro</user_guide>
+                <change_log>social-login</change_log>
+            </module>
+            <general>
+                <captcha>
+                    <enabled>0</enabled>
+                    <recaptcha_forms>user_create</recaptcha_forms>
+                </captcha>
+                <redirect_url>5</redirect_url>
+                <cms_page>no-route</cms_page>
+                <social_btn_position>right</social_btn_position>
+            </general>
+            <disqus>
+                <sort_order>130</sort_order>
+            </disqus>
+            <mailru>
+                <sort_order>140</sort_order>
+            </mailru>
+            <odnoklassniki>
+                <sort_order>150</sort_order>
+            </odnoklassniki>
+            <steam>
+                <sort_order>160</sort_order>
+            </steam>
+            <pinterest>
+                <sort_order>170</sort_order>
+            </pinterest>
+        </sociallogin>
+    </default>
+</config>

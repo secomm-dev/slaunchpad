@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">mplookbook_slider_form.mplookbook_slider_form_data_source</item>
+            <item name="namespace" xsi:type="string">mplookbook_slider_form</item>
+        </item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+        <item name="label" xsi:type="string" translate="true">Slider Information</item>
+        <item name="reverseMetadataMerge" xsi:type="boolean">true</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="save" class="Mageplaza\Lookbook\Block\Adminhtml\Slider\Edit\SaveButton"/>
+            <button name="save_and_continue"
+                    class="Mageplaza\Lookbook\Block\Adminhtml\Slider\Edit\SaveAndContinueButton"/>
+            <button name="reset" class="Magento\Customer\Block\Adminhtml\Edit\ResetButton"/>
+            <button name="delete" class="Mageplaza\Lookbook\Block\Adminhtml\Slider\Edit\DeleteButton"/>
+            <button name="back" class="Magento\Customer\Block\Adminhtml\Edit\BackButton"/>
+        </buttons>
+        <namespace>mplookbook_slider_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>mplookbook_slider_form.mplookbook_slider_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="mplookbook_slider_form_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+        <settings>
+            <submitUrl path="mplookbook/slider/save"/>
+        </settings>
+        <dataProvider class="Mageplaza\Lookbook\Ui\DataProvider\Slider\Form\DataProvider"
+                      name="mplookbook_slider_form_data_source">
+            <settings>
+                <requestFieldName>slider_id</requestFieldName>
+                <primaryFieldName>slider_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <fieldset name="general">
+        <settings>
+            <collapsible>false</collapsible>
+            <label translate="true">General Information</label>
+        </settings>
+        <field name="slider_id" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <visible>false</visible>
+                <dataScope>slider_id</dataScope>
+            </settings>
+        </field>
+        <field name="name" sortOrder="10" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                </item>
+            </argument>
+            <settings>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+                <dataType>text</dataType>
+                <label translate="true">Name</label>
+                <dataScope>name</dataScope>
+            </settings>
+        </field>
+        <field name="status" sortOrder="20" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                    <item name="default" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Status</label>
+                <dataScope>status</dataScope>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Config\Model\Config\Source\Enabledisable"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="design" sortOrder="30" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Design</label>
+                <dataScope>design</dataScope>
+                <switcherConfig>
+                    <rules>
+                        <rule name="0">
+                            <value>0</value>
+                            <actions>
+                                <action name="0">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.infinite</target>
+                                    <callback>hide</callback>
+                                </action>
+                                <action name="1">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.arrows</target>
+                                    <callback>hide</callback>
+                                </action>
+                                <action name="2">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.dots</target>
+                                    <callback>hide</callback>
+                                </action>
+                                <action name="3">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.lazyLoad</target>
+                                    <callback>hide</callback>
+                                </action>
+                                <action name="4">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.autoplay</target>
+                                    <callback>hide</callback>
+                                </action>
+                                <action name="5">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.pauseOnHover</target>
+                                    <callback>hide</callback>
+                                </action>
+                                <action name="6">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.autoplaySpeed</target>
+                                    <callback>hide</callback>
+                                </action>
+                            </actions>
+                        </rule>
+                        <rule name="1">
+                            <value>1</value>
+                            <actions>
+                                <action name="0">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.infinite</target>
+                                    <callback>show</callback>
+                                </action>
+                                <action name="1">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.arrows</target>
+                                    <callback>show</callback>
+                                </action>
+                                <action name="2">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.dots</target>
+                                    <callback>show</callback>
+                                </action>
+                                <action name="3">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.lazyLoad</target>
+                                    <callback>show</callback>
+                                </action>
+                                <action name="4">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.autoplay</target>
+                                    <callback>show</callback>
+                                </action>
+                            </actions>
+                        </rule>
+                    </rules>
+                    <enabled>true</enabled>
+                </switcherConfig>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="infinite" sortOrder="40" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Infinity Loop</label>
+                <dataScope>infinite</dataScope>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="arrows" sortOrder="50" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Show Next/Prev Buttons</label>
+                <dataScope>arrows</dataScope>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="dots" sortOrder="60" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Show Dots Navigation</label>
+                <dataScope>dots</dataScope>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="lazyLoad" sortOrder="70" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Lazy Loading Images</label>
+                <dataScope>lazyLoad</dataScope>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Mageplaza\Lookbook\Model\Config\Source\LazyLoad"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="autoplay" sortOrder="80" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Autoplay</label>
+                <dataScope>autoplay</dataScope>
+                <switcherConfig>
+                    <rules>
+                        <rule name="0">
+                            <value>0</value>
+                            <actions>
+                                <action name="0">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.pauseOnHover</target>
+                                    <callback>hide</callback>
+                                </action>
+                                <action name="1">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.autoplaySpeed</target>
+                                    <callback>hide</callback>
+                                </action>
+                            </actions>
+                        </rule>
+                        <rule name="1">
+                            <value>1</value>
+                            <actions>
+                                <action name="0">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.pauseOnHover</target>
+                                    <callback>show</callback>
+                                </action>
+                                <action name="1">
+                                    <target>mplookbook_slider_form.mplookbook_slider_form.general.autoplaySpeed</target>
+                                    <callback>show</callback>
+                                </action>
+                            </actions>
+                        </rule>
+                    </rules>
+                    <enabled>true</enabled>
+                </switcherConfig>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="pauseOnHover" sortOrder="90" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Pause On Mouse Hover</label>
+                <dataScope>pauseOnHover</dataScope>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="autoplaySpeed" sortOrder="100" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                    <item name="default" xsi:type="number">5000</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>number</dataType>
+                <label translate="true">Autoplay Speed</label>
+                <dataScope>autoplaySpeed</dataScope>
+                <validation>
+                    <rule name="validate-greater-than-zero" xsi:type="boolean">true</rule>
+                    <rule name="validate-digits" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="custom_css" formElement="textarea">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">slider</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Custom Css</label>
+                <dataScope>custom_css</dataScope>
+            </settings>
+        </field>
+    </fieldset>
+    <fieldset name="lookbook">
+        <settings>
+            <label translate="true">Manage Lookbook</label>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+            <additionalClasses>
+                <class name="admin__fieldset-section">true</class>
+            </additionalClasses>
+            <dataScope>lookbook</dataScope>
+        </settings>
+        <container name="assign_lookbook_container" template="ui/form/components/complex">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="formElement" xsi:type="string">container</item>
+                    <item name="breakLine" xsi:type="boolean">false</item>
+                    <item name="dataScope" xsi:type="string"/>
+                    <item name="label" xsi:type="string"/>
+                </item>
+            </argument>
+            <button name="assign_lookbook_button" component="Magento_Ui/js/form/components/button">
+                <settings>
+                    <title translate="true">Add Lookbooks</title>
+                    <dataScope/>
+                    <imports>
+                        <link name="parentId">${ $.provider}:data.slider_id</link>
+                    </imports>
+                </settings>
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="formElement" xsi:type="string">container</item>
+                        <item name="additionalForGroup" xsi:type="boolean">true</item>
+                        <item name="additionalClasses" xsi:type="string">admin__field-medium</item>
+                        <item name="actions" xsi:type="array">
+                            <item name="0" xsi:type="array">
+                                <item name="targetName" xsi:type="string">
+                                    mplookbook_slider_form.mplookbook_slider_form.lookbook.lookbook_update_modal
+                                </item>
+                                <item name="actionName" xsi:type="string">toggleModal</item>
+                            </item>
+                            <item name="1" xsi:type="array">
+                                <item name="targetName" xsi:type="string">
+                                    mplookbook_slider_form.mplookbook_slider_form.lookbook.lookbook_update_modal.assign_lookbook_grid
+                                </item>
+                                <item name="actionName" xsi:type="string">render</item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </button>
+        </container>
+        <dynamicRows name="assigned_lookbooks" template="ui/dynamic-rows/templates/grid"
+                     component="Magento_Ui/js/dynamic-rows/dynamic-rows-grid">
+            <argument name="data" xsi:type="array">
+                <item name="js_config" xsi:type="array">
+                    <item name="columnsHeaderAfterRender" xsi:type="boolean">true</item>
+                    <item name="deleteButtonLabel" xsi:type="string">Remove</item>
+                    <item name="dataProvider" xsi:type="string">data.lookbook.assign_lookbook_grid</item>
+                    <item name="map" xsi:type="array">
+                        <item name="lookbook_id" xsi:type="string">lookbook_id</item>
+                        <item name="name" xsi:type="string">name</item>
+                        <item name="image" xsi:type="string">image_src</item>
+                        <item name="status" xsi:type="string">status_text</item>
+                    </item>
+                    <item name="identificationDRProperty" xsi:type="string">lookbook_id</item>
+                </item>
+            </argument>
+            <settings>
+                <defaultRecord>false</defaultRecord>
+                <addButton>false</addButton>
+                <deleteProperty>true</deleteProperty>
+                <recordTemplate>record</recordTemplate>
+                <identificationProperty>lookbook_id</identificationProperty>
+                <dataScope>data.lookbook</dataScope>
+                <links>
+                    <link name="insertData">${ $.provider }:${ $.dataProvider }</link>
+                </links>
+                <dndConfig>
+                    <param name="enabled" xsi:type="boolean">true</param>
+                    <param name="template" xsi:type="string">ui/dynamic-rows/cells/dnd</param>
+                </dndConfig>
+                <columnsHeader>false</columnsHeader>
+                <additionalClasses>
+                    <class name="admin__field-wide">true</class>
+                </additionalClasses>
+            </settings>
+            <container name="record" component="Magento_Ui/js/dynamic-rows/record">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="isTemplate" xsi:type="boolean">true</item>
+                        <item name="is_collection" xsi:type="boolean">true</item>
+                        <item name="dataScope" xsi:type="string"/>
+                        <item name="positionProvider" xsi:type="string">position</item>
+                    </item>
+                </argument>
+                <field name="lookbook_id" formElement="input" component="Magento_Ui/js/form/element/text"
+                       sortOrder="10">
+                    <argument name="data" xsi:type="array">
+                        <item name="config" xsi:type="array">
+                            <item name="fit" xsi:type="boolean">false</item>
+                        </item>
+                    </argument>
+                    <settings>
+                        <elementTmpl>ui/dynamic-rows/cells/text</elementTmpl>
+                        <dataType>text</dataType>
+                        <dataScope>lookbook_id</dataScope>
+                        <label translate="true">ID</label>
+                    </settings>
+                </field>
+                <field name="image" formElement="input" sortOrder="20">
+                    <argument name="data" xsi:type="array">
+                        <item name="config" xsi:type="array">
+                            <item name="fit" xsi:type="boolean">true</item>
+                        </item>
+                    </argument>
+                    <settings>
+                        <elementTmpl>ui/dynamic-rows/cells/thumbnail</elementTmpl>
+                        <dataType>text</dataType>
+                        <dataScope>image</dataScope>
+                        <label translate="true">Image</label>
+                    </settings>
+                </field>
+                <field name="name" formElement="input" component="Magento_Ui/js/form/element/text" sortOrder="30">
+                    <argument name="data" xsi:type="array">
+                        <item name="config" xsi:type="array">
+                            <item name="fit" xsi:type="boolean">false</item>
+                        </item>
+                    </argument>
+                    <settings>
+                        <elementTmpl>ui/dynamic-rows/cells/text</elementTmpl>
+                        <dataType>text</dataType>
+                        <dataScope>name</dataScope>
+                        <label translate="true">Name</label>
+                    </settings>
+                </field>
+                <field name="status" formElement="input" component="Magento_Ui/js/form/element/text" sortOrder="40">
+                    <argument name="data" xsi:type="array">
+                        <item name="config" xsi:type="array">
+                            <item name="fit" xsi:type="boolean">true</item>
+                        </item>
+                    </argument>
+                    <settings>
+                        <elementTmpl>ui/dynamic-rows/cells/text</elementTmpl>
+                        <dataType>text</dataType>
+                        <dataScope>status</dataScope>
+                        <label translate="true">Status</label>
+                    </settings>
+                </field>
+                <field name="position" formElement="input" sortOrder="50">
+                    <settings>
+                        <elementTmpl>ui/form/element/input</elementTmpl>
+                        <dataType>number</dataType>
+                        <dataScope>position</dataScope>
+                        <label translate="true">Position</label>
+                        <visible>false</visible>
+                    </settings>
+                </field>
+                <actionDelete name="actionDelete">
+                    <argument name="data" xsi:type="array">
+                        <item name="config" xsi:type="array">
+                            <item name="fit" xsi:type="boolean">true</item>
+                        </item>
+                    </argument>
+                    <settings>
+                        <label translate="true">Remove</label>
+                        <dataType>text</dataType>
+                        <componentType>actionDelete</componentType>
+                        <visible>true</visible>
+                        <additionalClasses>
+                            <class name="data-grid-actions-cell">true</class>
+                        </additionalClasses>
+                    </settings>
+                </actionDelete>
+            </container>
+        </dynamicRows>
+        <modal name="lookbook_update_modal">
+            <settings>
+                <options>
+                    <option name="title" xsi:type="string" translate="true">Add/Update Lookbook</option>
+                    <option name="buttons" xsi:type="array">
+                        <item name="0" xsi:type="array">
+                            <item name="text" xsi:type="string">Cancel</item>
+                            <item name="class" xsi:type="string">action-secondary</item>
+                            <item name="actions" xsi:type="array">
+                                <item name="0" xsi:type="array">
+                                    <item name="targetName" xsi:type="string">${ $.name }</item>
+                                    <item name="actionName" xsi:type="string">actionCancel</item>
+                                </item>
+                            </item>
+                        </item>
+                        <item name="1" xsi:type="array">
+                            <item name="text" xsi:type="string" translate="true">Add Selected Lookbooks</item>
+                            <item name="class" xsi:type="string">action-primary</item>
+                            <item name="actions" xsi:type="array">
+                                <item name="0" xsi:type="array">
+                                    <item name="targetName" xsi:type="string">index = assign_lookbook_grid</item>
+                                    <item name="actionName" xsi:type="string">save</item>
+                                </item>
+                                <item name="1" xsi:type="array">
+                                    <item name="targetName" xsi:type="string">${ $.name }</item>
+                                    <item name="actionName" xsi:type="string">actionDone</item>
+                                </item>
+                            </item>
+                        </item>
+                    </option>
+                </options>
+            </settings>
+            <insertListing name="assign_lookbook_grid">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="cssclass" xsi:type="string">noclass</item>
+                    </item>
+                </argument>
+                <settings>
+                    <autoRender>false</autoRender>
+                    <dataScope>assign_lookbook_grid</dataScope>
+                    <ns>mplookbook_lookbook_grid</ns>
+                    <externalProvider>mplookbook_lookbook_grid.mplookbook_lookbook_grid_data_source</externalProvider>
+                    <selectionsProvider>mplookbook_lookbook_grid.mplookbook_lookbook_grid.mplookbook_lookbook_columns.ids</selectionsProvider>
+                    <realTimeLink>true</realTimeLink>
+                    <renderUrl path="mui/index/render"/>
+                    <behaviourType>simple</behaviourType>
+                    <dataLinks>
+                        <imports>false</imports>
+                        <exports>true</exports>
+                    </dataLinks>
+                    <externalFilterMode>true</externalFilterMode>
+                </settings>
+            </insertListing>
+        </modal>
+    </fieldset>
+</form>

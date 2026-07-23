@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="address" class="Magento\Customer\Ui\Component\Form\AddressFieldset">
+        <container name="customer_default_billing_address_wrapper" template="Magento_Customer/default-address-wrapper">
+            <component name="customer_default_billing_address_content" template="Secomm_AddressDropdown/default-address">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="defaultAddressClass" xsi:type="string">billing-address</item>
+                        <item name="defaultAddressId" xsi:type="string">billing-address-caption</item>
+                        <item name="title" translate="true" xsi:type="string">Default Billing Address</item>
+                        <item name="contentClass" xsi:type="string">customer-default-billing-address-content</item>
+                        <item name="notExistsMessage" xsi:type="string" translate="true">The customer does not have default billing address</item>
+                        <item name="tracks" xsi:type="array">
+                            <item name="address" xsi:type="boolean">true</item>
+                        </item>
+                    </item>
+                </argument>
+                <settings>
+                    <imports>
+                        <link name="address">${ $.provider}:data.default_billing_address</link>
+                    </imports>
+                </settings>
+            </component>
+        </container>
+        <container name="customer_default_shipping_address_wrapper" template="Magento_Customer/default-address-wrapper">
+            <component name="customer_default_shipping_address_content" template="Secomm_AddressDropdown/default-address">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="defaultAddressClass" xsi:type="string">shipping-address</item>
+                        <item name="defaultAddressId" xsi:type="string">shipping-address-caption</item>
+                        <item name="title" xsi:type="string" translate="true">Default Shipping Address</item>
+                        <item name="contentClass" xsi:type="string">customer-default-shipping-address-content</item>
+                        <item name="notExistsMessage" xsi:type="string" translate="true">The customer does not have default shipping address</item>
+                        <item name="tracks" xsi:type="array">
+                            <item name="address" xsi:type="boolean">true</item>
+                        </item>
+                    </item>
+                </argument>
+                <settings>
+                    <imports>
+                        <link name="address">${ $.provider}:data.default_shipping_address</link>
+                    </imports>
+                </settings>
+            </component>
+        </container>
+    </fieldset>
+</form>

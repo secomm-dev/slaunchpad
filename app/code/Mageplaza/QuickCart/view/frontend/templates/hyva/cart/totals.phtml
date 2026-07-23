@@ -1,0 +1,39 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_QuickCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+use Mageplaza\QuickCart\Helper\Data;
+
+/** @var Data $helperData */
+$helperData = $this->helper(Data::class);
+?>
+<div class="mpquickcart-totals p-3">
+    <table class="data table table-totals w-full">
+        <tbody>
+        <template x-for="total in getTotals()" :key="total.code">
+            <tr class="totals" x-show="!isMultipleCoupon(total.code)">
+                <th class="mark text-left py-2" scope="row" x-text="total.title"></th>
+                <td class="amount text-right py-2">
+                    <p class="price" x-html="total.value" :data-th="total.title"></p>
+                </td>
+            </tr>
+        </template>
+        </tbody>
+    </table>
+</div>

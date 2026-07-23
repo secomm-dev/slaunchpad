@@ -1,0 +1,63 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ThankYouPage
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\ThankYouPage\Block\Subscribe $block */
+/** @var \Hyva\Theme\Model\ViewModelRegistry $viewModels */
+/** @var HeroiconsSolid $heroIcons */
+
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+
+$heroIcons = $viewModels->require(HeroiconsSolid::class);
+?>
+
+<div class="mp-container style3">
+    <div class="mp-content">
+        <div class="title"><?= /** @noEscape */ $block->getPageTitle() ?></div>
+        <p class="flex justify-center"><?= $heroIcons->checkHtml('check-icon', 96, 96, ['aria-hidden' => true]) ?></p>
+        <div class="subtitle"><?= /** @noEscape */ $block->getPageSubTitle() ?></div>
+        <div class="description"><?= /** @noEscape */ $block->getPageDescription() ?></div>
+        <div class="additional" style="text-align: center;">
+            <?php if ($block->checkEnableCoupon()): ?>
+                <div class="order-coupons mp-gray">
+                    <p><?= /** @noEscape */ $block->getCouponHtml(); ?></p>
+                </div>
+            <?php endif; ?>
+            <?php if ($block->checkEnableSocialShare()): ?>
+                <div class="sharethis-button">
+                    <div class="sharethis-inline-share-buttons"></div>
+                    <script type="text/javascript">
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var script = document.createElement('script');
+                            script.src = "https://platform-api.sharethis.com/js/sharethis.js#property=<?= /* @noEscape */ $block->getSharethisKey() ?>&product=inline-share-buttons&source=platform";
+                            script.async = true;
+                            document.body.appendChild(script);
+                        });
+                    </script>
+                </div>
+            <?php endif; ?>
+        </div>
+        <div class="flex justify-center">
+            <a class="action primary continue mp-xs-3 btn font-semibold" href="<?= /* @noEscape */ $block->getContinueUrl() ?>">
+                <span><?= /** @noEscape */ __('Continue to Homepage') ?></span>
+            </a>
+        </div>
+    </div>
+</div>

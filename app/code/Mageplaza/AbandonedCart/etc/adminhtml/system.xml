@@ -1,0 +1,269 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="abandonedcart" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Abandoned Cart Email</label>
+            <tab>mageplaza</tab>
+            <resource>Mageplaza_AbandonedCart::configuration</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Configuration</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select Yes to enable this module.</comment>
+                </field>
+                <field id="send_subscribed_only" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Send Emails to Subscribers Only</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="enable_unsubscribe_link" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Add Unsubscribe Link in Email</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="email" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Email</label>
+                    <frontend_model>Mageplaza\AbandonedCart\Block\Adminhtml\Config\Backend\Email</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment>E.g, 1d 4h. This means emails will be sent to customers after the carts have been abandoned for 1 day and 4 hours </comment>
+                </field>
+                <field id="test_email" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Send Test Email To</label>
+                    <validate>validate-email</validate>
+                </field>
+                <field id="send_email_recover" translate="label comment" type="select" sortOrder="71" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Send follow-up Emails</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[If <strong>Yes</strong>, follow-up emails will be sent to the customer if he views the abandoned cart email and clicks the <strong>Your cart here</strong> button. If <strong>No</strong>, no further emails will be sent. The quantity and content of emails will be determined by the admin settings in the <strong>Email</strong> field above]]></comment>
+                </field>
+                <field id="related_product" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Add Related Products in Email</label>
+                    <source_model>Mageplaza\AbandonedCart\Model\System\Config\Source\RelatedProductOptions</source_model>
+                </field>
+                <field id="related_product_title" translate="label comment" type="text" sortOrder="81" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Title</label>
+                    <depends>
+                        <field id="related_product" separator=",">1,2,3</field>
+                    </depends>
+                </field>
+                <field id="related_product_limit" translate="label comment" type="text" sortOrder="82" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Limit the Number of Products</label>
+                    <validate>validate-number validate-zero-or-greater validate-digits</validate>
+                    <depends>
+                        <field id="related_product" separator=",">1,2,3</field>
+                    </depends>
+                </field>
+                <field id="related_product_out_of_stock" translate="label comment" type="select" sortOrder="83" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Exclude Products Out Of Stock and Disable Products in Email</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If Yes, will exclude products out of stock and disable products of Related Product, Cross-sell Product, Up-sell Product from email.</comment>
+                    <depends>
+                        <field id="related_product" separator=",">1,2,3</field>
+                    </depends>
+                </field>
+                <field id="stop_sending_email" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Stop Sending Emails if All Products in Cart Are Out Of Stock</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="reindex" translate="label comment" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <button_label>Reindex</button_label>
+                    <button_url>abandonedcart/indexer/reindex</button_url>
+                    <frontend_model>Mageplaza\AbandonedCart\Block\Adminhtml\System\Config\Button</frontend_model>
+                    <comment><![CDATA[Reindex reports to update real-time data, or any new data from updated version]]></comment>
+                </field>
+            </group>
+            <group id="sms_notification" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>SMS Notification</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Compatible with <a href='https://www.mageplaza.com/magento-2-sms-notification/' target='_blank'>Mageplaza's SMS Notification </a> extension.]]></comment>
+                </field>
+                <field id="enable_abandon_cart_number" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Abandonment Cart Phone Number Field</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[If Yes, the Abandonment Cart Phone Number field will be displayed on the Create an account page to send the SMS reminder to the customer if he abandons the cart.]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="message" translate="label comment" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Message</label>
+                    <comment><![CDATA[You can use the following variables for SMS text : {{customer_name}}, {{customer_email}}, {{items}}, {{store_name}}, {{coupon_code}}, {{to_date}}, {{order_total}}]]></comment>
+                    <validate>validate-no-empty</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="admin_phone_number" translate="label" sortOrder="25" type="text" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label><![CDATA[Admin Phone Number <strong class="colorRed">*</strong>]]></label>
+                    <validate>mp-validate-phone-number validate-no-empty</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="send_after" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Send After</label>
+                    <validate>validate-no-empty integer validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                    <comment>The unit is minute. If blank, the default value will be 30</comment>
+                </field>
+                <field id="sms_provider" translate="label comment" sortOrder="35" type="text" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>SMS Service Provider</label>
+                    <comment><![CDATA[Get account for <a href="https://www.twilio.com/console" target="_blank">Twilio</a>]]></comment>
+                    <frontend_model>Mageplaza\AbandonedCart\Block\Adminhtml\System\Config\Disable</frontend_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="twilio_sid" translate="label" sortOrder="40" type="text" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label><![CDATA[Twilio Account SID <strong class="colorRed">*</strong>]]></label>
+                    <validate>validate-no-empty</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="twilio_token" translate="label" sortOrder="45" type="obscure" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label><![CDATA[Twilio Account Token <strong class="colorRed">*</strong>]]></label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <validate>validate-no-empty</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="recipient_phone_number" translate="label comment" sortOrder="50" type="text" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Recipient Phone Number</label>
+                    <comment>Click the Send Test SMS button below and check SMS on this number</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="test" translate="label" type="button" sortOrder="65" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <frontend_model>Mageplaza\AbandonedCart\Block\Adminhtml\System\Config\TestSMS</frontend_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="analytics" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>UTM Parameter</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="source" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Source (utm_source)</label>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                    <comment>Referrer (e.g: google, newsletter4, billboard)</comment>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="medium" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Medium (utm_medium)</label>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                    <comment>Marketing medium (e.g: cpc, banner, email)</comment>
+                </field>
+                <field id="name" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Campaign (utm_campaign)</label>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                    <comment>Product, slogan, promo code (e.g: spring_sale)</comment>
+                </field>
+                <field id="term" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Term (utm_term)</label>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                    <comment>Identify the paid keywords</comment>
+                </field>
+            </group>
+            <group id="coupon" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Coupon</label>
+                <field id="rule" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Rule</label>
+                    <source_model>Mageplaza\AbandonedCart\Model\Config\Source\CartRules</source_model>
+                    <comment>Please select rule to use this feature. Only auto-generated rules are displayed here</comment>
+                </field>
+                <field id="valid" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Valid</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Hour(s)</comment>
+                    <validate>validate-digits</validate>
+                </field>
+                <field id="length" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Code Length</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Excluding prefix, suffix and separators. If this field is blank, the default value will be 5</comment>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                </field>
+                <field id="format" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Code Format</label>
+                    <source_model>Magento\SalesRule\Model\System\Config\Source\Coupon\Format</source_model>
+                </field>
+                <field id="prefix" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Code Prefix</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="suffix" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Code Suffix</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="dash" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Dash Every X Characters</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If blank, no separation among characters</comment>
+                    <validate>validate-digits</validate>
+                </field>
+            </group>
+            <group id="report" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Reports</label>
+                <field id="time_measure" translate="label comment" type="text" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Define an Abandoned Cart</label>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                    <comment><![CDATA[Time to define an abandoned cart. The unit is minute. <br/>
+                    For example, if you enter 30, carts will be considered abandoned after 30 minutes]]></comment>
+                </field>
+                <field id="date_range" translate="label comment" sortOrder="43" type="select" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Default Date Range</label>
+                    <source_model>Mageplaza\AbandonedCart\Model\System\Config\Source\RealTimeReports</source_model>
+                </field>
+                <field id="cart_board" translate="label comment" type="select" sortOrder="44" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Cart Board Report</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select Yes to enable Cart Board report page and start to collect data</comment>
+                </field>
+                <field id="shopping_behavior_analysis" translate="label comment" type="select" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Shopping Behavior Analysis</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select Yes to enable Shopping Behavior analysis page and start to collect data</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Mageplaza_ExtraFee::extra_fee" title="Extra Fee" module="Mageplaza_ExtraFee" sortOrder="45" resource="Mageplaza_ExtraFee::extra_fee" parent="Magento_Backend::stores"/>
+        <add id="Mageplaza_ExtraFee::manage_rules" title="Manage Rules" module="Mageplaza_ExtraFee" sortOrder="10" action="mpextrafee/managerules" resource="Mageplaza_ExtraFee::manage_rules" parent="Mageplaza_ExtraFee::extra_fee"/>
+        <add id="Mageplaza_ExtraFee::configuration" title="Configuration" module="Mageplaza_ExtraFee" sortOrder="100" action="adminhtml/system_config/edit/section/mp_extra_fee" resource="Mageplaza_ExtraFee::configuration" parent="Mageplaza_ExtraFee::extra_fee"/>
+    </menu>
+</config>

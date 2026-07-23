@@ -1,0 +1,650 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\SocialLogin\Block\Popup $block */
+$helperData  = $this->helper(\Mageplaza\SocialLoginPro\Helper\Data::class);
+$popupEffect = $helperData->getPopupEffect();
+$modal       = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class)
+    ->createModal()
+    ->addDialogClass("p-3 w-full wrap-modal-login  transform origin-left opacity-0 scale-0" . " " . $popupEffect . "-appear")
+    ->removeDialogClass('shadow-xl', 'inline-block', 'bg-white', 'rounded-lg', 'p-10', 'max-h-screen', 'overflow-auto',
+        'border border-10', 'border-blue-500')
+    ->withDialogRefName('my-dialog')
+    ->withContent('
+    <div id="popup_test">
+
+    </div>
+    ');
+
+$isGDPRTac       = $helperData->isGDPRTaCEnabled();
+$translateYvalue = $isGDPRTac ? '5%' : '30%';
+$popupLogin      = $helperData->getPopupLogin();
+$translateYvalue = ($popupLogin === 'popup_slide') ? '0' : $translateYvalue;
+$animationTime   = ($popupLogin === 'quick_login') ? '0s' : '0.5s';
+$closeTime       = ($popupLogin === 'quick_login') ? 0 : 300;
+$btnPosition     = $helperData->getSocialBtnPosition();
+?>
+
+<style>
+    @keyframes newspaperAnimation {
+        0% {
+            opacity: 0;
+            transform: scale(0) rotate(360deg);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+    }
+    @keyframes newspaperAnimationOut {
+        0% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+
+
+        }
+        100% {
+            opacity: 0;
+            transform: scale(0) rotate(360deg);
+        }
+    }
+
+    .mfp-newspaper-appear {
+        animation: newspaperAnimation <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+    .mfp-newspaper-disappear {
+        animation: newspaperAnimationOut <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+    @keyframes newspaperAnimationSlider {
+        0% {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes newspaperAnimationOutSlider {
+        0% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        100% {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+
+    .mfp-newspaper-appear-slider {
+        animation: newspaperAnimationSlider <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+    .mfp-newspaper-disappear-slider {
+        animation: newspaperAnimationOutSlider <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+    @keyframes zoomInAnimation {
+        0% {
+            opacity: 0;
+            transform: scale(0);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes slideInFromRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .mfp-zoom-in-appear {
+        animation: <?= /* @noEscape */  ($popupLogin === 'popup_slide' ? 'slideInFromRight' : 'zoomInAnimation') ?> <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+
+    @keyframes zoomInAnimationOut {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+
+        }
+        100% {
+
+            opacity: 0;
+            transform: scale(0);
+        }
+    }
+
+    @keyframes slideInFromLeft {
+        from {
+            transform: translateX(0);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 1;
+        }
+    }
+
+    .mfp-zoom-in-disappear {
+        animation: <?= /* @noEscape */  ($popupLogin === 'popup_slide' ? 'slideInFromLeft' : 'zoomInAnimationOut') ?> <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+    @keyframes slideInLeftAnimation {
+        0% {
+            opacity: 0;
+            transform: translateX(-10%);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .mfp-move-horizontal-appear {
+        animation: slideInLeftAnimation <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+    @keyframes slideInLeftAnimationOut {
+        0% {
+            opacity: 1;
+            transform: translateX(0);
+
+        }
+        100% {
+            opacity: 0;
+            transform: translateX(20%);
+        }
+    }
+
+    .mfp-move-horizontal-disappear {
+        animation: slideInLeftAnimationOut <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+
+    @keyframes fadeInDownAnimation {
+        0% {
+            opacity: 0;
+            transform: translateY(-20%);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .mfp-move-from-top-appear {
+        animation: fadeInDownAnimation <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+
+    @keyframes fadeInDownAnimationOut {
+        0% {
+            opacity: 1;
+            transform: translateY(0);
+
+        }
+        100% {
+
+            opacity: 0;
+            transform: translateY(20%);
+        }
+    }
+
+    .mfp-move-from-top-disappear {
+        animation: fadeInDownAnimationOut <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+
+    @keyframes flipInYAnimation {
+        0% {
+            opacity: 0;
+            transform: perspective(400px) rotateY(-90deg);
+        }
+        100% {
+            opacity: 1;
+            transform: perspective(400px) rotateY(0);
+        }
+    }
+
+    .mfp-3d-unfold-appear {
+        animation: flipInYAnimation <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+    @keyframes flipInYAnimationOut {
+        0% {
+            opacity: 1;
+            transform: perspective(400px) rotateY(0);
+
+        }
+        100% {
+
+            opacity: 0;
+            transform: perspective(400px) rotateY(90deg);
+        }
+    }
+
+    .mfp-3d-unfold-disappear {
+        animation: flipInYAnimationOut <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+    @keyframes zoomOutAnimation {
+        0% {
+            opacity: 0;
+            transform: scale(2);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .mfp-zoom-out-appear {
+        animation: zoomOutAnimation <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+
+    @keyframes zoomOutAnimationOut {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+
+        }
+        100% {
+
+            opacity: 0;
+            transform: scale(2);
+        }
+    }
+
+    .mfp-zoom-out-disappear {
+        animation: zoomOutAnimationOut <?= /* @noEscape */  $animationTime ?> ease-out forwards;
+    }
+    <?php if ($popupLogin === 'quick_login'): ?>
+    .bg-black {
+        background-color: unset;
+    }
+    .fixed.inset-0.bg-black.bg-opacity-50.z-50 {
+        position: relative;
+    }
+    <?php endif; ?>
+</style>
+
+<div x-data="{
+    ...hyva.modal(),
+    init() {
+        window.openMyDialog = function (event) {
+            this.show('my-dialog', event);
+            setTimeout(() => {
+                this.onOpenPopup();
+            }, 50);
+        }.bind(this);
+
+        window.hideMyDialog = function (event) {
+            this.hide('my-dialog', event);
+        }.bind(this);
+    },
+    onOpenPopup() {
+      scrollButtonContent();
+        document.body.classList.forEach(className => {
+            if (className === 'overflow-hidden') {
+                document.body.classList.remove('overflow-hidden');
+            }
+        });
+    }
+}" x-init="init()">
+    <?= /* @noEscape */ $modal ?>
+</div>
+
+
+<div id="test" style="display: none; height: 100vh">
+    <div id="social-login-popup" data-df="" style="transform: translateY(<?php /* @escapeNotVerified */
+    echo $translateYvalue ?>)" class="white-popup mfp-with-anim"
+         data-mage-init='{"socialPopupForm": <?= /* @noEscape */
+         $block->getFormParams() ?>}'>
+        <button title="Close (Esc)" type="button" class="mfp-close" onclick="closeModal()">×</button>
+
+        <?= /* @noEscape */
+        $block->getChildHtml('popup.email') ?>
+        <div class="mp-social-popup col-mp mp-7" style="padding-top: <?= $popupLogin === 'popup_slide' ? '0px' : '15px' ?>;">
+            <?= /* @noEscape */
+            $block->getChildHtml('popup.authentication') ?>
+            <?= /* @noEscape */
+            $block->getChildHtml('popup.create') ?>
+            <?= /* @noEscape */
+            $block->getChildHtml('popup.forgot') ?>
+        </div>
+        <?= /* @noEscape */
+        $block->getChildHtml('popup.authentication.social') ?>
+        <?= /* @noEscape */
+        $block->getChildHtml('popup.additional.info') ?>
+    </div>
+    <div style="clear: both"></div>
+</div>
+<script type="text/javascript">
+    let popup = ``;
+
+    function showMyDialog () {
+        const modal = document.querySelector('.wrap-modal-login');
+        modal.classList.remove('hidden');
+        modal.classList.remove('<?= /* @noEscape */ $popupEffect ?>-disappear');
+        modal.classList.add('<?= /* @noEscape */ $popupEffect ?>-appear');
+    }
+
+    function handleHideModalClickOutSide () {
+        let popup_test = document.getElementById("popup_test");
+        let test       = document.getElementById("test");
+
+        test.style.display = 'block';
+        popup_test.append(test);
+
+        popup_test.addEventListener('click', function (e) {
+            if (e.target === test) {
+                const modal = document.querySelector('.wrap-modal-login');
+                modal.classList.remove('<?= /* @noEscape */ $popupEffect ?>-appear');
+                modal.classList.add('<?= /* @noEscape */ $popupEffect ?>-disappear');
+                setTimeout(() => {
+                    modal.classList.remove('<?= /* @noEscape */ $popupEffect ?>-disappear');
+                    hideMyDialog();
+                }, <?= /* @noEscape */ $closeTime ?>);
+            }
+        });
+        popup_test.addEventListener('click', function (e) {
+            if (e.target === popup_test) {
+                showMyDialog();
+            }
+        });
+    }
+
+    handleHideModalClickOutSide();
+
+    function closeModal () {
+        const modal = document.querySelector('.wrap-modal-login');
+        modal.classList.remove('<?= /* @noEscape */ $popupEffect ?>-appear');
+        modal.classList.add('<?= /* @noEscape */ $popupEffect ?>-disappear');
+        setTimeout(() => {
+            modal.classList.remove('<?= /* @noEscape */ $popupEffect ?>-disappear');
+            hideMyDialog();
+        }, <?= /* @noEscape */ $closeTime ?>);
+    }
+
+    function changePositionLeft (form) {
+        form.classList.add('mp-7');
+        form.classList.remove('mp-12');
+        form.classList.add('login-right');
+    }
+
+    function changeResponsive (social, loginForms, socialBtns) {
+        social.classList.add('mp-12');
+        social.classList.remove('mp-6');
+        loginForms.forEach(loginForm => {
+            loginForm.classList.add('mp-12');
+            loginForm.classList.remove('mp-7');
+        });
+        socialBtns.forEach(function (socialBtn) {
+            if(window.innerWidth < 768){
+                socialBtn.classList.add('col-mp');
+                socialBtn.classList.add('mp-12');
+            } else {
+                socialBtn.classList.add('col-mp');
+                socialBtn.classList.add('mp-6');
+            }
+            socialBtn.style.borderTopWidth = '0px';
+            socialBtn.style.setProperty('border-top-width', '0px', 'important');
+            socialBtn.style.setProperty('max-width', '260px', 'important');
+        });
+    }
+
+    function initQuickLogin () {
+        const modal = document.querySelector('.wrap-modal-login');
+        modal.classList.add('quick-login');
+
+        modal.querySelectorAll('.mp-5, .mp-3, .mp-7').forEach(el => {
+            el.classList.remove('mp-5', 'mp-3', 'mp-7');
+            el.classList.add('mp-12');
+        });
+
+        modal.querySelectorAll('.actions-toolbar.social-btn').forEach(el => {
+            if(window.innerWidth < 768){
+                if (!el.classList.contains('mp-12')) {
+                    el.classList.add('mp-12');
+                }
+            } else {
+                if (!el.classList.contains('mp-5')) {
+                    el.classList.add('mp-5');
+                }
+            }
+        });
+        const fixedWrapper = modal.closest('.fixed');
+        if (fixedWrapper) {
+            fixedWrapper.classList.remove('fixed');
+        }
+
+        document.querySelectorAll('.white-popup').forEach(popupTop => {
+            popupTop.style.setProperty("transform", "translateY(0%)", "important");
+        })
+        document.querySelector('.form-customer-create').classList.add('mp-12');
+        document.querySelector('.form-customer-login').classList.add('mp-12');
+    }
+
+
+    function initModal (element, options) {
+        element.classList.add(options.modalClass);
+
+        let trigger = document.querySelector(options.trigger);
+        if (trigger) {
+            trigger.addEventListener("click", function () {
+                element.style.display = "block";
+            });
+        }
+    }
+
+    function createPopupSlide () {
+        let modal       = document.createElement("div");
+        modal.className = options.modalClass;
+        wrapper.appendChild(modal);
+
+        document.querySelector(".social-login-btn").addEventListener("click", function () {
+            wrapper.classList.add("active");
+            modal.style.zIndex = 102;
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!wrapper.contains(event.target) && !document.querySelector(".social-login-btn").contains(event.target)) {
+                wrapper.classList.remove("active");
+            }
+        });
+    }
+
+    function initPopupSlide () {
+        const modal = document.querySelector('.wrap-modal-login');
+        modal.classList.add('slider-modal');
+
+        modal.querySelectorAll('.mp-5, .mp-3, .mp-7').forEach(el => {
+            el.classList.remove('mp-5', 'mp-3', 'mp-7');
+            el.classList.add('mp-12');
+        });
+
+        modal.querySelectorAll('.actions-toolbar.social-btn').forEach(el => {
+            if(window.innerWidth < 768){
+                if (!el.classList.contains('mp-12')) {
+                    el.classList.add('mp-12');
+                }
+            } else {
+                if (!el.classList.contains('mp-5')) {
+                    el.classList.add('mp-5');
+                }
+            }
+        });
+
+        modal.querySelectorAll('.block-content').forEach(el => {
+            if (!el.classList.contains('mp-12')) {
+                el.classList.add('mp-12');
+            }
+        });
+        let element = document.querySelector("#social-login-popup .block.social-login-authentication-channel .block-content");
+        if (element) {
+            element.style.display  = "flex";
+            element.style.flexWrap = "wrap";
+        }
+        if(window.innerWidth < 768){
+            document.querySelectorAll('.white-popup').forEach(popupTop => {
+                popupTop.style.setProperty("transform", "translateY(0%)", "important");
+            })
+            document.querySelector(".white-popup").style.setProperty("bottom", "0%", "important");
+        }
+        modal.classList.remove('mfp-newspaper-appear', 'mfp-newspaper-disappear');
+        modal.classList.add('mfp-newspaper-appear-slider');
+    }
+
+    function scrollButtonContent() {
+        const blockContainers = document.querySelectorAll('.social-login.block-container');
+
+        blockContainers.forEach(container => {
+            if (window.getComputedStyle(container).display !== 'none') {
+                const blockContent = container.querySelector('.block-content');
+                const popupContent = document.querySelector('#mp-popup-social-content .block-content');
+
+                let popupLogin = "<?= /* @noEscape */ $btnPosition ?>".trim();
+
+                if (blockContent && popupContent) {
+                    let blockContentHeight = blockContent.offsetHeight || blockContent.scrollHeight;
+
+                    const isMobile = window.innerWidth <= 768;
+                    const isLimited = isMobile || popupLogin === 'top' || popupLogin === 'bottom';
+                    let popupType = '<?= /* @noEscape */ $popupLogin ?>';
+                    if (isLimited) {
+                        blockContentHeight = Math.min(blockContentHeight, 190);
+                    }
+
+                    if (blockContentHeight > 25) {
+                        if (popupType === 'popup_slide' && window.innerWidth > 768) {
+                            blockContentHeight= '300';
+                        }
+                        popupContent.style.maxHeight = `${blockContentHeight - 25}px`;
+                        popupContent.style.overflow = 'auto';
+                    }
+                }
+            }
+        });
+    }
+
+
+    function changeSocialBtnPosition () {
+        let btnPosition  = "<?= /* @noEscape */ $btnPosition ?>";
+        let social       = document.querySelector("#social-login-popup .block.social-login-authentication-channel");
+        let loginForms   = document.querySelectorAll("#social-login-popup .block.social-login-customer-authentication");
+        let createForms  = document.querySelectorAll('.social-login.block-container.create .block');
+        let forgotForms  = document.querySelectorAll('.social-login.block-container.forgot .block');
+        let socialBtn    = document.querySelectorAll("#social-login-popup .actions-toolbar.social-btn");
+        let socialPopups = document.querySelectorAll('.mp-social-popup');
+
+        if (btnPosition !== "" && social && loginForms.length > 0) {
+            document.querySelectorAll('.white-popup').forEach(popupTop => {
+                popupTop.style.setProperty("transform", "translateY(7%)", "important");
+            })
+            switch (btnPosition){
+                case "left":
+                    if (window.innerWidth < 768) {
+                        break;
+                    }
+                    document.querySelector('#mp-popup-social-content').classList.add('social-left');
+                    social.classList.remove('mp-5');
+                    loginForms.forEach(loginForm => {
+                        changePositionLeft(loginForm);
+                    });
+                    createForms.forEach(createForm => {
+                        changePositionLeft(createForm);
+                    });
+                    forgotForms.forEach(forgotForm => {
+                        changePositionLeft(forgotForm);
+                    });
+                    socialPopups.forEach(socialPopup => {
+                        socialPopup.classList.add('mp-12');
+                    });
+                    break;
+                case "top":
+                    if (window.innerWidth < 768) {
+                        break;
+                    }
+                    social.classList.add('social-top');
+                    loginForms.forEach(loginForm => {
+                        loginForm.classList.add('login-bottom');
+                    });
+                    socialPopups.forEach(socialPopup => {
+                        socialPopup.classList.add('mp-12');
+                        socialPopup.classList.remove('mp-7');
+                    });
+                    createForms.forEach(createForm => {
+                        createForm.classList.add('login-bottom');
+                    });
+                    forgotForms.forEach(forgotForm => {
+                        forgotForm.classList.add('login-bottom');
+                    });
+                    changeResponsive(social, loginForms, socialBtn);
+                    break;
+                case "bottom":
+                    if (window.innerWidth < 768) {
+                        break;
+                    }
+                    if(window.innerWidth > 768){
+                        document.querySelectorAll('.white-popup').forEach(popupTop => {
+                            popupTop.style.setProperty("transform", "translateY(5%)", "important");
+                        })
+                    }
+                    changeResponsive(social, loginForms, socialBtn);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        let popupLogin = "<?= /* @noEscape */ $popupLogin ?>";
+
+        switch (popupLogin){
+            case 'popup_login':
+                changeSocialBtnPosition();
+                break;
+            case 'quick_login':
+                initQuickLogin();
+                break;
+            case 'popup_slide':
+                initPopupSlide();
+                break;
+            default:
+                break;
+        }
+    });
+
+</script>

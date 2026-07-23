@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">region_listing.region_listing_data_source</item>
+            <item name="deps" xsi:type="string">region_listing.region_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="back" class="Secomm\AddressDropdown\Block\Form\Region\BackListing"/>
+            <button name="add" class="Secomm\AddressDropdown\Block\Form\Region\AddNew"/>
+        </buttons>
+        <spinner>country_columns</spinner>
+        <deps>
+            <dep>region_listing.region_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="region_listing_data_source" component="Secomm_AddressDropdown/js/grid/custom-provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">region_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Secomm_AddressDropdown::management</aclResource>
+        <dataProvider class="Secomm\AddressDropdown\Ui\DataProvider\RegionDataProvider" name="region_listing_data_source">
+            <settings>
+                <requestFieldName>region_id</requestFieldName>
+                <primaryFieldName>region_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+<!--        <massaction name="listing_massaction">-->
+<!--            <action name="delete">-->
+<!--                <settings>-->
+<!--                    <confirm>-->
+<!--                        <message translate="true">Are you sure you want to delete selected items?</message>-->
+<!--                        <title translate="true">Delete items</title>-->
+<!--                    </confirm>-->
+<!--                    <url path="*/*/massDelete"/>-->
+<!--                    <type>delete</type>-->
+<!--                    <label translate="true">Delete</label>-->
+<!--                </settings>-->
+<!--            </action>-->
+<!--        </massaction>-->
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="country_columns">
+<!--        <selectionsColumn name="ids" sortOrder="0">-->
+<!--            <settings>-->
+<!--                <indexField>region_id</indexField>-->
+<!--            </settings>-->
+<!--        </selectionsColumn>-->
+        <column name="region_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Region ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="country_id">
+            <settings>
+                <filter>false</filter>
+                <label translate="true">Country ID</label>
+                <sorting>false</sorting>
+            </settings>
+        </column>
+        <column name="code">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Code</label>
+            </settings>
+        </column>
+        <column name="default_name">
+            <settings>
+                <options class="Magento\LayeredNavigation\Model\Attribute\Source\FilterableOptions"/>
+                <filter>text</filter>
+                <label translate="true">Default Name</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Secomm\AddressDropdown\Ui\Component\Listing\Column\RegionBlockActions">
+            <settings>
+                <indexField>city_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

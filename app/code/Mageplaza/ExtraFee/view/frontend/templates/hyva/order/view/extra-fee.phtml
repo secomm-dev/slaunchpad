@@ -1,0 +1,171 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\ExtraFee\Block\Sales\Order\View\ExtraFee;
+use Mageplaza\ExtraFee\Model\Config\Source\DisplayArea;
+
+/** @var ExtraFee $block */
+$paymentExtraFee  = $block->getExtraFeeInfo(DisplayArea::PAYMENT_METHOD);
+$shipmentExtraFee = $block->getExtraFeeInfo(DisplayArea::SHIPPING_METHOD);
+$extraFee         = $block->getExtraFeeInfo(DisplayArea::CART_SUMMARY);
+?>
+<?php if (count($extraFee)) : ?>
+    <div class="block extra-fee border-t border-container mt-3" id="mp_extra_fee">
+        <div class="block-title text-lg mt-3 mb-2 font-semibold">
+            <div ><?= $block->escapeHtml(__('Extra Fee Information')) ?></div>
+        </div>
+        <div class="block-content">
+            <?php foreach ($block->getFrontendExtraFeeInfo() as $label => $fees) : ?>
+                <div class="box">
+                    <strong class="box-title">
+                        <span><?= $block->escapeHtml($label) ?></span>
+                    </strong>
+                    <div class="box-content">
+                        <?php foreach ($fees as $fee) : ?>
+                            <div class="box-content">
+                                <?= $block->escapeHtml($fee['label']) ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            <?php
+                $notes = $block->getExtraFeeNote(DisplayArea::CART_SUMMARY);
+                if (count($notes)) :
+            ?>
+                <div class="box">
+                    <strong class="box-title">
+                        <span>
+                            <?= $block->escapeHtml(__('Customer Note Message: ')) ?>
+                        </span>
+                    </strong>
+                    <div class="box-content">
+                        <?php
+                            foreach ($notes as $key => $note) :
+                        ?>
+                            <p><strong><?= $block->escapeHtml($key . ': ')?></strong><?= $block->escapeHtml($note) ?></p>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+<?php endif; ?>
+<?php if (count($paymentExtraFee)) : ?>
+    <div id="mp_extra_fee_payment" style="margin-top: 20px">
+        <div class="box-title mt-3 mb-2 font-semibold">
+            <span><?= $block->escapeHtml(__('Extra Fee')) ?></span>
+        </div>
+        <?php foreach ($paymentExtraFee as $fee) : ?>
+            <div class="box-content">
+                <?= $block->escapeHtml($block->getFrontendTitle($fee)) ?>
+            </div>
+        <?php endforeach; ?>
+        <?php
+            $notes = $block->getExtraFeeNote(DisplayArea::PAYMENT_METHOD);
+            if (count($notes)) :
+        ?>
+            <div class="box" style="display: contents">
+                <strong class="box-title" style="margin-top: 20px">
+                        <span>
+                            <?= $block->escapeHtml(__('Customer Note Message: ')) ?>
+                        </span>
+                </strong>
+                <div class="box-content">
+                    <?php
+                        foreach ($notes as $key => $note) :
+                    ?>
+                        <p><strong><?= $block->escapeHtml($key . ': ')?></strong><?= $block->escapeHtml($note) ?></p>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+<?php if (count($shipmentExtraFee)) : ?>
+    <div id="mp_extra_fee_shipment" style="margin-top: 20px">
+        <div class="box-title mt-3 mb-2 font-semibold">
+            <span><?= $block->escapeHtml(__('Extra Fee')) ?></span>
+        </div>
+        <?php foreach ($shipmentExtraFee as $fee) : ?>
+            <div class="box-content">
+                <?= $block->escapeHtml($block->getFrontendTitle($fee)) ?>
+            </div>
+        <?php endforeach; ?>
+        <?php
+            $notes = $block->getExtraFeeNote(DisplayArea::SHIPPING_METHOD);
+            if (count($notes)) :
+        ?>
+            <div class="box" style="display: contents">
+                <strong class="box-title" style="margin-top: 20px">
+                        <span>
+                            <?= $block->escapeHtml(__('Customer Note Message: ')) ?>
+                        </span>
+                </strong>
+                <div class="box-content">
+                    <?php
+                        foreach ($notes as $key => $note) :
+                    ?>
+                        <p><strong><?= $block->escapeHtml($key . ': ')?></strong><?= $block->escapeHtml($note) ?></p>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var mpExtraFeeShipment = document.getElementById('mp_extra_fee_shipment');
+        var mpExtraFeePayment = document.getElementById('mp_extra_fee_payment');
+        var mpExtraFee = document.getElementById('mp_extra_fee');
+        var shippingMethodBox = document.querySelector('.box.box-order-shipping-method');
+        var billingMethodBox = document.querySelector('.box.box-order-billing-method');
+        var orderDetailsBlock = document.querySelector('.block.block-order-details-view');
+        var orderItemsTable = document.querySelector('.table-order-items');
+        if (!shippingMethodBox.querySelector('#mp_extra_fee_shipment') && mpExtraFeeShipment) {
+            if (shippingMethodBox) {
+                shippingMethodBox.appendChild(mpExtraFeeShipment);
+            } else {
+                if (mpExtraFee.nextElementSibling) {
+                    mpExtraFee.nextElementSibling.insertAdjacentElement('afterend', mpExtraFeeShipment);
+                }
+            }
+        }
+        if (!billingMethodBox.querySelector('#mp_extra_fee_payment') && mpExtraFeePayment) {
+            billingMethodBox.appendChild(mpExtraFeePayment);
+        }
+        if (orderDetailsBlock) {
+            if (!orderDetailsBlock.nextElementSibling ||
+                !orderDetailsBlock.nextElementSibling.querySelector('#mp_extra_fee')) {
+                if (orderDetailsBlock.nextElementSibling) {
+                    orderDetailsBlock.nextElementSibling.insertAdjacentElement('beforebegin', mpExtraFee);
+                } else {
+                    orderDetailsBlock.insertAdjacentElement('afterend', mpExtraFee);
+                }
+            }
+        }
+        if (orderItemsTable) {
+            orderItemsTable.querySelector('#mp_extra_fee_shipment').remove();
+            orderItemsTable.querySelector('#mp_extra_fee_payment').remove();
+            orderItemsTable.querySelector('#mp_extra_fee').remove();
+        }
+    });
+</script>

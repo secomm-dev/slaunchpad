@@ -1,0 +1,71 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+?>
+<div class="social-login block-container authentication">
+    <div class="social-login-title">
+        <h3 class="login-title header-title"><?= /* @noEscape */ __('Sign In') ?></h3>
+    </div>
+    <div class="block-content col-mp mp-12" aria-labelledby="block-customer-login-heading">
+        <form class="form-customer-login" id="social-form-login" data-mage-init='{"validation":{}}'>
+            <?= /* @noEscape */ /** @var \Mageplaza\SocialLogin\Block\Form\Login $block
+             */$block->getBlockHtml('formkey') ?>
+            <fieldset class="fieldset login" data-hasrequired="<?= /* @noEscape */ __('* Required Fields') ?>">
+                <?= /* @noEscape */ $block->getChildHtml('form_before_login_fields') ?>
+                <div class="field email required">
+                    <label class="label" for="social_login_email"><span><?= /* @noEscape */ __('Email') ?></span></label>
+                    <div class="control">
+                        <input name="username" id="social_login_email" type="email" class="input-text"
+                               value="<?= /* @noEscape */ $escaper->escapeHtml($block->getUsername()) ?>"<?php if ($block->isAutocompleteDisabled()) :
+                                    ?> autocomplete="off"<?php endif; ?>
+                               title="<?= /* @noEscape */ __('Email') ?>"
+                               data-validate="{required:true, 'validate-email':true}">
+                    </div>
+                </div>
+                <div class="field password required">
+                    <label for="pass" class="label"><span><?= /* @noEscape */ __('Password') ?></span></label>
+                    <div class="control">
+                        <input name="password" id="social_login_pass" type="password"
+                               class="input-text"
+                            <?= /* @noEscape */ $block->isAutocompleteDisabled() ? ' autocomplete="off"' : '' ?>
+                               title="<?= /* @noEscape */ __('Password') ?>"
+                               data-validate="{required:true, 'validate-password':true}">
+                    </div>
+                </div>
+                <?= /* @noEscape */ $block->getChildHtml('form_additional_info') ?>
+                <div class="actions-toolbar">
+                    <div class="primary">
+                        <button type="button" class="action login primary" id="bnt-social-login-authentication">
+                            <span><?= /* @noEscape */ __('Login') ?></span>
+                        </button>
+                    </div>
+                    <div class="secondary">
+                        <a class="action remind" href="#"><span><?= /* @noEscape */ __('Forgot Your Password?') ?></span></a>
+                    </div>
+                </div>
+                <div class="actions-toolbar">
+                    <div class="primary">
+                        <a class="action create" href="#"><span><?= /* @noEscape */ __('Create New Account?') ?></span></a>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>

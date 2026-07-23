@@ -1,0 +1,75 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\ExtraFee\Block\Multishipping\Checkout\AbstractExtraFee;
+use Mageplaza\ExtraFee\Helper\Data;
+use Mageplaza\ExtraFee\Model\Config\Source\DisplayArea;
+
+/** @var AbstractExtraFee $block */
+$addresses       = $block->getAddresses();
+$rules           = [];
+$selectedOptions = [];
+$store           = $block->getStore();
+$quoteId         = $block->getQuote()->getId();
+$extraFeeNote    = $block->getExtraFeeNote();
+
+foreach ($addresses as $_index => $address) {
+    $block->fetch($address, DisplayArea::SHIPPING_METHOD);
+    $rules[$address->getId()] = $block->getAllApplyRule($address, DisplayArea::SHIPPING_METHOD);
+    list($applyRule, $selectedOption) = $block->getAppliedRule($address, DisplayArea::SHIPPING_METHOD);
+    list($applyRule, $selectedOption) = [$applyRule[0], $selectedOption[0]];
+    if (count($extraFeeNote) && isset($extraFeeNote[$address->getId()])) {
+        $selectedOption['note'] = $extraFeeNote[$address->getId()];
+    }
+
+    $selectedOptions[$address->getId()] = $selectedOption;
+}
+?>
+<div id="extra-fee-loader" data-role="checkout-loader">
+    <div class="loader">
+        <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+             alt="<?= /* @noEscape */ __('Loading...') ?>" style="position: absolute;">
+    </div>
+</div>
+<div id="mp-extra-fee-multishipping-shipping" data-bind="scope: 'mp-extra-fee-multishipping-shipping'">
+    <!-- ko template: getTemplate() --><!-- /ko -->
+</div>
+<script type="text/x-magento-init">
+    {
+        "#mp-extra-fee-multishipping-shipping": {
+            "Magento_Ui/js/core/app": {
+                "components": {
+                    "mp-extra-fee-multishipping-shipping": {
+                        "component": "Mageplaza_ExtraFee/js/view/checkout/multishipping/extra-fee-shipping",
+                        "config": {
+                            "ruleMultiShipping": <?= /** @noEscape */ Data::jsonEncode($rules) ?>,
+                            "selectedOptionsMultiShipping": <?= /** @noEscape */ Data::jsonEncode($selectedOptions) ?>,
+                            "storeId": <?= /** @noEscape */ $store->getId() ?>,
+                            "code": "<?= /** @noEscape */ $store->getCode() ?>",
+                            "quoteId": "<?= /** @noEscape */$quoteId ?>"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+</script>

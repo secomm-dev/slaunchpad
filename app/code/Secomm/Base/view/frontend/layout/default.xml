@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+    Storefront announcement bar — rendered on every page that has the
+    `content.top` container. Gated by `ifconfig` so it only renders when
+    Stores > Configuration > Secomm > Storefront > Announcement > Enable = Yes.
+    No checkout impact: Mageplaza OSC uses its own layout handle (no content.top).
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content.top">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="secomm.storefront.announcement"
+                   template="Secomm_Base::announcement.phtml"
+                   ifconfig="secomm_storefront/announcement/enable"
+                   before="-"/>
+        </referenceContainer>
+    </body>
+</page>

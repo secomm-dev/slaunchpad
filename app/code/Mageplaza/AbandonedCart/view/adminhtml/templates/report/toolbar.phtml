@@ -1,0 +1,104 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/**
+ * @var Mageplaza\AbandonedCart\Block\Adminhtml\Report\Toolbar $block
+ */
+
+$products = $block->getTopProducts()
+?>
+<div class="mp-abandonedcart-report">
+    <div class="statistics">
+        <h3>Statistics</h3>
+        <ul>
+            <?php /* @noEscape */ $data = $block->getStatisticsData() ?>
+            <li>Cart abandonment rate: <?= /* @noEscape */ $data['cartAbandonRate'] ?? "--" ?>%</li>
+            <li>Checkout abandonment rate: <?= /* @noEscape */ $data['checkoutAbandonmentRate'] ?? "--" ?>%</li>
+            <li>Recovered cart rate: <?= /* @noEscape */ $data['recoveredCartRate'] ?? "--" ?>%</li>
+            <li>Potential revenue: $<?= /* @noEscape */ $data['recapturableRevenue'] ?? "--" ?></li>
+            <li>Recovered revenue: $<?= /* @noEscape */ $data['recoveredRevenue'] ?? "--" ?></li>
+            <li>Emails sent: <?= /* @noEscape */ $data['totalAbandonedEmails'] ?? "--" ?></li>
+        </ul>
+    </div>
+    <div class="top-products">
+        <p class="title">Top 5 Abandoned Products</p>
+            <?php if (count($products)): ?>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Product name</th>
+                        <th>Thumbnail</th>
+                        <th class="mp-table-center">SKU</th>
+                        <th class="mp-table-center">Price</th>
+                        <th class="mp-table-center">Abandoned Time</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($products as $product): ?>
+                        <tr>
+                            <td><?= /* @noEscape */ $product->getProductName() ?></td>
+                            <td><img src="<?= /* @noEscape */ $block->getImage($product->getProductId()) ?>" alt="Thumbnail of <?=/* @noEscape */ $product->getProductName() ?>"></td>
+                            <td class="mp-table-center"><?= /* @noEscape */ $product->getSku() ?></td>
+                            <td class="mp-table-center">$<?= /* @noEscape */ $product->getPrice() ?></td>
+                            <td class="mp-table-center"><?= /* @noEscape */ $product->getAbandonedTime() ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else:?>
+                <p>We couldn't find any records</p>
+            <?php endif;?>
+    </div>
+</div>
+<hr style="border-top: 1px rgba(227, 227, 227, 1);">
+<h3 style="margin: 2rem 0 0 0">Email Logs</h3>
+
+<style type="text/css">
+    .field-row {
+        display: inline-block;
+    }
+    .admin__data-grid-outer-wrap {
+
+    }
+</style>
+
+<script type="text/javascript">
+    require([
+        'jquery'
+    ], function ($) {
+        $(window).bind('scroll', function () {
+            if ($('.sticky-header .admin__data-grid-header-row .email-log-title').length < 1) {
+                $('.sticky-header .admin__data-grid-header-row').prepend('<h3 class="email-log-title">Email Logs</h3>')
+            }
+            var mpMenu  = $('.mp_menu'),
+                parent  = $(".sticky-header .admin__data-grid-header"),
+                content = $("div#container");
+            if (mpMenu.length < 2 && parent.length) {
+                mpMenu.insertBefore(".sticky-header .admin__data-grid-header");
+            }
+            if (mpMenu.length) {
+                if ($('.sticky-header').css('display') === 'none') {
+                    mpMenu.prependTo(content);
+                }
+            }
+        });
+    });
+</script>

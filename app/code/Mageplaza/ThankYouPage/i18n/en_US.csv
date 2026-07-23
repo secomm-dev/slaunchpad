@@ -1,0 +1,274 @@
+"Add Rule","Add Rule"
+"Save Rule","Save Rule"
+"Save and Continue Edit","Save and Continue Edit"
+"Delete Rule","Delete Rule"
+"Edit Rule '%1'","Edit Rule '%1'"
+"New Rule","New Rule"
+"Apply the rule only if the following conditions are met (leave blank for all products).","Apply the rule only if the following conditions are met (leave blank for all products)."
+Conditions,Conditions
+Display,Display
+"Select Style","Select Style"
+"Custom Style","Custom Style"
+"Load Template","Load Template"
+Title,Title
+Sub-title,Sub-title
+Description,Description
+"Insert Variable...","Insert Variable..."
+"Show Continue Shopping Button","Show Continue Shopping Button"
+"Enable Block(s)","Enable Block(s)"
+"Page HTML","Page HTML"
+"Custom CSS","Custom CSS"
+"This CSS will be applied on the order success page. You can change color, position, font, etc.","This CSS will be applied on the order success page. You can change color, position, font, etc."
+"Static Block 1","Static Block 1"
+"Static Block 2","Static Block 2"
+"Show Social Share","Show Social Share"
+"Static Block","Static Block"
+"Insert Product Slider","Insert Product Slider"
+"To enable this function, please install Mageplaza Product Slider <a href=""%1"" target=""_bank"">here.</a>","To enable this function, please install Mageplaza Product Slider <a href=""%1"" target=""_bank"">here.</a>"
+"This CSS will be applied on the subscribe success page. You can change color, position, font, etc.","This CSS will be applied on the subscribe success page. You can change color, position, font, etc."
+"Coupon Block","Coupon Block"
+Enable,Enable
+"Select Rule","Select Rule"
+"Go to Marketing > Cart Price Rules to generate a rule.","Go to Marketing > Cart Price Rules to generate a rule."
+"The rule should be set as a Specific Coupon and Auto-generated.","The rule should be set as a Specific Coupon and Auto-generated."
+"Learn more","Learn more"
+"Coupon Pattern","Coupon Pattern"
+"A coupon code pattern follows this rule:","A coupon code pattern follows this rule:"
+"4 alpha characters","4 alpha characters"
+"4 numeric characters","4 numeric characters"
+"4 alphanumeric characters","4 alphanumeric characters"
+"Coupon Label","Coupon Label"
+"Product Slider Block","Product Slider Block"
+"The cross-selling product list will display based on the products in the orders. To set cross-selling products, please visit <a href=""%1"" target=""_blank"">here</a>.","The cross-selling product list will display based on the products in the orders. To set cross-selling products, please visit <a href=""%1"" target=""_blank"">here</a>."
+"Limit the number of products","Limit the number of products"
+"Number of Cross-Sell products will be shown. Default: 10","Number of Cross-Sell products will be shown. Default: 10"
+"Display Information","Display Information"
+"FAQ Block","FAQ Block"
+"Please install/enable Mageplaza_FAQ <a href=""%1"" target=""_bank"">here</a> to enable this feature","Please install/enable Mageplaza_FAQ <a href=""%1"" target=""_bank"">here</a> to enable this feature"
+"Select Category","Select Category"
+Limit,Limit
+"Number of FAQs articles will be shown. Default: 5","Number of FAQs articles will be shown. Default: 5"
+"Rule Information","Rule Information"
+Name,Name
+Status,Status
+"Store Views","Store Views"
+"Customer Groups","Customer Groups"
+"Select customer group(s) to display the rule to","Select customer group(s) to display the rule to"
+Priority,Priority
+"Default is 0. Rule with lower number will get higher priority. ","Default is 0. Rule with lower number will get higher priority. "
+General,General
+"The entity that was requested doesn't exist. Verify the entity and try again.","The entity that was requested doesn't exist. Verify the entity and try again."
+"Load template success!","Load template success!"
+"Cannot load template.","Cannot load template."
+"The template has been deleted.","The template has been deleted."
+"Something went wrong.","Something went wrong."
+"This template no longer exists.","This template no longer exists."
+"Thank You Page Rules","Thank You Page Rules"
+"A total of %1 record(s) have been deleted.","A total of %1 record(s) have been deleted."
+"Something went wrong while updating status for %1.","Something went wrong while updating status for %1."
+"A total of %1 record(s) have been updated.","A total of %1 record(s) have been updated."
+"The wrong template is specified.","The wrong template is specified."
+"You saved the rule.","You saved the rule."
+"Something went wrong while saving the rule data. Please review the error log.","Something went wrong while saving the rule data. Please review the error log."
+"This email address is already subscribed.","This email address is already subscribed."
+"The confirmation request has been sent.","The confirmation request has been sent."
+"Thank you for your subscription.","Thank you for your subscription."
+"There was a problem with the subscription: %1","There was a problem with the subscription: %1"
+"Something went wrong with the subscription.","Something went wrong with the subscription."
+Abs,Abs
+Append,Append
+"At Least","At Least"
+"At Most","At Most"
+Capitalize,Capitalize
+Ceil,Ceil
+Date,Date
+"Date Format","Date Format"
+Default,Default
+"Divided By","Divided By"
+"Down Case","Down Case"
+Escape,Escape
+"Escape once","Escape once"
+Floor,Floor
+Join,Join
+"Join By","Join By"
+"Left Trim","Left Trim"
+Minus,Minus
+Modulo,Modulo
+"Replace new line to <br","Replace new line to <br"
+Plus,Plus
+Prepend,Prepend
+Remove,Remove
+Replace,Replace
+Search,Search
+"Replace First","Replace First"
+"Reverse Array","Reverse Array"
+Round,Round
+"Right Trim","Right Trim"
+"Array Size","Array Size"
+Slice,Slice
+From,From
+To,To
+"Array Sort","Array Sort"
+"Trim Text","Trim Text"
+"Strip Html Tags","Strip Html Tags"
+"Strip New Line","Strip New Line"
+Times,Times
+Truncate,Truncate
+Count,Count
+"Append Last","Append Last"
+"Truncate Words","Truncate Words"
+Words,Words
+Lowercase,Lowercase
+"Unique Id Of Array","Unique Id Of Array"
+Uppercase,Uppercase
+"Decode Url","Decode Url"
+"Encode Url","Encode Url"
+Price,Price
+"Item Image URL","Item Image URL"
+"If Empty","If Empty"
+"Add to Cart button","Add to Cart button"
+"Add to WishList button","Add to WishList button"
+"Add to Compare button","Add to Compare button"
+"Review information","Review information"
+"-- Please Select --","-- Please Select --"
+"Use Default Style","Use Default Style"
+"Edit Default Style","Edit Default Style"
+No,No
+Yes,Yes
+Coupon,Coupon
+"Social Sharing","Social Sharing"
+"-- None --","-- None --"
+"Order Details","Order Details"
+"Register Account Form","Register Account Form"
+"Subscribe Email Form","Subscribe Email Form"
+"Simple Style","Simple Style"
+"Complex Style","Complex Style"
+"Order Number:","Order Number:"
+Total:,Total:
+"Order create at:","Order create at:"
+"Billing Address","Billing Address"
+"Shipping Method","Shipping Method"
+"Payment Method","Payment Method"
+"Delivery Time","Delivery Time"
+"Order Success Page","Order Success Page"
+"Newsletter Success Page","Newsletter Success Page"
+Disable,Disable
+"Rule is not valid","Rule is not valid"
+"Error occurred when generating coupons: %1","Error occurred when generating coupons: %1"
+"Thank you for your purchase!","Thank you for your purchase!"
+"Your order has been placed and will be processed as soon as possible.","Your order has been placed and will be processed as soon as possible."
+"Your order number:","Your order number:"
+"You may also like","You may also like"
+"Use this coupon code: %1 to get %2 on your next order.","Use this coupon code: %1 to get %2 on your next order."
+"Thank you for signing up!","Thank you for signing up!"
+"Welcome you to our exclusive newsletters with every updates","Welcome you to our exclusive newsletters with every updates"
+"You would be the first to reach our latest arrivals, news, events, various special promotions, giveaways and more.","You would be the first to reach our latest arrivals, news, events, various special promotions, giveaways and more."
+"Stay tuned and keep updated. All the best!","Stay tuned and keep updated. All the best!"
+"Enter coupon code: %1 when you make your next purchase enjoy %2 off","Enter coupon code: %1 when you make your next purchase enjoy %2 off"
+"Customer Attributes","Customer Attributes"
+"Order Attributes","Order Attributes"
+"Coupon Attributes","Coupon Attributes"
+"Store Attributes","Store Attributes"
+"Other Attributes","Other Attributes"
+"Customer Id","Customer Id"
+"Customer Email","Customer Email"
+"Customer Group","Customer Group"
+"Customer First Name","Customer First Name"
+"Customer Last Name","Customer Last Name"
+"Customer Name","Customer Name"
+"Customer Gender","Customer Gender"
+"Order Id","Order Id"
+"Order Coupon","Order Coupon"
+"Shipping Description","Shipping Description"
+"Is Virtual","Is Virtual"
+"Store Id","Store Id"
+"Grand Total","Grand Total"
+Subtotal,Subtotal
+"Shipping Amount","Shipping Amount"
+"Tax Amount","Tax Amount"
+"Total Qty Ordered","Total Qty Ordered"
+"Order Currency Code","Order Currency Code"
+"Created at","Created at"
+"Rule Id","Rule Id"
+"Rule Description","Rule Description"
+"Coupon Code","Coupon Code"
+"Discount Amount","Discount Amount"
+"Store Name","Store Name"
+"Store Base Url","Store Base Url"
+"Current Url","Current Url"
+"Store Base Currency Code","Store Base Currency Code"
+"Store Current Currency Code","Store Current Currency Code"
+"Order Items","Order Items"
+"Order Total","Order Total"
+"Shipping Address","Shipping Address"
+"The module is disabled","The module is disabled"
+"Rule with ID %1 doesn't exist","Rule with ID %1 doesn't exist"
+"The template data is invalid. Verify the data and try again.","The template data is invalid. Verify the data and try again."
+"The subscribe success page is disabled","The subscribe success page is disabled"
+"An Order ID is needed. Set the Order ID and try again.","An Order ID is needed. Set the Order ID and try again."
+"The template that was requested doesn't exist or the order success page is disabled. Verify the orderId and try again.","The template that was requested doesn't exist or the order success page is disabled. Verify the orderId and try again."
+"Missing field: ","Missing field: "
+"The status value must have a value of 0 or 1","The status value must have a value of 0 or 1"
+"page_type value must have a value of order or newsletter","page_type value must have a value of order or newsletter"
+"style value for order success page must have a value of simple or complex","style value for order success page must have a value of simple or complex"
+"style value for subscribe success page must have a value of style1 or style2 or style3","style value for subscribe success page must have a value of style1 or style2 or style3"
+"custom_style value must have a value of 0 or 1","custom_style value must have a value of 0 or 1"
+"Missing custom_style field.","Missing custom_style field."
+Edit,Edit
+"All Customer Groups","All Customer Groups"
+"All Store Views","All Store Views"
+Add,Add
+"Add Filter","Add Filter"
+"Your order number is: %1.","Your order number is: %1."
+"Your order # is: <span>%1</span>.","Your order # is: <span>%1</span>."
+"We'll email you an order confirmation with details and tracking info.","We'll email you an order confirmation with details and tracking info."
+"Continue Shopping","Continue Shopping"
+"Read more","Read more"
+"There is no answer for this question.","There is no answer for this question."
+"View all","View all"
+Collapse,Collapse
+"Create an Account","Create an Account"
+"For tracking your order status easily.","For tracking your order status easily."
+"Email Address","Email Address"
+"Sign Up for Our Newsletter","Sign Up for Our Newsletter"
+"For every updated news, events, promotion or loyalty programs","For every updated news, events, promotion or loyalty programs"
+Subscribe,Subscribe
+"The price depends on the options chosen on the product page","The price depends on the options chosen on the product page"
+"Configure %1 on the product page","Configure %1 on the product page"
+Configure,Configure
+"Add to Cart","Add to Cart"
+"Add to Compare","Add to Compare"
+Carousel,Carousel
+"Carousel %1","Carousel %1"
+"Navigating through the elements of the carousel is possible using the tab key. You can skip the carousel or go straight to carousel navigation using the skip links.","Navigating through the elements of the carousel is possible using the tab key. You can skip the carousel or go straight to carousel navigation using the skip links."
+"Press to skip carousel","Press to skip carousel"
+"Press to go to carousel navigation","Press to go to carousel navigation"
+"Item %1","Item %1"
+"Previous slide","Previous slide"
+"Display slide %1","Display slide %1"
+"Next slide","Next slide"
+"Continue to Homepage","Continue to Homepage"
+"In stock","In stock"
+"Out of stock","Out of stock"
+"Add to Wish List","Add to Wish List"
+"Insert Variable","Insert Variable"
+"Click to each attribute to add filter & insert it to the template ","Click to each attribute to add filter & insert it to the template "
+"--Please Select--","--Please Select--"
+Delete,Delete
+"Mageplaza ThankYouPage","Mageplaza ThankYouPage"
+"Manage Rules","Manage Rules"
+"Thank You Page","Thank You Page"
+"General Configuration","General Configuration"
+"Select Yes to enable this module.","Select Yes to enable this module."
+"Sharethis Property ID","Sharethis Property ID"
+"Used for adding social share buttons. Visit <a href=""https://sharethis.com/"" target=""_bank"">Sharethis.com</a> to create an account then get the property ID.","Used for adding social share buttons. Visit <a href=""https://sharethis.com/"" target=""_bank"">Sharethis.com</a> to create an account then get the property ID."
+Route,Route
+"Leave empty to use default URL route. Default: subscribe","Leave empty to use default URL route. Default: subscribe"
+"Delete Rules","Delete Rules"
+"Are you sure you wan't to delete selected Rules?","Are you sure you wan't to delete selected Rules?"
+"Change status","Change status"
+ID,ID
+Type,Type
+"Store View","Store View"
+"Created Date","Created Date"
+"Updated Date","Updated Date"

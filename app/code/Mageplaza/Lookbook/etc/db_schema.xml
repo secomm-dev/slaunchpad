@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="mageplaza_lookbookslider_lookbook" resource="default" engine="innodb"
+           comment="Mageplaza Lookbook Table Table">
+        <column xsi:type="int" name="lookbook_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Lookbook ID"/>
+        <column xsi:type="varchar" name="name" nullable="true" length="255" comment="Name"/>
+        <column xsi:type="smallint" name="status" padding="6" unsigned="false" nullable="false" identity="false"
+                default="1" comment="Status"/>
+        <column xsi:type="varchar" name="store_ids" nullable="false" length="255" comment="Store Ids"/>
+        <column xsi:type="smallint" name="marker_type" nullable="false" comment="Marker Type"/>
+        <column xsi:type="varchar" name="image" nullable="true" length="255" comment="Image"/>
+        <column xsi:type="mediumtext" name="marker" nullable="true" comment="Marker"/>
+        <column xsi:type="varchar" name="width" nullable="true" comment="Image Width"/>
+        <column xsi:type="varchar" name="height" nullable="true" comment="Image Height"/>
+        <column xsi:type="timestamp" name="created_at" comment="Time of event"/>
+        <column xsi:type="timestamp" name="updated_at" comment="Time of event"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="lookbook_id"/>
+        </constraint>
+        <index referenceId="MAGEPLAZA_LOOKBOOKSLIDER_LOOKBOOK_NAME" indexType="fulltext">
+            <column name="name"/>
+        </index>
+    </table>
+    <table name="mageplaza_lookbookslider_slider" resource="default" engine="innodb"
+           comment="Mageplaza Lookbook Slider Table">
+        <column xsi:type="int" name="slider_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Slider ID"/>
+        <column xsi:type="varchar" name="name" nullable="true" length="255" comment="Name"/>
+        <column xsi:type="smallint" name="status" padding="6" unsigned="false" nullable="false" identity="false"
+                default="1" comment="Status"/>
+        <column xsi:type="smallint" name="design" padding="6" unsigned="false" nullable="false" identity="false"
+                default="1" comment="Design"/>
+        <column xsi:type="smallint" name="infinite" nullable="true" comment=""/>
+        <column xsi:type="smallint" name="arrows" nullable="true" comment=""/>
+        <column xsi:type="smallint" name="dots" nullable="true" comment=""/>
+        <column xsi:type="varchar" name="lazyLoad" nullable="true" length="255" comment=""/>
+        <column xsi:type="smallint" name="autoplay" nullable="true" comment=""/>
+        <column xsi:type="smallint" name="pauseOnHover" nullable="true" comment="pauseOnHover"/>
+        <column xsi:type="varchar" name="autoplaySpeed" nullable="true" default="5000" comment="autoplaySpeed"/>
+        <column xsi:type="text" name="custom_css" nullable="true" comment="custom css"/>
+        <column xsi:type="timestamp" name="created_at" comment="Time of event"/>
+        <column xsi:type="timestamp" name="updated_at" comment="Time of event"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="slider_id"/>
+        </constraint>
+        <index referenceId="MAGEPLAZA_LOOKBOOKSLIDER_LOOKBOOK_NAME" indexType="fulltext">
+            <column name="name"/>
+        </index>
+    </table>
+    <table name="mageplaza_lookbookslider_slider_lookbook" resource="default" engine="innodb"
+           comment="Mageplaza Lookbook To Slider Linkage Table">
+        <column xsi:type="int" name="link_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Link ID"/>
+        <column xsi:type="int" name="slider_id" padding="10" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Slider ID"/>
+        <column xsi:type="int" name="lookbook_id" padding="10" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Lookbook ID"/>
+        <column xsi:type="int" name="position" padding="11" unsigned="false" nullable="false" identity="false"
+                default="0"
+                comment="Position"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="link_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="LB_ID_LBSL_LB_ID_LBL"
+                    table="mageplaza_lookbookslider_slider_lookbook"
+                    column="lookbook_id" referenceTable="mageplaza_lookbookslider_lookbook"
+                    referenceColumn="lookbook_id"
+                    onDelete="CASCADE"/>
+        <constraint xsi:type="foreign"
+                    referenceId="SLIDER_ID_LOOKBOOKSLIDER_SLIDER_SLIDER_ID_LOOKBOOKSLIDER_SLIDER_LOOKBOOK"
+                    table="mageplaza_lookbookslider_slider_lookbook" column="slider_id"
+                    referenceTable="mageplaza_lookbookslider_slider"
+                    referenceColumn="slider_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="LOOKBOOKSLIDER_SLIDER_LOOKBOOK_SLIDER_ID_LINKED_LOOKBOOK_ID">
+            <column name="slider_id"/>
+            <column name="lookbook_id"/>
+        </constraint>
+        <index referenceId="LOOKBOOKSLIDER_SLIDER_LOOKBOOK_SLIDER_ID" indexType="btree">
+            <column name="slider_id"/>
+        </index>
+        <index referenceId="LOOKBOOKSLIDER_SLIDER_LOOKBOOK_LOOKBOOK_ID" indexType="btree">
+            <column name="lookbook_id"/>
+        </index>
+    </table>
+</schema>

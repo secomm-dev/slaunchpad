@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscUltimate
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mageplaza_Osc::css/style.css"/>
+        <css src="Mageplaza_Osc::css/jquery-ui.min.css"/>
+        <css src="https://use.fontawesome.com/releases/v5.10.1/css/all.css" src_type="url"/>
+        <css src="Mageplaza_OscUltimate::css/style.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <referenceBlock name="mposc.field.tabs" remove="true"/>
+            <block name="mposc.block.tabs" class="Mageplaza\OscUltimate\Block\Adminhtml\ManageBlock\Tabs"
+                   template="Mageplaza_OscUltimate::block/tabs.phtml">
+                <block class="Mageplaza\OscUltimate\Block\Adminhtml\Layout\ManageFields" name="mposc.fields">
+                    <block class="Mageplaza\Osc\Block\Adminhtml\Field\Address" name="mposc.field.address"/>
+                    <block class="Mageplaza\Osc\Block\Adminhtml\Field\Shipping" name="mposc.field.shipping"/>
+                    <block class="Mageplaza\Osc\Block\Adminhtml\Field\Payment" name="mposc.field.payment"/>
+                    <block class="Mageplaza\Osc\Block\Adminhtml\Field\Order" name="mposc.field.order"/>
+                    <block class="Mageplaza\Osc\Block\Adminhtml\Field\CheckoutSteps" name="mposc.checkout.steps"/>
+                </block>
+                <block class="Mageplaza\OscUltimate\Block\Adminhtml\Layout\Block" name="mposc_block">
+                    <block class="Magento\Backend\Block\Store\Switcher" name="store_switcher" as="store_switcher"
+                           template="Mageplaza_OscUltimate::store/switcher.phtml"/>
+                    <block class="Mageplaza\OscUltimate\Block\Adminhtml\Layout\ManageBlock\Column"
+                           name="mposc.block.1column"/>
+                    <block class="Mageplaza\OscUltimate\Block\Adminhtml\Layout\ManageBlock\Columns"
+                           name="mposc.block.2columns"/>
+                    <block class="Mageplaza\OscUltimate\Block\Adminhtml\Layout\ManageBlock\ColumnsFloat"
+                           name="mposc.block.2columns-floating"/>
+                    <block class="Mageplaza\OscUltimate\Block\Adminhtml\Layout\ManageBlock\ThreeColumns"
+                           name="mposc.block.3columns"/>
+                    <block class="Mageplaza\OscUltimate\Block\Adminhtml\Layout\ManageBlock\ColumnsColspan"
+                           name="mposc.block.3columns-colspan"/>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

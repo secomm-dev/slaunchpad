@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="mageplaza_abandonedcart_logs" resource="default" engine="innodb" comment="Abandoned Cart Email Logs">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Log Id"/>
+        <column xsi:type="varchar" name="subject" nullable="true" length="255" comment="Subject"/>
+        <column xsi:type="varchar" name="customer_email" nullable="true" length="255" comment="Customer email"/>
+        <column xsi:type="varchar" name="coupon_code" nullable="true" length="255" comment="Coupon Code"/>
+        <column xsi:type="varchar" name="sender" nullable="true" length="255" comment="Sender"/>
+        <column xsi:type="varchar" name="customer_name" nullable="true" length="255" comment="Customer Name"/>
+        <column xsi:type="int" name="quote_id" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Quote Id"/>
+        <column xsi:type="smallint" name="sequent_number" padding="5" unsigned="true" nullable="false" identity="false" default="1" comment="Sequent number"/>
+        <column xsi:type="smallint" name="recovery" padding="5" unsigned="true" nullable="false" identity="false" default="0" comment="Recovery"/>
+        <column xsi:type="text" name="email_content" nullable="true" comment="Email Content"/>
+        <column xsi:type="smallint" name="status" padding="6" unsigned="false" nullable="false" identity="false" comment="Status"/>
+        <column xsi:type="smallint" name="display" padding="6" unsigned="false" nullable="false" identity="false" default="1" comment="Display"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="false" nullable="true" comment="Updated At"/>
+        <column xsi:type="text" name="sms_content" nullable="true" comment="SMS Content"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <index referenceId="MAGEPLAZA_ABANDONEDCART_LOGS_STATUS_SUBJECT" indexType="btree">
+            <column name="status"/>
+            <column name="subject"/>
+        </index>
+    </table>
+    <table name="mageplaza_abandonedcart_logs_token" resource="default" engine="innodb" comment="Abandoned Cart Email Token">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Id"/>
+        <column xsi:type="int" name="quote_id" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Quote Id"/>
+        <column xsi:type="varchar" name="config_id" nullable="true" length="255" comment="General configuration email id"/>
+        <column xsi:type="varchar" name="checkout_token" nullable="true" length="128" comment="Checkout token"/>
+        <column xsi:type="datetime" name="checkout_token_created_at" on_update="false" nullable="true" comment="Checkout token creation time"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="MAGEPLAZA_ABANDONEDCART_LOGS_TOKEN_QUOTE_ID_QUOTE_ENTITY_ID" table="mageplaza_abandonedcart_logs_token" column="quote_id" referenceTable="quote" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <index referenceId="MAGEPLAZA_ABANDONEDCART_LOGS_TOKEN_QUOTE_ID_CHECKOUT_TOKEN" indexType="btree">
+            <column name="quote_id"/>
+            <column name="checkout_token"/>
+        </index>
+    </table>
+    <table name="mageplaza_abandonedcart_reports_index" resource="default" engine="innodb" comment="Mageplaza Abandoned Cart Reports Index Table">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Id"/>
+        <column xsi:type="date" name="period" comment="Period"/>
+        <column xsi:type="int" name="store_id" padding="11" unsigned="false" nullable="true" identity="false" comment="Store ID"/>
+        <column xsi:type="float" name="cart_abandon_rate" scale="0" precision="0" unsigned="false" nullable="true" comment="Cart Abandon Rate"/>
+        <column xsi:type="float" name="successful_cart_rate" scale="0" precision="0" unsigned="false" nullable="true" comment="Successful Cart Rate"/>
+        <column xsi:type="int" name="total_abandoned_carts" padding="11" unsigned="false" nullable="true" identity="false" comment="Total Abandoned Carts"/>
+        <column xsi:type="float" name="total_abandoned_revenue" scale="2" precision="10" unsigned="false" nullable="true"/>
+        <column xsi:type="int" name="number_of_successful_carts" padding="11" unsigned="false" nullable="true" identity="false" comment="Number Of Successful Carts"/>
+        <column xsi:type="float" name="successful_carts_revenue" scale="2" precision="10" unsigned="false" nullable="true"/>
+        <column xsi:type="int" name="actionable_abandoned_carts" padding="11" unsigned="false" nullable="true" identity="false" comment="Actionable Abandoned Carts"/>
+        <column xsi:type="float" name="recapturable_revenue" scale="2" precision="10" unsigned="false" nullable="true"/>
+        <column xsi:type="float" name="recaptured_revenue" scale="2" precision="10" unsigned="false" nullable="true"/>
+        <column xsi:type="float" name="recaptured_rate" scale="0" precision="0" unsigned="false" nullable="true" comment="Recaptured Rate"/>
+        <column xsi:type="int" name="total_email_abandoned_sent" padding="11" unsigned="false" nullable="true" identity="false" comment="Total Email Abandoned Sent"/>
+        <column xsi:type="int" name="total_cart_checkout_sent" padding="11" unsigned="false" nullable="true" identity="false" comment="Total Cart Checkout Sent"/>
+        <column xsi:type="int" name="customer_group_id" padding="11" unsigned="false" nullable="true" identity="false" comment="Customer Group Id"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+    </table>
+    <table name="mageplaza_abandonedcart_product_reports_index" resource="default" engine="innodb" comment="Mageplaza Abandoned Cart Product Reports">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Id"/>
+        <column xsi:type="date" name="period" comment="Period"/>
+        <column xsi:type="int" name="store_id" padding="11" unsigned="false" nullable="true" identity="false" comment="Store Id"/>
+        <column xsi:type="int" name="product_id" padding="11" unsigned="false" nullable="true" identity="false" comment="Product Id"/>
+        <column xsi:type="varchar" name="product_name" nullable="true" length="255" comment="Product Name"/>
+        <column xsi:type="varchar" name="thumbnail" nullable="true" length="255" comment="Thumbnail"/>
+        <column xsi:type="varchar" name="sku" nullable="true" length="255" comment="SKU"/>
+        <column xsi:type="float" name="price" scale="0" precision="0" unsigned="false" nullable="true" comment="Price"/>
+        <column xsi:type="int" name="abandoned_time" padding="11" unsigned="false" nullable="true" identity="false" comment="Abandoned Time"/>
+        <column xsi:type="int" name="qty" padding="11" unsigned="false" nullable="true" identity="false" comment="Qty"/>
+        <column xsi:type="decimal" name="abandoned_revenue" scale="4" precision="12" unsigned="false" nullable="true" comment="Abandoned Revenue"/>
+        <column xsi:type="int" name="customer_group_id" padding="11" unsigned="false" nullable="true" identity="false" comment="Customer Group Id"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+    </table>
+    <table name="quote" resource="default">
+        <column xsi:type="int" name="mp_abandoned_set_change" padding="11" unsigned="false" nullable="true" identity="false" comment="Mageplaza Abandoned Change"/>
+    </table>
+    <table name="sales_order" resource="default">
+        <column xsi:type="int" name="mp_abandoned_return_cart" padding="11" unsigned="false" nullable="true" identity="false" comment="Mageplaza Abandoned Return Cart"/>
+    </table>
+    <table name="salesrule_coupon" resource="default">
+        <column xsi:type="smallint" name="mp_generated_by_abandoned_cart" padding="6" unsigned="false" nullable="true" identity="false" comment="1 = Generated by Abandoned Cart Email"/>
+        <column xsi:type="timestamp" name="mp_ace_expires_at" on_update="false" nullable="true" comment="Coupon expiration date of Abandoned Cart Email"/>
+    </table>
+    <table name="customer_entity" resource="default">
+        <column xsi:type="smallint" name="mp_ace_blacklist" padding="6" unsigned="false" nullable="true" identity="false" default="0" comment="Abandoned Cart Email Blacklist"/>
+    </table>
+</schema>

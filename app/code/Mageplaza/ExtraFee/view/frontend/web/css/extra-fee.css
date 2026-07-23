@@ -1,0 +1,76 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+@media only screen and (max-width: 767px) {
+    #mp-extra-fee {
+        padding: 5px 15px 23px;
+    }
+}
+
+.mp-description {
+    overflow-wrap: anywhere;
+}
+
+.mp-extra-fee-multi-cart {
+    width: 25%;
+    float: left;
+    overflow-wrap: anywhere;
+}
+
+#review-order-form .box.box-shipping-method {
+    width: 30%;
+}
+
+.mp_required:after {
+    color: #eb5202;
+    content: '*';
+    display: inline-block;
+    font-size: 1.6rem;
+    font-weight: 500;
+    line-height: 1;
+    margin-top: .2rem;
+    position: absolute;
+    z-index: 1;
+    left: 0;
+}
+
+.mp_required {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.mp-error-message {
+    display: none;
+}
+
+.apply-extra-fee-button, .apply-extra-fee-button:active {
+    display: block;
+    width: 115px;
+    height: 25px;
+    background: #006bb4;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    line-height: 25px;
+    cursor: pointer;
+}

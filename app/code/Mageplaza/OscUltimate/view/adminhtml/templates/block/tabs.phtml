@@ -1,0 +1,77 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscUltimate
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var Tabs $block */
+
+use Mageplaza\OscUltimate\Block\Adminhtml\Layout;
+use Mageplaza\OscUltimate\Block\Adminhtml\ManageBlock\Tabs;
+
+?>
+
+<div id="mposc-manage" class="row">
+    <a class="button action-default col-m-6" href="#<?= $block->escapeQuote(Layout\ManageFields::BLOCK_ID) ?>">
+        <span><?= $block->escapeHtml(__('Manage Field')) ?></span>
+    </a>
+    <a class="button action-default col-m-6" href="#<?= $block->escapeQuote(Layout\Block::BLOCK_ID) ?>">
+        <span><?= $block->escapeHtml(__('Manage Block')) ?></span>
+    </a>
+</div>
+<?= $block->getChildHtml() ?>
+<style>
+    #mposc-manage a._active {
+        background-color: #050084;
+        border-color: #050084;
+        color: #ffffff;
+    }
+
+    .column ul li {
+        width: 100%;
+    }
+
+    div#field-position-sortable {
+        width: 80%;
+    }
+
+    div#mposc-field-tabs {
+        width: 20%;
+    }
+
+    div#mposc-manage-fields {
+        display: flex;
+    }
+
+    #mposc-field-tabs a._active {
+        background-color: #4A4542 !important;
+        border-color: #4A4542 !important;;
+        color: #ffffff;
+    }
+
+</style>
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Mageplaza_OscUltimate/js/view/field-tabs": {
+                "url": "<?= $block->escapeUrl($block->getAjaxUrl()) ?>",
+                "urlCheckoutSteps": "<?= $block->escapeUrl($block->getUrlCheckoutSteps()) ?>"
+        }
+    }
+}
+</script>

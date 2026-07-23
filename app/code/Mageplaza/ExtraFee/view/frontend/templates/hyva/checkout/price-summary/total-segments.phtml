@@ -1,0 +1,78 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Checkout\ViewModel\Checkout\PriceSummary\TotalSegments as TotalSegmentsViewModel;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Mageplaza\ExtraFee\ViewModel\Checkout\OrderSummary\ExtraFee as ViewModel;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
+
+/** @var TotalSegmentsViewModel $totalSegmentsViewModel */
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var ViewModel $viewModel */
+/** @var FormatterViewModel $formatterViewModel */
+
+$viewModel = $viewModels->require(ViewModel::class);
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+$totalSegmentsViewModel = $viewModels->require(TotalSegmentsViewModel::class);
+$totals = $totalSegmentsViewModel->getTotals();
+$quote = $viewModel->getQuote();
+$ruleConfig = json_decode($quote->getData('mp_extra_fee'))->totals;
+?>
+<div class="total-segments border-t border-slate-300 divide-y leading-loose">
+    <?php if ($ruleConfig): ?>
+        <?php foreach ($ruleConfig as $rule): ?>
+            <div class="item py-3.5 <?= $escaper->escapeHtmlAttr($rule->code) ?>">
+                <div class="flex gap-4 justify-between text-slate-800 text-base md:gap-0">
+                    <?php
+                    $label = strpos($rule->code, 'auto') ? $rule->rule_label : ($rule->rule_label . ' - ' . $rule->title);
+                    ?>
+                    <span class="label"><?= /** @noEscape */ $label ?></span>
+                    <span class="value"><?= /** @noEscape */ $formatterViewModel->currency($rule->value) ?></span>
+                </div>
+            </div>
+        <?php endforeach ?>
+    <?php endif;?>
+    <?php if ($totals): ?>
+        <?php foreach ($totals->getTotalSegments() as $segment): ?>
+            <?php if ($segment->hasCode() && $child = $totalSegmentsViewModel->getTotalBlock($block, $segment->toArray())): ?>
+                <?php if ($child->toHtml() != ''): ?>
+                    <div class="item py-3.5 <?= $escaper->escapeHtmlAttr($segment->getCode()) ?>">
+                        <?= $child->toHtml() ?>
+
+                        <?php foreach ($totalSegmentsViewModel->getTotalSegmentExtensionAttributes($segment) as $code => $extensionAttribute): ?>
+                            <?php if ($extensionAttributes = $totalSegmentsViewModel->getTotalExtensionAttributesBlock($child, $code, $extensionAttribute)): ?>
+                                <?= $extensionAttributes->toHtml() ?>
+                            <?php endif ?>
+                        <?php endforeach ?>
+                    </div>
+                <?php endif; ?>
+            <?php endif ?>
+        <?php endforeach ?>
+    <?php else: ?>
+        <p class="border border-red-700 bg-red-500 rounded-md text-white p-4 text-sm">
+            <?= $escaper->escapeHtml(__('Something went wrong while collecting the order price summary.')) ?>
+        </p>
+    <?php endif ?>
+</div>

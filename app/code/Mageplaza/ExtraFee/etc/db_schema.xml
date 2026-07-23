@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="mageplaza_extrafee_rule" resource="default" engine="innodb" comment="Extra Fee Rule Table">
+        <column xsi:type="int" name="rule_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Profile Id"/>
+        <column xsi:type="varchar" name="name" nullable="false" length="255" comment="Rule Name"/>
+        <column xsi:type="int" name="status" padding="11" unsigned="false" nullable="false" identity="false" comment="Rule Status"/>
+        <column xsi:type="varchar" name="store_ids" nullable="false" length="255" comment="Stores"/>
+        <column xsi:type="varchar" name="customer_groups" nullable="false" length="64" comment="Customer Groups"/>
+        <column xsi:type="int" name="priority" padding="11" unsigned="false" nullable="true" identity="false" comment="Priority"/>
+        <column xsi:type="mediumtext" name="actions_serialized" nullable="true" comment="Actions Serialized"/>
+        <column xsi:type="mediumtext" name="conditions_serialized" nullable="true" comment="Attribute Conditions"/>
+        <column xsi:type="int" name="apply_type" padding="11" unsigned="false" nullable="true" identity="false" comment="Apply Type"/>
+        <column xsi:type="int" name="fee_type" padding="11" unsigned="false" nullable="true" identity="false" comment="Fee Type"/>
+        <column xsi:type="decimal" name="amount" scale="4" precision="12" unsigned="false" nullable="true" comment="Amount"/>
+        <column xsi:type="int" name="area" padding="11" unsigned="false" nullable="true" identity="false" comment="Area"/>
+        <column xsi:type="int" name="display_type" padding="11" unsigned="false" nullable="true" identity="false" comment="Display Type"/>
+        <column xsi:type="int" name="is_required" padding="11" unsigned="false" nullable="true" identity="false" comment="Is Required"/>
+        <column xsi:type="int" name="fee_tax" padding="11" unsigned="false" nullable="true" identity="false" comment="Fee Tax"/>
+        <column xsi:type="int" name="sort_order" padding="11" unsigned="false" nullable="true" identity="false" comment="Cart Sort Order"/>
+        <column xsi:type="int" name="refundable" padding="11" unsigned="false" nullable="true" identity="false" comment="Refundable"/>
+        <column xsi:type="int" name="stop_further_processing" padding="11" unsigned="false" nullable="true" identity="false" comment="Stop Further Processing"/>
+        <column xsi:type="mediumtext" name="labels" nullable="true" comment="Labels"/>
+        <column xsi:type="mediumtext" name="options" nullable="true" comment="Options"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP" comment="Update At"/>
+        <column xsi:type="text" name="description" nullable="true" comment="Description"/>
+        <column xsi:type="int" name="allow_note_message" padding="11" unsigned="false" nullable="false" identity="false" comment="Allow Note Message"/>
+        <column xsi:type="text" name="message_title" nullable="true" comment="Message Title"/>
+        <column xsi:type="datetime" name="from_date" on_update="false" nullable="true" comment="From Date"/>
+        <column xsi:type="datetime" name="to_date" on_update="false" nullable="true" comment="To Date"/>
+        <column xsi:type="text" name="available_days" nullable="true" comment="Available Days"/>
+        <column xsi:type="int" name="apply_for" padding="11" unsigned="false" nullable="false" identity="false" default="1" comment="Apply For"/>
+        <column xsi:type="text" name="fee_include" nullable="true" comment="Fee Include"/>
+        <column xsi:type="int" name="fee_type_item" padding="11" unsigned="false" nullable="true" identity="false" comment="Fee Type Item"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="rule_id"/>
+        </constraint>
+    </table>
+    <table name="quote" resource="default">
+        <column xsi:type="text" name="mp_extra_fee" comment="Mp Extra Fee"/>
+    </table>
+    <table name="quote_address" resource="default">
+        <column xsi:type="text" name="mp_extra_fee" comment="Mp Extra Fee"/>
+    </table>
+    <table name="sales_order" resource="default">
+        <column xsi:type="text" name="mp_extra_fee" comment="Mp Extra Fee"/>
+    </table>
+    <table name="sales_order_item" resource="default">
+        <column xsi:type="text" name="mp_extra_fee" comment="Mp Extra Fee"/>
+    </table>
+    <table name="sales_invoice" resource="default">
+        <column xsi:type="text" name="mp_extra_fee" comment="Mp Extra Fee"/>
+    </table>
+    <table name="sales_invoice_item" resource="default">
+        <column xsi:type="text" name="mp_extra_fee" comment="Mp Extra Fee"/>
+    </table>
+    <table name="sales_creditmemo" resource="default">
+        <column xsi:type="text" name="mp_extra_fee" comment="Mp Extra Fee"/>
+        <column xsi:type="decimal" name="mp_extra_fee_rule" scale="4" precision="20" unsigned="false" nullable="true"
+                comment="Base Adjustment"/>
+    </table>
+    <table name="sales_creditmemo_item" resource="default">
+        <column xsi:type="text" name="mp_extra_fee" comment="Mp Extra Fee"/>
+    </table>
+
+    <table name="mageplaza_extrafee_product_attribute" resource="default" engine="innodb" comment="Mageplaza ExtraFee Rule to Attribute Link">
+        <column xsi:type="int" name="rule_id" nullable="false" unsigned="true" comment="ExtraFee Rule ID"/>
+        <column xsi:type="smallint" name="website_id" nullable="false" unsigned="true" comment="Website ID"/>
+        <column xsi:type="int" name="customer_group_id" nullable="false" unsigned="true" comment="Customer Group ID"/>
+        <column xsi:type="smallint" name="attribute_id" nullable="false" unsigned="true" comment="EAV Attribute ID"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="rule_id"/>
+            <column name="website_id"/>
+            <column name="customer_group_id"/>
+            <column name="attribute_id"/>
+        </constraint>
+
+        <constraint xsi:type="foreign" referenceId="MP_EXTRAFEE_PRD_ATTR_RULE_ID_EXTRAFEE_RULE_RULE_ID"
+                    table="mageplaza_extrafee_product_attribute" column="rule_id"
+                    referenceTable="mageplaza_extrafee_rule" referenceColumn="rule_id"
+                    onDelete="CASCADE"/>
+
+        <constraint xsi:type="foreign" referenceId="MP_EXTRAFEE_PRD_ATTR_ATTR_ID_EAV_ATTR_ATTR_ID"
+                    table="mageplaza_extrafee_product_attribute" column="attribute_id"
+                    referenceTable="eav_attribute" referenceColumn="attribute_id"
+                    onDelete="CASCADE"/>
+
+        <constraint xsi:type="foreign" referenceId="MP_EXTRAFEE_PRD_ATTR_CG_ID_CUSTOMER_GROUP_ID"
+                    table="mageplaza_extrafee_product_attribute" column="customer_group_id"
+                    referenceTable="customer_group" referenceColumn="customer_group_id"
+                    onDelete="CASCADE"/>
+
+        <constraint xsi:type="foreign" referenceId="MP_EXTRAFEE_PRD_ATTR_WEBSITE_ID_STORE_WEBSITE_ID"
+                    table="mageplaza_extrafee_product_attribute" column="website_id"
+                    referenceTable="store_website" referenceColumn="website_id"
+                    onDelete="CASCADE"/>
+
+        <index referenceId="MP_EXTRAFEE_PRODUCT_ATTRIBUTE_ATTRIBUTE_ID" indexType="btree">
+            <column name="attribute_id"/>
+        </index>
+        <index referenceId="MP_EXTRAFEE_PRODUCT_ATTRIBUTE_CUSTOMER_GROUP_ID" indexType="btree">
+            <column name="customer_group_id"/>
+        </index>
+        <index referenceId="MP_EXTRAFEE_PRODUCT_ATTRIBUTE_WEBSITE_ID" indexType="btree">
+            <column name="website_id"/>
+        </index>
+    </table>
+    <table name="mageplaza_extrafee_stats" resource="default" engine="innodb" comment="Mageplaza ExtraFee Stats per Rule">
+        <column xsi:type="int" name="rule_id" padding="10" unsigned="true" nullable="false" comment="Rule ID"/>
+        <column xsi:type="int" name="order_count" padding="11" unsigned="true" nullable="false" default="0" comment="Order Count"/>
+        <column xsi:type="decimal" name="revenue" scale="4" precision="20" unsigned="true" nullable="false" default="0" comment="Revenue"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="MP_EXTRAFEE_STATS_PK">
+            <column name="rule_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="MP_EXTRAFEE_STATS_RULE_FK" table="mageplaza_extrafee_stats" column="rule_id" referenceTable="mageplaza_extrafee_rule" referenceColumn="rule_id" onDelete="CASCADE"/>
+    </table>
+</schema>

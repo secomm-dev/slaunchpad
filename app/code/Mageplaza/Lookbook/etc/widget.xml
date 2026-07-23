@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<widgets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Widget:etc/widget.xsd">
+    <widget class="Mageplaza\Lookbook\Block\Widget" id="mageplaza_lookbook_slider_widget">
+        <label translate="true">Mageplaza Lookbook Slider</label>
+        <description translate="true">Mageplaza Lookbook Slider List</description>
+        <parameters>
+            <parameter name="slider_id" xsi:type="block" visible="true" required="true" sort_order="20">
+                <label translate="true">Slider</label>
+                <block class="Mageplaza\Lookbook\Block\Adminhtml\Slider\Widget\Chooser">
+                    <data>
+                        <item name="button" xsi:type="array">
+                            <item name="open" xsi:type="string" translate="true">Select Slider...</item>
+                        </item>
+                    </data>
+                </block>
+            </parameter>
+        </parameters>
+    </widget>
+    <widget class="Mageplaza\Lookbook\Block\Lookbook" id="mageplaza_lookbook_widget">
+        <label translate="true">Mageplaza Lookbook</label>
+        <description translate="true">Mageplaza Lookbook List</description>
+        <parameters>
+            <parameter name="lookbook_id" xsi:type="block" visible="true" required="true" sort_order="20">
+                <label translate="true">Lookbook</label>
+                <block class="Mageplaza\Lookbook\Block\Adminhtml\Lookbook\Widget\Chooser">
+                    <data>
+                        <item name="button" xsi:type="array">
+                            <item name="open" xsi:type="string" translate="true">Select Lookbook...</item>
+                        </item>
+                    </data>
+                </block>
+            </parameter>
+        </parameters>
+    </widget>
+</widgets>

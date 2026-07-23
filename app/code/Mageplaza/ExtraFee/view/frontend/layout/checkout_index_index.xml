@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="checkout" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mageplaza_ExtraFee::css/disabled-place-order.css"/>
+    </head>
+    <body>
+        <referenceBlock name="checkout.root">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="checkout" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="steps" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="shipping-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="shippingAddress" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="mp_extra_fee" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Mageplaza_ExtraFee/js/view/checkout/extra-fee-shipping</item>
+                                                            <item name="displayArea" xsi:type="string">shippingAdditional</item>
+                                                            <item name="config" xsi:type="array">
+                                                                <item name="componentDisabled" xsi:type="helper" helper="Mageplaza\ExtraFee\Helper\Data::isDisabled"/>
+                                                                <item name="title" xsi:type="string" translate="true">Extra Fee</item>
+                                                                <item name="sortOrder" xsi:type="string">30</item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                        <item name="billing-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="payment" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="afterMethods" xsi:type="array">
+                                                            <item name="displayArea" xsi:type="string">afterMethods</item>
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="extra-fee" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Mageplaza_ExtraFee/js/view/checkout/extra-fee-billing</item>
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="sortOrder" xsi:type="string">0</item>
+                                                                        <item name="componentDisabled" xsi:type="helper" helper="Mageplaza\ExtraFee\Helper\Data::isDisabled"/>
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                                <item name="sidebar" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="summary" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="mpExtraFee" xsi:type="array">
+                                                    <item name="component" xsi:type="string">Mageplaza_ExtraFee/js/view/cart/extra-fee</item>
+                                                    <item name="sortOrder" xsi:type="string">0</item>
+                                                    <item name="config" xsi:type="array">
+                                                        <item name="componentDisabled" xsi:type="helper" helper="Mageplaza\ExtraFee\Helper\Data::isOscPage"/>
+                                                    </item>
+                                                </item>
+                                                <item name="totals" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="before_grandtotal" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="extra_fee" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Mageplaza_ExtraFee/js/view/cart/totals/extra-fee</item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                        <item name="place-order-information-left" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="addition-information" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="mpExtraFee" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Mageplaza_ExtraFee/js/view/cart/extra-fee</item>
+                                                            <item name="sortOrder" xsi:type="string">0</item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>

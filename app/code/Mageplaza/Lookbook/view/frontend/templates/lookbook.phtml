@@ -1,0 +1,134 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+$lookbook = $block->getLookbook();
+if ($lookbook && $lookbook->getStatus() === '1'): ?>
+    <?php
+    $imgUrl       = $block->getImageUrl($lookbook->getImage());
+    $lookbookName = $lookbook->getName();
+    $uniqid       = uniqid('-', false);
+    $lookbookId   = $lookbook->getId() . $uniqid;
+    $data         = json_encode([$lookbookId => $block->getMarkerData()]);
+    $width        = $lookbook->getWidth() ? 'width="' . $lookbook->getWidth() . '"' : '';
+    $height       = $lookbook->getLookbookHeight() ? 'height="' . $lookbook->getHeight() . '"' : '';
+    ?>
+    <div>
+        <div class="mplookbook-lookbook <?= !$block->isPopupType() ? 'mplookbook-marker-tooltip' : 'mplookbook-marker-popup' ?>">
+            <div style="max-width: max-content; margin: auto;" id="mplookbook-<?= /* @noEscape */
+            $lookbookId ?>">
+                <img class="img-responsive mplookbook-pin-<?= /* @noEscape */
+                $lookbook->getId() ?>" <?= /* @noEscape */
+                $width ?> <?= /* @noEscape */
+                $height ?>
+                    <?php if ($block->isLazyLoad() !== \Mageplaza\Lookbook\Model\Config\Source\LazyLoad::NO): ?>
+                        data-lazy="<?= $block->escapeUrl($imgUrl) ?>"
+                    <?php else: ?>
+                        src="<?= $block->escapeUrl($imgUrl) ?>"
+                    <?php endif; ?>
+                     title="<?= $block->escapeHtml($lookbookName) ?>"
+                     alt="<?= $block->escapeHtml($lookbookName) ?>"
+                     easypin-id="<?= /* @noEscape */
+                     $lookbookId ?>"/>
+                <div class="mplookbook-popover-container" style="display:none;" easypin-tpl>
+                    <popover>
+                        <div class="exPopoverContainer mplookbook-exPopoverContainer"
+                             style="height: auto;background-color: #FFFFFF;color: #000000;font-size: 20px;">{[template]}
+                        </div>
+                    </popover>
+
+                    <marker class="mplookbook-marker">
+                        <div <?= /* @noEscape */
+                        $block->getMarkerStyle() ?>></div>
+                    </marker>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php if ($block->isPopupType()): ?>
+        <link rel="stylesheet" type="text/css" href="<?= /* @noEscape */
+        $block->getViewFileUrl('Mageplaza_Core::css/magnific-popup.css') ?>">
+        <style type="text/css">
+            .mfp-iframe-scaler iframe {
+                background: url(<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>) no-repeat scroll center center #fff;
+            }
+        </style>
+    <?php endif; ?>
+    <script>
+        require(['jquery',
+                'mplookbook/easing',
+                'mplookbook/easypin',
+                'mageplaza/core/jquery/popup'],
+            function ($) {
+                $(document).ready(function () {
+                    $('.mplookbook-pin-<?= /* @noEscape */ $lookbook->getId() ?>').easypinShow({
+                        data: <?= /* @noEscape */ $data ?>,
+                        responsive: true,
+                        popover: {show: false, animate: true},
+                        each: function (index, data) {
+                            return data;
+                        },
+                        error: function (e) {
+                            console.log(e);
+                        },
+                        success: function () {
+                        }
+                    });
+
+                    <?php if ($block->isPopupType()): ?>
+                    $('#mplookbook-<?= /* @noEscape */ $lookbookId ?>').find('.easypin-marker').on('click', function () {
+                        var prodUrl = $(this).find('.mplookbook-quickview').attr('data-quickview-url');
+                        if (prodUrl && prodUrl.length) {
+                            $.magnificPopup.open({
+                                items: {
+                                    src: prodUrl + '?mplookbook=1'
+                                },
+                                type: 'iframe',
+                                removalDelay: 300,
+                                mainClass: 'mfp-fade mfp-mplookbook-quickview-frame',
+                                closeOnBgClick: true,
+                                preloader: true,
+                                tLoading: 'Loading...',
+                                callbacks: {
+                                    close: function () {
+                                        $('.mfp-preloader').css('display', 'none');
+                                    }
+                                }
+                            });
+                        } else {
+                            $.magnificPopup.open({
+                                items: {
+                                    src: $(this).find('.exPopoverContainer').html(),
+                                    type: 'inline'
+                                },
+                                mainClass: 'mfp-fade',
+                                closeOnBgClick: true,
+                                callbacks: {
+                                    open: function () {
+                                        $('.mfp-content .white-popup').css('display', 'block');
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    <?php endif; ?>
+                });
+            });
+    </script>
+<?php endif; ?>

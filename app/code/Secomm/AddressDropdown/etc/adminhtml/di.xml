@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Customer\Model\Customer\DataProviderWithDefaultAddresses">
+        <plugin name="display_default_addresses_in_customer_data_provider"
+                type="Secomm\AddressDropdown\Plugin\DataProviderWithDefaultAddressesPlugin"/>
+    </type>
+    <type name="Magento\Customer\Ui\Component\Listing\Address\Column\Actions">
+        <plugin name="update_subcity"
+                type="Secomm\AddressDropdown\Plugin\ActionsPlugin"/>
+    </type>
+</config>

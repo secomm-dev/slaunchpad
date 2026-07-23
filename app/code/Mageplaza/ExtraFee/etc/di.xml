@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Mageplaza\ExtraFee\Api\RuleInterface" type="Mageplaza\ExtraFee\Model\Api\RuleManagement"/>
+    <preference for="Mageplaza\ExtraFee\Api\GuestRuleInterface" type="Mageplaza\ExtraFee\Model\Api\GuestRuleManagement"/>
+    <preference for="Magento\Sales\Model\Order\Pdf\Invoice" type="Mageplaza\ExtraFee\Model\Sales\Order\Pdf\Invoice"/>
+    <preference for="Magento\Sales\Model\Order\Pdf\Shipment" type="Mageplaza\ExtraFee\Model\Sales\Order\Pdf\Shipment"/>
+    <preference for="Magento\Sales\Model\Order\Pdf\Creditmemo" type="Mageplaza\ExtraFee\Model\Sales\Order\Pdf\Creditmemo"/>
+
+    <preference for="Mageplaza\ExtraFee\Api\Data\ListInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Mageplaza\ExtraFee\Api\Data\RulesDataInterface" type="Magento\Framework\Api\SearchResults"/>
+
+    <preference for="Mageplaza\ExtraFee\Api\Data\Rules\AreaInterface" type="Magento\Framework\Api\SearchResults"/>
+
+    <preference for="Magento\Sales\Model\Order\CreditmemoFactory" type="Mageplaza\ExtraFee\Model\Sales\Order\CreditmemoFactory"/>
+    <!--Grid collection-->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="sales_order_grid_data_source" xsi:type="string">Mageplaza\ExtraFee\Model\ResourceModel\Order\Grid\Collection</item>
+                <item name="mageplaza_extrafee_rule_listing_data_source" xsi:type="string">Mageplaza\ExtraFee\Model\ResourceModel\Rule\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Checkout\Model\TotalsInformationManagement">
+        <plugin name="mp_extra_fee_saveShipingMethodOnCalculate" type="Mageplaza\ExtraFee\Plugin\Model\Checkout\TotalsInformationManagement"/>
+    </type>
+    <type name="Magento\Quote\Model\Cart\TotalsConverter">
+        <plugin name="mp_extra_fee_add_value_incl_tax" type="Mageplaza\ExtraFee\Plugin\Quote\Model\Cart\TotalsConverter"/>
+    </type>
+    <type name="Magento\Sales\Api\OrderRepositoryInterface">
+        <plugin name="get_extra_fee_attributes" type="Mageplaza\ExtraFee\Plugin\Sales\Model\OrderGet"/>
+    </type>
+    <type name="Magento\SalesRule\Model\Rule\Condition\Address">
+        <plugin name="add_payment_method" type="Mageplaza\ExtraFee\Plugin\Model\Rule\Condition\EFAddress"/>
+    </type>
+    <type name="Mageplaza\ExtraFee\Model\ResourceModel\Order\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">sales_order_grid</argument>
+            <argument name="resourceModel" xsi:type="string">Magento\Sales\Model\ResourceModel\Order</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Multishipping\Model\Checkout\Type\Multishipping">
+        <plugin name="mp_extra_fee_shipping" type="Mageplaza\ExtraFee\Plugin\Multishipping\Type\Multishipping"/>
+    </type>
+    <type name="Magento\Quote\Model\Quote\TotalsReader">
+        <plugin name="add_tax_details" type="Mageplaza\ExtraFee\Plugin\Model\Quote\TotalsReader"/>
+    </type>
+    <type name="Magento\SalesRule\Model\ResourceModel\Rule">
+        <plugin name="mp_extrafee_rule_active_attributes" type="Mageplaza\ExtraFee\Plugin\Model\SalesRule\ResourceModel\RulePlugin"/>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="mageplaza_extrafee_rebuild_stats" xsi:type="object">Mageplaza\ExtraFee\Console\Command\RebuildStats</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

@@ -1,0 +1,195 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ThankYouPage
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var Mageplaza\ThankYouPage\Block\Faq $block */
+/** @var \Mageplaza\Faqs\Model\ResourceModel\Article\Collection $articles */
+/** @var \Hyva\Theme\Model\ViewModelRegistry $viewModels */
+
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/** @var Hyva\Theme\ViewModel\HeroiconsOutline $heroIcons */
+$heroIcons = $viewModels->require(HeroiconsOutline::class);
+?>
+
+<?php
+if ($block->getType() === 'order' && $block->isOrderSuccessPageEnable()) {
+    $title    = $block->getOrderFaqTitle();
+    $articles = $block->getOrderFaqs();
+    $limit    = $block->getOrderFaqLimit();
+} elseif ($block->getType() === 'newsletter') {
+    $title    = $block->getNewsletterFaqTitle();
+    $articles = $block->getNewsletterFaqs();
+    $limit    = $block->getNewsletterFaqLimit();
+} else {
+    $title    = 'FAQs';
+    $articles = null;
+    $limit    = null;
+} ?>
+<?php if ($articles != null && $limit != null && $limit != 0): ?>
+    <div id="mpfaqs-list-container" class="col-mp mp-12 mpfaqs-list mpfaqs">
+        <div class="mpfaqs-list__block">
+            <div class="section grey lighten-5 row">
+                <div class="faq-title">
+                    <p class="font-bold"><?= /** @noEscape */ __($title) ?></p>
+                </div>
+                <?php $iterator = 1; ?>
+                <ul class="mpfaqs-list__block__question collapsible">
+                    <?php foreach ($articles as $article): ?>
+                        <?php $isOverLimit = $iterator++ > $limit ? 'style="display: none"' : ''; ?>
+                        <li class="mpfaqs-item" <?= /** @noEscape */ $isOverLimit ?>>
+                            <div class="collapsible-header in-active"
+                                 data-id="<?= /** @noEscape */ $article->getId() ?>">
+                                <span class="flex gap-4">
+                            <?php if ($block->isCollapsible()): ?>
+                                <?= /** @noEscape */ $heroIcons->documentTextHtml('', 24, 24, ['aria-hidden' => true]); ?>
+                                <?= /** @noEscape */ $article->getName(); ?>
+                            <?php else: ?>
+                                <a href="<?= $block->escapeUrl($article->getUrl()) ?>">
+                                    <?= /** @noEscape */ $heroIcons->documentTextHtml('', 24, 24, ['aria-hidden' => true]); ?>
+                                    <?= /** @noEscape */ $article->getName() ?>
+                                </a>
+                            <?php endif; ?>
+                                </span>
+                            </div>
+                            <div id="mpfaqs-list__block__question__content--<?= /** @noEscape  */ $article->getId() ?>"
+                                 class="collapsible-body">
+                                <?php if ($article->getShortAnswer()): ?>
+                                    <?php if ($block->getHelperData()->isEnabledDetailPage()): ?>
+                                        <p><?= /** @noEscape */ $block->getHelperData()->getPageFilter($article->getShortAnswer()) ?>
+                                            <br>
+                                            <a href="<?= $block->escapeUrl($article->getUrl()) ?>"><?= /** @noEscape */ __('Read more') ?></a>
+                                        </p>
+                                    <?php else: ?>
+                                        <p><?= /** @noEscape */ $block->getHelperData()->getPageFilter($article->getArticleContent()) ?></p>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <p><?= /** @noEscape */ __('There is no answer for this question.') ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                    <div class="view-all-faq flex gap-4 mt-4">
+                        <?= /** @noEscape */ $heroIcons->chevronDoubleDownHtml('', 20, 20, ['aria-hidden' => true]); ?>
+                        <a class="load-more"> <?= /** @noEscape */ __('View all') ?></a>
+                    </div>
+                    <div class="collapse-faq flex hidden gap-4 mt-4">
+                        <?= /** @noEscape */ $heroIcons->chevronDoubleUpHtml('', 20, 20, ['aria-hidden' => true]); ?>
+                        <a class="back-to-top"> <?= /** @noEscape */ __('Collapse') ?></a>
+                    </div>
+                </ul>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function () {
+                const limitCount    = '<?= /** @noEscape */ $limit; ?>';
+                const isCollapsible = '<?= /** @noEscape */ $block->isCollapsible()?>';
+
+                document.querySelectorAll('.mpfaqs-list__block').forEach(function (el) {
+                    const faqItems    = el.querySelectorAll('.mpfaqs-list__block__question li.mpfaqs-item');
+                    const hiddenItems = Array.from(faqItems).slice(limitCount);
+                    const showMore    = el.querySelector('.view-all-faq');
+                    const collapse = el.querySelector('.collapse-faq');
+
+                    faqItems.forEach(function (item, index) {
+                        item.style.display = index < limitCount ? 'block' : 'none';
+                    });
+
+                    if (faqItems.length <= limitCount) {
+                        showMore.style.display = 'none';
+                    } else {
+                        showMore.querySelector('a').addEventListener('click', function () {
+                            hiddenItems.forEach(function (item) {
+                                item.style.display = 'block';
+                            });
+                            showMore.classList.add('hidden');
+                            collapse.classList.remove('hidden');
+                        });
+
+                        collapse.querySelector('a').addEventListener('click', function () {
+                            hiddenItems.forEach(function (item) {
+                                item.style.display = 'none';
+                            });
+                            showMore.classList.remove('hidden');
+                            collapse.classList.add('hidden');
+                        });
+                    }
+                });
+
+                if (isCollapsible) {
+                    document.querySelectorAll('.collapsible-header').forEach(function (header) {
+                        header.addEventListener('click', function () {
+                            const content  = document.getElementById('mpfaqs-list__block__question__content--' + this.dataset.id);
+                            const isActive = this.classList.toggle('active');
+                            this.classList.toggle('in-active', !isActive);
+                            content.style.display = isActive ? 'block' : 'none';
+                        });
+                    });
+                }
+            });
+        </script>
+    </div>
+    <style>
+        #mpfaqs-list-container {
+            margin-top: 20px
+        }
+        .mpfaqs-list__block__question {
+            margin-left: 40px;
+            margin-top: 20px;
+        }
+        .collapsible-body {
+            display: none;
+        }
+
+        li.mpfaqs-item {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            list-style: none;
+        }
+
+        .mpfaqs-list__block__question .collapsible-header a {
+            color: inherit;
+        }
+
+        .mpfaqs a {
+            text-decoration: none;
+            &:hover {
+                color: #1abc9c;
+            }
+        }
+
+        .mpfaqs .collapsible-header i {
+            width: 2rem;
+            font-size: 1.6rem;
+            display: inline-block;
+            text-align: center;
+            margin-right: 1rem;
+        }
+
+        .mpfaqs-list__block__question .collapsible-header i {
+            color: #ccc;
+        }
+        .view-all-faq {
+            margin-top: 20px;
+        }
+    </style>
+<?php endif; ?>
+

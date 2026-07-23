@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Mageplaza\Lookbook\Api\Data\LookbookInterFace" type="Mageplaza\Lookbook\Model\Lookbook"/>
+    <preference for="Mageplaza\Lookbook\Api\LookbookRepositoryInterface" type="Mageplaza\Lookbook\Model\LookbookRepository"/>
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="mplookbook_lookbook_listing_data_source" xsi:type="string">
+                    Mageplaza\Lookbook\Model\ResourceModel\Lookbook\Grid\Collection
+                </item>
+                <item name="mplookbook_slider_listing_data_source" xsi:type="string">
+                    Mageplaza\Lookbook\Model\ResourceModel\Slider\Grid\Collection
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Mageplaza\Lookbook\Model\ResourceModel\Lookbook\Grid\Collection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mageplaza_lookbookslider_lookbook</argument>
+            <argument name="resourceModel" xsi:type="string">Mageplaza\Lookbook\Model\ResourceModel\Lookbook</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Mageplaza\Lookbook\Model\ResourceModel\Slider\Grid\Collection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mageplaza_lookbookslider_slider</argument>
+            <argument name="resourceModel" xsi:type="string">Mageplaza\Lookbook\Model\ResourceModel\Slider</argument>
+        </arguments>
+    </virtualType>
+</config>

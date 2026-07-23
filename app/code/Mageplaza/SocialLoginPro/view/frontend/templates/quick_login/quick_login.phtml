@@ -1,0 +1,78 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+/** @var \Mageplaza\SocialLogin\Block\Popup $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$popupLogin = $block->isEnabled();
+$color      = $block->getStyleManagement();
+?>
+<?php if ($block->isEnabled() && $popupLogin !== 'popup_login') : ?>
+    <div class="quick-login-wrapper col-mp mp-12"
+         data-mage-init='{"socialPopupForm": <?= $escaper->escapeHtml($block->getFormParams()) ?>}'>
+        <div class="quick-login-wrapper-content mp-12">
+            <?php if ($popupLogin === 'quick_login') : ?>
+                <button class="fa fa-times btn-close" aria-hidden="true"></button>
+            <?php endif; ?>
+            <?= /* @noEscape */ $block->getChildHtml('quick.login.authentication') ?>
+            <?= /* @noEscape */ $block->getChildHtml('quick.login.create') ?>
+            <?= /* @noEscape */ $block->getChildHtml('quick.login.forgot') ?>
+            <?= /* @noEscape */ $block->getChildHtml('quick.login.authentication.social') ?>
+        </div>
+    </div>
+    <div id="request-popup" class="white-popup mfp-with-anim mfp-hide">
+            <?= /* @noEscape */ $block->getChildHtml('quick.login.email') ?>
+    </div>
+<?php endif; ?>
+
+<style type="text/css">
+    <?php if ($popupLogin === 'quick_login') :?>
+    .quick-login-wrapper {
+        text-align: unset;
+        display: none;
+        color: black;
+        padding: 0;
+        list-style: none none;
+        background: #fff;
+        border: 1px solid #bbb;
+        margin-top: 40px;
+        min-width: 19%;
+        width: 313px;
+        z-index: 999;
+        box-sizing: border-box;
+        position: absolute;
+        top: 0;
+        right: 14%;
+        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.15);
+    }
+
+    <?php endif;?>
+
+    .quick-login-wrapper .social-login-title {
+        background-color: <?= /* @noEscape */ $color ?>
+    }
+
+    .quick-login-wrapper .social-login #bnt-social-login-authentication,
+    .quick-login-wrapper .forgot .primary button,
+    .quick-login-wrapper .create .primary button,
+    .quick-login-wrapper .fake-email .primary button {
+        background-color: <?= /* @noEscape */ $color ?>;
+        border: <?= /* @noEscape */ $color ?>
+    }
+</style>

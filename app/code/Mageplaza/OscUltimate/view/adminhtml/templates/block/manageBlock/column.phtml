@@ -1,0 +1,57 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscUltimate
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var Column $block */
+
+use Mageplaza\OscUltimate\Block\Adminhtml\Layout\ManageBlock\Column;
+
+?>
+<ul class="sortable-list ui-sortable">
+    <?php foreach ($block->getSortedFields() as $key => $item): ?>
+        <li class="sortable-item "
+            data-code="<?= /* @noEscape */ $item ?>">
+            <i class="fa fa-grip-vertical"></i>
+            <?php if ($item === 'addressInformation'): ?>
+                <i class="fa fa-home"></i>
+                <span><?= $block->escapeHtml(__('Address Information')) ?></span>
+            <?php elseif ($item === 'shippingMethod'): ?>
+                <i class="fa fa-truck"></i>
+                <span><?= $block->escapeHtml(__('Shipping Method')) ?></span>
+            <?php elseif ($item === 'paymentMethod'): ?>
+                <i class="fa fa-credit-card"></i>
+                <span><?= $block->escapeHtml(__('Payment Method')) ?></span>
+            <?php else: ?>
+                <i class="fa fa-check-square"></i>
+                <span><?= $block->escapeHtml(__('Order Summary')) ?></span>
+            <?php endif; ?>
+        </li>
+    <?php endforeach; ?>
+</ul>
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Mageplaza_OscUltimate/js/view/field-position": {
+                "blockId": "<?= /** @noEscape */
+    $block->getBlockId() ?>"
+                }
+            }
+        }
+</script>

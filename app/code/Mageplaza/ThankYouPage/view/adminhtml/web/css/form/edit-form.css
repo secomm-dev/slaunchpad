@@ -1,0 +1,166 @@
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ThankYouPage
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+.CodeMirror.cm-s-default {
+    border: 1px solid #ddd;
+    margin-top: 1px;
+    max-width: 500px;
+}
+
+@media only screen and (max-width: 1220px) {
+    .CodeMirror.cm-s-default {
+        width: 300px;
+    }
+}
+
+#insert-variable-popup .attr-code {
+    margin-left: 20px;
+}
+
+#insert-variable-popup .group-label {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.modifier {
+    margin-top: 3px;
+}
+
+label.liquid-variable {
+    float: right;
+    margin-right: 50px;
+    max-width: 60%;
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #c7254e;
+    border-radius: 4px;
+}
+
+#insert-variable-popup input.modifier-param {
+    width: 50px;
+}
+
+#insert-variable-popup .modifier-param {
+    margin: 0 5px;
+}
+
+#insert-variable-popup .modifier select, #insert-variable-popup .modifier .params {
+    margin-right: 20px;
+    float: left;
+    width: auto;
+}
+
+.remove-modifier {
+    float: right;
+    margin: 2px 60px 2px 2px;
+}
+
+.attr-code {
+    border: 1px solid #f1f1f1;
+    margin: 5px;
+    width: 80%;
+}
+
+.attr-code-label {
+    font-weight: 500;
+    padding-left: 1em;
+}
+
+#insert-variable-popup .row {
+    background: #f1f1f1;
+    line-height: 2;
+}
+
+#insert-variable-popup button.insert, button.add-modifier {
+    float: right;
+    margin-right: 5px;
+}
+
+.delete-option.remove-modifier::before {
+    font-family: 'MUI-Icons', serif;
+    font-style: normal;
+    speak: none;
+    font-weight: normal;
+    font-size: 18px;
+    -webkit-font-smoothing: antialiased;
+    content: '\e07f';
+    color: #b7b3ad;
+}
+
+#insert-variable-popup .row-modifier {
+    margin-left: 2%;
+    width: 96%;
+    padding: 0;
+    display: none;
+}
+
+#insert-variable-popup .row-modifier.show {
+    display: block;
+}
+
+#feed_template_html {
+    display: none;
+}
+
+#mpthankyoupage_description,
+#mpthankyoupage_custom_html,
+#mpthankyoupage_hyva_custom_html,
+#mpthankyoupage_custom_css,
+#mpthankyoupage_hyva_custom_css,
+#mpthankyoupage_coupon_label {
+    display: none;
+}
+
+a.insert-variable {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a#load-template {
+    letter-spacing: 0.025em;
+    cursor: pointer;
+    text-decoration: none;
+    background-color: #eb5202;
+    color: #ffffff;
+    text-shadow: rgba(0, 0, 0, 0.25) 1px 1px 0;
+    border: 1px solid #eb5202;
+    border-radius: 0;
+    display: inline-block;
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1.36;
+    padding: 0.6rem 1em 0.6rem;
+    text-align: center;
+    vertical-align: baseline;
+}
+
+div#mpthankyoupage_sub_fieldset_1-content,
+div#mpthankyoupage_sub_fieldset_2-content,
+div#mpthankyoupage_sub_fieldset_3-content {
+    display: none;
+}
+
+.fieldset-wrapper.admin__collapsible-block-wrapper.opened div#mpthankyoupage_sub_fieldset_1-content,
+.fieldset-wrapper.admin__collapsible-block-wrapper.opened div#mpthankyoupage_sub_fieldset_2-content,
+.fieldset-wrapper.admin__collapsible-block-wrapper.opened div#mpthankyoupage_sub_fieldset_3-content {
+    display: unset;
+}

@@ -1,0 +1,92 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Osc
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+
+<div class="block items-in-cart"
+     data-bind="click: toggleCart, mageInit: {'collapsible':{'openedState': 'active', 'active': isCartExpanded()}}">
+    <div class="title" data-role="title" data-bind="visible: window.checkoutConfig.oscConfig.isShowItemListToggle">
+        <strong role="heading">
+            <!-- ko if: window.checkoutConfig.maxCartItemsToDisplay < items().length -->
+            <!-- ko if: (window.checkoutConfig.maxCartItemsToDisplay != 0) -->
+            <span data-bind="text: window.checkoutConfig.maxCartItemsToDisplay"></span>
+            <span data-bind="i18n: ' of '"></span>
+            <!-- /ko -->
+            <span data-bind="text: items().length"></span>
+            <!-- /ko -->
+            <!-- ko ifnot: window.checkoutConfig.maxCartItemsToDisplay < items().length -->
+            <span data-bind="text: items().length"></span>
+            <!-- /ko -->
+            <!-- ko if: items().length == 1 -->
+            <span data-bind="i18n: 'Item in Cart'"></span>
+            <!-- /ko -->
+            <!-- ko if: items().length > 1 -->
+            <span data-bind="i18n: 'Items in Cart'"></span>
+            <!-- /ko -->
+        </strong>
+    </div>
+    <div class="content minicart-items" data-role="content">
+        <div class="minicart-items-wrapper overflowed">
+            <table id="checkout-review-table" class="data-table">
+                <colgroup>
+                    <col>
+                    <col width="1">
+                    <col width="1">
+                    <col width="1">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th data-bind="i18n: 'Product Name'"></th>
+                    <th class="a-center" data-bind="i18n: 'Quantity'"></th>
+                    <th class="a-center" data-bind="i18n: 'Subtotal'"></th>
+                    <th class="a-center" data-bind="i18n: 'Action'"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- ko if: (window.checkoutConfig.maxCartItemsToDisplay == 0) -->
+                <!-- ko foreach: items() -->
+                <tr class="product-item">
+                    <!-- ko foreach: $parent.elems() -->
+                    <!-- ko template: getTemplate() --><!-- /ko -->
+                    <!-- /ko -->
+                </tr>
+                <!-- /ko -->
+                <!-- /ko -->
+                <!-- ko if: (window.checkoutConfig.maxCartItemsToDisplay != 0) -->
+                <!-- ko foreach: items().slice(0, window.checkoutConfig.maxCartItemsToDisplay) -->
+                <tr class="product-item">
+                    <!-- ko foreach: $parent.elems() -->
+                    <!-- ko template: getTemplate() --><!-- /ko -->
+                    <!-- /ko -->
+                </tr>
+                <!-- /ko -->
+                <!-- /ko -->
+                </tbody>
+            </table>
+        </div>
+        <!-- ko if: window.checkoutConfig.maxCartItemsToDisplay < items().length -->
+        <div class="actions-toolbar">
+            <a class="action viewcart" data-bind="attr: {href: cartUrl}">
+                <span class="label" data-bind="i18n: 'View and Edit Cart'"></span>
+            </a>
+        </div>
+        <!-- /ko -->
+    </div>
+</div>

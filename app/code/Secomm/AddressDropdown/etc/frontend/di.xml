@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Customer\CustomerData\SectionPoolInterface">
+        <arguments>
+            <argument name="sectionSourceMap" xsi:type="array">
+                <item name="city-data" xsi:type="string">Secomm\AddressDropdown\CustomerData\CityData</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Quote\Model\Quote\Address">
+        <plugin name="add_sub_city_import_address"
+                type="Secomm\AddressDropdown\Plugin\AddSubCityImportAddressPlugin"
+                sortOrder="100"/>
+    </type>
+    <type name="Magento\Multishipping\Block\DataProviders\Billing">
+        <plugin name="translate_sub_city"
+                type="Secomm\AddressDropdown\Plugin\DataProvidersPlugin"
+                sortOrder="100"/>
+    </type>
+    <type name="Magento\Customer\Model\Address\Mapper">
+        <plugin name="translate_sub_city"
+                type="Secomm\AddressDropdown\Plugin\MapperPlugin"
+                sortOrder="100"/>
+    </type>
+    <type name="Magento\Directory\Helper\Data">
+        <plugin name="get_region_data_plugin"
+                type="Secomm\AddressDropdown\Plugin\GetRegionDataPlugin"/>
+    </type>
+</config>

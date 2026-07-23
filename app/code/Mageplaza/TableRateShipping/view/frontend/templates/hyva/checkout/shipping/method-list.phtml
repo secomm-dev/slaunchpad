@@ -1,0 +1,145 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_TableRateShipping
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
+use Hyva\Checkout\ViewModel\Checkout\Shipping\MethodList as ViewModel;
+use Hyva\Checkout\Magewire\Checkout\Shipping\MethodList as Magewire;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Magento\Quote\Api\Data\ShippingMethodInterface;
+use Magento\Tax\Helper\Data as TaxHelper;
+use Hyva\Theme\ViewModel\Store;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var ViewModel $viewModel */
+/** @var ShippingMethodInterface $method */
+/** @var Magewire $magewire */
+/** @var Escaper $escaper */
+/** @var TaxHelper $taxHelper */
+/** @var Store $storeViewModel */
+
+$viewModel = $viewModels->require(ViewModel::class);
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+$taxHelper = $this->helper(TaxHelper::class);
+$storeViewModel = $viewModels->require(Store::class);
+$storeId = $storeViewModel->getStoreId();
+$methods = $viewModel->getList();
+?>
+<div id="shipping-methods">
+    <?php if ($methods): ?>
+        <script>
+            window.addEventListener('checkout:step:loaded', () => {
+                if('<?= $escaper->escapeJs($magewire->method) ?>' && document.getElementById('shipping-method-list')) {
+                    window.dispatchEvent(
+                        new CustomEvent('checkout:shipping:method-activate', {
+                            detail: {
+                                method: '<?= $escaper->escapeJs($magewire->method) ?>'
+                            }
+                        })
+                    )
+                }
+            }, { once: true })
+        </script>
+
+        <ol id="shipping-method-list" class="flex flex-col space-y-4 test123">
+            <?php foreach ($methods as $method): ?>
+                <?php $methodCode = $escaper->escapeHtml($method->getMethodCode()) ?>
+                <?php $methodCodeAttr = $escaper->escapeHtmlAttr($method->getMethodCode()) ?>
+                <?php $methodCarrierCode = $escaper->escapeHtmlAttr($method->getCarrierCode()) ?>
+                <?php $methodTitle = $escaper->escapeHtml($method->getMethodTitle() ?: __('Unknown')) ?>
+                <?php $methodImage = $escaper->escapeHtml($method->getExtensionAttributes()->getMptablerateImage()) ?>
+                <?php $methodComment = $escaper->escapeHtml($method->getExtensionAttributes()->getMptablerateComment()) ?>
+
+                <li id="shipping-method-option-<?= /* @noEscape */ $methodCode ?>"
+                     class="flex gap-x-4 <?= $magewire->method === $methodCarrierCode . '_' . $methodCodeAttr ? 'active' : 'inactive' ?>"
+                     wire:key="<?= /* @noEscape */ $methodCodeAttr ?>"
+                     x-data="{ disabled: <?= ! $method->getErrorMessage() ? 'false' : 'true' ?> }"
+                >
+                    <div class="flex flex-start m-1">
+                        <input type="radio"
+                               class="flex-none disabled:opacity-25"
+                               id="shipping-method-<?= /* @noEscape */ $methodCodeAttr ?>"
+                               name="shipping-method-option"
+                               value="<?= $escaper->escapeHtmlAttr($methodCarrierCode . '_' . $methodCodeAttr) ?>"
+                               wire:model="method"
+                               x-bind:disabled="disabled"
+                        />
+                    </div>
+
+                    <div class="flex-1 space-y-2">
+                        <label class="flex justify-between cursor-pointer gap-x-4"
+                               for="shipping-method-<?= /* @noEscape */ $methodCodeAttr ?>"
+                        >
+                            <div class="text-gray-700 font-bold break-all">
+                                <?php if ($methodImage) : ?>
+                                    <img src="<?= /* @noEscape */ $methodImage ?>" alt="method-image" style="max-height: 32px; float: left; margin-right: 10px">
+                                <?php endif; ?>
+                                <?= /** @noEscape */ $methodTitle ?>
+                            </div>
+
+                            <div class="product-price text-right">
+                                <?php if ($taxHelper->displayShippingPriceIncludingTax() || $taxHelper->displayShippingBothPrices()): ?>
+                                    <span class="price-including-tax" data-label="<?= $escaper->escapeHtmlAttr(__('Incl. Tax')) ?>">
+                                        <?= /* @noEscape */ $formatterViewModel->currency($method->getPriceInclTax()) ?>
+                                    </span>
+                                <?php endif ?>
+
+                                <?php if (($taxHelper->displayShippingPriceExcludingTax() || $taxHelper->displayShippingBothPrices() || $taxHelper->getShippingTaxClass($storeId) === 0)): ?>
+                                    <span class="price-excluding-tax" data-label="<?= $escaper->escapeHtmlAttr(__('Excl. Tax')) ?>">
+                                        <?= /* @noEscape */ $formatterViewModel->currency($method->getPriceExclTax()) ?>
+                                    </span>
+                                <?php endif ?>
+                            </div>
+                        </label>
+                        <?php if ($methodComment) : ?>
+                            <div class="mp-comment-hyva"><?= /* @noEscape */ htmlspecialchars_decode($methodComment) ?></div>
+                        <?php endif; ?>
+
+                        <?php if ($method->getErrorMessage()): ?>
+                            <div role="alert" class="messages w-full">
+                                <p class="message error mb-0">
+                                    <?= $escaper->escapeHtml(__($method->getErrorMessage())) ?>
+                                </p>
+                            </div>
+                        <?php endif ?>
+
+                        <?php if ($viewModel->isCurrentShippingMethod($method, $magewire->method)): ?>
+                            <?php if ($viewModel->hasAdditionalView($block, $method)): ?>
+                                <?php $html = $viewModel->getAdditionalViewBlock($block, $method)->toHtml() ?>
+                                <?php if (! empty($html)): ?>
+                                    <div id="<?= /* @noEscape */ 'shipping-method-view-' . $methodCodeAttr ?>"
+                                         class="w-full mt-4"
+                                    >
+                                        <?= /* @noEscape */ $html ?>
+                                    </div>
+                                <?php endif ?>
+                            <?php endif ?>
+                        <?php endif ?>
+                    </div>
+                </li>
+            <?php endforeach ?>
+        </ol>
+    <?php endif ?>
+</div>

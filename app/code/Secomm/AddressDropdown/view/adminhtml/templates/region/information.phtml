@@ -1,0 +1,72 @@
+<?php
+/**
+ * Template render region information
+ */
+/** @var \Secomm\AddressDropdown\Block\Adminhtml\Region\Information $block */
+if ($region = $block->getRegion()) :
+    ?>
+    <main id="anchor-content" class="page-content">
+        <div id="page:main-container" class="page-columns">
+            <div id="container" class="main-col">
+                <div class="admin__old">
+                    <div class="entry-edit order-view">
+                        <div style="" class="ui-tabs-panel ui-widget-content ui-corner-bottom"
+                             role="tabpanel"
+                             aria-hidden="false">
+                            <section class="admin__page-section order-view-account-information">
+                                <div class="admin__page-section-title">
+                                    <span class="title"><?= $region->getName() ?></span>
+                                </div>
+                                <div class="admin__page-section-content">
+                                    <div class="admin__page-section-item order-information">
+                                        <div class="admin__page-section-item-title">
+                                            <span class="title"><?= __("Information") ?></span>
+                                        </div>
+                                        <div class="admin__page-section-item-content">
+                                            <table class="admin__table-secondary order-information-table">
+                                                <tbody>
+                                                <tr>
+                                                    <th><?= __("Default Name") ?></th>
+                                                    <td><?= $region->getDefaultName() ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <th><?= __("Code") ?></th>
+                                                    <td><?= $region->getCode() ?></td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="admin__page-section-item order-account-information">
+                                        <div class="admin__page-section-item-title">
+                                            <span class="title"><?= __("Name") ?></span>
+                                            <div class="actions">
+                                            </div>
+                                        </div>
+
+                                        <?php if ($regionNameData = $block->getAllRegionNamesByRegionId()) : ?>
+                                            <div class="admin__page-section-item-content">
+                                                <table class="admin__table-secondary order-account-information-table">
+                                                    <tbody>
+                                                    <?php foreach ($regionNameData as $item) : ?>
+                                                        <tr>
+                                                            <th><?= __($item['locale']) ?></th>
+                                                            <td><?= $item['name'] ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+<?php
+endif;

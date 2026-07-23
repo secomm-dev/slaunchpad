@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="osc" translate="label comment" sortOrder="10" type="text" showInDefault="1" showInWebsite="1"
+                 showInStore="1">
+            <label>One Step Checkout</label>
+            <tab>mageplaza</tab>
+            <group id="loading_speed_optimization" translate="label comment" sortOrder="40" type="text"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Loading Speed</label>
+                <comment>
+                    <![CDATA[By limiting which component inside Checkout Page will be refreshed each time an action occurred,
+                     the payment process will become smoother and faster.]]></comment>
+                <field id="refresh_page" translate="label comment" sortOrder="20" type="select" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Checkout Page Refresh</label>
+                    <source_model>Mageplaza\OscPro\Model\System\Config\Source\RefreshPage</source_model>
+                    <comment>
+                        <![CDATA[Selecting Custom grants you complete control over the checkout page's loading system. Refer to the
+                         <a href="https://docs.mageplaza.com/magento/one-step-checkout/professional/" target="_blank" style="margin-left:0;">User Guide</a>
+                         for more instructions.]]></comment>
+                </field>
+                <field id="shipping_address_change" translate="label comment" sortOrder="20" type="multiselect"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Shipping Address Change</label>
+                    <source_model>Mageplaza\OscPro\Model\System\Config\Source\ShippingAddressChangeOptions</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[Changing information inside this field will refresh all selected fields.
+                     Hold Control (Ctrl) to select/deselect multiple options.]]></comment>
+                    <depends>
+                        <field id="refresh_page">2</field>
+                    </depends>
+                </field>
+                <field id="billing_address_change" translate="label comment" sortOrder="20" type="multiselect"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Billing Address Change</label>
+                    <source_model>Mageplaza\OscPro\Model\System\Config\Source\BillingAddressChangeOptions</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[Changing information inside this field will refresh all selected fields.
+                     Hold Control (Ctrl) to select/deselect multiple options.]]></comment>
+                    <depends>
+                        <field id="refresh_page">2</field>
+                    </depends>
+                </field>
+                <field id="shipping_method_change" translate="label comment" sortOrder="20" type="multiselect"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Shipping Method Change</label>
+                    <source_model>Mageplaza\OscPro\Model\System\Config\Source\BillingAddressChangeOptions</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[Changing information inside this field will refresh all selected fields.
+                     Hold Control (Ctrl) to select/deselect multiple options.]]></comment>
+                    <depends>
+                        <field id="refresh_page">2</field>
+                    </depends>
+                </field>
+                <field id="payment_method_change" translate="label comment" sortOrder="20" type="multiselect"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Payment Method Change</label>
+                    <source_model>Mageplaza\OscPro\Model\System\Config\Source\PaymentChangeOptions</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[Changing information inside this field will refresh all selected fields.
+                     Hold Control (Ctrl) to select/deselect multiple options.]]></comment>
+                    <depends>
+                        <field id="refresh_page">2</field>
+                    </depends>
+                </field>
+                <field id="product_change" translate="label comment" sortOrder="20" type="multiselect"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Order Summary Product Change</label>
+                    <source_model>Mageplaza\OscPro\Model\System\Config\Source\QtyProductChangeOptions</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[Changing information inside this field will refresh all selected fields.
+                     Hold Control (Ctrl) to select/deselect multiple options.]]></comment>
+                    <depends>
+                        <field id="refresh_page">2</field>
+                    </depends>
+                </field>
+                <field id="apply_coupon" translate="label comment" sortOrder="20" type="multiselect"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Apply Coupon</label>
+                    <source_model>Mageplaza\OscPro\Model\System\Config\Source\ShippingAddressChangeOptions</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[Changing information inside this field will refresh all selected fields.
+                     Hold Control (Ctrl) to select/deselect multiple options.]]></comment>
+                    <depends>
+                        <field id="refresh_page">2</field>
+                    </depends>
+                </field>
+                <field id="gift_wrap" translate="label comment" sortOrder="20" type="multiselect"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Gift Wrap Service</label>
+                    <source_model>Mageplaza\OscPro\Model\System\Config\Source\ShippingAddressChangeOptions</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[Changing information inside this field will refresh all selected fields.
+                     Hold Control (Ctrl) to select/deselect multiple options.]]></comment>
+                    <depends>
+                        <field id="refresh_page">2</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

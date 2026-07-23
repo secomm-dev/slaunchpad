@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">country_listing.country_listing_data_source</item>
+            <item name="deps" xsi:type="string">country_listing.country_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>country_columns</spinner>
+        <deps>
+            <dep>country_listing.country_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="country_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">country_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Secomm_AddressDropdown::management</aclResource>
+        <dataProvider class="Secomm\AddressDropdown\Ui\DataProvider\CountryDataProvider" name="country_listing_data_source">
+            <settings>
+                <requestFieldName>country_id</requestFieldName>
+                <primaryFieldName>country_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="country_columns">
+        <column name="country_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Country ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="iso2_code">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">ISO2 Code</label>
+            </settings>
+        </column>
+        <column name="iso3_code">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">ISO3 Code</label>
+            </settings>
+        </column>
+        <column name="default_name">
+            <settings>
+                <filter>false</filter>
+                <sortable>false</sortable>
+                <label translate="true">Default Name</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Secomm\AddressDropdown\Ui\Component\Listing\Column\CountryBlockActions">
+            <settings>
+                <indexField>city_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

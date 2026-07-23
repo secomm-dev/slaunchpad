@@ -1,0 +1,51 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+?>
+<?php
+$product = $block->getProduct();
+?>
+<div class="popBg borderRadius"></div>
+<div class="mplookbook-popBody">
+    <div class="widget">
+        <div class="product-item">
+            <div class="product-item-info" style="width: max-content">
+                <a href="<?= /** @noEscape */$block->getProductUrl($product) ?>"
+                   class="product photo slider-product-item-photo" style="vertical-align: middle;">
+                    <?= /** @noEscape */$block->getImage($product, 'product_thumbnail_image')->toHtml() ?>
+                </a>
+                <div class="product details product-item-details" style="vertical-align: middle;display: inline-block">
+                    <strong class="product name product-item-name">
+                        <a class="product-item-link"
+                           title="<?= /** @noEscape */
+                            $block->escapeHtml($product->getName()) ?>"
+                           href="<?= /** @noEscape */
+                            $block->getProductUrl($product) ?>">
+                            <?= /** @noEscape */
+                            $block->escapeHtml($product->getName()) ?>
+                        </a>
+                    </strong>
+                    <?= /** @noEscape */
+                    $block->getProductPrice($product) ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

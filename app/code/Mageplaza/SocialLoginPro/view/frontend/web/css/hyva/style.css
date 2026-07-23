@@ -1,0 +1,178 @@
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+.slider-modal {
+    transition: all 0.5s ease-in-out;
+}
+.slider-modal.is-active {
+    opacity: 1;
+    transform: translateX(0);
+}
+.slider-modal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 320px;
+    height: 100%;
+    background-color: #fff;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-out;
+    z-index: 1000;
+}
+
+.slider-modal.is-open {
+    transform: translateX(0);
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+    .slider-modal {
+        width: 320px;
+    }
+    .quick-login {
+        top: 10%;
+    }
+}
+
+/* Overlay */
+.slider-modal::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.slider-modal.is-open::before {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.slider-modal .modal-dialog {
+    height: 100%;
+    overflow-y: auto;
+}
+.quick-login {
+    text-align: unset;
+    color: black;
+    padding: 0;
+    list-style: none none;
+    box-sizing: border-box;
+    position: absolute;
+    top: 10%;
+    left: 35%;
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.15);
+}
+.quick-login .mfp-close{
+    top: unset;
+}
+.quick-login .block-content {
+    display: flex;
+    flex-wrap: wrap;
+}
+.quick-login .white-popup {
+    display: flex;
+    position: absolute;
+    background: #FFF;
+    padding: 0;
+    width: auto;
+    right: 33%;
+    min-width: 250px;
+    z-index: 999;
+    max-width: 400px;
+    margin: 0 auto;
+    flex-direction: column;
+}
+.quick-login .block.social-login-authentication-channel {
+    overflow-y: auto;
+}
+.login-right {
+    float: right !important;
+}
+
+.social-left {
+    position: absolute;
+}
+
+.social-top {
+    position: absolute;
+}
+
+.login-bottom {
+    padding-top: 150px !important;
+}
+@media only screen and (max-width: 768px) {
+    .white-popup {
+        bottom: 0 !important;
+    }
+    .slider-modal #mp-popup-social-content .block-content {
+        max-height: 165px !important;
+    }
+    .main .social-login-authentication-channel .block-content .social-btn {
+        margin-left: 15px;
+    }
+    .quick-login .white-popup {
+        text-align: unset;
+        color: black;
+        padding: 0;
+        list-style: none none;
+        background: #fff;
+        border: 1px solid #bbb;
+        margin-top: 40px;
+        min-width: 19%;
+        width: 313px;
+        z-index: 999;
+        box-sizing: border-box;
+        position: absolute;
+        top: -10% !important;
+        right: 27%;
+        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.15);
+    }
+    .social-btn {
+        width: 90%;
+        max-width: 100%;
+    }
+}
+@media only screen and (min-width: 768px) {
+    .quick-login .white-popup {
+        top: 0 !important;
+    }
+}
+#social-login-popup .block-container .block.login-bottom {
+    padding: 50% 0 0 25px !important;
+}
+
+#popup_test  .block-content > .actions-toolbar {
+    display: block;
+    padding-right: 27px;
+}
+.quick-login .white-popup #mp-popup-social-content{
+    padding-top: 0 !important;
+}
+.block.social-login-authentication-channel {
+    padding: 10px !important;
+}

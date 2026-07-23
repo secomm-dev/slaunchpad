@@ -1,0 +1,160 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_OscUltimate
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+.form-shipping-address .mp-6 input[type="text"],
+.form-shipping-address .mp-6 input[type="password"],
+.form-shipping-address .mp-6 input[type="url"],
+.form-shipping-address .mp-6 input[type="tel"],
+.form-shipping-address .mp-6 input[type="search"],
+.form-shipping-address .mp-6 input[type="number"],
+.form-shipping-address .mp-6 input[type*="date"],
+.form-shipping-address .mp-6 .select,
+.address-information .mp-6 input[type="text"],
+.address-information .mp-6 input[type="password"],
+.address-information .mp-6 input[type="url"],
+.address-information .mp-6 input[type="tel"],
+.address-information .mp-6 input[type="search"],
+.address-information .mp-6 input[type="number"],
+.address-information .mp-6 input[type*="date"],
+.address-information .mp-6 .select{
+    width: 98% ;
+    float: right;
+}
+.form-shipping-address .mp-6.mp-clear input[type="text"],
+.form-shipping-address .mp-clear input[type="password"],
+.form-shipping-address .mp-clear input[type="url"],
+.form-shipping-address .mp-clear input[type="tel"],
+.form-shipping-address .mp-clear input[type="search"],
+.form-shipping-address .mp-clear input[type="number"],
+.form-shipping-address .mp-clear input[type*="date"],
+.form-shipping-address .mp-clear .select,
+.address-information .mp-6.mp-clear input[type="text"],
+.address-information .mp-clear input[type="password"],
+.address-information .mp-clear input[type="url"],
+.address-information .mp-clear input[type="tel"],
+.address-information .mp-clear input[type="search"],
+.address-information .mp-clear input[type="number"],
+.address-information .mp-clear input[type*="date"],
+.address-information .mp-clear .select{
+    float: left !important;
+}
+
+.address-information .mp-6.date .ui-datepicker-trigger{
+    float: right;
+    margin-top: -28px;
+    margin-right: 4%;
+}
+
+.mp-col-1,.mp-col-3, .address-information {
+    display: flex;
+    flex-direction: column;
+}
+.opc-wrapper .form-login, .opc-wrapper .form-shipping-address {
+    max-width: 100% !important;
+}
+
+.address-information {
+    display: flex;
+    flex-direction: column;
+}
+
+div#checkoutSteps, .mp-columns-colspan .mp-col-2 {
+    display: flex;
+    flex-direction: row;
+}
+.mp-columns, .mp-columns-floating {
+    align-items: flex-start;
+}
+.mp-col-2.sticky {
+    position: sticky;
+    top: 30px;
+}
+
+div[data-bind="scope: 'checkout.sidebar'"], div[data-bind="scope: 'checkout.steps.shipping-step'"],
+div[data-bind="scope: 'checkout.steps.billing-step'"] {
+    width:100%;
+}
+
+div[data-bind="scope: 'checkout.sidebar'"], div[data-bind="scope: 'checkout.steps.shipping-step'"] {
+     margin-top: 0 !important;
+}
+
+@media (max-width: 768px), print {
+    .mp-4, .mp-6, .mp-8 {
+        width: 100% !important;
+    }
+    div#checkoutSteps, .mp-responsive-col-2-3 {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+    .mp-responsive-col-2-3 {
+        width: 100%;
+    }
+    .mp-responsive-col-2-3 .mp-4 {
+        width: 100% !important;
+    }
+    .mp-columns-colspan .mp-col-2 {
+        display: flex;
+        flex-direction: column;
+    }
+    .mp-col-2.mp-4 {
+        margin: unset !important;
+    }
+}
+@media (min-width: 769px) and (max-width: 991px) {
+    .columns-colspan.mp-8 {
+        margin-left: 2%;
+    }
+    .columns-colspan.mp-8 {
+        width: 50%;
+    }
+    .mp-col-3.mp-4 {
+        margin-left: 3%;
+    }
+    .mp-columns-colspan .mp-col-2 {
+        display: flex;
+        flex-direction: column;
+    }
+    .mp-responsive-col-2-3 {
+        display: flex;
+        flex-direction: column;
+    }
+    .mp-responsive-col-2-3 {
+        width: 50%;
+    }
+    .mp-responsive-col-2-3 .mp-4 {
+        width: 100% !important;
+    }
+    .mp-4 {
+        width: 50%;
+    }
+}
+.one-step-checkout-wrapper .hoverable {
+    margin-bottom: 14px;
+}
+
+
+@media (min-width: 991px) {
+    .mp-col-2.mp-8 > :last-child {
+        margin-left: 2%
+    }
+}

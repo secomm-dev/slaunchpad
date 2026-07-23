@@ -1,0 +1,218 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Magento\Framework\DataObject;
+use Magento\Store\Model\Store;
+use Mageplaza\ExtraFee\Block\Adminhtml\Rule\Edit\Tab\Renderer\Options;
+
+/** @var $block Options */
+$stores  = $block->getStoresSortedBySortOrder();
+$feeType = $block->getFeeType();
+?>
+<fieldset class="fieldset admin__collapsible-block-wrapper" id="rule_options">
+    <legend class="legend fieldset-wrapper-title">
+        <strong class="admin__collapsible-title" data-toggle="collapse" data-target="#manage-options-panel">
+            <span><?= $block->escapeHtml(__('Manage Options')) ?></span>
+        </strong>
+    </legend>
+    <div id="manage-options-panel" data-index="attribute_options_select_container">
+        <table class="admin__control-table" data-index="attribute_options_select">
+            <thead>
+            <tr id="attribute-options-table">
+                <th class="col-draggable"></th>
+                <th class="col-type">
+                    <span><?= $block->escapeHtml(__('Type')) ?></span></th>
+                <th class="col-amount">
+                    <span><?= $block->escapeHtml(__('Amount')) ?></span></th>
+                <?php
+                foreach ($stores as $_store) : ?>
+                    <?php /** @var Store $_store */ ?>
+                    <th
+                        <?php if ($_store->getId() == Store::DEFAULT_STORE_ID) : ?>
+                            class="_required"
+                        <?php endif; ?>>
+                        <span><?= $block->escapeHtml(__($_store->getName())) ?></span>
+                    </th>
+                <?php endforeach;
+                $storeTotal = count($stores) + 3;
+                ?>
+                <th class="col-default control-table-actions-th">
+                    <span><?= $block->escapeHtml(__('Is Default')) ?></span></th>
+                <th class="col-delete">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody data-role="options-container" class="ignore-validate"></tbody>
+            <tfoot>
+            <tr>
+                <th colspan="<?= /* @noEscape */
+                (int) $storeTotal + 2 ?>" class="validation">
+                    <input type="hidden" class="required-dropdown-attribute-entry"
+                           name="dropdown_attribute_validation"/>
+                    <input type="hidden" class="required-dropdown-attribute-unique"
+                           name="dropdown_attribute_validation_unique"/>
+                    <input type="hidden" class="mp-required-entry"
+                           name="mp_required_entry"/>
+                </th>
+            </tr>
+            <tr>
+                <th colspan="<?= /* @noEscape */
+                (int) $storeTotal + 2 ?>" class="col-actions-add">
+                    <button id="add_new_option_button" data-action="add_new_row"
+                            title="<?= $block->escapeHtml(__('Add Option')) ?>"
+                            type="button" class="action- scalable add">
+                        <span><?= $block->escapeHtml(__('Add Option')) ?></span>
+                    </button>
+                </th>
+            </tr>
+            </tfoot>
+        </table>
+        <input type="hidden" id="option-count-check" value=""/>
+    </div>
+    <script>
+        require(['jquery'], function ($) {
+            $("#rule_apply_for").on("change", function () {
+                $(".options option").remove();
+                var cartFeeType = {
+                        "1": "Fixed amount for each item",
+                        "2": "Fixed amount for the whole cart",
+                        "3": "Percentage of cart total"
+                    },
+                    ItemFeeType = {
+                        "4": "Fix amount for item",
+                        "5": "Percentage item amount"
+                    };
+                var option;
+
+                option = cartFeeType;
+                if (parseInt($("#rule_apply_for").val()) === 2) {
+                    option = ItemFeeType;
+                }
+                appendOptions(option);
+            });
+
+            function appendOptions (option) {
+                $.each(option, function (key, value) {
+                    var $option = $("<option/>", {
+                        value: key,
+                        text: value
+                    });
+                    $(".options").append($option);
+                });
+            }
+        });
+    </script>
+    <script id="row-template" type="text/x-magento-template">
+        <tr>
+            <td class="col-draggable">
+                <div data-role="draggable-handle" class="draggable-handle"
+                     title="<?= $block->escapeHtml(__('Sort Option')) ?>"></div>
+                <input
+                    data-role="order"
+                    type="hidden"
+                    name="option[order][<%- data.id %>]"
+                    value="<%- data.sort_order %>"
+            </td>
+            <td class="col-type col-option_3">
+                <select class="options" name="option[value][<%- data.id %>][type]">
+                    <?php foreach ($feeType as $type) : ?>
+                        <% if(data.type == <?= /* @noEscape */
+                        $type['value'] ?>){ %>
+                        <option value="<?= /* @noEscape */
+                        $type['value'] ?>" selected><?= $block->escapeHtml($type['label']) ?></option>
+                        <% }else{ %>
+                        <option value="<?= /* @noEscape */
+                        $type['value'] ?>"><?= $block->escapeHtml($type['label']) ?></option>
+                        <% } %>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+            <td class="col-<%- data.id %>">
+                <input
+                    name="option[value][<%- data.id %>][amount]"
+                    value="<%- data.amount %>"
+                    class="input-text"
+                    type="text">
+            </td>
+            <?php foreach ($stores as $_store) : ?>
+                <td class="col-<%- data.id %>">
+                    <input
+                        name="option[value][<%- data.id %>][<?= /* @noEscape */
+                        (int) $_store->getId() ?>]"
+                        value="<%- data.store<?= /* @noEscape */
+                        (int) $_store->getId() ?> %>"
+                        class="input-text<?= (int) $_store->getId() == Store::DEFAULT_STORE_ID ? ' mp-required-entry required-option required-unique' : '' ?>"
+                        type="text"/>
+                </td>
+            <?php endforeach; ?>
+            <td class="col-default control-table-actions-cell">
+                <input
+                    class="input-radio"
+                    type="<%- data.intype %>"
+                    name="default[]"
+                    value="<%- data.id %>"
+                <%- data.checked %>
+                <?= $block->getReadOnly() ? 'disabled="disabled"' : '' ?>/>
+            </td>
+            <td id="delete_button_container_<%- data.id %>" class="col-delete">
+                <input type="hidden" class="delete-flag" name="option[delete][<%- data.id %>]" value=""/>
+                <button
+                    id="delete_button_<%- data.id %>"
+                    title="<?= $block->escapeHtml(__('Delete')) ?>"
+                    type="button"
+                    class="action- scalable delete delete-option">
+                    <span><?= $block->escapeHtml(__('Delete')) ?></span>
+                </button>
+            </td>
+        </tr>
+    </script>
+    <?php
+    $values = [];
+    foreach ($block->getOptionValues() as $value) {
+        /** @var DataObject $value */
+        $value    = $value->getData();
+        $values[] = is_array($value) ? array_map('htmlspecialchars_decode', $value) : $value;
+    }
+    ?>
+    <script type="text/x-magento-init">
+        {
+            "*": {
+                "Mageplaza_ExtraFee/js/options": {
+                    "attributesData": <?= /* @noEscape */
+        json_encode($values, JSON_HEX_QUOT) ?>,
+                    "isSortable":  true,
+                    "isReadOnly": false
+                },
+                "Magento_Catalog/catalog/product/attribute/unique-validate": {
+                    "element": "required-dropdown-attribute-unique",
+                    "message": "<?= $block->escapeHtml(__('The value of Admin must be unique.')) ?>"
+                },
+                "Mageplaza_ExtraFee/js/validate" : {},
+                "Mageplaza_ExtraFee/js/form/validate" : {}
+            }
+        }
+    </script>
+</fieldset>
+<style>
+    .admin__field-control.control #rule_actions .rule-param a {
+        font-weight: 600;
+        color: #000000;
+    }
+</style>

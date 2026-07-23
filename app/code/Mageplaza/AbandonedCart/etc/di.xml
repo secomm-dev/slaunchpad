@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (http://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="abandoned_checkout_cart_grid_data_source" xsi:type="string">\Mageplaza\AbandonedCart\Model\ResourceModel\Grid\AbandonedCarts\Collection</item>
+                <item name="abandoned_product_grid_data_source" xsi:type="string">\Mageplaza\AbandonedCart\Model\ResourceModel\Grid\ProductReport\Collection</item>
+                <item name="abandoned_email_grid_data_source" xsi:type="string">Mageplaza\AbandonedCart\Model\ResourceModel\Logs\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Mageplaza\AbandonedCart\Model\ResourceModel\Logs\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mageplaza_abandonedcart_logs</argument>
+            <argument name="resourceModel" xsi:type="string">Mageplaza\AbandonedCart\Model\ResourceModel\Logs</argument>
+        </arguments>
+    </virtualType>
+    <type name="Mageplaza\AbandonedCart\Model\ResourceModel\Grid\AbandonedCarts\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mageplaza_abandonedcart_reports_index</argument>
+            <argument name="resourceModel" xsi:type="string">Mageplaza\AbandonedCart\Model\ResourceModel\AbandonedCarts</argument>
+        </arguments>
+    </type>
+    <type name="Mageplaza\AbandonedCart\Model\ResourceModel\Report\AbandonedCarts\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mageplaza_abandonedcart_reports_index</argument>
+            <argument name="resourceModel" xsi:type="string">Mageplaza\AbandonedCart\Model\ResourceModel\AbandonedCarts</argument>
+        </arguments>
+    </type>
+    <type name="Mageplaza\AbandonedCart\Model\ResourceModel\Grid\ProductReport\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mageplaza_abandonedcart_product_reports_index</argument>
+            <argument name="resourceModel" xsi:type="string">Mageplaza\AbandonedCart\Model\ResourceModel\ProductReport</argument>
+        </arguments>
+    </type>
+    <preference for="Mageplaza\AbandonedCart\Api\AbandonedCartRepositoryInterface" type="Mageplaza\AbandonedCart\Model\Api\AbandonedCartRepository"/>
+    <type name="Magento\Quote\Model\CouponManagement">
+        <plugin name="mpace_coupon_management" type="Mageplaza\AbandonedCart\Plugin\Model\CouponManagement" />
+    </type>
+    <type name="Magento\Customer\Model\AccountManagement">
+        <plugin name="mpace_save_customer_email" type="Mageplaza\AbandonedCart\Plugin\SaveCustomerEmail" sortOrder="88"/>
+    </type>
+    <type name="Mageplaza\AbandonedCart\Block\Email\Template">
+        <arguments>
+            <argument name="frontUrlModel" xsi:type="object" shared="false">Magento\Framework\Url</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Checkout\Block\Onepage">
+        <plugin name="mp_ace_custom_checkout_plugin" type="Mageplaza\AbandonedCart\Plugin\Checkout\OnepagePlugin" sortOrder="10" />
+    </type>
+</config>

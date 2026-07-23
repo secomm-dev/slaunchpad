@@ -1,0 +1,152 @@
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AbandonedCart
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+
+#menu {
+    height: 70px;
+    background-color: #F8F8F8;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e3e3e3;
+    border-top: 1px solid #e3e3e3;
+}
+
+.fa.fa-bars {
+    font-size: 20px;
+    margin-top: -4px;
+    margin-left: -10px;
+}
+
+.menu-select {
+    float: left;
+}
+
+.menu-select .admin__action-dropdown {
+    height: 28px;
+    margin: 11px;
+}
+
+.menu-select .admin__action-dropdown-menu {
+    left: 0;
+    right: auto;
+    width: 200px;
+    z-index: 99;
+}
+
+.menu-select .admin__action-dropdown-menu a:hover {
+    background-color: #cccccc;
+}
+
+.mp-rp-store-switcher, .date-range-picker, .customer-group {
+    float: left;
+}
+
+.period {
+    float: right;
+    margin-right: 20px;
+}
+
+.mp-rp-store-switcher {
+    margin: 15px 20px;
+}
+
+#daterange {
+    margin-left: 20px;
+    border: 1px solid #cccccc;
+    height: 29px;
+}
+
+#daterange, #customer-group-id, #period {
+    border: none;
+}
+
+.store-switcher.store-view span.store-switcher-label {
+    display: none;
+}
+
+.admin__field-tooltip.tooltip {
+    display: none;
+}
+
+.sticky-header {
+    top: 0;
+}
+.sticky-header #menu .mp-rp-store-switcher  {
+    display: none;
+}
+
+.sticky-header #menu .customer-group  {
+    display: none;
+}
+
+.sticky-header #menu .scroll-title  {
+    display: block !important;
+    float: left;
+    margin-top: 24px;
+}
+h3.email-log-title {
+    float: left;
+    margin: 6px 30px 0 0;
+}
+
+
+button#store-change-button, select#customer-group-id {
+    background-color: unset;
+}
+
+.store-switcher .dropdown .dropdown-menu[data-role="stores-list"], .admin__action-dropdown-wrap.active .admin__action-dropdown-menu {
+    z-index: 999;
+}
+
+.store-switcher {
+    background-color: unset;
+}
+.page-actions-buttons {
+    height: 46px;
+    margin: 11px 20px;
+}
+.date-range-picker {
+    display: flex;
+    margin: 25px 20px 16px 50px;
+}
+.customer-group {
+    margin: 25px 0 0 30px;
+}
+.mp-rp-store-switcher {
+    display: flex;
+}
+.customer-group select option:hover {
+    background-color: #E3E3E3 !important;
+}
+.mp-rp-store-switcher .mp-menu-label {
+    padding-top: 11px;
+}
+.mp-menu-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #41362F;
+}
+.ranges li:hover {
+    background-color: #E3E3E3 !important;
+}
+.ranges li.active {
+    background-color: #E3E3E3 !important;
+    color: #41362F !important;
+}

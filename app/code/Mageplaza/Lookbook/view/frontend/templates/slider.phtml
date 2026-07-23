@@ -1,0 +1,58 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_Lookbook
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+?>
+<?php
+$collection = $block->getLookbookCollection();
+$check      = is_array($collection) ? !empty($collection) : $collection->getSize();
+if ($check): ?>
+    <?php
+    $slider   = $block->getSlider();
+    $sliderId = $slider->getId() . uniqid('-', false);
+    ?>
+    <div class="mp-lookbook-slider-container">
+        <div class="mp-lookbook-slider">
+            <?php $iterator = 1; ?>
+            <div id="lookbookslider-list-items-<?= /* @noEscape */
+            $sliderId ?>">
+                <?php foreach ($collection as $item): ?>
+                    <div class="item-image">
+                        <?= $block->getLayout()->createBlock('Mageplaza\Lookbook\Block\Lookbook')
+                            ->setLookbook($item)
+                            ->setData('isLazyLoad', $block->isLazyLoad($slider))
+                            ->toHtml() ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <link rel="stylesheet" type="text/css" href="<?= /* @noEscape */ $block->getViewFileUrl('Mageplaza_Lookbook/css/slick.css') ?>">
+    <link rel="stylesheet" type="text/css" href="<?= /* @noEscape */ $block->getViewFileUrl('Mageplaza_Lookbook/css/slick-theme.css') ?>">
+    <script>
+        require(['jquery', 'mageplaza/slick'], function ($) {
+            $('#lookbookslider-list-items-<?= /* @noEscape */ $sliderId ?>').slick(<?= /* @noEscape */ $block->getSliderOptions($slider) ?>);
+        });
+    </script>
+        <style type="text/css">
+            <?php if ($slider->getCustomCss()): ?>
+                <?= /* @noEscape */ $slider->getCustomCss() ?>
+            <?php endif; ?>
+        </style>
+<?php endif; ?>
