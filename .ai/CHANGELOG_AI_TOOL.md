@@ -79,5 +79,5 @@
 
 ### Notes
 - Respects P1D design: AI `.ai/`-scoped ignores stay in `.ai/.gitignore` (validator `--check-runtime-separation` depends on the `/runtime/` carve-out there); only non-`.ai` AI artifacts go to root. Minor; no bin/security.
-- **Caveat (runtime skeleton):** a tracked `.gitkeep` inside an ignored dir makes `git check-ignore .ai/runtime/` report "not ignored" (git quirk — git won't ignore a path with tracked descendants) → validator's runtime-separation shows **1 cosmetic WARN**. Contents ARE ignored (`/runtime/**`); the WARN is a false positive. Unavoidable when committing a skeleton; the toolkit validator should check a runtime *content* file (e.g. `.ai/runtime/session/NEXT_ACTION.md`) instead of the dir — flag for backport (see P1D improvement).
-- `project-ai-validate` → 0 FAIL, 1 WARN (cosmetic, as above).
+- **Runtime skeleton + validator fix backported to toolkit** (toolkit CHANGELOG Entry (e), 2026-07-23): `bin/project-ai-upgrade` `run_P1D()` now emits the negation pattern + `.gitkeep`; `bin/project-ai-validate` checks a runtime *content* path (`.ai/runtime/session/NEXT_ACTION.md`) instead of the dir — fixing the false "not ignored" WARN that a tracked `.gitkeep` inside an ignored dir caused (git won't ignore a path with tracked descendants). slaunchpad's `.ai/bin/project-ai-validate` re-synced to the fixed version.
+- `project-ai-validate` → now **0 FAIL, 0 WARN**.

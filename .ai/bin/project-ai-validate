@@ -468,7 +468,10 @@ if [ $C_RSEP -eq 1 ]; then
         [ -d "$P/.ai/runtime/$sd" ] || warn ".ai/runtime/$sd/ missing (recommended by Phase 1d)"
       done
       if command -v git >/dev/null 2>&1 && [ -d "$P/.git" ]; then
-        git -C "$P" check-ignore -q .ai/runtime/ 2>/dev/null || warn ".ai/runtime/ not git-ignored at repo root"
+        # Check a runtime CONTENT path, not the dir: a committed .gitkeep skeleton makes
+        # `check-ignore .ai/runtime/` falsely report "not ignored" (git won't ignore a path
+        # with tracked descendants). A content file verifies runtime state is actually ignored.
+        git -C "$P" check-ignore -q .ai/runtime/session/NEXT_ACTION.md 2>/dev/null || warn ".ai/runtime/ content not git-ignored (runtime state would be committed)"
       fi
       note "Phase 1d runtime-separation check done (project)"
     fi
