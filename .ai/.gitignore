@@ -4,7 +4,14 @@
 # Durable project truth (.ai/project/, .ai/records/, .ai/workflow/ definitions, .ai/agents/, …) stays committable.
 
 # Mutable runtime umbrella — session/, workflow/, evidence/, navigator workspace (RM-02/RM-03)
-/runtime/
+# Per-staff transient state is gitignored; skeleton dirs kept via .gitkeep so a fresh clone has
+# the dirs present without depending on the agent to mkdir-on-write.
+# NOTE: a tracked .gitkeep makes `git check-ignore .ai/runtime/` report "not ignored" (git quirk),
+# so the toolkit validator's runtime-separation dir-check shows 1 cosmetic WARN. Contents ARE
+# ignored — the WARN is a false positive; the toolkit validator should check a content file instead.
+/runtime/**
+!/runtime/**/
+!/runtime/**/.gitkeep
 
 # Legacy session-cursor files (Phase 1d RM-09: superseded, not deleted) → canonical home is .ai/runtime/session/
 /project-context/memory/CURRENT_STATE.md

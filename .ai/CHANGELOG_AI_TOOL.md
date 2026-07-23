@@ -74,8 +74,10 @@
 
 ### Changed — `.gitignore` hygiene (dedup + AI-toolkit ignores)
 - Root [.gitignore](.gitignore): removed 3 duplicates (`/.idea`, `.DS_Store`, Maven `dist/` — kept the unanchored copies at lines that also catch nested paths); added `# AI Toolkit (Claude Code)` section ignoring `.claude/settings.local.json` + `.claude/*.local.json` (local/personal settings only — skills + shared `settings.json` stay committed).
-- [.ai/.gitignore](.ai/.gitignore): added `/toolkit/_pre-sync-backup-*/` (transient rollback backups).
+- [.ai/.gitignore](.ai/.gitignore): added `/toolkit/_pre-sync-backup-*/` (transient rollback backups) + committed `.gitkeep` skeleton in `.ai/runtime/{session,workflow,evidence}/` (via `/runtime/**` + `!/runtime/**/.gitkeep` negation) so a fresh clone has the runtime dirs without depending on the agent to mkdir-on-write. `.gitkeep` is normally addable (no `-f`).
 - Removed transient `.ai/toolkit/_pre-sync-backup-2026-07-23/` (referenced in 1.3.0; sync verified IN SYNC — recoverable via idempotent engine re-run).
 
 ### Notes
-- Respects P1D design: AI `.ai/`-scoped ignores stay in `.ai/.gitignore` (validator `--check-runtime-separation` depends on the `/runtime/` carve-out there); only non-`.ai` AI artifacts go to root. Minor; no bin/security. `project-ai-validate` → still VALID.
+- Respects P1D design: AI `.ai/`-scoped ignores stay in `.ai/.gitignore` (validator `--check-runtime-separation` depends on the `/runtime/` carve-out there); only non-`.ai` AI artifacts go to root. Minor; no bin/security.
+- **Caveat (runtime skeleton):** a tracked `.gitkeep` inside an ignored dir makes `git check-ignore .ai/runtime/` report "not ignored" (git quirk — git won't ignore a path with tracked descendants) → validator's runtime-separation shows **1 cosmetic WARN**. Contents ARE ignored (`/runtime/**`); the WARN is a false positive. Unavoidable when committing a skeleton; the toolkit validator should check a runtime *content* file (e.g. `.ai/runtime/session/NEXT_ACTION.md`) instead of the dir — flag for backport (see P1D improvement).
+- `project-ai-validate` → 0 FAIL, 1 WARN (cosmetic, as above).
