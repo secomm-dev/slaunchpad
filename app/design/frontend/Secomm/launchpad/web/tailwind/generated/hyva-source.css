@@ -7,8 +7,13 @@
  */
 
 @source "../../../../../../../../vendor/hyva-themes/magento2-theme-module/src";
+@source "../../../../../../../code/Hyva/MagefanBlog";
+@source "../../../../../../../code/Mageplaza/SocialLogin";
+@source "../../../../../../../code/Mageplaza/SocialLoginPro";
 @source "../../../../../../../../vendor/magewirephp/magewire/src";
 
+@import "../../../../../../../code/Mageplaza/SocialLogin/view/frontend/tailwind/tailwind-source.css";
+@import "../../../../../../../code/Mageplaza/SocialLoginPro/view/frontend/tailwind/tailwind-source.css";
 @import "../../../../../../../../vendor/magewirephp/magewire/src/view/frontend/tailwind/tailwind-source.css";
 
 @import "../../../../../../../../vendor/mollie/magento2-hyva-compatibility/src/view/frontend/tailwind/module.css";
