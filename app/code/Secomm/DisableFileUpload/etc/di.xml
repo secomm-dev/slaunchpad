@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- 1. Disable Customer Address File Upload (All Areas: Frontend, REST API, GraphQL) -->
+    <type name="Magento\Customer\Controller\Address\File\Upload">
+        <plugin name="secomm_disable_customer_address_file_upload"
+                type="Secomm\DisableFileUpload\Plugin\Controller\DisableCustomerAddressUpload"
+                sortOrder="1"/>
+    </type>
+
+    <!-- 2. Disable Product Custom Option File Upload (All Areas: Frontend, REST API, GraphQL) -->
+    <type name="Magento\Catalog\Model\Product\Option\Type\File\ValidatorFile">
+        <plugin name="secomm_disable_custom_option_file_upload"
+                type="Secomm\DisableFileUpload\Plugin\Catalog\DisableCustomOptionFileUpload"
+                sortOrder="1"/>
+    </type>
+</config>
