@@ -1,0 +1,161 @@
+{
+    "_hash": "801afdcd9291017315dc51fbd1eb9743d8e629f5d74add5cfa7352f4b21647c6",
+    "patches": {
+        "magento/module-async-config": [
+            {
+                "package": "magento/module-async-config",
+                "description": "APSB26-73: Security Patch for Async Config",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-async-config.patch",
+                "sha256": "c65e6f77ad68c6e77807bc9007906a44c79c96ba4b3b1bf5cd03a2e515b75c12",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-catalog": [
+            {
+                "package": "magento/module-catalog",
+                "description": "APSB26-73: Security Patch for Catalog",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-catalog.patch",
+                "sha256": "a55023215b348997e8c7000c73fb4751b11e4d9808a90480a856feecf4faf579",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-catalog-inventory": [
+            {
+                "package": "magento/module-catalog-inventory",
+                "description": "APSB26-73: Security Patch for Catalog Inventory",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-catalog-inventory.patch",
+                "sha256": "066866180b6a3efb47a580682dcff2673814f379d1a1c5292ccaed7f35d5f825",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-catalog-url-rewrite-graph-ql": [
+            {
+                "package": "magento/module-catalog-url-rewrite-graph-ql",
+                "description": "APSB26-73: Security Patch for Catalog URL Rewrite Graph QL",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-catalog-url-rewrite-graph-ql.patch",
+                "sha256": "77ab8a30da3e20e723aa4d874d177fd82c4cb24314b955887056e88321a37736",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-checkout": [
+            {
+                "package": "magento/module-checkout",
+                "description": "APSB26-73: Security Patch for Checkout",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-checkout.patch",
+                "sha256": "73faea69c58060653da001aeb1074990ca9f16f87cc5d94232fbf56777eaea09",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-gift-message": [
+            {
+                "package": "magento/module-gift-message",
+                "description": "APSB26-73: Security Patch for Gift Message",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-gift-message.patch",
+                "sha256": "f1d2ecedcba9e98206456540fed4ebdd7d74d4cef878d3d3d4b2918a0a28a19a",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-translation": [
+            {
+                "package": "magento/module-translation",
+                "description": "APSB26-73: Security Patch for Translation Inline",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-translation.patch",
+                "sha256": "b0f679ded9c3f9b1d25ac54c5a1440e36f52cc0e9c2621b9369e9b1a11b5c395",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-quote": [
+            {
+                "package": "magento/module-quote",
+                "description": "APSB26-73: Security Patch for Quote",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-quote.patch",
+                "sha256": "638290da8044584471b6f782a61b21e773242e7271de2a1315a1dfc220950557",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/framework": [
+            {
+                "package": "magento/framework",
+                "description": "APSB26-73: Security Patch for Framework UI Component Data Provider Sanitizer",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-framework.patch",
+                "sha256": "e6bb6bcfaae29fe64d3cd10e3ade0edacd88aa71bceca74ee18975dc86e6f189",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-customer": [
+            {
+                "package": "magento/module-customer",
+                "description": "APSB26-73: Security Patch for Customer Config",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-customer.patch",
+                "sha256": "b7029e936f981a9849332bb60a1cba13ca606a6d9deeeb5f72d2ca07f05d9385",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-store": [
+            {
+                "package": "magento/module-store",
+                "description": "APSB26-73: Security Patch for Store config.xml protected extensions",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-module-store.patch",
+                "sha256": "2c2f8b4fa5ddd8857a31709bc1b93d70e9b9b0c00924dee3447756ee78244d2b",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/magento2-base": [
+            {
+                "package": "magento/magento2-base",
+                "description": "APSB26-73: Security Patch for Nginx Config Sample",
+                "url": "patches/composer/APSB26-73/APSB26-73-magento-magento2-base.patch",
+                "sha256": "dfb3ffe67d1aae3624ca1df31708b0f2a71c0b92cdfcd9f7ec34781388f94e9b",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-page-cache": [
+            {
+                "package": "magento/module-page-cache",
+                "description": "AC-15223: Use vary cookie in FPC save identifier for store switch",
+                "url": "patches/composer/AC-15223_2.4.8.patch",
+                "sha256": "5cc7095c7948dbd3feaadb4fe02c6ae293b411f41044d2ea976143998d8729fc",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ]
+    }
+}

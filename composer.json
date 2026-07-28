@@ -8,6 +8,7 @@
     ],
     "config": {
         "allow-plugins": {
+            "cweagans/composer-patches": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
             "laminas/laminas-dependency-plugin": true,
             "magento/*": true,
@@ -18,6 +19,7 @@
     },
     "version": "2.4.8-p5",
     "require": {
+        "cweagans/composer-patches": "^2.0",
         "hybridauth/hybridauth": "^3.8.2",
         "hyva-themes/magento2-default-theme": "^1.5",
         "hyva-themes/magento2-luma-checkout": "^1.1",
@@ -86,6 +88,47 @@
         }
     },
     "extra": {
-        "magento-force": "override"
+        "magento-force": "override",
+        "patches": {
+            "magento/module-async-config": {
+                "APSB26-73: Security Patch for Async Config": "patches/composer/APSB26-73/APSB26-73-magento-module-async-config.patch"
+            },
+            "magento/module-catalog": {
+                "APSB26-73: Security Patch for Catalog": "patches/composer/APSB26-73/APSB26-73-magento-module-catalog.patch"
+            },
+            "magento/module-catalog-inventory": {
+                "APSB26-73: Security Patch for Catalog Inventory": "patches/composer/APSB26-73/APSB26-73-magento-module-catalog-inventory.patch"
+            },
+            "magento/module-catalog-url-rewrite-graph-ql": {
+                "APSB26-73: Security Patch for Catalog URL Rewrite Graph QL": "patches/composer/APSB26-73/APSB26-73-magento-module-catalog-url-rewrite-graph-ql.patch"
+            },
+            "magento/module-checkout": {
+                "APSB26-73: Security Patch for Checkout": "patches/composer/APSB26-73/APSB26-73-magento-module-checkout.patch"
+            },
+            "magento/module-gift-message": {
+                "APSB26-73: Security Patch for Gift Message": "patches/composer/APSB26-73/APSB26-73-magento-module-gift-message.patch"
+            },
+            "magento/module-translation": {
+                "APSB26-73: Security Patch for Translation Inline": "patches/composer/APSB26-73/APSB26-73-magento-module-translation.patch"
+            },
+            "magento/module-quote": {
+                "APSB26-73: Security Patch for Quote": "patches/composer/APSB26-73/APSB26-73-magento-module-quote.patch"
+            },
+            "magento/framework": {
+                "APSB26-73: Security Patch for Framework UI Component Data Provider Sanitizer": "patches/composer/APSB26-73/APSB26-73-magento-framework.patch"
+            },
+            "magento/module-customer": {
+                "APSB26-73: Security Patch for Customer Config": "patches/composer/APSB26-73/APSB26-73-magento-module-customer.patch"
+            },
+            "magento/module-store": {
+                "APSB26-73: Security Patch for Store config.xml protected extensions": "patches/composer/APSB26-73/APSB26-73-magento-module-store.patch"
+            },
+            "magento/magento2-base": {
+                "APSB26-73: Security Patch for Nginx Config Sample": "patches/composer/APSB26-73/APSB26-73-magento-magento2-base.patch"
+            },
+            "magento/module-page-cache": {
+                "AC-15223: Use vary cookie in FPC save identifier for store switch": "patches/composer/AC-15223_2.4.8.patch"
+            }
+        }
     }
 }
