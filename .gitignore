@@ -85,6 +85,8 @@ atlassian*
 /.php-cs-fixer.cache
 /grunt-config.json
 /pub/media/*.*
+/pub/media/blog
+/pub/media/magefan_blog
 !/pub/media/.htaccess
 /pub/media/attribute/*
 !/pub/media/attribute/.htaccess
