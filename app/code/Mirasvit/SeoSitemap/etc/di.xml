@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!--DATA-->
+    <preference for="Mirasvit\SeoSitemap\Api\Data\ProviderInterface" type="Mirasvit\SeoSitemap\Model\Provider"/>
+    <preference for="Mirasvit\SeoSitemap\Api\Data\ProviderSearchResultsInterface" type="Mirasvit\SeoSitemap\Model\ProviderSearchResults"/>
+
+    <!--REPOSITORY-->
+    <preference for="Mirasvit\SeoSitemap\Api\ProviderRepositoryInterface" type="Mirasvit\SeoSitemap\Repository\SitemapProviderRepository"/>
+
+    <!--Entity Manager-->
+    <type name="Magento\Framework\EntityManager\MetadataPool">
+        <arguments>
+            <argument name="metadata" xsi:type="array">
+                <item name="Mirasvit\SeoSitemap\Api\Data\ProviderInterface" xsi:type="array">
+                    <item name="entityTableName" xsi:type="const">Mirasvit\SeoSitemap\Api\Data\ProviderInterface::TABLE_NAME</item>
+                    <item name="identifierField" xsi:type="const">Mirasvit\SeoSitemap\Api\Data\ProviderInterface::ID</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\EntityManager\HydratorPool">
+        <arguments>
+            <argument name="hydrators" xsi:type="array">
+                <item name="Mirasvit\SeoSitemap\Api\Data\ProviderInterface" xsi:type="string">Magento\Framework\EntityManager\AbstractModelHydrator</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!--SITEMAP-->
+    <preference for="Magento\Sitemap\Model\Sitemap" type="Mirasvit\SeoSitemap\Model\Sitemap"/>
+    <preference for="Magento\Sitemap\Model\ResourceModel\Catalog\Product" type="Mirasvit\SeoSitemap\Preference\ResourceModel\Product"/>
+    <preference for="Magento\Sitemap\Model\ItemProvider\Composite" type="Mirasvit\SeoSitemap\Model\ItemProvider\InspectableComposite"/>
+
+    <type name="Mirasvit\SeoSitemap\Repository\Provider\Magento\CompositeProvider">
+        <arguments>
+            <argument name="excludedProviderKeys" xsi:type="array">
+                <item name="storeUrlProvider" xsi:type="string">storeUrlProvider</item>
+                <item name="categoryProvider" xsi:type="string">categoryProvider</item>
+                <item name="cmsPageProvider" xsi:type="string">cmsPageProvider</item>
+                <item name="productProvider" xsi:type="string">productProvider</item>
+                <item name="mstBlogMxCategoryItemProvider" xsi:type="string">mstBlogMxCategoryItemProvider</item>
+                <item name="mstBlogMxPostItemProvider" xsi:type="string">mstBlogMxPostItemProvider</item>
+                <item name="fishpig-wordpress" xsi:type="string">fishpig-wordpress</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Mirasvit\SeoSitemap\Repository\ProviderRepository">
+        <arguments>
+            <argument name="pool" xsi:type="array">
+                <item name="magento_product" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Magento\ProductProvider</item>
+                <item name="magento_category" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Magento\CategoryProvider</item>
+                <item name="magento_page" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Magento\PageProvider</item>
+                <item name="aheadworks_blog" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Aheadworks\BlogProvider</item>
+                <item name="mirasvit_kb" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Mirasvit\KbProvider</item>
+                <item name="fishpig_blog" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\FishPig\BlogProvider</item>
+                <item name="mirasvit_blog" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Mirasvit\BlogProvider</item>
+                <item name="mirasvit_brand" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Mirasvit\BrandProvider</item>
+                <item name="mirasvit_landing_page" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Mirasvit\LandingPageProvider</item>
+                <item name="mageplaza_blog" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Mageplaza\BlogProvider</item>
+                <item name="magefan_blog" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Magefan\BlogProvider</item>
+                <item name="amasty_blog" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Amasty\BlogProvider</item>
+                <item name="magezon_blog" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Magezon\BlogProvider</item>
+                <item name="magento_composite" xsi:type="object">Mirasvit\SeoSitemap\Repository\Provider\Magento\CompositeProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="mstSeoSitemapGenerate" xsi:type="object">Mirasvit\SeoSitemap\Console\Command\SitemapGenerateCommand</item>
+                <item name="mstSeoSitemapValidate" xsi:type="object">Mirasvit\SeoSitemap\Console\Command\ValidateCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- correct sitemap url if use pub folder -->
+    <type name="Magento\Sitemap\Block\Adminhtml\Grid\Renderer\Link">
+        <plugin name="mstSeoSitemapLink" type="Mirasvit\SeoSitemap\Plugin\SitemapLinkPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- add home page in xml sitemap (from Magento 2.2.4) -->
+    <type name="Magento\Cms\Model\GetUtilityPageIdentifiers">
+        <plugin name="mstSeoSitemapHomePage" type="Mirasvit\SeoSitemap\Plugin\SitemapHomePagePlugin" sortOrder="1000"/>
+    </type>
+</config>

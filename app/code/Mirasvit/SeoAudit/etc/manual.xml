@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../../../module-core/src/Core/etc/manual.xsd">
+    <link action="seoaudit_job_index" title="Learn more about SEO audit" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/seo-audit"/>
+    <link action="seoaudit_job_details" title="Learn more about SEO audit" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/seo-audit"/>
+    <link action="seoaudit_job_url" title="Learn more about SEO audit" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/seo-audit"/>
+</config>

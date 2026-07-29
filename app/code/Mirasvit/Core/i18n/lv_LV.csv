@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1 pakalpojums nav pareizi konfigurēts vai nav pieejams"
+"Invalid AI request data","Nederīgi AI pieprasījuma dati"
+"Request prompt cannot be empty","Pieprasījuma uzvedne nevar būt tukša"
+"Claude API error","Claude API kļūda"
+"Invalid Claude API response: missing content","Nederīga Claude API atbilde: trūkst satura"
+"Empty content received from Claude API","No Claude API saņemts tukšs saturs"
+"Gemini API error","Gemini API kļūda"
+"Invalid Gemini API response: missing candidates","Nederīga Gemini API atbilde: trūkst kandidātu"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Gemini API atbilde tika saīsināta, jo tika sasniegts max_tokens limits. Apsveriet iespēju palielināt max_tokens iestatījumu vai izmantot īsāku uzvedni."
+"Empty content received from Gemini API","No Gemini API saņemts tukšs saturs"
+"AI services are disabled in configuration","AI pakalpojumi ir atspējoti konfigurācijā"
+"No default AI provider configured","Nav konfigurēts noklusējuma AI pakalpojumu sniedzējs"
+"No available AI provider for request validation","Nav pieejama AI pakalpojumu sniedzēja pieprasījuma validācijai"
+"Request validation failed: %1","Pieprasījuma validācija neizdevās: %1"
+"All AI providers failed. Last error: %1","Visi AI pakalpojumu sniedzēji neizdevās. Pēdējā kļūda: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Neatbalstīts AI pakalpojumu sniedzējs: %1. Atbalstītie sniedzēji: %2"
+"Service class %1 must extend %2","Pakalpojuma klasei %1 jāpaplašina %2"
+"Failed to create AI service for provider %1: %2","Neizdevās izveidot AI pakalpojumu sniedzējam %1: %2"
+"Not configured","Nav konfigurēts"
+Unknown,Nezināms
+"Unknown API error","Nezināma API kļūda"
+"Temperature must be between 0 and 2","Temperatūrai jābūt no 0 līdz 2"
+"Max tokens must be greater than 0","Maksimālajam žetonu skaitam jābūt lielākam par 0"
+"Frequency penalty must be between -2 and 2","Biežuma sodam jābūt no -2 līdz 2"
+"Format output as JSON.","Formatēt izvadi kā JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API atgrieza nepilnīgu atbildi, jo tika pārsniegts modeļa konteksta loga žetonu skaits."
+"OpenAI API returned no content in the response.","OpenAI API neatgrieza saturu atbildē."
+"Not Installed","Nav instalēts"
+"A total of %1 record(s) have been deleted.","Kopā %1 ieraksts(-i) ir dzēsts(-i)."
+"The record has been removed.","Ieraksts ir noņemts."
+"Disallowed file type.","Neatļauts faila tips."
+"Can't remove folder %s","Nevar noņemt mapi %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Paplašinājums nesatur visus nepieciešamos failus. Lūdzu, pārinstalējiet paplašinājumu no oriģinālās pakotnes."
+"Extension Information","Paplašinājuma informācija"
+Status,Statuss
+Other,Cits
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron priekš Magento nedarbojas. Lai iestatītu cron uzdevumu, sekojiet saitei %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron uzdevumi [%1] nedarbojas. Lūdzu, pārbaudiet tabulu %2 iesaldēto uzdevumu meklēšanai un noņemiet tos."
+Remove,Noņemt
+Error,Kļūda
+Missed,Nokavēts
+Running,Darbojas
+Pending,Gaida
+Success,Veiksmīgi
+"Server gmt time","Servera GMT laiks"
+"Last job","Pēdējais uzdevums"
+Executed,Izpildīts
+none,nav
+"Cron setup","Cron iestatīšana"
+"Cron Jobs","Cron uzdevumi"
+"No AI-enabled modules are currently active.","Pašlaik nav aktīvu AI iespējotu moduļu."
+"%1 module(s) using AI functionality:","%1 modulis(-ļi) izmanto AI funkcionalitāti:"
+Provider:,Sniedzējs:
+ai_provider,ai_provider
+"You have the latest version","Jums ir jaunākā versija"
+"New version %1 is available","Pieejama jauna versija %1"
+"View %1 details (opens in new window)","Skatīt %1 detaļas (atveras jaunā logā)"
+Details,Detaļas
+"View %1 user guide (opens in new window)","Skatīt %1 lietotāja rokasgrāmatu (atveras jaunā logā)"
+"User Guide","Lietotāja rokasgrāmata"
+"View %1 changelog (opens in new window)","Skatīt %1 izmaiņu žurnālu (atveras jaunā logā)"
+Changelog,Izmaiņu žurnāls
+"Request new feature for %1 (opens in new window)","Pieprasīt jaunu funkciju priekš %1 (atveras jaunā logā)"
+"Request New Feature","Pieprasīt jaunu funkciju"
+"Installed Extensions","Instalētie paplašinājumi"
+"Check changes","Pārbaudīt izmaiņas"
+"Validate All Extensions","Validēt visus paplašinājumus"
+"Suggest Improvement","Ieteikt uzlabojumu"
+"%1 (opens in new window)","%1 (atveras jaunā logā)"
+"More Details","Vairāk informācijas"
+"Developer settings","Izstrādātāja iestatījumi"
+"AI Provider Status","AI sniedzēja statuss"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Pašlaik nav iespējotu AI sniedzēju. Lūdzu, konfigurējiet AI sniedzējus %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 no %2 sniedzējiem iespējots. Jūs varat pārvaldīt sniedzējus %3."
+Enabled,Iespējots
+Disabled,Atspējots
+"All tests have been passed","Visi testi ir veiksmīgi izturēti"
+Module,Modulis
+Test,Tests
+"How to fix","Kā labot"
+Warning,Brīdinājums
+Info,Informācija
+Failed,Neizdevās
+Today,Šodien
+"Last 7 days","Pēdējās 7 dienas"
+"Last 30 days","Pēdējās 30 dienas"
+"Last 365 days","Pēdējās 365 dienas"
+"Mirasvit Extensions Validator","Mirasvit paplašinājumu validētājs"
+"Mirasvit Menu","Mirasvit izvēlne"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Paplašinājumi
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit paplašinājumi"
+Developer,Izstrādātājs
+"Menu Settings","Izvēlnes iestatījumi"
+"Enable Mirasvit Menu","Iespējot Mirasvit izvēlni"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Izvēlne ir redzama, ja jums ir vismaz divi aktīvi Mirasvit paplašinājumi."
+"Additional CSS Styles","Papildu CSS stili"
+"AI Configuration","AI konfigurācija"
+"Modules using AI","Moduļi, kas izmanto AI"
+"Enable AI features","Iespējot AI funkcijas"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Globāli iespējojiet vai atspējojiet visas AI darbinātas funkcijas Mirasvit paplašinājumos.<br>Kad atspējots, visa AI funkcionalitāte nebūs pieejama neatkarīgi no individuālajiem sniedzēja iestatījumiem vai AI iestatījumiem citos moduļos."
+"Default AI provider","Noklusējuma AI sniedzējs"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Izvēlieties primāro AI sniedzēju, ko izmantot, kad ir konfigurēti vairāki sniedzēji.<br>Tas tiks izmantots kā rezerves sniedzējs visām AI operācijām, kad nav pieprasīts konkrēts sniedzējs."
+"Request timeout","Pieprasījuma noildze"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Maksimālais laiks sekundēs, lai gaidītu AI sniedzēja atbildes.<br> Atstājiet tukšu, lai atspējotu noildzi.<br> Šis iestatījums ietekmēs visas AI funkcijas citos moduļos."
+"Maximum tokens per request","Maksimālais žetonu skaits pieprasījumā"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Maksimālais ģenerējamo žetonu skaits vienā AI pieprasījumā. Augstākas vērtības ļauj garākas atbildes, bet palielina izmaksas.<br> Atstājiet tukšu, lai atspējotu ierobežojumu.<br> Dažādiem sniedzējiem un modeļiem ir savi ierobežojumi.<br> Šis iestatījums ietekmēs visas AI funkcijas citos moduļos."
+"Default temperature","Noklusējuma temperatūra"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Kontrolē nejaušību AI atbildēs. Zemākas vērtības rada konsekventākus rezultātus, augstākas vērtības - radošākus.<br>Piemērs:<br><code>0.1</code> - ļoti konsekventi, faktiski atbildi<br><code>0.7</code> - līdzsvarota radošums un konsekvence<br><code>1.0</code> - ļoti radoši un dažādi atbildi.<br>Ja tukšs, tiks izmantota noklusējuma temperatūra 0.7.<br>Šis iestatījums ietekmēs visas AI funkcijas citos moduļos.<br>Daži paplašinājumi var ignorēt šo iestatījumu."
+"Debug mode","Atkļūdošanas režīms"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Iespējot detalizētu AI pieprasījumu un atbilžu reģistrēšanu atkļūdošanas nolūkiem.<br>Brīdinājums: Tas var reģistrēt sensitīvus datus un ietekmēt veiktspēju. Izmantojiet tikai izstrādei."
+"OpenAI Configuration","OpenAI konfigurācija"
+"Enable OpenAI provider","Iespējot OpenAI sniedzēju"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Iespējojiet OpenAI kā pieejamu AI sniedzēju. Nepieciešama derīga API atslēgas konfigurācija."
+"OpenAI API key","OpenAI API atslēga"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Jūsu OpenAI API atslēga, kas sākas ar 'sk-'. Šī atslēga ir šifrēta un droši uzglabāta.<br>Iegūstiet savu API atslēgu no: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Noklusējuma OpenAI modelis"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Izvēlieties noklusējuma OpenAI modeli AI operācijām. Dažādiem modeļiem ir atšķirīgas iespējas un izmaksas."
+"Claude Configuration","Claude konfigurācija"
+"Enable Claude provider","Iespējot Claude sniedzēju"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Iespējojiet Anthropic Claude kā pieejamu AI sniedzēju. Nepieciešama derīga API atslēgas konfigurācija."
+"Claude API key","Claude API atslēga"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Jūsu Anthropic Claude API atslēga, kas sākas ar 'sk-ant-'. Šī atslēga ir šifrēta un droši uzglabāta.<br>Iegūstiet savu API atslēgu no: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Noklusējuma Claude modelis"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Izvēlieties noklusējuma Claude modeli AI operācijām. Dažādiem modeļiem ir atšķirīgas iespējas un izmaksas."
+"Google Gemini Configuration","Google Gemini konfigurācija"
+"Enable Gemini provider","Iespējot Gemini sniedzēju"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Iespējojiet Google Gemini kā pieejamu AI sniedzēju. Nepieciešama derīga API atslēgas konfigurācija."
+"Gemini API key","Gemini API atslēga"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Jūsu Google AI Studio API atslēga, kas sākas ar 'AIza'. Šī atslēga ir šifrēta un droši uzglabāta.<br>Iegūstiet savu API atslēgu no: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Noklusējuma Gemini modelis"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Izvēlieties noklusējuma Gemini modeli AI operācijām. Dažādiem modeļiem ir atšķirīgas iespējas un izmaksas."
+"Determine visitor's country, city, and timezone based on their IP address.","Nosakiet apmeklētāja valsti, pilsētu un laika joslu, pamatojoties uz viņa IP adresi."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Automātiskiem atjauninājumiem nepieciešams bezmaksas <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind konts</a> (pārbaudīts katru nedēļu)."
+"Used by:","Lieto:"
+message,ziņojums
+"Error downloading database: %1","Kļūda, lejupielādējot datubāzi: %1"
+"MaxMind credentials not configured","MaxMind akreditācijas dati nav konfigurēti"
+"Failed to download remote hash","Neizdevās lejupielādēt attālo hash"
+"Database is up to date","Datubāze ir atjaunināta"
+"Failed to download and extract database","Neizdevās lejupielādēt un izpakot datubāzi"
+"Database updated successfully","Datubāze veiksmīgi atjaunināta"
+"Download failed: %1","Lejupielāde neizdevās: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Šis paplašinājums izmanto GeoLite2 datus, ko izveidojis MaxMind."
+"Database available (auto-update enabled)","Datubāze pieejama (automātiskā atjaunināšana iespējota)"
+"Database available (auto-update disabled)","Datubāze pieejama (automātiskā atjaunināšana atspējota)"
+Configure,Konfigurēt
+"Database not available","Datubāze nav pieejama"
+"Database status:","Datubāzes statuss:"
+"Not available","Nav pieejams"
+"Credentials configured. Click the button below to download the database.","Akreditācijas dati konfigurēti. Noklikšķiniet uz pogas zemāk, lai lejupielādētu datubāzi."
+"Download database","Lejupielādēt datubāzi"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Ievadiet MaxMind akreditācijas datus augstāk, lai iespējotu automātiskas lejupielādes, vai palaidiet setup:upgrade, lai instalētu pievienoto datubāzi."
+"Available (auto-update disabled)","Pieejams (automātiskā atjaunināšana atspējota)"
+Version:,Versija:
+Size:,Izmērs:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Ievadiet MaxMind akreditācijas datus augstāk, lai iespējotu automātiskus iknedēļas atjauninājumus."
+"Available (auto-update enabled)","Pieejams (automātiskā atjaunināšana iespējota)"
+"Update database","Atjaunināt datubāzi"
+"Database updated successfully.","Datubāze veiksmīgi atjaunināta."
+Notice,Paziņojums
+"Database is up to date.","Datubāze ir atjaunināta."
+"An error occurred while downloading the database.","Lejupielādējot datubāzi, radās kļūda."
+"IP Geolocation","IP ģeolokācija"
+"Account ID","Konta ID"
+"License Key","Licences atslēga"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Ģenerēt licences atslēgu</a>"
+Cron,Cron
+Delete,Dzēst
+"Delete items","Dzēst vienumus"
+"Are you sure you want to delete selected items?","Vai tiešām vēlaties dzēst izvēlētos vienumus?"
+ID,ID
+Code,Kods
+Messages,Ziņojumi
+Created,Izveidots
+Scheduled,Ieplānots
+Finished,Pabeigts

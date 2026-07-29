@@ -1,0 +1,95 @@
+<?php
+/**
+ * @var \Mirasvit\Core\Block\Adminhtml\Config\GeoLocationField $block
+ */
+
+use Mirasvit\Core\Service\GeoLocationService;
+
+$elementId = 'mst-geolocation-btn-' . uniqid();
+$status    = $block->getStatus();
+?>
+
+<div class="mst-core__geolocation-field">
+    <?php if ($status === GeoLocationService::STATUS_NO_DATABASE): ?>
+        <div class="message message-warning">
+            <strong><?= $block->escapeHtml(__('Database status:')) ?></strong>
+            <?= $block->escapeHtml(__('Not available')) ?>
+        </div>
+        <?php if ($block->isConfigured()): ?>
+            <p class="mst-core__geolocation-hint">
+                <?= $block->escapeHtml(__('Credentials configured. Click the button below to download the database.')) ?>
+            </p>
+            <button type="button"
+                    id="<?= $block->escapeHtmlAttr($elementId) ?>"
+                    class="action-default scalable primary">
+                <span><?= $block->escapeHtml(__('Download database')) ?></span>
+            </button>
+        <?php else: ?>
+            <p class="mst-core__geolocation-hint">
+                <?= $block->escapeHtml(__('Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.')) ?>
+            </p>
+        <?php endif; ?>
+
+    <?php elseif ($status === GeoLocationService::STATUS_NO_AUTOUPDATE): ?>
+        <?php $info = $block->getDatabaseInfo(); ?>
+        <div class="message message-notice">
+            <strong><?= $block->escapeHtml(__('Database status:')) ?></strong>
+            <?= $block->escapeHtml(__('Available (auto-update disabled)')) ?>
+        </div>
+        <?php if ($info): ?>
+            <div class="mst-core__geolocation-info">
+                <?php if (!empty($info['version'])): ?>
+                    <p>
+                        <strong><?= $block->escapeHtml(__('Version:')) ?></strong>
+                        <?= $block->escapeHtml($block->formatVersion($info['version'])) ?>
+                    </p>
+                <?php endif; ?>
+                <p>
+                    <strong><?= $block->escapeHtml(__('Size:')) ?></strong>
+                    <?= $block->escapeHtml(number_format((float)$info['size'] / 1024 / 1024, 1)) ?> MB
+                </p>
+            </div>
+        <?php endif; ?>
+        <p class="mst-core__geolocation-hint">
+            <?= $block->escapeHtml(__('Enter MaxMind credentials above to enable automatic weekly updates.')) ?>
+        </p>
+
+    <?php else: ?>
+        <?php $info = $block->getDatabaseInfo(); ?>
+        <div class="message message-success">
+            <strong><?= $block->escapeHtml(__('Database status:')) ?></strong>
+            <?= $block->escapeHtml(__('Available (auto-update enabled)')) ?>
+        </div>
+        <?php if ($info): ?>
+            <div class="mst-core__geolocation-info">
+                <?php if (!empty($info['version'])): ?>
+                    <p>
+                        <strong><?= $block->escapeHtml(__('Version:')) ?></strong>
+                        <?= $block->escapeHtml($block->formatVersion($info['version'])) ?>
+                    </p>
+                <?php endif; ?>
+                <p>
+                    <strong><?= $block->escapeHtml(__('Size:')) ?></strong>
+                    <?= $block->escapeHtml(number_format((float)$info['size'] / 1024 / 1024, 1)) ?> MB
+                </p>
+            </div>
+        <?php endif; ?>
+        <button type="button"
+                id="<?= $block->escapeHtmlAttr($elementId) ?>"
+                class="action-default scalable">
+            <span><?= $block->escapeHtml(__('Update database')) ?></span>
+        </button>
+    <?php endif; ?>
+</div>
+
+<?php if ($block->isConfigured()): ?>
+    <script type="text/x-magento-init">
+        {
+            "#<?= $block->escapeJs($elementId) ?>": {
+                "Mirasvit_Core/js/geolocation-download": {
+                    "url": "<?= $block->escapeUrl($block->getDownloadUrl()) ?>"
+                }
+            }
+        }
+    </script>
+<?php endif; ?>

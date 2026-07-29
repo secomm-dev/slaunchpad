@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <seo_audit>
+            <general>
+                <is_enabled>1</is_enabled>
+            </general>
+            <performance>
+                <level>2</level>
+                <delay>200</delay>
+                <max_urls_per_run>0</max_urls_per_run>
+                <cron_schedule>*/30 * * * *</cron_schedule>
+                <cron_schedule_custom>*/30 * * * *</cron_schedule_custom>
+                <server_load_threshold>80</server_load_threshold>
+                <max_job_lifetime_days>1</max_job_lifetime_days>
+            </performance>
+        </seo_audit>
+    </default>
+</config>

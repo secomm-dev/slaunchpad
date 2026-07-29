@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","Dịch vụ %1 không được cấu hình đúng hoặc không khả dụng"
+"Invalid AI request data","Dữ liệu yêu cầu AI không hợp lệ"
+"Request prompt cannot be empty","Prompt yêu cầu không được để trống"
+"Claude API error","Lỗi Claude API"
+"Invalid Claude API response: missing content","Phản hồi Claude API không hợp lệ: thiếu nội dung"
+"Empty content received from Claude API","Nhận được nội dung trống từ Claude API"
+"Gemini API error","Lỗi Gemini API"
+"Invalid Gemini API response: missing candidates","Phản hồi Gemini API không hợp lệ: thiếu ứng viên"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Phản hồi Gemini API bị cắt ngắn vì đã đạt giới hạn max_tokens. Hãy xem xét tăng cài đặt max_tokens hoặc sử dụng prompt ngắn hơn."
+"Empty content received from Gemini API","Nhận được nội dung trống từ Gemini API"
+"AI services are disabled in configuration","Các dịch vụ AI bị tắt trong cấu hình"
+"No default AI provider configured","Chưa cấu hình nhà cung cấp AI mặc định"
+"No available AI provider for request validation","Không có nhà cung cấp AI khả dụng để xác thực yêu cầu"
+"Request validation failed: %1","Xác thực yêu cầu thất bại: %1"
+"All AI providers failed. Last error: %1","Tất cả nhà cung cấp AI đều thất bại. Lỗi cuối: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Nhà cung cấp AI không được hỗ trợ: %1. Nhà cung cấp được hỗ trợ: %2"
+"Service class %1 must extend %2","Lớp dịch vụ %1 phải mở rộng %2"
+"Failed to create AI service for provider %1: %2","Không thể tạo dịch vụ AI cho nhà cung cấp %1: %2"
+"Not configured","Chưa cấu hình"
+Unknown,Không xác định
+"Unknown API error","Lỗi API không xác định"
+"Temperature must be between 0 and 2","Nhiệt độ phải nằm trong khoảng 0 đến 2"
+"Max tokens must be greater than 0","Số token tối đa phải lớn hơn 0"
+"Frequency penalty must be between -2 and 2","Hình phạt tần suất phải nằm trong khoảng -2 đến 2"
+"Format output as JSON.","Định dạng đầu ra dưới dạng JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API trả về phản hồi không đầy đủ vì số token của cửa sổ ngữ cảnh mô hình đã bị vượt quá."
+"OpenAI API returned no content in the response.","OpenAI API không trả về nội dung trong phản hồi."
+"Not Installed","Chưa cài đặt"
+"A total of %1 record(s) have been deleted.","Tổng cộng %1 bản ghi đã bị xóa."
+"The record has been removed.","Bản ghi đã được xóa."
+"Disallowed file type.","Loại tệp không được phép."
+"Can't remove folder %s","Không thể xóa thư mục %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Tiện ích mở rộng không chứa tất cả các tệp cần thiết. Vui lòng cài đặt lại tiện ích mở rộng từ gói gốc."
+"Extension Information","Thông tin tiện ích mở rộng"
+Status,Trạng thái
+Other,Khác
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron cho Magento không chạy. Để thiết lập công việc cron, hãy theo liên kết %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Công việc Cron [%1] không chạy. Vui lòng kiểm tra bảng %2 để tìm công việc bị đóng băng và xóa chúng."
+Remove,Xóa
+Error,Lỗi
+Missed,Bỏ lỡ
+Running,Đang chạy
+Pending,Đang chờ
+Success,Thành công
+"Server gmt time","Thời gian GMT của máy chủ"
+"Last job","Công việc cuối"
+Executed,Đã thực thi
+none,không có
+"Cron setup","Thiết lập Cron"
+"Cron Jobs","Công việc Cron"
+"No AI-enabled modules are currently active.","Hiện không có mô-đun hỗ trợ AI nào đang hoạt động."
+"%1 module(s) using AI functionality:","%1 mô-đun đang sử dụng chức năng AI:"
+Provider:,Nhà cung cấp:
+ai_provider,ai_provider
+"You have the latest version","Bạn đã có phiên bản mới nhất"
+"New version %1 is available","Phiên bản mới %1 đã có sẵn"
+"View %1 details (opens in new window)","Xem chi tiết %1 (mở trong cửa sổ mới)"
+Details,Chi tiết
+"View %1 user guide (opens in new window)","Xem hướng dẫn sử dụng %1 (mở trong cửa sổ mới)"
+"User Guide","Hướng dẫn sử dụng"
+"View %1 changelog (opens in new window)","Xem nhật ký thay đổi %1 (mở trong cửa sổ mới)"
+Changelog,Nhật ký thay đổi
+"Request new feature for %1 (opens in new window)","Yêu cầu tính năng mới cho %1 (mở trong cửa sổ mới)"
+"Request New Feature","Yêu cầu tính năng mới"
+"Installed Extensions","Tiện ích mở rộng đã cài đặt"
+"Check changes","Kiểm tra thay đổi"
+"Validate All Extensions","Xác thực tất cả tiện ích mở rộng"
+"Suggest Improvement","Đề xuất cải tiến"
+"%1 (opens in new window)","%1 (mở trong cửa sổ mới)"
+"More Details","Chi tiết thêm"
+"Developer settings","Cài đặt nhà phát triển"
+"AI Provider Status","Trạng thái nhà cung cấp AI"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Hiện không có nhà cung cấp AI nào được bật. Vui lòng cấu hình nhà cung cấp AI trong %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 trong số %2 nhà cung cấp được bật. Bạn có thể quản lý nhà cung cấp trong %3."
+Enabled,Đã bật
+Disabled,Đã tắt
+"All tests have been passed","Tất cả các bài kiểm tra đã được thông qua"
+Module,Mô-đun
+Test,Kiểm tra
+"How to fix","Cách khắc phục"
+Warning,Cảnh báo
+Info,Thông tin
+Failed,Thất bại
+Today,Hôm nay
+"Last 7 days","7 ngày qua"
+"Last 30 days","30 ngày qua"
+"Last 365 days","365 ngày qua"
+"Mirasvit Extensions Validator","Trình xác thực tiện ích mở rộng Mirasvit"
+"Mirasvit Menu","Menu Mirasvit"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Tiện ích mở rộng
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Tiện ích mở rộng Mirasvit"
+Developer,Nhà phát triển
+"Menu Settings","Cài đặt menu"
+"Enable Mirasvit Menu","Bật menu Mirasvit"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Menu sẽ hiển thị nếu bạn có ít nhất hai tiện ích mở rộng Mirasvit đang hoạt động."
+"Additional CSS Styles","Kiểu CSS bổ sung"
+"AI Configuration","Cấu hình AI"
+"Modules using AI","Mô-đun sử dụng AI"
+"Enable AI features","Bật tính năng AI"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Bật hoặc tắt toàn cầu tất cả các tính năng hỗ trợ AI trong các tiện ích mở rộng Mirasvit.<br>Khi bị tắt, tất cả chức năng AI sẽ không khả dụng bất kể cài đặt nhà cung cấp riêng lẻ hoặc cài đặt AI trong các mô-đun khác."
+"Default AI provider","Nhà cung cấp AI mặc định"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Chọn nhà cung cấp AI chính để sử dụng khi có nhiều nhà cung cấp được cấu hình.<br>Đây sẽ được sử dụng làm nhà cung cấp dự phòng cho tất cả các hoạt động AI khi không có nhà cung cấp cụ thể nào được yêu cầu."
+"Request timeout","Thời gian chờ yêu cầu"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Thời gian tối đa tính bằng giây để chờ phản hồi từ nhà cung cấp AI.<br> Để trống để tắt thời gian chờ.<br> Cài đặt này sẽ ảnh hưởng đến tất cả các tính năng AI trong các mô-đun khác."
+"Maximum tokens per request","Số token tối đa mỗi yêu cầu"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Số lượng token tối đa để tạo trong một yêu cầu AI. Giá trị cao hơn cho phép phản hồi dài hơn nhưng tăng chi phí.<br> Để trống để tắt giới hạn.<br> Các nhà cung cấp và mô hình khác nhau có giới hạn riêng.<br> Cài đặt này sẽ ảnh hưởng đến tất cả các tính năng AI trong các mô-đun khác."
+"Default temperature","Nhiệt độ mặc định"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Kiểm soát tính ngẫu nhiên trong phản hồi AI. Giá trị thấp hơn tạo ra kết quả nhất quán hơn, giá trị cao hơn sáng tạo hơn.<br>Ví dụ:<br><code>0.1</code> - phản hồi rất nhất quán, dựa trên sự thật<br><code>0.7</code> - cân bằng giữa sáng tạo và nhất quán<br><code>1.0</code> - phản hồi rất sáng tạo và đa dạng.<br>Nếu để trống, nhiệt độ mặc định 0.7 sẽ được sử dụng.<br>Cài đặt này sẽ ảnh hưởng đến tất cả các tính năng AI trong các mô-đun khác.<br>Một số tiện ích mở rộng có thể ghi đè cài đặt này."
+"Debug mode","Chế độ gỡ lỗi"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Bật ghi nhật ký chi tiết các yêu cầu và phản hồi AI cho mục đích gỡ lỗi.<br>Cảnh báo: Điều này có thể ghi lại dữ liệu nhạy cảm và ảnh hưởng đến hiệu suất. Chỉ sử dụng cho mục đích phát triển."
+"OpenAI Configuration","Cấu hình OpenAI"
+"Enable OpenAI provider","Bật nhà cung cấp OpenAI"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Bật OpenAI làm nhà cung cấp AI khả dụng. Yêu cầu cấu hình khóa API hợp lệ."
+"OpenAI API key","Khóa API OpenAI"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Khóa API OpenAI của bạn bắt đầu bằng 'sk-'. Khóa này được mã hóa và lưu trữ an toàn.<br>Lấy khóa API của bạn từ: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Mô hình OpenAI mặc định"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Chọn mô hình OpenAI mặc định cho các hoạt động AI. Các mô hình khác nhau có khả năng và chi phí khác nhau."
+"Claude Configuration","Cấu hình Claude"
+"Enable Claude provider","Bật nhà cung cấp Claude"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Bật Anthropic Claude làm nhà cung cấp AI khả dụng. Yêu cầu cấu hình khóa API hợp lệ."
+"Claude API key","Khóa API Claude"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Khóa API Anthropic Claude của bạn bắt đầu bằng 'sk-ant-'. Khóa này được mã hóa và lưu trữ an toàn.<br>Lấy khóa API của bạn từ: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Mô hình Claude mặc định"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Chọn mô hình Claude mặc định cho các hoạt động AI. Các mô hình khác nhau có khả năng và chi phí khác nhau."
+"Google Gemini Configuration","Cấu hình Google Gemini"
+"Enable Gemini provider","Bật nhà cung cấp Gemini"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Bật Google Gemini làm nhà cung cấp AI khả dụng. Yêu cầu cấu hình khóa API hợp lệ."
+"Gemini API key","Khóa API Gemini"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Khóa API Google AI Studio của bạn bắt đầu bằng 'AIza'. Khóa này được mã hóa và lưu trữ an toàn.<br>Lấy khóa API của bạn từ: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Mô hình Gemini mặc định"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Chọn mô hình Gemini mặc định cho các hoạt động AI. Các mô hình khác nhau có khả năng và chi phí khác nhau."
+"Determine visitor's country, city, and timezone based on their IP address.","Xác định quốc gia, thành phố và múi giờ của khách truy cập dựa trên địa chỉ IP của họ."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Cần có tài khoản <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind miễn phí</a> để cập nhật tự động (kiểm tra hàng tuần)."
+"Used by:","Được sử dụng bởi:"
+message,tin nhắn
+"Error downloading database: %1","Lỗi tải xuống cơ sở dữ liệu: %1"
+"MaxMind credentials not configured","Thông tin xác thực MaxMind chưa được cấu hình"
+"Failed to download remote hash","Tải xuống hash từ xa thất bại"
+"Database is up to date","Cơ sở dữ liệu đã được cập nhật"
+"Failed to download and extract database","Tải xuống và giải nén cơ sở dữ liệu thất bại"
+"Database updated successfully","Cơ sở dữ liệu đã được cập nhật thành công"
+"Download failed: %1","Tải xuống thất bại: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Tiện ích mở rộng này sử dụng dữ liệu GeoLite2 được tạo bởi MaxMind."
+"Database available (auto-update enabled)","Cơ sở dữ liệu khả dụng (cập nhật tự động đã bật)"
+"Database available (auto-update disabled)","Cơ sở dữ liệu khả dụng (cập nhật tự động đã tắt)"
+Configure,Cấu hình
+"Database not available","Cơ sở dữ liệu không khả dụng"
+"Database status:","Trạng thái cơ sở dữ liệu:"
+"Not available","Không khả dụng"
+"Credentials configured. Click the button below to download the database.","Thông tin xác thực đã được cấu hình. Nhấp vào nút bên dưới để tải xuống cơ sở dữ liệu."
+"Download database","Tải xuống cơ sở dữ liệu"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Nhập thông tin xác thực MaxMind ở trên để bật tải xuống tự động, hoặc chạy setup:upgrade để cài đặt cơ sở dữ liệu đi kèm."
+"Available (auto-update disabled)","Khả dụng (cập nhật tự động đã tắt)"
+Version:,Phiên bản:
+Size:,Kích thước:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Nhập thông tin xác thực MaxMind ở trên để bật cập nhật tự động hàng tuần."
+"Available (auto-update enabled)","Khả dụng (cập nhật tự động đã bật)"
+"Update database","Cập nhật cơ sở dữ liệu"
+"Database updated successfully.","Cơ sở dữ liệu đã được cập nhật thành công."
+Notice,Thông báo
+"Database is up to date.","Cơ sở dữ liệu đã được cập nhật."
+"An error occurred while downloading the database.","Đã xảy ra lỗi khi tải xuống cơ sở dữ liệu."
+"IP Geolocation","Định vị địa lý IP"
+"Account ID","ID tài khoản"
+"License Key","Khóa giấy phép"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Tạo khóa giấy phép</a>"
+Cron,Cron
+Delete,Xóa
+"Delete items","Xóa mục"
+"Are you sure you want to delete selected items?","Bạn có chắc chắn muốn xóa các mục đã chọn không?"
+ID,ID
+Code,Mã
+Messages,Tin nhắn
+Created,Đã tạo
+Scheduled,Đã lên lịch
+Finished,Đã hoàn thành

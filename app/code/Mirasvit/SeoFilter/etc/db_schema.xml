@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="mst_seo_filter_rewrite" resource="default" engine="innodb" comment="SeoFilter Rewrites">
+    <column xsi:type="int" name="rewrite_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Rewrite Id"/>
+    <column xsi:type="varchar" name="attribute_code" nullable="false" length="120" comment="Attribute Code"/>
+    <column xsi:type="varchar" name="option" nullable="true" length="120" comment="Option"/>
+    <column xsi:type="varchar" name="rewrite" nullable="false" length="120" comment="Rewrite"/>
+    <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" identity="false" comment="Store Id"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="rewrite_id"/>
+    </constraint>
+    <constraint xsi:type="unique" referenceId="MST_SEO_FILTER_REWRITE_REWRITE_STORE_ID" disabled="true">
+      <column name="rewrite"/>
+      <column name="store_id"/>
+    </constraint>
+    <constraint xsi:type="unique" referenceId="MST_SEO_FILTER_REWRITE_ATTRIBUTE_CODE_OPTION_STORE_ID">
+      <column name="attribute_code"/>
+      <column name="option"/>
+      <column name="store_id"/>
+    </constraint>
+    <index referenceId="MST_SEO_FILTER_REWRITE_STORE_ID" indexType="btree">
+      <column name="store_id"/>
+    </index>
+    <index referenceId="MST_SEO_FILTER_REWRITE_OPTION" indexType="btree">
+      <column name="option"/>
+    </index>
+    <index referenceId="MST_SEO_FILTER_REWRITE_REWRITE_STORE_ID_IDX" indexType="btree">
+      <column name="rewrite"/>
+      <column name="store_id"/>
+    </index>
+  </table>
+  <table name="mst_seo_filter_attribute_config" resource="default" engine="innodb" comment="SeoFilter Attribute Config">
+    <column xsi:type="int" name="config_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Config Id"/>
+    <column xsi:type="varchar" name="attribute_code" nullable="false" length="120" comment="Attribute Code"/>
+    <column xsi:type="smallint" name="attribute_status" padding="5" unsigned="true" nullable="false" default="1" identity="false" comment="Attribute SEO Status"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="config_id"/>
+    </constraint>
+  </table>
+</schema>

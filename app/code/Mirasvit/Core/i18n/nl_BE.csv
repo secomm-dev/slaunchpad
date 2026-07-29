@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1-service is niet correct geconfigureerd of niet beschikbaar"
+"Invalid AI request data","Ongeldige AI-aanvraaggegevens"
+"Request prompt cannot be empty","De aanvraagprompt mag niet leeg zijn"
+"Claude API error","Claude API-fout"
+"Invalid Claude API response: missing content","Ongeldige Claude API-respons: ontbrekende inhoud"
+"Empty content received from Claude API","Lege inhoud ontvangen van Claude API"
+"Gemini API error","Gemini API-fout"
+"Invalid Gemini API response: missing candidates","Ongeldige Gemini API-respons: ontbrekende kandidaten"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","De Gemini API-respons werd afgekapt omdat de max_tokens-limiet werd bereikt. Overweeg de max_tokens-instelling te verhogen of een kortere prompt te gebruiken."
+"Empty content received from Gemini API","Lege inhoud ontvangen van Gemini API"
+"AI services are disabled in configuration","AI-services zijn uitgeschakeld in de configuratie"
+"No default AI provider configured","Geen standaard AI-provider geconfigureerd"
+"No available AI provider for request validation","Geen beschikbare AI-provider voor aanvraagvalidatie"
+"Request validation failed: %1","Aanvraagvalidatie mislukt: %1"
+"All AI providers failed. Last error: %1","Alle AI-providers zijn mislukt. Laatste fout: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Niet-ondersteunde AI-provider: %1. Ondersteunde providers: %2"
+"Service class %1 must extend %2","Serviceklasse %1 moet %2 uitbreiden"
+"Failed to create AI service for provider %1: %2","Aanmaken van AI-service voor provider %1 mislukt: %2"
+"Not configured","Niet geconfigureerd"
+Unknown,Onbekend
+"Unknown API error","Onbekende API-fout"
+"Temperature must be between 0 and 2","Temperatuur moet tussen 0 en 2 liggen"
+"Max tokens must be greater than 0","Max tokens moet groter zijn dan 0"
+"Frequency penalty must be between -2 and 2","Frequentiestraf moet tussen -2 en 2 liggen"
+"Format output as JSON.","Formatteer uitvoer als JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API gaf een onvolledige respons omdat het aantal tokens van het contextvenster van het model werd overschreden."
+"OpenAI API returned no content in the response.","OpenAI API gaf geen inhoud in de respons."
+"Not Installed","Niet geïnstalleerd"
+"A total of %1 record(s) have been deleted.","In totaal zijn %1 record(s) verwijderd."
+"The record has been removed.","Het record is verwijderd."
+"Disallowed file type.","Niet-toegestaan bestandstype."
+"Can't remove folder %s","Kan map %s niet verwijderen"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","De extensie bevat niet alle benodigde bestanden. Installeer de extensie opnieuw vanuit het originele pakket."
+"Extension Information","Extensie-informatie"
+Status,Status
+Other,Overige
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron voor Magento draait niet. Om een cronjob in te stellen, volg de link %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cronjobs [%1] draaien niet. Controleer de tabel %2 op bevroren jobs en verwijder ze."
+Remove,Verwijderen
+Error,Fout
+Missed,Gemist
+Running,Actief
+Pending,In afwachting
+Success,Succes
+"Server gmt time","Server GMT-tijd"
+"Last job","Laatste job"
+Executed,Uitgevoerd
+none,geen
+"Cron setup","Cron-configuratie"
+"Cron Jobs","Cronjobs"
+"No AI-enabled modules are currently active.","Er zijn momenteel geen AI-modules actief."
+"%1 module(s) using AI functionality:","%1 module(s) gebruiken AI-functionaliteit:"
+Provider:,Provider:
+ai_provider,ai_provider
+"You have the latest version","U heeft de nieuwste versie"
+"New version %1 is available","Nieuwe versie %1 is beschikbaar"
+"View %1 details (opens in new window)","Bekijk %1-details (opent in nieuw venster)"
+Details,Details
+"View %1 user guide (opens in new window)","Bekijk %1-gebruikershandleiding (opent in nieuw venster)"
+"User Guide","Gebruikershandleiding"
+"View %1 changelog (opens in new window)","Bekijk %1-wijzigingslogboek (opent in nieuw venster)"
+Changelog,Wijzigingslogboek
+"Request new feature for %1 (opens in new window)","Vraag nieuwe functie aan voor %1 (opent in nieuw venster)"
+"Request New Feature","Nieuwe functie aanvragen"
+"Installed Extensions","Geïnstalleerde extensies"
+"Check changes","Wijzigingen controleren"
+"Validate All Extensions","Alle extensies valideren"
+"Suggest Improvement","Verbetering voorstellen"
+"%1 (opens in new window)","%1 (opent in nieuw venster)"
+"More Details","Meer details"
+"Developer settings","Ontwikkelaarsinstellingen"
+"AI Provider Status","AI-providerstatus"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Er zijn momenteel geen AI-providers ingeschakeld. Configureer AI-providers in %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 van %2 providers ingeschakeld. U kunt providers beheren in %3."
+Enabled,Ingeschakeld
+Disabled,Uitgeschakeld
+"All tests have been passed","Alle tests zijn geslaagd"
+Module,Module
+Test,Test
+"How to fix","Hoe te repareren"
+Warning,Waarschuwing
+Info,Info
+Failed,Mislukt
+Today,Vandaag
+"Last 7 days","Laatste 7 dagen"
+"Last 30 days","Laatste 30 dagen"
+"Last 365 days","Laatste 365 dagen"
+"Mirasvit Extensions Validator","Mirasvit-extensievalidator"
+"Mirasvit Menu","Mirasvit-menu"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Extensies
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit-extensies"
+Developer,Ontwikkelaar
+"Menu Settings","Menu-instellingen"
+"Enable Mirasvit Menu","Mirasvit-menu inschakelen"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Het menu is zichtbaar als u ten minste twee actieve Mirasvit-extensies heeft."
+"Additional CSS Styles","Extra CSS-stijlen"
+"AI Configuration","AI-configuratie"
+"Modules using AI","Modules die AI gebruiken"
+"Enable AI features","AI-functies inschakelen"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Schakel alle AI-functies globaal in of uit in Mirasvit-extensies.<br>Wanneer uitgeschakeld, is alle AI-functionaliteit niet beschikbaar, ongeacht individuele providerinstellingen of AI-instellingen in andere modules."
+"Default AI provider","Standaard AI-provider"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Selecteer de primaire AI-provider om te gebruiken wanneer meerdere providers zijn geconfigureerd.<br>Dit wordt gebruikt als terugvalprovider voor alle AI-operaties wanneer geen specifieke provider wordt gevraagd."
+"Request timeout","Aanvraagtimeout"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Maximale tijd in seconden om te wachten op AI-providerreacties.<br> Laat leeg om timeout uit te schakelen.<br> Deze instelling is van invloed op alle AI-functies in andere modules."
+"Maximum tokens per request","Maximum tokens per aanvraag"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Maximum aantal tokens om te genereren in een enkele AI-aanvraag. Hogere waarden staan langere reacties toe, maar verhogen de kosten.<br> Laat leeg om beperking uit te schakelen.<br> Verschillende providers en modellen hebben hun eigen limieten.<br> Deze instelling is van invloed op alle AI-functies in andere modules."
+"Default temperature","Standaardtemperatuur"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Regelt willekeurigheid in AI-reacties. Lagere waarden produceren consistentere resultaten, hogere waarden creatiever.<br>Voorbeeld:<br><code>0.1</code> - zeer consistente, feitelijke reacties<br><code>0.7</code> - evenwichtige creativiteit en consistentie<br><code>1.0</code> - zeer creatieve en gevarieerde reacties.<br>Indien leeg, wordt de standaardtemperatuur 0.7 gebruikt.<br>Deze instelling is van invloed op alle AI-functies in andere modules.<br>Sommige extensies kunnen deze instelling overschrijven."
+"Debug mode","Debugmodus"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Schakel gedetailleerde logging van AI-aanvragen en -reacties in voor debugdoeleinden.<br>Waarschuwing: Dit kan gevoelige gegevens loggen en de prestaties beïnvloeden. Alleen gebruiken voor ontwikkeling."
+"OpenAI Configuration","OpenAI-configuratie"
+"Enable OpenAI provider","OpenAI-provider inschakelen"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Schakel OpenAI in als beschikbare AI-provider. Vereist geldige API-sleutelconfiguratie."
+"OpenAI API key","OpenAI API-sleutel"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Uw OpenAI API-sleutel die begint met 'sk-'. Deze sleutel is versleuteld en veilig opgeslagen.<br>Verkrijg uw API-sleutel via: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Standaard OpenAI-model"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Selecteer het standaard OpenAI-model voor AI-operaties. Verschillende modellen hebben verschillende mogelijkheden en kosten."
+"Claude Configuration","Claude-configuratie"
+"Enable Claude provider","Claude-provider inschakelen"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Schakel Anthropic Claude in als beschikbare AI-provider. Vereist geldige API-sleutelconfiguratie."
+"Claude API key","Claude API-sleutel"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Uw Anthropic Claude API-sleutel die begint met 'sk-ant-'. Deze sleutel is versleuteld en veilig opgeslagen.<br>Verkrijg uw API-sleutel via: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Standaard Claude-model"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Selecteer het standaard Claude-model voor AI-operaties. Verschillende modellen hebben verschillende mogelijkheden en kosten."
+"Google Gemini Configuration","Google Gemini-configuratie"
+"Enable Gemini provider","Gemini-provider inschakelen"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Schakel Google Gemini in als beschikbare AI-provider. Vereist geldige API-sleutelconfiguratie."
+"Gemini API key","Gemini API-sleutel"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Uw Google AI Studio API-sleutel die begint met 'AIza'. Deze sleutel is versleuteld en veilig opgeslagen.<br>Verkrijg uw API-sleutel via: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Standaard Gemini-model"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Selecteer het standaard Gemini-model voor AI-operaties. Verschillende modellen hebben verschillende mogelijkheden en kosten."
+"Determine visitor's country, city, and timezone based on their IP address.","Bepaal het land, de stad en de tijdzone van de bezoeker op basis van hun IP-adres."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Gratis <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind-account</a> vereist voor automatische updates (wekelijks gecontroleerd)."
+"Used by:","Gebruikt door:"
+message,bericht
+"Error downloading database: %1","Fout bij downloaden van database: %1"
+"MaxMind credentials not configured","MaxMind-inloggegevens niet geconfigureerd"
+"Failed to download remote hash","Downloaden van externe hash mislukt"
+"Database is up to date","Database is up-to-date"
+"Failed to download and extract database","Downloaden en uitpakken van database mislukt"
+"Database updated successfully","Database succesvol bijgewerkt"
+"Download failed: %1","Download mislukt: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Deze extensie gebruikt GeoLite2-gegevens gemaakt door MaxMind."
+"Database available (auto-update enabled)","Database beschikbaar (automatische update ingeschakeld)"
+"Database available (auto-update disabled)","Database beschikbaar (automatische update uitgeschakeld)"
+Configure,Configureren
+"Database not available","Database niet beschikbaar"
+"Database status:","Databasestatus:"
+"Not available","Niet beschikbaar"
+"Credentials configured. Click the button below to download the database.","Inloggegevens geconfigureerd. Klik op de knop hieronder om de database te downloaden."
+"Download database","Database downloaden"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Voer hierboven MaxMind-inloggegevens in om automatische downloads in te schakelen, of voer setup:upgrade uit om de meegeleverde database te installeren."
+"Available (auto-update disabled)","Beschikbaar (automatische update uitgeschakeld)"
+Version:,Versie:
+Size:,Grootte:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Voer hierboven MaxMind-inloggegevens in om automatische wekelijkse updates in te schakelen."
+"Available (auto-update enabled)","Beschikbaar (automatische update ingeschakeld)"
+"Update database","Database bijwerken"
+"Database updated successfully.","Database succesvol bijgewerkt."
+Notice,Melding
+"Database is up to date.","Database is up-to-date."
+"An error occurred while downloading the database.","Er is een fout opgetreden bij het downloaden van de database."
+"IP Geolocation","IP-geolocatie"
+"Account ID","Account-ID"
+"License Key","Licentiesleutel"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Licentiesleutel genereren</a>"
+Cron,Cron
+Delete,Verwijderen
+"Delete items","Items verwijderen"
+"Are you sure you want to delete selected items?","Weet u zeker dat u de geselecteerde items wilt verwijderen?"
+ID,ID
+Code,Code
+Messages,Berichten
+Created,Aangemaakt
+Scheduled,Gepland
+Finished,Voltooid

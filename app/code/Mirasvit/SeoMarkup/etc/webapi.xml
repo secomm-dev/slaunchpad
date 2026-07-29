@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <route url="/V1/seo-markup/extenders" method="GET">
+        <service class="Mirasvit\SeoMarkup\Api\ExtenderRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_SeoMarkup::seomarkup_extender"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-markup/extender/:extenderId" method="GET">
+        <service class="Mirasvit\SeoMarkup\Api\ExtenderRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoMarkup::seomarkup_extender"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-markup/extender" method="POST">
+        <service class="Mirasvit\SeoMarkup\Api\ExtenderRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoMarkup::seomarkup_extender"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-markup/extender/:extenderId" method="PUT">
+        <service class="Mirasvit\SeoMarkup\Api\ExtenderRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoMarkup::seomarkup_extender"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-markup/extender/:extenderId" method="DELETE">
+        <service class="Mirasvit\SeoMarkup\Api\ExtenderRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoMarkup::seomarkup_extender"/>
+        </resources>
+    </route>
+
+</routes>

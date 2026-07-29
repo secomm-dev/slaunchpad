@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Mirasvit\SeoMarkup\Api\Data\ExtenderInterface"
+                type="Mirasvit\SeoMarkup\Model\Extender"/>
+    <preference for="Mirasvit\SeoMarkup\Api\ExtenderRepositoryInterface"
+                type="Mirasvit\SeoMarkup\Repository\ExtenderRepository"/>
+    <preference for="Mirasvit\SeoMarkup\Api\Data\ExtenderSearchResultsInterface"
+                type="Mirasvit\SeoMarkup\Model\ExtenderSearchResults"/>
+
+    <!--UI-->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="extender_index_listing_data_source" xsi:type="string">
+                    Mirasvit\SeoMarkup\Model\ResourceModel\Extender\Grid\Collection
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Mirasvit\SeoMarkup\Model\ResourceModel\Extender\Grid\Collection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mst_reach_snippet_extender</argument>
+            <argument name="resourceModel" xsi:type="string">Mirasvit\SeoMarkup\Model\ResourceModel\Extender</argument>
+        </arguments>
+    </virtualType>
+</config>

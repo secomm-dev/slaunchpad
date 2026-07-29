@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","Serviciul %1 nu este configurat corect sau nu este disponibil"
+"Invalid AI request data","Date de solicitare AI invalide"
+"Request prompt cannot be empty","Promptul solicitării nu poate fi gol"
+"Claude API error","Eroare API Claude"
+"Invalid Claude API response: missing content","Răspuns API Claude invalid: conținut lipsă"
+"Empty content received from Claude API","Conținut gol primit de la API Claude"
+"Gemini API error","Eroare API Gemini"
+"Invalid Gemini API response: missing candidates","Răspuns API Gemini invalid: candidați lipsă"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Răspunsul API Gemini a fost trunchiat deoarece s-a atins limita max_tokens. Luați în considerare creșterea setării max_tokens sau utilizarea unui prompt mai scurt."
+"Empty content received from Gemini API","Conținut gol primit de la API Gemini"
+"AI services are disabled in configuration","Serviciile AI sunt dezactivate în configurație"
+"No default AI provider configured","Niciun furnizor AI implicit configurat"
+"No available AI provider for request validation","Niciun furnizor AI disponibil pentru validarea solicitării"
+"Request validation failed: %1","Validarea solicitării a eșuat: %1"
+"All AI providers failed. Last error: %1","Toți furnizorii AI au eșuat. Ultima eroare: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Furnizor AI neacceptat: %1. Furnizori acceptați: %2"
+"Service class %1 must extend %2","Clasa de serviciu %1 trebuie să extindă %2"
+"Failed to create AI service for provider %1: %2","Nu s-a putut crea serviciul AI pentru furnizorul %1: %2"
+"Not configured","Neconfigurat"
+Unknown,Necunoscut
+"Unknown API error","Eroare API necunoscută"
+"Temperature must be between 0 and 2","Temperatura trebuie să fie între 0 și 2"
+"Max tokens must be greater than 0","Numărul maxim de tokeni trebuie să fie mai mare decât 0"
+"Frequency penalty must be between -2 and 2","Penalizarea de frecvență trebuie să fie între -2 și 2"
+"Format output as JSON.","Formatează ieșirea ca JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","API-ul OpenAI a returnat un răspuns incomplet deoarece numărul de tokeni ai ferestrei de context a modelului a fost depășit."
+"OpenAI API returned no content in the response.","API-ul OpenAI nu a returnat conținut în răspuns."
+"Not Installed","Neinstalat"
+"A total of %1 record(s) have been deleted.","Un total de %1 înregistrare(i) a fost ștearsă."
+"The record has been removed.","Înregistrarea a fost eliminată."
+"Disallowed file type.","Tip de fișier nepermis."
+"Can't remove folder %s","Nu se poate elimina folderul %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Extensia nu conține toate fișierele necesare. Vă rugăm să reinstalați extensia din pachetul original."
+"Extension Information","Informații extensie"
+Status,Stare
+Other,Altele
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron pentru Magento nu rulează. Pentru a configura un job cron, urmați linkul %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Joburile cron [%1] nu rulează. Vă rugăm să verificați tabelul %2 pentru joburi blocate și să le eliminați."
+Remove,Elimină
+Error,Eroare
+Missed,Ratat
+Running,În execuție
+Pending,În așteptare
+Success,Succes
+"Server gmt time","Ora GMT a serverului"
+"Last job","Ultimul job"
+Executed,Executat
+none,niciunul
+"Cron setup","Configurare Cron"
+"Cron Jobs","Joburi Cron"
+"No AI-enabled modules are currently active.","Niciun modul cu AI nu este activ în prezent."
+"%1 module(s) using AI functionality:","%1 modul(e) folosesc funcționalitatea AI:"
+Provider:,Furnizor:
+ai_provider,ai_provider
+"You have the latest version","Aveți cea mai recentă versiune"
+"New version %1 is available","Versiunea nouă %1 este disponibilă"
+"View %1 details (opens in new window)","Vedeți detalii %1 (se deschide în fereastră nouă)"
+Details,Detalii
+"View %1 user guide (opens in new window)","Vedeți ghidul utilizatorului %1 (se deschide în fereastră nouă)"
+"User Guide","Ghidul utilizatorului"
+"View %1 changelog (opens in new window)","Vedeți jurnalul de modificări %1 (se deschide în fereastră nouă)"
+Changelog,Jurnal de modificări
+"Request new feature for %1 (opens in new window)","Solicitați o funcție nouă pentru %1 (se deschide în fereastră nouă)"
+"Request New Feature","Solicitați funcție nouă"
+"Installed Extensions","Extensii instalate"
+"Check changes","Verificați modificările"
+"Validate All Extensions","Validați toate extensiile"
+"Suggest Improvement","Sugerați îmbunătățire"
+"%1 (opens in new window)","%1 (se deschide în fereastră nouă)"
+"More Details","Mai multe detalii"
+"Developer settings","Setări dezvoltator"
+"AI Provider Status","Stare furnizor AI"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Niciun furnizor AI nu este activat în prezent. Vă rugăm să configurați furnizorii AI în %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 din %2 furnizori activați. Puteți gestiona furnizorii în %3."
+Enabled,Activat
+Disabled,Dezactivat
+"All tests have been passed","Toate testele au fost trecute"
+Module,Modul
+Test,Test
+"How to fix","Cum se repară"
+Warning,Avertisment
+Info,Informație
+Failed,Eșuat
+Today,Astăzi
+"Last 7 days","Ultimele 7 zile"
+"Last 30 days","Ultimele 30 de zile"
+"Last 365 days","Ultimele 365 de zile"
+"Mirasvit Extensions Validator","Validator extensii Mirasvit"
+"Mirasvit Menu","Meniu Mirasvit"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Extensii
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Extensii Mirasvit"
+Developer,Dezvoltator
+"Menu Settings","Setări meniu"
+"Enable Mirasvit Menu","Activează meniul Mirasvit"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Meniul este vizibil dacă aveți cel puțin două extensii Mirasvit active."
+"Additional CSS Styles","Stiluri CSS suplimentare"
+"AI Configuration","Configurare AI"
+"Modules using AI","Module care folosesc AI"
+"Enable AI features","Activează funcțiile AI"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Activați sau dezactivați global toate funcțiile bazate pe AI în extensiile Mirasvit.<br>Când este dezactivat, toate funcționalitățile AI vor fi indisponibile indiferent de setările individuale ale furnizorilor sau setările AI din alte module."
+"Default AI provider","Furnizor AI implicit"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Selectați furnizorul AI principal de utilizat când sunt configurați mai mulți furnizori.<br>Acesta va fi folosit ca furnizor de rezervă pentru toate operațiunile AI când nu este solicitat un furnizor specific."
+"Request timeout","Timeout solicitare"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Timp maxim în secunde de așteptare pentru răspunsurile furnizorului AI.<br> Lăsați gol pentru a dezactiva timeout-ul.<br> Această setare va afecta toate funcțiile AI din alte module."
+"Maximum tokens per request","Număr maxim de tokeni per solicitare"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Numărul maxim de tokeni de generat într-o singură solicitare AI. Valorile mai mari permit răspunsuri mai lungi dar cresc costurile.<br> Lăsați gol pentru a dezactiva limitarea.<br> Diferiți furnizori și modele au propriile lor limite.<br> Această setare va afecta toate funcțiile AI din alte module."
+"Default temperature","Temperatură implicită"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Controlează aleatoritatea în răspunsurile AI. Valorile mai mici produc rezultate mai consistente, valorile mai mari mai creative.<br>Exemplu:<br><code>0.1</code> - răspunsuri foarte consistente, factuale<br><code>0.7</code> - creativitate și consistență echilibrate<br><code>1.0</code> - răspunsuri foarte creative și variate.<br>Dacă este gol, se va folosi temperatura implicită 0.7.<br>Această setare va afecta toate funcțiile AI din alte module.<br>Unele extensii pot suprascrie această setare."
+"Debug mode","Mod depanare"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Activați înregistrarea detaliată a solicitărilor și răspunsurilor AI în scopuri de depanare.<br>Avertisment: Aceasta poate înregistra date sensibile și poate afecta performanța. Utilizați doar pentru dezvoltare."
+"OpenAI Configuration","Configurare OpenAI"
+"Enable OpenAI provider","Activează furnizorul OpenAI"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Activați OpenAI ca furnizor AI disponibil. Necesită configurare validă a cheii API."
+"OpenAI API key","Cheie API OpenAI"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Cheia dvs. API OpenAI care începe cu 'sk-'. Această cheie este criptată și stocată în siguranță.<br>Obțineți cheia API de la: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Model OpenAI implicit"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Selectați modelul OpenAI implicit pentru operațiunile AI. Diferite modele au capabilități și costuri variate."
+"Claude Configuration","Configurare Claude"
+"Enable Claude provider","Activează furnizorul Claude"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Activați Anthropic Claude ca furnizor AI disponibil. Necesită configurare validă a cheii API."
+"Claude API key","Cheie API Claude"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Cheia dvs. API Anthropic Claude care începe cu 'sk-ant-'. Această cheie este criptată și stocată în siguranță.<br>Obțineți cheia API de la: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Model Claude implicit"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Selectați modelul Claude implicit pentru operațiunile AI. Diferite modele au capabilități și costuri variate."
+"Google Gemini Configuration","Configurare Google Gemini"
+"Enable Gemini provider","Activează furnizorul Gemini"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Activați Google Gemini ca furnizor AI disponibil. Necesită configurare validă a cheii API."
+"Gemini API key","Cheie API Gemini"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Cheia dvs. API Google AI Studio care începe cu 'AIza'. Această cheie este criptată și stocată în siguranță.<br>Obțineți cheia API de la: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Model Gemini implicit"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Selectați modelul Gemini implicit pentru operațiunile AI. Diferite modele au capabilități și costuri variate."
+"Determine visitor's country, city, and timezone based on their IP address.","Determină țara, orașul și fusul orar al vizitatorului pe baza adresei IP."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Este necesar un cont <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind gratuit</a> pentru actualizări automate (verificare săptămânală)."
+"Used by:","Utilizat de:"
+message,mesaj
+"Error downloading database: %1","Eroare la descărcarea bazei de date: %1"
+"MaxMind credentials not configured","Datele de autentificare MaxMind nu sunt configurate"
+"Failed to download remote hash","Descărcarea hash-ului de la distanță a eșuat"
+"Database is up to date","Baza de date este actualizată"
+"Failed to download and extract database","Descărcarea și extragerea bazei de date a eșuat"
+"Database updated successfully","Baza de date a fost actualizată cu succes"
+"Download failed: %1","Descărcare eșuată: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Această extensie utilizează date GeoLite2 create de MaxMind."
+"Database available (auto-update enabled)","Bază de date disponibilă (actualizare automată activată)"
+"Database available (auto-update disabled)","Bază de date disponibilă (actualizare automată dezactivată)"
+Configure,Configurează
+"Database not available","Baza de date nu este disponibilă"
+"Database status:","Starea bazei de date:"
+"Not available","Indisponibil"
+"Credentials configured. Click the button below to download the database.","Date de autentificare configurate. Faceți clic pe butonul de mai jos pentru a descărca baza de date."
+"Download database","Descarcă baza de date"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Introduceți datele de autentificare MaxMind mai sus pentru a activa descărcările automate, sau rulați setup:upgrade pentru a instala baza de date inclusă."
+"Available (auto-update disabled)","Disponibil (actualizare automată dezactivată)"
+Version:,Versiune:
+Size:,Dimensiune:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Introduceți datele de autentificare MaxMind mai sus pentru a activa actualizările săptămânale automate."
+"Available (auto-update enabled)","Disponibil (actualizare automată activată)"
+"Update database","Actualizează baza de date"
+"Database updated successfully.","Baza de date a fost actualizată cu succes."
+Notice,Notificare
+"Database is up to date.","Baza de date este actualizată."
+"An error occurred while downloading the database.","A apărut o eroare la descărcarea bazei de date."
+"IP Geolocation","Geolocalizare IP"
+"Account ID","ID cont"
+"License Key","Cheie de licență"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generează cheie de licență</a>"
+Cron,Cron
+Delete,Șterge
+"Delete items","Șterge elemente"
+"Are you sure you want to delete selected items?","Sunteți sigur că doriți să ștergeți elementele selectate?"
+ID,ID
+Code,Cod
+Messages,Mesaje
+Created,Creat
+Scheduled,Programat
+Finished,Terminat

@@ -1,0 +1,80 @@
+<?php
+/** @var \Mirasvit\Seo\Block\Adminhtml\System\Config\ApplyTrailingSlash $block */
+$nonce = \Mirasvit\Core\Service\CspService::getNonce();
+?>
+
+<script<?php if ($nonce): ?> nonce="<?= $block->escapeHtmlAttr($nonce) ?>"<?php endif; ?>>
+require(["prototype"], function(){
+//<![CDATA[
+    function mApplyTrailingSlash() {
+        var validationMessage = $('applytrailingslash_result');
+
+        new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getAjaxUrl() ?>', {
+            onSuccess: function(response) {
+                var result = '<?php /* @escapeNotVerified */ echo __('Error during processing URLs.') ?>';
+                try {
+                    if (response.responseText.isJSON()) {
+                        response = response.responseText.evalJSON();
+                        result = response.message;
+                    }
+                    if (response.valid == 1) {
+                        validationMessage.removeClassName('hidden').addClassName('success')
+                    } else {
+                        validationMessage.removeClassName('hidden').addClassName('error')
+                    }
+                } catch (e) {
+                    validationMessage.removeClassName('hidden').addClassName('error')
+                }
+                validationMessage.update(result);
+            }
+        });
+    }
+
+    window.mApplyTrailingSlash = mApplyTrailingSlash;
+//]]>
+
+});
+</script>
+
+<script<?php if ($nonce): ?> nonce="<?= $block->escapeHtmlAttr($nonce) ?>"<?php endif; ?>>
+require([
+    "jquery",
+    'Magento_Ui/js/modal/modal',
+    "jquery/ui",
+    "prototype",
+    "mage/translate"
+    ], function(jQuery, modal){
+//<![CDATA[
+        function mApplyTrailingSlashMessage() {
+            jQuery('[data-id="information-dialog-applytrailingslash-message"]').modal({
+                    modalClass: 'confirm',
+                    title:  jQuery.mage.__('Attention'),
+                    buttons: [{
+                        text: 'Cancel',
+                        class: 'action-secondary',
+                        click: function () {
+                            this.closeModal();
+                        }
+                    }, {
+                        text: 'Ok',
+                        class: 'action-primary',
+                        click: function () {
+                            this.closeModal();
+                            mApplyTrailingSlash();
+                        }
+                    }]
+
+                }).trigger('openModal');
+        }
+
+        window.mApplyTrailingSlashMessage = mApplyTrailingSlashMessage;
+//]]>
+});
+</script>
+
+<div class="actions actions-apply-trailing-slash">
+    <div id="applytrailingslash_result" class="message-apply-trailing-slash hidden"></div>
+    <button onclick="javascript:mApplyTrailingSlashMessage(); return false;" class="action-apply-trailing-slash" type="button" id="<?php echo $block->getHtmlId() ?>">
+        <span><?php echo $block->escapeHtml($block->getButtonLabel()) ?></span>
+    </button>
+</div>

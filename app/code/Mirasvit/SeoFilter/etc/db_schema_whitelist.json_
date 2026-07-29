@@ -1,0 +1,30 @@
+{
+    "mst_seo_filter_rewrite": {
+        "column": {
+            "rewrite_id": true,
+            "attribute_code": true,
+            "option": true,
+            "rewrite": true,
+            "store_id": true
+        },
+        "index": {
+            "MST_SEO_FILTER_REWRITE_STORE_ID": true,
+            "MST_SEO_FILTER_REWRITE_OPTION": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MST_SEO_FILTER_REWRITE_REWRITE_STORE_ID": true,
+            "MST_SEO_FILTER_REWRITE_ATTRIBUTE_CODE_OPTION_STORE_ID": true
+        }
+    },
+    "mst_seo_filter_attribute_config": {
+        "column": {
+            "config_id": true,
+            "attribute_code": true,
+            "attribute_status": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

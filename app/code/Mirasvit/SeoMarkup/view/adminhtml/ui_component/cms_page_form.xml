@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="seo_markup_rich_snippet" sortOrder="280">
+        <settings>
+            <collapsible>true</collapsible>
+            <label translate="true">Rich snippet</label>
+        </settings>
+        <field name="mst_seo_markup_schema_type" formElement="select" sortOrder="10">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Schema type</label>
+                <dataScope>mst_seo_markup_schema_type</dataScope>
+                <tooltip>
+                    <description translate="true">Select the schema.org type for this page. Leave as "Default" to use the global setting from Stores > Configuration > Rich snippets and OpenGraph > CMS page.</description>
+                </tooltip>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Mirasvit\SeoMarkup\Model\Config\Source\Page\CmsSchemaType"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+    </fieldset>
+</form>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="seo">
+            <group id="seo_toolbar" translate="label comment" sortOrder="10000" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>SEO toolbar settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure the SEO toolbar's visibility and access restrictions. The toolbar provides real-time SEO analysis information directly in your storefront.]]></comment>
+
+                <field id="is_active" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo/seo_toolbar/is_active</config_path>
+                    <label>Enable toolbar</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, the SEO toolbar will be displayed according to the IP restrictions below. Disable to completely turn off the toolbar functionality.]]></comment>
+                </field>
+
+                <field id="allowed_ip" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo/seo_toolbar/allowed_ip</config_path>
+                    <label>Show toolbar only for IPs</label>
+                    <comment><![CDATA[For security, enter comma-separated IP addresses that are allowed to see the toolbar. Leave empty to show the toolbar for all IPs. Example: 192.168.1.1,10.0.0.1]]></comment>
+                    <depends>
+                        <field id="is_active">1</field>
+                    </depends>
+                </field>
+
+                <field id="disable_links" translate="label comment" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo/seo_toolbar/disable_links</config_path>
+                    <label>Disable toolbar for links</label>
+                    <comment><![CDATA[Specify links (one per line) where the toolbar should be disabled (e.g., /customer/login or /checkout).]]></comment>
+                    <depends>
+                        <field id="is_active">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

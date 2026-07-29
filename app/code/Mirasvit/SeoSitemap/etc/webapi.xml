@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <route url="/V1/seo-sitemap/providers" method="GET">
+        <service class="Mirasvit\SeoSitemap\Api\ProviderRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_SeoSitemap::seositemap_provider"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-sitemap/provider/:providerId" method="GET">
+        <service class="Mirasvit\SeoSitemap\Api\ProviderRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoSitemap::seositemap_provider"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-sitemap/provider" method="POST">
+        <service class="Mirasvit\SeoSitemap\Api\ProviderRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoSitemap::seositemap_provider"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-sitemap/provider/:providerId" method="PUT">
+        <service class="Mirasvit\SeoSitemap\Api\ProviderRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoSitemap::seositemap_provider"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-sitemap/provider/:providerId" method="DELETE">
+        <service class="Mirasvit\SeoSitemap\Api\ProviderRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoSitemap::seositemap_provider"/>
+        </resources>
+    </route>
+
+</routes>

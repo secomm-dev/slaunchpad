@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1 þjónusta er ekki rétt stillt eða ekki tiltæk"
+"Invalid AI request data","Ógild gervigreindar beiðnigögn"
+"Request prompt cannot be empty","Beiðni hvatning getur ekki verið tóm"
+"Claude API error","Claude API villa"
+"Invalid Claude API response: missing content","Ógilt Claude API svar: efni vantar"
+"Empty content received from Claude API","Tómt efni móttekið frá Claude API"
+"Gemini API error","Gemini API villa"
+"Invalid Gemini API response: missing candidates","Ógilt Gemini API svar: frambjóðendur vantar"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Gemini API svar var stytt vegna þess að max_tokens mörkin náðust. Íhugaðu að auka max_tokens stillingu eða nota styttri hvatningu."
+"Empty content received from Gemini API","Tómt efni móttekið frá Gemini API"
+"AI services are disabled in configuration","Gervigreindarþjónustur eru óvirkar í stillingum"
+"No default AI provider configured","Enginn sjálfgefinn gervigreindar veitandi stilltur"
+"No available AI provider for request validation","Enginn tiltækur gervigreindar veitandi fyrir staðfestingu beiðni"
+"Request validation failed: %1","Staðfesting beiðni mistókst: %1"
+"All AI providers failed. Last error: %1","Allir gervigreindar veitendur mistókust. Síðasta villa: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Óstuddur gervigreindar veitandi: %1. Studdir veitendur: %2"
+"Service class %1 must extend %2","Þjónustuflokkur %1 verður að framlengja %2"
+"Failed to create AI service for provider %1: %2","Mistókst að búa til gervigreindarþjónustu fyrir veitanda %1: %2"
+"Not configured","Ekki stillt"
+Unknown,Óþekkt
+"Unknown API error","Óþekkt API villa"
+"Temperature must be between 0 and 2","Hitastig verður að vera á milli 0 og 2"
+"Max tokens must be greater than 0","Hámarks tákn verða að vera meiri en 0"
+"Frequency penalty must be between -2 and 2","Tíðnisekt verður að vera á milli -2 og 2"
+"Format output as JSON.","Sníða úttak sem JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API skilaði ófullkomnu svari vegna þess að fjöldi tákna í samhengisglugga módelisins var farið yfir."
+"OpenAI API returned no content in the response.","OpenAI API skilaði engu efni í svarinu."
+"Not Installed","Ekki uppsett"
+"A total of %1 record(s) have been deleted.","Samtals %1 færsla/færslur hafa verið eytt."
+"The record has been removed.","Færslunni hefur verið eytt."
+"Disallowed file type.","Óleyfileg skráartegund."
+"Can't remove folder %s","Get ekki fjarlægt möppu %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Viðbót inniheldur ekki allar nauðsynlegar skrár. Vinsamlegast settu viðbótina upp aftur úr upprunalega pakkanum."
+"Extension Information","Viðbótarupplýsingar"
+Status,Staða
+Other,Annað
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron fyrir Magento er ekki í gangi. Til að setja upp cron verk, fylgdu hlekknum %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron verk [%1] eru ekki í gangi. Vinsamlegast athugaðu töflu %2 fyrir frosinn verk og fjarlægðu þau."
+Remove,Fjarlægja
+Error,Villa
+Missed,Sleppt
+Running,Í gangi
+Pending,Bíður
+Success,Árangur
+"Server gmt time","GMT tími netþjóns"
+"Last job","Síðasta verk"
+Executed,Framkvæmt
+none,ekkert
+"Cron setup","Cron uppsetning"
+"Cron Jobs","Cron verk"
+"No AI-enabled modules are currently active.","Engar einingar með gervigreind eru virkar núna."
+"%1 module(s) using AI functionality:","%1 eining(ar) nota gervigreindar virkni:"
+Provider:,Veitandi:
+ai_provider,ai_provider
+"You have the latest version","Þú ert með nýjustu útgáfuna"
+"New version %1 is available","Ný útgáfa %1 er tiltæk"
+"View %1 details (opens in new window)","Skoða %1 upplýsingar (opnast í nýjum glugga)"
+Details,Upplýsingar
+"View %1 user guide (opens in new window)","Skoða %1 notendahandbók (opnast í nýjum glugga)"
+"User Guide","Notendahandbók"
+"View %1 changelog (opens in new window)","Skoða %1 breytingaskrá (opnast í nýjum glugga)"
+Changelog,Breytingaskrá
+"Request new feature for %1 (opens in new window)","Óska eftir nýjum eiginleika fyrir %1 (opnast í nýjum glugga)"
+"Request New Feature","Óska eftir nýjum eiginleika"
+"Installed Extensions","Uppsettar viðbætur"
+"Check changes","Athuga breytingar"
+"Validate All Extensions","Staðfesta allar viðbætur"
+"Suggest Improvement","Leggja til umbætur"
+"%1 (opens in new window)","%1 (opnast í nýjum glugga)"
+"More Details","Fleiri upplýsingar"
+"Developer settings","Forritarastillingar"
+"AI Provider Status","Staða gervigreindar veitanda"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Engir gervigreindar veitendur eru virkir núna. Vinsamlegast stilltu gervigreindar veitendur í %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 af %2 veitendum virkir. Þú getur stjórnað veitendum í %3."
+Enabled,Virkt
+Disabled,Óvirkt
+"All tests have been passed","Öll próf hafa verið staðist"
+Module,Eining
+Test,Próf
+"How to fix","Hvernig á að laga"
+Warning,Viðvörun
+Info,Upplýsingar
+Failed,Mistókst
+Today,Í dag
+"Last 7 days","Síðustu 7 dagar"
+"Last 30 days","Síðustu 30 dagar"
+"Last 365 days","Síðustu 365 dagar"
+"Mirasvit Extensions Validator","Mirasvit viðbóta staðfestari"
+"Mirasvit Menu","Mirasvit valmynd"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Viðbætur
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit viðbætur"
+Developer,Forritari
+"Menu Settings","Valmyndarstillingar"
+"Enable Mirasvit Menu","Virkja Mirasvit valmynd"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Valmyndin er sýnileg ef þú ert með að minnsta kosti tvær virkar Mirasvit viðbætur."
+"Additional CSS Styles","Viðbótar CSS stílar"
+"AI Configuration","Gervigreindar stillingar"
+"Modules using AI","Einingar sem nota gervigreind"
+"Enable AI features","Virkja gervigreindar eiginleika"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Virkja eða slökkva á öllum gervigreindar eiginleikum í Mirasvit viðbótum.<br>Þegar slökkt er, verða allir gervigreindar eiginleikar ekki tiltækir óháð stillingum einstakra veitenda eða gervigreindar stillingum í öðrum einingum."
+"Default AI provider","Sjálfgefinn gervigreindar veitandi"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Veldu aðal gervigreindar veitanda til að nota þegar margir veitendur eru stilltir.<br>Þetta verður notað sem varaveitandi fyrir allar gervigreindar aðgerðir þegar enginn sérstakur veitandi er beðinn um."
+"Request timeout","Tímamörk beiðni"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Hámarkstími í sekúndum til að bíða eftir svörum gervigreindar veitanda.<br> Skildu eftir autt til að slökkva á tímamörkum.<br> Þessi stilling mun hafa áhrif á alla gervigreindar eiginleika í öðrum einingum."
+"Maximum tokens per request","Hámarks tákn á beiðni"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Hámarksfjöldi tákna til að búa til í einni gervigreindar beiðni. Hærri gildi leyfa lengri svör en auka kostnað.<br> Skildu eftir autt til að slökkva á takmörkun.<br> Mismunandi veitendur og módel hafa sín eigin mörk.<br> Þessi stilling mun hafa áhrif á alla gervigreindar eiginleika í öðrum einingum."
+"Default temperature","Sjálfgefið hitastig"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Stýrir tilviljun í gervigreindar svörum. Lægri gildi gefa samkvæmari niðurstöður, hærri gildi skapandi.<br>Dæmi:<br><code>0.1</code> - mjög samkvæm, staðreyndamiðuð svör<br><code>0.7</code> - jafnvægi milli sköpunar og samkvæmni<br><code>1.0</code> - mjög skapandi og fjölbreytt svör.<br>Ef autt verður sjálfgefið hitastig 0.7 notað.<br>Þessi stilling mun hafa áhrif á alla gervigreindar eiginleika í öðrum einingum.<br>Sumar viðbætur gætu yfirtekið þessa stillingu."
+"Debug mode","Villuleitarhamur"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Virkja nákvæma skráningu gervigreindar beiðna og svara fyrir villuleit.<br>Viðvörun: Þetta gæti skráð viðkvæm gögn og haft áhrif á afköst. Notaðu aðeins fyrir þróun."
+"OpenAI Configuration","OpenAI stillingar"
+"Enable OpenAI provider","Virkja OpenAI veitanda"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Virkja OpenAI sem tiltækan gervigreindar veitanda. Krefst gildrar API lykils stillingar."
+"OpenAI API key","OpenAI API lykill"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","OpenAI API lykillinn þinn sem byrjar á 'sk-'. Þessi lykill er dulkóðaður og geymdur á öruggan hátt.<br>Fáðu API lykilinn þinn frá: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Sjálfgefið OpenAI módel"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Veldu sjálfgefna OpenAI módelið fyrir gervigreindar aðgerðir. Mismunandi módel hafa mismunandi getu og kostnað."
+"Claude Configuration","Claude stillingar"
+"Enable Claude provider","Virkja Claude veitanda"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Virkja Anthropic Claude sem tiltækan gervigreindar veitanda. Krefst gildrar API lykils stillingar."
+"Claude API key","Claude API lykill"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Anthropic Claude API lykillinn þinn sem byrjar á 'sk-ant-'. Þessi lykill er dulkóðaður og geymdur á öruggan hátt.<br>Fáðu API lykilinn þinn frá: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Sjálfgefið Claude módel"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Veldu sjálfgefna Claude módelið fyrir gervigreindar aðgerðir. Mismunandi módel hafa mismunandi getu og kostnað."
+"Google Gemini Configuration","Google Gemini stillingar"
+"Enable Gemini provider","Virkja Gemini veitanda"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Virkja Google Gemini sem tiltækan gervigreindar veitanda. Krefst gildrar API lykils stillingar."
+"Gemini API key","Gemini API lykill"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Google AI Studio API lykillinn þinn sem byrjar á 'AIza'. Þessi lykill er dulkóðaður og geymdur á öruggan hátt.<br>Fáðu API lykilinn þinn frá: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Sjálfgefið Gemini módel"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Veldu sjálfgefna Gemini módelið fyrir gervigreindar aðgerðir. Mismunandi módel hafa mismunandi getu og kostnað."
+"Determine visitor's country, city, and timezone based on their IP address.","Ákvarða land, borg og tímabelti gests út frá IP tölu þeirra."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Ókeypis <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind reikningur</a> þarf fyrir sjálfvirkar uppfærslur (athugað vikulega)."
+"Used by:","Notað af:"
+message,skilaboð
+"Error downloading database: %1","Villa við niðurhal gagnagrunns: %1"
+"MaxMind credentials not configured","MaxMind aðgangsupplýsingar ekki stilltar"
+"Failed to download remote hash","Tókst ekki að hlaða niður fjarlægu hash"
+"Database is up to date","Gagnagrunnur er uppfærður"
+"Failed to download and extract database","Tókst ekki að hlaða niður og draga úr gagnagrunni"
+"Database updated successfully","Gagnagrunnur uppfærður"
+"Download failed: %1","Niðurhal mistókst: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Þessi viðbót notar GeoLite2 gögn búin til af MaxMind."
+"Database available (auto-update enabled)","Gagnagrunnur tiltækur (sjálfvirk uppfærsla virk)"
+"Database available (auto-update disabled)","Gagnagrunnur tiltækur (sjálfvirk uppfærsla óvirk)"
+Configure,Stilla
+"Database not available","Gagnagrunnur ekki tiltækur"
+"Database status:","Staða gagnagrunns:"
+"Not available","Ekki tiltækt"
+"Credentials configured. Click the button below to download the database.","Aðgangsupplýsingar stilltar. Smelltu á hnappinn hér að neðan til að hlaða niður gagnagrunni."
+"Download database","Hlaða niður gagnagrunni"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Sláðu inn MaxMind aðgangsupplýsingar hér að ofan til að virkja sjálfvirk niðurhal, eða keyrðu setup:upgrade til að setja upp meðfylgjandi gagnagrunn."
+"Available (auto-update disabled)","Tiltækt (sjálfvirk uppfærsla óvirk)"
+Version:,Útgáfa:
+Size:,Stærð:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Sláðu inn MaxMind aðgangsupplýsingar hér að ofan til að virkja sjálfvirkar vikulegar uppfærslur."
+"Available (auto-update enabled)","Tiltækt (sjálfvirk uppfærsla virk)"
+"Update database","Uppfæra gagnagrunn"
+"Database updated successfully.","Gagnagrunnur uppfærður."
+Notice,Tilkynning
+"Database is up to date.","Gagnagrunnur er uppfærður."
+"An error occurred while downloading the database.","Villa kom upp við niðurhal gagnagrunns."
+"IP Geolocation","IP staðsetning"
+"Account ID","Reikningsauðkenni"
+"License Key","Leyfislykill"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Búa til leyfislykil</a>"
+Cron,Cron
+Delete,Eyða
+"Delete items","Eyða hlutum"
+"Are you sure you want to delete selected items?","Ertu viss um að þú viljir eyða völdum hlutum?"
+ID,ID
+Code,Kóði
+Messages,Skilaboð
+Created,Búið til
+Scheduled,Áætlað
+Finished,Lokið

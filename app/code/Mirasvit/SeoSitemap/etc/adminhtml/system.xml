@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="seositemap" translate="label" type="text" sortOrder="440" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Extended sitemap</label>
+            <tab>mirasvit</tab>
+            <resource>Mirasvit_SeoSitemap::config_seositemap</resource>
+
+            <group id="general" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General sitemap settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Basic configuration options that affect both frontend and XML sitemaps.]]></comment>
+
+                <field id="ignore_cms_pages" translate="label comment" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seositemap/frontend/ignore_cms_pages</config_path>
+                    <label>Ignore CMS pages</label>
+                    <source_model>Mirasvit\SeoSitemap\Model\Config\Source\Ignore\Cms\Pages</source_model>
+                    <comment><![CDATA[Select pages that should not appear in any sitemaps. Useful for login, registration, and other utility pages.]]></comment>
+                </field>
+
+                <field id="include_seo_rewrites" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seositemap/frontend/include_seo_rewrites</config_path>
+                    <label>Include SEO rewrites in sitemap</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, all SEO rewrite URLs with INDEX FOLLOW meta robots will be included in the sitemap. The included link pattern must not be an action name or contain wildcard characters. For a frontend sitemap, the <b>Title</b> field is required.]]></comment>
+                </field>
+
+                <field id="exclude_redirects" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seositemap/general/exclude_redirects</config_path>
+                    <label>Exclude redirects from sitemap</label>
+                    <source_model>Mirasvit\SeoSitemap\Model\Config\Source\Redirects</source_model>
+                    <comment><![CDATA[Controls how redirect URLs are handled in sitemap generation. Excluding redirects prevents search engines from indexing redirect URLs, while including them allows crawlers to discover the redirect chain. Permanent redirects (301) typically should be excluded as they point to canonical URLs already in the sitemap.]]></comment>
+                </field>
+
+                <field id="additional_links" translate="label comment tooltip" type="textarea" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seositemap/frontend/additional_links</config_path>
+                    <label>Additional links</label>
+                    <tooltip><![CDATA[Example:<br/>/promotions/, Our Promotions<br/>/customer/account/, Customer Account]]></tooltip>
+                    <comment><![CDATA[Add custom URLs to include in your sitemaps. Format: one URL per line. For frontend sitemaps, specify both URL and page title separated by comma.]]></comment>
+                </field>
+
+                <field id="exclude_links" translate="label comment tooltip" type="textarea" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seositemap/frontend/exclude_links</config_path>
+                    <label>Exclude by pattern</label>
+                    <tooltip><![CDATA[Example:<br/>/catalog/category/*<br/>/checkout/*]]></tooltip>
+                    <comment><![CDATA[Specify URL patterns to exclude from all sitemaps. Each pattern should be on a new line. Wildcards (*) are supported.]]></comment>
+                </field>
+            </group>
+
+            <group id="frontend" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Frontend sitemap settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure how your HTML sitemap appears to visitors and search engines.]]></comment>
+
+                <group id="display" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display settings</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Configure the visual presentation and user interface elements of your HTML sitemap. These settings control how the sitemap is displayed to visitors, including layout structure, navigation aids, and interactive features that enhance user experience.]]></comment>
+
+                    <field id="column_count" translate="label comment tooltip" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/column_count</config_path>
+                        <label>Columns count</label>
+                        <validate>required-entry validate-digits-range digits-range-1-10</validate>
+                        <tooltip>Valid values from 1 to 10</tooltip>
+                        <comment><![CDATA[Define how many columns will display in the frontend sitemap. More columns can improve readability on large sites.]]></comment>
+                    </field>
+
+                    <field id="is_capital_letters_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_capital_letters_enabled</config_path>
+                        <label>Alphabetical product grouping</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, products will be grouped alphabetically with capital letter headings, improving navigation for visitors.]]></comment>
+                    </field>
+
+                    <field id="is_show_search" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_search</config_path>
+                        <label>Show sitemap search box</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[Display a search input field on the frontend sitemap page. Visitors can use this to filter and find specific content within the sitemap without scrolling through all entries.]]></comment>
+                    </field>
+
+                    <field id="pagination_position" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/pagination_position</config_path>
+                        <label>Pagination controls position</label>
+                        <source_model>Mirasvit\SeoSitemap\Model\Config\Source\PaginationPositionSource</source_model>
+                        <comment><![CDATA[Configure where pagination navigation appears on the frontend sitemap: at the top of the page, bottom of the page, or both locations. For large sitemaps spanning multiple pages, placing controls at both top and bottom improves navigation usability.]]></comment>
+                    </field>
+
+                    <field id="links_limit" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <config_path>seositemap/frontend/links_limit</config_path>
+                        <label>Cap product links per page</label>
+                        <validate>required-entry validate-number validate-integer</validate>
+                        <comment><![CDATA[Set maximum number of product links per page to prevent excessive page size. Pagination will be applied automatically if exceeded.]]></comment>
+                    </field>
+                </group>
+
+                <group id="seo" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>SEO settings</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Define search engine optimization elements for your HTML sitemap page. These settings directly impact how the sitemap appears in search results and affect its discoverability by both users and crawlers.]]></comment>
+
+                    <field id="sitemap_base_url" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/sitemap_base_url</config_path>
+                        <label>Base URL path to frontend sitemap</label>
+                        <comment><![CDATA[Specify the URL path where the frontend sitemap will be accessible (e.g., 'map' will make it available at example.com/map).]]></comment>
+                    </field>
+
+                    <field id="sitemap_meta_title" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/sitemap_meta_title</config_path>
+                        <label>Meta title</label>
+                        <comment><![CDATA[Define the browser tab title for your sitemap page. Important for search engine indexing.]]></comment>
+                    </field>
+
+                    <field id="sitemap_meta_keywords" translate="label comment" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/sitemap_meta_keywords</config_path>
+                        <label>Meta keywords</label>
+                        <comment><![CDATA[Define keywords for the sitemap page. While less important for modern SEO, this can still be useful for internal search.]]></comment>
+                    </field>
+
+                    <field id="sitemap_meta_description" translate="label comment" type="textarea" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/sitemap_meta_description</config_path>
+                        <label>Meta description</label>
+                        <comment><![CDATA[Define the meta description for your sitemap page. This text may appear in search engine results.]]></comment>
+                    </field>
+
+                    <field id="sitemap_h1" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/sitemap_h1</config_path>
+                        <label>H1 header</label>
+                        <comment><![CDATA[Define the main heading (H1) that appears on the sitemap page. Important for both usability and SEO.]]></comment>
+                    </field>
+                </group>
+
+                <group id="content" translate="label comment" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Content settings</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Control which types of content are included in your HTML sitemap. These settings determine the scope and comprehensiveness of your sitemap, allowing you to tailor it to your site's specific navigation needs while considering performance implications for large catalogs.]]></comment>
+
+                    <field id="is_show_products" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_products</config_path>
+                        <label>Show products</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, all products will be listed in the frontend sitemap. Consider performance impact for large catalogs.]]></comment>
+                    </field>
+
+                    <field id="is_show_categories" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_categories</config_path>
+                        <label>Show categories</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, all categories will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_cms_pages" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_cms_pages</config_path>
+                        <label>Show CMS pages</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, CMS pages (except those excluded in General sitemap settings) will appear in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_additional_links" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_additional_links</config_path>
+                        <label>Show additional links</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, additional links will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_stores" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_stores</config_path>
+                        <label>Show stores</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, links to all store views will be included in the frontend sitemap. Useful for multi-language stores to improve navigation.]]></comment>
+                    </field>
+
+                    <field id="is_show_landing_pages" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_landing_pages</config_path>
+                        <if_module_enabled>Mirasvit_LandingPage</if_module_enabled>
+                        <label>Show landing pages</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, landing pages will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_brands" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_brands</config_path>
+                        <if_module_enabled>Mirasvit_Brand</if_module_enabled>
+                        <label>Show brands</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, brands will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_kb" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_kb</config_path>
+                        <if_module_enabled>Mirasvit_Kb</if_module_enabled>
+                        <label>Show knowledge base</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, the knowledge base will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_blog" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_blog</config_path>
+                        <if_module_enabled>Mirasvit_BlogMx</if_module_enabled>
+                        <label>Show blog</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, the blog will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_aheadworks_blog" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_aheadworks_blog</config_path>
+                        <if_module_enabled>Aheadworks_Blog</if_module_enabled>
+                        <label>Show Aheadworks blog</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, the Aheadworks blog will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_fishpig_blog" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_fishpig_blog</config_path>
+                        <if_module_enabled>FishPig_WordPress</if_module_enabled>
+                        <label>Show FishPig blog</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, the FishPig blog will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_mageplaza_blog" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_mageplaza_blog</config_path>
+                        <if_module_enabled>Mageplaza_Blog</if_module_enabled>
+                        <label>Show Mageplaza blog</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, the Mageplaza blog will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_magefan_blog" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_magefan_blog</config_path>
+                        <if_module_enabled>Magefan_Blog</if_module_enabled>
+                        <label>Show Magefan blog</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, the Magefan blog will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_amasty_blog" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_amasty_blog</config_path>
+                        <if_module_enabled>Amasty_Blog</if_module_enabled>
+                        <label>Show Amasty blog</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, the Amasty blog will be included in the frontend sitemap.]]></comment>
+                    </field>
+
+                    <field id="is_show_magezon_blog" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_magezon_blog</config_path>
+                        <if_module_enabled>Magezon_Blog</if_module_enabled>
+                        <label>Show Magezon blog</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, the Magezon blog will be included in the frontend sitemap.]]></comment>
+                    </field>
+                </group>
+            </group>
+
+            <group id="xml" translate="label comment" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>XML sitemap settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure XML sitemaps for search engine crawlers. These settings affect how search engines discover and index your site content.]]></comment>
+
+                <group id="common" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Common settings</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Settings that apply to all XML sitemap entries regardless of content type.]]></comment>
+
+                    <field id="remove_changefreq_priority" translate="label comment" type="select" sortOrder="10" showInDefault="1">
+                        <config_path>seositemap/xml/remove_changefreq_priority</config_path>
+                        <label>Strip optional sitemap tags</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, changefreq and priority tags will be removed from all XML sitemaps. Some SEO experts recommend this as these values are often ignored by search engines.]]></comment>
+                    </field>
+
+                    <field id="remove_optional_image_tags" translate="label comment" type="select" sortOrder="20" showInDefault="1">
+                        <config_path>seositemap/xml/remove_optional_image_tags</config_path>
+                        <label>Strip optional image tags</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, image:title and image:caption tags will be removed from all XML sitemaps. Reduces sitemap file size and improves generation performance.]]></comment>
+                    </field>
+
+                    <field id="remove_pagemap_tags" translate="label comment" type="select" sortOrder="30" showInDefault="1">
+                        <config_path>seositemap/xml/remove_pagemap_tags</config_path>
+                        <label>Strip PageMap tags</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, PageMap tags will be removed from all XML sitemaps. PageMap is a deprecated Google feature rarely used in modern indexing. Enable to reduce sitemap complexity.]]></comment>
+                    </field>
+
+                    <field id="sort_by_priority" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/xml/sort_by_priority</config_path>
+                        <label>Sort URLs by priority</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, XML sitemap URLs are ordered from highest to lowest priority value (URLs with equal priority are ordered alphabetically). Helps crawlers reach your most important pages first under crawl-budget limits. When split by entity type is enabled, URLs are sorted within each entity file. Default order is unchanged when disabled.]]></comment>
+                    </field>
+                </group>
+
+                <group id="category" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Categories options</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Configure how category pages appear in XML sitemaps.]]></comment>
+
+                    <field id="changefreq" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/category/changefreq</config_path>
+                        <label>Frequency</label>
+                        <source_model>Magento\Sitemap\Model\Config\Source\Frequency</source_model>
+                        <comment><![CDATA[Suggest to search engines how frequently category pages change. This is a hint only and may not affect crawl frequency.]]></comment>
+                    </field>
+
+                    <field id="priority" translate="label comment tooltip" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/category/priority</config_path>
+                        <label>Priority</label>
+                        <backend_model>Magento\Sitemap\Model\Config\Backend\Priority</backend_model>
+                        <tooltip>Valid values range from 0.0 (lowest) to 1.0 (highest)</tooltip>
+                        <comment><![CDATA[Suggest the relative importance of category pages. This is a hint only and may not affect ranking.]]></comment>
+                    </field>
+                </group>
+
+                <group id="product" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Products options</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Configure how product pages appear in XML sitemaps.]]></comment>
+
+                    <field id="changefreq" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/product/changefreq</config_path>
+                        <label>Frequency</label>
+                        <source_model>Magento\Sitemap\Model\Config\Source\Frequency</source_model>
+                        <comment><![CDATA[Suggest to search engines how frequently product pages change. Use 'Daily' for dynamic inventory or pricing, 'Weekly' for more static products.]]></comment>
+                    </field>
+
+                    <field id="priority" translate="label comment tooltip" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/product/priority</config_path>
+                        <label>Priority</label>
+                        <backend_model>Magento\Sitemap\Model\Config\Backend\Priority</backend_model>
+                        <tooltip>Valid values range from 0.0 to 1.0</tooltip>
+                        <comment><![CDATA[Suggest the relative importance of product pages. For ecommerce sites, values between 0.6 and 0.8 are commonly used.]]></comment>
+                    </field>
+
+                    <field id="image_include" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/product/image_include</config_path>
+                        <label>Add images into sitemap</label>
+                        <source_model>Magento\Sitemap\Model\Source\Product\Image\IncludeImage</source_model>
+                        <comment><![CDATA[Control product image inclusion in XML sitemaps. Adding images may improve visibility in image search results.]]></comment>
+                    </field>
+
+                    <field id="is_show_non_salable_products" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/frontend/is_show_non_salable_products</config_path>
+                        <label>Include disabled products</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, products that are disabled will still appear in XML sitemaps.]]></comment>
+                    </field>
+
+                    <field id="include_out_of_stock_products" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/xml/include_out_of_stock_products</config_path>
+                        <label>Include out of stock products</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, products that are out of stock will still appear in XML sitemaps.]]></comment>
+                    </field>
+                </group>
+
+                <group id="page" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>CMS pages options</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Configure how CMS pages appear in XML sitemaps.]]></comment>
+
+                    <field id="changefreq" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/page/changefreq</config_path>
+                        <label>Frequency</label>
+                        <source_model>Magento\Sitemap\Model\Config\Source\Frequency</source_model>
+                        <comment><![CDATA[Suggest to search engines how frequently CMS pages change. Static pages typically use 'Monthly' or 'Yearly'.]]></comment>
+                    </field>
+
+                    <field id="priority" translate="label comment tooltip" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/page/priority</config_path>
+                        <label>Priority</label>
+                        <backend_model>Magento\Sitemap\Model\Config\Backend\Priority</backend_model>
+                        <tooltip>Valid values range from 0.0 to 1.0</tooltip>
+                        <comment><![CDATA[Suggest the relative importance of CMS pages. Home page typically uses 1.0, while utility pages use lower values.]]></comment>
+                    </field>
+                </group>
+
+                <group id="store" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Store URL options</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Configure how store view URLs appear in XML sitemaps for multi-store setups.]]></comment>
+
+                    <field id="changefreq" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/store/changefreq</config_path>
+                        <label>Frequency</label>
+                        <source_model>Magento\Sitemap\Model\Config\Source\Frequency</source_model>
+                        <comment><![CDATA[Suggest to search engines how frequently store view homepages change. For multi-language sites with shared content, this should match your main homepage frequency.]]></comment>
+                    </field>
+
+                    <field id="priority" translate="label comment tooltip" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/store/priority</config_path>
+                        <label>Priority</label>
+                        <backend_model>Magento\Sitemap\Model\Config\Backend\Priority</backend_model>
+                        <tooltip>Valid values range from 0.0 to 1.0</tooltip>
+                        <comment><![CDATA[Suggest the relative importance of store view homepages. For multi-language sites, values should typically match your main homepage priority.]]></comment>
+                    </field>
+                </group>
+
+                <group id="generate" translate="label comment" type="text" sortOrder="60" showInDefault="1">
+                    <label>Generation settings</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Configure automated XML sitemap generation and error notifications.]]></comment>
+
+                    <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/generate/enabled</config_path>
+                        <label>Enable sitemap generation</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, XML sitemaps will be automatically regenerated according to the schedule below. Recommended for sites with frequent content updates.]]></comment>
+                    </field>
+
+                    <field id="time" translate="label comment" type="time" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>sitemap/generate/time</config_path>
+                        <label>Start time</label>
+                        <comment><![CDATA[Set the time when sitemap generation should start. Choose a time of low site traffic to minimize performance impact.]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="frequency" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>sitemap/generate/frequency</config_path>
+                        <label>Frequency</label>
+                        <source_model>Magento\Cron\Model\Config\Source\Frequency</source_model>
+                        <backend_model>Mirasvit\SeoSitemap\Model\Config\Backend\Frequency</backend_model>
+                        <comment><![CDATA[Set how often sitemaps should be regenerated. More frequent updates are recommended for dynamic content but may increase server load.]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="error_email" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>sitemap/generate/error_email</config_path>
+                        <label>Error email recipient</label>
+                        <validate>validate-email</validate>
+                        <comment><![CDATA[Email address that will receive notifications if sitemap generation fails. Leave empty to disable notifications.]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="error_email_identity" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" canRestore="1">
+                        <config_path>sitemap/generate/error_email_identity</config_path>
+                        <label>Error email sender</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Identity</source_model>
+                        <comment><![CDATA[Email sender identity for sitemap generation error notifications.]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="error_email_template" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" canRestore="1">
+                        <config_path>sitemap/generate/error_email_template</config_path>
+                        <label>Error email template</label>
+                        <comment>Email template chosen based on theme fallback when "Default" option is selected.</comment>
+                        <source_model>Mirasvit\SeoSitemap\Model\Config\Source\EmailTemplate</source_model>
+                        <comment><![CDATA[Email template for sitemap generation error notifications. The default template includes error details and troubleshooting information.]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <group id="limit" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sitemap file limits</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Configure XML sitemap file size limits to ensure compatibility with search engines.]]></comment>
+
+                    <field id="max_lines" translate="label comment tooltip" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/limit/max_lines</config_path>
+                        <label>Maximum number of URLs per file</label>
+                        <validate>validate-number validate-greater-than-zero</validate>
+                        <tooltip>Search engines recommend no more than 50,000 URLs per file</tooltip>
+                        <comment><![CDATA[Maximum URLs per sitemap file. If exceeded, multiple sitemap files will be created automatically.]]></comment>
+                    </field>
+
+                    <field id="max_file_size" translate="label comment tooltip" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/limit/max_file_size</config_path>
+                        <label>Maximum file size</label>
+                        <validate>validate-number validate-greater-than-zero</validate>
+                        <tooltip>Search engines recommend files under 50MB (52,428,800 bytes)</tooltip>
+                        <comment><![CDATA[Maximum sitemap file size in bytes. If exceeded, multiple sitemap files will be created automatically.]]></comment>
+                    </field>
+
+                    <field id="split_by_entity" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/xml/split_by_entity</config_path>
+                        <label>Split sitemap by entity type</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[When enabled, separate sitemap files will be created per entity type (products, categories, pages, blogs, etc.). The main sitemap file becomes an index referencing all entity-specific files.]]></comment>
+                    </field>
+
+                    <field id="additional_sitemap_name" translate="label comment" type="text" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <config_path>seositemap/xml/additional_sitemap_name</config_path>
+                        <label>Custom name for additional sitemap file</label>
+                        <comment><![CDATA[When "Split sitemap by entity type" is enabled, URLs not covered by a dedicated entity file are written to <em>other-sitemap.xml</em> by default. Enter a custom prefix (e.g. <code>brands</code>) to name it <em>brands-sitemap.xml</em> instead. Leave empty to keep the default <em>other</em> prefix. Use lowercase letters, digits, and hyphens only.]]></comment>
+                        <depends>
+                            <field id="split_by_entity">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <group id="search_engines" translate="label comment" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Search engine submission settings</label>
+                    <fieldset_css>mst_seo_sub_group_config</fieldset_css>
+                    <comment><![CDATA[Configure automatic submission of XML sitemaps to search engines via robots.txt.]]></comment>
+
+                    <field id="submission_robots" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <config_path>sitemap/search_engines/submission_robots</config_path>
+                        <label>Enable submission to robots.txt</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <backend_model>Mirasvit\SeoSitemap\Model\Config\Backend\Robots</backend_model>
+                        <comment><![CDATA[When enabled, sitemap locations will be automatically added to robots.txt file, helping search engines discover them. This is complementary to, not a replacement for, direct submission in search engine webmaster tools.]]></comment>
+                    </field>
+                </group>
+            </group>
+        </section>
+    </system>
+</config>

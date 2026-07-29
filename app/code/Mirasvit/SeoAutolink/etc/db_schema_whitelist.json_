@@ -1,0 +1,45 @@
+{
+    "mst_seoautolink_link": {
+        "column": {
+            "link_id": true,
+            "keyword": true,
+            "url": true,
+            "link_type": true,
+            "entity_id": true,
+            "url_target": true,
+            "url_title": true,
+            "is_nofollow": true,
+            "max_replacements": true,
+            "sort_order": true,
+            "occurence": true,
+            "is_active": true,
+            "active_from": true,
+            "active_to": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "index": {
+            "MST_SEOAUTOLINK_LINK_KEYWORD": true,
+            "Seoautolink fulltext index": true
+        }
+    },
+    "mst_seoautolink_link_store": {
+        "column": {
+            "id": true,
+            "link_id": true,
+            "store_id": true
+        },
+        "index": {
+            "MST_SEOAUTOLINK_LINK_STORE_STORE_ID": true,
+            "MST_SEOAUTOLINK_LINK_STORE_LINK_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MST_SEOAUTOLINK_LINK_STORE_STORE_ID_STORE_STORE_ID": true,
+            "MST_SEOAUTOLINK_LINK_STORE_LINK_ID_MST_SEOAUTOLINK_LINK_LINK_ID": true
+        }
+    }
+}

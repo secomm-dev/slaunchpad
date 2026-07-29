@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","Layanan %1 tidak dikonfigurasi dengan benar atau tidak tersedia"
+"Invalid AI request data","Data permintaan AI tidak valid"
+"Request prompt cannot be empty","Prompt permintaan tidak boleh kosong"
+"Claude API error","Error API Claude"
+"Invalid Claude API response: missing content","Respons API Claude tidak valid: konten tidak ada"
+"Empty content received from Claude API","Konten kosong diterima dari API Claude"
+"Gemini API error","Error API Gemini"
+"Invalid Gemini API response: missing candidates","Respons API Gemini tidak valid: kandidat tidak ada"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Respons API Gemini terpotong karena batas max_tokens tercapai. Pertimbangkan untuk meningkatkan pengaturan max_tokens atau menggunakan prompt yang lebih pendek."
+"Empty content received from Gemini API","Konten kosong diterima dari API Gemini"
+"AI services are disabled in configuration","Layanan AI dinonaktifkan dalam konfigurasi"
+"No default AI provider configured","Tidak ada penyedia AI default yang dikonfigurasi"
+"No available AI provider for request validation","Tidak ada penyedia AI yang tersedia untuk validasi permintaan"
+"Request validation failed: %1","Validasi permintaan gagal: %1"
+"All AI providers failed. Last error: %1","Semua penyedia AI gagal. Error terakhir: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Penyedia AI tidak didukung: %1. Penyedia yang didukung: %2"
+"Service class %1 must extend %2","Kelas layanan %1 harus memperluas %2"
+"Failed to create AI service for provider %1: %2","Gagal membuat layanan AI untuk penyedia %1: %2"
+"Not configured","Tidak dikonfigurasi"
+Unknown,Tidak diketahui
+"Unknown API error","Error API tidak diketahui"
+"Temperature must be between 0 and 2","Temperatur harus antara 0 dan 2"
+"Max tokens must be greater than 0","Token maksimum harus lebih besar dari 0"
+"Frequency penalty must be between -2 and 2","Penalti frekuensi harus antara -2 dan 2"
+"Format output as JSON.","Format output sebagai JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","API OpenAI mengembalikan respons tidak lengkap karena jumlah token jendela konteks model terlampaui."
+"OpenAI API returned no content in the response.","API OpenAI tidak mengembalikan konten dalam respons."
+"Not Installed","Tidak Terinstal"
+"A total of %1 record(s) have been deleted.","Total %1 catatan telah dihapus."
+"The record has been removed.","Catatan telah dihapus."
+"Disallowed file type.","Jenis file tidak diizinkan."
+"Can't remove folder %s","Tidak dapat menghapus folder %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Ekstensi tidak berisi semua file yang diperlukan. Silakan instal ulang ekstensi dari paket asli."
+"Extension Information","Informasi Ekstensi"
+Status,Status
+Other,Lainnya
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron untuk Magento tidak berjalan. Untuk mengatur cron job, ikuti tautan %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron job [%1] tidak berjalan. Silakan periksa tabel %2 untuk job yang membeku dan hapus."
+Remove,Hapus
+Error,Error
+Missed,Terlewat
+Running,Berjalan
+Pending,Tertunda
+Success,Berhasil
+"Server gmt time","Waktu GMT server"
+"Last job","Job terakhir"
+Executed,Dieksekusi
+none,tidak ada
+"Cron setup","Pengaturan Cron"
+"Cron Jobs","Cron Jobs"
+"No AI-enabled modules are currently active.","Tidak ada modul berkemampuan AI yang aktif saat ini."
+"%1 module(s) using AI functionality:","%1 modul menggunakan fungsionalitas AI:"
+Provider:,Penyedia:
+ai_provider,ai_provider
+"You have the latest version","Anda memiliki versi terbaru"
+"New version %1 is available","Versi baru %1 tersedia"
+"View %1 details (opens in new window)","Lihat detail %1 (buka di jendela baru)"
+Details,Detail
+"View %1 user guide (opens in new window)","Lihat panduan pengguna %1 (buka di jendela baru)"
+"User Guide","Panduan Pengguna"
+"View %1 changelog (opens in new window)","Lihat changelog %1 (buka di jendela baru)"
+Changelog,Changelog
+"Request new feature for %1 (opens in new window)","Minta fitur baru untuk %1 (buka di jendela baru)"
+"Request New Feature","Minta Fitur Baru"
+"Installed Extensions","Ekstensi Terinstal"
+"Check changes","Periksa perubahan"
+"Validate All Extensions","Validasi Semua Ekstensi"
+"Suggest Improvement","Sarankan Perbaikan"
+"%1 (opens in new window)","%1 (buka di jendela baru)"
+"More Details","Detail Lebih Lanjut"
+"Developer settings","Pengaturan pengembang"
+"AI Provider Status","Status Penyedia AI"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Tidak ada penyedia AI yang diaktifkan saat ini. Silakan konfigurasi penyedia AI di %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 dari %2 penyedia diaktifkan. Anda dapat mengelola penyedia di %3."
+Enabled,Diaktifkan
+Disabled,Dinonaktifkan
+"All tests have been passed","Semua tes telah lulus"
+Module,Modul
+Test,Tes
+"How to fix","Cara memperbaiki"
+Warning,Peringatan
+Info,Info
+Failed,Gagal
+Today,Hari ini
+"Last 7 days","7 hari terakhir"
+"Last 30 days","30 hari terakhir"
+"Last 365 days","365 hari terakhir"
+"Mirasvit Extensions Validator","Validator Ekstensi Mirasvit"
+"Mirasvit Menu","Menu Mirasvit"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Ekstensi
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Ekstensi Mirasvit"
+Developer,Pengembang
+"Menu Settings","Pengaturan Menu"
+"Enable Mirasvit Menu","Aktifkan Menu Mirasvit"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Menu terlihat jika Anda memiliki setidaknya dua ekstensi Mirasvit yang aktif."
+"Additional CSS Styles","Gaya CSS Tambahan"
+"AI Configuration","Konfigurasi AI"
+"Modules using AI","Modul menggunakan AI"
+"Enable AI features","Aktifkan fitur AI"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Aktifkan atau nonaktifkan secara global semua fitur bertenaga AI di ekstensi Mirasvit.<br>Saat dinonaktifkan, semua fungsionalitas AI tidak akan tersedia terlepas dari pengaturan penyedia individual atau pengaturan AI di modul lain."
+"Default AI provider","Penyedia AI default"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Pilih penyedia AI utama yang akan digunakan ketika beberapa penyedia dikonfigurasi.<br>Ini akan digunakan sebagai penyedia cadangan untuk semua operasi AI ketika tidak ada penyedia spesifik yang diminta."
+"Request timeout","Batas waktu permintaan"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Waktu maksimum dalam detik untuk menunggu respons penyedia AI.<br> Biarkan kosong untuk menonaktifkan batas waktu.<br> Pengaturan ini akan mempengaruhi semua fitur AI di modul lain."
+"Maximum tokens per request","Token maksimum per permintaan"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Jumlah maksimum token yang dihasilkan dalam satu permintaan AI. Nilai yang lebih tinggi memungkinkan respons yang lebih panjang tetapi meningkatkan biaya.<br> Biarkan kosong untuk menonaktifkan batasan.<br> Penyedia dan model yang berbeda memiliki batasannya sendiri.<br> Pengaturan ini akan mempengaruhi semua fitur AI di modul lain."
+"Default temperature","Temperatur default"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Mengontrol keacakan dalam respons AI. Nilai yang lebih rendah menghasilkan hasil yang lebih konsisten, nilai yang lebih tinggi lebih kreatif.<br>Contoh:<br><code>0.1</code> - respons yang sangat konsisten dan faktual<br><code>0.7</code> - kreativitas dan konsistensi yang seimbang<br><code>1.0</code> - respons yang sangat kreatif dan beragam.<br>Jika kosong, temperatur default 0.7 akan digunakan.<br>Pengaturan ini akan mempengaruhi semua fitur AI di modul lain.<br>Beberapa ekstensi mungkin menimpa pengaturan ini."
+"Debug mode","Mode debug"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Aktifkan pencatatan detail permintaan dan respons AI untuk tujuan debugging.<br>Peringatan: Ini dapat mencatat data sensitif dan mempengaruhi kinerja. Gunakan hanya untuk pengembangan."
+"OpenAI Configuration","Konfigurasi OpenAI"
+"Enable OpenAI provider","Aktifkan penyedia OpenAI"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Aktifkan OpenAI sebagai penyedia AI yang tersedia. Memerlukan konfigurasi kunci API yang valid."
+"OpenAI API key","Kunci API OpenAI"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Kunci API OpenAI Anda yang dimulai dengan 'sk-'. Kunci ini dienkripsi dan disimpan dengan aman.<br>Dapatkan kunci API Anda dari: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Model OpenAI default"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Pilih model OpenAI default untuk operasi AI. Model yang berbeda memiliki kemampuan dan biaya yang berbeda."
+"Claude Configuration","Konfigurasi Claude"
+"Enable Claude provider","Aktifkan penyedia Claude"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Aktifkan Anthropic Claude sebagai penyedia AI yang tersedia. Memerlukan konfigurasi kunci API yang valid."
+"Claude API key","Kunci API Claude"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Kunci API Anthropic Claude Anda yang dimulai dengan 'sk-ant-'. Kunci ini dienkripsi dan disimpan dengan aman.<br>Dapatkan kunci API Anda dari: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Model Claude default"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Pilih model Claude default untuk operasi AI. Model yang berbeda memiliki kemampuan dan biaya yang berbeda."
+"Google Gemini Configuration","Konfigurasi Google Gemini"
+"Enable Gemini provider","Aktifkan penyedia Gemini"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Aktifkan Google Gemini sebagai penyedia AI yang tersedia. Memerlukan konfigurasi kunci API yang valid."
+"Gemini API key","Kunci API Gemini"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Kunci API Google AI Studio Anda yang dimulai dengan 'AIza'. Kunci ini dienkripsi dan disimpan dengan aman.<br>Dapatkan kunci API Anda dari: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Model Gemini default"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Pilih model Gemini default untuk operasi AI. Model yang berbeda memiliki kemampuan dan biaya yang berbeda."
+"Determine visitor's country, city, and timezone based on their IP address.","Tentukan negara, kota, dan zona waktu pengunjung berdasarkan alamat IP mereka."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Diperlukan akun <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind gratis</a> untuk pembaruan otomatis (diperiksa setiap minggu)."
+"Used by:","Digunakan oleh:"
+message,pesan
+"Error downloading database: %1","Kesalahan mengunduh database: %1"
+"MaxMind credentials not configured","Kredensial MaxMind belum dikonfigurasi"
+"Failed to download remote hash","Gagal mengunduh hash jarak jauh"
+"Database is up to date","Database sudah yang terbaru"
+"Failed to download and extract database","Gagal mengunduh dan mengekstrak database"
+"Database updated successfully","Database berhasil diperbarui"
+"Download failed: %1","Unduhan gagal: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Ekstensi ini menggunakan Data GeoLite2 yang dibuat oleh MaxMind."
+"Database available (auto-update enabled)","Database tersedia (pembaruan otomatis diaktifkan)"
+"Database available (auto-update disabled)","Database tersedia (pembaruan otomatis dinonaktifkan)"
+Configure,Konfigurasi
+"Database not available","Database tidak tersedia"
+"Database status:","Status database:"
+"Not available","Tidak tersedia"
+"Credentials configured. Click the button below to download the database.","Kredensial dikonfigurasi. Klik tombol di bawah untuk mengunduh database."
+"Download database","Unduh database"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Masukkan kredensial MaxMind di atas untuk mengaktifkan unduhan otomatis, atau jalankan setup:upgrade untuk menginstal database yang disertakan."
+"Available (auto-update disabled)","Tersedia (pembaruan otomatis dinonaktifkan)"
+Version:,Versi:
+Size:,Ukuran:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Masukkan kredensial MaxMind di atas untuk mengaktifkan pembaruan mingguan otomatis."
+"Available (auto-update enabled)","Tersedia (pembaruan otomatis diaktifkan)"
+"Update database","Perbarui database"
+"Database updated successfully.","Database berhasil diperbarui."
+Notice,Pemberitahuan
+"Database is up to date.","Database sudah yang terbaru."
+"An error occurred while downloading the database.","Terjadi kesalahan saat mengunduh database."
+"IP Geolocation","Geolokasi IP"
+"Account ID","ID Akun"
+"License Key","Kunci Lisensi"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Buat kunci lisensi</a>"
+Cron,Cron
+Delete,Hapus
+"Delete items","Hapus item"
+"Are you sure you want to delete selected items?","Apakah Anda yakin ingin menghapus item yang dipilih?"
+ID,ID
+Code,Kode
+Messages,Pesan
+Created,Dibuat
+Scheduled,Dijadwalkan
+Finished,Selesai

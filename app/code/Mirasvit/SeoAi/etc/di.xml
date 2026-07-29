@@ -1,0 +1,44 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Commands -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="mstSeoAiAuditMetaFix" xsi:type="object">Mirasvit\SeoAi\Console\Command\SeoAuditMetaFixCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Mirasvit\SeoAi\Service\ContextService">
+        <arguments>
+            <argument name="pool" xsi:type="array">
+                <item name="catalog_product_view" xsi:type="object">Mirasvit\SeoAi\Service\Context\ProductContext</item>
+                <item name="catalog_category_view" xsi:type="object">Mirasvit\SeoAi\Service\Context\CategoryContext</item>
+                <item name="cms_page_view" xsi:type="object">Mirasvit\SeoAi\Service\Context\CmsPageContext</item>
+                <item name="cms_index_index" xsi:type="object">Mirasvit\SeoAi\Service\Context\CmsPageContext</item>
+                <item name="blog_post_view" xsi:type="object">Mirasvit\SeoAi\Service\Context\BlogPostContext</item>
+                <item name="blog_category_view" xsi:type="object">Mirasvit\SeoAi\Service\Context\BlogCategoryContext</item>
+                <item name="blog_category_index" xsi:type="object">Mirasvit\SeoAi\Service\Context\BlogCategoryContext</item>
+                <item name="brand_brand_index" xsi:type="object">Mirasvit\SeoAi\Service\Context\BrandContext</item>
+                <item name="brand_brand_view" xsi:type="object">Mirasvit\SeoAi\Service\Context\BrandContext</item>
+                <item name="default" xsi:type="object">Mirasvit\SeoAi\Service\Context\DefaultContext</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\App\FrontController">
+        <plugin name="mstSeoAiDetect" type="Mirasvit\SeoAi\Plugin\Framework\App\FrontController\RetrieveContextFromUrlPlugin" />
+    </type>
+
+    <type name="Mirasvit\Core\Ai\Service\ModuleRegistry">
+        <arguments>
+            <argument name="modulesPool" xsi:type="array">
+                <item name="Mirasvit_SeoAi" xsi:type="array">
+                    <item name="config_class" xsi:type="string">Mirasvit\SeoAi\Model\ConfigProvider</item>
+                    <item name="ai_enabled_method" xsi:type="string">isHelperEnabled</item>
+                    <item name="ai_provider_method" xsi:type="string">getProvider</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>
