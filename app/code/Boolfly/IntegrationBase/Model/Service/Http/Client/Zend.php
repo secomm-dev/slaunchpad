@@ -15,13 +15,13 @@ use Boolfly\IntegrationBase\Model\Service\Http\ConverterException;
 use Boolfly\IntegrationBase\Model\Service\Http\TransferInterface;
 use Boolfly\IntegrationBase\Model\Service\Http\ConverterInterface;
 use Boolfly\IntegrationBase\Model\Logger\Logger;
-use Magento\Framework\HTTP\ZendClient;
-use Magento\Framework\HTTP\ZendClientFactory;
+use Magento\Framework\HTTP\LaminasClient;
+use Magento\Framework\HTTP\LaminasClientFactory;
 
 class Zend implements ClientInterface
 {
     /**
-     * @var ZendClientFactory
+     * @var LaminasClientFactory
      */
     private $clientFactory;
 
@@ -36,14 +36,14 @@ class Zend implements ClientInterface
     private $logger;
 
     /**
-     * @param ZendClientFactory $clientFactory
+     * @param LaminasClientFactory $clientFactory
      * @param Logger $logger
      * @param ConverterInterface | null $converter
      */
     public function __construct(
-        ZendClientFactory $clientFactory,
+        LaminasClientFactory $clientFactory,
         Logger $logger,
-        ConverterInterface $converter = null
+        ?ConverterInterface $converter = null
     ) {
         $this->clientFactory = $clientFactory;
         $this->converter = $converter;
@@ -60,18 +60,25 @@ class Zend implements ClientInterface
             'request_uri' => $transferObject->getUri()
         ];
         $result = [];
-        /** @var ZendClient $client */
+        /** @var LaminasClient $client */
         $client = $this->clientFactory->create();
 
-        $client->setConfig($transferObject->getClientConfig());
+        $client->setOptions($transferObject->getClientConfig());
         $client->setMethod($transferObject->getMethod());
 
-        switch ($transferObject->getMethod()) {
-            case \Zend_Http_Client::GET:
-                $client->setParameterGet($transferObject->getBody());
+        $method = strtoupper((string)$transferObject->getMethod());
+        switch ($method) {
+            case 'GET':
+                if (is_array($transferObject->getBody())) {
+                    $client->setParameterGet($transferObject->getBody());
+                }
                 break;
-            case \Zend_Http_Client::POST:
-                $client->setParameterPost($transferObject->getBody());
+            case 'POST':
+                if (is_array($transferObject->getBody())) {
+                    $client->setParameterPost($transferObject->getBody());
+                } else {
+                    $client->setRawBody($transferObject->getBody());
+                }
                 break;
             default:
                 throw new \LogicException(
@@ -87,18 +94,19 @@ class Zend implements ClientInterface
         $client->setUri($transferObject->getUri());
 
         try {
-            $response = $client->request();
+            $response = $client->send();
 
             $result = $this->converter
                 ? $this->converter->convert($response->getBody())
                 : [$response->getBody()];
             $log['response'] = $result;
-        } catch (\Zend_Http_Client_Exception $e) {
+        } catch (\Exception $e) {
+            if ($e instanceof ConverterException) {
+                throw $e;
+            }
             throw new ClientException(
                 __($e->getMessage())
             );
-        } catch (ConverterException $e) {
-            throw $e;
         } finally {
             $this->logger->debug($log);
         }

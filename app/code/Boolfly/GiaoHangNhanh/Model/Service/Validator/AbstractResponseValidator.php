@@ -35,7 +35,7 @@ abstract class AbstractResponseValidator extends AbstractValidator
      */
     public function __construct(
         ResultInterfaceFactory $resultFactory,
-        ConfigInterface $config = null
+        ?ConfigInterface $config = null
     ) {
         parent::__construct($resultFactory);
         $this->config = $config;

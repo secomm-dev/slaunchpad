@@ -5,8 +5,4 @@
         <observer name="secomm_ahamove_core_layout_render_element_observer"
                   instance="Secomm\Ahamove\Observer\Admin\CoreLayoutRenderElementObserver"/>
     </event>
-    <event name="admin_system_config_changed_section_carriers">
-        <observer name="custom_admin_system_config_changed_section_carriers"
-                  instance="Secomm\Ahamove\Observer\ConfigObserver"/>
-    </event>
 </config>

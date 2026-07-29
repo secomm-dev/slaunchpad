@@ -48,7 +48,7 @@ class Zend implements ClientInterface
     public function __construct(
         CurlFactory $clientFactory,
         Logger $logger,
-        ConverterInterface $converter = null
+        ?ConverterInterface $converter = null
     ) {
         $this->clientFactory = $clientFactory;
         $this->converter     = $converter;

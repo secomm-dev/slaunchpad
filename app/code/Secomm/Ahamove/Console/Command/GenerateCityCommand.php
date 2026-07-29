@@ -22,7 +22,7 @@ class GenerateCityCommand extends Command
      */
     public function __construct(
         Connection $connection,
-        string     $name = null
+        ?string    $name = null
     )
     {
         $this->connection = $connection;

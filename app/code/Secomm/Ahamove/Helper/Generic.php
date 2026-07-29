@@ -14,8 +14,6 @@ use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\State;
-use Secomm\PackagingManager\Model\Config\Source\ListServices;
-
 class Generic extends AbstractHelper
 {
     const AHAMOVE_STANDARD_ACTIVE_PATH = 'carriers/ahamove_standard/active';
@@ -24,7 +22,6 @@ class Generic extends AbstractHelper
 
     public function __construct(
         protected State             $appState,
-        protected ListServices      $listServices,
         protected TypeListInterface $cacheTypeList,
         protected Pool              $cacheFrontendPool,
         Context                     $context,
@@ -60,23 +57,6 @@ class Generic extends AbstractHelper
     public function isEnableAhamoveExpress(): bool
     {
         return $this->scopeConfig->isSetFlag(self::AHAMOVE_EXPRESS_ACTIVE_PATH);
-    }
-
-    /**
-     * @param $carrier
-     * @return bool|mixed
-     */
-    public function getModelCarrier($carrier)
-    {
-        return $this->listServices->getModelCarrier($carrier);
-    }
-
-    /**
-     * @return string
-     */
-    public function getListServiceConfig(): string
-    {
-        return (string)$this->scopeConfig->getValue(\Secomm\PackagingManager\Helper\Data::LIST_SERVICES_PATH);
     }
 
     /**

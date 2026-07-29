@@ -14,7 +14,7 @@ use Secomm\Ahamove\Model\Config;
 use Secomm\Ahamove\Model\Data\PackageItem;
 use Secomm\Ahamove\Model\Package;
 
-abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\AhamoveAbstractCarrier implements \Secomm\PackagingManager\Api\PackagingServiceInterface
+abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\AhamoveAbstractCarrier
 {
     /**
      * Key is Magento service id, value is Ahamove service id

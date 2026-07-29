@@ -17,13 +17,10 @@ use Secomm\Ahamove\Logger\Logger;
 
 class Index extends Action implements CsrfAwareActionInterface, HttpPostActionInterface
 {
-
     /**
      * @var Logger
      */
     protected $logger;
-    protected $packageFactory;
-    protected $packageResource;
     protected $moduleDir;
     protected $ahamoveOrderStatusResource;
     protected $ahamoveOrderStatusFactory;
@@ -36,8 +33,6 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
     public function __construct(
         Logger                     $logger,
         Context                    $context,
-        \Secomm\PackagingManager\Model\PackageFactory $packageFactory,
-        \Secomm\PackagingManager\Model\ResourceModel\Package $packageResource,
         \Magento\Framework\Module\Dir\Reader $moduleDir,
         \Secomm\Ahamove\Model\ResourceModel\AhamoveOrderStatus $ahamoveOrderStatusResource,
         \Secomm\Ahamove\Model\AhamoveOrderStatusFactory $ahamoveOrderStatusFactory,
@@ -48,8 +43,6 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
         \Secomm\Ahamove\Helper\Data $helperData
     ) {
         $this->logger = $logger;
-        $this->packageFactory = $packageFactory;
-        $this->packageResource = $packageResource;
         $this->moduleDir = $moduleDir;
         $this->ahamoveOrderStatusResource = $ahamoveOrderStatusResource;
         $this->ahamoveOrderStatusFactory = $ahamoveOrderStatusFactory;
@@ -73,17 +66,7 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
         $data = json_decode($data, true);
 
         try {
-            $package = $this->packageFactory->create();
             if (isset($data['_id']) && !empty($data['_id'])) {
-                $this->packageResource->load($package, $data['_id'], 'track_number');
-                if (!$package->getId()) {
-                    $this->packageResource->load($package, $data['_id'], 'service_order_id');
-                }
-                // Case double and fails id
-                if ($data['status'] == 'IN PROCESS' && is_null($package->getId())) {
-                    return;
-                }
-
                 $status = $data['status'] ?? '';
                 $statusLabel = '';
                 if ($status == 'COMPLETED') {
@@ -96,27 +79,14 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
                     }
                 }
 
-                $additionalData = [];
-                if (isset($data['cancel_comment']) && $status == 'CANCELLED') {
-                    $additionalData = [
-                      'Cancel Comment' => $data['cancel_comment'] ?? ''
-                    ];
-                }
-                if (!empty($additionalData)) {
-                    $package->setAdditionalData(json_encode($additionalData));
-                }
-                
                 if (empty($statusLabel)) {
                     $statusLabel = $this->getStatusLabel($status);
                 }
-                $package->setStatus($status);
-                $package->setStatusLabel($statusLabel);
-                $this->packageResource->save($package);
 
                 $ahamoveOrderData = [
                     'order_ahamove_id' => $data['_id'] ?? '',
-                    'track_number' => $package->getTrackNumber() ?? '',
-                    'status' => $data['status'] ?? '',
+                    'track_number' => $data['tracking_code'] ?? '',
+                    'status' => $status,
                     'shared_link' => $data['shared_link'] ?? '',
                     'order_data' => json_encode($data)
                 ];
@@ -128,13 +98,10 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
 
                 // send notify to seller when shipment on ahamove failed
                 if (in_array($status, ['CANCELLED', 'RETURNED', 'IN_RETURN', 'FAILED'])) {
-                    $incrementId = $package->getOrder()->getIncrementId();
-                    $content = "Package id='{$package->getIncrementId()}' on ahamove failed, order id='{$incrementId}'";
+                    $incrementId = $data['external_id'] ?? $data['supplier_id'] ?? 'N/A';
+                    $content = "Ahamove order id='{$data['_id']}' failed, external id='{$incrementId}'";
                     $this->helperData->sendNotifyWebhookAhamove($content);
                 }
-
-                // Create Shipment Based on package Object
-                return $package;
             }
         } catch (\Exception $e) {
             $this->logger->error('Webhook : ' . $e->getMessage());

@@ -83,8 +83,8 @@ class ServiceCommand implements CommandInterface
         ClientInterface $client,
         LoggerInterface $logger,
         Command\Result\ArrayResultFactory $resultFactory,
-        HandlerInterface $handler = null,
-        ValidatorInterface $validator = null,
+        ?HandlerInterface $handler = null,
+        ?ValidatorInterface $validator = null,
         $resultKey = null
     ) {
         $this->requestBuilder = $requestBuilder;
