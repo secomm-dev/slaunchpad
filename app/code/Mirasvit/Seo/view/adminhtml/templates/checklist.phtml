@@ -1,0 +1,36 @@
+<?php
+/** @var \Mirasvit\Seo\Block\Adminhtml\Checklist $block */
+?>
+<div class="mst-checklist">
+    <div class="mst-checklist__totals">
+        <strong><?= $block->escapeHtml($block->getPassedQTY()) ?> / <?= $block->escapeHtml($block->getTotalQty()) ?></strong> <?= $block->escapeHtml(__('Tests passed.')) ?> <strong><?= $block->escapeHtml($block->getFailedQty()) ?></strong> <?= $block->escapeHtml(__('test(s) remaining')) ?>
+    </div>
+
+    <div class="mst-checklist__list" role="list">
+        <?php foreach ($block->runTests() as $key => $data): ?>
+            <div class="mst-checklist__test" role="listitem">
+                <div class="mst-checklist__test-title">
+                    <div class="mst-checklist__test-status <?= ($data['status']) ? '' : '_invalid' ?>"></div>
+                    <strong><?= $block->escapeHtml($data['name']) ?></strong>
+                </div>
+
+                <div class="mst-checklist__test-content">
+                    <?php if ($data['hint']): ?>
+                        <div class="mst-checklist__test-hint">
+                            <strong><?= $block->escapeHtml(__('Hint')) ?></strong>
+                            <p class="hint"><?= /* @noEscape */ $data['hint'] ?></p>
+                        </div>
+                    <?php endif ?>
+
+                    <?php if ($data['solution']): ?>
+                        <div class="mst-checklist__test-solution">
+                            <strong><?= $block->escapeHtml(__('Solution')) ?></strong>
+                            <p class="solution"><?= /* @noEscape */ $data['solution'] ?></p>
+                        </div>
+                    <?php endif ?>
+                </div>
+            </div>
+        <?php endforeach ?>
+    </div>
+</div>
+

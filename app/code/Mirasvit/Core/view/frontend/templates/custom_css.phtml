@@ -1,0 +1,12 @@
+<?php
+
+use Mirasvit\Core\Service\CspService;
+
+/* @var $block \Mirasvit\Core\Block\CustomCss*/
+
+$css   = $block->getCustomCss();
+$nonce = CspService::getNonce();
+?>
+<?php if ($css): ?>
+    <style<?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?>><?= /* @noEscape */ strip_tags($css); ?></style>
+<?php endif; ?>

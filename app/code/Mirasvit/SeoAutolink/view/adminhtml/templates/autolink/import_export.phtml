@@ -1,0 +1,75 @@
+<?php
+
+use Mirasvit\SeoAutolink\Block\Adminhtml\Import\Edit;
+
+/** @var Edit $block */
+?>
+
+<div class="import-export-link">
+    <div class="import-link">
+        <form id="import_form"
+              action="<?php /* @escapeNotVerified */ echo $block->getUrl('seoautolink/import/save') ?>"
+              method="post"
+              enctype="multipart/form-data">
+            <?php echo $block->getBlockHtml('formkey') ?>
+            <fieldset class="fieldset admin__fieldset">
+                <legend class="hidden"><?= $block->escapeHtml(__('SEO Autolink Import')) ?></legend>
+                <div class="admin__field required">
+                    <label for="import_file" class="admin__field-label">
+                        <span><?= $block->escapeHtml(__('Import links (.csv)')) ?></span>
+                    </label>
+                    <div class="admin__field-control">
+                        <input type="file" id="import_file" name="import_file" class="input-file required-entry"/>
+                        <?php echo $block->getButtonHtml(__('Import links'), '', 'import-submit') ?>
+                        <label id="file-error" class="mage-error hidden">
+                            <?= $block->escapeHtml(__('This is a required field.')) ?>
+                        </label>
+                        <div class="note" id="file-note">
+                            <a href="<?= $block->escapeUrl($block->getDownloadUrl()) ?>"
+                               aria-label="<?= $block->escapeHtml(__('Download example CSV file for autolink import')) ?>"><?= $block->escapeHtml(__('Example of CSV file')) ?></a>
+                        </div>
+                    </div>
+                    <div class="page-actions">
+                        <div class="page-actions-buttons">
+                            <?= $block->getButtonHtml(__('Back'), "setLocation('" . $block->escapeUrl($block->getBackUrl()) . "')", 'back', 'back') ?>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+    <div class="export-link">
+        <form id="export_form"
+              action="<?php /* @escapeNotVerified */ echo $block->getUrl('seoautolink/import/export') ?>"
+              method="post"
+              enctype="multipart/form-data">
+            <?php echo $block->getBlockHtml('formkey') ?>
+            <fieldset class="fieldset admin__fieldset">
+                <legend class="hidden"><?= $block->escapeHtml(__('SEO Autolink Export')) ?></legend>
+                <div class="admin__field">
+                    <span class="admin__field-label">
+                        <span><?= $block->escapeHtml(__('Export links (.csv)')) ?></span>
+                    </span>
+                    <div class="admin__field-control">
+                        <?php echo $block->getButtonHtml(__('Export links'), 'export_form.submit()') ?>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+<script>
+    require(['jquery', "mage/mage", "loadingPopup"], function (jQuery) {
+        jQuery('#import_form').mage('form').mage('validation');
+        (function ($) {
+            $('.import-submit').click(function () {
+                if ($(':input[name="import_file"]').val()) {
+                    $(this.form).submit();
+                } else {
+                    $('#file-error').removeClass('hidden');
+                }
+            });
+        })(jQuery);
+    });
+</script>

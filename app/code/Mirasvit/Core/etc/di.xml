@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!--HELP-->
+    <preference for="Mirasvit\Core\Api\Service\ManualServiceInterface" type="Mirasvit\Core\Service\ManualService"/>
+
+    <!--INTERFACES-->
+    <preference for="Mirasvit\Core\Api\UrlRewriteHelperInterface" type="Mirasvit\Core\Helper\UrlRewrite"/>
+    <preference for="Mirasvit\Core\Api\ImageHelperInterface" type="Mirasvit\Core\Helper\Image"/>
+    <preference for="Mirasvit\Core\Api\CronHelperInterface" type="Mirasvit\Core\Helper\Cron"/>
+    <preference for="Mirasvit\Core\Api\TextHelperInterface" type="Mirasvit\Core\Helper\Text"/>
+    <preference for="Mirasvit\Core\Api\ParseVariablesHelperInterface" type="Mirasvit\Core\Helper\ParseVariables"/>
+
+    <!--SERVICES-->
+    <preference for="Mirasvit\Core\Api\Service\ValidationServiceInterface" type="Mirasvit\Core\Service\ValidationService"/>
+    <preference for="Mirasvit\Core\Api\Service\CronServiceInterface" type="Mirasvit\Core\Service\CronService"/>
+
+    <type name="Magento\Framework\App\FrontController">
+        <plugin name="mstCoreDispatch" type="Mirasvit\Core\Plugin\UrlRewritePlugin" sortOrder="1000"/>
+    </type>
+
+    <type name="Magento\Backend\Model\View\Result\Page">
+        <plugin name="mstCoreAddAdminThemeClass" type="Mirasvit\Core\Plugin\AddAdminThemeClassPlugin" sortOrder="100"/>
+    </type>
+
+    <type name="Mirasvit\Core\Api\Service\ValidationServiceInterface">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="core" xsi:type="object">Mirasvit\Core\Service\GeneralValidationService</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- CLI Commands -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="mstCoreValidation" xsi:type="object">Mirasvit\Core\Console\Command\ValidationCommand</item>
+                <item name="mstCoreInternalization" xsi:type="object">Mirasvit\Core\Console\Command\I18nFrontCollectPhrasesCommand</item>
+                <item name="mstCoreTestAi" xsi:type="object">Mirasvit\Core\Console\Command\TestAiCommand</item>
+                <item name="mstCoreGeoLocationDownload" xsi:type="object">Mirasvit\Core\Console\Command\GeoLocationDownloadCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!--AI SERVICES-->
+    <preference for="Mirasvit\Core\Ai\Api\Data\AiRequestInterface" type="Mirasvit\Core\Ai\Model\Request"/>
+    <preference for="Mirasvit\Core\Ai\Api\Data\AiResponseInterface" type="Mirasvit\Core\Ai\Model\Response"/>
+
+    <!-- AI Config Provider with Provider Pool -->
+    <type name="Mirasvit\Core\Ai\Model\ConfigProvider">
+        <arguments>
+            <argument name="providerConfigs" xsi:type="array">
+                <item name="openai" xsi:type="object">Mirasvit\Core\Ai\Service\OpenAi\ConfigProvider</item>
+                <item name="claude" xsi:type="object">Mirasvit\Core\Ai\Service\Claude\ConfigProvider</item>
+                <item name="gemini" xsi:type="object">Mirasvit\Core\Ai\Service\Gemini\ConfigProvider</item>
+                <item name="grok" xsi:type="object">Mirasvit\Core\Ai\Service\Grok\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- AI Service Manager Configuration -->
+    <type name="Mirasvit\Core\Ai\Service\Manager">
+        <arguments>
+            <argument name="providers" xsi:type="array">
+                <item name="openai" xsi:type="array">
+                    <item name="class" xsi:type="string">Mirasvit\Core\Ai\Service\OpenAi\Service</item>
+                    <item name="priority" xsi:type="number">90</item>
+                    <item name="enabled" xsi:type="boolean">true</item>
+                </item>
+                <item name="claude" xsi:type="array">
+                    <item name="class" xsi:type="string">Mirasvit\Core\Ai\Service\Claude\Service</item>
+                    <item name="priority" xsi:type="number">80</item>
+                    <item name="enabled" xsi:type="boolean">true</item>
+                </item>
+                <item name="gemini" xsi:type="array">
+                    <item name="class" xsi:type="string">Mirasvit\Core\Ai\Service\Gemini\Service</item>
+                    <item name="priority" xsi:type="number">70</item>
+                    <item name="enabled" xsi:type="boolean">true</item>
+                </item>
+                <item name="grok" xsi:type="array">
+                    <item name="class" xsi:type="string">Mirasvit\Core\Ai\Service\Grok\Service</item>
+                    <item name="priority" xsi:type="number">60</item>
+                    <item name="enabled" xsi:type="boolean">true</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- OpenAI Service Configuration -->
+    <type name="Mirasvit\Core\Ai\Service\OpenAi\Service">
+        <arguments>
+            <argument name="client" xsi:type="object">Mirasvit\Core\Ai\Service\OpenAi\Client</argument>
+        </arguments>
+    </type>
+
+    <!-- Claude Service Configuration -->
+    <type name="Mirasvit\Core\Ai\Service\Claude\Service">
+        <arguments>
+            <argument name="client" xsi:type="object">Mirasvit\Core\Ai\Service\Claude\Client</argument>
+        </arguments>
+    </type>
+
+    <!-- Gemini Service Configuration -->
+    <type name="Mirasvit\Core\Ai\Service\Gemini\Service">
+        <arguments>
+            <argument name="client" xsi:type="object">Mirasvit\Core\Ai\Service\Gemini\Client</argument>
+        </arguments>
+    </type>
+
+    <!-- Grok Service Configuration -->
+    <type name="Mirasvit\Core\Ai\Service\Grok\Service">
+        <arguments>
+            <argument name="client" xsi:type="object">Mirasvit\Core\Ai\Service\Grok\Client</argument>
+        </arguments>
+    </type>
+
+    <!--AI LOGGER-->
+    <type name="Mirasvit\Core\Ai\Logger\AiLogger">
+        <arguments>
+            <argument name="name" xsi:type="string">CoreAiLogger</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="ai" xsi:type="object">Mirasvit\Core\Ai\Logger\AiHandler</item>
+            </argument>
+            <argument name="processors" xsi:type="array"/>
+            <argument name="configProvider" xsi:type="object">Mirasvit\Core\Ai\Model\ConfigProvider</argument>
+        </arguments>
+    </type>
+
+    <!--UI-->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="mst_core_cron_job_listing_data_source" xsi:type="string">Mirasvit\Core\Model\ResourceModel\Job\Grid</item>
+            </argument>
+        </arguments>
+    </type>
+
+</config>

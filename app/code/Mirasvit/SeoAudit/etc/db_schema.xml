@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="mst_seo_audit_job" resource="default" engine="innodb" comment="mst_seo_audit_job">
+    <column xsi:type="int" name="job_id" padding="11" unsigned="false" nullable="false" identity="true" comment="job_id"/>
+    <column xsi:type="varchar" name="status" nullable="false" length="255" comment="status"/>
+    <column xsi:type="text" name="message" nullable="true" comment="message"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="created_at"/>
+    <column xsi:type="timestamp" name="started_at" on_update="false" nullable="true" comment="started_at"/>
+    <column xsi:type="timestamp" name="finished_at" on_update="false" nullable="true" comment="finished_at"/>
+    <column xsi:type="text" name="result_serialized" nullable="true" comment="result_serialized"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="job_id"/>
+    </constraint>
+  </table>
+  <table name="mst_seo_audit_check_result" resource="default" engine="innodb" comment="mst_seo_audit_check_result">
+    <column xsi:type="int" name="check_id" padding="11" unsigned="false" nullable="false" identity="true" comment="check_id"/>
+    <column xsi:type="int" name="job_id" padding="11" unsigned="false" nullable="false" identity="false" comment="job_id"/>
+    <column xsi:type="int" name="url_id" padding="11" unsigned="false" nullable="false" identity="false" comment="url_id"/>
+    <column xsi:type="varchar" name="url_type" nullable="true" comment="URI" onCreate="migrateDataFrom(url_type)" length="255"/>
+    <column xsi:type="varchar" name="identifier" nullable="false" length="255" comment="identifier"/>
+    <column xsi:type="int" name="importance" padding="11" unsigned="false" nullable="false" identity="false" comment="importance"/>
+    <column xsi:type="int" name="result" padding="11" unsigned="false" nullable="false" identity="false" comment="result"/>
+    <column xsi:type="text" name="value" nullable="false" comment="value"/>
+    <column xsi:type="text" name="message" nullable="true" comment="message"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="created_at"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="check_id"/>
+    </constraint>
+    <index referenceId="MST_SEO_AUDIT_CHECK_RESULT_URL_ID_JOB_ID" indexType="btree">
+      <column name="url_id"/>
+      <column name="job_id"/>
+    </index>
+    <index referenceId="MST_SEO_AUDIT_CHECK_RESULT_URL_TYPE_JOB_ID" indexType="btree">
+      <column name="url_type"/>
+      <column name="job_id"/>
+    </index>
+    <index referenceId="MST_SEO_AUDIT_CHECK_RESULT_URL_TYPE_JOB_ID_RESULT" indexType="btree">
+      <column name="url_type"/>
+      <column name="job_id"/>
+      <column name="result"/>
+    </index>
+  </table>
+  <table name="mst_seo_audit_check_result_aggregated" resource="default" engine="innodb" comment="mst_seo_audit_check_result_aggregated">
+    <column xsi:type="int" name="aggregated_id" padding="11" unsigned="false" nullable="false" identity="true" comment="aggregated_id"/>
+    <column xsi:type="int" name="job_id" padding="11" unsigned="false" nullable="false" identity="false" comment="job_id"/>
+    <column xsi:type="varchar" name="identifier" nullable="false" length="255" comment="identifier"/>
+    <column xsi:type="int" name="total" padding="11" unsigned="false" nullable="false" default="0" identity="false" comment="total"/>
+    <column xsi:type="int" name="error" padding="11" unsigned="false" nullable="false" default="0" identity="false" comment="error"/>
+    <column xsi:type="int" name="warning" padding="11" unsigned="false" nullable="false" default="0" identity="false" comment="warning"/>
+    <column xsi:type="int" name="notice" padding="11" unsigned="false" nullable="false" default="0" identity="false" comment="notice"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="aggregated_id"/>
+    </constraint>
+    <index referenceId="MST_SEO_AUDIT_CHECK_RESULT_AGGREGATED_AGGREGATED_ID" indexType="btree">
+      <column name="aggregated_id"/>
+    </index>
+    <index referenceId="MST_SEO_AUDIT_CHECK_RESULT_AGGREGATED_JOB_ID" indexType="btree">
+        <column name="job_id"/>
+    </index>
+  </table>
+  <table name="mst_seo_audit_url" resource="default" engine="innodb" comment="mst_seo_audit_url">
+    <column xsi:type="int" name="url_id" padding="11" unsigned="false" nullable="false" identity="true" comment="url_id"/>
+    <column xsi:type="text" name="parent_ids" nullable="true" comment="parent_ids"/>
+    <column xsi:type="int" name="job_id" padding="11" unsigned="false" nullable="false" identity="false" comment="job_id"/>
+    <column xsi:type="text" name="url" nullable="false" comment="url"/>
+    <column xsi:type="varchar" name="url_hash" nullable="false" length="255" comment="url_hash"/>
+    <column xsi:type="varchar" name="type" nullable="false" length="255" comment="type"/>
+    <column xsi:type="varchar" name="status" nullable="false" length="255" comment="status"/>
+    <column xsi:type="int" name="status_code" padding="10" unsigned="true" nullable="true" identity="false" comment="status_code"/>
+    <column xsi:type="text" name="meta_title" nullable="true" comment="meta_title"/>
+    <column xsi:type="text" name="meta_description" nullable="true" comment="meta_description"/>
+    <column xsi:type="varchar" name="robots" nullable="true" length="255" comment="robots"/>
+    <column xsi:type="text" name="canonical" nullable="true" comment="canonical"/>
+    <column xsi:type="mediumtext" name="content" nullable="true" comment="content"/>
+    <column xsi:type="int" name="meta_fix_attempts" padding="11" unsigned="true" nullable="false" default="0" comment="meta_fix_attempts"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="url_id"/>
+    </constraint>
+    <index referenceId="MST_SEO_AUDIT_URL_TYPE" indexType="btree">
+      <column name="type"/>
+    </index>
+    <index referenceId="MST_SEO_AUDIT_URL_URL_HASH" indexType="btree">
+      <column name="url_hash"/>
+    </index>
+    <index referenceId="MST_SEO_AUDIT_URL_JOB_ID" indexType="btree">
+      <column name="job_id"/>
+    </index>
+    <index referenceId="MST_SEO_AUDIT_URL_STATUS" indexType="btree">
+      <column name="status"/>
+    </index>
+    <index referenceId="MST_SEO_AUDIT_URL_JOB_ID_STATUS_CODE" indexType="btree">
+      <column name="job_id"/>
+      <column name="status_code"/>
+    </index>
+    <index referenceId="MST_SEO_AUDIT_URL_JOB_ID_STATUS_CODE_TYPE" indexType="btree">
+      <column name="job_id"/>
+      <column name="status_code"/>
+      <column name="type"/>
+    </index>
+  </table>
+  <table name="mst_seo_audit_url_parent" resource="default" engine="innodb" comment="mst_seo_audit_url_parent">
+    <column xsi:type="int" name="url_id" padding="11" unsigned="false" nullable="false" comment="url_id"/>
+    <column xsi:type="int" name="parent_url_id" padding="11" unsigned="false" nullable="false" comment="parent_url_id"/>
+    <constraint xsi:type="unique" referenceId="MST_SEO_AUDIT_URL_PARENT_URL_ID_PARENT_URL_ID">
+      <column name="url_id"/>
+      <column name="parent_url_id"/>
+    </constraint>
+    <index referenceId="MST_SEO_AUDIT_URL_PARENT_PARENT_URL_ID" indexType="btree">
+      <column name="parent_url_id"/>
+    </index>
+  </table>
+</schema>

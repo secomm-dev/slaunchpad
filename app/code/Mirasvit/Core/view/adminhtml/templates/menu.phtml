@@ -1,0 +1,53 @@
+<?php
+
+use Mirasvit\Core\Service\CspService;
+
+/** @var \Mirasvit\Core\Block\Adminhtml\Menu $block */
+
+$nonce = CspService::getNonce();
+?>
+<style <?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?>>
+    .page-title-wrapper .page-title {
+        display: none;
+    }
+</style>
+<div class="admin__action-dropdown-wrap mst-core-menu">
+    <button
+        type="button"
+        class="admin__action-dropdown"
+        data-mage-init='{"dropdown":{}}'
+        data-toggle="dropdown"
+        aria-haspopup="true">
+        <i class="fa fa-bars"></i>
+        <span class="admin__action-dropdown-text"><?php echo $block->escapeHtml($block->getActiveTitle()) ?></span>
+    </button>
+
+    <ul class="admin__action-dropdown-menu" role="menu">
+        <?php foreach ($block->getItems() as $item): ?>
+            <?php if ($item == \Mirasvit\Core\Block\Adminhtml\AbstractMenu::SEPARATOR): ?>
+                <li class="separator" role="separator"></li>
+                <?php continue; endif; ?>
+
+            <li role="menuitem">
+                <?php $target = $item->getTarget() ? 'target="' . $item->getTarget() . '"' : ''; ?>
+                <?php $ariaLabel = $item->getTarget() ? $block->escapeHtml(__('%1 (opens in new window)', $item->getTitle())) : $block->escapeHtml($item->getTitle()); ?>
+
+                <a href="<?= $block->escapeUrl($item->getUrl()) ?>" <?= $block->escapeHtmlAttr($target) ?> aria-label="<?= /* @escapeNotVerified */ $ariaLabel ?>">
+                    <?php echo $block->escapeHtml($item->getTitle()) ?>
+                </a>
+
+                <?php if ($item->getItems()): ?>
+                    <ul role="menu">
+                        <?php foreach ($item->getItems() as $child): ?>
+                            <li role="menuitem">
+                                <a href="<?= $block->escapeUrl($child->getUrl()) ?>" aria-label="<?= $block->escapeHtml($child->getTitle()) ?>">
+                                    <?= $block->escapeHtml($child->getTitle()) ?>
+                                </a>
+                            </li>
+                        <?php endforeach ?>
+                    </ul>
+                <?php endif ?>
+            </li>
+        <?php endforeach ?>
+    </ul>
+</div>

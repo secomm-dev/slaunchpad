@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1-tjänsten är inte korrekt konfigurerad eller tillgänglig"
+"Invalid AI request data","Ogiltig AI-förfrågningsdata"
+"Request prompt cannot be empty","Förfrågningsprompt kan inte vara tom"
+"Claude API error","Claude API-fel"
+"Invalid Claude API response: missing content","Ogiltigt Claude API-svar: saknar innehåll"
+"Empty content received from Claude API","Tomt innehåll mottaget från Claude API"
+"Gemini API error","Gemini API-fel"
+"Invalid Gemini API response: missing candidates","Ogiltigt Gemini API-svar: saknar kandidater"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Gemini API-svaret trunkerades eftersom max_tokens-gränsen nåddes. Överväg att öka max_tokens-inställningen eller använda en kortare prompt."
+"Empty content received from Gemini API","Tomt innehåll mottaget från Gemini API"
+"AI services are disabled in configuration","AI-tjänster är inaktiverade i konfigurationen"
+"No default AI provider configured","Ingen standard AI-leverantör konfigurerad"
+"No available AI provider for request validation","Ingen tillgänglig AI-leverantör för validering av förfrågan"
+"Request validation failed: %1","Validering av förfrågan misslyckades: %1"
+"All AI providers failed. Last error: %1","Alla AI-leverantörer misslyckades. Senaste fel: %1"
+"Unsupported AI provider: %1. Supported providers: %2","AI-leverantör som inte stöds: %1. Stödda leverantörer: %2"
+"Service class %1 must extend %2","Tjänsteklassen %1 måste utöka %2"
+"Failed to create AI service for provider %1: %2","Misslyckades med att skapa AI-tjänst för leverantör %1: %2"
+"Not configured","Inte konfigurerad"
+Unknown,Okänd
+"Unknown API error","Okänt API-fel"
+"Temperature must be between 0 and 2","Temperaturen måste vara mellan 0 och 2"
+"Max tokens must be greater than 0","Max tokens måste vara större än 0"
+"Frequency penalty must be between -2 and 2","Frekvensstraff måste vara mellan -2 och 2"
+"Format output as JSON.","Formatera utdata som JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API returnerade ett ofullständigt svar eftersom modellens kontextfönster-tokens överskreds."
+"OpenAI API returned no content in the response.","OpenAI API returnerade inget innehåll i svaret."
+"Not Installed","Inte installerad"
+"A total of %1 record(s) have been deleted.","Totalt %1 post(er) har raderats."
+"The record has been removed.","Posten har tagits bort."
+"Disallowed file type.","Otillåten filtyp."
+"Can't remove folder %s","Kan inte ta bort mapp %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Tillägget innehåller inte alla nödvändiga filer. Vänligen installera om tillägget från originalpaketet."
+"Extension Information","Tilläggsinformation"
+Status,Status
+Other,Övrigt
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron för Magento körs inte. För att konfigurera ett cron-jobb, följ länken %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron-jobb [%1] körs inte. Vänligen kontrollera tabellen %2 för frusna jobb och ta bort dem."
+Remove,Ta bort
+Error,Fel
+Missed,Missad
+Running,Körs
+Pending,Väntar
+Success,Lyckades
+"Server gmt time","Server GMT-tid"
+"Last job","Senaste jobb"
+Executed,Utförd
+none,ingen
+"Cron setup","Cron-konfiguration"
+"Cron Jobs","Cron-jobb"
+"No AI-enabled modules are currently active.","Inga AI-aktiverade moduler är för närvarande aktiva."
+"%1 module(s) using AI functionality:","%1 modul(er) använder AI-funktionalitet:"
+Provider:,Leverantör:
+ai_provider,ai_provider
+"You have the latest version","Du har den senaste versionen"
+"New version %1 is available","Ny version %1 är tillgänglig"
+"View %1 details (opens in new window)","Visa %1-detaljer (öppnas i nytt fönster)"
+Details,Detaljer
+"View %1 user guide (opens in new window)","Visa %1-användarguide (öppnas i nytt fönster)"
+"User Guide","Användarguide"
+"View %1 changelog (opens in new window)","Visa %1-ändringslogg (öppnas i nytt fönster)"
+Changelog,Ändringslogg
+"Request new feature for %1 (opens in new window)","Begär ny funktion för %1 (öppnas i nytt fönster)"
+"Request New Feature","Begär ny funktion"
+"Installed Extensions","Installerade tillägg"
+"Check changes","Kontrollera ändringar"
+"Validate All Extensions","Validera alla tillägg"
+"Suggest Improvement","Föreslå förbättring"
+"%1 (opens in new window)","%1 (öppnas i nytt fönster)"
+"More Details","Mer information"
+"Developer settings","Utvecklarinställningar"
+"AI Provider Status","AI-leverantörsstatus"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Inga AI-leverantörer är för närvarande aktiverade. Vänligen konfigurera AI-leverantörer i %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 av %2 leverantörer aktiverade. Du kan hantera leverantörer i %3."
+Enabled,Aktiverad
+Disabled,Inaktiverad
+"All tests have been passed","Alla tester har godkänts"
+Module,Modul
+Test,Test
+"How to fix","Hur man åtgärdar"
+Warning,Varning
+Info,Info
+Failed,Misslyckades
+Today,Idag
+"Last 7 days","Senaste 7 dagarna"
+"Last 30 days","Senaste 30 dagarna"
+"Last 365 days","Senaste 365 dagarna"
+"Mirasvit Extensions Validator","Mirasvit-tilläggsvalidator"
+"Mirasvit Menu","Mirasvit-meny"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Tillägg
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit-tillägg"
+Developer,Utvecklare
+"Menu Settings","Menyinställningar"
+"Enable Mirasvit Menu","Aktivera Mirasvit-meny"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Menyn är synlig om du har minst två aktiva Mirasvit-tillägg."
+"Additional CSS Styles","Ytterligare CSS-stilar"
+"AI Configuration","AI-konfiguration"
+"Modules using AI","Moduler som använder AI"
+"Enable AI features","Aktivera AI-funktioner"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Aktivera eller inaktivera alla AI-drivna funktioner globalt i Mirasvit-tillägg.<br>När inaktiverad kommer all AI-funktionalitet vara otillgänglig oavsett individuella leverantörsinställningar eller AI-inställningar i andra moduler."
+"Default AI provider","Standard AI-leverantör"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Välj den primära AI-leverantören som ska användas när flera leverantörer är konfigurerade.<br>Detta kommer att användas som reservleverantör för alla AI-operationer när ingen specifik leverantör begärs."
+"Request timeout","Tidsgräns för förfrågan"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Maximal tid i sekunder att vänta på AI-leverantörssvar.<br> Lämna tomt för att inaktivera tidsgräns.<br> Denna inställning påverkar alla AI-funktioner i andra moduler."
+"Maximum tokens per request","Maximalt antal tokens per förfrågan"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Maximalt antal tokens att generera i en enskild AI-förfrågan. Högre värden tillåter längre svar men ökar kostnaderna.<br> Lämna tomt för att inaktivera begränsning.<br> Olika leverantörer och modeller har sina egna gränser.<br> Denna inställning påverkar alla AI-funktioner i andra moduler."
+"Default temperature","Standardtemperatur"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Styr slumpmässighet i AI-svar. Lägre värden ger mer konsekventa resultat, högre värden mer kreativa.<br>Exempel:<br><code>0.1</code> - mycket konsekventa, faktabaserade svar<br><code>0.7</code> - balanserad kreativitet och konsekvens<br><code>1.0</code> - mycket kreativa och varierade svar.<br>Om tom används standardtemperaturen 0.7.<br>Denna inställning påverkar alla AI-funktioner i andra moduler.<br>Vissa tillägg kan åsidosätta denna inställning."
+"Debug mode","Felsökningsläge"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Aktivera detaljerad loggning av AI-förfrågningar och svar för felsökningsändamål.<br>Varning: Detta kan logga känslig data och påverka prestanda. Använd endast för utveckling."
+"OpenAI Configuration","OpenAI-konfiguration"
+"Enable OpenAI provider","Aktivera OpenAI-leverantör"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Aktivera OpenAI som en tillgänglig AI-leverantör. Kräver giltig API-nyckelkonfiguration."
+"OpenAI API key","OpenAI API-nyckel"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Din OpenAI API-nyckel som börjar med 'sk-'. Denna nyckel är krypterad och lagrad säkert.<br>Hämta din API-nyckel från: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Standard OpenAI-modell"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Välj standard OpenAI-modell för AI-operationer. Olika modeller har varierande kapacitet och kostnader."
+"Claude Configuration","Claude-konfiguration"
+"Enable Claude provider","Aktivera Claude-leverantör"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Aktivera Anthropic Claude som en tillgänglig AI-leverantör. Kräver giltig API-nyckelkonfiguration."
+"Claude API key","Claude API-nyckel"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Din Anthropic Claude API-nyckel som börjar med 'sk-ant-'. Denna nyckel är krypterad och lagrad säkert.<br>Hämta din API-nyckel från: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Standard Claude-modell"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Välj standard Claude-modell för AI-operationer. Olika modeller har varierande kapacitet och kostnader."
+"Google Gemini Configuration","Google Gemini-konfiguration"
+"Enable Gemini provider","Aktivera Gemini-leverantör"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Aktivera Google Gemini som en tillgänglig AI-leverantör. Kräver giltig API-nyckelkonfiguration."
+"Gemini API key","Gemini API-nyckel"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Din Google AI Studio API-nyckel som börjar med 'AIza'. Denna nyckel är krypterad och lagrad säkert.<br>Hämta din API-nyckel från: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Standard Gemini-modell"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Välj standard Gemini-modell för AI-operationer. Olika modeller har varierande kapacitet och kostnader."
+"Determine visitor's country, city, and timezone based on their IP address.","Bestäm besökarens land, stad och tidszon baserat på deras IP-adress."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Gratis <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind-konto</a> krävs för automatiska uppdateringar (kontrolleras varje vecka)."
+"Used by:","Används av:"
+message,meddelande
+"Error downloading database: %1","Fel vid nedladdning av databas: %1"
+"MaxMind credentials not configured","MaxMind-autentiseringsuppgifter ej konfigurerade"
+"Failed to download remote hash","Misslyckades med att ladda ner fjärr-hash"
+"Database is up to date","Databasen är uppdaterad"
+"Failed to download and extract database","Misslyckades med att ladda ner och extrahera databas"
+"Database updated successfully","Databasen uppdaterades framgångsrikt"
+"Download failed: %1","Nedladdning misslyckades: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Detta tillägg använder GeoLite2-data skapad av MaxMind."
+"Database available (auto-update enabled)","Databas tillgänglig (automatisk uppdatering aktiverad)"
+"Database available (auto-update disabled)","Databas tillgänglig (automatisk uppdatering inaktiverad)"
+Configure,Konfigurera
+"Database not available","Databas ej tillgänglig"
+"Database status:","Databasstatus:"
+"Not available","Ej tillgänglig"
+"Credentials configured. Click the button below to download the database.","Autentiseringsuppgifter konfigurerade. Klicka på knappen nedan för att ladda ner databasen."
+"Download database","Ladda ner databas"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Ange MaxMind-autentiseringsuppgifter ovan för att aktivera automatiska nedladdningar, eller kör setup:upgrade för att installera den medföljande databasen."
+"Available (auto-update disabled)","Tillgänglig (automatisk uppdatering inaktiverad)"
+Version:,Version:
+Size:,Storlek:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Ange MaxMind-autentiseringsuppgifter ovan för att aktivera automatiska veckovisa uppdateringar."
+"Available (auto-update enabled)","Tillgänglig (automatisk uppdatering aktiverad)"
+"Update database","Uppdatera databas"
+"Database updated successfully.","Databasen uppdaterades framgångsrikt."
+Notice,Meddelande
+"Database is up to date.","Databasen är uppdaterad."
+"An error occurred while downloading the database.","Ett fel uppstod vid nedladdning av databasen."
+"IP Geolocation","IP-geolokalisering"
+"Account ID","Konto-ID"
+"License Key","Licensnyckel"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generera licensnyckel</a>"
+Cron,Cron
+Delete,Radera
+"Delete items","Radera objekt"
+"Are you sure you want to delete selected items?","Är du säker på att du vill radera valda objekt?"
+ID,ID
+Code,Kod
+Messages,Meddelanden
+Created,Skapad
+Scheduled,Schemalagd
+Finished,Avslutad

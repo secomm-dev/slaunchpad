@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="mst_seoautolink_link" resource="default" engine="innodb" comment="mst_seoautolink_link">
+        <column xsi:type="int" name="link_id" padding="11" unsigned="false" nullable="false" identity="true" comment="Link Id"/>
+        <column xsi:type="varchar" name="keyword" nullable="false" length="255" comment="Keyword"/>
+        <column xsi:type="text" name="url" nullable="true" comment="Url"/>
+        <column xsi:type="varchar" name="url_target" nullable="true" length="255" comment="Url Target"/>
+        <column xsi:type="varchar" name="url_title" nullable="true" length="255" comment="Url Title"/>
+        <column xsi:type="int" name="is_nofollow" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Is Nofollow"/>
+        <column xsi:type="int" name="max_replacements" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Max Replacements"/>
+        <column xsi:type="int" name="sort_order" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Sort Order"/>
+        <column xsi:type="int" name="occurence" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Occurence"/>
+        <column xsi:type="int" name="is_active" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Is Active"/>
+        <column xsi:type="timestamp" name="active_from" on_update="false" nullable="true" comment="Active From"/>
+        <column xsi:type="timestamp" name="active_to" on_update="false" nullable="true" comment="Active To"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <column xsi:type="varchar" name="link_type" nullable="false" length="50" default="url" comment="Link type (url, product, category)"/>
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="true" identity="false" comment="Entity ID (product or category ID)"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="link_id"/>
+        </constraint>
+        <!--    <index referenceId="MST_SEOAUTOLINK_LINK_KEYWORD" indexType="fulltext">-->
+        <!--      <column name="keyword"/>-->
+        <!--    </index>-->
+    </table>
+    <table name="mst_seoautolink_link_store" resource="default" engine="innodb" comment="mst_seoautolink_link_store">
+        <column xsi:type="int" name="id" padding="11" unsigned="false" nullable="false" identity="true" comment="Id"/>
+        <column xsi:type="int" name="link_id" padding="11" unsigned="false" nullable="false" identity="false" comment="Link Id"/>
+        <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" identity="false" comment="Store Id"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="MST_SEOAUTOLNK_LNK_STORE_LNK_ID_MST_SEOAUTOLNK_LNK_LNK_ID" table="mst_seoautolink_link_store" column="link_id" referenceTable="mst_seoautolink_link" referenceColumn="link_id" onDelete="CASCADE"/>
+        <index referenceId="MST_SEOAUTOLINK_LINK_STORE_STORE_ID" indexType="btree">
+            <column name="store_id"/>
+        </index>
+        <index referenceId="MST_SEOAUTOLINK_LINK_STORE_LINK_ID" indexType="btree">
+            <column name="link_id"/>
+        </index>
+    </table>
+</schema>

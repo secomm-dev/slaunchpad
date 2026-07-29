@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","שירות %1 אינו מוגדר כראוי או אינו זמין"
+"Invalid AI request data","נתוני בקשת AI לא חוקיים"
+"Request prompt cannot be empty","הנחיית הבקשה אינה יכולה להיות ריקה"
+"Claude API error","שגיאת Claude API"
+"Invalid Claude API response: missing content","תגובת Claude API לא חוקית: תוכן חסר"
+"Empty content received from Claude API","תוכן ריק התקבל מ-Claude API"
+"Gemini API error","שגיאת Gemini API"
+"Invalid Gemini API response: missing candidates","תגובת Gemini API לא חוקית: מועמדים חסרים"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","תגובת Gemini API נקטעה מכיוון שהגעת למגבלת max_tokens. שקול להגדיל את הגדרת max_tokens או להשתמש בהנחיה קצרה יותר."
+"Empty content received from Gemini API","תוכן ריק התקבל מ-Gemini API"
+"AI services are disabled in configuration","שירותי AI מושבתים בתצורה"
+"No default AI provider configured","לא הוגדר ספק AI ברירת מחדל"
+"No available AI provider for request validation","אין ספק AI זמין לאימות בקשות"
+"Request validation failed: %1","אימות הבקשה נכשל: %1"
+"All AI providers failed. Last error: %1","כל ספקי ה-AI נכשלו. שגיאה אחרונה: %1"
+"Unsupported AI provider: %1. Supported providers: %2","ספק AI לא נתמך: %1. ספקים נתמכים: %2"
+"Service class %1 must extend %2","מחלקת השירות %1 חייבת להרחיב את %2"
+"Failed to create AI service for provider %1: %2","יצירת שירות AI עבור ספק %1 נכשלה: %2"
+"Not configured","לא מוגדר"
+Unknown,לא ידוע
+"Unknown API error","שגיאת API לא ידועה"
+"Temperature must be between 0 and 2","הטמפרטורה חייבת להיות בין 0 ל-2"
+"Max tokens must be greater than 0","מספר הטוקנים המרבי חייב להיות גדול מ-0"
+"Frequency penalty must be between -2 and 2","קנס התדירות חייב להיות בין -2 ל-2"
+"Format output as JSON.","עצב פלט כ-JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API החזיר תגובה לא שלמה מכיוון שמספר הטוקנים של חלון ההקשר של המודל חרג."
+"OpenAI API returned no content in the response.","OpenAI API לא החזיר תוכן בתגובה."
+"Not Installed","לא מותקן"
+"A total of %1 record(s) have been deleted.","סה""כ %1 רשומה/ות נמחקו."
+"The record has been removed.","הרשומה הוסרה."
+"Disallowed file type.","סוג קובץ לא מורשה."
+"Can't remove folder %s","לא ניתן להסיר את התיקייה %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","ההרחבה אינה מכילה את כל הקבצים הנדרשים. אנא התקן מחדש את ההרחבה מהחבילה המקורית."
+"Extension Information","מידע על ההרחבה"
+Status,סטטוס
+Other,אחר
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron עבור Magento אינו פועל. להגדרת משימת cron, עקוב אחר הקישור %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","משימות Cron [%1] אינן פועלות. אנא בדוק את הטבלה %2 עבור משימות קפואות והסר אותן."
+Remove,הסר
+Error,שגיאה
+Missed,פספוס
+Running,פועל
+Pending,ממתין
+Success,הצלחה
+"Server gmt time","שעת GMT של השרת"
+"Last job","משימה אחרונה"
+Executed,בוצע
+none,ללא
+"Cron setup","הגדרת Cron"
+"Cron Jobs","משימות Cron"
+"No AI-enabled modules are currently active.","אין מודולים עם יכולות AI פעילים כרגע."
+"%1 module(s) using AI functionality:","%1 מודול(ים) משתמשים בפונקציונליות AI:"
+Provider:,ספק:
+ai_provider,ai_provider
+"You have the latest version","יש לך את הגרסה האחרונה"
+"New version %1 is available","גרסה חדשה %1 זמינה"
+"View %1 details (opens in new window)","צפה בפרטי %1 (נפתח בחלון חדש)"
+Details,פרטים
+"View %1 user guide (opens in new window)","צפה במדריך למשתמש %1 (נפתח בחלון חדש)"
+"User Guide","מדריך למשתמש"
+"View %1 changelog (opens in new window)","צפה ביומן השינויים של %1 (נפתח בחלון חדש)"
+Changelog,יומן שינויים
+"Request new feature for %1 (opens in new window)","בקש תכונה חדשה עבור %1 (נפתח בחלון חדש)"
+"Request New Feature","בקש תכונה חדשה"
+"Installed Extensions","הרחבות מותקנות"
+"Check changes","בדוק שינויים"
+"Validate All Extensions","אמת את כל ההרחבות"
+"Suggest Improvement","הצע שיפור"
+"%1 (opens in new window)","%1 (נפתח בחלון חדש)"
+"More Details","פרטים נוספים"
+"Developer settings","הגדרות מפתח"
+"AI Provider Status","סטטוס ספקי AI"
+"No AI providers are currently enabled. Please configure AI providers in %1.","אין ספקי AI מופעלים כרגע. אנא הגדר ספקי AI ב-%1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 מתוך %2 ספקים מופעלים. אתה יכול לנהל ספקים ב-%3."
+Enabled,מופעל
+Disabled,מושבת
+"All tests have been passed","כל הבדיקות עברו בהצלחה"
+Module,מודול
+Test,בדיקה
+"How to fix","כיצד לתקן"
+Warning,אזהרה
+Info,מידע
+Failed,נכשל
+Today,היום
+"Last 7 days","7 הימים האחרונים"
+"Last 30 days","30 הימים האחרונים"
+"Last 365 days","365 הימים האחרונים"
+"Mirasvit Extensions Validator","מאמת הרחבות Mirasvit"
+"Mirasvit Menu","תפריט Mirasvit"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,הרחבות
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","הרחבות Mirasvit"
+Developer,מפתח
+"Menu Settings","הגדרות תפריט"
+"Enable Mirasvit Menu","הפעל תפריט Mirasvit"
+"The menu is visible, if you have at least two active Mirasvit extensions.","התפריט גלוי אם יש לך לפחות שתי הרחבות Mirasvit פעילות."
+"Additional CSS Styles","סגנונות CSS נוספים"
+"AI Configuration","תצורת AI"
+"Modules using AI","מודולים המשתמשים ב-AI"
+"Enable AI features","הפעל תכונות AI"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","הפעל או השבת באופן גלובלי את כל התכונות המופעלות על ידי AI בהרחבות Mirasvit.<br>כאשר מושבת, כל פונקציונליות ה-AI לא תהיה זמינה ללא קשר להגדרות ספק בודדות או הגדרות AI במודולים אחרים."
+"Default AI provider","ספק AI ברירת מחדל"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","בחר את ספק ה-AI הראשי לשימוש כאשר מספר ספקים מוגדרים.<br>זה ישמש כספק גיבוי לכל פעולות ה-AI כאשר לא מתבקש ספק ספציפי."
+"Request timeout","זמן קצוב לבקשה"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","זמן מרבי בשניות להמתין לתגובות ספק AI.<br> השאר ריק כדי להשבית את הזמן הקצוב.<br> הגדרה זו תשפיע על כל תכונות ה-AI במודולים אחרים."
+"Maximum tokens per request","מספר טוקנים מרבי לבקשה"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","מספר הטוקנים המרבי ליצירה בבקשת AI בודדת. ערכים גבוהים יותר מאפשרים תגובות ארוכות יותר אך מגדילים עלויות.<br> השאר ריק כדי להשבית את המגבלה.<br> לספקים ולמודלים שונים יש מגבלות משלהם.<br> הגדרה זו תשפיע על כל תכונות ה-AI במודולים אחרים."
+"Default temperature","טמפרטורת ברירת מחדל"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","שולט באקראיות בתגובות AI. ערכים נמוכים יותר מייצרים תוצאות עקביות יותר, ערכים גבוהים יותר יצירתיים יותר.<br>דוגמה:<br><code>0.1</code> - תגובות עקביות מאוד ועובדתיות<br><code>0.7</code> - יצירתיות ועקביות מאוזנות<br><code>1.0</code> - תגובות יצירתיות ומגוונות מאוד.<br>אם ריק, תשמש טמפרטורת ברירת המחדל 0.7.<br>הגדרה זו תשפיע על כל תכונות ה-AI במודולים אחרים.<br>הרחבות מסוימות עשויות לדרוס הגדרה זו."
+"Debug mode","מצב ניפוי באגים"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","הפעל רישום מפורט של בקשות ותגובות AI לצורכי ניפוי באגים.<br>אזהרה: זה עשוי לרשום נתונים רגישים ולהשפיע על הביצועים. השתמש רק לפיתוח."
+"OpenAI Configuration","תצורת OpenAI"
+"Enable OpenAI provider","הפעל ספק OpenAI"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","הפעל את OpenAI כספק AI זמין. דורש תצורת מפתח API תקפה."
+"OpenAI API key","מפתח OpenAI API"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","מפתח ה-OpenAI API שלך שמתחיל ב-'sk-'. מפתח זה מוצפן ומאוחסן בצורה מאובטחת.<br>קבל את מפתח ה-API שלך מ: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","מודל OpenAI ברירת מחדל"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","בחר את מודל OpenAI ברירת המחדל לפעולות AI. למודלים שונים יש יכולות ועלויות שונות."
+"Claude Configuration","תצורת Claude"
+"Enable Claude provider","הפעל ספק Claude"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","הפעל את Anthropic Claude כספק AI זמין. דורש תצורת מפתח API תקפה."
+"Claude API key","מפתח Claude API"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","מפתח ה-Anthropic Claude API שלך שמתחיל ב-'sk-ant-'. מפתח זה מוצפן ומאוחסן בצורה מאובטחת.<br>קבל את מפתח ה-API שלך מ: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","מודל Claude ברירת מחדל"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","בחר את מודל Claude ברירת המחדל לפעולות AI. למודלים שונים יש יכולות ועלויות שונות."
+"Google Gemini Configuration","תצורת Google Gemini"
+"Enable Gemini provider","הפעל ספק Gemini"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","הפעל את Google Gemini כספק AI זמין. דורש תצורת מפתח API תקפה."
+"Gemini API key","מפתח Gemini API"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","מפתח ה-Google AI Studio API שלך שמתחיל ב-'AIza'. מפתח זה מוצפן ומאוחסן בצורה מאובטחת.<br>קבל את מפתח ה-API שלך מ: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","מודל Gemini ברירת מחדל"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","בחר את מודל Gemini ברירת המחדל לפעולות AI. למודלים שונים יש יכולות ועלויות שונות."
+"Determine visitor's country, city, and timezone based on their IP address.","קבע את המדינה, העיר ואזור הזמן של המבקר על סמך כתובת ה-IP שלו."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","נדרש חשבון <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind חינמי</a> לעדכונים אוטומטיים (נבדק שבועית)."
+"Used by:","בשימוש על ידי:"
+message,הודעה
+"Error downloading database: %1","שגיאה בהורדת מסד נתונים: %1"
+"MaxMind credentials not configured","פרטי ההתחברות של MaxMind לא הוגדרו"
+"Failed to download remote hash","נכשלה הורדת ה-hash המרוחק"
+"Database is up to date","מסד הנתונים מעודכן"
+"Failed to download and extract database","נכשלה הורדה וחילוץ מסד הנתונים"
+"Database updated successfully","מסד הנתונים עודכן בהצלחה"
+"Download failed: %1","ההורדה נכשלה: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","תוסף זה משתמש בנתוני GeoLite2 שנוצרו על ידי MaxMind."
+"Database available (auto-update enabled)","מסד נתונים זמין (עדכון אוטומטי מופעל)"
+"Database available (auto-update disabled)","מסד נתונים זמין (עדכון אוטומטי מושבת)"
+Configure,הגדר
+"Database not available","מסד נתונים לא זמין"
+"Database status:","סטטוס מסד נתונים:"
+"Not available","לא זמין"
+"Credentials configured. Click the button below to download the database.","פרטי ההתחברות הוגדרו. לחץ על הכפתור למטה להורדת מסד הנתונים."
+"Download database","הורד מסד נתונים"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","הזן פרטי התחברות MaxMind למעלה להפעלת הורדות אוטומטיות, או הרץ setup:upgrade להתקנת מסד הנתונים המצורף."
+"Available (auto-update disabled)","זמין (עדכון אוטומטי מושבת)"
+Version:,גרסה:
+Size:,גודל:
+"Enter MaxMind credentials above to enable automatic weekly updates.","הזן פרטי התחברות MaxMind למעלה להפעלת עדכונים שבועיים אוטומטיים."
+"Available (auto-update enabled)","זמין (עדכון אוטומטי מופעל)"
+"Update database","עדכן מסד נתונים"
+"Database updated successfully.","מסד הנתונים עודכן בהצלחה."
+Notice,הודעה
+"Database is up to date.","מסד הנתונים מעודכן."
+"An error occurred while downloading the database.","אירעה שגיאה בעת הורדת מסד הנתונים."
+"IP Geolocation","מיקום גאוגרפי לפי IP"
+"Account ID","מזהה חשבון"
+"License Key","מפתח רישיון"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">צור מפתח רישיון</a>"
+Cron,Cron
+Delete,מחק
+"Delete items","מחק פריטים"
+"Are you sure you want to delete selected items?","האם אתה בטוח שברצונך למחוק את הפריטים שנבחרו?"
+ID,ID
+Code,קוד
+Messages,הודעות
+Created,נוצר
+Scheduled,מתוזמן
+Finished,הסתיים

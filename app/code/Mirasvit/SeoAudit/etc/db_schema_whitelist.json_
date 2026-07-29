@@ -1,0 +1,96 @@
+{
+    "mst_seo_audit_job": {
+        "column": {
+            "job_id": true,
+            "status": true,
+            "message": true,
+            "created_at": true,
+            "started_at": true,
+            "finished_at": true,
+            "result_serialized": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mst_seo_audit_check_result": {
+        "column": {
+            "check_id": true,
+            "job_id": true,
+            "url_id": true,
+            "url_type": true,
+            "identifier": true,
+            "importance": true,
+            "result": true,
+            "value": true,
+            "message": true,
+            "created_at": true
+        },
+        "index": {
+            "MST_SEO_AUDIT_CHECK_RESULT_URL_ID_JOB_ID": true,
+            "MST_SEO_AUDIT_CHECK_RESULT_URL_TYPE_JOB_ID": true,
+            "MST_SEO_AUDIT_CHECK_RESULT_URL_TYPE_JOB_ID_RESULT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mst_seo_audit_check_result_aggregated": {
+        "column": {
+            "aggregated_id": true,
+            "job_id": true,
+            "identifier": true,
+            "total": true,
+            "error": true,
+            "warning": true,
+            "notice": true,
+        },
+        "index": {
+            "MST_SEO_AUDIT_CHECK_RESULT_AGGREGATED_AGGREGATED_ID": true,
+            "MST_SEO_AUDIT_CHECK_RESULT_AGGREGATED_JOB_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mst_seo_audit_url": {
+        "column": {
+            "url_id": true,
+            "parent_ids": true,
+            "job_id": true,
+            "url": true,
+            "url_hash": true,
+            "type": true,
+            "status": true,
+            "status_code": true,
+            "meta_title": true,
+            "meta_description": true,
+            "robots": true,
+            "canonical": true,
+            "content": true
+        },
+        "index": {
+            "MST_SEO_AUDIT_URL_TYPE": true,
+            "MST_SEO_AUDIT_URL_URL_HASH": true,
+            "MST_SEO_AUDIT_URL_JOB_ID": true,
+            "MST_SEO_AUDIT_URL_STATUS": true,
+            "MST_SEO_AUDIT_URL_JOB_ID_STATUS_CODE": true,
+            "MST_SEO_AUDIT_URL_JOB_ID_STATUS_CODE_TYPE": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mst_seo_audit_url_parent": {
+        "column": {
+            "url_id": true,
+            "parent_url_id": true
+        },
+        "index": {
+            "MST_SEO_AUDIT_URL_PARENT_PARENT_URL_ID": true
+        },
+        "constraint": {
+            "MST_SEO_AUDIT_URL_PARENT_URL_ID_PARENT_URL_ID": true
+        }
+    }
+}

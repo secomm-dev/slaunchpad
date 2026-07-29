@@ -1,0 +1,16 @@
+<div id="mst_dash_separator_message" style="display: none;">
+    <div class="message message-warning warning">
+        <div><?= $escaper->escapeHtml(__("Using the hyphen as a word separator has limitations.")); ?></div>
+    </div>
+    <div class="example">
+        <p><?= $escaper->escapeHtml(__('Since the hyphen is used as an option separator, aliases like: "weight-height" and single "weight" may not be recognized correctly by the SEO filter route handler.')); ?></p>
+    </div>
+</div>
+
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Mirasvit_SeoFilter/js/dash-separator": {}
+        }
+    }
+</script>

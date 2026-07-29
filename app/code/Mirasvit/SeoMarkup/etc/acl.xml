@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::marketing">
+                    <resource id="Mirasvit_Seo::seo">
+                        <resource id="Mirasvit_SeoMarkup::seomarkup" title="SEO Markup" sortOrder="800">
+                            <resource id="Mirasvit_SeoMarkup::seomarkup_extender" title="Extender" sortOrder="10"/>
+                        </resource>
+                    </resource>
+                </resource>
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Mirasvit_SeoMarkup::config_seo_markup" title="Mirasvit Rich snippets and Opengraph" sortOrder="1000"/>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

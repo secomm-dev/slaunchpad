@@ -1,0 +1,20 @@
+{
+    "mst_reach_snippet_extender": {
+        "column": {
+            "extender_id": true,
+            "name": true,
+            "is_active": true,
+            "entity_type_id": true,
+            "store_ids": true,
+            "snippet": true,
+            "override": true,
+            "conditions_serialized": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "index": {
+            "MST_REACH_SNIPPET_EXTENDER_IS_ACTIVE": true
+        }
+    }
+}

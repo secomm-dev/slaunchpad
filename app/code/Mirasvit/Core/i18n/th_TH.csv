@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","บริการ %1 ไม่ได้กำหนดค่าอย่างถูกต้องหรือไม่พร้อมใช้งาน"
+"Invalid AI request data","ข้อมูลคำขอ AI ไม่ถูกต้อง"
+"Request prompt cannot be empty","พรอมต์คำขอต้องไม่ว่างเปล่า"
+"Claude API error","ข้อผิดพลาด Claude API"
+"Invalid Claude API response: missing content","การตอบกลับ Claude API ไม่ถูกต้อง: ไม่มีเนื้อหา"
+"Empty content received from Claude API","ได้รับเนื้อหาว่างเปล่าจาก Claude API"
+"Gemini API error","ข้อผิดพลาด Gemini API"
+"Invalid Gemini API response: missing candidates","การตอบกลับ Gemini API ไม่ถูกต้อง: ไม่มีผู้สมัคร"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","การตอบกลับ Gemini API ถูกตัดทอนเนื่องจากถึงขีดจำกัด max_tokens พิจารณาเพิ่มการตั้งค่า max_tokens หรือใช้พรอมต์ที่สั้นกว่า"
+"Empty content received from Gemini API","ได้รับเนื้อหาว่างเปล่าจาก Gemini API"
+"AI services are disabled in configuration","บริการ AI ถูกปิดใช้งานในการกำหนดค่า"
+"No default AI provider configured","ไม่ได้กำหนดค่าผู้ให้บริการ AI เริ่มต้น"
+"No available AI provider for request validation","ไม่มีผู้ให้บริการ AI สำหรับการตรวจสอบคำขอ"
+"Request validation failed: %1","การตรวจสอบคำขอล้มเหลว: %1"
+"All AI providers failed. Last error: %1","ผู้ให้บริการ AI ทั้งหมดล้มเหลว ข้อผิดพลาดล่าสุด: %1"
+"Unsupported AI provider: %1. Supported providers: %2","ผู้ให้บริการ AI ที่ไม่รองรับ: %1 ผู้ให้บริการที่รองรับ: %2"
+"Service class %1 must extend %2","คลาสบริการ %1 ต้องขยาย %2"
+"Failed to create AI service for provider %1: %2","ไม่สามารถสร้างบริการ AI สำหรับผู้ให้บริการ %1: %2"
+"Not configured","ไม่ได้กำหนดค่า"
+Unknown,ไม่ทราบ
+"Unknown API error","ข้อผิดพลาด API ที่ไม่รู้จัก"
+"Temperature must be between 0 and 2","อุณหภูมิต้องอยู่ระหว่าง 0 ถึง 2"
+"Max tokens must be greater than 0","จำนวนโทเค็นสูงสุดต้องมากกว่า 0"
+"Frequency penalty must be between -2 and 2","ค่าปรับความถี่ต้องอยู่ระหว่าง -2 ถึง 2"
+"Format output as JSON.","จัดรูปแบบเอาต์พุตเป็น JSON"
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API ส่งคืนการตอบกลับที่ไม่สมบูรณ์เนื่องจากจำนวนโทเค็นของหน้าต่างบริบทของโมเดลเกินขีดจำกัด"
+"OpenAI API returned no content in the response.","OpenAI API ไม่ส่งคืนเนื้อหาในการตอบกลับ"
+"Not Installed","ไม่ได้ติดตั้ง"
+"A total of %1 record(s) have been deleted.","รวม %1 รายการถูกลบแล้ว"
+"The record has been removed.","รายการถูกลบแล้ว"
+"Disallowed file type.","ประเภทไฟล์ที่ไม่อนุญาต"
+"Can't remove folder %s","ไม่สามารถลบโฟลเดอร์ %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","ส่วนขยายไม่มีไฟล์ที่จำเป็นทั้งหมด กรุณาติดตั้งส่วนขยายใหม่จากแพ็คเกจต้นฉบับ"
+"Extension Information","ข้อมูลส่วนขยาย"
+Status,สถานะ
+Other,อื่นๆ
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron สำหรับ Magento ไม่ทำงาน เพื่อตั้งค่างาน cron ให้ทำตามลิงก์ %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","งาน Cron [%1] ไม่ทำงาน กรุณาตรวจสอบตาราง %2 สำหรับงานที่ค้างและลบออก"
+Remove,ลบ
+Error,ข้อผิดพลาด
+Missed,พลาด
+Running,กำลังทำงาน
+Pending,รอดำเนินการ
+Success,สำเร็จ
+"Server gmt time","เวลา GMT ของเซิร์ฟเวอร์"
+"Last job","งานล่าสุด"
+Executed,ดำเนินการแล้ว
+none,ไม่มี
+"Cron setup","การตั้งค่า Cron"
+"Cron Jobs","งาน Cron"
+"No AI-enabled modules are currently active.","ขณะนี้ไม่มีโมดูลที่เปิดใช้งาน AI"
+"%1 module(s) using AI functionality:","%1 โมดูลใช้ฟังก์ชัน AI:"
+Provider:,ผู้ให้บริการ:
+ai_provider,ai_provider
+"You have the latest version","คุณมีเวอร์ชันล่าสุดแล้ว"
+"New version %1 is available","เวอร์ชันใหม่ %1 พร้อมใช้งาน"
+"View %1 details (opens in new window)","ดูรายละเอียด %1 (เปิดในหน้าต่างใหม่)"
+Details,รายละเอียด
+"View %1 user guide (opens in new window)","ดูคู่มือผู้ใช้ %1 (เปิดในหน้าต่างใหม่)"
+"User Guide","คู่มือผู้ใช้"
+"View %1 changelog (opens in new window)","ดูบันทึกการเปลี่ยนแปลง %1 (เปิดในหน้าต่างใหม่)"
+Changelog,บันทึกการเปลี่ยนแปลง
+"Request new feature for %1 (opens in new window)","ขอฟีเจอร์ใหม่สำหรับ %1 (เปิดในหน้าต่างใหม่)"
+"Request New Feature","ขอฟีเจอร์ใหม่"
+"Installed Extensions","ส่วนขยายที่ติดตั้ง"
+"Check changes","ตรวจสอบการเปลี่ยนแปลง"
+"Validate All Extensions","ตรวจสอบส่วนขยายทั้งหมด"
+"Suggest Improvement","แนะนำการปรับปรุง"
+"%1 (opens in new window)","%1 (เปิดในหน้าต่างใหม่)"
+"More Details","รายละเอียดเพิ่มเติม"
+"Developer settings","การตั้งค่านักพัฒนา"
+"AI Provider Status","สถานะผู้ให้บริการ AI"
+"No AI providers are currently enabled. Please configure AI providers in %1.","ขณะนี้ไม่มีผู้ให้บริการ AI ที่เปิดใช้งาน กรุณากำหนดค่าผู้ให้บริการ AI ใน %1"
+"%1 of %2 providers enabled. You can manage providers in %3.","เปิดใช้งาน %1 จาก %2 ผู้ให้บริการ คุณสามารถจัดการผู้ให้บริการใน %3"
+Enabled,เปิดใช้งาน
+Disabled,ปิดใช้งาน
+"All tests have been passed","ผ่านการทดสอบทั้งหมดแล้ว"
+Module,โมดูล
+Test,ทดสอบ
+"How to fix","วิธีแก้ไข"
+Warning,คำเตือน
+Info,ข้อมูล
+Failed,ล้มเหลว
+Today,วันนี้
+"Last 7 days","7 วันล่าสุด"
+"Last 30 days","30 วันล่าสุด"
+"Last 365 days","365 วันล่าสุด"
+"Mirasvit Extensions Validator","ตัวตรวจสอบส่วนขยาย Mirasvit"
+"Mirasvit Menu","เมนู Mirasvit"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,ส่วนขยาย
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","ส่วนขยาย Mirasvit"
+Developer,นักพัฒนา
+"Menu Settings","การตั้งค่าเมนู"
+"Enable Mirasvit Menu","เปิดใช้งานเมนู Mirasvit"
+"The menu is visible, if you have at least two active Mirasvit extensions.","เมนูจะแสดงหากคุณมีส่วนขยาย Mirasvit ที่ใช้งานอยู่อย่างน้อยสองรายการ"
+"Additional CSS Styles","สไตล์ CSS เพิ่มเติม"
+"AI Configuration","การกำหนดค่า AI"
+"Modules using AI","โมดูลที่ใช้ AI"
+"Enable AI features","เปิดใช้งานฟีเจอร์ AI"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","เปิดหรือปิดใช้งานฟีเจอร์ที่ขับเคลื่อนด้วย AI ทั่วโลกในส่วนขยาย Mirasvit<br>เมื่อปิดใช้งาน ฟังก์ชัน AI ทั้งหมดจะไม่พร้อมใช้งานโดยไม่คำนึงถึงการตั้งค่าผู้ให้บริการแต่ละรายหรือการตั้งค่า AI ในโมดูลอื่น"
+"Default AI provider","ผู้ให้บริการ AI เริ่มต้น"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","เลือกผู้ให้บริการ AI หลักที่จะใช้เมื่อกำหนดค่าผู้ให้บริการหลายราย<br>จะใช้เป็นผู้ให้บริการสำรองสำหรับการดำเนินการ AI ทั้งหมดเมื่อไม่มีการร้องขอผู้ให้บริการเฉพาะ"
+"Request timeout","หมดเวลาคำขอ"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","เวลาสูงสุดเป็นวินาทีที่จะรอการตอบกลับจากผู้ให้บริการ AI<br> ปล่อยว่างเพื่อปิดใช้งานการหมดเวลา<br> การตั้งค่านี้จะมีผลต่อฟีเจอร์ AI ทั้งหมดในโมดูลอื่น"
+"Maximum tokens per request","จำนวนโทเค็นสูงสุดต่อคำขอ"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","จำนวนโทเค็นสูงสุดที่จะสร้างในคำขอ AI เดียว ค่าที่สูงขึ้นช่วยให้ตอบกลับได้ยาวขึ้นแต่เพิ่มค่าใช้จ่าย<br> ปล่อยว่างเพื่อปิดใช้งานการจำกัด<br> ผู้ให้บริการและโมเดลต่างๆ มีขีดจำกัดของตัวเอง<br> การตั้งค่านี้จะมีผลต่อฟีเจอร์ AI ทั้งหมดในโมดูลอื่น"
+"Default temperature","อุณหภูมิเริ่มต้น"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","ควบคุมความสุ่มในการตอบกลับ AI ค่าที่ต่ำกว่าให้ผลลัพธ์ที่สม่ำเสมอมากขึ้น ค่าที่สูงกว่าให้ความสร้างสรรค์มากขึ้น<br>ตัวอย่าง:<br><code>0.1</code> - การตอบกลับที่สม่ำเสมอมาก ตามข้อเท็จจริง<br><code>0.7</code> - ความสร้างสรรค์และความสม่ำเสมอที่สมดุล<br><code>1.0</code> - การตอบกลับที่สร้างสรรค์และหลากหลายมาก<br>หากว่างเปล่า จะใช้อุณหภูมิเริ่มต้น 0.7<br>การตั้งค่านี้จะมีผลต่อฟีเจอร์ AI ทั้งหมดในโมดูลอื่น<br>ส่วนขยายบางตัวอาจแทนที่การตั้งค่านี้"
+"Debug mode","โหมดดีบัก"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","เปิดใช้งานการบันทึกรายละเอียดของคำขอและการตอบกลับ AI สำหรับวัตถุประสงค์ในการดีบัก<br>คำเตือน: อาจบันทึกข้อมูลที่ละเอียดอ่อนและส่งผลกระทบต่อประสิทธิภาพ ใช้สำหรับการพัฒนาเท่านั้น"
+"OpenAI Configuration","การกำหนดค่า OpenAI"
+"Enable OpenAI provider","เปิดใช้งานผู้ให้บริการ OpenAI"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","เปิดใช้งาน OpenAI เป็นผู้ให้บริการ AI ที่พร้อมใช้งาน ต้องมีการกำหนดค่าคีย์ API ที่ถูกต้อง"
+"OpenAI API key","คีย์ API OpenAI"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","คีย์ API OpenAI ของคุณที่ขึ้นต้นด้วย 'sk-' คีย์นี้ถูกเข้ารหัสและจัดเก็บอย่างปลอดภัย<br>รับคีย์ API ของคุณจาก: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","โมเดล OpenAI เริ่มต้น"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","เลือกโมเดล OpenAI เริ่มต้นสำหรับการดำเนินการ AI โมเดลต่างๆ มีความสามารถและค่าใช้จ่ายที่แตกต่างกัน"
+"Claude Configuration","การกำหนดค่า Claude"
+"Enable Claude provider","เปิดใช้งานผู้ให้บริการ Claude"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","เปิดใช้งาน Anthropic Claude เป็นผู้ให้บริการ AI ที่พร้อมใช้งาน ต้องมีการกำหนดค่าคีย์ API ที่ถูกต้อง"
+"Claude API key","คีย์ API Claude"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","คีย์ API Anthropic Claude ของคุณที่ขึ้นต้นด้วย 'sk-ant-' คีย์นี้ถูกเข้ารหัสและจัดเก็บอย่างปลอดภัย<br>รับคีย์ API ของคุณจาก: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","โมเดล Claude เริ่มต้น"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","เลือกโมเดล Claude เริ่มต้นสำหรับการดำเนินการ AI โมเดลต่างๆ มีความสามารถและค่าใช้จ่ายที่แตกต่างกัน"
+"Google Gemini Configuration","การกำหนดค่า Google Gemini"
+"Enable Gemini provider","เปิดใช้งานผู้ให้บริการ Gemini"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","เปิดใช้งาน Google Gemini เป็นผู้ให้บริการ AI ที่พร้อมใช้งาน ต้องมีการกำหนดค่าคีย์ API ที่ถูกต้อง"
+"Gemini API key","คีย์ API Gemini"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","คีย์ API Google AI Studio ของคุณที่ขึ้นต้นด้วย 'AIza' คีย์นี้ถูกเข้ารหัสและจัดเก็บอย่างปลอดภัย<br>รับคีย์ API ของคุณจาก: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","โมเดล Gemini เริ่มต้น"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","เลือกโมเดล Gemini เริ่มต้นสำหรับการดำเนินการ AI โมเดลต่างๆ มีความสามารถและค่าใช้จ่ายที่แตกต่างกัน"
+"Determine visitor's country, city, and timezone based on their IP address.","ระบุประเทศ เมือง และเขตเวลาของผู้เยี่ยมชมตามที่อยู่ IP ของพวกเขา"
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","ต้องมีบัญชี <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind ฟรี</a>สำหรับการอัปเดตอัตโนมัติ (ตรวจสอบทุกสัปดาห์)"
+"Used by:","ใช้โดย:"
+message,ข้อความ
+"Error downloading database: %1","เกิดข้อผิดพลาดในการดาวน์โหลดฐานข้อมูล: %1"
+"MaxMind credentials not configured","ยังไม่ได้กำหนดค่าข้อมูลรับรอง MaxMind"
+"Failed to download remote hash","ดาวน์โหลด remote hash ไม่สำเร็จ"
+"Database is up to date","ฐานข้อมูลเป็นเวอร์ชันล่าสุด"
+"Failed to download and extract database","ดาวน์โหลดและแตกไฟล์ฐานข้อมูลไม่สำเร็จ"
+"Database updated successfully","อัปเดตฐานข้อมูลสำเร็จ"
+"Download failed: %1","ดาวน์โหลดล้มเหลว: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","ส่วนขยายนี้ใช้ข้อมูล GeoLite2 ที่สร้างโดย MaxMind"
+"Database available (auto-update enabled)","ฐานข้อมูลพร้อมใช้งาน (เปิดใช้งานการอัปเดตอัตโนมัติ)"
+"Database available (auto-update disabled)","ฐานข้อมูลพร้อมใช้งาน (ปิดใช้งานการอัปเดตอัตโนมัติ)"
+Configure,กำหนดค่า
+"Database not available","ฐานข้อมูลไม่พร้อมใช้งาน"
+"Database status:","สถานะฐานข้อมูล:"
+"Not available","ไม่พร้อมใช้งาน"
+"Credentials configured. Click the button below to download the database.","กำหนดค่าข้อมูลรับรองแล้ว คลิกปุ่มด้านล่างเพื่อดาวน์โหลดฐานข้อมูล"
+"Download database","ดาวน์โหลดฐานข้อมูล"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","กรอกข้อมูลรับรอง MaxMind ด้านบนเพื่อเปิดใช้งานการดาวน์โหลดอัตโนมัติ หรือเรียกใช้ setup:upgrade เพื่อติดตั้งฐานข้อมูลที่รวมมา"
+"Available (auto-update disabled)","พร้อมใช้งาน (ปิดใช้งานการอัปเดตอัตโนมัติ)"
+Version:,เวอร์ชัน:
+Size:,ขนาด:
+"Enter MaxMind credentials above to enable automatic weekly updates.","กรอกข้อมูลรับรอง MaxMind ด้านบนเพื่อเปิดใช้งานการอัปเดตอัตโนมัติรายสัปดาห์"
+"Available (auto-update enabled)","พร้อมใช้งาน (เปิดใช้งานการอัปเดตอัตโนมัติ)"
+"Update database","อัปเดตฐานข้อมูล"
+"Database updated successfully.","อัปเดตฐานข้อมูลสำเร็จ"
+Notice,แจ้งเตือน
+"Database is up to date.","ฐานข้อมูลเป็นเวอร์ชันล่าสุด"
+"An error occurred while downloading the database.","เกิดข้อผิดพลาดขณะดาวน์โหลดฐานข้อมูล"
+"IP Geolocation","ตำแหน่งทางภูมิศาสตร์ IP"
+"Account ID","ID บัญชี"
+"License Key","คีย์ใบอนุญาต"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">สร้างคีย์ใบอนุญาต</a>"
+Cron,Cron
+Delete,ลบ
+"Delete items","ลบรายการ"
+"Are you sure you want to delete selected items?","คุณแน่ใจหรือไม่ว่าต้องการลบรายการที่เลือก?"
+ID,ID
+Code,รหัส
+Messages,ข้อความ
+Created,สร้างแล้ว
+Scheduled,กำหนดเวลาแล้ว
+Finished,เสร็จสิ้น

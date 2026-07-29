@@ -1,0 +1,4 @@
+redirect_id,url_from,url_to,redirect_type,is_redirect_only_error_page,comments,is_active,store_id
+1,old,new,301,0,redirect,1,0
+2,old1,new1,302,1,"redirect, redirect1",1,1
+3,old2,new2,307,1,redirect2,0,0

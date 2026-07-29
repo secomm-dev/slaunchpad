@@ -1,0 +1,18 @@
+<?php
+
+use Mirasvit\Core\Service\CspService;
+
+/** @var \Magento\Backend\Block\Template $block */
+
+$nonce = CspService::getNonce();
+
+?>
+<script<?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?>>
+    require([
+        'jquery'
+    ], function ($) {
+        $(document).ready(function () {
+            $('a[href*="https://mirasvit.com/magento-2-extensions.html"]').attr('target', '_blank');
+        });
+    });
+</script>

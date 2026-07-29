@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1-palvelua ei ole määritetty oikein tai se ei ole käytettävissä"
+"Invalid AI request data","Virheelliset tekoälypyynnön tiedot"
+"Request prompt cannot be empty","Pyynnön kehote ei voi olla tyhjä"
+"Claude API error","Claude API -virhe"
+"Invalid Claude API response: missing content","Virheellinen Claude API -vastaus: sisältö puuttuu"
+"Empty content received from Claude API","Tyhjä sisältö vastaanotettu Claude API:sta"
+"Gemini API error","Gemini API -virhe"
+"Invalid Gemini API response: missing candidates","Virheellinen Gemini API -vastaus: ehdokkaat puuttuvat"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Gemini API -vastaus katkaistiin, koska max_tokens-raja saavutettiin. Harkitse max_tokens-asetuksen kasvattamista tai lyhyemmän kehotteen käyttämistä."
+"Empty content received from Gemini API","Tyhjä sisältö vastaanotettu Gemini API:sta"
+"AI services are disabled in configuration","Tekoälypalvelut on poistettu käytöstä määrityksissä"
+"No default AI provider configured","Oletustekoälypalveluntarjoajaa ei ole määritetty"
+"No available AI provider for request validation","Pyynnön validointiin ei ole käytettävissä tekoälypalveluntarjoajaa"
+"Request validation failed: %1","Pyynnön validointi epäonnistui: %1"
+"All AI providers failed. Last error: %1","Kaikki tekoälypalveluntarjoajat epäonnistuivat. Viimeinen virhe: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Ei-tuettu tekoälypalveluntarjoaja: %1. Tuetut palveluntarjoajat: %2"
+"Service class %1 must extend %2","Palveluluokan %1 on laajennettava %2"
+"Failed to create AI service for provider %1: %2","Tekoälypalvelun luominen palveluntarjoajalle %1 epäonnistui: %2"
+"Not configured","Ei määritetty"
+Unknown,Tuntematon
+"Unknown API error","Tuntematon API-virhe"
+"Temperature must be between 0 and 2","Lämpötilan on oltava välillä 0–2"
+"Max tokens must be greater than 0","Tokenien enimmäismäärän on oltava suurempi kuin 0"
+"Frequency penalty must be between -2 and 2","Toistosakkoa on oltava välillä -2 ja 2"
+"Format output as JSON.","Muotoile tulostus JSON-muotoon."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API palautti epätäydellisen vastauksen, koska mallin konteksti-ikkunan tokenien määrä ylittyi."
+"OpenAI API returned no content in the response.","OpenAI API ei palauttanut sisältöä vastauksessa."
+"Not Installed","Ei asennettu"
+"A total of %1 record(s) have been deleted.","Yhteensä %1 tietue(tta) on poistettu."
+"The record has been removed.","Tietue on poistettu."
+"Disallowed file type.","Kielletty tiedostotyyppi."
+"Can't remove folder %s","Kansiota %s ei voi poistaa"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Laajennus ei sisällä kaikkia tarvittavia tiedostoja. Asenna laajennus uudelleen alkuperäisestä paketista."
+"Extension Information","Laajennustiedot"
+Status,Tila
+Other,Muu
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron Magentolle ei ole käynnissä. Määritä cron-tehtävä seuraamalla linkkiä %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron-tehtävät [%1] eivät ole käynnissä. Tarkista taulukko %2 jähmettyneiden tehtävien varalta ja poista ne."
+Remove,Poista
+Error,Virhe
+Missed,Ohitettu
+Running,Käynnissä
+Pending,Odottaa
+Success,Onnistui
+"Server gmt time","Palvelimen GMT-aika"
+"Last job","Viimeisin tehtävä"
+Executed,Suoritettu
+none,ei mitään
+"Cron setup","Cron-määritys"
+"Cron Jobs","Cron-tehtävät"
+"No AI-enabled modules are currently active.","Yhtään tekoälytoiminnolla varustettua moduulia ei ole tällä hetkellä aktiivisena."
+"%1 module(s) using AI functionality:","%1 moduuli(a) käyttää tekoälytoimintoja:"
+Provider:,Palveluntarjoaja:
+ai_provider,ai_provider
+"You have the latest version","Sinulla on uusin versio"
+"New version %1 is available","Uusi versio %1 on saatavilla"
+"View %1 details (opens in new window)","Näytä %1-tiedot (avautuu uuteen ikkunaan)"
+Details,Tiedot
+"View %1 user guide (opens in new window)","Näytä %1-käyttöopas (avautuu uuteen ikkunaan)"
+"User Guide","Käyttöopas"
+"View %1 changelog (opens in new window)","Näytä %1-muutosloki (avautuu uuteen ikkunaan)"
+Changelog,Muutosloki
+"Request new feature for %1 (opens in new window)","Pyydä uutta ominaisuutta %1:lle (avautuu uuteen ikkunaan)"
+"Request New Feature","Pyydä uutta ominaisuutta"
+"Installed Extensions","Asennetut laajennukset"
+"Check changes","Tarkista muutokset"
+"Validate All Extensions","Validoi kaikki laajennukset"
+"Suggest Improvement","Ehdota parannusta"
+"%1 (opens in new window)","%1 (avautuu uuteen ikkunaan)"
+"More Details","Lisätietoja"
+"Developer settings","Kehittäjäasetukset"
+"AI Provider Status","Tekoälypalveluntarjoajan tila"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Yhtään tekoälypalveluntarjoajaa ei ole tällä hetkellä käytössä. Määritä tekoälypalveluntarjoajat kohdassa %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1/%2 palveluntarjoajaa käytössä. Voit hallita palveluntarjoajia kohdassa %3."
+Enabled,Käytössä
+Disabled,Pois käytöstä
+"All tests have been passed","Kaikki testit läpäisty"
+Module,Moduuli
+Test,Testi
+"How to fix","Korjausohjeet"
+Warning,Varoitus
+Info,Tiedot
+Failed,Epäonnistui
+Today,Tänään
+"Last 7 days","Viimeiset 7 päivää"
+"Last 30 days","Viimeiset 30 päivää"
+"Last 365 days","Viimeiset 365 päivää"
+"Mirasvit Extensions Validator","Mirasvit-laajennusten validoija"
+"Mirasvit Menu","Mirasvit-valikko"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Laajennukset
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit-laajennukset"
+Developer,Kehittäjä
+"Menu Settings","Valikkoasetukset"
+"Enable Mirasvit Menu","Ota Mirasvit-valikko käyttöön"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Valikko näkyy, jos sinulla on vähintään kaksi aktiivista Mirasvit-laajennusta."
+"Additional CSS Styles","Lisä-CSS-tyylit"
+"AI Configuration","Tekoälymääritykset"
+"Modules using AI","Tekoälyä käyttävät moduulit"
+"Enable AI features","Ota tekoälyominaisuudet käyttöön"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Ota käyttöön tai poista käytöstä kaikki tekoälypohjaiset ominaisuudet Mirasvit-laajennuksissa.<br>Kun poistettu käytöstä, kaikki tekoälytoiminnot ovat käyttämättömissä riippumatta yksittäisten palveluntarjoajien asetuksista tai tekoälyasetuksista muissa moduuleissa."
+"Default AI provider","Oletustekoälypalveluntarjoaja"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Valitse ensisijainen tekoälypalveluntarjoaja käytettäväksi, kun useita palveluntarjoajia on määritetty.<br>Tätä käytetään varapalveluntarjoajana kaikissa tekoälyoperaatioissa, kun tiettyä palveluntarjoajaa ei ole pyydetty."
+"Request timeout","Pyynnön aikakatkaisu"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Enimmäisaika sekunteina tekoälypalveluntarjoajan vastausten odottamiseen.<br> Jätä tyhjäksi aikakatkaisun poistamiseksi käytöstä.<br> Tämä asetus vaikuttaa kaikkiin tekoälyominaisuuksiin muissa moduuleissa."
+"Maximum tokens per request","Tokenien enimmäismäärä per pyyntö"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Yhdessä tekoälypyynnössä generoitavien tokenien enimmäismäärä. Suuremmat arvot mahdollistavat pidemmät vastaukset, mutta kasvattavat kustannuksia.<br> Jätä tyhjäksi rajoituksen poistamiseksi käytöstä.<br> Eri palveluntarjoajilla ja malleilla on omat rajansa.<br> Tämä asetus vaikuttaa kaikkiin tekoälyominaisuuksiin muissa moduuleissa."
+"Default temperature","Oletuslämpötila"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Hallitsee satunnaisuutta tekoälyvastauksissa. Pienemmät arvot tuottavat johdonmukaisempia tuloksia, suuremmat arvot luovempia.<br>Esimerkki:<br><code>0.1</code> - erittäin johdonmukaiset, tosiasioihin perustuvat vastaukset<br><code>0.7</code> - tasapainotettu luovuus ja johdonmukaisuus<br><code>1.0</code> - erittäin luovat ja vaihtelevat vastaukset.<br>Jos tyhjä, käytetään oletuslämpötilaa 0.7.<br>Tämä asetus vaikuttaa kaikkiin tekoälyominaisuuksiin muissa moduuleissa.<br>Jotkut laajennukset saattavat ohittaa tämän asetuksen."
+"Debug mode","Virheenkorjaustila"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Ota käyttöön tekoälypyyntöjen ja -vastausten yksityiskohtainen lokitus virheenkorjaustarkoituksiin.<br>Varoitus: Tämä saattaa kirjata arkaluontoisia tietoja ja vaikuttaa suorituskykyyn. Käytä vain kehityksessä."
+"OpenAI Configuration","OpenAI-määritykset"
+"Enable OpenAI provider","Ota OpenAI-palveluntarjoaja käyttöön"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Ota OpenAI käyttöön saatavilla olevana tekoälypalveluntarjoajana. Vaatii voimassa olevan API-avaimen määrityksen."
+"OpenAI API key","OpenAI API -avain"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","OpenAI API -avaimesi, joka alkaa 'sk-'. Tämä avain on salattu ja tallennettu turvallisesti.<br>Hanki API-avaimesi täältä: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Oletus-OpenAI-malli"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Valitse oletus-OpenAI-malli tekoälyoperaatioille. Eri malleilla on erilaiset ominaisuudet ja kustannukset."
+"Claude Configuration","Claude-määritykset"
+"Enable Claude provider","Ota Claude-palveluntarjoaja käyttöön"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Ota Anthropic Claude käyttöön saatavilla olevana tekoälypalveluntarjoajana. Vaatii voimassa olevan API-avaimen määrityksen."
+"Claude API key","Claude API -avain"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Anthropic Claude API -avaimesi, joka alkaa 'sk-ant-'. Tämä avain on salattu ja tallennettu turvallisesti.<br>Hanki API-avaimesi täältä: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Oletus-Claude-malli"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Valitse oletus-Claude-malli tekoälyoperaatioille. Eri malleilla on erilaiset ominaisuudet ja kustannukset."
+"Google Gemini Configuration","Google Gemini -määritykset"
+"Enable Gemini provider","Ota Gemini-palveluntarjoaja käyttöön"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Ota Google Gemini käyttöön saatavilla olevana tekoälypalveluntarjoajana. Vaatii voimassa olevan API-avaimen määrityksen."
+"Gemini API key","Gemini API -avain"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Google AI Studio API -avaimesi, joka alkaa 'AIza'. Tämä avain on salattu ja tallennettu turvallisesti.<br>Hanki API-avaimesi täältä: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Oletus-Gemini-malli"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Valitse oletus-Gemini-malli tekoälyoperaatioille. Eri malleilla on erilaiset ominaisuudet ja kustannukset."
+"Determine visitor's country, city, and timezone based on their IP address.","Määritä vierailijan maa, kaupunki ja aikavyöhyke IP-osoitteen perusteella."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Ilmainen <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind-tili</a> vaaditaan automaattisiin päivityksiin (tarkistetaan viikoittain)."
+"Used by:","Käyttäjät:"
+message,viesti
+"Error downloading database: %1","Virhe tietokannan latauksessa: %1"
+"MaxMind credentials not configured","MaxMind-tunnistetietoja ei ole määritetty"
+"Failed to download remote hash","Etätiivisteen lataus epäonnistui"
+"Database is up to date","Tietokanta on ajan tasalla"
+"Failed to download and extract database","Tietokannan lataus ja purkaminen epäonnistui"
+"Database updated successfully","Tietokanta päivitetty onnistuneesti"
+"Download failed: %1","Lataus epäonnistui: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Tämä laajennus käyttää MaxMindin luomia GeoLite2-tietoja."
+"Database available (auto-update enabled)","Tietokanta saatavilla (automaattinen päivitys käytössä)"
+"Database available (auto-update disabled)","Tietokanta saatavilla (automaattinen päivitys pois käytöstä)"
+Configure,Määritä
+"Database not available","Tietokanta ei ole saatavilla"
+"Database status:","Tietokannan tila:"
+"Not available","Ei saatavilla"
+"Credentials configured. Click the button below to download the database.","Tunnistetiedot määritetty. Napsauta alla olevaa painiketta ladataksesi tietokannan."
+"Download database","Lataa tietokanta"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Syötä MaxMind-tunnistetiedot yllä ottaaksesi automaattiset lataukset käyttöön, tai suorita setup:upgrade asentaaksesi mukana tulevan tietokannan."
+"Available (auto-update disabled)","Saatavilla (automaattinen päivitys pois käytöstä)"
+Version:,Versio:
+Size:,Koko:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Syötä MaxMind-tunnistetiedot yllä ottaaksesi automaattiset viikoittaiset päivitykset käyttöön."
+"Available (auto-update enabled)","Saatavilla (automaattinen päivitys käytössä)"
+"Update database","Päivitä tietokanta"
+"Database updated successfully.","Tietokanta päivitetty onnistuneesti."
+Notice,Ilmoitus
+"Database is up to date.","Tietokanta on ajan tasalla."
+"An error occurred while downloading the database.","Tietokannan latauksessa tapahtui virhe."
+"IP Geolocation","IP-paikannus"
+"Account ID","Tilin tunnus"
+"License Key","Lisenssiavain"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Luo lisenssiavain</a>"
+Cron,Cron
+Delete,Poista
+"Delete items","Poista kohteet"
+"Are you sure you want to delete selected items?","Haluatko varmasti poistaa valitut kohteet?"
+ID,ID
+Code,Koodi
+Messages,Viestit
+Created,Luotu
+Scheduled,Ajastettu
+Finished,Valmis

@@ -1,0 +1,83 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/** @var $block \Mirasvit\SeoFilter\Block\Adminhtml\Group\GroupStoreAliases  */
+
+$aliases = $block->getAliases();
+
+if (empty($aliases)) {
+    return;
+}
+
+?>
+
+<fieldset class="admin__fieldset fieldset fieldset__groups">
+    <div class="admin__field">
+        <div class="admin__field-label" data-bind="visible: $data.labelVisible">
+            <label data-bind="attr: {for: uid}" for="attribute-labels-table">
+                <span data-bind="attr: {'data-config-scope': $data.scopeLabel}, i18n: label"><?= $block->escapeHtml(__('Seo Friendly Urls')) ?></span>
+            </label>
+        </div>
+        <div class="admin__field-control admin__control-table-wrapper">
+            <table class="admin__control-table" id="attribute-labels-table">
+                <thead>
+                <tr>
+                    <?php foreach ($block->getStores() as $_store): ?>
+                        <th class="col-store-view">
+                            <div class="admin__field">
+                                <div class="admin__field-label" data-bind="visible: $data.labelVisible" style="text-align: left;">
+                                    <label data-bind="attr: {for: uid}" for="title[<?= $block->escapeHtmlAttr($_store->getId()) ?>]">
+                                        <span data-bind="attr: {'data-config-scope': $data.scopeLabel}, i18n: label"><?= $block->escapeHtml($_store->getName()) ?></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </th>
+                    <?php endforeach; ?>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <?php foreach ($block->getStores() as $_store): ?>
+                        <td class="col-store-view">
+                            <input class="admin__control-text input-text validate-no-html-tags"
+                                   type="text"
+                                   data-form-part="layered_navigation_group_form"
+                                   name="aliases[<?= $block->escapeHtmlAttr($_store->getId()) ?>]"
+                                   id="aliases[<?= $block->escapeHtmlAttr($_store->getId()) ?>]"
+                                   value="<?= $block->escapeHtmlAttr(isset($aliases[$_store->getId()]) ? $aliases[$_store->getId()] : '') ?>"
+                                   />
+                        </td>
+                    <?php endforeach; ?>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</fieldset>
+
+<style>
+    .fieldset__groups {
+        padding-top: 0!important;
+    }
+</style>
+
+<script type="text/javascript">
+    require([
+        'jquery',
+        'jquery/ui',
+        'jquery/validate',
+        'mage/translate'
+    ], function($){
+        $.validator.addMethod(
+            '_required-validate', function (value) {
+                return value.match(/.+/g);
+            }, $.mage.__('This is a required field.')
+        );
+    });
+</script>
+

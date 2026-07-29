@@ -1,0 +1,156 @@
+<?php
+/** @var \Mirasvit\SeoSitemap\Block\Map $block */
+
+$categoryBlock = $block->getChildBlock('map.category');
+$productBlock  = $block->getChildBlock('map.product');
+$storeBlock    = $block->getChildBlock('map.store');
+$cmsPageBlock  = $block->getChildBlock('map.cms_page');
+
+$capitalLettersVisibility = $productBlock->isCapitalLettersEnabled() ? 'visible' : 'hidden';
+?>
+
+<div class="mst-seo-sitemap__map" data-element="sitemap__map">
+    <?php if ($block->canShowSearch()): ?>
+        <div class="search-bar">
+            <label for="sitemap-search" class="hidden"><?= $block->escapeHtml(__('Search sitemap')) ?></label>
+            <input type="search" id="sitemap-search" placeholder="<?= $block->escapeHtmlAttr(__('Search')) ?>" data-element="search"
+                   aria-label="<?= $block->escapeHtmlAttr(__('Search through sitemap items')) ?>">
+        </div>
+    <?php endif; ?>
+
+    <?php if ($block->canShowTopPagination()): ?>
+        <?= $block->getChildHtml('map.pager') ?>
+    <?php endif; ?>
+
+    <?php if ($block->isFirstPage()): ?>
+
+        <?php if ($storeBlock->canShowStores() && count($storeBlock->getStores()) > 1): ?>
+            <div class="mst-seo-sitemap__map-stores provider" data-element="provider">
+                <h3><?= $block->escapeHtml($storeBlock->getTitle()) ?></h3>
+
+                <ul class="cols-<?= $block->escapeHtmlAttr($block->getColumnCount()) ?>" role="list">
+                    <?php foreach ($storeBlock->getStores() as $store): ?>
+                        <li data-element="item" role="listitem">
+                            <a href="<?= $block->escapeUrl($store->getBaseUrl()) ?>"
+                               aria-label="<?= $block->escapeHtmlAttr(__('Visit %1 store', $store->getName())) ?>">
+                                <span><?= $block->escapeHtml($store->getName()) ?></span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($cmsPageBlock->canShowCmsPages()): ?>
+            <div class="mst-seo-sitemap__map-pages provider" data-element="provider">
+                <h3><?= $block->escapeHtml($cmsPageBlock->getTitle()) ?></h3>
+
+                <ul class="cols-<?= $block->escapeHtmlAttr($block->getColumnCount()) ?>" role="list">
+                    <?php foreach ($cmsPageBlock->getCollection() as $page): ?>
+                        <li data-element="item" role="listitem">
+                            <a href="<?= $block->escapeUrl($page->getUrl()) ?>"
+                               aria-label="<?= $block->escapeHtmlAttr(__('View %1 page', $page->getTitle())) ?>">
+                                <span><?= $block->escapeHtml($page->getTitle()) ?></span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($cmsPageBlock->canShowAdditionalLinks() && count($cmsPageBlock->getAdditionalCollection()) > 0): ?>
+            <div class="mst-seo-sitemap__map-additional provider" data-element="provider">
+                <h3><?= $block->escapeHtml(__('Additional Links')) ?></h3>
+
+                <ul class="cols-<?= $block->escapeHtmlAttr($block->getColumnCount()) ?>" role="list">
+                    <?php foreach ($cmsPageBlock->getAdditionalCollection() as $link): ?>
+                        <li data-element="item" role="listitem">
+                            <a href="<?= $block->escapeUrl($link->getUrl()) ?>"
+                               aria-label="<?= $block->escapeHtmlAttr(__('Visit %1', $link->getTitle())) ?>">
+                                <span><?= $block->escapeHtml($link->getTitle()) ?></span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <?php foreach ($block->getFrontendProviders() as $provider): ?>
+            <?php $items = $block->getProviderItems($provider) ?>
+            <?php if (count($items) > 0): ?>
+                <div class="mst-seo-sitemap__map-<?= $block->escapeHtmlAttr(strtolower($provider->getModuleName())) ?> provider" data-element="provider">
+                    <h3><?= $block->escapeHtml($provider->getTitle()) ?></h3>
+
+                    <ul class="cols-<?= $block->escapeHtmlAttr($block->getColumnCount()) ?>" role="list">
+                        <?php foreach ($items as $item): ?>
+                            <li data-element="item" role="listitem">
+                                <a href="<?= $block->escapeUrl($item->getData('url')) ?>"
+                                   aria-label="<?= $block->escapeHtmlAttr(__('View %1', $item->getData('title'))) ?>">
+                                    <span><?= $block->escapeHtml($item->getData('title')) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
+
+        <?php if ($categoryBlock->isShowCategories()): ?>
+            <div class="mst-seo-sitemap__map-categories provider" data-element="provider">
+                <h3><?= $block->escapeHtml($categoryBlock->getTitle()) ?></h3>
+
+                <ul class="cols-<?= $block->escapeHtmlAttr($block->getColumnCount()) ?>" role="list">
+                    <?php foreach ($categoryBlock->getCategoriesAsPaths() as $item): ?>
+                        <li data-element="item" role="listitem">
+                            <a href="<?= $block->escapeUrl($item->getUrl()) ?>"
+                               aria-label="<?= $block->escapeHtmlAttr(__('View category: %1', implode(' > ', $item->getPath()))) ?>">
+                                <?php foreach ($item->getPath() as $cat): ?>
+                                    <span><?= $block->escapeHtml($cat) ?></span>
+                                <?php endforeach; ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+    <?php endif; ?>
+
+    <?php if ($productBlock->isShowProducts()): ?>
+        <div class="mst-seo-sitemap__map-products provider" data-element="provider">
+            <h3><?= $block->escapeHtml($productBlock->getTitle()) ?></h3>
+
+            <ul role="list">
+                <?php foreach ($block->getSplitByLetterCollection() as $index => $items): ?>
+                    <li class="letter" data-element="letter" role="listitem">
+                        <strong class='strong_<?= $block->escapeHtmlAttr($capitalLettersVisibility) ?>'><?= $block->escapeHtml($index) ?></strong>
+
+                        <ul class="cols-<?= $block->escapeHtmlAttr($block->getColumnCount()) ?>" role="list">
+                            <?php foreach ($items as $item): ?>
+                                <li data-element="item" role="listitem">
+                                    <a href="<?= $block->escapeUrl($item['url']) ?>"
+                                       aria-label="<?= $block->escapeHtmlAttr(__('View product: %1', $item['name'])) ?>">
+                                        <span><?= $block->escapeHtml($item['name']) ?></span>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
+    <div class="message warning" data-element="notFound" hidden>
+        <div><?= $block->escapeHtml(__('Nothing to show, please change a search query')) ?></div>
+    </div>
+</div>
+
+<?php if ($block->canShowBottomPagination()): ?>
+    <?= $block->getChildHtml('map.pager') ?>
+<?php endif; ?>
+
+<script type="text/x-magento-init"><?= /* @noEscape */ json_encode([
+        '[data-element="sitemap__map"]' => [
+            'Mirasvit_SeoSitemap/js/sitemap' => [],
+        ],
+    ]) ?></script>

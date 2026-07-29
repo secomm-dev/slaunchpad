@@ -1,0 +1,36 @@
+<?php
+
+use Mirasvit\Core\Service\CspService;
+use Mirasvit\Core\Service\SerializeService;
+
+/** @var \Mirasvit\Core\Ui\QuickDataBar\MultiScalarDataBlock $block */
+
+$scope = hash('sha256', $block->getNameInLayout());
+$nonce = CspService::getNonce();
+?>
+
+<div data-bind="scope: '<?= $block->escapeHtmlAttr($scope) ?>'">
+    <div class="mst-quickDataBar__dataBlock _multiScalarData" data-bind="css: { _loading: loading() }">
+        <div class="dataBlockLabel"><?= $block->escapeHtml($block->getLabel()) ?></div>
+        <div class="dataBlockValues" data-bind="foreach: data().value">
+            <div class="dataBlockValue">
+                <div class="valueLabel" data-bind="text: label"></div>
+                <div class="value" data-bind="text: value"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script<?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?> type="text/x-magento-init"><?= /* @noEscape */ SerializeService::encode([
+        '*' => [
+            'Magento_Ui/js/core/app' => [
+                'components' => [
+                    $scope => [
+                        'component' => 'Mirasvit_Core/js/quickDataBar/dataBlock',
+                        'block'     => get_class($block),
+                        'updateURL' => $this->getUrl('mstcore/quickdatabar/load'),
+                    ],
+                ],
+            ],
+        ],
+    ]) ?></script>

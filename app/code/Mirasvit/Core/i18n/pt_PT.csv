@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","O serviço %1 não está configurado corretamente ou não está disponível"
+"Invalid AI request data","Dados de pedido de IA inválidos"
+"Request prompt cannot be empty","O prompt do pedido não pode estar vazio"
+"Claude API error","Erro da API Claude"
+"Invalid Claude API response: missing content","Resposta da API Claude inválida: conteúdo em falta"
+"Empty content received from Claude API","Conteúdo vazio recebido da API Claude"
+"Gemini API error","Erro da API Gemini"
+"Invalid Gemini API response: missing candidates","Resposta da API Gemini inválida: candidatos em falta"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","A resposta da API Gemini foi truncada porque o limite max_tokens foi atingido. Considere aumentar a definição max_tokens ou usar um prompt mais curto."
+"Empty content received from Gemini API","Conteúdo vazio recebido da API Gemini"
+"AI services are disabled in configuration","Os serviços de IA estão desativados na configuração"
+"No default AI provider configured","Nenhum fornecedor de IA predefinido configurado"
+"No available AI provider for request validation","Nenhum fornecedor de IA disponível para validação de pedidos"
+"Request validation failed: %1","A validação do pedido falhou: %1"
+"All AI providers failed. Last error: %1","Todos os fornecedores de IA falharam. Último erro: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Fornecedor de IA não suportado: %1. Fornecedores suportados: %2"
+"Service class %1 must extend %2","A classe de serviço %1 deve estender %2"
+"Failed to create AI service for provider %1: %2","Falha ao criar serviço de IA para o fornecedor %1: %2"
+"Not configured","Não configurado"
+Unknown,Desconhecido
+"Unknown API error","Erro de API desconhecido"
+"Temperature must be between 0 and 2","A temperatura deve estar entre 0 e 2"
+"Max tokens must be greater than 0","O máximo de tokens deve ser superior a 0"
+"Frequency penalty must be between -2 and 2","A penalização de frequência deve estar entre -2 e 2"
+"Format output as JSON.","Formatar saída como JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","A API OpenAI devolveu uma resposta incompleta porque o número de tokens da janela de contexto do modelo foi excedido."
+"OpenAI API returned no content in the response.","A API OpenAI não devolveu conteúdo na resposta."
+"Not Installed","Não instalado"
+"A total of %1 record(s) have been deleted.","Um total de %1 registo(s) foi eliminado."
+"The record has been removed.","O registo foi removido."
+"Disallowed file type.","Tipo de ficheiro não permitido."
+"Can't remove folder %s","Não é possível remover a pasta %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","A extensão não contém todos os ficheiros necessários. Por favor, reinstale a extensão a partir do pacote original."
+"Extension Information","Informações da extensão"
+Status,Estado
+Other,Outro
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","O Cron para Magento não está em execução. Para configurar uma tarefa cron, siga a ligação %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","As tarefas cron [%1] não estão em execução. Por favor, verifique a tabela %2 para tarefas bloqueadas e remova-as."
+Remove,Remover
+Error,Erro
+Missed,Perdido
+Running,Em execução
+Pending,Pendente
+Success,Sucesso
+"Server gmt time","Hora GMT do servidor"
+"Last job","Última tarefa"
+Executed,Executado
+none,nenhum
+"Cron setup","Configuração do Cron"
+"Cron Jobs","Tarefas Cron"
+"No AI-enabled modules are currently active.","Nenhum módulo com IA está ativo de momento."
+"%1 module(s) using AI functionality:","%1 módulo(s) a usar funcionalidade de IA:"
+Provider:,Fornecedor:
+ai_provider,ai_provider
+"You have the latest version","Tem a versão mais recente"
+"New version %1 is available","Nova versão %1 disponível"
+"View %1 details (opens in new window)","Ver detalhes de %1 (abre em nova janela)"
+Details,Detalhes
+"View %1 user guide (opens in new window)","Ver guia do utilizador de %1 (abre em nova janela)"
+"User Guide","Guia do utilizador"
+"View %1 changelog (opens in new window)","Ver changelog de %1 (abre em nova janela)"
+Changelog,Changelog
+"Request new feature for %1 (opens in new window)","Solicitar nova funcionalidade para %1 (abre em nova janela)"
+"Request New Feature","Solicitar nova funcionalidade"
+"Installed Extensions","Extensões instaladas"
+"Check changes","Verificar alterações"
+"Validate All Extensions","Validar todas as extensões"
+"Suggest Improvement","Sugerir melhoria"
+"%1 (opens in new window)","%1 (abre em nova janela)"
+"More Details","Mais detalhes"
+"Developer settings","Definições de programador"
+"AI Provider Status","Estado do fornecedor de IA"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Nenhum fornecedor de IA está ativado de momento. Por favor, configure os fornecedores de IA em %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 de %2 fornecedores ativados. Pode gerir fornecedores em %3."
+Enabled,Ativado
+Disabled,Desativado
+"All tests have been passed","Todos os testes foram aprovados"
+Module,Módulo
+Test,Teste
+"How to fix","Como corrigir"
+Warning,Aviso
+Info,Informação
+Failed,Falhou
+Today,Hoje
+"Last 7 days","Últimos 7 dias"
+"Last 30 days","Últimos 30 dias"
+"Last 365 days","Últimos 365 dias"
+"Mirasvit Extensions Validator","Validador de extensões Mirasvit"
+"Mirasvit Menu","Menu Mirasvit"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Extensões
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Extensões Mirasvit"
+Developer,Programador
+"Menu Settings","Definições do menu"
+"Enable Mirasvit Menu","Ativar menu Mirasvit"
+"The menu is visible, if you have at least two active Mirasvit extensions.","O menu é visível se tiver pelo menos duas extensões Mirasvit ativas."
+"Additional CSS Styles","Estilos CSS adicionais"
+"AI Configuration","Configuração de IA"
+"Modules using AI","Módulos a usar IA"
+"Enable AI features","Ativar funcionalidades de IA"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Ative ou desative globalmente todas as funcionalidades com IA nas extensões Mirasvit.<br>Quando desativado, todas as funcionalidades de IA ficarão indisponíveis, independentemente das definições individuais do fornecedor ou definições de IA noutros módulos."
+"Default AI provider","Fornecedor de IA predefinido"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Selecione o fornecedor de IA principal a usar quando vários fornecedores estiverem configurados.<br>Este será usado como fornecedor de fallback para todas as operações de IA quando nenhum fornecedor específico for solicitado."
+"Request timeout","Tempo limite do pedido"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Tempo máximo em segundos para aguardar respostas do fornecedor de IA.<br> Deixe vazio para desativar o tempo limite.<br> Esta definição afetará todas as funcionalidades de IA noutros módulos."
+"Maximum tokens per request","Máximo de tokens por pedido"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Número máximo de tokens para gerar num único pedido de IA. Valores mais altos permitem respostas mais longas, mas aumentam os custos.<br> Deixe vazio para desativar a limitação.<br> Diferentes fornecedores e modelos têm os seus próprios limites.<br> Esta definição afetará todas as funcionalidades de IA noutros módulos."
+"Default temperature","Temperatura predefinida"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Controla a aleatoriedade nas respostas de IA. Valores mais baixos produzem resultados mais consistentes, valores mais altos mais criativos.<br>Exemplo:<br><code>0.1</code> - respostas muito consistentes e factuais<br><code>0.7</code> - criatividade e consistência equilibradas<br><code>1.0</code> - respostas altamente criativas e variadas.<br>Se vazio, a temperatura predefinida 0.7 será usada.<br>Esta definição afetará todas as funcionalidades de IA noutros módulos.<br>Algumas extensões podem substituir esta definição."
+"Debug mode","Modo de depuração"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Ative o registo detalhado de pedidos e respostas de IA para fins de depuração.<br>Aviso: Isto pode registar dados sensíveis e afetar o desempenho. Use apenas para desenvolvimento."
+"OpenAI Configuration","Configuração OpenAI"
+"Enable OpenAI provider","Ativar fornecedor OpenAI"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Ative o OpenAI como um fornecedor de IA disponível. Requer configuração válida de chave de API."
+"OpenAI API key","Chave de API OpenAI"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","A sua chave de API OpenAI começando com 'sk-'. Esta chave é encriptada e armazenada de forma segura.<br>Obtenha a sua chave de API em: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Modelo OpenAI predefinido"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Selecione o modelo OpenAI predefinido para operações de IA. Diferentes modelos têm capacidades e custos variados."
+"Claude Configuration","Configuração Claude"
+"Enable Claude provider","Ativar fornecedor Claude"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Ative o Anthropic Claude como um fornecedor de IA disponível. Requer configuração válida de chave de API."
+"Claude API key","Chave de API Claude"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","A sua chave de API Anthropic Claude começando com 'sk-ant-'. Esta chave é encriptada e armazenada de forma segura.<br>Obtenha a sua chave de API em: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Modelo Claude predefinido"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Selecione o modelo Claude predefinido para operações de IA. Diferentes modelos têm capacidades e custos variados."
+"Google Gemini Configuration","Configuração Google Gemini"
+"Enable Gemini provider","Ativar fornecedor Gemini"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Ative o Google Gemini como um fornecedor de IA disponível. Requer configuração válida de chave de API."
+"Gemini API key","Chave de API Gemini"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","A sua chave de API Google AI Studio começando com 'AIza'. Esta chave é encriptada e armazenada de forma segura.<br>Obtenha a sua chave de API em: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Modelo Gemini predefinido"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Selecione o modelo Gemini predefinido para operações de IA. Diferentes modelos têm capacidades e custos variados."
+"Determine visitor's country, city, and timezone based on their IP address.","Determine o país, cidade e fuso horário do visitante com base no endereço IP."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","É necessária uma conta <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind gratuita</a> para atualizações automáticas (verificação semanal)."
+"Used by:","Utilizado por:"
+message,mensagem
+"Error downloading database: %1","Erro ao transferir a base de dados: %1"
+"MaxMind credentials not configured","Credenciais do MaxMind não configuradas"
+"Failed to download remote hash","Falha ao transferir o hash remoto"
+"Database is up to date","A base de dados está atualizada"
+"Failed to download and extract database","Falha ao transferir e extrair a base de dados"
+"Database updated successfully","Base de dados atualizada com sucesso"
+"Download failed: %1","Transferência falhou: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Esta extensão utiliza dados GeoLite2 criados pela MaxMind."
+"Database available (auto-update enabled)","Base de dados disponível (atualização automática ativada)"
+"Database available (auto-update disabled)","Base de dados disponível (atualização automática desativada)"
+Configure,Configurar
+"Database not available","Base de dados não disponível"
+"Database status:","Estado da base de dados:"
+"Not available","Não disponível"
+"Credentials configured. Click the button below to download the database.","Credenciais configuradas. Clique no botão abaixo para transferir a base de dados."
+"Download database","Transferir base de dados"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Introduza as credenciais do MaxMind acima para ativar transferências automáticas, ou execute setup:upgrade para instalar a base de dados incluída."
+"Available (auto-update disabled)","Disponível (atualização automática desativada)"
+Version:,Versão:
+Size:,Tamanho:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Introduza as credenciais do MaxMind acima para ativar atualizações semanais automáticas."
+"Available (auto-update enabled)","Disponível (atualização automática ativada)"
+"Update database","Atualizar base de dados"
+"Database updated successfully.","Base de dados atualizada com sucesso."
+Notice,Aviso
+"Database is up to date.","A base de dados está atualizada."
+"An error occurred while downloading the database.","Ocorreu um erro ao transferir a base de dados."
+"IP Geolocation","Geolocalização por IP"
+"Account ID","ID da conta"
+"License Key","Chave de licença"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Gerar chave de licença</a>"
+Cron,Cron
+Delete,Eliminar
+"Delete items","Eliminar itens"
+"Are you sure you want to delete selected items?","Tem a certeza de que pretende eliminar os itens selecionados?"
+ID,ID
+Code,Código
+Messages,Mensagens
+Created,Criado
+Scheduled,Agendado
+Finished,Terminado

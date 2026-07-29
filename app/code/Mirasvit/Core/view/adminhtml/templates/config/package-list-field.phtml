@@ -1,0 +1,239 @@
+<?php
+
+use Mirasvit\Core\Service\CspService;
+
+/** @var \Mirasvit\Core\Block\Adminhtml\Config\PackageListField $block */
+
+if ($block->isMarketplace()) {
+    return;
+}
+$packages           = $block->getPackageList();
+$displayedPool      = [];
+$inRequirementsPool = [];
+$nonce              = CspService::getNonce();
+
+foreach ($packages as $package) {
+    if (strpos($package->getPackage(), 'sample-data') !== false) {
+        continue;
+    }
+
+    foreach ($package->getRequire() as $requireName) {
+        $inRequirementsPool[$requireName] = true;
+    }
+}
+?>
+<div class="section-config active" style="padding-top: 2rem;">
+    <div class="entry-edit-head admin__collapsible-block">
+        <span id="packages-link" class="entry-edit-head-link"></span>
+
+        <a id="packages-head" href="#packages-link" onclick="Fieldset.toggleCollapse('packages'); return false;" class="open">
+            <?= $block->escapeHtml(__('Installed Extensions')) ?>
+        </a>
+    </div>
+
+    <input id="packages-state" name="config_state[packages]" type="hidden" value="1">
+
+    <fieldset class="admin__collapsible-block" id="packages" data-bind="scope: 'mstValidator'">
+        <div class="mst-package-list">
+            <?php foreach ($packages as $package): ?>
+                <?php
+                if (!$package->getUrl()) {
+                    continue;
+                }
+                if (isset($inRequirementsPool[$package->getPackage()])) {
+                    continue;
+                }
+                $isOutdated = $package->isOutdated();
+                ?>
+                <div class="mst-package">
+                    <div class="package-info">
+                        <div class="package-info-primary">
+                            <div class="package-status <?= $isOutdated ? '_outdated' : '_latest' ?>"></div>
+
+                            <div class="package-label">
+                                <?php if ($package->getUrl()): ?>
+                                    <a href="<?= $block->escapeUrl($package->getUrl()) ?>" target="_blank"><?= $block->escapeHtml($package->getLabel()) ?></a>
+                                <?php else: ?>
+                                    <?= $block->escapeHtml($package->getLabel()) ?>
+                                <?php endif ?>
+                            </div>
+
+                            <div class="version">
+                                v. <?= $block->escapeHtml($package->getVersion()) ?>
+                            </div>
+                        </div>
+
+                        <div class="package-info-secondary">
+                            <div class="new-version">
+                                <?php if ($isOutdated): ?>
+                                    <?= $block->escapeHtml(__('New version %1 is available', $package->getLatestVersion())) ?>
+                                <?php else: ?>
+                                    <?= $block->escapeHtml(__('You have the latest version')) ?>
+                                <?php endif ?>
+                            </div>
+
+                            <?php if ($package->getUrl() && $isOutdated): ?>
+                                <a href="<?= $block->escapeUrl($block->getChangelogUrl($package)) ?>" class="changes" target="_blank"><?= $block->escapeHtml(__('Check changes')) ?></a>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                    <div class="package-requires">
+                        <?php foreach ($package->getRequire() as $requireName): ?>
+                            <?php foreach ($packages as $requirePackage): ?>
+                                <?php
+                                if ($requireName !== $requirePackage->getPackage()) {
+                                    continue;
+                                }
+                                if (isset($displayedPool[$requirePackage->getPackage()])) {
+                                    continue;
+                                }
+
+                                $displayedPool[$requirePackage->getPackage()] = true;
+                                ?>
+                                <div class="package-require">
+                                    <div class="package-require-label"><?= $block->escapeHtml($requirePackage->getPackage()) ?></div>
+                                    <div class="package-require-version">
+                                        <?= $block->escapeHtml($requirePackage->getVersion()) ?>
+                                    </div>
+                                    <div class="package-require-latest-version">
+                                        <?php if ($requirePackage->isOutdated()): ?>
+                                            → <span><?= $block->escapeHtml($requirePackage->getLatestVersion()) ?></span>
+                                        <?php endif ?>
+                                    </div>
+                                </div>
+                            <?php endforeach ?>
+                        <?php endforeach ?>
+                    </div>
+                    <div class="package-modules">
+                        <?php foreach ($package->getModuleList() as $moduleName): ?>
+                            <div class="package-module"><?= $block->escapeHtml($moduleName) ?>&nbsp;<span class="status-<?= $block->isModuleEnabled($moduleName) ? 'on' : 'off' ?>"><?= $block->isModuleEnabled($moduleName) ? 'ON' : 'OFF' ?></span></div>
+                        <?php endforeach ?>
+                    </div>
+                </div>
+            <?php endforeach ?>
+        </div>
+
+        <div style="text-align: center">
+            <button type="button" class="action-default" data-bind="click: validate.bind($data, '')">
+                <?= $block->escapeHtml(__('Validate All Extensions')) ?>
+            </button>
+        </div>
+    </fieldset>
+
+
+    <script <?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?> type="text/javascript">
+        //<![CDATA[
+        require(['prototype'], function () {
+            Fieldset.applyCollapse('packages');
+        });
+        //]]>
+    </script>
+</div>
+
+<script <?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?> type="text/x-magento-init">
+{
+    "*": {
+        "Magento_Ui/js/core/app": {
+            "components": {
+                "mstValidator": {
+                    "component": "Mirasvit_Core/js/validator",
+                    "config": {
+                        "url": "<?= $block->escapeUrl($block->getValidationUrl()) ?>"
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>

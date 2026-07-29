@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="mst_seo_content_template" resource="default" engine="innodb" comment="mst_seo_content_template">
+    <column xsi:type="int" name="template_id" padding="11" unsigned="false" nullable="false" identity="true" comment="template_id"/>
+    <column xsi:type="varchar" name="name" nullable="true" length="255" comment="name"/>
+    <column xsi:type="int" name="is_active" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="is_active"/>
+    <column xsi:type="int" name="rule_type" padding="10" unsigned="true" nullable="false" identity="false" comment="rule_type"/>
+    <column xsi:type="varchar" name="store_ids" nullable="true" length="255" comment="store_ids"/>
+    <column xsi:type="int" name="sort_order" padding="10" unsigned="true" nullable="false" identity="false" comment="sort_order"/>
+    <column xsi:type="text" name="meta_title" nullable="true" comment="meta_title"/>
+    <column xsi:type="text" name="meta_keywords" nullable="true" comment="meta_keywords"/>
+    <column xsi:type="text" name="meta_description" nullable="true" comment="meta_description"/>
+    <column xsi:type="text" name="title" nullable="true" comment="title"/>
+    <column xsi:type="text" name="description" nullable="true" comment="description"/>
+    <column xsi:type="text" name="short_description" nullable="true" comment="short_description"/>
+    <column xsi:type="text" name="full_description" nullable="true" comment="full_description"/>
+    <column xsi:type="int" name="description_position" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="description_position"/>
+    <column xsi:type="text" name="description_template" nullable="true" comment="description_template"/>
+    <column xsi:type="text" name="category_description" nullable="true" comment="category_description"/>
+    <column xsi:type="text" name="category_image" nullable="true" comment="category_image"/>
+    <column xsi:type="text" name="conditions_serialized" nullable="false" comment="conditions_serialized"/>
+    <column xsi:type="int" name="stop_rules_processing" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="stop_rules_processing"/>
+    <column xsi:type="int" name="apply_for_child_categories" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="apply_for_child_categories"/>
+    <column xsi:type="int" name="apply_for_homepage" padding="9" unsigned="true" nullable="false" identity="false" default="0" comment="is applicable for homepage"/>
+    <column xsi:type="int" name="apply_for_all_brands_page" padding="9" unsigned="true" nullable="false" identity="false" default="0" comment="is applicable for all brands page"/>
+    <column xsi:type="int" name="apply_for_landing_pages" padding="9" unsigned="true" nullable="false" identity="false" default="0" comment="is applicable for landing pages"/>
+    <column xsi:type="text" name="brand_description" nullable="true" comment="brand_description"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="template_id"/>
+    </constraint>
+  </table>
+  <table name="mst_seo_content_rewrite" resource="default" engine="innodb" comment="mst_seo_content_rewrite">
+    <column xsi:type="int" name="rewrite_id" padding="11" unsigned="false" nullable="false" identity="true" comment="rewrite_id"/>
+    <column xsi:type="varchar" name="url" nullable="true" length="255" comment="url"/>
+    <column xsi:type="int" name="is_active" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="is_active"/>
+    <column xsi:type="varchar" name="store_ids" nullable="true" length="255" comment="store_ids"/>
+    <column xsi:type="int" name="sort_order" padding="10" unsigned="true" nullable="false" identity="false" comment="sort_order"/>
+    <column xsi:type="text" name="meta_title" nullable="true" comment="meta_title"/>
+    <column xsi:type="text" name="meta_keywords" nullable="true" comment="meta_keywords"/>
+    <column xsi:type="text" name="meta_description" nullable="true" comment="meta_description"/>
+    <column xsi:type="text" name="title" nullable="true" comment="title"/>
+    <column xsi:type="text" name="description" nullable="true" comment="description"/>
+    <column xsi:type="int" name="description_position" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="description_position"/>
+    <column xsi:type="text" name="description_template" nullable="true" comment="description_template"/>
+    <column xsi:type="varchar" name="meta_robots" nullable="false" length="255" default="-" comment="meta_robots"/>
+    <column xsi:type="int" name="add_to_sitemap" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="add_to_sitemap"/>
+    <column xsi:type="int" name="is_autogenerated" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="is_autogenerated"/>
+    <column xsi:type="int" name="use_in_breadcrumbs" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="use_in_breadcrumbs"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="rewrite_id"/>
+    </constraint>
+  </table>
+</schema>

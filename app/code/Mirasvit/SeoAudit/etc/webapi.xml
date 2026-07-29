@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <route url="/V1/seo-audit/jobs" method="GET">
+        <service class="Mirasvit\SeoAudit\Api\JobRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAudit::seoaudit_job"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-audit/job/:jobId" method="GET">
+        <service class="Mirasvit\SeoAudit\Api\JobRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAudit::seoaudit_job"/>
+        </resources>
+    </route>
+
+    <route url="/V1/seo-audit/urls" method="GET">
+        <service class="Mirasvit\SeoAudit\Api\UrlRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAudit::seoaudit_url"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-audit/url/:urlId" method="GET">
+        <service class="Mirasvit\SeoAudit\Api\UrlRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAudit::seoaudit_url"/>
+        </resources>
+    </route>
+
+    <route url="/V1/seo-audit/check-results" method="GET">
+        <service class="Mirasvit\SeoAudit\Api\CheckResultRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAudit::seoaudit_check_result"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-audit/check-result/:checkResultId" method="GET">
+        <service class="Mirasvit\SeoAudit\Api\CheckResultRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAudit::seoaudit_check_result"/>
+        </resources>
+    </route>
+
+</routes>

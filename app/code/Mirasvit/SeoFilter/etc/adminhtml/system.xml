@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="mst_seo_filter" showInDefault="1" showInWebsite="1" showInStore="1" type="text" translate="label" sortOrder="441">
+            <label>Filter SEO URLs</label>
+            <tab>mirasvit</tab>
+            <resource>Mirasvit_SeoFilter::config_seofilter</resource>
+
+            <group id="general" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="1000" translate="label">
+                <label>SEO friendly Layered Navigation URLs</label>
+
+                <field id="is_enabled" translate="label comment" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="10">
+                    <label>Enable SEO Friendly URLs</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Activates SEO-friendly URLs for layered navigation. Works with default Magento or Mirasvit Layered Navigation only.</comment>
+                </field>
+                <field id="url_format_with_separator" translate="label comment" type="select" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="15">
+                    <label>URL Formats</label>
+                    <source_model>Mirasvit\SeoFilter\Model\Config\Source\UrlFormatsSource</source_model>
+                    <comment>Select the URL format for filters.</comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="name_separator" translate="label comment" type="select" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="20">
+                    <label>Separator for Filter Names</label>
+                    <source_model>Mirasvit\SeoFilter\Model\Config\Source\NameSeparatorSource</source_model>
+                    <comment>Choose a separator to go between words in complex filter names. For example, "all-weather" vs. "allweather."</comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="dash_separator_warning" translate="label" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label/>
+                    <frontend_model>Mirasvit\SeoFilter\Block\Adminhtml\Config\Form\Field\DashSeparatorAlert</frontend_model>
+                </field>
+
+                <field id="prefix" translate="label comment" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Use Prefix for Filters</label>
+                    <comment>Optionally, add a prefix before filters in URLs to improve readability.</comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="reset" translate="label" type="text" sortOrder="85" showInDefault="1">
+                    <button_label>Remove existing aliases</button_label>
+                    <frontend_model>Mirasvit\SeoFilter\Block\Adminhtml\Config\Form\Field\Command\Reset</frontend_model>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="store_view_alias" translate="label comment" type="select" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="40">
+                    <label>Rewrite Alias Source</label>
+                    <source_model>Mirasvit\SeoFilter\Model\Config\Source\RewriteLabelsSource</source_model>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                    </depends>
+                    <comment>Define the source for URL rewrite aliases. Choose between using the store view label or the default store view label for consistency across all views.</comment>
+                </field>
+
+            </group>
+        </section>
+    </system>
+</config>

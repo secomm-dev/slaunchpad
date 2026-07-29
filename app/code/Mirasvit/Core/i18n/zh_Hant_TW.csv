@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1 服務未正確設定或無法使用"
+"Invalid AI request data","無效的 AI 請求資料"
+"Request prompt cannot be empty","請求提示詞不能為空"
+"Claude API error","Claude API 錯誤"
+"Invalid Claude API response: missing content","無效的 Claude API 回應：缺少內容"
+"Empty content received from Claude API","從 Claude API 收到空內容"
+"Gemini API error","Gemini API 錯誤"
+"Invalid Gemini API response: missing candidates","無效的 Gemini API 回應：缺少候選項"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Gemini API 回應被截斷，因為已達到 max_tokens 限制。請考慮增加 max_tokens 設定或使用更短的提示詞。"
+"Empty content received from Gemini API","從 Gemini API 收到空內容"
+"AI services are disabled in configuration","AI 服務在設定中已停用"
+"No default AI provider configured","未設定預設 AI 提供商"
+"No available AI provider for request validation","沒有可用的 AI 提供商進行請求驗證"
+"Request validation failed: %1","請求驗證失敗：%1"
+"All AI providers failed. Last error: %1","所有 AI 提供商均失敗。最後錯誤：%1"
+"Unsupported AI provider: %1. Supported providers: %2","不支援的 AI 提供商：%1。支援的提供商：%2"
+"Service class %1 must extend %2","服務類別 %1 必須擴展 %2"
+"Failed to create AI service for provider %1: %2","為提供商 %1 建立 AI 服務失敗：%2"
+"Not configured","未設定"
+Unknown,未知
+"Unknown API error","未知 API 錯誤"
+"Temperature must be between 0 and 2","溫度必須在 0 到 2 之間"
+"Max tokens must be greater than 0","最大權杖數必須大於 0"
+"Frequency penalty must be between -2 and 2","頻率懲罰必須在 -2 到 2 之間"
+"Format output as JSON.","將輸出格式化為 JSON。"
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API 傳回了不完整的回應，因為超出了模型上下文視窗的權杖數。"
+"OpenAI API returned no content in the response.","OpenAI API 在回應中未傳回內容。"
+"Not Installed","未安裝"
+"A total of %1 record(s) have been deleted.","共刪除了 %1 筆記錄。"
+"The record has been removed.","記錄已被刪除。"
+"Disallowed file type.","不允許的檔案類型。"
+"Can't remove folder %s","無法刪除資料夾 %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","擴充功能不包含所有必要的檔案。請從原始套件重新安裝擴充功能。"
+"Extension Information","擴充功能資訊"
+Status,狀態
+Other,其他
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Magento 的 Cron 未執行。要設定 cron 工作，請造訪連結 %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron 工作 [%1] 未執行。請檢查表格 %2 中凍結的工作並刪除它們。"
+Remove,刪除
+Error,錯誤
+Missed,錯過
+Running,執行中
+Pending,待處理
+Success,成功
+"Server gmt time","伺服器 GMT 時間"
+"Last job","最後工作"
+Executed,已執行
+none,無
+"Cron setup","Cron 設定"
+"Cron Jobs","Cron 工作"
+"No AI-enabled modules are currently active.","目前沒有啟用 AI 的模組處於活動狀態。"
+"%1 module(s) using AI functionality:","%1 個模組正在使用 AI 功能："
+Provider:,提供商：
+ai_provider,ai_provider
+"You have the latest version","您已擁有最新版本"
+"New version %1 is available","新版本 %1 可用"
+"View %1 details (opens in new window)","檢視 %1 詳情（在新視窗中開啟）"
+Details,詳情
+"View %1 user guide (opens in new window)","檢視 %1 使用者指南（在新視窗中開啟）"
+"User Guide","使用者指南"
+"View %1 changelog (opens in new window)","檢視 %1 更新日誌（在新視窗中開啟）"
+Changelog,更新日誌
+"Request new feature for %1 (opens in new window)","為 %1 請求新功能（在新視窗中開啟）"
+"Request New Feature","請求新功能"
+"Installed Extensions","已安裝的擴充功能"
+"Check changes","檢查變更"
+"Validate All Extensions","驗證所有擴充功能"
+"Suggest Improvement","建議改進"
+"%1 (opens in new window)","%1（在新視窗中開啟）"
+"More Details","更多詳情"
+"Developer settings","開發者設定"
+"AI Provider Status","AI 提供商狀態"
+"No AI providers are currently enabled. Please configure AI providers in %1.","目前沒有啟用 AI 提供商。請在 %1 中設定 AI 提供商。"
+"%1 of %2 providers enabled. You can manage providers in %3.","已啟用 %1/%2 個提供商。您可以在 %3 中管理提供商。"
+Enabled,已啟用
+Disabled,已停用
+"All tests have been passed","所有測試已通過"
+Module,模組
+Test,測試
+"How to fix","如何修復"
+Warning,警告
+Info,資訊
+Failed,失敗
+Today,今天
+"Last 7 days","最近 7 天"
+"Last 30 days","最近 30 天"
+"Last 365 days","最近 365 天"
+"Mirasvit Extensions Validator","Mirasvit 擴充功能驗證器"
+"Mirasvit Menu","Mirasvit 選單"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,擴充功能
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit 擴充功能"
+Developer,開發者
+"Menu Settings","選單設定"
+"Enable Mirasvit Menu","啟用 Mirasvit 選單"
+"The menu is visible, if you have at least two active Mirasvit extensions.","如果您有至少兩個活動的 Mirasvit 擴充功能，選單將可見。"
+"Additional CSS Styles","附加 CSS 樣式"
+"AI Configuration","AI 設定"
+"Modules using AI","使用 AI 的模組"
+"Enable AI features","啟用 AI 功能"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","全域啟用或停用 Mirasvit 擴充功能中所有 AI 驅動的功能。<br>停用後，無論個別提供商設定或其他模組中的 AI 設定如何，所有 AI 功能都將無法使用。"
+"Default AI provider","預設 AI 提供商"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","選擇設定多個提供商時使用的主要 AI 提供商。<br>當沒有請求特定提供商時，這將用作所有 AI 操作的後備提供商。"
+"Request timeout","請求逾時"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","等待 AI 提供商回應的最大秒數。<br> 留空以停用逾時。<br> 此設定將影響其他模組中的所有 AI 功能。"
+"Maximum tokens per request","每個請求的最大權杖數"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","單個 AI 請求中產生的最大權杖數。較高的值允許更長的回應，但會增加成本。<br> 留空以停用限制。<br> 不同的提供商和模型有其自己的限制。<br> 此設定將影響其他模組中的所有 AI 功能。"
+"Default temperature","預設溫度"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","控制 AI 回應中的隨機性。較低的值產生更一致的結果，較高的值更具創意。<br>範例：<br><code>0.1</code> - 非常一致、事實性的回應<br><code>0.7</code> - 平衡的創意和一致性<br><code>1.0</code> - 高度創意和多樣化的回應。<br>如果為空，將使用預設溫度 0.7。<br>此設定將影響其他模組中的所有 AI 功能。<br>某些擴充功能可能會覆寫此設定。"
+"Debug mode","偵錯模式"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","啟用 AI 請求和回應的詳細記錄以進行偵錯。<br>警告：這可能會記錄敏感資料並影響效能。僅用於開發目的。"
+"OpenAI Configuration","OpenAI 設定"
+"Enable OpenAI provider","啟用 OpenAI 提供商"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","啟用 OpenAI 作為可用的 AI 提供商。需要有效的 API 金鑰設定。"
+"OpenAI API key","OpenAI API 金鑰"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","您的以 'sk-' 開頭的 OpenAI API 金鑰。此金鑰已加密並安全儲存。<br>從以下位置取得您的 API 金鑰：<a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","預設 OpenAI 模型"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","選擇用於 AI 操作的預設 OpenAI 模型。不同的模型具有不同的功能和成本。"
+"Claude Configuration","Claude 設定"
+"Enable Claude provider","啟用 Claude 提供商"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","啟用 Anthropic Claude 作為可用的 AI 提供商。需要有效的 API 金鑰設定。"
+"Claude API key","Claude API 金鑰"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","您的以 'sk-ant-' 開頭的 Anthropic Claude API 金鑰。此金鑰已加密並安全儲存。<br>從以下位置取得您的 API 金鑰：<a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","預設 Claude 模型"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","選擇用於 AI 操作的預設 Claude 模型。不同的模型具有不同的功能和成本。"
+"Google Gemini Configuration","Google Gemini 設定"
+"Enable Gemini provider","啟用 Gemini 提供商"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","啟用 Google Gemini 作為可用的 AI 提供商。需要有效的 API 金鑰設定。"
+"Gemini API key","Gemini API 金鑰"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","您的以 'AIza' 開頭的 Google AI Studio API 金鑰。此金鑰已加密並安全儲存。<br>從以下位置取得您的 API 金鑰：<a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","預設 Gemini 模型"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","選擇用於 AI 操作的預設 Gemini 模型。不同的模型具有不同的功能和成本。"
+"Determine visitor's country, city, and timezone based on their IP address.","根據訪客的IP位址確定其國家、城市和時區。"
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","自動更新需要免費的<a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind帳戶</a>（每週檢查）。"
+"Used by:","使用者："
+message,訊息
+"Error downloading database: %1","下載資料庫錯誤：%1"
+"MaxMind credentials not configured","MaxMind憑證未設定"
+"Failed to download remote hash","下載遠端雜湊失敗"
+"Database is up to date","資料庫已是最新"
+"Failed to download and extract database","下載和解壓縮資料庫失敗"
+"Database updated successfully","資料庫更新成功"
+"Download failed: %1","下載失敗：%1"
+"This extension uses GeoLite2 Data created by MaxMind.","此擴充功能使用由MaxMind建立的GeoLite2資料。"
+"Database available (auto-update enabled)","資料庫可用（自動更新已啟用）"
+"Database available (auto-update disabled)","資料庫可用（自動更新已停用）"
+Configure,設定
+"Database not available","資料庫不可用"
+"Database status:","資料庫狀態："
+"Not available","不可用"
+"Credentials configured. Click the button below to download the database.","憑證已設定。點擊下方按鈕下載資料庫。"
+"Download database","下載資料庫"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","在上方輸入MaxMind憑證以啟用自動下載，或執行setup:upgrade安裝隨附的資料庫。"
+"Available (auto-update disabled)","可用（自動更新已停用）"
+Version:,版本：
+Size:,大小：
+"Enter MaxMind credentials above to enable automatic weekly updates.","在上方輸入MaxMind憑證以啟用自動每週更新。"
+"Available (auto-update enabled)","可用（自動更新已啟用）"
+"Update database","更新資料庫"
+"Database updated successfully.","資料庫更新成功。"
+Notice,通知
+"Database is up to date.","資料庫已是最新。"
+"An error occurred while downloading the database.","下載資料庫時發生錯誤。"
+"IP Geolocation","IP地理定位"
+"Account ID","帳戶ID"
+"License Key","授權金鑰"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">產生授權金鑰</a>"
+Cron,Cron
+Delete,刪除
+"Delete items","刪除項目"
+"Are you sure you want to delete selected items?","您確定要刪除所選項目嗎？"
+ID,ID
+Code,代碼
+Messages,訊息
+Created,建立時間
+Scheduled,排程時間
+Finished,完成時間

@@ -1,0 +1,66 @@
+<?php
+
+use Mirasvit\Core\Service\SecureOutputService;
+use Mirasvit\SeoToolbar\Block\Toolbar;
+
+/** @var Toolbar $block */
+?>
+<div class="mst-seo-toolbar__toolbar _disabled" data-bind="scope: 'seoToolbar'">
+    <!-- ko if: isToolBarAllowed -->
+    <div class="mst-seo-toolbar__toolbar-header" data-role="header">
+        <i class="fa fa-tachometer"></i>
+        <!-- ko i18n: 'SEO Toolbar' --><!-- /ko -->
+
+        <button class="close" data-role="close" type="button"
+                aria-label="<?= $block->escapeHtml(__('Close SEO Toolbar')) ?>">
+            <div class="icon-close">×</div>
+        </button>
+    </div>
+
+    <div class="mst-seo-toolbar__toolbar-content" data-bind="foreach: sections">
+        <section>
+            <h4 data-bind="text: title"></h4>
+
+            <ul data-bind="foreach: items" role="list">
+                <li role="listitem">
+                    <!-- ko if: title -->
+                    <div class="title" data-bind="text: title"></div>
+                    <!-- /ko -->
+                    <!-- ko if: status -->
+                    <div class="status" data-bind="css: 'status _' + status"></div>
+                    <!-- /ko -->
+                    <div class="description">
+                        <!-- ko if: action -->
+                        <div class="action" data-bind="html: action"></div>
+                        <!-- /ko -->
+                        <!-- ko if: description -->
+                        <div data-bind="html: description"></div>
+                        <!-- /ko -->
+                        <!-- ko if: note -->
+                        <div class="note" data-bind="text: note"></div>
+                        <!-- /ko -->
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    <!-- /ko -->
+</div>
+
+<script type="text/x-magento-init">
+    <?= /* @noEscape */ json_encode([
+        '.mst-seo-toolbar__toolbar' => [
+            'Magento_Ui/js/core/app' => [
+                'components' => [
+                    'seoToolbar' => [
+                        'component' => 'Mirasvit_SeoToolbar/js/toolbar',
+                        'config' => [
+                            'url' => $block->getUrl('seotoolbar/toolbar/ajax'),
+                            'sections' => $block->getSections()
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]) ?>
+</script>

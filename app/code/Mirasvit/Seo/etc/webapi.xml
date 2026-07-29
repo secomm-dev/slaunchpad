@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <route url="/V1/seo/canonical-rewrites" method="GET">
+        <service class="Mirasvit\Seo\Api\CanonicalRewriteRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_canonicalRewrite"/>
+        </resources>
+    </route>
+    <route url="/V1/seo/canonical-rewrite/:canonicalRewriteId" method="GET">
+        <service class="Mirasvit\Seo\Api\CanonicalRewriteRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_canonicalRewrite"/>
+        </resources>
+    </route>
+    <route url="/V1/seo/canonical-rewrite" method="POST">
+        <service class="Mirasvit\Seo\Api\CanonicalRewriteRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_canonicalRewrite"/>
+        </resources>
+    </route>
+    <route url="/V1/seo/canonical-rewrite/:canonicalRewriteId" method="PUT">
+        <service class="Mirasvit\Seo\Api\CanonicalRewriteRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_canonicalRewrite"/>
+        </resources>
+    </route>
+    <route url="/V1/seo/canonical-rewrite/:canonicalRewriteId" method="DELETE">
+        <service class="Mirasvit\Seo\Api\CanonicalRewriteRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_canonicalRewrite"/>
+        </resources>
+    </route>
+
+    <route url="/V1/seo/redirects" method="GET">
+        <service class="Mirasvit\Seo\Api\RedirectRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_redirect"/>
+        </resources>
+    </route>
+    <route url="/V1/seo/redirect/:redirectId" method="GET">
+        <service class="Mirasvit\Seo\Api\RedirectRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_redirect"/>
+        </resources>
+    </route>
+    <route url="/V1/seo/redirect" method="POST">
+        <service class="Mirasvit\Seo\Api\RedirectRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_redirect"/>
+        </resources>
+    </route>
+    <route url="/V1/seo/redirect/:redirectId" method="PUT">
+        <service class="Mirasvit\Seo\Api\RedirectRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_redirect"/>
+        </resources>
+    </route>
+    <route url="/V1/seo/redirect/:redirectId" method="DELETE">
+        <service class="Mirasvit\Seo\Api\RedirectRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Mirasvit_Seo::seo_redirect"/>
+        </resources>
+    </route>
+
+</routes>

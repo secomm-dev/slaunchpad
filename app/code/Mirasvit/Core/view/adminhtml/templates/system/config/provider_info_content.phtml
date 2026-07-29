@@ -1,0 +1,39 @@
+<?php
+/** @var \Mirasvit\Core\Block\Adminhtml\System\Config\ProviderInfo $block */
+
+$providers = $block->getProviderInfo();
+$enabledCount = $block->getEnabledCount();
+$totalCount = $block->getTotalCount();
+
+$coreSettingsLink = '<a href="' . $block->escapeUrl($block->getCoreSettingsLink()) . '" target="_blank">Mirasvit ' . $block->escapeHtml(__('Developer settings')) . '</a>';
+?>
+
+<div class="provider-info-wrapper">
+    <div class="provider-info-header">
+        <span><?= $block->escapeHtml(__('AI Provider Status')) ?></span>
+    </div>
+    <div class="provider-info-content">
+        <?php if ($enabledCount === 0): ?>
+            <div class="message message-warning">
+                <?= /** @noEscape */ __('No AI providers are currently enabled. Please configure AI providers in %1.', $coreSettingsLink) ?>
+            </div>
+        <?php else: ?>
+            <div class="message message-info">
+                <?= /** @noEscape */ __('%1 of %2 providers enabled. You can manage providers in %3.', $enabledCount, $totalCount, $coreSettingsLink) ?>
+            </div>
+        <?php endif ?>
+
+        <div class="provider-list">
+            <?php foreach ($providers as $code => $provider): ?>
+                <div class="provider-item">
+                    <div class="provider-details <?= $provider['enabled'] ? 'enabled' : 'disabled' ?>">
+                        <div class="provider-name"><?= $block->escapeHtml($provider['name']) ?></div>
+                        <div class="provider-status <?= $provider['enabled'] ? 'enabled' : 'disabled' ?>">
+                            <?= $block->escapeHtml($provider['enabled'] ? __('Enabled') : __('Disabled')) ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach ?>
+        </div>
+    </div>
+</div>

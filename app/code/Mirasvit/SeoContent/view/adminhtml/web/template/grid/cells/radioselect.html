@@ -1,0 +1,14 @@
+<!--
+/**
+ * based on the Magento_Variable/grid/cells/radioselect
+ */
+-->
+
+<input type="radio"
+       class="admin__control-radio"
+       name="radio-select"
+       data-bind="value: ($row()['variable_type'].startsWith('adv_seo_'))
+                      ? '[' + $row()['code'] + ']'
+                      : $row()['variable_type'] + ':' + $row()['code'],
+                  checked: selectedVariableCode, click: selectVariable"/>
+<label class="admin__field-label"></label>

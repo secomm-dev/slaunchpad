@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <route url="/V1/seo-content/rewrites" method="GET">
+        <service class="Mirasvit\SeoContent\Api\RewriteRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_rewrite"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-content/rewrite/:rewriteId" method="GET">
+        <service class="Mirasvit\SeoContent\Api\RewriteRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_rewrite"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-content/rewrite" method="POST">
+        <service class="Mirasvit\SeoContent\Api\RewriteRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_rewrite"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-content/rewrite/:rewriteId" method="PUT">
+        <service class="Mirasvit\SeoContent\Api\RewriteRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_rewrite"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-content/rewrite/:rewriteId" method="DELETE">
+        <service class="Mirasvit\SeoContent\Api\RewriteRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_rewrite"/>
+        </resources>
+    </route>
+
+    <route url="/V1/seo-content/templates" method="GET">
+        <service class="Mirasvit\SeoContent\Api\TemplateRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_template"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-content/template/:templateId" method="GET">
+        <service class="Mirasvit\SeoContent\Api\TemplateRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_template"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-content/template" method="POST">
+        <service class="Mirasvit\SeoContent\Api\TemplateRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_template"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-content/template/:templateId" method="PUT">
+        <service class="Mirasvit\SeoContent\Api\TemplateRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_template"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-content/template/:templateId" method="DELETE">
+        <service class="Mirasvit\SeoContent\Api\TemplateRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoContent::seo_content_template"/>
+        </resources>
+    </route>
+
+</routes>

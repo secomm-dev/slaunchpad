@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xs">
+    <system>
+        <section id="seo_audit" translate="label" type="text" sortOrder="460" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>SEO audit</label>
+            <tab>mirasvit</tab>
+            <resource>Mirasvit_SeoAudit::config_seoaudit</resource>
+
+            <group id="general" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Core configuration settings that control the SEO audit functionality.]]></comment>
+
+                <field id="is_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_audit/general/is_enabled</config_path>
+                    <label>Enable SEO audit</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, the module will perform scheduled SEO audits based on the configuration. Disabling will pause all automated audit functionality.]]></comment>
+                </field>
+
+                <field id="exclude_patterns" translate="label comment" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_audit/general/exclude_patterns</config_path>
+                    <label>Exclude URL patterns</label>
+                    <comment><![CDATA[One path or substring per line. Any URL containing a listed pattern will be skipped. Example: <code>/checkout</code>, <code>/customer</code>, <code>/cdn-cgi/</code>, <code>facebook.com</code>.]]></comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="performance" translate="label comment" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Crawl performance</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Control how aggressively the SEO audit crawls your store. Lower intensity reduces server load at the cost of a longer crawl time.]]></comment>
+                <depends>
+                    <field id="seo_audit/general/is_enabled">1</field>
+                </depends>
+
+                <field id="level" translate="label comment tooltip" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_audit/performance/level</config_path>
+                    <label>Crawl intensity</label>
+                    <source_model>Mirasvit\SeoAudit\Model\Config\Source\CrawlIntensity</source_model>
+                    <tooltip><![CDATA[<b>High — intensive crawl</b>: no delay between requests, suitable for dedicated servers with spare capacity.<br/><b>Medium — default mode</b>: 200 ms delay, recommended for most stores.<br/><b>Low — soft crawl</b>: 500 ms delay, use on shared hosting or stores with limited resources.<br/><b>Custom — expert mode</b>: configure all crawl settings manually.]]></tooltip>
+                    <comment><![CDATA[Set the crawl intensity. Custom allows per-field configuration below.]]></comment>
+                </field>
+
+                <group id="custom_settings" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Custom intensity settings</label>
+                    <comment><![CDATA[Applies only when Crawl intensity is set to Custom.]]></comment>
+                    <depends>
+                        <field id="level">0</field>
+                    </depends>
+                    <fieldset_css>mst_config_expanded</fieldset_css>
+
+                    <field id="delay" translate="label comment tooltip" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <config_path>seo_audit/performance/delay</config_path>
+                        <label>Delay between requests (ms)</label>
+                        <tooltip><![CDATA[Time to wait between consecutive URL requests. Set to <code>0</code> for no delay, <code>500</code> for half a second.]]></tooltip>
+                        <comment><![CDATA[Delay in milliseconds inserted after each crawled URL. Reduces peak PHP-FPM concurrency on busy stores.]]></comment>
+                    </field>
+
+                    <field id="max_urls_per_run" translate="label comment tooltip" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <config_path>seo_audit/performance/max_urls_per_run</config_path>
+                        <label>Maximum URLs per cron run</label>
+                        <tooltip><![CDATA[The crawler also stops after 5 minutes regardless of this limit.]]></tooltip>
+                        <comment><![CDATA[Hard cap on the number of URLs crawled in a single cron run. Set to <code>0</code> for no limit (time-bound only).]]></comment>
+                    </field>
+
+                    <field id="cron_schedule_custom" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <config_path>seo_audit/performance/cron_schedule_custom</config_path>
+                        <label>Crawl schedule</label>
+                        <validate>cron-expression</validate>
+                        <comment><![CDATA[Cron expression for how often the crawler runs. Default <code>*/30 * * * *</code> runs every 30 minutes. Use <code>0 2 * * *</code> to run once a day at 2 AM.]]></comment>
+                    </field>
+
+                    <field id="server_load_threshold" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <config_path>seo_audit/performance/server_load_threshold</config_path>
+                        <label>Server load threshold (%)</label>
+                        <comment><![CDATA[The crawler pauses when CPU load exceeds this value. Default is 80. Lower this value on servers that are sensitive to load spikes.]]></comment>
+                    </field>
+
+                    <field id="max_job_lifetime_days" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <config_path>seo_audit/performance/max_job_lifetime_days</config_path>
+                        <label>Restart job after (days)</label>
+                        <comment><![CDATA[The audit job is force-restarted after this many days. Use this as a safety net for stores with more URLs than the crawler can process in one day.]]></comment>
+                    </field>
+                </group>
+            </group>
+        </section>
+    </system>
+</config>
