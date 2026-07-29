@@ -7,6 +7,18 @@
             "src": "app/code/Hyva/MagefanBlog"
         },
         {
+            "src": "app/code/Hyva/MirasvitSeo"
+        },
+        {
+            "src": "app/code/Hyva/MirasvitSeoMarkup"
+        },
+        {
+            "src": "app/code/Hyva/MirasvitSeoSitemap"
+        },
+        {
+            "src": "app/code/Hyva/MirasvitSeoToolbar"
+        },
+        {
             "src": "vendor/mollie/magento2-hyva-compatibility/src"
         },
         {
