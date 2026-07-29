@@ -1,0 +1,1061 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="seo_markup" translate="label" type="text" sortOrder="410" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Rich snippets and OpenGraph</label>
+            <tab>mirasvit</tab>
+            <resource>Mirasvit_SeoMarkup::config_seo_markup</resource>
+
+            <group id="product" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Product page</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure rich snippets for product pages to improve search engine visibility. These settings enhance how your products appear in search results with additional information like pricing, availability, and reviews.]]></comment>
+
+                <field id="is_remove_native_rs" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_remove_native_rs</config_path>
+                    <label>Delete wrong snippets automatically</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Automatically removes incorrect structured data from product pages. Helps maintain clean markup and prevent schema validation issues.]]></comment>
+                </field>
+
+                <field id="is_rs_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_rs_enabled</config_path>
+                    <label>Enable rich snippet</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates structured data markup for product pages. This is the master switch for all product-related rich snippets.]]></comment>
+                </field>
+
+                <field id="name_max_length" translate="label comment tooltip" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/name_max_length</config_path>
+                    <label>Item name length</label>
+                    <tooltip>The maximum value recommended by Google is 150. Values below 25 will default to 150. If the value is empty or 0, no limit is applied.</tooltip>
+                    <comment><![CDATA[Maximum character length for item name in structured data.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_price_enabled" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_price_enabled</config_path>
+                    <label>Item price</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Includes product pricing information in OpenGraph and Rich Snippets. Warning: disabling this will remove price from structured data and may cause Google Rich Results validation errors, as price is required for valid Product rich snippets.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_single_price_mode" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_single_price_mode</config_path>
+                    <label>Single price mode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, uses schema.org Offer type with a single price value instead of AggregateOffer type with price ranges. This changes the structured data from multiple offer aggregation to a single offer representation.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_price_valid_until_enabled" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_price_valid_until_enabled</config_path>
+                    <label>Include price valid until</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[This helps search engines understand price temporal validity and can improve accuracy in price comparison features. Useful for promotional pricing, time-limited offers, or regularly updated pricing structures.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="description_type" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/description_type</config_path>
+                    <label>Item description</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Product\DescriptionType</source_model>
+                    <comment><![CDATA[Controls which product description field is used in structured data. Select the most appropriate source for comprehensive product information.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="description_max_length" translate="label comment tooltip" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/description_max_length</config_path>
+                    <label>Item description length</label>
+                    <tooltip>The maximum value recommended by Google is 5000. Values below 25 will default to 5000. If the value is empty or 0, no limit is applied.</tooltip>
+                    <comment><![CDATA[Maximum character length for item description in structured data.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="description_type" separator="|">1|2|3</field>
+                    </depends>
+                </field>
+
+                <field id="is_image_enabled" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_image_enabled</config_path>
+                    <label>Item image</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Includes product images in structured data. This enables visual representation of products in search results and rich snippets.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_availability_enabled" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_availability_enabled</config_path>
+                    <label>Item availability</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Shows product inventory status in structured data. This helps communicate stock levels to potential customers directly in search results.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_accepted_payment_method_enabled" translate="label comment" type="select" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_accepted_payment_method_enabled</config_path>
+                    <label>Payment methods</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Lists accepted payment methods in structured data. This provides transparency about payment options before visitors click through.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_available_delivery_method_enabled" translate="label comment" type="select" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_available_delivery_method_enabled</config_path>
+                    <label>Delivery methods</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Includes shipping and delivery options in structured data. This helps set customer expectations regarding fulfillment methods.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_category_enabled" translate="label comment" type="select" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_category_enabled</config_path>
+                    <label>Product category</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Displays category information in product structured data. This helps establish product classification context for search engines.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_mpn_enabled" translate="label comment" type="select" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_mpn_enabled</config_path>
+                    <label>Manufacturer part number</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Includes manufacturer part numbers in structured data. This improves discoverability for specific product searches by technical identifiers.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="mpn_attribute" translate="label comment" type="text" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/mpn_attribute</config_path>
+                    <label>Manufacturer part number attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains the manufacturer part number data. The system will read this attribute to populate structured data.]]></comment>
+                    <depends>
+                        <field id="is_mpn_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="brand_attribute" translate="label comment" type="text" sortOrder="160" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/brand_attribute</config_path>
+                    <label>Brand attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains brand information. This maps your existing brand data to structured markup.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="model_attribute" translate="label comment" type="text" sortOrder="170" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/model_attribute</config_path>
+                    <label>Model attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains model information. Helps identify specific product models in structured data.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="color_attribute" translate="label comment" type="text" sortOrder="180" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/color_attribute</config_path>
+                    <label>Color attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains color information. Important for product variants and filtering in rich results.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="size_attribute" translate="label comment" type="text" sortOrder="190" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/size_attribute</config_path>
+                    <label>Size attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains size information. Relevant for apparel and dimensional product data.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="material_attribute" translate="label comment" type="text" sortOrder="195" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/material_attribute</config_path>
+                    <label>Material attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains material information (e.g. "material", "fabric"). Outputs as a direct schema.org property on Product.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="pattern_attribute" translate="label comment" type="text" sortOrder="196" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/pattern_attribute</config_path>
+                    <label>Pattern attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains pattern information (e.g. "pattern"). Outputs as a direct schema.org property on Product.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="weight_unit_type" translate="label comment" type="select" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/weight_unit_type</config_path>
+                    <label>Weight unit</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Product\WeightUnitType</source_model>
+                    <comment><![CDATA[Select the standard measurement unit used for product weights. Ensures consistent weight representation in structured data.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_dimensions_enabled" translate="label comment" type="select" sortOrder="210" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_dimensions_enabled</config_path>
+                    <label>Dimensions</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Enable dimensional measurements in structured data. Important for physical products where size matters to customers.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="dimension_unit" translate="label comment" type="text" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/dimension_unit</config_path>
+                    <label>Unit</label>
+                    <comment><![CDATA[Specify the measurement unit for product dimensions (e.g., inches, cm). Maintains consistency in dimensional representation.]]></comment>
+                    <depends>
+                        <field id="is_dimensions_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="dimension_height_attribute" translate="label comment" type="text" sortOrder="230" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/dimension_height_attribute</config_path>
+                    <label>Height attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains height measurements. Maps your height data to structured markup.]]></comment>
+                    <depends>
+                        <field id="is_dimensions_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="dimension_width_attribute" translate="label comment" type="text" sortOrder="240" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/dimension_width_attribute</config_path>
+                    <label>Width attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains width measurements. Maps your width data to structured markup.]]></comment>
+                    <depends>
+                        <field id="is_dimensions_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="dimension_depth_attribute" translate="label comment" type="text" sortOrder="250" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/dimension_depth_attribute</config_path>
+                    <label>Depth attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains depth measurements. Maps your depth data to structured markup.]]></comment>
+                    <depends>
+                        <field id="is_dimensions_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="item_condition_type" translate="label comment" type="select" sortOrder="260" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/item_condition_type</config_path>
+                    <label>Product condition</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Product\ItemConditionType</source_model>
+                    <comment><![CDATA[Indicate whether products are new, used, or refurbished. This is important for marketplaces and resellers.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="item_condition_attribute" translate="label comment" type="text" sortOrder="270" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/item_condition_attribute</config_path>
+                    <label>Condition attribute</label>
+                    <comment><![CDATA[Specify which product attribute contains condition information. The system will read this attribute for condition data.]]></comment>
+                    <depends>
+                        <field id="item_condition_type">1</field>
+                    </depends>
+                </field>
+                <field id="item_condition_attribute_value_new" translate="label comment" type="text" sortOrder="280" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/item_condition_attribute_value_new</config_path>
+                    <label>New attribute value</label>
+                    <comment><![CDATA[Specify the exact attribute value that indicates a product is new. This maps your internal values to schema.org standards.]]></comment>
+                    <depends>
+                        <field id="item_condition_type">1</field>
+                    </depends>
+                </field>
+                <field id="item_condition_attribute_value_used" translate="label comment" type="text" sortOrder="290" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/item_condition_attribute_value_used</config_path>
+                    <label>Used attribute value</label>
+                    <comment><![CDATA[Specify the exact attribute value that indicates a product is used. This maps your internal values to schema.org standards.]]></comment>
+                    <depends>
+                        <field id="item_condition_type">1</field>
+                    </depends>
+                </field>
+                <field id="item_condition_attribute_value_refurbished" translate="label comment" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/item_condition_attribute_value_refurbished</config_path>
+                    <label>Refurbished attribute value</label>
+                    <comment><![CDATA[Specify the exact attribute value that indicates a product is refurbished. This maps your internal values to schema.org standards.]]></comment>
+                    <depends>
+                        <field id="item_condition_type">1</field>
+                    </depends>
+                </field>
+                <field id="item_condition_attribute_value_damaged" translate="label comment" type="text" sortOrder="310" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/item_condition_attribute_value_damaged</config_path>
+                    <label>Damaged attribute value</label>
+                    <comment><![CDATA[Specify the exact attribute value that indicates a product is damaged. This maps your internal values to schema.org standards.]]></comment>
+                    <depends>
+                        <field id="item_condition_type">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_individual_reviews_enabled" translate="label comment" type="select" sortOrder="320" showInDefault="1">
+                    <config_path>seo_markup/product/is_individual_reviews_enabled</config_path>
+                    <label>Individual review markup</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Include markup for each individual product review. This enables rich display of review content in search results beyond aggregate ratings.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_variants_enabled" translate="label comment" type="select" sortOrder="330" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/is_variants_enabled</config_path>
+                    <label>Add rich snippets for product variants</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Include structured data for product variations like different colors or sizes. This helps search engines understand your complete product offering.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="gtin" translate="label comment" type="label" sortOrder="340" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/gtin</config_path>
+                    <label><![CDATA[<strong><u>GTIN configuration:</u></strong>]]></label>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="gtin8_attribute" translate="label comment" type="text" sortOrder="350" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/gtin8_attribute</config_path>
+                    <label>GTIN-8 attribute</label>
+                    <comment><![CDATA[Specify which attribute contains 8-digit GTIN/EAN codes. Important for international product identification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="gtin12_attribute" translate="label comment" type="text" sortOrder="360" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/gtin12_attribute</config_path>
+                    <label>GTIN-12 attribute</label>
+                    <comment><![CDATA[Specify which attribute contains 12-digit GTIN/UPC codes. Standard for North American product identification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="gtin13_attribute" translate="label comment" type="text" sortOrder="370" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/gtin13_attribute</config_path>
+                    <label>GTIN-13 attribute</label>
+                    <comment><![CDATA[Specify which attribute contains 13-digit GTIN/EAN codes. Common international product identification format.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="gtin14_attribute" translate="label comment" type="text" sortOrder="380" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/product/gtin14_attribute</config_path>
+                    <label>GTIN-14 attribute</label>
+                    <comment><![CDATA[Specify which attribute contains 14-digit GTIN codes. Used for packaging levels in supply chain identification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="category" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Category page</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Control how category pages are represented in search results. These settings help search engines better understand your category structure and improve the display of category information in search results.]]></comment>
+
+                <field id="is_remove_native_rs" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/is_remove_native_rs</config_path>
+                    <label>Delete wrong snippets automatically</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Automatically removes incorrect structured data from category pages. Helps maintain clean markup and prevent schema validation issues.]]></comment>
+                </field>
+
+                <field id="is_rs_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/is_rs_enabled</config_path>
+                    <label>Enable rich snippet</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates structured data markup for category pages. This enables enhanced search result displays for category listings.]]></comment>
+                </field>
+
+                <field id="description_type" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/description_type</config_path>
+                    <label>Category description</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Category\DescriptionType</source_model>
+                    <comment><![CDATA[Controls which description field is used in category structured data. Select the source that best represents your category content.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_image_enabled" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/is_image_enabled</config_path>
+                    <label>Category image</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Category\ImageSource</source_model>
+                    <comment><![CDATA[Includes category thumbnail images in structured data. Helps provide visual context in search and social sharing.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="product_offers_type" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/product_offers_type</config_path>
+                    <label>Product offers</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Category\ProductOffersType</source_model>
+                    <comment><![CDATA[Controls whether and how product information is included in category structured data. This can show available products within categories. Warning: "Entire category" mode outputs all products regardless of current page, which violates Google's guidelines requiring structured data to reflect visible page content, may be treated as spammy markup, and can significantly increase page load time for large categories.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="product_offers_format" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/product_offers_format</config_path>
+                    <label>Product offers format</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Category\ProductOffersFormat</source_model>
+                    <comment><![CDATA[Determines how product data is formatted within category structured data. "Aggregate Product" outputs single Product schema with price range from whole category.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="aggregate_brand_name" translate="label comment" type="text" sortOrder="61" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/aggregate_brand_name</config_path>
+                    <label>Brand name</label>
+                    <comment><![CDATA[Brand name for aggregate Product schema. Leave empty to use store name or brand name for brand pages.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="product_offers_format">3</field>
+                    </depends>
+                </field>
+
+                <field id="aggregate_include_rating" translate="label comment" type="select" sortOrder="62" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/aggregate_include_rating</config_path>
+                    <label>Include aggregate rating</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Include aggregated rating from all products in category for aggregate Product schema.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="product_offers_format">3</field>
+                    </depends>
+                </field>
+
+                <field id="aggregate_exclude_zero_price" translate="label comment" type="select" sortOrder="63" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/aggregate_exclude_zero_price</config_path>
+                    <label>Exclude products with price 0</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, products with price 0 will be excluded from the aggregate offer calculation. This prevents lowPrice from showing 0 when category contains free products.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="product_offers_format">3</field>
+                    </depends>
+                </field>
+
+                <field id="is_og_enabled" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/category/is_og_enabled</config_path>
+                    <label>Enable OpenGraph</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates OpenGraph metadata for category pages. This controls how category pages appear when shared on social media platforms.]]></comment>
+                </field>
+            </group>
+
+            <group id="page" translate="label comment" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>CMS page</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Manage rich snippets and OpenGraph data for static content pages. This helps search engines properly interpret your informational pages and improves how they appear when shared on social media.]]></comment>
+
+                <field id="is_remove_native_rs" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/page/is_remove_native_rs</config_path>
+                    <label>Delete wrong snippets automatically</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Automatically removes incorrect structured data from CMS pages. Helps maintain clean markup on static content pages.]]></comment>
+                </field>
+
+                <field id="is_rs_enabled" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/page/is_rs_enabled</config_path>
+                    <label>Enable rich snippet</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates structured data markup for CMS pages. This enables enhanced search result displays with schema.org types like WebPage, Article, BlogPosting, and more.]]></comment>
+                </field>
+
+                <field id="default_schema_type" translate="label comment" type="select" sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/page/default_schema_type</config_path>
+                    <label>Default schema type</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Page\SchemaType</source_model>
+                    <comment><![CDATA[Select the default schema.org type used for CMS pages when no per-page override is set. Individual pages can override this in the CMS page editor.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_og_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/page/is_og_enabled</config_path>
+                    <label>Enable OpenGraph</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates OpenGraph metadata for CMS pages. This improves how static pages appear when shared on social platforms.]]></comment>
+                </field>
+            </group>
+
+            <group id="landing" translate="label comment" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Landing page</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Control how landing pages are represented in search results. These settings help search engines better understand your landing page structure and improve the display of landing page information in search results. Works with Mirasvit Landing Page only.]]></comment>
+
+                <field id="is_remove_native_rs" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/is_remove_native_rs</config_path>
+                    <label>Delete wrong snippets automatically</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Automatically removes incorrect structured data from landing pages. Helps maintain clean markup and prevent schema validation issues.]]></comment>
+                </field>
+
+                <field id="is_rs_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/is_rs_enabled</config_path>
+                    <label>Enable rich snippet</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates structured data markup for landing pages. This enables enhanced search result displays for landing page listings.]]></comment>
+                </field>
+
+                <field id="description_type" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/description_type</config_path>
+                    <label>Landing page description</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Landing\DescriptionType</source_model>
+                    <comment><![CDATA[Controls which description field is used in landing page structured data. Select the source that best represents your landing page content.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_image_enabled" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/is_image_enabled</config_path>
+                    <label>Landing page image</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Landing\ImageSource</source_model>
+                    <comment><![CDATA[Includes landing page thumbnail images in structured data. Helps provide visual context in search and social sharing.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="product_offers_type" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/product_offers_type</config_path>
+                    <label>Product offers</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Landing\ProductOffersType</source_model>
+                    <comment><![CDATA[Controls whether and how product information is included in landing page structured data. This can show available products within landing pages. Warning: "Entire landing page" mode outputs all products regardless of current page, which violates Google's guidelines requiring structured data to reflect visible page content, may be treated as spammy markup, and can significantly increase page load time for large categories.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="product_offers_format" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/product_offers_format</config_path>
+                    <label>Product offers format</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Landing\ProductOffersFormat</source_model>
+                    <comment><![CDATA[Determines how product data is formatted within landing page structured data. "Aggregate Product" outputs single Product schema with price range.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="aggregate_brand_name" translate="label comment" type="text" sortOrder="61" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/aggregate_brand_name</config_path>
+                    <label>Brand name</label>
+                    <comment><![CDATA[Brand name for aggregate Product schema. Leave empty to use store name.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="product_offers_format">3</field>
+                    </depends>
+                </field>
+
+                <field id="aggregate_include_rating" translate="label comment" type="select" sortOrder="62" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/aggregate_include_rating</config_path>
+                    <label>Include aggregate rating</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Include aggregated rating from all products in landing page for aggregate Product schema.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="product_offers_format">3</field>
+                    </depends>
+                </field>
+
+                <field id="aggregate_exclude_zero_price" translate="label comment" type="select" sortOrder="63" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/aggregate_exclude_zero_price</config_path>
+                    <label>Exclude products with price 0</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, products with price 0 will be excluded from the aggregate offer calculation. This prevents lowPrice from showing 0 when category contains free products.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="product_offers_format">3</field>
+                    </depends>
+                </field>
+
+                <field id="is_og_enabled" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/landing/is_og_enabled</config_path>
+                    <label>Enable OpenGraph</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates OpenGraph metadata for landing pages. This controls how landing pages appear when shared on social media platforms.]]></comment>
+                </field>
+            </group>
+
+            <group id="organization" translate="label comment" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Organization</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Define structured data about your organization for search engines. This information helps establish your business identity in search results and can enable special features like knowledge panel displays.]]></comment>
+
+                <field id="is_rs_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_rs_enabled</config_path>
+                    <label>Enable rich snippet</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates structured data about your organization. This helps search engines understand your business identity.]]></comment>
+                </field>
+
+                <field id="display_scope" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/display_scope</config_path>
+                    <label>Display scope</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\DisplayScopeSource</source_model>
+                    <comment><![CDATA[Choose where organization schema markup should appear on your website.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="cms_pages" translate="label comment" type="multiselect" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/cms_pages</config_path>
+                    <label>CMS pages</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\CmsPagesSource</source_model>
+                    <comment><![CDATA[Select specific CMS pages where organization schema markup should be displayed.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="display_scope">2</field>
+                    </depends>
+                </field>
+
+                <field id="is_custom_name" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_name</config_path>
+                    <label>Name</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Controls how your organization name is determined. Select default store name or specify a custom business name.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="custom_name" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/custom_name</config_path>
+                    <label>Name value</label>
+                    <comment><![CDATA[Enter your organization's official name when using custom naming. This should match your legal business name for consistency.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_name">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_custom_address_country" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_address_country</config_path>
+                    <label>Country</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Determines how your organization's country is specified. Important for local business structured data.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="custom_address_country" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/custom_address_country</config_path>
+                    <label>Country value</label>
+                    <comment><![CDATA[Enter your organization's country name when using custom specification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_address_country">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_custom_address_locality" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_address_locality</config_path>
+                    <label>Locality address</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Controls how your organization's city/locality is determined. Important for local search visibility.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="custom_address_locality" translate="label comment" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/custom_address_locality</config_path>
+                    <label>Locality address value</label>
+                    <comment><![CDATA[Enter your organization's city or locality when using custom specification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_address_locality">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_custom_address_region" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_address_region</config_path>
+                    <label>Address region</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Controls how your organization's state/province/region is determined. Helps with regional search relevance.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="custom_address_region" translate="label comment" type="text" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/custom_address_region</config_path>
+                    <label>Region value</label>
+                    <comment><![CDATA[Enter your organization's state, province or region when using custom specification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_address_region">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_custom_postal_code" translate="label comment" type="select" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_postal_code</config_path>
+                    <label>Postal code</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Controls how your organization's ZIP/postal code is determined. Important for precise location mapping.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="custom_postal_code" translate="label comment" type="text" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/custom_postal_code</config_path>
+                    <label>Postal code value</label>
+                    <comment><![CDATA[Enter your organization's postal code when using custom specification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_postal_code">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_custom_street_address" translate="label comment" type="select" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_street_address</config_path>
+                    <label>Street address</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Controls how your organization's street address is determined. Provides detailed location information.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="custom_street_address" translate="label comment" type="text" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/custom_street_address</config_path>
+                    <label>Street address value</label>
+                    <comment><![CDATA[Enter your organization's full street address when using custom specification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_street_address">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_custom_telephone" translate="label comment" type="select" sortOrder="160" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_telephone</config_path>
+                    <label>Telephone number</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Controls how your organization's phone contact is determined. Important for customer contact information.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="custom_telephone" translate="label comment" type="text" sortOrder="170" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/custom_telephone</config_path>
+                    <label>Telephone number value</label>
+                    <comment><![CDATA[Enter your organization's primary contact phone number when using custom specification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_telephone">1</field>
+                    </depends>
+                </field>
+
+                <field id="custom_fax_number" translate="label comment" type="text" sortOrder="180" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/custom_fax_number</config_path>
+                    <label>Fax number</label>
+                    <comment><![CDATA[Enter your organization's fax number if applicable. Optional contact method for business communications.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="is_custom_email" translate="label comment" type="select" sortOrder="190" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_email</config_path>
+                    <label>Email</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Controls how your organization's email contact is determined. Provides alternative contact information.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="custom_email" translate="label comment" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/custom_email</config_path>
+                    <label>Email value</label>
+                    <comment><![CDATA[Enter your organization's public contact email address when using custom specification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_email">1</field>
+                    </depends>
+                </field>
+
+                <field id="social" translate="label comment" type="label" sortOrder="210" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/social</config_path>
+                    <label><![CDATA[<strong><u>Social media links:</u></strong>]]></label>
+                    <comment><![CDATA[Enter full URLs to your social media profiles. These establish official connection between your website and social channels, helping search engines verify your online presence.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="youtube_link" translate="label comment" type="text" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/youtube_link</config_path>
+                    <label>YouTube channel</label>
+                    <validate>validate-url</validate>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="facebook_link" translate="label comment" type="text" sortOrder="230" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/facebook_link</config_path>
+                    <label>Facebook account</label>
+                    <validate>validate-url</validate>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="linkedin_link" translate="label comment" type="text" sortOrder="240" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/linkedin_link</config_path>
+                    <label>LinkedIn profile</label>
+                    <validate>validate-url</validate>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="instagram_link" translate="label comment" type="text" sortOrder="250" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/instagram_link</config_path>
+                    <label>Instagram account</label>
+                    <validate>validate-url</validate>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="pinterest_link" translate="label comment" type="text" sortOrder="260" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/pinterest_link</config_path>
+                    <label>Pinterest account</label>
+                    <validate>validate-url</validate>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="tumblr_link" translate="label comment" type="text" sortOrder="270" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/tumblr_link</config_path>
+                    <label>Tumblr account</label>
+                    <validate>validate-url</validate>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="twitter_link" translate="label comment" type="text" sortOrder="280" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/twitter_link</config_path>
+                    <label>Twitter account</label>
+                    <validate>validate-url</validate>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="legal_name" translate="label comment" type="text" sortOrder="290" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/legal_name</config_path>
+                    <label>Legal name</label>
+                    <comment><![CDATA[Enter your organization's full registered legal name, if it differs from the display name above. Helps search engines distinguish your official business identity.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="founding_date" translate="label comment" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/founding_date</config_path>
+                    <label>Founding date</label>
+                    <comment><![CDATA[Enter the date your organization was founded, in YYYY-MM-DD format. Used by search engines for Knowledge Graph and trust signals.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="number_of_employees" translate="label comment" type="text" sortOrder="310" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/number_of_employees</config_path>
+                    <label>Number of employees</label>
+                    <comment><![CDATA[Enter the approximate number of employees in your organization.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="area_served" translate="label comment" type="text" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/area_served</config_path>
+                    <label>Area served</label>
+                    <comment><![CDATA[Enter the geographic area your organization serves, e.g. "United States" or "Worldwide".]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="contact_points" translate="label comment" type="label" sortOrder="330" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_points</config_path>
+                    <label><![CDATA[<strong><u>Contact points:</u></strong>]]></label>
+                    <comment><![CDATA[Define dedicated phone/email contact points by department. These are added in addition to the general telephone/email above, and help search engines and users reach the right department directly.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="contact_customer_service_telephone" translate="label comment" type="text" sortOrder="340" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_customer_service_telephone</config_path>
+                    <label>Customer service telephone</label>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="is_custom_contact_customer_service_email" translate="label comment" type="select" sortOrder="345" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_contact_customer_service_email</config_path>
+                    <label>Customer service email</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Controls how the customer service contact email is determined. Store information uses your Customer Support sender email.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="contact_customer_service_email" translate="label comment" type="text" sortOrder="350" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_customer_service_email</config_path>
+                    <label>Customer service email value</label>
+                    <comment><![CDATA[Enter the customer service contact email address when using custom specification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_contact_customer_service_email">1</field>
+                    </depends>
+                </field>
+                <field id="contact_customer_service_area_served" translate="label comment" type="text" sortOrder="360" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_customer_service_area_served</config_path>
+                    <label>Customer service area served</label>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="contact_sales_telephone" translate="label comment" type="text" sortOrder="370" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_sales_telephone</config_path>
+                    <label>Sales telephone</label>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="is_custom_contact_sales_email" translate="label comment" type="select" sortOrder="375" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/is_custom_contact_sales_email</config_path>
+                    <label>Sales email</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Organization\TypeSource</source_model>
+                    <comment><![CDATA[Controls how the sales contact email is determined. Store information uses your Sales Representative sender email.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="contact_sales_email" translate="label comment" type="text" sortOrder="380" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_sales_email</config_path>
+                    <label>Sales email value</label>
+                    <comment><![CDATA[Enter the sales contact email address when using custom specification.]]></comment>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                        <field id="is_custom_contact_sales_email">1</field>
+                    </depends>
+                </field>
+                <field id="contact_sales_area_served" translate="label comment" type="text" sortOrder="390" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_sales_area_served</config_path>
+                    <label>Sales area served</label>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="contact_technical_support_telephone" translate="label comment" type="text" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_technical_support_telephone</config_path>
+                    <label>Technical support telephone</label>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="contact_technical_support_email" translate="label comment" type="text" sortOrder="410" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_technical_support_email</config_path>
+                    <label>Technical support email</label>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="contact_technical_support_area_served" translate="label comment" type="text" sortOrder="420" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/organization/contact_technical_support_area_served</config_path>
+                    <label>Technical support area served</label>
+                    <depends>
+                        <field id="is_rs_enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="breadcrumb_list" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Breadcrumbs</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Enable structured breadcrumb data to help search engines understand your site navigation hierarchy. This improves site indexing and can enhance how breadcrumb navigation appears in search results.]]></comment>
+
+                <field id="is_rs_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_markup/breadcrumb_list/is_rs_enabled</config_path>
+                    <label>Enable rich snippet</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates structured breadcrumb markup. This helps search engines understand your site hierarchy and may display enhanced breadcrumb navigation in search results.]]></comment>
+                </field>
+            </group>
+
+            <group id="twitter" translate="label comment" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Twitter card</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure Twitter card metadata to control how your pages appear when shared on Twitter. This helps optimize social sharing with appropriate images and descriptions.]]></comment>
+
+                <field id="card_type" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/twitter/card_type</config_path>
+                    <label>Add Twitter summary card</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Twitter\CardType</source_model>
+                    <comment><![CDATA[Controls which type of Twitter card to implement. This determines how your content appears when shared on Twitter.]]></comment>
+                </field>
+                <field id="username" translate="label comment" type="text" sortOrder="20" showInDefault="1"  showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/twitter/username</config_path>
+                    <label>Twitter username</label>
+                    <comment><![CDATA[Enter your Twitter handle without the @ symbol. This associates your Twitter account with shared content.]]></comment>
+                    <depends>
+                        <field id="card_type" separator=",">1,2</field>
+                    </depends>
+                </field>
+            </group>
+
+            <group id="searchbox" translate="label comment" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Search box</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Enhance your site's appearance in search results by adding a search box directly in the search snippet. This can drive more targeted traffic through custom site searches.]]></comment>
+
+                <field id="searchbox_type" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/searchbox/searchbox_type</config_path>
+                    <label>Search box type</label>
+                    <source_model>Mirasvit\SeoMarkup\Model\Config\Source\Searchbox\SearchboxType</source_model>
+                    <comment><![CDATA[Determines whether and what type of site search is featured in search results. This can encourage visitors to search your site directly from search results.]]></comment>
+                </field>
+                <field id="blog_search_url" translate="label comment" type="text" sortOrder="20" showInDefault="1">
+                    <config_path>seo_markup/searchbox/blog_search_url</config_path>
+                    <label>Path to the blog search</label>
+                    <validate>required-entry</validate>
+                    <comment><![CDATA[Enter the URL path for your blog search functionality. Required when enabling blog-specific search in search results.]]></comment>
+                    <depends>
+                        <field id="searchbox_type">2</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="aeo" translate="label comment" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Answer Engine (AEO)</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Make the structured-data graph discoverable to AI answer engines (ChatGPT search, Perplexity, Gemini, Google AI Overviews). When enabled, the emitted JSON-LD nodes carry stable @id values and are cross-referenced into one connected graph, so an answer engine can assemble a single confident entity from the page. When disabled, output is identical to the standard rich-snippet behaviour.]]></comment>
+
+                <field id="is_aeo_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_markup/aeo/is_aeo_enabled</config_path>
+                    <label>Enable Answer-Engine Optimization</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Adds stable @id values to each structured-data node and stitches them into one connected graph (Product references its brand and the selling Organization). Off by default; turning it on does not change which entities are emitted, only links them.]]></comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

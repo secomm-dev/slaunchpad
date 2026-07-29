@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","Služba %1 nie je správne nakonfigurovaná alebo nie je dostupná"
+"Invalid AI request data","Neplatné údaje požiadavky AI"
+"Request prompt cannot be empty","Výzva požiadavky nemôže byť prázdna"
+"Claude API error","Chyba API Claude"
+"Invalid Claude API response: missing content","Neplatná odpoveď API Claude: chýbajúci obsah"
+"Empty content received from Claude API","Prázdny obsah prijatý z API Claude"
+"Gemini API error","Chyba API Gemini"
+"Invalid Gemini API response: missing candidates","Neplatná odpoveď API Gemini: chýbajúci kandidáti"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Odpoveď API Gemini bola skrátená, pretože bol dosiahnutý limit max_tokens. Zvážte zvýšenie nastavenia max_tokens alebo použitie kratšej výzvy."
+"Empty content received from Gemini API","Prázdny obsah prijatý z API Gemini"
+"AI services are disabled in configuration","Služby AI sú vypnuté v konfigurácii"
+"No default AI provider configured","Nie je nakonfigurovaný predvolený poskytovateľ AI"
+"No available AI provider for request validation","Nie je k dispozícii žiadny poskytovateľ AI pre validáciu požiadavky"
+"Request validation failed: %1","Validácia požiadavky zlyhala: %1"
+"All AI providers failed. Last error: %1","Všetci poskytovatelia AI zlyhali. Posledná chyba: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Nepodporovaný poskytovateľ AI: %1. Podporovaní poskytovatelia: %2"
+"Service class %1 must extend %2","Trieda služby %1 musí rozširovať %2"
+"Failed to create AI service for provider %1: %2","Nepodarilo sa vytvoriť službu AI pre poskytovateľa %1: %2"
+"Not configured","Nenakonfigurované"
+Unknown,Neznáme
+"Unknown API error","Neznáma chyba API"
+"Temperature must be between 0 and 2","Teplota musí byť medzi 0 a 2"
+"Max tokens must be greater than 0","Maximálny počet tokenov musí byť väčší ako 0"
+"Frequency penalty must be between -2 and 2","Penalizácia frekvencie musí byť medzi -2 a 2"
+"Format output as JSON.","Formátovať výstup ako JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","API OpenAI vrátilo neúplnú odpoveď, pretože bol prekročený počet tokenov kontextového okna modelu."
+"OpenAI API returned no content in the response.","API OpenAI nevrátilo žiadny obsah v odpovedi."
+"Not Installed","Nenainštalované"
+"A total of %1 record(s) have been deleted.","Celkom bolo odstránených %1 záznam(ov)."
+"The record has been removed.","Záznam bol odstránený."
+"Disallowed file type.","Nepovolený typ súboru."
+"Can't remove folder %s","Nie je možné odstrániť priečinok %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Rozšírenie neobsahuje všetky potrebné súbory. Preinštalujte rozšírenie z pôvodného balíka."
+"Extension Information","Informácie o rozšírení"
+Status,Stav
+Other,Ostatné
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron pre Magento nie je spustený. Pre nastavenie cron úlohy nasledujte odkaz %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron úlohy [%1] nie sú spustené. Skontrolujte tabuľku %2 pre zmrazené úlohy a odstráňte ich."
+Remove,Odstrániť
+Error,Chyba
+Missed,Vynechané
+Running,Beží
+Pending,Čaká
+Success,Úspech
+"Server gmt time","Čas servera GMT"
+"Last job","Posledná úloha"
+Executed,Vykonané
+none,žiadne
+"Cron setup","Nastavenie Cron"
+"Cron Jobs","Cron úlohy"
+"No AI-enabled modules are currently active.","Momentálne nie sú aktívne žiadne moduly s AI."
+"%1 module(s) using AI functionality:","%1 modul(ov) používa funkcionalitu AI:"
+Provider:,Poskytovateľ:
+ai_provider,ai_provider
+"You have the latest version","Máte najnovšiu verziu"
+"New version %1 is available","Je dostupná nová verzia %1"
+"View %1 details (opens in new window)","Zobraziť podrobnosti %1 (otvorí sa v novom okne)"
+Details,Podrobnosti
+"View %1 user guide (opens in new window)","Zobraziť používateľskú príručku %1 (otvorí sa v novom okne)"
+"User Guide","Používateľská príručka"
+"View %1 changelog (opens in new window)","Zobraziť záznam zmien %1 (otvorí sa v novom okne)"
+Changelog,Záznam zmien
+"Request new feature for %1 (opens in new window)","Požiadať o novú funkciu pre %1 (otvorí sa v novom okne)"
+"Request New Feature","Požiadať o novú funkciu"
+"Installed Extensions","Nainštalované rozšírenia"
+"Check changes","Skontrolovať zmeny"
+"Validate All Extensions","Validovať všetky rozšírenia"
+"Suggest Improvement","Navrhnúť vylepšenie"
+"%1 (opens in new window)","%1 (otvorí sa v novom okne)"
+"More Details","Viac podrobností"
+"Developer settings","Nastavenia vývojára"
+"AI Provider Status","Stav poskytovateľa AI"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Momentálne nie sú povolení žiadni poskytovatelia AI. Nakonfigurujte poskytovateľov AI v %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 z %2 poskytovateľov povolených. Poskytovateľov môžete spravovať v %3."
+Enabled,Povolené
+Disabled,Zakázané
+"All tests have been passed","Všetky testy boli úspešne dokončené"
+Module,Modul
+Test,Test
+"How to fix","Ako opraviť"
+Warning,Varovanie
+Info,Informácia
+Failed,Zlyhalo
+Today,Dnes
+"Last 7 days","Posledných 7 dní"
+"Last 30 days","Posledných 30 dní"
+"Last 365 days","Posledných 365 dní"
+"Mirasvit Extensions Validator","Validátor rozšírení Mirasvit"
+"Mirasvit Menu","Menu Mirasvit"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Rozšírenia
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Rozšírenia Mirasvit"
+Developer,Vývojár
+"Menu Settings","Nastavenia menu"
+"Enable Mirasvit Menu","Povoliť menu Mirasvit"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Menu je viditeľné, ak máte aspoň dve aktívne rozšírenia Mirasvit."
+"Additional CSS Styles","Dodatočné CSS štýly"
+"AI Configuration","Konfigurácia AI"
+"Modules using AI","Moduly používajúce AI"
+"Enable AI features","Povoliť funkcie AI"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Globálne povoľte alebo zakážte všetky funkcie poháňané AI v rozšíreniach Mirasvit.<br>Keď je zakázané, všetky funkcie AI budú nedostupné bez ohľadu na individuálne nastavenia poskytovateľa alebo nastavenia AI v iných moduloch."
+"Default AI provider","Predvolený poskytovateľ AI"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Vyberte primárneho poskytovateľa AI, ktorý sa použije, keď je nakonfigurovaných viacero poskytovateľov.<br>Bude sa používať ako záložný poskytovateľ pre všetky operácie AI, keď nie je požadovaný konkrétny poskytovateľ."
+"Request timeout","Časový limit požiadavky"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Maximálny čas v sekundách na čakanie na odpovede poskytovateľa AI.<br> Nechajte prázdne na zakázanie časového limitu.<br> Toto nastavenie ovplyvní všetky funkcie AI v iných moduloch."
+"Maximum tokens per request","Maximálny počet tokenov na požiadavku"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Maximálny počet tokenov na generovanie v jednej požiadavke AI. Vyššie hodnoty umožňujú dlhšie odpovede, ale zvyšujú náklady.<br> Nechajte prázdne na zakázanie obmedzenia.<br> Rôzni poskytovatelia a modely majú svoje vlastné limity.<br> Toto nastavenie ovplyvní všetky funkcie AI v iných moduloch."
+"Default temperature","Predvolená teplota"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Kontroluje náhodnosť v odpovediach AI. Nižšie hodnoty produkujú konzistentnejšie výsledky, vyššie hodnoty kreatívnejšie.<br>Príklad:<br><code>0.1</code> - veľmi konzistentné, vecné odpovede<br><code>0.7</code> - vyvážená kreativita a konzistencia<br><code>1.0</code> - vysoko kreatívne a rozmanité odpovede.<br>Ak je prázdne, použije sa predvolená teplota 0.7.<br>Toto nastavenie ovplyvní všetky funkcie AI v iných moduloch.<br>Niektoré rozšírenia môžu toto nastavenie prepísať."
+"Debug mode","Režim ladenia"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Povoľte podrobné protokolovanie požiadaviek a odpovedí AI na účely ladenia.<br>Varovanie: Môže to zaznamenávať citlivé údaje a ovplyvniť výkon. Používajte len na vývoj."
+"OpenAI Configuration","Konfigurácia OpenAI"
+"Enable OpenAI provider","Povoliť poskytovateľa OpenAI"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Povoľte OpenAI ako dostupného poskytovateľa AI. Vyžaduje platnú konfiguráciu API kľúča."
+"OpenAI API key","API kľúč OpenAI"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Váš API kľúč OpenAI začínajúci 'sk-'. Tento kľúč je šifrovaný a bezpečne uložený.<br>Získajte svoj API kľúč z: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Predvolený model OpenAI"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Vyberte predvolený model OpenAI pre operácie AI. Rôzne modely majú rôzne schopnosti a náklady."
+"Claude Configuration","Konfigurácia Claude"
+"Enable Claude provider","Povoliť poskytovateľa Claude"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Povoľte Anthropic Claude ako dostupného poskytovateľa AI. Vyžaduje platnú konfiguráciu API kľúča."
+"Claude API key","API kľúč Claude"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Váš API kľúč Anthropic Claude začínajúci 'sk-ant-'. Tento kľúč je šifrovaný a bezpečne uložený.<br>Získajte svoj API kľúč z: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Predvolený model Claude"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Vyberte predvolený model Claude pre operácie AI. Rôzne modely majú rôzne schopnosti a náklady."
+"Google Gemini Configuration","Konfigurácia Google Gemini"
+"Enable Gemini provider","Povoliť poskytovateľa Gemini"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Povoľte Google Gemini ako dostupného poskytovateľa AI. Vyžaduje platnú konfiguráciu API kľúča."
+"Gemini API key","API kľúč Gemini"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Váš API kľúč Google AI Studio začínajúci 'AIza'. Tento kľúč je šifrovaný a bezpečne uložený.<br>Získajte svoj API kľúč z: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Predvolený model Gemini"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Vyberte predvolený model Gemini pre operácie AI. Rôzne modely majú rôzne schopnosti a náklady."
+"Determine visitor's country, city, and timezone based on their IP address.","Určte krajinu, mesto a časové pásmo návštevníka na základe jeho IP adresy."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Pre automatické aktualizácie je potrebný bezplatný účet <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind</a> (kontrola týždenne)."
+"Used by:","Používané:"
+message,správa
+"Error downloading database: %1","Chyba pri sťahovaní databázy: %1"
+"MaxMind credentials not configured","Prihlasovacie údaje MaxMind nie sú nakonfigurované"
+"Failed to download remote hash","Stiahnutie vzdialeného hashu zlyhalo"
+"Database is up to date","Databáza je aktuálna"
+"Failed to download and extract database","Stiahnutie a rozbalenie databázy zlyhalo"
+"Database updated successfully","Databáza bola úspešne aktualizovaná"
+"Download failed: %1","Sťahovanie zlyhalo: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Toto rozšírenie používa dáta GeoLite2 vytvorené spoločnosťou MaxMind."
+"Database available (auto-update enabled)","Databáza dostupná (automatická aktualizácia povolená)"
+"Database available (auto-update disabled)","Databáza dostupná (automatická aktualizácia zakázaná)"
+Configure,Konfigurovať
+"Database not available","Databáza nie je dostupná"
+"Database status:","Stav databázy:"
+"Not available","Nedostupné"
+"Credentials configured. Click the button below to download the database.","Prihlasovacie údaje nakonfigurované. Kliknite na tlačidlo nižšie pre stiahnutie databázy."
+"Download database","Stiahnuť databázu"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Zadajte vyššie prihlasovacie údaje MaxMind pre povolenie automatického sťahovania, alebo spustite setup:upgrade pre inštaláciu pribalenej databázy."
+"Available (auto-update disabled)","Dostupné (automatická aktualizácia zakázaná)"
+Version:,Verzia:
+Size:,Veľkosť:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Zadajte vyššie prihlasovacie údaje MaxMind pre povolenie automatických týždenných aktualizácií."
+"Available (auto-update enabled)","Dostupné (automatická aktualizácia povolená)"
+"Update database","Aktualizovať databázu"
+"Database updated successfully.","Databáza bola úspešne aktualizovaná."
+Notice,Oznámenie
+"Database is up to date.","Databáza je aktuálna."
+"An error occurred while downloading the database.","Pri sťahovaní databázy došlo k chybe."
+"IP Geolocation","IP geolokácia"
+"Account ID","ID účtu"
+"License Key","Licenčný kľúč"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Vygenerovať licenčný kľúč</a>"
+Cron,Cron
+Delete,Odstrániť
+"Delete items","Odstrániť položky"
+"Are you sure you want to delete selected items?","Ste si istí, že chcete odstrániť vybrané položky?"
+ID,ID
+Code,Kód
+Messages,Správy
+Created,Vytvorené
+Scheduled,Naplánované
+Finished,Dokončené

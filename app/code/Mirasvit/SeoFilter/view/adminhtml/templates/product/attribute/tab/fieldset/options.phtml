@@ -1,0 +1,61 @@
+<?php
+/** @var \Mirasvit\SeoFilter\Block\Adminhtml\Attribute\Edit\Tab\Fieldset\OptionsFieldset $block */
+$stores  = $block->getStores();
+$options = $block->getOptions();
+?>
+<?php if (!empty($options)): ?>
+    <div class="fieldset">
+        <div class="grid">
+            <div class="hor-scroll">
+                <table cellspacing="0" class="data border admin__control-table" width="100%">
+                    <thead>
+                    <tr class="headings">
+                        <th><?= $block->escapeHtml(__('Option')) ?></th>
+                        <?php foreach ($stores as $store): ?>
+                            <th><?= $block->escapeHtml(__('URL Alias')) ?> <small>[<?= $block->escapeHtml($store) ?>]</small></th>
+                        <?php endforeach ?>
+                    </tr>
+                    </thead>
+                    <tbody id="rewrite_items">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<?php else: ?>
+    <th><?= $block->escapeHtml(__('SEO friendly aliases are automatically generated when "Use in Layered Navigation" is set to Filterable.')) ?></th>
+<?php endif ?>
+
+<script type="text/javascript">
+    require([
+        'jquery',
+        'mage/template'
+    ], function ($, mageTemplate) {
+        let linkTemplate = '' +
+            '<tr>' +
+            '<td>' +
+            '<%= name %>' +
+            '</td>';
+
+        <?php foreach ($stores as $storeId => $store): ?>
+        linkTemplate += '<td>' +
+            '<input type="text" class="input-text" name="seo_filter[options][<%= id %>][<?=$block->escapeHtmlAttr($storeId) ?>]" value="<%= rewrite[<?=$block->escapeHtmlAttr($storeId) ?>] %>">' +
+            '</td>';
+        <?php endforeach ?>
+        linkTemplate += '</tr>';
+
+        const linkItems = {
+            tbody:        $('#rewrite_items'),
+            templateText: linkTemplate,
+
+            add: function (data) {
+                const row = mageTemplate(this.templateText, data);
+                $(this.tbody).append(row);
+            }
+        };
+
+        <?php foreach ($options as $item): ?>
+        linkItems.add(<?= \Mirasvit\Core\Service\SerializeService::encode($item) ?>);
+        <?php endforeach; ?>
+    });
+</script>

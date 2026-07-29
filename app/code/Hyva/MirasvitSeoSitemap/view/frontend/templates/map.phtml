@@ -1,0 +1,302 @@
+<?php
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Mirasvit\SeoSitemap\Block\Map;
+
+/**
+ * @var Map     $block
+ * @var Escaper $escaper
+ * @var HyvaCsp $hyvaCsp
+ */
+
+$categoryBlock = $block->getChildBlock('map.category');
+$productBlock  = $block->getChildBlock('map.product');
+$storeBlock    = $block->getChildBlock('map.store');
+$cmsPageBlock  = $block->getChildBlock('map.cms_page');
+
+$capitalLettersVisibility = $productBlock->isCapitalLettersEnabled() ? 'visible' : 'hidden';
+
+$uniqueStyle = 's' . md5($block->getNameInLayout());
+$chevronRightSvg = 'data:image/svg+xml; utf8, <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="gray"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>';
+?>
+<style>
+    .<?= $uniqueStyle ?>:after {
+        content: url('<?= $chevronRightSvg ?>');
+        display: inline-block;
+        width: 1.2rem;
+        height: 1.2rem;
+        vertical-align: sub;
+        speak: none;
+        margin-left: 0.5rem;
+    }
+    .<?= $uniqueStyle ?>:last-child:after {
+        display: none;
+    }
+</style>
+
+<div class="mst-seo-sitemap__map container" x-data="init_mst_seo_sitemap">
+    <?php if ($block->canShowSearch()): ?>
+        <div class="search-bar flex">
+            <label for="sitemap-search" class="hidden"><?= $block->escapeHtml(__('Search sitemap')) ?></label>
+            <input type="search" id="sitemap-search" placeholder="<?= $block->escapeHtmlAttr(__('Search')) ?>"
+                   class="relative mx-auto w-10/12 md:w-1/2" x-on:input="search" autofocus data-element="search"
+                   aria-label="<?= $block->escapeHtmlAttr(__('Search through sitemap items')) ?>">
+        </div>
+    <?php endif; ?>
+
+    <?php if ($block->canShowTopPagination()): ?>
+        <?= $block->getChildHtml('map.pager') ?>
+    <?php endif; ?>
+
+    <?php if ($block->isFirstPage()): ?>
+
+        <?php if ($storeBlock->canShowStores() && count($storeBlock->getStores()) > 1): ?>
+            <div class="mst-seo-sitemap__map-stores provider" data-element="provider">
+                <h3 class="text-2xl py-4"><?= $block->escapeHtml($storeBlock->getTitle()) ?></h3>
+
+                <ul class="pl-4 grid grid-cols-<?= $block->escapeHtmlAttr($block->getColumnCount()) ?> gap-3" role="list">
+                    <?php foreach ($storeBlock->getStores() as $store): ?>
+                        <li data-element="item" role="listitem">
+                            <a href="<?= $block->escapeUrl($store->getBaseUrl()) ?>"
+                               aria-label="<?= $block->escapeHtmlAttr(__('Visit %1 store', $store->getName())) ?>">
+                                <span class="h-6 w-6"><?= $block->escapeHtml($store->getName()) ?></span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($cmsPageBlock->canShowCmsPages()): ?>
+            <div class="mst-seo-sitemap__map-pages provider" data-element="provider">
+                <h3 class="text-2xl py-4"><?= $block->escapeHtml($cmsPageBlock->getTitle()) ?></h3>
+
+                <ul class="pl-4 grid grid-cols-<?= $block->getColumnCount() ?>" role="list">
+                    <?php foreach ($cmsPageBlock->getCollection() as $page): ?>
+                        <li data-element="item" role="listitem">
+                            <a href="<?= $block->escapeUrl($page->getUrl()) ?>"
+                               aria-label="<?= $block->escapeHtmlAttr(__('View %1 page', $page->getTitle())) ?>">
+                                <span><?= $block->escapeHtml($page->getTitle()) ?></span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($cmsPageBlock->canShowAdditionalLinks() && count($cmsPageBlock->getAdditionalCollection()) > 0): ?>
+            <div class="mst-seo-sitemap__map-additional provider" data-element="provider">
+                <h3 class="text-2xl py-4"><?= $block->escapeHtml(__('Additional Links')) ?></h3>
+
+                <ul class="pl-4 grid grid-cols-<?= $block->getColumnCount() ?>" role="list">
+                    <?php foreach ($cmsPageBlock->getAdditionalCollection() as $link): ?>
+                        <li data-element="item" role="listitem">
+                            <a href="<?= $block->escapeUrl($link->getUrl()) ?>"
+                               aria-label="<?= $block->escapeHtmlAttr(__('Visit %1', $link->getTitle())) ?>">
+                                <span><?= $block->escapeHtml($link->getTitle()) ?></span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <?php foreach ($block->getFrontendProviders() as $provider): ?>
+            <?php $items = $block->getProviderItems($provider) ?>
+            <?php if (count($items) > 0): ?>
+                <div class="mst-seo-sitemap__map-<?= $block->escapeHtmlAttr(strtolower($provider->getModuleName())) ?> provider" data-element="provider">
+                    <h3 class="text-2xl py-4"><?= $block->escapeHtml($provider->getTitle()) ?></h3>
+
+                    <ul class="pl-4 grid grid-cols-<?= $block->getColumnCount() ?>" role="list">
+                        <?php foreach ($items as $item): ?>
+                            <li data-element="item" role="listitem">
+                                <a href="<?= $block->escapeUrl($item->getData('url')) ?>"
+                                   aria-label="<?= $block->escapeHtmlAttr(__('View %1', $item->getData('title'))) ?>">
+                                    <span><?= $block->escapeHtml($item->getData('title')) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
+
+        <?php if ($categoryBlock->isShowCategories()): ?>
+            <div class="mst-seo-sitemap__map-categories provider" data-element="provider">
+                <h3 class="text-2xl py-4"><?= $block->escapeHtml($categoryBlock->getTitle()) ?></h3>
+
+                <ul class="pl-4 grid grid-cols-<?= $block->getColumnCount() ?> gap-3" role="list">
+                    <?php foreach ($categoryBlock->getCategoriesAsPaths() as $item): ?>
+                        <li data-element="item" role="listitem">
+                            <a href="<?= $block->escapeUrl($item->getUrl()) ?>"
+                               aria-label="<?= $block->escapeHtmlAttr(__('View category: %1', implode(' > ', $item->getPath()))) ?>">
+                                <?php foreach ($item->getPath() as $cat): ?>
+                                    <span class="<?= $uniqueStyle ?>"><?= $block->escapeHtml($cat) ?></span>
+                                <?php endforeach; ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+    <?php endif; ?>
+
+    <?php if ($productBlock->isShowProducts()): ?>
+        <div class="mst-seo-sitemap__map-products provider" data-element="provider">
+            <h3 class="text-2xl py-4"><?= $block->escapeHtml($productBlock->getTitle()) ?></h3>
+
+            <ul class="pl-4 pb-1" role="list">
+                <?php foreach ($block->getSplitByLetterCollection() as $index => $items): ?>
+                    <li class="letter" data-element="letter" role="listitem">
+                        <strong class='strong_<?=$capitalLettersVisibility ?>'><?= $block->escapeHtml($index) ?></strong>
+
+                        <ul class="pl-2 grid grid-cols-<?= $block->getColumnCount() ?>" role="list">
+                            <?php foreach ($items as $item): ?>
+                                <li data-element="item" role="listitem">
+                                    <a href="<?= $block->escapeUrl($item['url']) ?>"
+                                       aria-label="<?= $block->escapeHtmlAttr(__('View product: %1', $item['name'])) ?>">
+                                        <span class="mx-1"><?= $block->escapeHtml($item['name']) ?></span>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
+    <div class="message warning" data-element="notFound" style="display: none;margin-top: 2rem;">
+        <div><?= $block->escapeHtml(__('Nothing to show, please change a search query')) ?></div>
+    </div>
+</div>
+
+<?php if ($block->canShowBottomPagination()): ?>
+    <?= $block->getChildHtml('map.pager') ?>
+<?php endif; ?>
+
+<script>
+    function init_mst_seo_sitemap() {
+
+        function highlight(el, query) {
+            const arSpecialChars = [
+                {'key': 'a', 'value': '(à|â|ą|a)'},
+                {'key': 'c', 'value': '(ç|č|c)'},
+                {'key': 'e', 'value': '(è|é|ė|ê|ë|ę|e)'},
+                {'key': 'i', 'value': '(î|ï|į|i)'},
+                {'key': 'o', 'value': '(ô|o)'},
+                {'key': 's', 'value': '(š|s)'},
+                {'key': 'u', 'value': '(ù|ü|û|ū|ų|u)'}
+            ];
+
+            let text = el.innerText;
+
+            if (query) {
+                let word = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+
+                arSpecialChars.forEach(function (match) {
+                    word = word.replace(new RegExp(match.key, 'g'), match.value);
+                });
+
+                if ('span'.indexOf(word.toLowerCase()) < 0) {
+                    text = text.replace(new RegExp('(' + word + '(?![^<>]*>))', 'ig'), function ($1, match) {
+                        return '<i class="bg-yellow-100">' + match + '</i>';
+                    });
+                }
+            }
+
+            el.innerHTML = text;
+        }
+
+        function resetHighlight(items) {
+            items.forEach(el => {
+                const html = el.innerHTML;
+                el.innerHTML = html.replace(/<\/?i[^>]*>/g, '');
+            })
+        }
+
+        function show(element) {
+            element && (element.style.display = '');
+        }
+
+        function hide(element) {
+            element && (element.style.display = 'none');
+        }
+
+        return {
+            search: function (event) {
+
+                const providerSelector = '[data-element=provider]',
+                    letterSelector = '[data-element=letter]',
+                    notFoundSelector = '[data-element=notFound]';
+
+                const closest = (element, selector) => {
+                    if (! element || element === this.$root) {
+                        return;
+                    }
+                    return element.matches(selector)
+                        ? element
+                        : closest(element.parentElement, selector);
+                };
+
+                const showAll = selector => {
+                    Array.from(this.$root.querySelectorAll(selector)).forEach(show);
+                }
+
+                const hideAll = selector => {
+                    Array.from(this.$root.querySelectorAll(selector)).forEach(hide)
+                }
+
+                let isFound = false;
+                const query = event.target.value;
+                const items = Array.from(this.$root.querySelectorAll('[data-element=item]'));
+
+                resetHighlight(items);
+
+                if (query === '') {
+                    isFound = true;
+                    items.map(show);
+                    showAll(providerSelector);
+                    showAll(letterSelector);
+                } else {
+                    hideAll(providerSelector);
+                    hideAll(letterSelector);
+
+                    items.forEach(item => {
+                        const text = item.innerText.toLowerCase();
+                        if (text.indexOf(query) !== -1) {
+                            isFound = true;
+                            item.style.display = '';
+                            show(closest(item, providerSelector));
+                            show(closest(item, letterSelector));
+                            Array.from(item.querySelectorAll('span')).forEach(el => highlight(el, query));
+                        } else {
+                            hide(item);
+                        }
+                    })
+                }
+                if (isFound) {
+                    hideAll(notFoundSelector);
+                } else {
+                    showAll(notFoundSelector);
+                }
+            }
+        }
+    }
+
+    window.addEventListener(
+        'alpine:init',
+        () => Alpine.data('init_mst_seo_sitemap', init_mst_seo_sitemap),
+        {once: true}
+    );
+</script>
+<?php isset($hyvaCsp) && $hyvaCsp->registerInlineScript() ?>
+
+<?php /*
+<script type="text/x-magento-init"><?= \Zend_Json::encode([
+        '[data-element="sitemap__map"]' => [
+            'Mirasvit_SeoSitemap/js/sitemap' => [],
+        ],
+    ]) ?></script>
+*/ ?>

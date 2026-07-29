@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../../../module-core/src/Core/etc/manual.xsd">
+    <link action="seo_canonicalRewrite_index" title="Learn more about Canonical rewrite management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/canonical-rewrite-manager"/>
+    <link action="seo_canonicalRewrite_add" title="Learn more about Canonical rewrite management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/canonical-rewrite-manager"/>
+    <link action="seo_canonicalRewrite_edit" title="Learn more about Canonical rewrite management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/canonical-rewrite-manager"/>
+    <link action="seo_redirect_index" title="Learn more about Redirects management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/redirects-manager"/>
+    <link action="seo_redirect_add" title="Learn more about Redirects management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/redirects-manager"/>
+    <link action="seo_redirect_edit" title="Learn more about Redirects management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/redirects-manager"/>
+    <link action="seo_redirectImportExport_index" title="Learn more about Import/Export redirects" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/how-to/import-export-redirect-rules"/>
+</config>

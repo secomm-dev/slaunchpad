@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","Сервіс %1 не налаштований належним чином або недоступний"
+"Invalid AI request data","Недійсні дані запиту ШІ"
+"Request prompt cannot be empty","Промпт запиту не може бути порожнім"
+"Claude API error","Помилка API Claude"
+"Invalid Claude API response: missing content","Недійсна відповідь API Claude: відсутній вміст"
+"Empty content received from Claude API","Отримано порожній вміст від API Claude"
+"Gemini API error","Помилка API Gemini"
+"Invalid Gemini API response: missing candidates","Недійсна відповідь API Gemini: відсутні кандидати"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Відповідь API Gemini була обрізана, оскільки досягнуто ліміт max_tokens. Спробуйте збільшити налаштування max_tokens або використати коротший промпт."
+"Empty content received from Gemini API","Отримано порожній вміст від API Gemini"
+"AI services are disabled in configuration","Сервіси ШІ вимкнено в конфігурації"
+"No default AI provider configured","Не налаштовано постачальника ШІ за замовчуванням"
+"No available AI provider for request validation","Немає доступного постачальника ШІ для валідації запиту"
+"Request validation failed: %1","Валідація запиту не вдалася: %1"
+"All AI providers failed. Last error: %1","Усі постачальники ШІ зазнали невдачі. Остання помилка: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Непідтримуваний постачальник ШІ: %1. Підтримувані постачальники: %2"
+"Service class %1 must extend %2","Клас сервісу %1 повинен розширювати %2"
+"Failed to create AI service for provider %1: %2","Не вдалося створити сервіс ШІ для постачальника %1: %2"
+"Not configured","Не налаштовано"
+Unknown,Невідомо
+"Unknown API error","Невідома помилка API"
+"Temperature must be between 0 and 2","Температура повинна бути між 0 та 2"
+"Max tokens must be greater than 0","Максимальна кількість токенів повинна бути більше 0"
+"Frequency penalty must be between -2 and 2","Штраф за повторення повинен бути між -2 та 2"
+"Format output as JSON.","Форматувати вивід як JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","API OpenAI повернув неповну відповідь, оскільки було перевищено кількість токенів контекстного вікна моделі."
+"OpenAI API returned no content in the response.","API OpenAI не повернув вміст у відповіді."
+"Not Installed","Не встановлено"
+"A total of %1 record(s) have been deleted.","Всього видалено %1 запис(ів)."
+"The record has been removed.","Запис видалено."
+"Disallowed file type.","Недозволений тип файлу."
+"Can't remove folder %s","Неможливо видалити папку %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Розширення не містить усіх необхідних файлів. Будь ласка, перевстановіть розширення з оригінального пакету."
+"Extension Information","Інформація про розширення"
+Status,Статус
+Other,Інше
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron для Magento не працює. Щоб налаштувати cron-завдання, перейдіть за посиланням %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron-завдання [%1] не виконуються. Перевірте таблицю %2 на наявність завислих завдань та видаліть їх."
+Remove,Видалити
+Error,Помилка
+Missed,Пропущено
+Running,Виконується
+Pending,Очікує
+Success,Успішно
+"Server gmt time","Час сервера за GMT"
+"Last job","Останнє завдання"
+Executed,Виконано
+none,немає
+"Cron setup","Налаштування Cron"
+"Cron Jobs","Cron-завдання"
+"No AI-enabled modules are currently active.","Наразі немає активних модулів з підтримкою ШІ."
+"%1 module(s) using AI functionality:","%1 модуль(ів) використовують функціонал ШІ:"
+Provider:,Постачальник:
+ai_provider,ai_provider
+"You have the latest version","У вас найновіша версія"
+"New version %1 is available","Доступна нова версія %1"
+"View %1 details (opens in new window)","Переглянути деталі %1 (відкриється в новому вікні)"
+Details,Деталі
+"View %1 user guide (opens in new window)","Переглянути посібник користувача %1 (відкриється в новому вікні)"
+"User Guide","Посібник користувача"
+"View %1 changelog (opens in new window)","Переглянути журнал змін %1 (відкриється в новому вікні)"
+Changelog,Журнал змін
+"Request new feature for %1 (opens in new window)","Запросити нову функцію для %1 (відкриється в новому вікні)"
+"Request New Feature","Запросити нову функцію"
+"Installed Extensions","Встановлені розширення"
+"Check changes","Перевірити зміни"
+"Validate All Extensions","Перевірити всі розширення"
+"Suggest Improvement","Запропонувати покращення"
+"%1 (opens in new window)","%1 (відкриється в новому вікні)"
+"More Details","Більше деталей"
+"Developer settings","Налаштування розробника"
+"AI Provider Status","Статус постачальників ШІ"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Наразі не увімкнено жодного постачальника ШІ. Налаштуйте постачальників ШІ в %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","Увімкнено %1 з %2 постачальників. Ви можете керувати постачальниками в %3."
+Enabled,Увімкнено
+Disabled,Вимкнено
+"All tests have been passed","Усі тести пройдено"
+Module,Модуль
+Test,Тест
+"How to fix","Як виправити"
+Warning,Попередження
+Info,Інформація
+Failed,Не вдалося
+Today,Сьогодні
+"Last 7 days","Останні 7 днів"
+"Last 30 days","Останні 30 днів"
+"Last 365 days","Останні 365 днів"
+"Mirasvit Extensions Validator","Валідатор розширень Mirasvit"
+"Mirasvit Menu","Меню Mirasvit"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Розширення
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Розширення Mirasvit"
+Developer,Розробник
+"Menu Settings","Налаштування меню"
+"Enable Mirasvit Menu","Увімкнути меню Mirasvit"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Меню відображається, якщо у вас є принаймні два активних розширення Mirasvit."
+"Additional CSS Styles","Додаткові CSS-стилі"
+"AI Configuration","Конфігурація ШІ"
+"Modules using AI","Модулі з використанням ШІ"
+"Enable AI features","Увімкнути функції ШІ"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Глобально увімкніть або вимкніть усі функції на базі ШІ в розширеннях Mirasvit.<br>При вимкненні всі функції ШІ будуть недоступні незалежно від індивідуальних налаштувань постачальників або налаштувань ШІ в інших модулях."
+"Default AI provider","Постачальник ШІ за замовчуванням"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Виберіть основного постачальника ШІ для використання, коли налаштовано кілька постачальників.<br>Він буде використовуватися як резервний постачальник для всіх операцій ШІ, коли не вказано конкретного постачальника."
+"Request timeout","Тайм-аут запиту"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Максимальний час у секундах для очікування відповідей від постачальників ШІ.<br> Залиште порожнім, щоб вимкнути тайм-аут.<br> Це налаштування вплине на всі функції ШІ в інших модулях."
+"Maximum tokens per request","Максимальна кількість токенів на запит"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Максимальна кількість токенів для генерації в одному запиті ШІ. Вищі значення дозволяють довші відповіді, але збільшують витрати.<br> Залиште порожнім, щоб вимкнути обмеження.<br> Різні постачальники та моделі мають власні ліміти.<br> Це налаштування вплине на всі функції ШІ в інших модулях."
+"Default temperature","Температура за замовчуванням"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Контролює випадковість у відповідях ШІ. Нижчі значення дають більш послідовні результати, вищі — більш креативні.<br>Приклад:<br><code>0.1</code> - дуже послідовні, фактичні відповіді<br><code>0.7</code> - збалансована креативність та послідовність<br><code>1.0</code> - високо креативні та різноманітні відповіді.<br>Якщо порожньо, буде використано температуру за замовчуванням 0.7.<br>Це налаштування вплине на всі функції ШІ в інших модулях.<br>Деякі розширення можуть перевизначити це налаштування."
+"Debug mode","Режим налагодження"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Увімкніть детальне журналювання запитів та відповідей ШІ для цілей налагодження.<br>Увага: це може записувати конфіденційні дані та впливати на продуктивність. Використовуйте лише для розробки."
+"OpenAI Configuration","Конфігурація OpenAI"
+"Enable OpenAI provider","Увімкнути постачальника OpenAI"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Увімкніть OpenAI як доступного постачальника ШІ. Потрібна дійсна конфігурація API-ключа."
+"OpenAI API key","API-ключ OpenAI"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Ваш API-ключ OpenAI, що починається з 'sk-'. Цей ключ зашифрований та зберігається безпечно.<br>Отримайте свій API-ключ тут: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Модель OpenAI за замовчуванням"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Виберіть модель OpenAI за замовчуванням для операцій ШІ. Різні моделі мають різні можливості та вартість."
+"Claude Configuration","Конфігурація Claude"
+"Enable Claude provider","Увімкнути постачальника Claude"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Увімкніть Anthropic Claude як доступного постачальника ШІ. Потрібна дійсна конфігурація API-ключа."
+"Claude API key","API-ключ Claude"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Ваш API-ключ Anthropic Claude, що починається з 'sk-ant-'. Цей ключ зашифрований та зберігається безпечно.<br>Отримайте свій API-ключ тут: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Модель Claude за замовчуванням"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Виберіть модель Claude за замовчуванням для операцій ШІ. Різні моделі мають різні можливості та вартість."
+"Google Gemini Configuration","Конфігурація Google Gemini"
+"Enable Gemini provider","Увімкнути постачальника Gemini"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Увімкніть Google Gemini як доступного постачальника ШІ. Потрібна дійсна конфігурація API-ключа."
+"Gemini API key","API-ключ Gemini"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Ваш API-ключ Google AI Studio, що починається з 'AIza'. Цей ключ зашифрований та зберігається безпечно.<br>Отримайте свій API-ключ тут: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Модель Gemini за замовчуванням"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Виберіть модель Gemini за замовчуванням для операцій ШІ. Різні моделі мають різні можливості та вартість."
+"Determine visitor's country, city, and timezone based on their IP address.","Визначає країну, місто та часовий пояс відвідувача за його IP-адресою."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Для автоматичних оновлень потрібен безкоштовний обліковий запис <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind</a> (перевірка щотижня)."
+"Used by:","Використовується:"
+message,повідомлення
+"Error downloading database: %1","Помилка завантаження бази даних: %1"
+"MaxMind credentials not configured","Облікові дані MaxMind не налаштовані"
+"Failed to download remote hash","Не вдалося завантажити віддалений хеш"
+"Database is up to date","База даних актуальна"
+"Failed to download and extract database","Не вдалося завантажити та розпакувати базу даних"
+"Database updated successfully","Базу даних успішно оновлено"
+"Download failed: %1","Завантаження не вдалося: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Це розширення використовує дані GeoLite2, створені MaxMind."
+"Database available (auto-update enabled)","База даних доступна (автооновлення увімкнено)"
+"Database available (auto-update disabled)","База даних доступна (автооновлення вимкнено)"
+Configure,Налаштувати
+"Database not available","База даних недоступна"
+"Database status:","Статус бази даних:"
+"Not available","Недоступно"
+"Credentials configured. Click the button below to download the database.","Облікові дані налаштовані. Натисніть кнопку нижче, щоб завантажити базу даних."
+"Download database","Завантажити базу даних"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Введіть облікові дані MaxMind вище, щоб увімкнути автоматичне завантаження, або виконайте setup:upgrade для встановлення вбудованої бази даних."
+"Available (auto-update disabled)","Доступно (автооновлення вимкнено)"
+Version:,Версія:
+Size:,Розмір:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Введіть облікові дані MaxMind вище, щоб увімкнути автоматичні щотижневі оновлення."
+"Available (auto-update enabled)","Доступно (автооновлення увімкнено)"
+"Update database","Оновити базу даних"
+"Database updated successfully.","Базу даних успішно оновлено."
+Notice,Повідомлення
+"Database is up to date.","База даних актуальна."
+"An error occurred while downloading the database.","Під час завантаження бази даних сталася помилка."
+"IP Geolocation","Геолокація за IP"
+"Account ID","ID облікового запису"
+"License Key","Ліцензійний ключ"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Згенерувати ліцензійний ключ</a>"
+Cron,Cron
+Delete,Видалити
+"Delete items","Видалити елементи"
+"Are you sure you want to delete selected items?","Ви впевнені, що хочете видалити вибрані елементи?"
+ID,ID
+Code,Код
+Messages,Повідомлення
+Created,Створено
+Scheduled,Заплановано
+Finished,Завершено

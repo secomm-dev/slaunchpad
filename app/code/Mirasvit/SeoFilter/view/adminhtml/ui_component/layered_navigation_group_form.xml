@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="general">
+        <htmlContent name="seo-filter-aliases" sortOrder="21">
+            <block class="Mirasvit\SeoFilter\Block\Adminhtml\Group\GroupStoreAliases" name="group-seo-filter-aliases"/>
+        </htmlContent>
+    </fieldset>
+</form>

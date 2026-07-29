@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1 hizmeti düzgün yapılandırılmamış veya kullanılamıyor"
+"Invalid AI request data","Geçersiz AI istek verileri"
+"Request prompt cannot be empty","İstek promptu boş olamaz"
+"Claude API error","Claude API hatası"
+"Invalid Claude API response: missing content","Geçersiz Claude API yanıtı: içerik eksik"
+"Empty content received from Claude API","Claude API'den boş içerik alındı"
+"Gemini API error","Gemini API hatası"
+"Invalid Gemini API response: missing candidates","Geçersiz Gemini API yanıtı: adaylar eksik"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","max_tokens sınırına ulaşıldığı için Gemini API yanıtı kesildi. max_tokens ayarını artırmayı veya daha kısa bir prompt kullanmayı düşünün."
+"Empty content received from Gemini API","Gemini API'den boş içerik alındı"
+"AI services are disabled in configuration","Yapılandırmada AI hizmetleri devre dışı bırakıldı"
+"No default AI provider configured","Varsayılan AI sağlayıcı yapılandırılmamış"
+"No available AI provider for request validation","İstek doğrulaması için kullanılabilir AI sağlayıcı yok"
+"Request validation failed: %1","İstek doğrulaması başarısız: %1"
+"All AI providers failed. Last error: %1","Tüm AI sağlayıcıları başarısız oldu. Son hata: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Desteklenmeyen AI sağlayıcı: %1. Desteklenen sağlayıcılar: %2"
+"Service class %1 must extend %2","Hizmet sınıfı %1, %2'yi genişletmelidir"
+"Failed to create AI service for provider %1: %2","%1 sağlayıcısı için AI hizmeti oluşturulamadı: %2"
+"Not configured","Yapılandırılmamış"
+Unknown,Bilinmiyor
+"Unknown API error","Bilinmeyen API hatası"
+"Temperature must be between 0 and 2","Sıcaklık 0 ile 2 arasında olmalıdır"
+"Max tokens must be greater than 0","Maksimum token sayısı 0'dan büyük olmalıdır"
+"Frequency penalty must be between -2 and 2","Frekans cezası -2 ile 2 arasında olmalıdır"
+"Format output as JSON.","Çıktıyı JSON olarak biçimlendir."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","Modelin bağlam penceresi token sayısı aşıldığı için OpenAI API eksik bir yanıt döndürdü."
+"OpenAI API returned no content in the response.","OpenAI API yanıtta içerik döndürmedi."
+"Not Installed","Yüklü Değil"
+"A total of %1 record(s) have been deleted.","Toplam %1 kayıt silindi."
+"The record has been removed.","Kayıt kaldırıldı."
+"Disallowed file type.","İzin verilmeyen dosya türü."
+"Can't remove folder %s","%s klasörü kaldırılamıyor"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Uzantı gerekli tüm dosyaları içermiyor. Lütfen uzantıyı orijinal paketten yeniden yükleyin."
+"Extension Information","Uzantı Bilgileri"
+Status,Durum
+Other,Diğer
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Magento için Cron çalışmıyor. Bir cron işi kurmak için %1 bağlantısını takip edin"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron işleri [%1] çalışmıyor. Lütfen donmuş işler için %2 tablosunu kontrol edin ve bunları kaldırın."
+Remove,Kaldır
+Error,Hata
+Missed,Kaçırıldı
+Running,Çalışıyor
+Pending,Beklemede
+Success,Başarılı
+"Server gmt time","Sunucu GMT zamanı"
+"Last job","Son iş"
+Executed,Yürütüldü
+none,yok
+"Cron setup","Cron kurulumu"
+"Cron Jobs","Cron İşleri"
+"No AI-enabled modules are currently active.","Şu anda aktif AI özellikli modül yok."
+"%1 module(s) using AI functionality:","%1 modül AI işlevselliğini kullanıyor:"
+Provider:,Sağlayıcı:
+ai_provider,ai_provider
+"You have the latest version","En son sürüme sahipsiniz"
+"New version %1 is available","Yeni sürüm %1 mevcut"
+"View %1 details (opens in new window)","%1 ayrıntılarını görüntüle (yeni pencerede açılır)"
+Details,Ayrıntılar
+"View %1 user guide (opens in new window)","%1 kullanıcı kılavuzunu görüntüle (yeni pencerede açılır)"
+"User Guide","Kullanıcı Kılavuzu"
+"View %1 changelog (opens in new window)","%1 değişiklik günlüğünü görüntüle (yeni pencerede açılır)"
+Changelog,Değişiklik Günlüğü
+"Request new feature for %1 (opens in new window)","%1 için yeni özellik iste (yeni pencerede açılır)"
+"Request New Feature","Yeni Özellik İste"
+"Installed Extensions","Yüklü Uzantılar"
+"Check changes","Değişiklikleri kontrol et"
+"Validate All Extensions","Tüm Uzantıları Doğrula"
+"Suggest Improvement","İyileştirme Öner"
+"%1 (opens in new window)","%1 (yeni pencerede açılır)"
+"More Details","Daha Fazla Ayrıntı"
+"Developer settings","Geliştirici ayarları"
+"AI Provider Status","AI Sağlayıcı Durumu"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Şu anda hiçbir AI sağlayıcı etkin değil. Lütfen AI sağlayıcılarını %1'de yapılandırın."
+"%1 of %2 providers enabled. You can manage providers in %3.","%2 sağlayıcıdan %1'i etkin. Sağlayıcıları %3'te yönetebilirsiniz."
+Enabled,Etkin
+Disabled,Devre Dışı
+"All tests have been passed","Tüm testler başarıyla geçildi"
+Module,Modül
+Test,Test
+"How to fix","Nasıl düzeltilir"
+Warning,Uyarı
+Info,Bilgi
+Failed,Başarısız
+Today,Bugün
+"Last 7 days","Son 7 gün"
+"Last 30 days","Son 30 gün"
+"Last 365 days","Son 365 gün"
+"Mirasvit Extensions Validator","Mirasvit Uzantı Doğrulayıcı"
+"Mirasvit Menu","Mirasvit Menüsü"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Uzantılar
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit Uzantıları"
+Developer,Geliştirici
+"Menu Settings","Menü Ayarları"
+"Enable Mirasvit Menu","Mirasvit Menüsünü Etkinleştir"
+"The menu is visible, if you have at least two active Mirasvit extensions.","En az iki aktif Mirasvit uzantınız varsa menü görünür."
+"Additional CSS Styles","Ek CSS Stilleri"
+"AI Configuration","AI Yapılandırması"
+"Modules using AI","AI kullanan modüller"
+"Enable AI features","AI özelliklerini etkinleştir"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Mirasvit uzantılarında tüm AI destekli özellikleri global olarak etkinleştirin veya devre dışı bırakın.<br>Devre dışı bırakıldığında, bireysel sağlayıcı ayarları veya diğer modüllerdeki AI ayarlarından bağımsız olarak tüm AI işlevleri kullanılamaz olacaktır."
+"Default AI provider","Varsayılan AI sağlayıcı"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Birden fazla sağlayıcı yapılandırıldığında kullanılacak birincil AI sağlayıcıyı seçin.<br>Belirli bir sağlayıcı istenmediğinde tüm AI işlemleri için yedek sağlayıcı olarak kullanılacaktır."
+"Request timeout","İstek zaman aşımı"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","AI sağlayıcı yanıtları için beklenecek saniye cinsinden maksimum süre.<br> Zaman aşımını devre dışı bırakmak için boş bırakın.<br> Bu ayar diğer modüllerdeki tüm AI özelliklerini etkileyecektir."
+"Maximum tokens per request","İstek başına maksimum token"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Tek bir AI isteğinde üretilecek maksimum token sayısı. Daha yüksek değerler daha uzun yanıtlara izin verir ancak maliyetleri artırır.<br> Sınırlamayı devre dışı bırakmak için boş bırakın.<br> Farklı sağlayıcılar ve modellerin kendi sınırları vardır.<br> Bu ayar diğer modüllerdeki tüm AI özelliklerini etkileyecektir."
+"Default temperature","Varsayılan sıcaklık"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","AI yanıtlarındaki rastgeleliği kontrol eder. Daha düşük değerler daha tutarlı sonuçlar, daha yüksek değerler daha yaratıcı sonuçlar üretir.<br>Örnek:<br><code>0.1</code> - çok tutarlı, olgusal yanıtlar<br><code>0.7</code> - dengeli yaratıcılık ve tutarlılık<br><code>1.0</code> - son derece yaratıcı ve çeşitli yanıtlar.<br>Boş ise varsayılan sıcaklık 0.7 kullanılacaktır.<br>Bu ayar diğer modüllerdeki tüm AI özelliklerini etkileyecektir.<br>Bazı uzantılar bu ayarı geçersiz kılabilir."
+"Debug mode","Hata ayıklama modu"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Hata ayıklama amacıyla AI isteklerinin ve yanıtlarının ayrıntılı günlüğünü etkinleştirin.<br>Uyarı: Bu, hassas verileri günlüğe kaydedebilir ve performansı etkileyebilir. Yalnızca geliştirme için kullanın."
+"OpenAI Configuration","OpenAI Yapılandırması"
+"Enable OpenAI provider","OpenAI sağlayıcısını etkinleştir"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","OpenAI'ı kullanılabilir bir AI sağlayıcı olarak etkinleştirin. Geçerli API anahtarı yapılandırması gerektirir."
+"OpenAI API key","OpenAI API anahtarı"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","'sk-' ile başlayan OpenAI API anahtarınız. Bu anahtar şifrelenmiş ve güvenli bir şekilde saklanmaktadır.<br>API anahtarınızı buradan alın: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Varsayılan OpenAI modeli"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","AI işlemleri için varsayılan OpenAI modelini seçin. Farklı modeller farklı yeteneklere ve maliyetlere sahiptir."
+"Claude Configuration","Claude Yapılandırması"
+"Enable Claude provider","Claude sağlayıcısını etkinleştir"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Anthropic Claude'u kullanılabilir bir AI sağlayıcı olarak etkinleştirin. Geçerli API anahtarı yapılandırması gerektirir."
+"Claude API key","Claude API anahtarı"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","'sk-ant-' ile başlayan Anthropic Claude API anahtarınız. Bu anahtar şifrelenmiş ve güvenli bir şekilde saklanmaktadır.<br>API anahtarınızı buradan alın: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Varsayılan Claude modeli"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","AI işlemleri için varsayılan Claude modelini seçin. Farklı modeller farklı yeteneklere ve maliyetlere sahiptir."
+"Google Gemini Configuration","Google Gemini Yapılandırması"
+"Enable Gemini provider","Gemini sağlayıcısını etkinleştir"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Google Gemini'yi kullanılabilir bir AI sağlayıcı olarak etkinleştirin. Geçerli API anahtarı yapılandırması gerektirir."
+"Gemini API key","Gemini API anahtarı"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","'AIza' ile başlayan Google AI Studio API anahtarınız. Bu anahtar şifrelenmiş ve güvenli bir şekilde saklanmaktadır.<br>API anahtarınızı buradan alın: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Varsayılan Gemini modeli"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","AI işlemleri için varsayılan Gemini modelini seçin. Farklı modeller farklı yeteneklere ve maliyetlere sahiptir."
+"Determine visitor's country, city, and timezone based on their IP address.","Ziyaretçinin IP adresine göre ülkesini, şehrini ve saat dilimini belirleyin."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Otomatik güncellemeler için ücretsiz <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind hesabı</a> gereklidir (haftalık kontrol)."
+"Used by:","Kullanan:"
+message,mesaj
+"Error downloading database: %1","Veritabanı indirme hatası: %1"
+"MaxMind credentials not configured","MaxMind kimlik bilgileri yapılandırılmamış"
+"Failed to download remote hash","Uzak hash indirilemedi"
+"Database is up to date","Veritabanı güncel"
+"Failed to download and extract database","Veritabanı indirilemedi ve çıkarılamadı"
+"Database updated successfully","Veritabanı başarıyla güncellendi"
+"Download failed: %1","İndirme başarısız: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Bu eklenti MaxMind tarafından oluşturulan GeoLite2 Verilerini kullanır."
+"Database available (auto-update enabled)","Veritabanı mevcut (otomatik güncelleme etkin)"
+"Database available (auto-update disabled)","Veritabanı mevcut (otomatik güncelleme devre dışı)"
+Configure,Yapılandır
+"Database not available","Veritabanı mevcut değil"
+"Database status:","Veritabanı durumu:"
+"Not available","Mevcut değil"
+"Credentials configured. Click the button below to download the database.","Kimlik bilgileri yapılandırıldı. Veritabanını indirmek için aşağıdaki düğmeye tıklayın."
+"Download database","Veritabanını indir"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Otomatik indirmeleri etkinleştirmek için yukarıya MaxMind kimlik bilgilerini girin veya paketlenmiş veritabanını yüklemek için setup:upgrade çalıştırın."
+"Available (auto-update disabled)","Mevcut (otomatik güncelleme devre dışı)"
+Version:,Sürüm:
+Size:,Boyut:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Otomatik haftalık güncellemeleri etkinleştirmek için yukarıya MaxMind kimlik bilgilerini girin."
+"Available (auto-update enabled)","Mevcut (otomatik güncelleme etkin)"
+"Update database","Veritabanını güncelle"
+"Database updated successfully.","Veritabanı başarıyla güncellendi."
+Notice,Bildirim
+"Database is up to date.","Veritabanı güncel."
+"An error occurred while downloading the database.","Veritabanı indirilirken bir hata oluştu."
+"IP Geolocation","IP Coğrafi Konum"
+"Account ID","Hesap Kimliği"
+"License Key","Lisans Anahtarı"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Lisans anahtarı oluştur</a>"
+Cron,Cron
+Delete,Sil
+"Delete items","Öğeleri sil"
+"Are you sure you want to delete selected items?","Seçili öğeleri silmek istediğinizden emin misiniz?"
+ID,ID
+Code,Kod
+Messages,Mesajlar
+Created,Oluşturuldu
+Scheduled,Zamanlandı
+Finished,Tamamlandı

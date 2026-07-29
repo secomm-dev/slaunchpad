@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="mirasvit" translate="label" sortOrder="550" class="mirasvit-tab">
+            <label>Mirasvit Extensions</label>
+        </tab>
+
+        <section id="mst_core" showInDefault="1" showInWebsite="1" showInStore="1" type="text" translate="label" sortOrder="10000">
+            <label>Developer</label>
+            <tab>mirasvit</tab>
+            <resource>Mirasvit_Core::core_settings</resource>
+
+            <group id="packageList" showInDefault="1" sortOrder="0">
+                <frontend_model>Mirasvit\Core\Block\Adminhtml\Config\PackageListField</frontend_model>
+            </group>
+
+            <group id="menu" translate="label" showInDefault="1" sortOrder="5">
+                <label>Menu Settings</label>
+
+                <field id="is_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1">
+                    <label>Enable Mirasvit Menu</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>The menu is visible, if you have at least two active Mirasvit extensions.</comment>
+                </field>
+            </group>
+
+            <group id="css" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="10">
+                <label>CSS Settings</label>
+
+                <field id="custom" translate="label comment tooltip" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional CSS Styles</label>
+                </field>
+            </group>
+
+            <group id="ai" translate="label" showInDefault="1" sortOrder="15">
+                <label>AI Configuration</label>
+
+                <field id="ai_modules_info" translate="label comment" type="text" sortOrder="5" showInDefault="1">
+                    <label>Modules using AI</label>
+                    <frontend_model>Mirasvit\Core\Block\Adminhtml\Config\AiModulesField</frontend_model>
+                </field>
+
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1">
+                    <label>Enable AI features</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.]]></comment>
+                </field>
+
+                <field id="default_provider" translate="label comment" type="select" sortOrder="20" showInDefault="1">
+                    <label>Default AI provider</label>
+                    <source_model>Mirasvit\Core\Ai\Model\Config\Source\AiProviderSource</source_model>
+                    <comment><![CDATA[Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="timeout" translate="label comment tooltip" type="text" sortOrder="30" showInDefault="1">
+                    <label>Request timeout</label>
+                    <comment><![CDATA[Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.]]></comment>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="max_tokens" translate="label comment tooltip" type="text" sortOrder="40" showInDefault="1">
+                    <label>Maximum tokens per request</label>
+                    <comment><![CDATA[Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.]]></comment>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="temperature" translate="label comment tooltip" type="text" sortOrder="45" showInDefault="1">
+                    <label>Default temperature</label>
+                    <comment><![CDATA[Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.]]></comment>
+                    <validate>validate-number validate-number-range number-range-0-2</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="debug_mode" translate="label comment" type="select" sortOrder="50" showInDefault="1">
+                    <label>Debug mode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <group id="openai" translate="label" showInDefault="1" sortOrder="100">
+                    <label>OpenAI Configuration</label>
+
+                    <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1">
+                        <label>Enable OpenAI provider</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[Enable OpenAI as an available AI provider. Requires valid API key configuration.]]></comment>
+                        <depends>
+                            <field id="mst_core/ai/enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="api_key" translate="label comment" type="obscure" sortOrder="20" showInDefault="1">
+                        <label>OpenAI API key</label>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <comment><![CDATA[Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI API Keys</a>]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+
+
+                    <field id="model" translate="label comment" type="select" sortOrder="30" showInDefault="1">
+                        <label>Default OpenAI model</label>
+                        <source_model>Mirasvit\Core\Ai\Model\Config\Source\AiOpenAiModelSource</source_model>
+                        <comment><![CDATA[Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <group id="claude" translate="label" showInDefault="1" sortOrder="200">
+                    <label>Claude Configuration</label>
+
+                    <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1">
+                        <label>Enable Claude provider</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.]]></comment>
+                        <depends>
+                            <field id="mst_core/ai/enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="api_key" translate="label comment" type="obscure" sortOrder="20" showInDefault="1">
+                        <label>Claude API key</label>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <comment><![CDATA[Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a>]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="model" translate="label comment" type="select" sortOrder="30" showInDefault="1">
+                        <label>Default Claude model</label>
+                        <source_model>Mirasvit\Core\Ai\Model\Config\Source\AiClaudeModelSource</source_model>
+                        <comment><![CDATA[Select the default Claude model for AI operations. Different models have varying capabilities and costs.]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <group id="gemini" translate="label" showInDefault="1" sortOrder="300">
+                    <label>Google Gemini Configuration</label>
+
+                    <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1">
+                        <label>Enable Gemini provider</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[Enable Google Gemini as an available AI provider. Requires valid API key configuration.]]></comment>
+                        <depends>
+                            <field id="mst_core/ai/enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="api_key" translate="label comment" type="obscure" sortOrder="20" showInDefault="1">
+                        <label>Gemini API key</label>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <comment><![CDATA[Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="model" translate="label comment" type="select" sortOrder="30" showInDefault="1">
+                        <label>Default Gemini model</label>
+                        <source_model>Mirasvit\Core\Ai\Model\Config\Source\AiGeminiModelSource</source_model>
+                        <comment><![CDATA[Select the default Gemini model for AI operations. Different models have varying capabilities and costs.]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+
+                <group id="grok" translate="label" showInDefault="1" sortOrder="350">
+                    <label>xAI Grok Configuration</label>
+
+                    <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1">
+                        <label>Enable Grok provider</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[Enable xAI Grok as an available AI provider. Requires valid API key configuration.]]></comment>
+                        <depends>
+                            <field id="mst_core/ai/enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="api_key" translate="label comment" type="obscure" sortOrder="20" showInDefault="1">
+                        <label>Grok API key</label>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <comment><![CDATA[Your xAI API key starting with 'xai-'. This key is encrypted and stored securely.<br>Get your API key from: <a href="https://console.x.ai" target="_blank">xAI Console</a>]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="model" translate="label comment" type="select" sortOrder="30" showInDefault="1">
+                        <label>Default Grok model</label>
+                        <source_model>Mirasvit\Core\Ai\Model\Config\Source\AiGrokModelSource</source_model>
+                        <comment><![CDATA[Select the default Grok model for AI operations. Different models have varying capabilities and costs.]]></comment>
+                        <depends>
+                            <field id="enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+            </group>
+
+            <group id="geolocation" translate="label" showInDefault="1" sortOrder="25">
+                <label>IP Geolocation</label>
+                <frontend_model>Mirasvit\Core\Block\Adminhtml\Config\GeoLocationGroup</frontend_model>
+
+                <field id="account_id" translate="label" type="text" sortOrder="10" showInDefault="1">
+                    <label>Account ID</label>
+                </field>
+
+                <field id="license_key" translate="label comment" type="obscure" sortOrder="20" showInDefault="1">
+                    <label>License Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <comment><![CDATA[<a href="https://www.maxmind.com/en/accounts/0/license-key" target="_blank">Generate license key</a>]]></comment>
+                </field>
+
+                <field id="database_info" translate="label" type="text" sortOrder="30" showInDefault="1">
+                    <frontend_model>Mirasvit\Core\Block\Adminhtml\Config\GeoLocationField</frontend_model>
+                </field>
+            </group>
+
+        </section>
+    </system>
+</config>

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="mstcore_fontawesome"/>
+
+    <body>
+        <referenceContainer name="footer">
+            <block class="Magento\Backend\Block\Template" name="mirasvit.utils" template="Mirasvit_Core::utils.phtml" />
+        </referenceContainer>
+
+        <referenceBlock name="page.title">
+            <block class="Mirasvit\Core\Block\Adminhtml\Menu" name="mirasvit.menu" template="menu.phtml" />
+        </referenceBlock>
+
+        <referenceContainer name="page.main.container">
+            <block class="Mirasvit\Core\Block\Adminhtml\FeatureRequest" name="mst.feature-request" template="Mirasvit_Core::feature_request.phtml" after="-"/>
+        </referenceContainer>
+    </body>
+</page>

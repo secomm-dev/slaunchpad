@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Mirasvit_SeoMarkup::seomarkup_extender" title="Rich snippet extenders"
+             module="Mirasvit_SeoMarkup" action="seomarkup/extender" parent="Mirasvit_Seo::seo"
+             resource="Mirasvit_SeoMarkup::seomarkup_extender" sortOrder="90"/>
+    </menu>
+</config>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!--UI-->
+    <virtualType name="Mirasvit\SeoMarkup\Ui\Extender\Form\Control\SaveSplitButton"
+                 type="Magento\Backend\Ui\Component\Control\SaveSplitButton">
+        <arguments>
+            <argument name="targetName" xsi:type="string">extender_edit_form.extender_edit_form</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Mirasvit\SeoMarkup\Ui\Extender\Form\Control\DeleteButton"
+                 type="Magento\Backend\Ui\Component\Control\DeleteButton">
+        <arguments>
+            <argument name="confirmationMessage" xsi:type="string" translatable="true">Are you sure you want to delete this rich snippet extender?</argument>
+            <argument name="idFieldName" xsi:type="string">id</argument>
+            <argument name="deleteRoutePath" xsi:type="string">*/*/delete</argument>
+            <argument name="sortOrder" xsi:type="number">30</argument>
+        </arguments>
+    </virtualType>
+</config>

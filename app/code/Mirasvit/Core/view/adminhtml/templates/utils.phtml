@@ -1,0 +1,65 @@
+<?php
+
+use Mirasvit\Core\Service\CspService;
+
+/** @var \Magento\Backend\Block\Template $block */
+
+$nonce = CspService::getNonce();
+?>
+<script<?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?>>
+    require(['jquery', 'underscore'], function ($, _) {
+        function attach() {
+            var $cronExpressions = $('input.cron-expression, .cron-expression input[type="text"]');
+
+            if ($cronExpressions.length) {
+                require(['Mirasvit_Core/js/utils/cron-expression'], function (cron) {
+                    $cronExpressions.each(function (key, el) {
+                        cron(el);
+                    })
+                });
+            }
+
+            var $regularExpressions = $('input.regular-expression');
+
+            if ($regularExpressions.length) {
+                require(['Mirasvit_Core/js/utils/regular-expression'], function (regular) {
+                    $regularExpressions.each(function (key, el) {
+                        regular(el);
+                    })
+                });
+            }
+        }
+
+        attach();
+
+        var throttledAttach = _.throttle(attach, 100);
+
+        var observer = new MutationObserver(throttledAttach);
+
+        observer.observe(document.body, {
+            subtree:   true,
+            childList: true
+        });
+    })
+</script>
+
+<script<?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?>>
+    require(['jquery', 'underscore'], function ($, _) {
+        function handleSubmenuClose() {
+            const menu = $('#menu-mirasvit-core-menu');
+
+            const menuLevel0 = $('.level-0', menu);
+
+            $('.level-0>a', menu).on('click', (e) => {
+                menuLevel0.removeClass('_active');
+                menuLevel0.removeClass('_show');
+
+                const currentItem = $(e.target.closest('.level-0'));
+
+                currentItem.addClass('_active');
+            })
+        }
+
+        handleSubmenuClose();
+    })
+</script>

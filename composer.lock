@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6fbb1458f5e14d4d8d29edfca6a695a5",
+    "content-hash": "0c555169fd32ca3f4959d9968c35091a",
     "packages": [
         {
             "name": "2tvenom/cborencode",
@@ -3128,6 +3128,54 @@
                 "issues": "https://gitlab.hyva.io/hyva-themes/magento2-order-cancellation-webapi/-/issues"
             },
             "time": "2025-11-04T17:06:08+01:00"
+        },
+        {
+            "name": "hyva-themes/magento2-smile-elasticsuite",
+            "version": "1.2.8",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-smile-elasticsuite/1.2.8.0/5f2371efb5880d62fb0b1cce886034dfed786800.zip",
+                "reference": "5f2371efb5880d62fb0b1cce886034dfed786800",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "magento/framework": ">=103.0.0",
+                "smile/elasticsuite": "~2.10.9|~2.11.0|~2.12.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\SmileElasticsuite\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "see LICENSE.md"
+            ],
+            "authors": [
+                {
+                    "name": "Hyvä Themes, Elgentos",
+                    "email": "info@elgentos.nl"
+                },
+                {
+                    "name": "Elasticsuite core team",
+                    "email": "elasticsuite@smile.fr"
+                }
+            ],
+            "description": "Hyva_SmileElasticsuite makes Smile_Elasticsuite compatible with Hyvä Themes",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/hyva-compat/magento2-smile-elasticsuite/-/tree/1.2.8",
+                "issues": "https://gitlab.hyva.io/hyva-themes/hyva-compat/magento2-smile-elasticsuite/-/issues"
+            },
+            "time": "2026-06-03T15:12:16+00:00"
         },
         {
             "name": "hyva-themes/magento2-theme-fallback",
@@ -22817,6 +22865,125 @@
             "time": "2023-09-03T09:24:00+00:00"
         },
         {
+            "name": "smile/elasticsuite",
+            "version": "2.12.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Smile-SA/elasticsuite.git",
+                "reference": "5ca829ec1c191f59d3295ab9b363937b2414db37"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Smile-SA/elasticsuite/zipball/5ca829ec1c191f59d3295ab9b363937b2414db37",
+                "reference": "5ca829ec1c191f59d3295ab9b363937b2414db37",
+                "shasum": ""
+            },
+            "require": {
+                "magento/framework": ">=103.0.6",
+                "magento/magento-composer-installer": "*",
+                "magento/module-backend": ">=102.0.6",
+                "magento/module-catalog": ">=104.0.6",
+                "magento/module-catalog-graph-ql": ">=100.4.6",
+                "magento/module-catalog-search": ">=102.0.6",
+                "magento/module-store": ">=101.1.6",
+                "opensearch-project/opensearch-php": "^1.0 || ^2.0 <2.4.0 || >=2.4.3 <3.0.0"
+            },
+            "replace": {
+                "smile/module-elasticsuite-admin-notification": "self.version",
+                "smile/module-elasticsuite-analytics": "self.version",
+                "smile/module-elasticsuite-catalog": "self.version",
+                "smile/module-elasticsuite-catalog-graph-ql": "self.version",
+                "smile/module-elasticsuite-catalog-optimizer": "self.version",
+                "smile/module-elasticsuite-catalog-rule": "self.version",
+                "smile/module-elasticsuite-core": "self.version",
+                "smile/module-elasticsuite-indices": "self.version",
+                "smile/module-elasticsuite-swatches": "self.version",
+                "smile/module-elasticsuite-thesaurus": "self.version",
+                "smile/module-elasticsuite-tracker": "self.version",
+                "smile/module-elasticsuite-virtual-category": "self.version"
+            },
+            "require-dev": {
+                "smile/magento2-smilelab-quality-suite": "~2.2.0"
+            },
+            "type": "magento2-component",
+            "extra": {
+                "map": [
+                    [
+                        "src/lib/web/fonts/elasticsuite",
+                        "lib/web/fonts/elasticsuite"
+                    ]
+                ],
+                "branch-alias": {
+                    "dev-master": "2.12.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/module-elasticsuite-core/registration.php",
+                    "src/module-elasticsuite-admin-notification/registration.php",
+                    "src/module-elasticsuite-analytics/registration.php",
+                    "src/module-elasticsuite-catalog/registration.php",
+                    "src/module-elasticsuite-catalog-graph-ql/registration.php",
+                    "src/module-elasticsuite-catalog-optimizer/registration.php",
+                    "src/module-elasticsuite-catalog-rule/registration.php",
+                    "src/module-elasticsuite-indices/registration.php",
+                    "src/module-elasticsuite-swatches/registration.php",
+                    "src/module-elasticsuite-thesaurus/registration.php",
+                    "src/module-elasticsuite-tracker/registration.php",
+                    "src/module-elasticsuite-virtual-category/registration.php"
+                ],
+                "psr-4": {
+                    "Smile\\ElasticsuiteCore\\": "src/module-elasticsuite-core",
+                    "Smile\\ElasticsuiteCatalog\\": "src/module-elasticsuite-catalog",
+                    "Smile\\ElasticsuiteIndices\\": "src/module-elasticsuite-indices",
+                    "Smile\\ElasticsuiteTracker\\": "src/module-elasticsuite-tracker",
+                    "Smile\\ElasticsuiteSwatches\\": "src/module-elasticsuite-swatches",
+                    "Smile\\ElasticsuiteAnalytics\\": "src/module-elasticsuite-analytics",
+                    "Smile\\ElasticsuiteThesaurus\\": "src/module-elasticsuite-thesaurus",
+                    "Smile\\ElasticsuiteCatalogRule\\": "src/module-elasticsuite-catalog-rule",
+                    "Smile\\ElasticsuiteCatalogGraphQl\\": "src/module-elasticsuite-catalog-graph-ql",
+                    "Smile\\ElasticsuiteVirtualCategory\\": "src/module-elasticsuite-virtual-category",
+                    "Smile\\ElasticsuiteCatalogOptimizer\\": "src/module-elasticsuite-catalog-optimizer",
+                    "Smile\\ElasticsuiteAdminNotification\\": "src/module-elasticsuite-admin-notification"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Romain Ruaud",
+                    "email": "romain.ruaud@smile.fr"
+                },
+                {
+                    "name": "Richard Bayet",
+                    "email": "richard.bayet@smile.fr"
+                },
+                {
+                    "name": "Aurélien FOUCRET",
+                    "email": "aurelien.foucret@smile.fr"
+                }
+            ],
+            "description": "Magento 2 merchandising and search engine built on ElasticSearch ",
+            "homepage": "https://github.com/Smile-SA/elasticsuite",
+            "keywords": [
+                "core",
+                "elasticsearch",
+                "graphql",
+                "magento",
+                "magento2",
+                "merchandising",
+                "search",
+                "setup"
+            ],
+            "support": {
+                "issues": "https://github.com/Smile-SA/elasticsuite/issues",
+                "source": "https://github.com/Smile-SA/elasticsuite/tree/2.12.0"
+            },
+            "time": "2026-05-29T06:37:03+00:00"
+        },
+        {
             "name": "spomky-labs/aes-key-wrap",
             "version": "v7.0.0",
             "source": {
@@ -31197,5 +31364,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }

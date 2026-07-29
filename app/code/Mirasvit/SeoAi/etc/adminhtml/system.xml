@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xs">
+    <system>
+        <section id="seo_ai" translate="label" type="text" sortOrder="450" showInDefault="1" showInWebsite="0" showInStore="0">
+            <label>SEO AI helper</label>
+            <tab>mirasvit</tab>
+            <resource>Mirasvit_SeoAi::config_seoai</resource>
+
+            <group id="general" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure the core settings for the SEO AI helper functionality.]]></comment>
+
+                <field id="is_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_ai/general/is_enabled</config_path>
+                    <label>Enable SEO AI helper</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Activates the AI-powered SEO optimization features throughout your Magento store.]]></comment>
+                </field>
+
+                <field id="use_core_ai" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_ai/general/use_core_ai</config_path>
+                    <label>Use Core AI settings</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled: Uses global AI settings from Core module (recommended)<br>When disabled: Uses the module-specific settings below]]></comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="provider" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_ai/general/provider</config_path>
+                    <label>AI provider</label>
+                    <source_model>Mirasvit\Core\Ai\Model\Config\Source\AiProviderSource</source_model>
+                    <comment><![CDATA[Select the AI provider for SEO content generation.]]></comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                        <field id="use_core_ai">0</field>
+                    </depends>
+                </field>
+
+                <field id="openai_model" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_ai/general/openai_model</config_path>
+                    <label>AI model</label>
+                    <source_model>Mirasvit\Core\Ai\Model\Config\Source\AiOpenAiModelSource</source_model>
+                    <comment><![CDATA[Select the AI model for content generation. Available models depend on the selected provider.]]></comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                        <field id="use_core_ai">0</field>
+                        <field id="provider">openai</field>
+                    </depends>
+                </field>
+
+                <field id="openai_key" translate="label comment" type="obscure" sortOrder="31" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_ai/general/openai_key</config_path>
+                    <label>API key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <comment><![CDATA[<a href="https://platform.openai.com/api-keys" target="_blank">Get OpenAI API key</a>]]></comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                        <field id="use_core_ai">0</field>
+                        <field id="provider">openai</field>
+                    </depends>
+                </field>
+
+                <field id="claude_model" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_ai/general/claude_model</config_path>
+                    <label>AI model</label>
+                    <source_model>Mirasvit\Core\Ai\Model\Config\Source\AiClaudeModelSource</source_model>
+                    <comment><![CDATA[Select the AI model for content generation. Available models depend on the selected provider.]]></comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                        <field id="use_core_ai">0</field>
+                        <field id="provider">claude</field>
+                    </depends>
+                </field>
+
+                <field id="claude_key" translate="label comment" type="obscure" sortOrder="41" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_ai/general/claude_key</config_path>
+                    <label>API key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <comment><![CDATA[<a href="https://console.anthropic.com/settings/keys" target="_blank">Get Anthropic API key</a>]]></comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                        <field id="use_core_ai">0</field>
+                        <field id="provider">claude</field>
+                    </depends>
+                </field>
+
+                <field id="gemini_model" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_ai/general/gemini_model</config_path>
+                    <label>AI model</label>
+                    <source_model>Mirasvit\Core\Ai\Model\Config\Source\AiGeminiModelSource</source_model>
+                    <comment><![CDATA[Select the AI model for content generation. Available models depend on the selected provider.]]></comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                        <field id="use_core_ai">0</field>
+                        <field id="provider">gemini</field>
+                    </depends>
+                </field>
+
+                <field id="gemini_key" translate="label comment" type="obscure" sortOrder="51" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_ai/general/gemini_key</config_path>
+                    <label>API key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <comment><![CDATA[<a href="https://aistudio.google.com/apikey" target="_blank">Get Google AI Studio API key</a>]]></comment>
+                    <depends>
+                        <field id="is_enabled">1</field>
+                        <field id="use_core_ai">0</field>
+                        <field id="provider">gemini</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+
+        <section id="seo_audit">
+            <group id="ai_helper" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>AI helper</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure how the AI assistant automatically improves your store's SEO performance based on audit results.]]></comment>
+                <depends>
+                    <field id="seo_audit/general/is_enabled">1</field>
+                    <field id="seo_ai/general/is_enabled">1</field>
+                </depends>
+
+                <field id="is_auto_fix_meta" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_audit/ai_helper/is_auto_fix_meta</config_path>
+                    <label>Automatically fix meta-related issues</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, the system will automatically generate and apply SEO rewrites to fix issues with meta titles, descriptions, and other meta elements identified during audits. This helps maintain SEO best practices across your site without manual intervention.]]></comment>
+                    <if_module_enabled>Mirasvit_SeoAudit</if_module_enabled>
+                </field>
+                <field id="is_cron" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_audit/ai_helper/is_cron</config_path>
+                    <label>Enable cron task</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Schedule automatic SEO fixes to run every 30 minutes via Magento's cron system. This ensures your site's meta information remains optimized even as new content is added. Disable if you prefer to trigger fixes manually.]]></comment>
+                    <depends>
+                        <field id="is_auto_fix_meta">1</field>
+                    </depends>
+                    <if_module_enabled>Mirasvit_SeoAudit</if_module_enabled>
+                </field>
+                <field id="is_update" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_audit/ai_helper/is_update</config_path>
+                    <label>Re-generate SEO rewrites</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, the system will continuously refine previously generated meta content in subsequent runs until it meets recommended length guidelines and SEO best practices. This iterative improvement helps achieve optimal meta content over time.]]></comment>
+                    <depends>
+                        <field id="is_auto_fix_meta">1</field>
+                    </depends>
+                    <if_module_enabled>Mirasvit_SeoAudit</if_module_enabled>
+                </field>
+                <field id="is_include_store" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <config_path>seo_audit/ai_helper/is_include_store</config_path>
+                    <label>Add store information to context</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Enhances AI-generated content by including your store's name and description when creating meta content. This provides relevant context to the AI, resulting in more brand-aligned and relevant meta descriptions and titles.]]></comment>
+                    <depends>
+                        <field id="is_auto_fix_meta">1</field>
+                    </depends>
+                    <if_module_enabled>Mirasvit_SeoAudit</if_module_enabled>
+                </field>
+            </group>
+
+            <!--
+                The Store description is the only AI-helper setting with per-store meaning:
+                it is read at store-view scope by ConfigProvider::getAdditionalStoreData()
+                (SCOPE_STORE). It lives in its own store-visible group so it can be configured
+                per website / store view, while the operational toggles above (auto-fix / cron /
+                re-generate / include-store) stay Default-scope only. It carries no <depends>:
+                the gating fields (is_auto_fix_meta, the section is_enabled flags) are all
+                Default-scope only, so a dependency on them would leave the field permanently
+                JS-hidden at store scope — the very defect this group split fixes (pm#884).
+            -->
+            <group id="ai_helper_store_context" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>AI helper store context</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <field id="store_description" translate="label comment" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_audit/ai_helper/store_description</config_path>
+                    <label>Store description</label>
+                    <comment><![CDATA[Describe in a few words what types of products your store is selling. This context helps the AI generate more relevant and targeted meta content. This data is not required.]]></comment>
+                    <if_module_enabled>Mirasvit_SeoAudit</if_module_enabled>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

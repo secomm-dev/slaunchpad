@@ -1,0 +1,67 @@
+<?php
+declare(strict_types=1);
+
+use Mirasvit\SeoAudit\Block\Adminhtml\Job\Details;
+
+/** @var Details $block */
+$result = $block->getJobResult();
+
+if (!$result) {
+    return;
+}
+
+$errorCount   = $result['error_total'];
+$warningCount = $result['warning_total'];
+$noticeCount  = $result['notice_total'];
+
+$errorsLegendData = $block->getErrorChartData();
+$scoreColor       = $block->getHealthScoreColor();
+?>
+
+<div class="mst-seo-audit_info">
+    <div class="mst-seo-audit_info__summary">
+        <div class="ring-wrap">
+            <div class="ring-stack">
+                <svg width="120" height="120" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="<?= $block->escapeHtmlAttr(Details::RING_RADIUS) ?>"
+                            fill="<?= $block->escapeHtmlAttr($block->getHealthScoreTint()) ?>"></circle>
+                    <circle cx="60" cy="60" r="<?= $block->escapeHtmlAttr(Details::RING_RADIUS) ?>"
+                            fill="none" stroke="<?= $block->escapeHtmlAttr($scoreColor) ?>" stroke-width="7"
+                            stroke-dasharray="<?= $block->escapeHtmlAttr($block->getHealthScoreCircumference()) ?>"
+                            stroke-dashoffset="<?= $block->escapeHtmlAttr($block->getHealthScoreDashOffset()) ?>"
+                            stroke-linecap="round" transform="rotate(-90 60 60)"></circle>
+                </svg>
+                <div class="ring-overlay">
+                    <span class="ring-num" style="color:<?= $block->escapeHtmlAttr($scoreColor) ?>;"><?= $block->escapeHtml($result['score']) ?></span>
+                </div>
+            </div>
+            <p class="ring-caption"><?= $block->escapeHtml(__('Health score')) ?></p>
+        </div>
+
+        <div class="bar-container">
+            <div class="split-bar">
+                <div class="seg green" style="width:<?= $block->escapeHtmlAttr($errorsLegendData['rates'][0]) ?>%;"></div>
+                <div class="seg red" style="width:<?= $block->escapeHtmlAttr($errorsLegendData['rates'][1]) ?>%;"></div>
+            </div>
+            <div class="split-legend">
+                <span><i class="green"></i><?= $block->escapeHtml(__('Pages without errors')) ?> <b><?= $block->escapeHtml($errorsLegendData['withoutErrors']) ?></b></span>
+                <span><i class="red"></i><?= $block->escapeHtml(__('Pages with errors')) ?> <b><?= $block->escapeHtml($errorsLegendData['withErrors']) ?></b></span>
+            </div>
+        </div>
+
+        <div class="tag-row">
+            <a class="issue-tag error" href="<?= $block->escapeUrl($block->getIssueLink('error')) ?>"><?= $block->escapeHtml(__('Errors')) ?> <b><?= $block->escapeHtml($errorCount) ?></b></a>
+            <a class="issue-tag warning" href="<?= $block->escapeUrl($block->getIssueLink('warning')) ?>"><?= $block->escapeHtml(__('Warnings')) ?> <b><?= $block->escapeHtml($warningCount) ?></b></a>
+            <a class="issue-tag notice" href="<?= $block->escapeUrl($block->getIssueLink('notice')) ?>"><?= $block->escapeHtml(__('Notices')) ?> <b><?= $block->escapeHtml($noticeCount) ?></b></a>
+        </div>
+    </div>
+
+    <div class="mst-seo-audit_info__history">
+        <div class="history-canvas-wrap">
+            <canvas id="<?= $block->escapeHtml(Details::CHART_JOBS_ID) ?>"></canvas>
+        </div>
+        <p class="history-caption"><?= $block->escapeHtml(__('Audit history')) ?></p>
+    </div>
+</div>
+
+<script type="text/x-magento-init"><?= /* @noEscape */ $block->getChartInitConfig() ?></script>

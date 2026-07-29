@@ -1,0 +1,20 @@
+<?php
+/**
+ * Category image template
+ *
+ * @var $block \Mirasvit\Seo\Block\Category\Image
+ */
+?>
+<?php
+    if (($imgUrl = $block->getCategoryImageUrl())
+        && ($category = $block->getCurrentCategory())) {
+?>
+        <div class="category-image">
+            <img src="<?= $block->escapeUrl($imgUrl) ?>"
+                 alt="<?= $block->escapeHtml(__('Category image for %1', $category->getName())) ?>"
+                 title="<?= $block->escapeHtml($category->getName()) ?>"
+                 class="image" />
+        </div>
+<?php
+    }
+?>
