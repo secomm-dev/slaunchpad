@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @var $block \Secomm\Ahamove\Block\Adminhtml\System\Config\RefreshButton
+ */
+
+use Secomm\Ahamove\Model\Config\Source\ApiRequest\Status;
+
+$controller = $block->getButtonHtml();
+?>
+<script>
+    require([
+        'jquery',
+        'prototype'
+    ], function ($) {
+
+        $('#refresh_token_button').click(function () {
+            var params = {};
+            new Ajax.Request('<?php echo $block->getAjaxUrl() ?>', {
+                parameters: params,
+                loaderArea: true,
+                asynchronous: true,
+                onCreate: function () {
+                    $('#custom_button_response_message').text('');
+                },
+                onSuccess: function (transport) {
+                    var resultText = '';
+                    if (transport.status > <?= Status::STATUS_CODE_SUCCESS?>) {
+                        resultText = transport.statusText;
+                    } else {
+                        var response = JSON.parse(transport.responseText);
+                        resultText = response.message
+                    }
+                    $('#custom_button_response_message').text(resultText);
+                    setTimeout(()=> {
+                        window.location.reload();
+                    }, 2500);
+                }
+            });
+        });
+    });
+</script>
+<?php echo $block->getButtonHtml(); ?>
+<p>
+    <span id="custom_button_response_message"></span>
+</p>

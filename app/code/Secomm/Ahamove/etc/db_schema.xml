@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!-- Ahamove City and Details -->
+    <table name="ahamove_city" resource="default" engine="innodb"
+           comment="Ahamove City Table">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="city_id" nullable="false" length="255" comment="City Id"/>
+        <column xsi:type="varchar" name="country_id" nullable="false" length="255" comment="Country ID"/>
+        <column xsi:type="varchar" name="name" nullable="false" length="255" comment="City Name"/>
+        <column xsi:type="varchar" name="name_vi_vn" nullable="false" length="255" comment="City Name vi_vn"/>
+        <column xsi:type="varchar" name="level" nullable="false" length="255" comment="Level"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+            <column name="city_id"/>
+        </constraint>
+        <index referenceId="AHAMOVE_CITY_CITY_ID" indexType="btree">
+            <column name="city_id"/>
+        </index>
+    </table>
+    <table name="ahamove_city_detail" resource="default" engine="innodb"
+           comment="Ahamove City Details Table">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="city_id" nullable="false" comment="City Id"/>
+        <column xsi:type="varchar" name="name" nullable="false" length="255" comment="City Name"/>
+        <column xsi:type="varchar" name="name_vi_vn" nullable="false" length="255" comment="City Name vi_vn"/>
+        <column xsi:type="varchar" name="country_id" nullable="false" length="255" comment="Country ID"/>
+        <column xsi:type="varchar" name="location" nullable="false" length="255" comment="Location"/>
+        <column xsi:type="int" name="contract_number" nullable="true" comment="Location"/>
+        <column xsi:type="int" name="merchant_contract_number" nullable="true" comment="Location"/>
+        <column xsi:type="varchar" name="animated_url" nullable="true" length="255" comment="Location"/>
+        <column xsi:type="int" name="same_district_delivery" nullable="true" comment="Location"/>
+        <column xsi:type="varchar" name="level" nullable="true" length="255" comment="Level"/>
+        <column xsi:type="varchar" name="level_vn" nullable="true" length="255" comment="Level"/>
+        <column xsi:type="int" name="area_id" nullable="true" comment="Level"/>
+        <column xsi:type="varchar" name="service_city_id" nullable="true" length="255" comment="Level"/>
+        <column xsi:type="int" name="public_service" nullable="true" comment="Level"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="AHAMOVE_CITY_CITY_ID_AHAMOVE_CITY_DETAILS_CITY_ID"
+                    table="ahamove_city_detail"
+                    column="city_id" referenceTable="ahamove_city" referenceColumn="city_id" onDelete="CASCADE"/>
+    </table>
+
+
+    <table name="ahamove_standard" resource="default" engine="innodb" comment="Shipping Ahamove Standard">
+        <column xsi:type="int" name="pk" unsigned="true" nullable="false" identity="true"
+                comment="Primary key"/>
+        <column xsi:type="int" name="website_id" unsigned="false" nullable="false" identity="false"
+                default="0" comment="Website ID"/>
+        <column xsi:type="varchar" name="dest_country_id" nullable="false" length="4" default="0"
+                comment="Destination coutry ISO/2 or ISO/3 code"/>
+        <column xsi:type="int" name="dest_region_id" unsigned="false" nullable="false" identity="false"
+                default="0" comment="Destination Region ID"/>
+        <column xsi:type="varchar" name="dest_zip" nullable="false" length="10" default="*"
+                comment="Destination Post Code (Zip)"/>
+        <column xsi:type="varchar" name="condition_name" nullable="false" length="30" comment="Rate Condition name"/>
+        <column xsi:type="decimal" name="condition_value" scale="4" precision="12" unsigned="false" nullable="false"
+                default="0" comment="Rate condition value"/>
+        <column xsi:type="decimal" name="price" scale="4" precision="12" unsigned="false" nullable="false" default="0"
+                comment="Price"/>
+        <column xsi:type="decimal" name="cost" scale="4" precision="12" unsigned="false" nullable="false" default="0"
+                comment="Cost"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="pk"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="UNQ_3DPZA8ZTQU7APA3WPY7SAPOZYMHUHUFK">
+            <column name="website_id"/>
+            <column name="dest_country_id"/>
+            <column name="dest_region_id"/>
+            <column name="dest_zip"/>
+            <column name="condition_name"/>
+            <column name="condition_value"/>
+        </constraint>
+    </table>
+
+    <table name="ahamove_express" resource="default" engine="innodb" comment="Shipping Ahamove Express">
+        <column xsi:type="int" name="pk" unsigned="true" nullable="false" identity="true"
+                comment="Primary key"/>
+        <column xsi:type="int" name="website_id" unsigned="false" nullable="false" identity="false"
+                default="0" comment="Website ID"/>
+        <column xsi:type="varchar" name="dest_country_id" nullable="false" length="4" default="0"
+                comment="Destination coutry ISO/2 or ISO/3 code"/>
+        <column xsi:type="int" name="dest_region_id" unsigned="false" nullable="false" identity="false"
+                default="0" comment="Destination Region ID"/>
+        <column xsi:type="varchar" name="dest_zip" nullable="false" length="10" default="*"
+                comment="Destination Post Code (Zip)"/>
+        <column xsi:type="varchar" name="condition_name" nullable="false" length="30" comment="Rate Condition name"/>
+        <column xsi:type="decimal" name="condition_value" scale="4" precision="12" unsigned="false" nullable="false"
+                default="0" comment="Rate condition value"/>
+        <column xsi:type="decimal" name="price" scale="4" precision="12" unsigned="false" nullable="false" default="0"
+                comment="Price"/>
+        <column xsi:type="decimal" name="cost" scale="4" precision="12" unsigned="false" nullable="false" default="0"
+                comment="Cost"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="pk"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="UNQ_8OOGLN57QD9CPFE92KEQDRSI0GVBB4V6">
+            <column name="website_id"/>
+            <column name="dest_country_id"/>
+            <column name="dest_region_id"/>
+            <column name="dest_zip"/>
+            <column name="condition_name"/>
+            <column name="condition_value"/>
+        </constraint>
+    </table>
+    <!--  Order model Table of Ahamove Shipping -->
+    <table name="ahamove_order_status" resource="default" engine="innodb" comment="Ahamove Shipping Order Status Table">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="order_ahamove_id" nullable="false" length="255" comment="Order Id Ahamove"/>
+        <column xsi:type="varchar" name="track_number" nullable="false" length="255" comment="Tracking Number"/>
+        <column xsi:type="varchar" name="status" nullable="true" length="255" comment="Status"/>
+        <column xsi:type="varchar" name="shared_link" nullable="false" length="255" comment="Shared Link"/>
+        <column xsi:type="text" name="order_data" nullable="true" comment="Order Data"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+                <column name="entity_id"/>
+        </constraint>
+    </table>
+</schema>

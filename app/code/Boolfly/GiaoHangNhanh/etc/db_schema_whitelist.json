@@ -1,0 +1,45 @@
+{
+    "boolfly_giaohangnhanh_district": {
+        "column": {
+            "entity_id": true,
+            "district_id": true,
+            "province_id": true,
+            "district_name": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "sales_order": {
+        "column": {
+            "ghn_status": true
+        }
+    },
+    "quote_address": {
+        "column": {
+            "district": true,
+            "shipping_service_id": true,
+            "shipping_service_type_id": true
+        }
+    },
+    "sales_order_grid": {
+        "column": {
+            "ghn_status": true
+        }
+    },
+    "boolfly_giaohangnhanh_ward": {
+        "column": {
+            "entity_id": true,
+            "ward_code": true,
+            "district_id": true,
+            "ward_name": true
+        },
+        "index": {
+            "GHN_WARD_DISTRICT_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "GHN_WARD_DISTRICT_ID_GHN_DISTRICT_ENTT_ID": true
+        }
+    }
+}
