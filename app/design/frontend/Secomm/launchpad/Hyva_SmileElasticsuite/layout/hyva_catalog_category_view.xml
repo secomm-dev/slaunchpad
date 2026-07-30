@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+  Fix: PLP configurable swatch renderer — Hyva 1.5+ "product.swatch.item rendered
+  without option data" RuntimeException.
+
+  Root cause: hyva-themes/magento2-smile-elasticsuite 1.2.8 (latest available; no
+  1.5-compatible upstream) overrides the category configurable listing renderer
+  (handle hyva_catalog_category_view) with a PRE-1.5 renderer
+  (Hyva_SmileElasticsuite::swatch/product/listing/renderer.phtml) that renders
+  product.swatch.item WITHOUT the "option" data. Hyva 1.5.2's swatch-item.phtml
+  mandates option data and throws RuntimeException otherwise.
+
+  Remediation (theme-layer override; no vendor file modified; loads AFTER the module
+  layout so it wins): reset the configurable listing renderer template to the native
+  Hyva 1.5+ renderer Magento_Swatches::product/listing/renderer.phtml, which loops the
+  options server-side and passes setData('option', $option). The compat renderer adds
+  no ElasticSuite-specific logic for PLP swatches (same Configurable block + Hyva
+  swatch helpers), so the native renderer is a safe, maintained replacement.
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="category.product.type.details.renderers.configurable">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Magento_Swatches::product/listing/renderer.phtml</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>
