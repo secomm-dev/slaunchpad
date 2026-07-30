@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0c555169fd32ca3f4959d9968c35091a",
+    "content-hash": "5c6098f059fe2340a2ba2f711bff6f2d",
     "packages": [
         {
             "name": "2tvenom/cborencode",
@@ -182,16 +182,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.389.1",
+            "version": "3.389.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "98506321be0157d78a2c44424a8fce3a4842081d"
+                "reference": "784e0fb95e752e55c4654b5800b900c78f6d3990"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/98506321be0157d78a2c44424a8fce3a4842081d",
-                "reference": "98506321be0157d78a2c44424a8fce3a4842081d",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/784e0fb95e752e55c4654b5800b900c78f6d3990",
+                "reference": "784e0fb95e752e55c4654b5800b900c78f6d3990",
                 "shasum": ""
             },
             "require": {
@@ -273,9 +273,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.389.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.389.2"
             },
-            "time": "2026-07-27T18:09:06+00:00"
+            "time": "2026-07-28T18:10:25+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -2699,6 +2699,821 @@
                 "source": "https://github.com/hybridauth/hybridauth/tree/v3.13.0"
             },
             "time": "2026-04-02T19:11:26+00:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-bundle",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-bundle/1.0.23.0/7c214879e06f3e135cdd25b166b546c8759b52e9.zip",
+                "reference": "7c214879e06f3e135cdd25b166b546c8759b52e9",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-configurable": "*",
+                "hyva-themes/koti-sample-data-downloadable": "*",
+                "hyva-themes/koti-sample-data-media": "*",
+                "magento/framework": "*",
+                "magento/module-bundle": "*",
+                "magento/module-catalog": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataBundle\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Bundle Products",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-bundle/-/tree/1.0.22",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-bundle/-/issues"
+            },
+            "time": "2026-07-02T13:00:31+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-catalog",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-catalog/1.0.23.0/5d5f97f11b172a103c8115ccabf1a9695eb4ebfd.zip",
+                "reference": "5d5f97f11b172a103c8115ccabf1a9695eb4ebfd",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-media": "*",
+                "magento/framework": "*",
+                "magento/module-catalog": "*",
+                "magento/module-indexer": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataCatalog\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Catalog",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-catalog/-/tree/1.0.23",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-catalog/-/issues"
+            },
+            "time": "2026-07-10T15:06:40+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-catalog-rule",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-catalog-rule/1.0.23.0/cb58fa41c349af468aa33737da0f826597c3b0b5.zip",
+                "reference": "cb58fa41c349af468aa33737da0f826597c3b0b5",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-bundle": "*",
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-configurable": "*",
+                "hyva-themes/koti-sample-data-downloadable": "*",
+                "hyva-themes/koti-sample-data-grouped-product": "*",
+                "magento/framework": "*",
+                "magento/module-catalog-rule": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataCatalogRule\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Catalog Price Rules (Promotional Discounts)",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-catalog-rule/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-catalog-rule/-/issues"
+            },
+            "time": "2026-06-29T11:24:51+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-configurable",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-configurable/1.0.23.0/a6deb691adca85779a8fb825487a439037a6ffad.zip",
+                "reference": "a6deb691adca85779a8fb825487a439037a6ffad",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-media": "*",
+                "magento/framework": "*",
+                "magento/module-catalog": "*",
+                "magento/module-configurable-product": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataConfigurable\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Configurable Products",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-configurable/-/tree/1.0.22",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-configurable/-/issues"
+            },
+            "time": "2026-07-02T13:00:31+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-customer",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-customer/1.0.23.0/4026971c3eccb2f65db0dd14e568bf1ef04ab4b3.zip",
+                "reference": "4026971c3eccb2f65db0dd14e568bf1ef04ab4b3",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "magento/framework": "*",
+                "magento/module-customer": "*",
+                "magento/module-directory": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataCustomer\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Customers",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-customer/-/tree/1.0.22",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-customer/-/issues"
+            },
+            "time": "2026-07-02T12:57:59+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-downloadable",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-downloadable/1.0.23.0/4fb077d4a8f141923c8ebeaa6d604a414aec731e.zip",
+                "reference": "4fb077d4a8f141923c8ebeaa6d604a414aec731e",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-media": "*",
+                "magento/framework": "*",
+                "magento/module-catalog": "*",
+                "magento/module-downloadable": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataDownloadable\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Downloadable Products",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-downloadable/-/tree/1.0.23",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-downloadable/-/issues"
+            },
+            "time": "2026-07-10T15:07:45+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-grouped-product",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-grouped-product/1.0.23.0/234de23361c74e51b0696a7dd573fb15f4b1812c.zip",
+                "reference": "234de23361c74e51b0696a7dd573fb15f4b1812c",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-media": "*",
+                "magento/framework": "*",
+                "magento/module-catalog": "*",
+                "magento/module-grouped-product": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataGroupedProduct\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Grouped Products",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-grouped-product/-/tree/1.0.22",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-grouped-product/-/issues"
+            },
+            "time": "2026-07-02T13:00:31+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-media",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-media/1.0.23.0/86c548aa88f07e242414165f2466094001fcbbc6.zip",
+                "reference": "86c548aa88f07e242414165f2466094001fcbbc6",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "magento/magento-composer-installer": "*"
+            },
+            "type": "magento2-component",
+            "extra": {
+                "map": [
+                    [
+                        "catalog",
+                        "pub/media/catalog"
+                    ]
+                ]
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data Media Files",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-media/-/tree/1.0.19",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-media/-/issues"
+            },
+            "time": "2026-05-04T21:30:32+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-msrp",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-msrp/1.0.23.0/b67895ea0f070bc551d199f1ce1093a17b9d7311.zip",
+                "reference": "b67895ea0f070bc551d199f1ce1093a17b9d7311",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "magento/framework": "*",
+                "magento/module-catalog": "*",
+                "magento/module-msrp": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataMsrp\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for MSRP (Manufacturer's Suggested Retail Price)",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-msrp/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-msrp/-/issues"
+            },
+            "time": "2026-06-29T11:26:13+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-offline-shipping",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-offline-shipping/1.0.23.0/71c4723244b70cb152b50ac8c72e2e74492b4125.zip",
+                "reference": "71c4723244b70cb152b50ac8c72e2e74492b4125",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "magento/framework": "*",
+                "magento/module-config": "*",
+                "magento/module-offline-shipping": "*",
+                "magento/module-sample-data": "*",
+                "magento/module-store": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataOfflineShipping\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Table Rate Shipping (EU-focused from Amsterdam)",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-offline-shipping/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-offline-shipping/-/issues"
+            },
+            "time": "2026-06-29T11:26:23+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-product-links",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-product-links/1.0.23.0/f22ef3817268e929c249cce6fe45d4d145a0873d.zip",
+                "reference": "f22ef3817268e929c249cce6fe45d4d145a0873d",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-bundle": "*",
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-configurable": "*",
+                "hyva-themes/koti-sample-data-downloadable": "*",
+                "hyva-themes/koti-sample-data-grouped-product": "*",
+                "magento/framework": "*",
+                "magento/module-catalog": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataProductLinks\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Product Links (Related, Upsell, Cross-sell)",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-product-links/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-product-links/-/issues"
+            },
+            "time": "2026-06-29T11:26:36+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-review",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-review/1.0.23.0/9c5939ac47e422378509e56ced492f027d978468.zip",
+                "reference": "9c5939ac47e422378509e56ced492f027d978468",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-bundle": "*",
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-configurable": "*",
+                "hyva-themes/koti-sample-data-downloadable": "*",
+                "hyva-themes/koti-sample-data-grouped-product": "*",
+                "magento/framework": "*",
+                "magento/module-review": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataReview\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Product Reviews",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-review/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-review/-/issues"
+            },
+            "time": "2026-06-29T11:26:43+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-sales",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-sales/1.0.23.0/86bbbf869500555207ba7e38aaef59a59e94673c.zip",
+                "reference": "86bbbf869500555207ba7e38aaef59a59e94673c",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-bundle": "*",
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-configurable": "*",
+                "hyva-themes/koti-sample-data-customer": "*",
+                "hyva-themes/koti-sample-data-downloadable": "*",
+                "hyva-themes/koti-sample-data-offline-shipping": "*",
+                "hyva-themes/koti-sample-data-sales-rule": "*",
+                "hyva-themes/koti-sample-data-tax": "*",
+                "magento/framework": "*",
+                "magento/module-sales": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataSales\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Order History",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-sales/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-sales/-/issues"
+            },
+            "time": "2026-06-29T11:26:47+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-sales-rule",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-sales-rule/1.0.23.0/4f03017dcc815f90364eff96f4552764b90faa86.zip",
+                "reference": "4f03017dcc815f90364eff96f4552764b90faa86",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "magento/framework": "*",
+                "magento/module-sales-rule": "*",
+                "magento/module-sample-data": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataSalesRule\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Cart Price Rules (Coupon Codes)",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-sales-rule/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-sales-rule/-/issues"
+            },
+            "time": "2026-06-29T11:26:54+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-swatches",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-swatches/1.0.23.0/36ca194c07be5ae6bb14824d03b8a5ca195ffaee.zip",
+                "reference": "36ca194c07be5ae6bb14824d03b8a5ca195ffaee",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-configurable": "*",
+                "magento/framework": "*",
+                "magento/module-swatches": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataSwatches\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data Swatches - Converts color and size attributes to visual/text swatches",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-swatches/-/tree/1.0.22",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-swatches/-/issues"
+            },
+            "time": "2026-07-02T15:37:18+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-tax",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-tax/1.0.23.0/8f34bad73274241d59e55cddf4eb38f06665e45a.zip",
+                "reference": "8f34bad73274241d59e55cddf4eb38f06665e45a",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "magento/framework": "*",
+                "magento/module-directory": "*",
+                "magento/module-sample-data": "*",
+                "magento/module-tax": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataTax\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for EU VAT Tax Rates (NL-based merchant)",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-tax/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-tax/-/issues"
+            },
+            "time": "2026-06-29T11:27:07+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-theme",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-theme/1.0.23.0/1190c0438b64ba618a6ea8f7eb271d59cc9f397e.zip",
+                "reference": "1190c0438b64ba618a6ea8f7eb271d59cc9f397e",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "magento/framework": "*",
+                "magento/module-configurable-product": "*",
+                "magento/module-directory": "*",
+                "magento/module-theme": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataTheme\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data Theme Configuration",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-theme/-/tree/1.0.22",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-theme/-/issues"
+            },
+            "time": "2026-07-02T12:59:19+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-widget",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-widget/1.0.23.0/6bdf535094f9ffe6e743b4e574d3b43efe591cb8.zip",
+                "reference": "6bdf535094f9ffe6e743b4e574d3b43efe591cb8",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "magento/framework": "*",
+                "magento/module-cms": "*",
+                "magento/module-sample-data": "*",
+                "magento/module-store": "*",
+                "magento/module-theme": "*",
+                "magento/module-widget": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataWidget\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for CMS Widget (sample customer login credentials on login page)",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-widget/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-widget/-/issues"
+            },
+            "time": "2026-06-29T11:27:34+02:00"
+        },
+        {
+            "name": "hyva-themes/koti-sample-data-wishlist",
+            "version": "1.0.23",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-wishlist/1.0.23.0/141699d71cc050ced5fdc6809a8c7ef066518111.zip",
+                "reference": "141699d71cc050ced5fdc6809a8c7ef066518111",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "hyva-themes/koti-sample-data-catalog": "*",
+                "hyva-themes/koti-sample-data-configurable": "*",
+                "hyva-themes/koti-sample-data-customer": "*",
+                "hyva-themes/koti-sample-data-downloadable": "*",
+                "magento/framework": "*",
+                "magento/module-catalog": "*",
+                "magento/module-configurable-product": "*",
+                "magento/module-customer": "*",
+                "magento/module-sample-data": "*",
+                "magento/module-store": "*",
+                "magento/module-wishlist": "*",
+                "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0"
+            },
+            "type": "magento2-module",
+            "autoload": {
+                "files": [
+                    "src/registration.php"
+                ],
+                "psr-4": {
+                    "Hyva\\KotiSampleDataWishlist\\": "src/"
+                }
+            },
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "description": "Koti Sample Data for Customer Wishlists",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-wishlist/-/tree/1.0.21",
+                "issues": "https://gitlab.hyva.io/hyva-themes/sample-data/koti/koti-sample-data-wishlist/-/issues"
+            },
+            "time": "2026-06-29T11:27:46+02:00"
         },
         {
             "name": "hyva-themes/magento2-base-layout-reset",
@@ -24826,16 +25641,16 @@
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
-            "version": "v1.38.1",
+            "version": "v1.41.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
-                "reference": "e9247d281d694a5120554d9afaf54e070e88a603"
+                "reference": "bb899c1db0aa8127dc3afe8cda4a67eb24915f8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/e9247d281d694a5120554d9afaf54e070e88a603",
-                "reference": "e9247d281d694a5120554d9afaf54e070e88a603",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/bb899c1db0aa8127dc3afe8cda4a67eb24915f8d",
+                "reference": "bb899c1db0aa8127dc3afe8cda4a67eb24915f8d",
                 "shasum": ""
             },
             "require": {
@@ -24884,7 +25699,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.38.1"
+                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.41.0"
             },
             "funding": [
                 {
@@ -24904,7 +25719,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T05:58:03+00:00"
+            "time": "2026-07-28T08:25:59+00:00"
         },
         {
             "name": "symfony/polyfill-intl-idn",
@@ -25489,16 +26304,16 @@
         },
         {
             "name": "symfony/polyfill-php83",
-            "version": "v1.38.2",
+            "version": "v1.41.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php83.git",
-                "reference": "796a26abb75ce49f3a84433cd81bf1009d73d5f8"
+                "reference": "5ea99087fb99c273a9b9236ed4c31e78b16103c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/796a26abb75ce49f3a84433cd81bf1009d73d5f8",
-                "reference": "796a26abb75ce49f3a84433cd81bf1009d73d5f8",
+                "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/5ea99087fb99c273a9b9236ed4c31e78b16103c6",
+                "reference": "5ea99087fb99c273a9b9236ed4c31e78b16103c6",
                 "shasum": ""
             },
             "require": {
@@ -25545,7 +26360,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php83/tree/v1.38.2"
+                "source": "https://github.com/symfony/polyfill-php83/tree/v1.41.0"
             },
             "funding": [
                 {
@@ -25565,7 +26380,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-27T06:51:48+00:00"
+            "time": "2026-07-01T12:47:55+00:00"
         },
         {
             "name": "symfony/polyfill-php84",
@@ -25649,16 +26464,16 @@
         },
         {
             "name": "symfony/polyfill-php85",
-            "version": "v1.38.1",
+            "version": "v1.41.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php85.git",
-                "reference": "ba2ba04f3352cfa2dcbbcb90aee13ed967f505b1"
+                "reference": "255fab485aaa1006ed411040c42aecd7b5302d7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/ba2ba04f3352cfa2dcbbcb90aee13ed967f505b1",
-                "reference": "ba2ba04f3352cfa2dcbbcb90aee13ed967f505b1",
+                "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/255fab485aaa1006ed411040c42aecd7b5302d7a",
+                "reference": "255fab485aaa1006ed411040c42aecd7b5302d7a",
                 "shasum": ""
             },
             "require": {
@@ -25705,7 +26520,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php85/tree/v1.38.1"
+                "source": "https://github.com/symfony/polyfill-php85/tree/v1.41.0"
             },
             "funding": [
                 {
@@ -25725,7 +26540,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T02:25:22+00:00"
+            "time": "2026-07-01T12:47:55+00:00"
         },
         {
             "name": "symfony/process",
@@ -26559,16 +27374,16 @@
         },
         {
             "name": "webonyx/graphql-php",
-            "version": "v15.35.0",
+            "version": "v15.37.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webonyx/graphql-php.git",
-                "reference": "b67de08a46d42a5f606e455851882c27d3a3aba8"
+                "reference": "8c620457202b5c8d81582338238f769790ef718a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webonyx/graphql-php/zipball/b67de08a46d42a5f606e455851882c27d3a3aba8",
-                "reference": "b67de08a46d42a5f606e455851882c27d3a3aba8",
+                "url": "https://api.github.com/repos/webonyx/graphql-php/zipball/8c620457202b5c8d81582338238f769790ef718a",
+                "reference": "8c620457202b5c8d81582338238f769790ef718a",
                 "shasum": ""
             },
             "require": {
@@ -26581,12 +27396,12 @@
                 "amphp/http-server": "^2.1 || ^3",
                 "dms/phpunit-arraysubset-asserts": "dev-master",
                 "ergebnis/composer-normalize": "^2.28",
-                "friendsofphp/php-cs-fixer": "3.95.15",
+                "friendsofphp/php-cs-fixer": "3.95.17",
                 "mll-lab/php-cs-fixer-config": "5.13.0",
                 "nyholm/psr7": "^1.5",
                 "phpbench/phpbench": "^1.2",
                 "phpstan/extension-installer": "^1.1",
-                "phpstan/phpstan": "2.2.5",
+                "phpstan/phpstan": "2.2.6",
                 "phpstan/phpstan-phpunit": "2.0.18",
                 "phpstan/phpstan-strict-rules": "2.0.12",
                 "phpunit/phpunit": "^9.5 || ^10.5.21 || ^11",
@@ -26623,7 +27438,7 @@
             ],
             "support": {
                 "issues": "https://github.com/webonyx/graphql-php/issues",
-                "source": "https://github.com/webonyx/graphql-php/tree/v15.35.0"
+                "source": "https://github.com/webonyx/graphql-php/tree/v15.37.1"
             },
             "funding": [
                 {
@@ -26635,7 +27450,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2026-07-23T06:59:54+00:00"
+            "time": "2026-07-29T07:35:47+00:00"
         },
         {
             "name": "wikimedia/less.php",
@@ -28522,12 +29337,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pdepend/pdepend.git",
-                "reference": "8d2833e0e08e224bd48cee093f48823d5bcefea0"
+                "reference": "9045f271f5975b85661fc4f7a15e00f81949940b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pdepend/pdepend/zipball/8d2833e0e08e224bd48cee093f48823d5bcefea0",
-                "reference": "8d2833e0e08e224bd48cee093f48823d5bcefea0",
+                "url": "https://api.github.com/repos/pdepend/pdepend/zipball/9045f271f5975b85661fc4f7a15e00f81949940b",
+                "reference": "9045f271f5975b85661fc4f7a15e00f81949940b",
                 "shasum": ""
             },
             "require": {
@@ -28589,7 +29404,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-07-13T00:53:35+00:00"
+            "time": "2026-07-29T08:28:52+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -28959,11 +29774,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.12.33",
+            "version": "1.12.34",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/37982d6fc7cbb746dda7773530cda557cdf119e1",
-                "reference": "37982d6fc7cbb746dda7773530cda557cdf119e1",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/4dd89ca7aa30fdc6760be21550d583bcc32e8476",
+                "reference": "4dd89ca7aa30fdc6760be21550d583bcc32e8476",
                 "shasum": ""
             },
             "require": {
@@ -29008,7 +29823,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-28T20:30:03+00:00"
+            "time": "2026-07-28T10:04:39+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -31364,5 +32179,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.2.0"
 }

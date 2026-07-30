@@ -1,0 +1,28 @@
+# ============================================================================
+# Hyvä integration — dependency map
+# ============================================================================
+# Mirrors the upstream `requires:` frontmatter so dependency resolution has one
+# declarative source (cross-checked against each SKILL.md frontmatter by the
+# validator). Resolution is recursive; only dependencies of SELECTED skills are
+# installed. Utility skills are pulled in as dependencies, not as top-level picks.
+# ============================================================================
+schema_version: 1
+source_of_truth: "upstream SKILL.md `requires:` frontmatter (this file mirrors it)"
+resolution: recursive
+dependencies:
+  hyva-alpine-component: []
+  hyva-child-theme: [hyva-exec-shell-cmd, hyva-theme-list, hyva-compile-tailwind-css]
+  hyva-cms-component: [hyva-exec-shell-cmd, hyva-create-module, hyva-cms-components-dump, hyva-render-media-image]
+  hyva-cms-components-dump: [hyva-exec-shell-cmd]
+  hyva-cms-custom-field: [hyva-exec-shell-cmd, hyva-create-module]
+  hyva-compile-tailwind-css: [hyva-exec-shell-cmd, hyva-theme-list]
+  hyva-create-module: [hyva-exec-shell-cmd]
+  hyva-exec-shell-cmd: []
+  hyva-playwright-test: []
+  hyva-render-media-image: []
+  hyva-theme-list: []
+  hyva-ui-component: [hyva-exec-shell-cmd, hyva-theme-list, hyva-child-theme, hyva-compile-tailwind-css]
+# Example closed sets (what actually gets installed for a profile):
+#   hyva-theme-core (child-theme + alpine + render + compile + theme-list)
+#     + deps => + hyva-exec-shell-cmd   (via child-theme, compile)
+#   hyva-ui (ui-component) + deps => + exec + theme-list + child-theme + compile (+ exec via compile/child)

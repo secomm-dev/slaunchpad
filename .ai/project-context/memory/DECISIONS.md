@@ -162,3 +162,6 @@ Decision records mới được lưu canonical tại `.ai/records/decisions/DEC-
 - [DEC-013](../../records/decisions/DEC-013.md) — Idempotency + concurrency lock (proposed; FEAT-004)
 - [DEC-014](../../records/decisions/DEC-014.md) — Audit-trail storage (proposed; FEAT-004)
 - [DEC-015](../../records/decisions/DEC-015.md) — VNPAY payload contract versioning (proposed; FEAT-004)
+- [DEC-017](../../records/decisions/DEC-017.md) — Generic VN address capability (data + cart estimate cascade) lives in Secomm_VietNamAddress (accepted; FEAT-005)
+- [DEC-018](../../records/decisions/DEC-018.md) — Per-shipping-method VN customization lives in Launchpad (project, optional per carrier; 3rd-party + Secomm mix) (accepted; FEAT-005)
+- [DEC-019](../../records/decisions/DEC-019.md) — Generic module uses Magento-default labels only; VN labels → VietNamAddress; per-carrier code mappings → Launchpad (accepted; FEAT-005)

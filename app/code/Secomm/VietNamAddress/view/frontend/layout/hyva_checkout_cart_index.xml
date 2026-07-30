@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  ~ Secomm_VietNamAddress — SL-003 / FEAT-005 (DEC-017)
+  ~ Hyva cart "Estimate Shipping & Tax": add VN 2-level (Province/City → Ward/Commune).
+  ~ Handle `hyva_checkout_cart_index` is auto-added by Hyva\Theme (AddLayoutHandles)
+  ~ ONLY on Hyva storefronts and loads AFTER `checkout_cart_index` -> this setTemplate
+  ~ wins on Hyva. On Luma this file never loads (Luma uses generic jsLayout mixin).
+  ~ ifconfig gates on address/general/enable (Secomm_AddressDropdown master toggle).
+  ~ Non-VN behaviour is identical to native (Ward field is x-if gated on country = VN).
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="checkout.cart.shipping">
+            <action method="setTemplate" ifconfig="address/general/enable">
+                <argument name="template" xsi:type="string">Secomm_VietNamAddress::hyva/php-cart/shipping.phtml</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!--
+  ~ Secomm_VietNamAddress — SL-003 / FEAT-005 (DEC-017)
+  ~ Server-side validation of the VN 2-level relationship for cart shipping estimation.
+  ~ Frontend-only trust is not allowed (spec backend rule #3). Coexists with the
+  ~ generic Secomm_AddressDropdown\Plugin\Model\Shipping rate plugin (independent).
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Shipping\Model\Shipping">
+        <plugin name="secomm_vietnam_cart_validate_ward" type="Secomm\VietNamAddress\Plugin\Cart\ValidateVietNamWard" />
+    </type>
+</config>
