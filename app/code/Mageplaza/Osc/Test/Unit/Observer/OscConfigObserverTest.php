@@ -75,30 +75,27 @@ class OscConfigObserverTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestExecute()
+    public static function providerTestExecute()
     {
-        $attribute = $this->getMockBuilder(Attribute::class)
-            ->disableOriginalConstructor()->getMock();
-
         return [
-            [1, 1, $attribute],
-            [0, 1, $attribute],
-            [1, 0, $attribute],
-            [0, 0, $attribute],
+            [1, 1, true],
+            [0, 1, true],
+            [1, 0, true],
+            [0, 0, true],
             [0, 0, false]
         ];
     }
 
     /**
-     * @param int              $store
-     * @param int              $website
-     * @param false|MockObject $attribute
+     * @param int  $store
+     * @param int  $website
+     * @param bool $hasAttribute
      *
      * @dataProvider providerTestExecute
      *
      * @throws Exception
      */
-    public function testExecute($store, $website, $attribute)
+    public function testExecute($store, $website, $hasAttribute)
     {
         $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
         $scopeId = 0;
@@ -111,7 +108,7 @@ class OscConfigObserverTest extends TestCase
             ->getMock();
 
         $eventMock = $this->getMockBuilder(Event::class)
-            ->setMethods(['getStore', 'getWebsite'])
+            ->addMethods(['getStore', 'getWebsite'])
             ->disableOriginalConstructor()
             ->getMock();
         $observerMock->expects($this->exactly(2))->method('getEvent')->willReturn($eventMock);
@@ -122,7 +119,7 @@ class OscConfigObserverTest extends TestCase
         $this->oscHelperMock->expects($this->once())
             ->method('isDisabledGiftMessage')
             ->willReturn($isDisabledGiftMessage);
-        $this->oscHelperMock->expects($this->once())
+        $this->oscHelperMock->expects($this->exactly(2))
             ->method('isEnableGiftMessageItems')
             ->willReturn($isEnableGiftMessageItems);
         $disabledPaymentTOC = false;
@@ -134,54 +131,56 @@ class OscConfigObserverTest extends TestCase
         $this->oscHelperMock->expects($this->once())
             ->method('disabledReviewTOC')
             ->willReturn($disabledReviewTOC);
-        $this->modelConfigMock->expects($this->exactly(3))
+        $this->modelConfigMock->expects($this->exactly(4))
             ->method('saveConfig')
-            ->willReturnOnConsecutiveCalls(
-                [
-                    Message::XPATH_CONFIG_GIFT_MESSAGE_ALLOW_ITEMS,
-                    $isDisabledGiftMessage,
-                    $scope,
-                    $scopeId
-                ],
-                [
-                    Message::XPATH_CONFIG_GIFT_MESSAGE_ALLOW_ITEMS,
-                    $isEnableGiftMessageItems,
-                    $scope,
-                    $scopeId
-                ],
-                [
-                    'checkout/options/enable_agreements',
-                    $disabledPaymentTOC || $disabledReviewTOC,
-                    $scope,
-                    $scopeId
-                ]
-            )->willReturnSelf();
+            ->willReturnSelf();
 
         if (!$store && !$website) {
-            $this->attributeMetadataDataProviderMock->expects($this->at(0))
+            $attribute = $hasAttribute
+                ? $this->getMockBuilder(Attribute::class)->disableOriginalConstructor()->getMock()
+                : false;
+
+            $this->oscHelperMock->expects($this->once())
+                ->method('getShowCustomerGrid')
+                ->willReturn('');
+
+            $getAttributeCallCount = 0;
+            $this->attributeMetadataDataProviderMock->expects($this->exactly(3))
                 ->method('getAttribute')
-                ->with('customer_address', 'mposc_field_1')
-                ->willReturn($attribute);
-            $this->attributeMetadataDataProviderMock->expects($this->at(1))
-                ->method('getAttribute')
-                ->with('customer_address', 'mposc_field_2')
-                ->willReturn($attribute);
-            $this->attributeMetadataDataProviderMock->expects($this->at(2))
-                ->method('getAttribute')
-                ->with('customer_address', 'mposc_field_3')
-                ->willReturn($attribute);
+                ->willReturnCallback(function ($entityType, $fieldCode) use (&$getAttributeCallCount, $attribute) {
+                    $getAttributeCallCount++;
+                    $this->assertEquals('customer_address', $entityType);
+                    match ($getAttributeCallCount) {
+                        1 => $this->assertEquals('mposc_field_1', $fieldCode),
+                        2 => $this->assertEquals('mposc_field_2', $fieldCode),
+                        3 => $this->assertEquals('mposc_field_3', $fieldCode),
+                    };
+                    return $attribute;
+                });
             if ($attribute) {
                 $label = 'test';
+                $labelCallCount = 0;
                 $this->oscHelperMock->expects($this->exactly(3))
                     ->method('getCustomFieldLabel')
-                    ->withConsecutive([1], [2], [3])
-                    ->willReturn($label);
+                    ->willReturnCallback(function ($fieldNum) use (&$labelCallCount, $label) {
+                        $labelCallCount++;
+                        match ($labelCallCount) {
+                            1 => $this->assertEquals(1, $fieldNum),
+                            2 => $this->assertEquals(2, $fieldNum),
+                            3 => $this->assertEquals(3, $fieldNum),
+                        };
+                        return $label;
+                    });
                 $attribute->expects($this->exactly(3))
                     ->method('setDefaultFrontendLabel')
                     ->with($label)
                     ->willReturnSelf();
                 $attribute->expects($this->exactly(3))
                     ->method('save')
+                    ->willReturnSelf();
+
+                $attribute->expects($this->exactly(12))
+                    ->method('setData')
                     ->willReturnSelf();
             }
         }

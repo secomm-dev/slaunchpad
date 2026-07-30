@@ -73,7 +73,7 @@ class UserContextTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestAfterGetUserType()
+    public static function providerTestAfterGetUserType()
     {
         return [
             [
@@ -109,7 +109,7 @@ class UserContextTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestAfterGetUserId()
+    public static function providerTestAfterGetUserId()
     {
         return [
             [
@@ -143,7 +143,7 @@ class UserContextTest extends TestCase
         $this->oscHelperMock->expects($this->once())->method('isFlagOscMethodRegister')->willReturn($flagOsc);
         if ($flagOsc) {
             $quoteMock = $this->getMockBuilder(QuoteCore::class)
-                ->setMethods(['getCustomerId'])
+                ->addMethods(['getCustomerId'])
                 ->disableOriginalConstructor()->getMock();
             $this->checkoutSessionMock->expects($this->once())->method('getQuote')->willReturn($quoteMock);
             $quoteMock->expects($this->once())->method('getCustomerId')->willReturn(1);

@@ -24,6 +24,7 @@ namespace Mageplaza\Osc\Test\Unit\Observer;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Customer\Api\AccountManagementInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\GroupManagementInterface as CustomerGroupManagement;
 use Magento\Customer\Model\Data\Customer;
 use Magento\Customer\Model\Data\Group;
@@ -45,6 +46,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Address;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\CustomerManagement;
+use Magento\Store\Model\StoreManagerInterface;
 use Mageplaza\Osc\Observer\QuoteSubmitSuccess;
 use PHPUnit\Framework\MockObject\Matcher\InvokedCount as InvokedCountMatcher;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -123,6 +125,16 @@ class QuoteSubmitSuccessTest extends TestCase
     private $customerGroupManagementMock;
 
     /**
+     * @var CustomerRepositoryInterface|MockObject
+     */
+    private $customerRepositoryMock;
+
+    /**
+     * @var StoreManagerInterface|MockObject
+     */
+    private $storeManagerMock;
+
+    /**
      * @var QuoteSubmitSuccess
      */
     private $quoteSubmitSuccess;
@@ -145,7 +157,7 @@ class QuoteSubmitSuccessTest extends TestCase
     protected function setUp(): void
     {
         $this->checkoutSessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(
+            ->addMethods(
                 [
                 'getOscData',
                 'getIsCreatedAccountPaypalExpress',
@@ -188,6 +200,8 @@ class QuoteSubmitSuccessTest extends TestCase
         $this->customerGroupManagementMock = $this->getMockBuilder(CustomerGroupManagement::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $this->customerRepositoryMock = $this->getMockForAbstractClass(CustomerRepositoryInterface::class);
+        $this->storeManagerMock = $this->getMockForAbstractClass(StoreManagerInterface::class);
 
         $this->quoteMock = $this->getMockBuilder(Quote::class)
             ->disableOriginalConstructor()
@@ -202,7 +216,7 @@ class QuoteSubmitSuccessTest extends TestCase
             ->getMock();
 
         $eventMock = $this->getMockBuilder(Event::class)
-            ->setMethods(['getOrder', 'getQuote'])
+            ->addMethods(['getOrder', 'getQuote'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->observerMock->expects($this->exactly(2))->method('getEvent')->willReturn($eventMock);
@@ -215,22 +229,24 @@ class QuoteSubmitSuccessTest extends TestCase
             $this->customerUrlMock,
             $this->messageManagerMock,
             $this->customerSessionMock,
-            $this->subscriberFactoryMock,
-            $this->customerManagementMock,
+            $this->customerGroupManagementMock,
+            $this->objectCopyServiceMock,
             $this->scopeConfigMock,
+            $this->customerManagementMock,
+            $this->subscriberFactoryMock,
             $this->purchasedFactoryMock,
             $this->productFactoryMock,
             $this->itemFactoryMock,
             $this->itemsFactoryMock,
-            $this->objectCopyServiceMock,
-            $this->customerGroupManagementMock
+            $this->customerRepositoryMock,
+            $this->storeManagerMock
         );
     }
 
     /**
      * @return array
      */
-    public function providerTestExecuteWithRegisterAccount()
+    public static function providerTestExecuteWithRegisterAccount()
     {
         return [
             [true, 1, 'account_confirmation_required', self::once()],
@@ -314,11 +330,28 @@ class QuoteSubmitSuccessTest extends TestCase
         if ($isCreatedAccountPaypalExpress) {
             $this->quoteMock->expects($this->once())->method('getCustomer')->willReturn($customerMock);
         } else {
-            $this->orderMock->expects($this->once())->method('getId')->willReturn($orderId);
-            $this->customerManagementMock->expects($this->once())
-                ->method('create')
-                ->with($orderId)
-                ->willReturn($customerMock);
+            $this->orderMock->expects($this->once())->method('getCustomerEmail')->willReturn($email);
+            $storeMock = $this->getMockBuilder(\Magento\Store\Model\Store::class)
+                ->disableOriginalConstructor()
+                ->getMock();
+            $this->storeManagerMock->expects($this->once())->method('getStore')->willReturn($storeMock);
+            $storeMock->expects($this->once())->method('getWebsiteId')->willReturn(1);
+            if ($customerId) {
+                $this->customerRepositoryMock->expects($this->once())
+                    ->method('get')
+                    ->with($email, 1)
+                    ->willReturn($customerMock);
+            } else {
+                $this->customerRepositoryMock->expects($this->once())
+                    ->method('get')
+                    ->with($email, 1)
+                    ->willReturn($customerMock);
+                $this->orderMock->expects($this->once())->method('getId')->willReturn($orderId);
+                $this->customerManagementMock->expects($this->once())
+                    ->method('create')
+                    ->with($orderId)
+                    ->willReturn($customerMock);
+            }
         }
         $customerMock->expects($this->atLeastOnce())->method('getId')->willReturn($customerId);
         if ($customerId) {
@@ -357,7 +390,7 @@ class QuoteSubmitSuccessTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestExecuteWithSubscribed()
+    public static function providerTestExecuteWithSubscribed()
     {
         return [
             [false],
@@ -384,28 +417,28 @@ class QuoteSubmitSuccessTest extends TestCase
 
         $this->customerSessionMock->expects($this->once())->method('isLoggedIn')->willReturn($isCustomerLogin);
         $subscribedEmail = 'test@gmail.com';
+        $subscribeMock = $this->getMockBuilder(Subscriber::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->subscriberFactoryMock->expects($this->once())->method('create')
+            ->willReturn($subscribeMock);
         if (!$isCustomerLogin) {
             $billingAddressMock = $this->getMockBuilder(Address::class)
                 ->disableOriginalConstructor()
                 ->getMock();
             $this->quoteMock->method('getBillingAddress')->willReturn($billingAddressMock);
             $billingAddressMock->expects($this->once())->method('getEmail')->willReturn($subscribedEmail);
+            $subscribeMock->expects($this->once())->method('subscribe')->with($subscribedEmail);
         } else {
+            $customerId = 1;
             $customerMock = $this->getMockBuilder(\Magento\Customer\Model\Customer::class)
-                ->setMethods(['getEmail'])
                 ->disableOriginalConstructor()
                 ->getMock();
             $this->customerSessionMock->expects($this->once())->method('getCustomer')
                 ->willReturn($customerMock);
-            $customerMock->expects($this->once())->method('getEmail')->willReturn($subscribedEmail);
+            $customerMock->expects($this->once())->method('getId')->willReturn($customerId);
+            $subscribeMock->expects($this->once())->method('subscribeCustomerById')->with($customerId);
         }
-
-        $subscribeMock = $this->getMockBuilder(Subscriber::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->subscriberFactoryMock->expects($this->once())->method('create')
-            ->willReturn($subscribeMock);
-        $subscribeMock->expects($this->once())->method('subscribe')->with($subscribedEmail);
 
         $this->checkoutSessionMock->expects($this->once())->method('unsOscData');
 

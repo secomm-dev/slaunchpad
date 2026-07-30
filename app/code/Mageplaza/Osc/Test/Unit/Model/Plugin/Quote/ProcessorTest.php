@@ -71,10 +71,9 @@ class ProcessorTest extends TestCase
          * @var Product $candidateMock
          */
         $candidateMock = $this->getMockBuilder(Product::class)
-            ->setMethods(['getCartQty', 'getId', 'getStickWithinParent'])
+            ->onlyMethods(['getId'])
+            ->addMethods(['getCartQty', 'getStickWithinParent'])
             ->disableOriginalConstructor()->getMock();
-        $itemMethods = get_class_methods(Item::class);
-        $itemMethods[] = 'getId';
 
         /**
          * @var Item $itemMock
@@ -89,7 +88,7 @@ class ProcessorTest extends TestCase
          * @var DataObject $dataObjectMock
          */
         $dataObjectMock = $this->getMockBuilder(DataObject::class)
-            ->setMethods(['getResetCount', 'getId', 'getCustomPrice'])
+            ->addMethods(['getResetCount', 'getId', 'getCustomPrice'])
             ->disableOriginalConstructor()->getMock();
         $dataObjectMock->expects($this->once())->method('getResetCount')->willReturn(1);
 

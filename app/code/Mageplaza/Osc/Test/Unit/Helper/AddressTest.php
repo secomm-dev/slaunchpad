@@ -27,6 +27,7 @@ use Magento\Customer\Helper\Address as CustomerAddressHelper;
 use Magento\Customer\Model\AttributeMetadataDataProvider;
 use Magento\Directory\Model\Region;
 use Magento\Framework\App\Area;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Config\ReinitableConfigInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
@@ -37,6 +38,8 @@ use Magento\Framework\Locale\Resolver;
 use Magento\Framework\Module\Manager;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Newsletter\Model\Subscriber;
+use Magento\ReCaptchaUi\Model\UiConfigResolverInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Mageplaza\Osc\Helper\Address;
@@ -157,6 +160,12 @@ class AddressTest extends TestCase
         $this->appConfigMock = $this->getMockBuilder(ReinitableConfigInterface::class)
             ->disableOriginalConstructor()->getMock();
 
+        $subscriberMock = $this->getMockBuilder(Subscriber::class)
+            ->disableOriginalConstructor()->getMock();
+        $checkoutSessionMock = $this->getMockBuilder(Session::class)
+            ->disableOriginalConstructor()->getMock();
+        $captchaUiConfigResolverMock = $this->getMockForAbstractClass(UiConfigResolverInterface::class);
+
         $this->helperAddress = new Address(
             $contextMock,
             $this->objectManagerMock,
@@ -169,7 +178,10 @@ class AddressTest extends TestCase
             $this->addressHelperMock,
             $this->attributeMetadataDataProviderMock,
             $this->resourceConfigMock,
-            $this->appConfigMock
+            $this->appConfigMock,
+            $subscriberMock,
+            $checkoutSessionMock,
+            $captchaUiConfigResolverMock
         );
     }
 
@@ -217,11 +229,8 @@ class AddressTest extends TestCase
 
     public function testGetGeoIPDataWithException()
     {
-        $this->mockFieldConfig(true);
-        $this->mockModuleGeoIp(true);
-
         $helperGeoIP = $this->getMockBuilder(\Mageplaza\GeoIP\Helper\Address::class)
-            ->setMethods(['checkHasLibrary', 'getGeoIpData', 'isEnabled'])
+            ->onlyMethods(['checkHasLibrary', 'getGeoIpData', 'isEnabled'])
             ->disableOriginalConstructor()
             ->getMock();
         $exception = new Exception('test');
@@ -229,10 +238,28 @@ class AddressTest extends TestCase
         $this->loggerMock->expects($this->once())->method('critical')->with('test');
         $helperGeoIP->expects($this->once())->method('isEnabled')->with(null)->willReturn(true);
 
-        $this->objectManagerMock->expects($this->at(1))
-            ->method('get')
-            ->with(\Mageplaza\GeoIP\Helper\Address::class)
-            ->willReturn($helperGeoIP);
+        $stateMock = $this->getMockBuilder(State::class)
+            ->disableOriginalConstructor()->getMock();
+        $stateMock->expects($this->once())
+            ->method('getAreaCode')
+            ->willReturn(Area::AREA_FRONTEND);
+
+        $this->objectManagerMock->method('get')
+            ->willReturnCallback(function ($class) use ($stateMock, $helperGeoIP) {
+                if ($class === 'Magento\Framework\App\State') {
+                    return $stateMock;
+                }
+                if ($class === \Mageplaza\GeoIP\Helper\Address::class) {
+                    return $helperGeoIP;
+                }
+                return null;
+            });
+
+        $this->scopeConfigMock->method('getValue')
+            ->with('osc/general/geoip', ScopeInterface::SCOPE_STORE, null)
+            ->willReturn(true);
+
+        $this->mockModuleGeoIp(true);
 
         $this->assertEquals([], $this->helperAddress->getGeoIpData());
     }
@@ -240,7 +267,7 @@ class AddressTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestGetGeoIPData()
+    public static function providerTestGetGeoIPData()
     {
         return [
             [
@@ -265,30 +292,45 @@ class AddressTest extends TestCase
      */
     public function testGetGeoIPData($result, $allowedCountries, $geoIpData)
     {
-        $this->mockFieldConfig(true);
-        $this->mockModuleGeoIp(true);
-
         $helperGeoIP = $this->getMockBuilder(\Mageplaza\GeoIP\Helper\Address::class)
-            ->setMethods(['checkHasLibrary', 'getGeoIpData', 'isEnabled'])
+            ->onlyMethods(['checkHasLibrary', 'getGeoIpData', 'isEnabled'])
             ->disableOriginalConstructor()
             ->getMock();
         $helperGeoIP->expects($this->once())->method('checkHasLibrary')->willReturn(true);
         $helperGeoIP->expects($this->once())->method('isEnabled')->with(null)->willReturn(true);
-
-        $this->objectManagerMock->expects($this->at(1))
-            ->method('get')
-            ->with(\Mageplaza\GeoIP\Helper\Address::class)
-            ->willReturn($helperGeoIP);
-        $this->objectManagerMock->expects($this->at(2))
-            ->method('get')
-            ->with(\Mageplaza\GeoIP\Helper\Address::class)
-            ->willReturn($helperGeoIP);
         $helperGeoIP->expects($this->once())->method('getGeoIpData')->willReturn($geoIpData);
 
-        $this->scopeConfigMock->expects($this->at(1))
-            ->method('getValue')
-            ->with('general/country/allow', ScopeInterface::SCOPE_STORE, null)
-            ->willReturn($allowedCountries);
+        $stateMock = $this->getMockBuilder(State::class)
+            ->disableOriginalConstructor()->getMock();
+        $stateMock->expects($this->once())
+            ->method('getAreaCode')
+            ->willReturn(Area::AREA_FRONTEND);
+
+        $this->objectManagerMock->method('get')
+            ->willReturnCallback(function ($class) use ($stateMock, $helperGeoIP) {
+                if ($class === 'Magento\Framework\App\State') {
+                    return $stateMock;
+                }
+                if ($class === \Mageplaza\GeoIP\Helper\Address::class) {
+                    return $helperGeoIP;
+                }
+                return null;
+            });
+
+        $getValueCount = 0;
+        $this->scopeConfigMock->method('getValue')
+            ->willReturnCallback(function ($field) use (&$getValueCount, $allowedCountries) {
+                $getValueCount++;
+                if ($field === 'osc/general/geoip') {
+                    return true;
+                }
+                if ($field === 'general/country/allow') {
+                    return $allowedCountries;
+                }
+                return null;
+            });
+
+        $this->mockModuleGeoIp(true);
 
         $this->assertEquals($result, $this->helperAddress->getGeoIpData());
     }
@@ -296,22 +338,22 @@ class AddressTest extends TestCase
     /**
      * @param $result
      * @param string $field
-     * @param int    $at
-     * @param int    $valueAt
      */
-    public function mockFieldConfig($result, $field = 'osc/general/geoip', $at = 0, $valueAt = 0)
+    public function mockFieldConfig($result, $field = 'osc/general/geoip')
     {
         $stateMock = $this->getMockBuilder(State::class)
             ->disableOriginalConstructor()->getMock();
-        $this->objectManagerMock->expects($this->at($at))
-            ->method('get')
-            ->with('Magento\Framework\App\State')
-            ->willReturn($stateMock);
+        $this->objectManagerMock->method('get')
+            ->willReturnCallback(function ($class) use ($stateMock) {
+                if ($class === 'Magento\Framework\App\State') {
+                    return $stateMock;
+                }
+                return null;
+            });
         $stateMock->expects($this->once())
             ->method('getAreaCode')
             ->willReturn(Area::AREA_FRONTEND);
-        $this->scopeConfigMock->expects($this->at($valueAt))
-            ->method('getValue')
+        $this->scopeConfigMock->method('getValue')
             ->with($field, ScopeInterface::SCOPE_STORE, null)
             ->willReturn($result);
     }

@@ -47,6 +47,7 @@ use Magento\Quote\Model\Cart\Totals;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Address;
 use Magento\Quote\Model\Quote\TotalsCollector;
+use Magento\Quote\Model\QuoteAddressValidator;
 use Mageplaza\Osc\Helper\Item as OscHelper;
 use Mageplaza\Osc\Model\CheckoutManagement;
 use Mageplaza\Osc\Model\OscDetails;
@@ -140,6 +141,11 @@ class CheckoutManagementTest extends TestCase
     private $loggerMock;
 
     /**
+     * @var QuoteAddressValidator|MockObject
+     */
+    private $addressValidatorMock;
+
+    /**
      * @var CheckoutManagement
      */
     private $checkoutManagement;
@@ -155,7 +161,7 @@ class CheckoutManagementTest extends TestCase
         $this->cartTotalsRepositoryMock = $this->getMockForAbstractClass(CartTotalRepositoryInterface::class);
         $this->urlBuilderMock = $this->getMockForAbstractClass(UrlInterface::class);
         $this->checkoutSessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(['setOscData'])
+            ->addMethods(['setOscData'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->shippingInformationManagementMock = $this->getMockForAbstractClass(
@@ -177,12 +183,15 @@ class CheckoutManagementTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->addressInterfaceMock = $this->getMockBuilder(AddressInterface::class)
-            ->setMethods(['getData'])
+            ->addMethods(['getData'])
             ->getMockForAbstractClass();
         $this->shippingMethodConverterMock = $this->getMockBuilder(ShippingMethodConverter::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->loggerMock = $this->getMockForAbstractClass(LoggerInterface::class);
+        $this->addressValidatorMock = $this->getMockBuilder(QuoteAddressValidator::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->checkoutManagement = new CheckoutManagement(
             $this->cartRepositoryMock,
@@ -200,6 +209,7 @@ class CheckoutManagementTest extends TestCase
             $this->totalsCollectorMock,
             $this->addressInterfaceMock,
             $this->shippingMethodConverterMock,
+            $this->addressValidatorMock,
             $this->loggerMock
         );
     }
@@ -395,7 +405,7 @@ class CheckoutManagementTest extends TestCase
             ->disableOriginalConstructor()->getMock();
         $this->cartRepositoryMock->expects($this->once())->method('getActive')->with($cartId)->willReturn($quoteMock);
         $shippingAddressMock = $this->getMockBuilder(Address::class)
-            ->setMethods(['setUsedGiftWrap'])
+            ->addMethods(['setUsedGiftWrap'])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->atLeastOnce())->method('getShippingAddress')->willReturn($shippingAddressMock);
@@ -424,7 +434,7 @@ class CheckoutManagementTest extends TestCase
             ->disableOriginalConstructor()->getMock();
         $this->cartRepositoryMock->expects($this->once())->method('getActive')->with($cartId)->willReturn($quoteMock);
         $shippingAddressMock = $this->getMockBuilder(Address::class)
-            ->setMethods(['setUsedGiftWrap'])
+            ->addMethods(['setUsedGiftWrap'])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->atLeastOnce())->method('getShippingAddress')->willReturn($shippingAddressMock);
@@ -444,7 +454,7 @@ class CheckoutManagementTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestGetResponseDataWithRedirectUrl()
+    public static function providerTestGetResponseDataWithRedirectUrl()
     {
         return [
             [
@@ -471,7 +481,7 @@ class CheckoutManagementTest extends TestCase
     /**
      * @return array
      */
-    public function providertestGetResponseData()
+    public static function providertestGetResponseData()
     {
         return [
             [
@@ -496,11 +506,9 @@ class CheckoutManagementTest extends TestCase
         /**
          * @var Quote $quoteMock
          */
-        $quoteMethods = get_class_methods(Quote::class);
-        $quoteMethods[] = 'getHasError';
-        $quoteMethods[] = 'getQuoteCurrencyCode';
         $quoteMock = $this->getMockBuilder(Quote::class)
-            ->setMethods($quoteMethods)
+            ->onlyMethods(['hasItems', 'validateMinimumAmount', 'getShippingAddress', 'getId', 'getAllVisibleItems'])
+            ->addMethods(['getHasError', 'getQuoteCurrencyCode'])
             ->disableOriginalConstructor()->getMock();
         $oscDetailsMock = $this->getMockBuilder(OscDetails::class)
             ->disableOriginalConstructor()->getMock();
@@ -510,10 +518,9 @@ class CheckoutManagementTest extends TestCase
         $quoteMock->expects($this->once())->method('hasItems')->willReturn(true);
         $quoteMock->expects($this->once())->method('getHasError')->willReturn(false);
         $quoteMock->expects($this->once())->method('validateMinimumAmount')->willReturn(true);
-        $shippingAddressMethods = get_class_methods(Address::class);
-        $shippingAddressMethods[] = 'setCollectShippingRates';
         $shippingAddressMock = $this->getMockBuilder(Address::class)
-            ->setMethods($shippingAddressMethods)
+            ->onlyMethods(['getCountryId', 'getGroupedAllShippingRates'])
+            ->addMethods(['setCollectShippingRates'])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->atLeastOnce())->method('getShippingAddress')->willReturn($shippingAddressMock);
@@ -608,10 +615,18 @@ class CheckoutManagementTest extends TestCase
         $optionDataJson = '{"119":[]}';
         $imageDataJson = '{"119":{"src":"https:\/\/test.com\/pub\/media\/catalog\/product\/cache\/fff\/w\/b\/wb06-red-0.jpg","width":75,"height":75,"alt":"Endeavor Daytrip Backpack"}}';
         $requestPathJson = '{"119":"https:\/\/test.com\/endeavor-daytrip-backpack.html"}';
+        $jsonEncodeCallCount = 0;
+        $jsonEncodeArgs = [$imageData, $optionData, $requestPath];
+        $jsonEncodeReturns = [$imageDataJson, $optionDataJson, $requestPathJson];
         $this->oscHelperMock->expects($this->exactly(3))
             ->method('jsonEncodeData')
-            ->withConsecutive([$imageData], [$optionData], [$requestPath])
-            ->willReturnOnConsecutiveCalls($imageDataJson, $optionDataJson, $requestPathJson);
+            ->willReturnCallback(function ($arg) use (&$jsonEncodeCallCount, $jsonEncodeArgs, $jsonEncodeReturns) {
+                $expected = $jsonEncodeArgs[$jsonEncodeCallCount];
+                $return = $jsonEncodeReturns[$jsonEncodeCallCount];
+                $jsonEncodeCallCount++;
+                $this->assertEquals($expected, $arg);
+                return $return;
+            });
         $oscDetailsMock->expects($this->once())->method('setImageData')->with($imageDataJson)->willReturnSelf();
         $oscDetailsMock->expects($this->once())->method('setOptions')->with($optionDataJson)->willReturnSelf();
         $oscDetailsMock->expects($this->once())->method('setRequestPath')->with($requestPathJson)->willReturnSelf();
@@ -638,10 +653,9 @@ class CheckoutManagementTest extends TestCase
         /**
          * @var Quote $quoteMock
          */
-        $quoteMethods = get_class_methods(Quote::class);
-        $quoteMethods[] = 'getHasError';
         $quoteMock = $this->getMockBuilder(Quote::class)
-            ->setMethods($quoteMethods)
+            ->onlyMethods(['hasItems', 'validateMinimumAmount'])
+            ->addMethods(['getHasError'])
             ->disableOriginalConstructor()->getMock();
         $oscDetailsMock = $this->getMockBuilder(OscDetails::class)
             ->disableOriginalConstructor()->getMock();
@@ -664,7 +678,7 @@ class CheckoutManagementTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestSaveCheckoutInformation()
+    public static function providerTestSaveCheckoutInformation()
     {
         return [
             [
@@ -706,7 +720,7 @@ class CheckoutManagementTest extends TestCase
             ->with($additionInformation);
         $quoteMock = $this->getMockBuilder(Quote::class)
             ->disableOriginalConstructor()->getMock();
-        $this->oscHelperMock->expects($this->once())->method('isDisabledGiftMessage')->willReturn(false);
+        $this->oscHelperMock->expects($this->once())->method('isDisabledGiftMessage')->willReturn(true);
         $this->oscHelperMock->expects($this->once())->method('jsonDecodeData')
             ->with($giftMessageJson)
             ->willReturn($giftMessage);
@@ -728,7 +742,7 @@ class CheckoutManagementTest extends TestCase
             ->method('getShippingAddress')
             ->willReturn($quoteAddressMock);
 
-        $this->cartRepositoryMock->expects($this->once())->method('getActive')->with($cartId)->willReturn($quoteMock);
+        $this->cartRepositoryMock->expects($this->exactly(2))->method('getActive')->with($cartId)->willReturn($quoteMock);
         if (!$isBillingSameShipping && $isLoggedIn) {
             $quoteAddressMock->expects($this->once())->method('setSaveInAddressBook')->with(0);
         }
@@ -757,6 +771,11 @@ class CheckoutManagementTest extends TestCase
         $this->checkoutSessionMock->expects($this->once())
             ->method('setOscData')
             ->with($additionInformation);
+
+        $quoteMock = $this->getMockBuilder(Quote::class)
+            ->disableOriginalConstructor()->getMock();
+        $this->cartRepositoryMock->expects($this->atLeastOnce())
+            ->method('getActive')->with($cartId)->willReturn($quoteMock);
 
         $quoteAddressMock = $this->getMockBuilder(Address::class)
             ->disableOriginalConstructor()

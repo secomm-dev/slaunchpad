@@ -65,7 +65,7 @@ class TotalsTest extends TestCase
         $layoutMock = $this->getMockForAbstractClass(LayoutInterface::class);
 
         $blockMock = $this->getMockBuilder(BlockInterface::class)
-            ->setMethods(['getSource', 'addTotal'])
+            ->addMethods(['getSource', 'addTotal'])
             ->getMockForAbstractClass();
         $this->totalBlock->setLayout($layoutMock);
         $this->totalBlock->setNameInLayout('test');
@@ -73,23 +73,26 @@ class TotalsTest extends TestCase
         $layoutMock->expects($this->once())->method('getblock')->with('parentName')->willReturn($blockMock);
 
         $orderMock = $this->getMockBuilder(Order::class)
-            ->setMethods(['getOscGiftWrapAmount'])
+            ->addMethods(['getOscGiftWrapAmount', 'getBaseOscGiftWrapAmount'])
             ->disableOriginalConstructor()
             ->getMock();
         $blockMock->expects($this->once())->method('getSource')->willReturn($orderMock);
         $oscGiftWrapAmount = 10;
+        $baseOscGiftWrapAmount = 10;
         $orderMock->expects($this->exactly(2))->method('getOscGiftWrapAmount')->willReturn($oscGiftWrapAmount);
+        $orderMock->expects($this->once())->method('getBaseOscGiftWrapAmount')->willReturn($baseOscGiftWrapAmount);
         $dataObject = new DataObject(
             [
             'code' => 'gift_wrap',
             'field' => 'osc_gift_wrap_amount',
             'label' => new Phrase('Gift Wrap'),
+            'base_value' => $baseOscGiftWrapAmount,
             'value' => $oscGiftWrapAmount,
             ]
         );
         $blockMock->expects($this->once())
             ->method('addTotal')
-            ->with($dataObject)
+            ->with($dataObject, 'shipping')
             ->willReturnSelf();
 
         $this->totalBlock->initTotals();

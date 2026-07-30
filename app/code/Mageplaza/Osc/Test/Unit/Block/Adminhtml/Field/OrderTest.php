@@ -19,75 +19,163 @@
  * @license   https://www.mageplaza.com/LICENSE.txt
  */
 
-namespace Mageplaza\Osc\Test\Unit\Block\Adminhtml\Field;
+namespace Mageplaza\OrderAttributes\Helper {
 
-use Magento\Backend\Block\Widget\Context;
-use Magento\Framework\Phrase;
-use Mageplaza\Osc\Block\Adminhtml\Field\Address;
-use Mageplaza\Osc\Block\Adminhtml\Field\Order;
-use Mageplaza\Osc\Helper\Address as HelperAddress;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+    if (!class_exists(\Mageplaza\OrderAttributes\Helper\Data::class, false)) {
+        class Data
+        {
+        }
+    }
+}
 
-/**
- * Class Order
- *
- */
-class OrderTest extends TestCase
-{
-    /**
-     * @var Address
-     */
-    private $orderBlock;
+namespace Mageplaza\OrderAttributes\Model {
 
-    /**
-     * @var HelperAddress|MockObject $helperAddressMock
-     */
-    private $helperAddressMock;
+    if (!class_exists(\Mageplaza\OrderAttributes\Model\Attribute::class, false)) {
+        class Attribute
+        {
+        }
+    }
+}
 
-    protected function setUp(): void
+namespace Mageplaza\Osc\Test\Unit\Block\Adminhtml\Field {
+
+    use Magento\Framework\App\ObjectManager as AppObjectManager;
+    use Magento\Framework\DataObject;
+    use Magento\Framework\ObjectManagerInterface;
+    use Magento\Framework\Phrase;
+    use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+    use Mageplaza\OrderAttributes\Helper\Data as OaHelper;
+    use Mageplaza\OrderAttributes\Model\Attribute as OaAttribute;
+    use Mageplaza\Osc\Block\Adminhtml\Field\Order;
+    use Mageplaza\Osc\Helper\Address as HelperAddress;
+    use PHPUnit\Framework\MockObject\MockObject;
+    use PHPUnit\Framework\TestCase;
+
+    class OrderTest extends TestCase
     {
         /**
-         * @var Context|MockObject $contextMock
+         * @var Order
          */
-        $contextMock = $this->getMockBuilder(Context::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        private $orderBlock;
 
-        $this->helperAddressMock = $this->getMockBuilder(HelperAddress::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        /**
+         * @var HelperAddress|MockObject
+         */
+        private $helperAddressMock;
 
-        $this->orderBlock = new Order(
-            $contextMock,
-            $this->helperAddressMock
-        );
-    }
+        protected function setUp(): void
+        {
+            $objectManagerMock = $this->getMockForAbstractClass(ObjectManagerInterface::class);
+            $objectManagerMock->method('get')->willReturn(new \stdClass());
+            AppObjectManager::setInstance($objectManagerMock);
 
-    public function testGetFieldsWithEmptyField()
-    {
-        $this->helperAddressMock->expects($this->once())->method('isEnableOrderAttributes')->willReturn(false);
-        $this->assertEquals([[], []], $this->orderBlock->getFields());
-    }
+            $objectManager = new ObjectManager($this);
 
-    public function testGetFields()
-    {
-        //        $this->helperAddressMock->expects($this->once())->method('isEnableOrderAttributes')->willReturn(true);
-        //        $this->helperAddressMock->expects($this->once())
-        //            ->method('getObject')
-        //            ->with(oaHelper::class)
-        //            ->
-    }
+            $this->helperAddressMock = $this->getMockBuilder(HelperAddress::class)
+                ->disableOriginalConstructor()
+                ->getMock();
 
-    public function testGetBlockTitle()
-    {
-        $result = (string)new Phrase('Order Summary');
+            $this->orderBlock = $objectManager->getObject(
+                Order::class,
+                [
+                    'helper' => $this->helperAddressMock,
+                ]
+            );
+        }
 
-        $this->assertEquals($result, $this->orderBlock->getBlockTitle());
-    }
+        protected function tearDown(): void
+        {
+            $objectManagerMock = $this->getMockForAbstractClass(ObjectManagerInterface::class);
+            AppObjectManager::setInstance($objectManagerMock);
+        }
 
-    public function testGetBlockId()
-    {
-        $this->assertEquals('mposc-order-summary', $this->orderBlock->getBlockId());
+        public function testGetFieldsWithEmptyField()
+        {
+            $this->helperAddressMock->expects($this->once())->method('isEnableOrderAttributes')->willReturn(false);
+            $this->assertEquals([[], []], $this->orderBlock->getFields());
+        }
+
+        public function testGetFields()
+        {
+            $this->helperAddressMock->expects($this->once())
+                ->method('isEnableOrderAttributes')
+                ->willReturn(true);
+
+            $oaHelperMock = $this->getMockBuilder(OaHelper::class)
+                ->addMethods(['getOrderAttributesCollection'])
+                ->getMock();
+
+            $this->helperAddressMock->expects($this->once())
+                ->method('getObject')
+                ->with(OaHelper::class)
+                ->willReturn($oaHelperMock);
+
+            $attributeInScope = $this->getMockBuilder(OaAttribute::class)
+                ->addMethods([
+                    'getPosition',
+                    'getAttributeCode',
+                    'setColspan',
+                    'setSortOrder',
+                    'setColStyle',
+                    'setIsRequired',
+                    'setIsRequiredMp',
+                ])
+                ->getMock();
+            $attributeInScope->method('getPosition')->willReturn(6);
+            $attributeInScope->method('getAttributeCode')->willReturn('order_comment');
+            $attributeInScope->method('setColspan')->willReturnSelf();
+            $attributeInScope->method('setSortOrder')->willReturnSelf();
+            $attributeInScope->method('setColStyle')->willReturnSelf();
+            $attributeInScope->method('setIsRequired')->willReturnSelf();
+            $attributeInScope->method('setIsRequiredMp')->willReturnSelf();
+
+            $attributeOutScope = $this->getMockBuilder(OaAttribute::class)
+                ->addMethods(['getPosition'])
+                ->getMock();
+            $attributeOutScope->method('getPosition')->willReturn(1);
+
+            $oaHelperMock->expects($this->once())
+                ->method('getOrderAttributesCollection')
+                ->with(null, null, false)
+                ->willReturn([$attributeInScope, $attributeOutScope]);
+
+            $fieldPositions = [
+                ['code' => 'order_comment', 'colspan' => 12, 'required' => true, 'bottom' => 0],
+            ];
+            $this->helperAddressMock->expects($this->once())
+                ->method('getOAFieldPosition')
+                ->willReturn($fieldPositions);
+
+            $this->helperAddressMock->expects($this->once())
+                ->method('getColStyle')
+                ->with(12)
+                ->willReturn('wide');
+
+            $result = $this->orderBlock->getFields();
+
+            $this->assertIsArray($result);
+            $this->assertCount(2, $result);
+
+            [$sortedFields, $availFields] = $result;
+
+            $this->assertCount(2, $sortedFields);
+            $this->assertSame($attributeInScope, $sortedFields[0]);
+            $this->assertInstanceOf(DataObject::class, $sortedFields[1]);
+            $this->assertEquals('Order Summary', (string) $sortedFields[1]->getData('frontend_label'));
+
+            $this->assertEmpty($availFields);
+        }
+
+        public function testGetBlockTitle()
+        {
+            $result = (string) new Phrase('Order Summary');
+
+            $this->assertEquals($result, $this->orderBlock->getBlockTitle());
+        }
+
+        public function testGetBlockId()
+        {
+            $this->assertEquals('mposc-order-summary', $this->orderBlock->getBlockId());
+        }
     }
 }

@@ -53,6 +53,8 @@ use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\CustomerManagement;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 class QuoteSubmitSuccess implements ObserverInterface
 {
@@ -129,6 +131,16 @@ class QuoteSubmitSuccess implements ObserverInterface
     protected $customerGroupManagement;
 
     /**
+     * @var CustomerRepositoryInterface
+     */
+    protected $customerRepository;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * QuoteSubmitSuccess constructor.
      *
      * @param Session $checkoutSession
@@ -145,6 +157,8 @@ class QuoteSubmitSuccess implements ObserverInterface
      * @param ProductFactory|null $productFactory
      * @param ItemFactory|null $itemFactory
      * @param CollectionFactory|null $itemsFactory
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Session $checkoutSession,
@@ -160,7 +174,9 @@ class QuoteSubmitSuccess implements ObserverInterface
         ?PurchasedFactory $purchasedFactory,
         ?ProductFactory $productFactory,
         ?ItemFactory $itemFactory,
-        ?CollectionFactory $itemsFactory
+        ?CollectionFactory $itemsFactory,
+        CustomerRepositoryInterface $customerRepository,
+        StoreManagerInterface $storeManager
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->accountManagement = $accountManagement;
@@ -176,6 +192,8 @@ class QuoteSubmitSuccess implements ObserverInterface
         $this->_itemsFactory = $itemsFactory;
         $this->_objectCopyService = $objectCopyService;
         $this->customerGroupManagement = $customerGroupManagement;
+        $this->customerRepository = $customerRepository;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -203,7 +221,13 @@ class QuoteSubmitSuccess implements ObserverInterface
                 $customer = $quote->getCustomer();
                 $this->checkoutSession->unsIsCreatedAccountPaypalExpress();
             } else {
-                $customer = $this->customerManagement->create($order->getId());
+                $email     = $order->getCustomerEmail();
+                $websiteId = $this->storeManager->getStore()->getWebsiteId();
+
+                $customer = $this->customerRepository->get($email, $websiteId);
+                if (!$customer->getId()) {
+                    $customer = $this->customerManagement->create($order->getId());
+                }
             }
 
             /* Set customer Id for address */

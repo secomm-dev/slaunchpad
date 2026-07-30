@@ -21,14 +21,27 @@
 
 namespace Mageplaza\Osc\Test\Unit\Model\Plugin\Customer;
 
+use Magento\Checkout\Model\Session;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Model\Address as CustomerAddress;
+use Magento\Eav\Model\Config;
 use Mageplaza\Osc\Model\Plugin\Customer\Address;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 
 class AddressTest extends TestCase
 {
+    /**
+     * @var Session|MockObject
+     */
+    private $checkoutSessionMock;
+
+    /**
+     * @var Config|MockObject
+     */
+    private $configMock;
+
     /**
      * @var Address
      */
@@ -36,7 +49,19 @@ class AddressTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->plugin = new Address();
+        $this->checkoutSessionMock = $this->getMockBuilder(Session::class)
+            ->addMethods(['getOscData'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->configMock = $this->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->plugin = new Address(
+            $this->checkoutSessionMock,
+            $this->configMock
+        );
     }
 
     public function testAfterUpdateData()
@@ -45,7 +70,7 @@ class AddressTest extends TestCase
          * @var CustomerAddress $subject
          */
         $subject = $this->getMockBuilder(CustomerAddress::class)
-            ->setMethods(['setShouldIgnoreValidation'])
+            ->addMethods(['setShouldIgnoreValidation'])
             ->disableOriginalConstructor()->getMock();
         $subject->expects($this->once())->method('setShouldIgnoreValidation')->with(true);
 
@@ -55,7 +80,7 @@ class AddressTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestBeforeUpdateData()
+    public static function providerTestBeforeUpdateData()
     {
         return [
             [

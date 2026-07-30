@@ -311,12 +311,9 @@ class UpdateItemOptionsTest extends TestCase
             ->disableOriginalConstructor()->getMock();
         $this->cartMock->expects($this->once())->method('getQuote')->willReturn($quoteMock);
         $itemMock = $this->getMockBuilder(Item::class)
-            ->setMethods(
-                [
-                'getHasError',
-                'getMessage'
-                ]
-            )->disableOriginalConstructor()
+            ->onlyMethods(['getMessage'])
+            ->addMethods(['getHasError'])
+            ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->once())->method('getItemById')->with($id)->willReturn($itemMock);
 

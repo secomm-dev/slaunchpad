@@ -21,7 +21,8 @@ var config = {
     config: {
         mixins: {
             'mage/validation': {
-                'Mageplaza_Osc/js/admin-config/validator-rules-mixin': true
+                'Mageplaza_Osc/js/admin-config/validator-rules-mixin': true,
+                'Mageplaza_Osc/js/admin-config/validator-route-mixin': true
             }
         }
     }

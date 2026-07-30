@@ -28,6 +28,7 @@ use Magento\Downloadable\Model\Product\Type;
 use Magento\Downloadable\Observer\IsAllowedGuestCheckoutObserver;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\App\RequestInterface;
@@ -35,8 +36,10 @@ use Magento\Framework\App\State;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Newsletter\Model\Subscriber;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Item;
+use Magento\ReCaptchaUi\Model\UiConfigResolverInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Mageplaza\Osc\Helper\Data;
@@ -83,7 +86,7 @@ class DataTest extends TestCase
          */
         $contextMock = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
         $this->requestMock = $this->getMockBuilder(RequestInterface::class)
-            ->setMethods(['getRouteName'])
+            ->addMethods(['getRouteName'])
             ->getMockForAbstractClass();
         $this->scopeConfigMock = $this->getMockForAbstractClass(ScopeConfigInterface::class);
         $contextMock->method('getRequest')->willReturn($this->requestMock);
@@ -96,12 +99,21 @@ class DataTest extends TestCase
         $this->encryptorMock = $this->getMockForAbstractClass(EncryptorInterface::class);
         $this->jsonMock = $this->getMockBuilder(Json::class)->disableOriginalConstructor()->getMock();
 
+        $subscriberMock = $this->getMockBuilder(Subscriber::class)
+            ->disableOriginalConstructor()->getMock();
+        $checkoutSessionMock = $this->getMockBuilder(Session::class)
+            ->disableOriginalConstructor()->getMock();
+        $captchaUiConfigResolverMock = $this->getMockForAbstractClass(UiConfigResolverInterface::class);
+
         $this->helper = new Data(
             $contextMock,
             $this->objectManagerMock,
             $storeManagerMock,
             $this->encryptorMock,
-            $this->jsonMock
+            $this->jsonMock,
+            $subscriberMock,
+            $checkoutSessionMock,
+            $captchaUiConfigResolverMock
         );
     }
 
@@ -159,7 +171,7 @@ class DataTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestIsOscPage()
+    public static function providerTestIsOscPage()
     {
         return [
             [Area::AREA_FRONTEND],
@@ -178,25 +190,34 @@ class DataTest extends TestCase
     {
         $stateMock = $this->getMockBuilder(State::class)
             ->disableOriginalConstructor()->getMock();
-        $this->objectManagerMock->expects($this->at(0))
-            ->method('get')
-            ->with('Magento\Framework\App\State')
-            ->willReturn($stateMock);
         $stateMock->expects($this->once())
             ->method('getAreaCode')
             ->willReturn($area);
         $field = 'osc/general/enabled';
         if ($area === Area::AREA_FRONTEND) {
+            $this->objectManagerMock->method('get')
+                ->willReturnCallback(function ($class) use ($stateMock) {
+                    if ($class === 'Magento\Framework\App\State') {
+                        return $stateMock;
+                    }
+                    return null;
+                });
             $this->scopeConfigMock->expects($this->once())
                 ->method('getValue')
                 ->with($field, ScopeInterface::SCOPE_STORE, null)
                 ->willReturn(true);
         } else {
             $backendConfigMock = $this->getMockForAbstractClass(ConfigInterface::class);
-            $this->objectManagerMock->expects($this->at(1))
-                ->method('get')
-                ->with('Magento\Backend\App\ConfigInterface')
-                ->willReturn($backendConfigMock);
+            $this->objectManagerMock->method('get')
+                ->willReturnCallback(function ($class) use ($stateMock, $backendConfigMock) {
+                    if ($class === 'Magento\Framework\App\State') {
+                        return $stateMock;
+                    }
+                    if ($class === 'Magento\Backend\App\ConfigInterface') {
+                        return $backendConfigMock;
+                    }
+                    return null;
+                });
             $backendConfigMock->expects($this->once())
                 ->method('getValue')
                 ->with('osc/general/enabled')
@@ -226,7 +247,7 @@ class DataTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestGetAllowGuestCheckout()
+    public static function providerTestGetAllowGuestCheckout()
     {
         return [
             [true, false, ''],
@@ -276,19 +297,23 @@ class DataTest extends TestCase
      * @param string             $field
      * @param int                $store
      * @param string             $area
-     * @param int                $at
      */
-    public function mockConfig($result, $field, $store, $area = Area::AREA_FRONTEND, $at = 0)
+    public function mockConfig($result, $field, $store, $area = Area::AREA_FRONTEND)
     {
-        $stateMock = $this->getMockBuilder(State::class)
-            ->disableOriginalConstructor()->getMock();
-        $this->objectManagerMock->expects($this->at($at))
-            ->method('get')
-            ->with('Magento\Framework\App\State')
-            ->willReturn($stateMock);
-        $stateMock->expects($this->once())
-            ->method('getAreaCode')
-            ->willReturn($area);
+        if ($store === null) {
+            $stateMock = $this->getMockBuilder(State::class)
+                ->disableOriginalConstructor()->getMock();
+            $this->objectManagerMock->method('get')
+                ->willReturnCallback(function ($class) use ($stateMock) {
+                    if ($class === \Magento\Framework\App\State::class) {
+                        return $stateMock;
+                    }
+                    return null;
+                });
+            $stateMock->expects($this->once())
+                ->method('getAreaCode')
+                ->willReturn($area);
+        }
         $this->scopeConfigMock->expects($this->once())
             ->method('getValue')
             ->with($field, ScopeInterface::SCOPE_STORE, $store)
@@ -319,17 +344,25 @@ class DataTest extends TestCase
     {
         $checkoutMock = $this->getMockBuilder(\Magento\Checkout\Helper\Data::class)
             ->disableOriginalConstructor()->getMock();
-        $this->objectManagerMock->expects($this->at(0))
-            ->method('get')
-            ->with(\Magento\Checkout\Helper\Data::class)
-            ->willReturn($checkoutMock);
-        $this->mockConfig(
-            1,
-            'osc/display_configuration/gift_wrap_amount',
-            null,
-            Area::AREA_FRONTEND,
-            1
-        );
+        $stateMock = $this->getMockBuilder(State::class)
+            ->disableOriginalConstructor()->getMock();
+        $stateMock->expects($this->once())
+            ->method('getAreaCode')
+            ->willReturn(Area::AREA_FRONTEND);
+        $this->objectManagerMock->method('get')
+            ->willReturnCallback(function ($class) use ($checkoutMock, $stateMock) {
+                if ($class === \Magento\Checkout\Helper\Data::class) {
+                    return $checkoutMock;
+                }
+                if ($class === 'Magento\Framework\App\State') {
+                    return $stateMock;
+                }
+                return null;
+            });
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with('osc/display_configuration/gift_wrap_amount', ScopeInterface::SCOPE_STORE, null)
+            ->willReturn(1);
         $checkoutMock->expects($this->once())
             ->method('formatPrice')
             ->with(1);

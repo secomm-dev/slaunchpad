@@ -56,7 +56,7 @@ class OptionPluginTest extends TestCase
          * @param Option $optionMock
          */
         $optionMock = $this->getMockBuilder(Option::class)
-            ->setMethods(['setTierPriceRenderer'])
+            ->addMethods(['setTierPriceRenderer'])
             ->disableOriginalConstructor()->getMock();
         if (class_exists('Magento\Bundle\Block\DataProviders\OptionPriceRenderer')) {
             $optionPriceRendererMock = $this->getMockBuilder(OptionPriceRenderer::class)

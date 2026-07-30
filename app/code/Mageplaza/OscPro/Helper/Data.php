@@ -27,6 +27,7 @@ use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Newsletter\Model\Subscriber;
+use Magento\ReCaptchaUi\Model\UiConfigResolverInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Mageplaza\Osc\Helper\Data as AbstractData;
 
@@ -45,6 +46,7 @@ class Data extends AbstractData
      * @param Json $json
      * @param Subscriber $subscriber
      * @param Session $checkoutSession
+     * @param UiConfigResolverInterface $captchaUiConfigResolver
      */
     public function __construct(
         Context $context,
@@ -53,9 +55,10 @@ class Data extends AbstractData
         EncryptorInterface $encryptor,
         Json $json,
         Subscriber $subscriber,
-        Session $checkoutSession
+        Session $checkoutSession,
+        UiConfigResolverInterface $captchaUiConfigResolver
     ) {
-        parent::__construct($context, $objectManager, $storeManager, $encryptor, $json, $subscriber, $checkoutSession);
+        parent::__construct($context, $objectManager, $storeManager, $encryptor, $json, $subscriber, $checkoutSession, $captchaUiConfigResolver);
     }
 
     /********************************** Loading Speed Optimization *********************

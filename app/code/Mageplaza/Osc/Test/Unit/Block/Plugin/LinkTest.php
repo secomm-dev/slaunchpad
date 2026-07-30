@@ -50,7 +50,7 @@ class LinkTest extends TestCase
     protected function setUp(): void
     {
         $this->requestMock = $this->getMockBuilder(RequestInterface::class)
-            ->setMethods(['getFullActionName'])
+            ->addMethods(['getFullActionName'])
             ->getMockForAbstractClass();
         $this->oscHelperMock = $this->getMockBuilder(OscHelper::class)
             ->disableOriginalConstructor()
