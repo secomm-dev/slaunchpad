@@ -1,0 +1,100 @@
+<?php
+/**
+ * Copyright © Magefan (support@magefan.com). All rights reserved.
+ * Please visit Magefan.com for license details (https://magefan.com/end-user-license-agreement).
+ */
+?>
+<?php
+/**
+ * Help template
+ *
+ * @var $block \Magefan\AdminUserGuide\Block\Adminhtml\Help
+ * @var $escaper \Magento\Framework\Escaper
+ * @var $mfSecureRenderer \Magefan\Community\Api\SecureHtmlRendererInterface
+ */
+?>
+<?php
+$pageHelp = $block->getPageHelp();
+
+if (!isset($escaper)) {
+    /* Compatability fix for old Magento versions */
+    $escaper = $block;
+}
+?>
+<?php if ($pageHelp) { ?>
+    <div id="magefan_help_container">
+        <div title="<?= $escaper->escapeHtml(__('Admin Guide')) ?>" id="magefan_show_help">
+            <?php $questionPath = 'Magefan_AdminUserGuide::image/question.svg' ?>
+            <img alt="Quesion" width="30" height="30"
+                 src="<?= $escaper->escapeUrl($block->getViewFileUrl($questionPath)) ?>"/>
+        </div>
+        <div id="magefan_aug" style="display: none">
+            <div class="magefan-aug-header">
+                <?php $linkPath = 'Magefan_AdminUserGuide::image/magefan.svg' ?>
+                <img class="mf-help-logo" alt="Magefan" width="30" height="30"
+                     src="<?= $escaper->escapeUrl($block->getViewFileUrl($linkPath)) ?>" />
+                <?= $escaper->escapeHtml(__('Admin Guide')) ?>
+                <a title="Magefan - Ecommerce solutions you can trust"
+                   href="https://magefan.com?utm_source=admin&utm_medium=admin-user-guide&utm_campaign=admin-user-guide"
+                   target="_blank" rel="nofollow noopener" style="color: #98A2B3;"
+                > by Magefan</a>
+                <button class="action-close" type="button" title="<?= $escaper->escapeHtml(__('Close')) ?>">
+                    <span><?= $escaper->escapeHtml(__('Close')) ?></span>
+                </button>
+            </div>
+            <div class="magefan-aug-content">
+                <ul>
+                    <?php foreach ($pageHelp as $question) { ?>
+                        <?php foreach ($question['links'] as $link) { ?>
+                            <li>
+                                <div class="icon">
+                                    <?php $linkPath = 'Magefan_AdminUserGuide::image/link.svg' ?>
+                                    <img alt="Link" width="16" height="16"
+                                         src="<?= $escaper->escapeUrl($block->getViewFileUrl($linkPath)) ?>" />
+                                </div>
+                                <a
+                                    title="<?= $escaper->escapeHtml(__($question['title'])); ?>"
+                                    href="<?= $escaper->escapeHtml(__($link)); ?>"
+                                    target="_blank"
+                                    rel="nofollow noopener"
+                                >
+                                    <?= $escaper->escapeHtml(__($question['title'])); ?>
+                                </a>
+                            </li>
+                            <?php break; ?>
+                        <?php } ?>
+                    <?php } ?>
+                </ul>
+            </div>
+            <div class="magefan-aug-footer">
+                <?php
+                    $configLink = $block->getUrl('adminhtml/system_config/edit', ['section' => 'mfadminuserguide']);
+                ?>
+                <a
+                    title="<?= $escaper->escapeHtml(__('Admin Guide Configuration')) ?>"
+                    class="config_link"
+                    href="<?= $escaper->escapeHtml($configLink) ?>"
+                >
+                    <span class="icon">
+                        <?php $settingPath = 'Magefan_AdminUserGuide::image/setting.svg' ?>
+                        <img alt="Settings" width="32" height="32"
+                             src="<?= $escaper->escapeUrl($block->getViewFileUrl($settingPath)) ?>"/>
+                    </span>
+                    <span>Admin Guide Configuration</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <?php $script = "
+        require(['jquery', 'domReady!'], function($){
+            $('#magefan_show_help').click(function() {
+                $('#magefan_aug').toggle();
+            });
+
+            $('.action-close').click(function() {
+                $('#magefan_aug').hide();
+            });
+        });
+    "; ?>
+    <?= /* @noEscape */ $mfSecureRenderer->renderTag('script', [], $script, false) ?>
+<?php }?>
