@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1 paslauga netinkamai sukonfigūruota arba nepasiekiama"
+"Invalid AI request data","Neteisingi AI užklausos duomenys"
+"Request prompt cannot be empty","Užklausos raginimasas negali būti tuščias"
+"Claude API error","Claude API klaida"
+"Invalid Claude API response: missing content","Neteisingas Claude API atsakymas: trūksta turinio"
+"Empty content received from Claude API","Gautas tuščias turinys iš Claude API"
+"Gemini API error","Gemini API klaida"
+"Invalid Gemini API response: missing candidates","Neteisingas Gemini API atsakymas: trūksta kandidatų"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Gemini API atsakymas buvo sutrumpintas, nes pasiekta max_tokens riba. Apsvarstykite max_tokens nustatymo padidinimą arba naudokite trumpesnį raginimą."
+"Empty content received from Gemini API","Gautas tuščias turinys iš Gemini API"
+"AI services are disabled in configuration","AI paslaugos išjungtos konfigūracijoje"
+"No default AI provider configured","Nesukonfigūruotas numatytasis AI teikėjas"
+"No available AI provider for request validation","Nėra prieinamo AI teikėjo užklausos patvirtinimui"
+"Request validation failed: %1","Užklausos patvirtinimas nepavyko: %1"
+"All AI providers failed. Last error: %1","Visi AI teikėjai nepavyko. Paskutinė klaida: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Nepalaikomas AI teikėjas: %1. Palaikomi teikėjai: %2"
+"Service class %1 must extend %2","Paslaugos klasė %1 turi išplėsti %2"
+"Failed to create AI service for provider %1: %2","Nepavyko sukurti AI paslaugos teikėjui %1: %2"
+"Not configured","Nesukonfigūruota"
+Unknown,Nežinoma
+"Unknown API error","Nežinoma API klaida"
+"Temperature must be between 0 and 2","Temperatūra turi būti tarp 0 ir 2"
+"Max tokens must be greater than 0","Maksimalus žetonų skaičius turi būti didesnis nei 0"
+"Frequency penalty must be between -2 and 2","Dažnio bauda turi būti tarp -2 ir 2"
+"Format output as JSON.","Formatuoti išvestį kaip JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API grąžino nepilną atsakymą, nes buvo viršytas modelio konteksto lango žetonų skaičius."
+"OpenAI API returned no content in the response.","OpenAI API negrąžino turinio atsakyme."
+"Not Installed","Neįdiegta"
+"A total of %1 record(s) have been deleted.","Iš viso ištrinta %1 įrašų."
+"The record has been removed.","Įrašas buvo pašalintas."
+"Disallowed file type.","Neleistinas failo tipas."
+"Can't remove folder %s","Nepavyksta pašalinti aplanko %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Plėtinys neturi visų reikiamų failų. Įdiekite plėtinį iš naujo iš originalaus paketo."
+"Extension Information","Plėtinio informacija"
+Status,Būsena
+Other,Kita
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron Magento neveikia. Norėdami nustatyti cron užduotį, sekite nuorodą %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron užduotys [%1] neveikia. Patikrinkite lentelę %2 dėl sustingusių užduočių ir pašalinkite jas."
+Remove,Pašalinti
+Error,Klaida
+Missed,Praleista
+Running,Vykdoma
+Pending,Laukiama
+Success,Sėkmė
+"Server gmt time","Serverio GMT laikas"
+"Last job","Paskutinė užduotis"
+Executed,Įvykdyta
+none,nėra
+"Cron setup","Cron nustatymas"
+"Cron Jobs","Cron užduotys"
+"No AI-enabled modules are currently active.","Šiuo metu nėra aktyvių AI palaikančių modulių."
+"%1 module(s) using AI functionality:","%1 modulis(-iai) naudoja AI funkcionalumą:"
+Provider:,Teikėjas:
+ai_provider,ai_provider
+"You have the latest version","Turite naujausią versiją"
+"New version %1 is available","Prieinama nauja versija %1"
+"View %1 details (opens in new window)","Peržiūrėti %1 detales (atsidaro naujame lange)"
+Details,Detalės
+"View %1 user guide (opens in new window)","Peržiūrėti %1 vartotojo vadovą (atsidaro naujame lange)"
+"User Guide","Vartotojo vadovas"
+"View %1 changelog (opens in new window)","Peržiūrėti %1 pakeitimų žurnalą (atsidaro naujame lange)"
+Changelog,Pakeitimų žurnalas
+"Request new feature for %1 (opens in new window)","Prašyti naujos funkcijos %1 (atsidaro naujame lange)"
+"Request New Feature","Prašyti naujos funkcijos"
+"Installed Extensions","Įdiegti plėtiniai"
+"Check changes","Tikrinti pakeitimus"
+"Validate All Extensions","Patvirtinti visus plėtinius"
+"Suggest Improvement","Siūlyti patobulinimą"
+"%1 (opens in new window)","%1 (atsidaro naujame lange)"
+"More Details","Daugiau informacijos"
+"Developer settings","Kūrėjo nustatymai"
+"AI Provider Status","AI teikėjo būsena"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Šiuo metu nėra įjungtų AI teikėjų. Sukonfigūruokite AI teikėjus %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 iš %2 teikėjų įjungta. Galite valdyti teikėjus %3."
+Enabled,Įjungta
+Disabled,Išjungta
+"All tests have been passed","Visi testai sėkmingai praeiti"
+Module,Modulis
+Test,Testas
+"How to fix","Kaip pataisyti"
+Warning,Įspėjimas
+Info,Informacija
+Failed,Nepavyko
+Today,Šiandien
+"Last 7 days","Paskutinės 7 dienos"
+"Last 30 days","Paskutinės 30 dienų"
+"Last 365 days","Paskutinės 365 dienos"
+"Mirasvit Extensions Validator","Mirasvit plėtinių tikrintuvas"
+"Mirasvit Menu","Mirasvit meniu"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Plėtiniai
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit plėtiniai"
+Developer,Kūrėjas
+"Menu Settings","Meniu nustatymai"
+"Enable Mirasvit Menu","Įjungti Mirasvit meniu"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Meniu matomas, jei turite bent du aktyvius Mirasvit plėtinius."
+"Additional CSS Styles","Papildomi CSS stiliai"
+"AI Configuration","AI konfigūracija"
+"Modules using AI","Moduliai naudojantys AI"
+"Enable AI features","Įjungti AI funkcijas"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Globaliai įjunkite arba išjunkite visas AI funkcijas Mirasvit plėtiniuose.<br>Kai išjungta, visos AI funkcijos bus neprieinamos, nepriklausomai nuo individualių teikėjo nustatymų ar AI nustatymų kituose moduliuose."
+"Default AI provider","Numatytasis AI teikėjas"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Pasirinkite pagrindinį AI teikėją, kuris bus naudojamas, kai sukonfigūruota keletas teikėjų.<br>Tai bus naudojama kaip atsarginis teikėjas visoms AI operacijoms, kai neprašomas konkretus teikėjas."
+"Request timeout","Užklausos skirtasis laikas"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Maksimalus laikas sekundėmis laukti AI teikėjo atsakymų.<br> Palikite tuščią, kad išjungtumėte skirtąjį laiką.<br> Šis nustatymas paveiks visas AI funkcijas kituose moduliuose."
+"Maximum tokens per request","Maksimalus žetonų skaičius užklausai"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Maksimalus žetonų skaičius, generuojamas vienoje AI užklausoje. Didesnės reikšmės leidžia ilgesnius atsakymus, bet padidina kaštus.<br> Palikite tuščią, kad išjungtumėte apribojimą.<br> Skirtingi teikėjai ir modeliai turi savo ribas.<br> Šis nustatymas paveiks visas AI funkcijas kituose moduliuose."
+"Default temperature","Numatytoji temperatūra"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Valdo atsitiktinumą AI atsakymuose. Mažesnės reikšmės duoda nuoseklesnius rezultatus, didesnės - kūrybiškesnius.<br>Pavyzdys:<br><code>0.1</code> - labai nuoseklūs, faktiniai atsakymai<br><code>0.7</code> - subalansuota kūrybiškumas ir nuoseklumas<br><code>1.0</code> - labai kūrybiški ir įvairūs atsakymai.<br>Jei tuščia, bus naudojama numatytoji temperatūra 0.7.<br>Šis nustatymas paveiks visas AI funkcijas kituose moduliuose.<br>Kai kurie plėtiniai gali perrašyti šį nustatymą."
+"Debug mode","Derinimo režimas"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Įjunkite detalų AI užklausų ir atsakymų registravimą derinimo tikslais.<br>Įspėjimas: Tai gali registruoti jautrius duomenis ir paveikti našumą. Naudokite tik kūrimui."
+"OpenAI Configuration","OpenAI konfigūracija"
+"Enable OpenAI provider","Įjungti OpenAI teikėją"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Įjunkite OpenAI kaip prieinamą AI teikėją. Reikalinga galiojanti API rakto konfigūracija."
+"OpenAI API key","OpenAI API raktas"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Jūsų OpenAI API raktas, prasidedantis 'sk-'. Šis raktas yra užšifruotas ir saugiai saugomas.<br>Gaukite savo API raktą iš: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Numatytasis OpenAI modelis"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Pasirinkite numatytąjį OpenAI modelį AI operacijoms. Skirtingi modeliai turi skirtingas galimybes ir kainas."
+"Claude Configuration","Claude konfigūracija"
+"Enable Claude provider","Įjungti Claude teikėją"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Įjunkite Anthropic Claude kaip prieinamą AI teikėją. Reikalinga galiojanti API rakto konfigūracija."
+"Claude API key","Claude API raktas"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Jūsų Anthropic Claude API raktas, prasidedantis 'sk-ant-'. Šis raktas yra užšifruotas ir saugiai saugomas.<br>Gaukite savo API raktą iš: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Numatytasis Claude modelis"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Pasirinkite numatytąjį Claude modelį AI operacijoms. Skirtingi modeliai turi skirtingas galimybes ir kainas."
+"Google Gemini Configuration","Google Gemini konfigūracija"
+"Enable Gemini provider","Įjungti Gemini teikėją"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Įjunkite Google Gemini kaip prieinamą AI teikėją. Reikalinga galiojanti API rakto konfigūracija."
+"Gemini API key","Gemini API raktas"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Jūsų Google AI Studio API raktas, prasidedantis 'AIza'. Šis raktas yra užšifruotas ir saugiai saugomas.<br>Gaukite savo API raktą iš: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Numatytasis Gemini modelis"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Pasirinkite numatytąjį Gemini modelį AI operacijoms. Skirtingi modeliai turi skirtingas galimybes ir kainas."
+"Determine visitor's country, city, and timezone based on their IP address.","Nustatykite lankytojo šalį, miestą ir laiko juostą pagal jo IP adresą."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Automatiniams atnaujinimams reikalinga nemokama <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind paskyra</a> (tikrinama kas savaitę)."
+"Used by:","Naudoja:"
+message,pranešimas
+"Error downloading database: %1","Klaida atsisiunčiant duomenų bazę: %1"
+"MaxMind credentials not configured","MaxMind kredencialai nesukonfigūruoti"
+"Failed to download remote hash","Nepavyko atsisiųsti nuotolinio hash"
+"Database is up to date","Duomenų bazė yra atnaujinta"
+"Failed to download and extract database","Nepavyko atsisiųsti ir išskleisti duomenų bazės"
+"Database updated successfully","Duomenų bazė sėkmingai atnaujinta"
+"Download failed: %1","Atsisiuntimas nepavyko: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Šis plėtinys naudoja GeoLite2 duomenis, sukurtus MaxMind."
+"Database available (auto-update enabled)","Duomenų bazė prieinama (automatinis atnaujinimas įjungtas)"
+"Database available (auto-update disabled)","Duomenų bazė prieinama (automatinis atnaujinimas išjungtas)"
+Configure,Konfigūruoti
+"Database not available","Duomenų bazė nepasiekiama"
+"Database status:","Duomenų bazės būsena:"
+"Not available","Nepasiekiama"
+"Credentials configured. Click the button below to download the database.","Kredencialai sukonfigūruoti. Spustelėkite mygtuką žemiau, kad atsisiųstumėte duomenų bazę."
+"Download database","Atsisiųsti duomenų bazę"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Įveskite MaxMind kredencialus aukščiau, kad įjungtumėte automatinius atsisiuntimus, arba paleiskite setup:upgrade, kad įdiegtumėte pridėtą duomenų bazę."
+"Available (auto-update disabled)","Prieinama (automatinis atnaujinimas išjungtas)"
+Version:,Versija:
+Size:,Dydis:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Įveskite MaxMind kredencialus aukščiau, kad įjungtumėte automatinius savaitinius atnaujinimus."
+"Available (auto-update enabled)","Prieinama (automatinis atnaujinimas įjungtas)"
+"Update database","Atnaujinti duomenų bazę"
+"Database updated successfully.","Duomenų bazė sėkmingai atnaujinta."
+Notice,Pranešimas
+"Database is up to date.","Duomenų bazė yra atnaujinta."
+"An error occurred while downloading the database.","Atsisiunčiant duomenų bazę įvyko klaida."
+"IP Geolocation","IP geolokacija"
+"Account ID","Paskyros ID"
+"License Key","Licencijos raktas"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generuoti licencijos raktą</a>"
+Cron,Cron
+Delete,Ištrinti
+"Delete items","Ištrinti elementus"
+"Are you sure you want to delete selected items?","Ar tikrai norite ištrinti pasirinktus elementus?"
+ID,ID
+Code,Kodas
+Messages,Pranešimai
+Created,Sukurta
+Scheduled,Suplanuota
+Finished,Baigta

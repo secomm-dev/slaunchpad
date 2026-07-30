@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">extender_edit_form.extender_edit_form_data_source</item>
+            <item name="deps" xsi:type="string">extender_edit_form.extender_edit_form_data_source</item>
+        </item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <label translate="true">Rich snippet extender</label>
+        <dataScope>data</dataScope>
+        <namespace>extender_edit_form</namespace>
+        <buttons>
+            <button name="back">
+                <url path="*/*/index"/>
+                <class>back</class>
+                <label translate="true">Back</label>
+            </button>
+            <button name="delete" class="Mirasvit\SeoMarkup\Ui\Extender\Form\Control\DeleteButton"/>
+            <button name="save" class="Mirasvit\SeoMarkup\Ui\Extender\Form\Control\SaveSplitButton"/>
+        </buttons>
+    </settings>
+
+    <dataSource name="extender_edit_form_data_source" component="Magento_Ui/js/form/provider">
+        <settings>
+            <submitUrl path="*/*/save"/>
+        </settings>
+        <aclResource>Mirasvit_SeoAutolink::seomarkup_extender</aclResource>
+        <dataProvider class="Mirasvit\SeoMarkup\Ui\Extender\Form\DataProvider"
+                      name="extender_edit_form_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>extender_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+
+    <fieldset name="extender_details" sortOrder="10">
+        <settings>
+            <label translate="true">General</label>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+        </settings>
+        <field name="name" sortOrder="10" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="label" xsi:type="string" translate="true">Name</item>
+                    <item name="source" xsi:type="string">extender</item>
+                    <item name="dataScope" xsi:type="string">name</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                </item>
+            </argument>
+        </field>
+        <field name="is_active">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="label" xsi:type="string" translate="true">Is active</item>
+                    <item name="dataType" xsi:type="string">boolean</item>
+                    <item name="formElement" xsi:type="string">checkbox</item>
+                    <item name="prefer" xsi:type="string">toggle</item>
+                    <item name="dataScope" xsi:type="string">is_active</item>
+                    <item name="valueMap" xsi:type="array">
+                        <item name="true" xsi:type="number">1</item>
+                        <item name="false" xsi:type="number">0</item>
+                    </item>
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+        </field>
+        <field name="entity_type_id" sortOrder="20" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="label" xsi:type="string" translate="true">Entity type</item>
+                    <item name="source" xsi:type="string">extender</item>
+                    <item name="dataScope" xsi:type="string">entity_type_id</item>
+                </item>
+                <item name="options" xsi:type="object">Mirasvit\SeoMarkup\Model\Config\Source\Extender\EntityTypeSource</item>
+            </argument>
+        </field>
+        <field name="store_ids">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">int</item>
+                    <item name="label" xsi:type="string" translate="true">Store view</item>
+                    <item name="formElement" xsi:type="string">multiselect</item>
+                    <item name="default" xsi:type="string">0</item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+                <item name="options" xsi:type="object">Magento\Cms\Ui\Component\Listing\Column\Cms\Options</item>
+            </argument>
+        </field>
+    </fieldset>
+
+    <fieldset name="extender_snippet" sortOrder="20">
+        <settings>
+            <label translate="true">Snippet extension</label>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+        </settings>
+        <field name="snippet" sortOrder="10" formElement="textarea">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="componentType" xsi:type="string">field</item>
+                    <item name="component" xsi:type="string">Mirasvit_SeoMarkup/js/ui/form/element/json</item>
+                    <item name="cols" xsi:type="number">15</item>
+                    <item name="label" xsi:type="string" translate="true">JSON snippet</item>
+                    <item name="source" xsi:type="string">extender</item>
+                    <item name="dataScope" xsi:type="string">snippet</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="notice" xsi:type="string" translate="true">Enclose the JSON snippet in curly braces</item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <container name="snippet_variables"
+                   class="Mirasvit\SeoMarkup\Ui\Component\SnippetVariablesComponent"
+                   sortOrder="15"/>
+        <field name="override">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="label" xsi:type="string" translate="true">Override non-empty fields</item>
+                    <item name="dataType" xsi:type="string">boolean</item>
+                    <item name="formElement" xsi:type="string">checkbox</item>
+                    <item name="prefer" xsi:type="string">toggle</item>
+                    <item name="dataScope" xsi:type="string">override</item>
+                    <item name="valueMap" xsi:type="array">
+                        <item name="true" xsi:type="number">1</item>
+                        <item name="false" xsi:type="number">0</item>
+                    </item>
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+
+    <fieldset name="conditions" sortOrder="30">
+        <settings>
+            <label translate="true">Conditions</label>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+        </settings>
+        <container name="conditions_serialized">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="componentType" xsi:type="string">fieldset</item>
+                </item>
+            </argument>
+            <htmlContent name="html_content">
+                <argument name="block" xsi:type="object">Mirasvit\SeoMarkup\Block\Adminhtml\Extender\Condition</argument>
+            </htmlContent>
+        </container>
+    </fieldset>
+</form>

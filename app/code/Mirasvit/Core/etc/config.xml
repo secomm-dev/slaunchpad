@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mst_core>
+            <menu>
+                <is_enabled>1</is_enabled>
+            </menu>
+            <ai>
+                <enabled>1</enabled>
+                <default_provider>openai</default_provider>
+                <temperature>0.7</temperature>
+                <debug_mode>0</debug_mode>
+                <openai>
+                    <enabled>1</enabled>
+                    <model>gpt-4o-mini</model>
+                </openai>
+                <claude>
+                    <enabled>0</enabled>
+                    <model>claude-sonnet-4-0</model>
+                </claude>
+                <gemini>
+                    <enabled>0</enabled>
+                    <model>gemini-2.5-flash</model>
+                </gemini>
+            </ai>
+        </mst_core>
+    </default>
+</config>

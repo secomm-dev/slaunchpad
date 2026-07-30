@@ -1,0 +1,78 @@
+<?php
+/**
+ * @var \Mirasvit\Core\Block\Adminhtml\Config\AiModulesField $block
+ */
+
+$aiModules = $block->getAiModules();
+?>
+
+<div class="mst-ai-modules-info">
+    <?php if (empty($aiModules)): ?>
+        <div class="message message-notice notice">
+            <div><?= $block->escapeHtml(__('No AI-enabled modules are currently active.')) ?></div>
+        </div>
+    <?php else: ?>
+        <div class="admin__field-note mst-ai-modules-message">
+            <span><?= $block->escapeHtml(__('%1 module(s) using AI functionality:', count($aiModules))) ?></span>
+        </div>
+
+        <div class="mst-ai-modules-list mst-package-list">
+            <?php foreach ($aiModules as $module): ?>
+                <div class="mst-ai-module-item mst-package">
+                    <div class="mst-ai-module-name">
+                        <strong><?= $block->escapeHtml($module['module_name']) ?></strong>
+                    </div>
+                    <div class="mst-ai-module-provider">
+                        <span class="mst-ai-provider-label"><?= $block->escapeHtml(__('Provider:')) ?></span>
+                        <span class="mst-ai-provider-value"><?= $block->escapeHtml(__($module['ai_provider'])) ?></span>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</div>
+
+<script>
+    document.querySelector('#row_mst_core_ai_ai_modules_info td.value').setAttribute('colspan', 3);
+</script>
+
+<style>
+    .mst-ai-modules-message {
+        font-size: 1.5rem;
+    }
+
+    .mst-ai-modules-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        margin-bottom: 15px;
+        margin-top: 1rem;
+    }
+
+    .mst-ai-module-item {
+        justify-content: space-between;
+        padding: 16px !important;
+    }
+
+    .mst-ai-module-name {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .mst-ai-module-provider {
+        color: #666;
+        font-size: 12px;
+    }
+
+    .mst-ai-provider-label {
+        margin-right: 5px;
+    }
+
+    .mst-ai-provider-value {
+        font-weight: 500;
+        color: #eb5202;
+    }
+
+    #row_mst_core_ai_ai_modules_info td.label {
+        display: none;
+    }
+</style>

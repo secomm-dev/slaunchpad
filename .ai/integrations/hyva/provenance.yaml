@@ -1,0 +1,35 @@
+# ============================================================================
+# Hyvä integration — provenance, license, ownership
+# ============================================================================
+# NOT a legal conclusion. Records the origin of imported upstream content and the
+# ownership boundary so attribution is preserved and redistribution can be
+# reviewed. See update-policy.md for the upstream-update lifecycle.
+# ============================================================================
+schema_version: 1
+source:
+  repository_url: https://github.com/hyva-themes/hyva-ai-tools
+  branch: main
+  commit: 5f094b6e57e6faab9967e2b031cac9c1cd6c9f93
+  retrieval_date: "2026-07-28"
+  license: OSL-3.0
+  copying_notice: "Copyright © 2026-present Hyvä Themes. Each source file licensed OSL-3.0 (see COPYING.txt / LICENSE.txt upstream)."
+redistribution_review:
+  status: review-required
+  notes:
+    - "OSL-3.0 obligations (including External Deployment / distribution triggers) must be reviewed by Secomm before broad redistribution of the toolkit or generated project toolkits that bundle these skills."
+    - "This record is NOT a legal conclusion. Record any licensing uncertainty as an explicit review item; do not infer permission."
+ownership:
+  upstream_owned:
+    - "skills-source/dev-skills/magento/hyva-*/SKILL.md and their assets/ references/ scripts/ (byte-identical upstream copies; verifiable via upstream-manifest.yaml sha256)"
+  secomm_owned:
+    - "shared-core/integrations/hyva/** (this metadata layer)"
+    - "skills-source/dev-skills/dev-skill-manifest.yaml"
+    - "the Secomm governance overlay (shared-core/integrations/hyva/SECOMM_OVERLAY.md) and any generated agent adapters"
+  project_owned:
+    - "PROJECT_AI_BLUEPRINT.md capability/profile declarations and any project-local override"
+local_adaptations:
+  - "None to upstream skill bodies. Bodies are byte-identical. Governance is applied via the shared Secomm overlay + project CODING_RULES/AGENTS §7.2, not by editing upstream files."
+  - "Retired two stale Secomm-authored Hyva dev-skills (hyva-alpine-component, hyva-tailwind-section) superseded by upstream canonical; preserved under retired-secomm-skills/ for traceability."
+attribution_handling:
+  - "Upstream copyright/license headers inside SKILL.md files are preserved unchanged."
+  - "Generated project toolkits carry the same attribution (bodies copied verbatim)."

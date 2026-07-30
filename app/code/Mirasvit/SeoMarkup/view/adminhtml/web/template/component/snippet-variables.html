@@ -1,0 +1,16 @@
+<div class="mst-seo-content__component-template-syntax-wrapper" style="display: none">
+    <h4><span data-bind="i18n: 'Template variables'"></span> <small><a href="https://mirasvit.com/docs/module-seo/current/seo/variables"
+                                     data-bind="attr: {'aria-label': $t('Learn more about template variables')}"
+                                     style="font-weight: 400" target="_blank"><span data-bind="i18n: 'learn more'"></span></a></small></h4>
+    <small translate="'Double click on a variable to insert it into the field'"></small>
+    <div class="close">&times;</div>
+    <ol data-bind="foreach: scopeData">
+        <li class="_entity">
+            <strong text="label"></strong>
+
+            <ul data-bind="foreach: vars">
+                <li class="_variable">[<span text="$data"></span>]</li>
+            </ul>
+        </li>
+    </ol>
+</div>

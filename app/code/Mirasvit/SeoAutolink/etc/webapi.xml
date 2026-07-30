@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <route url="/V1/seo-autolink/links" method="GET">
+        <service class="Mirasvit\SeoAutolink\Api\LinkRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAutolink::seoautolink_link"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-autolink/link/:linkId" method="GET">
+        <service class="Mirasvit\SeoAutolink\Api\LinkRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAutolink::seoautolink_link"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-autolink/link" method="POST">
+        <service class="Mirasvit\SeoAutolink\Api\LinkRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAutolink::seoautolink_link"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-autolink/link/:linkId" method="PUT">
+        <service class="Mirasvit\SeoAutolink\Api\LinkRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAutolink::seoautolink_link"/>
+        </resources>
+    </route>
+    <route url="/V1/seo-autolink/link/:linkId" method="DELETE">
+        <service class="Mirasvit\SeoAutolink\Api\LinkRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Mirasvit_SeoAutolink::seoautolink_link"/>
+        </resources>
+    </route>
+
+</routes>

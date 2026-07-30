@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../../../module-core/src/Core/etc/manual.xsd">
+    <link action="seomarkup_extender_index" title="Learn more about Rich snippet extenders" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/rich-snippet-extenders"/>
+    <link action="seomarkup_extender_new" title="Learn more about Rich snippet extenders" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/rich-snippet-extenders"/>
+    <link action="seomarkup_extender_edit" title="Learn more about Rich snippet extenders" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/rich-snippet-extenders"/>
+</config>

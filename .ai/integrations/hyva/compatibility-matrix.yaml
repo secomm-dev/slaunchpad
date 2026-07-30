@@ -1,0 +1,44 @@
+# ============================================================================
+# Hyvä integration — compatibility matrix
+# ============================================================================
+# Agent support + profile compatibility + the local-mode decision (copy vs
+# symlink). Honesty contract from the capability registry is inherited: Codex /
+# Copilot are advertised as natural-language only where they have no real
+# skill-folder adapter; parity is NOT faked.
+# ============================================================================
+schema_version: 1
+agent_support:
+  claude:
+    adapter_location: ".claude/skills/dev/hyva-<id>/SKILL.md (generated copy of canonical body)"
+    invocation_type: skill
+    discoverability: native (Claude Code skill auto-discovery via frontmatter description)
+    validation_status: static-validated
+  codex:
+    adapter_location: "codex/AGENTS.md routing (natural-language) → reads the same .claude/skills/dev/ content"
+    invocation_type: nl-only
+    discoverability: "instruction-file routing; no .codex/skills/ per current toolkit convention"
+    validation_status: static-validated
+    note: "Codex does not use a .codex/skills/ folder in this toolkit; it follows codex/AGENTS.md which routes to the canonical skill content."
+  copilot:
+    adapter_location: ".github/copilot-instructions.md routing (natural-language) → reads the same .claude/skills/dev/ content"
+    invocation_type: nl-only
+    discoverability: "instruction-file routing; no .github/skills/ per current toolkit convention"
+    validation_status: static-validated
+    note: "Copilot follows .github/copilot-instructions.md; no .github/skills/ folder in this toolkit."
+out_of_scope_agents: [cursor, gemini, junie, opencode]
+profile_compatibility:
+  hyva-theme-core: { default_for: [hyva-active, hyva-migration-planned] }
+  hyva-module-development: { default_for: [hyva-active, hyva-migration-planned] }
+  hyva-ui: { requires_feature_flag: hyva_ui }
+  hyva-cms: { requires_feature_flag: hyva_cms }
+  hyva-testing: { requires_feature_flag: playwright }
+  hyva-full: { requires_explicit_selection: true }
+local_mode:
+  chosen: deterministic-generated-copy
+  not: symlink
+  rationale: |
+    Symlinks are unreliable across Git/Bitbucket, Windows, WSL, Docker bind mounts,
+    CI, and developer workstations, and would make generated projects depend on an
+    external clone. Deterministic generated copies (with this manifest + sha256 +
+    the retrofit/update mechanism) keep projects independently usable after the
+    toolkit repo is removed from the workspace.

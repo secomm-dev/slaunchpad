@@ -1,0 +1,103 @@
+<?php
+
+use Mirasvit\Core\Service\GeoLocationService;
+
+/** @var \Mirasvit\Core\Block\Adminhtml\Config\ExtensionInfo $block */
+$package = $block->getPackage();
+if (!$package || !$package->getLabel() || !$package->getVersion()) {
+    return;
+}
+?>
+<div class="mst-axtensionInfo-wrapper">
+<div class="mst-extensionInfo">
+    <div>
+        <div class="mst-extensionInfo-title">
+            <?= $block->escapeHtml($package->getLabel()) ?> <span><?= $block->escapeHtml($package->getVersion()) ?></span>
+
+            <?php if (!$package->getLatestVersion() || version_compare($package->getVersion(), $package->getLatestVersion()) >= 0): ?>
+                <div class="mst-extensionInfo-version">
+                    <svg viewBox="0 0 36 36" fill="#2ebc5e" width="24" height="24" aria-hidden="true">
+
+                        <path class="st0" d="M12.8,28.7l-9.5-9.5c-0.4-0.4-0.4-1.1,0-1.6l1.5-1.5c0.4-0.4,1.1-0.4,1.6,0l7.2,7.2   l16-16c0.4-0.4,1.1-0.4,1.6,0l1.5,1.5c0.4,0.4,0.4,1.1,0,1.6L14.4,28.7C13.9,29.1,13.2,29.1,12.8,28.7z" id="check_x5F_mark_1_"/>
+                    </svg>
+                    <?= $block->escapeHtml(__('You have the latest version')) ?>
+                </div>
+            <?php else: ?>
+                <div class="mst-extensionInfo-version">
+                    <svg viewBox="0 0 24 24" fill="#eb5202" width="24" height="24" aria-hidden="true">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12.866 3l9.526 16.5a1 1 0 0 1-.866 1.5H2.474a1 1 0 0 1-.866-1.5L11.134 3a1 1 0 0 1 1.732 0zM11 16v2h2v-2h-2zm0-7v5h2V9h-2z"/>
+                    </svg>
+                    <?= $block->escapeHtml(__('New version %1 is available', $package->getLatestVersion())) ?>
+                </div>
+            <?php endif ?>
+        </div>
+        <div style="margin-top: 10px; display: flex; gap: 10px;margin-left: 30px;">
+            <?php if ($package->getUrl()): ?>
+                <a href="<?= $block->escapeUrl($package->getUrl()) ?>" target="_blank" aria-label="<?= $block->escapeHtml(__('View %1 details (opens in new window)', $package->getLabel())) ?>"><?= $block->escapeHtml(__('Details')) ?></a>
+            <?php endif ?>
+
+            <?php if ($package->getDocsUrl()): ?>
+                <a href="<?= $block->escapeUrl($package->getDocsUrl()) ?>" target="_blank" aria-label="<?= $block->escapeHtml(__('View %1 user guide (opens in new window)', $package->getLabel())) ?>"><?= $block->escapeHtml(__('User Guide')) ?></a>
+            <?php endif ?>
+
+            <?php if ($package->getChangelogUrl()): ?>
+                <a href="<?= $block->escapeUrl($package->getChangelogUrl()) ?>" target="_blank" aria-label="<?= $block->escapeHtml(__('View %1 changelog (opens in new window)', $package->getLabel())) ?>"><?= $block->escapeHtml(__('Changelog')) ?></a>
+            <?php endif ?>
+        </div>
+    </div>
+
+    <div class="mst-extensionInfo-bar">
+        <div class="mst-extensionInfo-fr">
+            <a href="<?= $block->escapeUrl($block->getRequestUrl()) ?>" target="_blank" aria-label="<?= $block->escapeHtml(__('Request new feature for %1 (opens in new window)', $package->getLabel())) ?>"><?= $block->escapeHtml(__('Request New Feature')) ?></a>
+        </div>
+    </div>
+</div>
+    <?php if ($block->usesGeoLocation()): ?>
+        <?php
+        $geoStatus = $block->getGeoLocationStatus();
+        $statusColors = [
+            GeoLocationService::STATUS_FULLY_CONFIGURED => ['bg' => '#f0f9f0', 'border' => '#2ebc5e', 'text' => '#2e7d32'],
+            GeoLocationService::STATUS_NO_AUTOUPDATE    => ['bg' => '#fff8e1', 'border' => '#ffc107', 'text' => '#f57c00'],
+            GeoLocationService::STATUS_NO_DATABASE      => ['bg' => '#fff8f0', 'border' => '#eb5202', 'text' => '#c62828'],
+        ];
+        $colors = $statusColors[$geoStatus] ?? $statusColors[GeoLocationService::STATUS_NO_DATABASE];
+        ?>
+        <div class="mst-extensionInfo-geolocation" style="
+            margin-top: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: <?= $block->escapeHtmlAttr($colors['bg']) ?>;
+            border-left: 3px solid <?= $block->escapeHtmlAttr($colors['border']) ?>;
+            border-radius: 0 4px 4px 0;
+            font-size: 13px;
+            color: #666;
+        ">
+            <span style="color: #888;">
+                <?= $block->escapeHtml(__('This extension uses GeoLite2 Data created by MaxMind.')) ?>
+            </span>
+            <?php if ($geoStatus === GeoLocationService::STATUS_FULLY_CONFIGURED): ?>
+                <svg viewBox="0 0 36 36" fill="#2ebc5e" width="18" height="18" aria-hidden="true" style="flex-shrink: 0;">
+                    <path d="M12.8,28.7l-9.5-9.5c-0.4-0.4-0.4-1.1,0-1.6l1.5-1.5c0.4-0.4,1.1-0.4,1.6,0l7.2,7.2l16-16c0.4-0.4,1.1-0.4,1.6,0l1.5,1.5c0.4,0.4,0.4,1.1,0,1.6L14.4,28.7C13.9,29.1,13.2,29.1,12.8,28.7z"/>
+                </svg>
+                <span style="color: <?= $block->escapeHtmlAttr($colors['text']) ?>; font-weight: 500;"><?= $block->escapeHtml(__('Database available (auto-update enabled)')) ?></span>
+            <?php elseif ($geoStatus === GeoLocationService::STATUS_NO_AUTOUPDATE): ?>
+                <svg viewBox="0 0 24 24" fill="#ffc107" width="18" height="18" aria-hidden="true" style="flex-shrink: 0;">
+                    <path d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M12.866 3l9.526 16.5a1 1 0 0 1-.866 1.5H2.474a1 1 0 0 1-.866-1.5L11.134 3a1 1 0 0 1 1.732 0zM11 16v2h2v-2h-2zm0-7v5h2V9h-2z"/>
+                </svg>
+                <span style="color: <?= $block->escapeHtmlAttr($colors['text']) ?>; font-weight: 500;"><?= $block->escapeHtml(__('Database available (auto-update disabled)')) ?></span>
+                <a href="<?= $block->escapeUrl($block->getGeoLocationConfigUrl()) ?>#mst_core_geolocation-link" style="margin-left: 4px;"><?= $block->escapeHtml(__('Configure')) ?></a>
+            <?php else: ?>
+                <svg viewBox="0 0 24 24" fill="#eb5202" width="18" height="18" aria-hidden="true" style="flex-shrink: 0;">
+                    <path d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M12.866 3l9.526 16.5a1 1 0 0 1-.866 1.5H2.474a1 1 0 0 1-.866-1.5L11.134 3a1 1 0 0 1 1.732 0zM11 16v2h2v-2h-2zm0-7v5h2V9h-2z"/>
+                </svg>
+                <span style="color: <?= $block->escapeHtmlAttr($colors['text']) ?>; font-weight: 500;"><?= $block->escapeHtml(__('Database not available')) ?></span>
+                <a href="<?= $block->escapeUrl($block->getGeoLocationConfigUrl()) ?>#mst_core_geolocation-link" style="margin-left: 4px;"><?= $block->escapeHtml(__('Configure')) ?></a>
+            <?php endif; ?>
+        </div>
+    <?php endif ?>
+</div>

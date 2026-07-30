@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="seo_content" translate="label" type="text" sortOrder="420" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>SEO Templates and rewrites</label>
+            <tab>mirasvit</tab>
+            <resource>Mirasvit_SeoContent::config_seo_content</resource>
+
+            <group id="general" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure basic behavior of meta tags processing across your store.]]></comment>
+
+                <field id="is_add_prefix_suffix" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/meta/is_add_prefix_suffix</config_path>
+                    <label>Apply store prefixes to custom titles</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, store's title prefix/suffix (configured in Content > Design > Configuration) will be automatically applied to any custom meta titles.]]></comment>
+                </field>
+
+                <field id="is_use_html_symbols_in_meta_tags" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/limiter/is_use_html_symbols_in_meta_tags</config_path>
+                    <label>Allow HTML in meta tags</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, HTML special characters (&, <, >, etc.) will be preserved in meta tags rather than being escaped. Useful for including special symbols or entities.]]></comment>
+                </field>
+            </group>
+
+            <group id="meta" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Use existing meta tags</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Define how the module should apply template-based meta tags for different page types. When enabled, the extension first checks the original meta tags. If they are not empty, it uses them; otherwise, it generates meta tags based on the defined templates. When disabled, meta tags are always generated from the templates, regardless of existing meta tags.]]></comment>
+
+                <field id="is_category_meta_tags_used" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/meta/is_category_meta_tags_used</config_path>
+                    <label>Category pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="is_product_meta_tags_used" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/meta/is_product_meta_tags_used</config_path>
+                    <label>Product pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="is_cms_meta_tags_used" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/meta/is_cms_meta_tags_used</config_path>
+                    <label>CMS pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="is_blog_meta_tags_used" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/meta/is_blog_meta_tags_used</config_path>
+                    <label>Blog pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Requires Mirasvit Blog module.]]></comment>
+                </field>
+
+                <field id="is_brand_meta_tags_used" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/meta/is_brand_meta_tags_used</config_path>
+                    <label>Brand pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Requires Mirasvit Brand module.]]></comment>
+                </field>
+
+                <field id="is_landing_meta_tags_used" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/meta/is_landing_meta_tags_used</config_path>
+                    <label>Landing pages</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Requires Mirasvit Landing Page module.]]></comment>
+                </field>
+            </group>
+
+            <group id="limiter" translate="label comment" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Content and meta length settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Specify character limits for different meta elements to ensure optimal display in search results. The meta element value will be truncated to the specified length. Values too low will be replaced with recommended minimums.]]></comment>
+
+                <field id="meta_title_max_length" translate="label comment tooltip" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/limiter/meta_title_max_length</config_path>
+                    <label>Meta title</label>
+                    <tooltip>Google typically displays ~55-60 characters. Values below 25 will default to 55. If the value is empty or 0, no limit is applied.</tooltip>
+                    <comment><![CDATA[Maximum character length for meta titles.]]></comment>
+                </field>
+
+                <field id="meta_description_max_length" translate="label comment tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/limiter/meta_description_max_length</config_path>
+                    <label>Meta description</label>
+                    <tooltip>Google typically displays ~150-160 characters. Values below 25 will default to 150. If the value is empty or 0, no limit is applied.</tooltip>
+                    <comment><![CDATA[Maximum character length for meta descriptions.]]></comment>
+                </field>
+
+                <field id="product_name_max_length" translate="label comment tooltip" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/limiter/product_name_max_length</config_path>
+                    <label>Product name</label>
+                    <tooltip>Values below 10 will default to 25. If the value is empty or 0, no limit is applied.</tooltip>
+                    <comment><![CDATA[Maximum character length for product names displayed on product pages. This setting controls the truncation of product titles in page content.]]></comment>
+                </field>
+
+                <field id="product_short_description_max_length" translate="label comment tooltip" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/limiter/product_short_description_max_length</config_path>
+                    <label>Product short description</label>
+                    <tooltip>Values below 25 will default to 90. If the value is empty or 0, no limit is applied.</tooltip>
+                    <comment><![CDATA[Maximum character length for product short descriptions displayed on product pages. This setting affects page content presentation.]]></comment>
+                </field>
+            </group>
+
+            <group id="pagination" translate="label comment" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Paginated content settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure how pagination information appears in meta tags for multi-page category listings and search results.]]></comment>
+
+                <field id="meta_title_page_number" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/pagination/meta_title_page_number</config_path>
+                    <label>Add pagination to meta titles</label>
+                    <source_model>Mirasvit\SeoContent\Model\Config\Source\PageNumberInMetaSource</source_model>
+                    <comment><![CDATA[Controls how page numbers appear in meta titles for paginated content. Helps search engines understand pagination structure.]]></comment>
+                </field>
+
+                <field id="meta_description_page_number" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seo_content/pagination/meta_description_page_number</config_path>
+                    <label>Add pagination to meta descriptions</label>
+                    <source_model>Mirasvit\SeoContent\Model\Config\Source\PageNumberInMetaSource</source_model>
+                    <comment><![CDATA[Controls how page numbers appear in meta descriptions for paginated content. Helps maintain unique meta descriptions across paginated pages.]]></comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

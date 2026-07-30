@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!--UI-->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="seoautolink_link_listing_data_source" xsi:type="string">Mirasvit\SeoAutolink\Model\ResourceModel\Link\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <virtualType name="SeoautolinkGirdFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\FulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="SeoautolinkGridDataProvider" type="Mirasvit\SeoAutolink\Ui\SeoAutolink\Listing\DataProvider">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Mirasvit\SeoAutolink\Model\ResourceModel\Link\Collection</argument>
+            <argument name="filterPool" xsi:type="object" shared="false">SeoautolinkGirdFilterPool</argument>
+        </arguments>
+    </virtualType>
+
+    <!--CONFIG-->
+    <preference for="Mirasvit\SeoAutolink\Api\Config\AutolinkInterface" type="Mirasvit\SeoAutolink\Service\Config\Autolink" />
+
+    <!--REPOSITORY-->
+    <preference for="Mirasvit\SeoAutolink\Api\LinkRepositoryInterface" type="Mirasvit\SeoAutolink\Repository\LinkRepository"/>
+    <preference for="Mirasvit\SeoAutolink\Api\Data\LinkInterface" type="Mirasvit\SeoAutolink\Model\Link"/>
+    <preference for="Mirasvit\SeoAutolink\Api\Data\LinkSearchResultsInterface" type="Mirasvit\SeoAutolink\Model\LinkSearchResults"/>
+
+    <!--Entity Manager-->
+    <type name="Magento\Framework\EntityManager\MetadataPool">
+        <arguments>
+            <argument name="metadata" xsi:type="array">
+                <item name="Mirasvit\SeoAutolink\Api\Data\LinkInterface" xsi:type="array">
+                    <item name="entityTableName" xsi:type="const">Mirasvit\SeoAutolink\Api\Data\LinkInterface::TABLE_NAME</item>
+                    <item name="identifierField" xsi:type="const">Mirasvit\SeoAutolink\Api\Data\LinkInterface::ID</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\EntityManager\HydratorPool">
+        <arguments>
+            <argument name="hydrators" xsi:type="array">
+                <item name="Mirasvit\SeoAutolink\Api\Data\LinkInterface" xsi:type="string">Magento\Framework\EntityManager\AbstractModelHydrator</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Cms\Block\Page">
+        <plugin name="mstSeoAutolinkCmsPageOutput" type="Mirasvit\SeoAutolink\Plugin\Magento\Cms\Block\Page\CmsPageOutput" />
+    </type>
+
+    <type name="Magento\Cms\Block\Block">
+        <plugin name="mstSeoAutolinkCmsBlockOutput" type="Mirasvit\SeoAutolink\Plugin\Magento\Cms\Block\Block\CmsBlockOutput" />
+    </type>
+
+    <type name="Magento\Cms\Block\BlockByIdentifier">
+        <plugin name="mstSeoAutolinkCmsBlockByIdentifierOutput" type="Mirasvit\SeoAutolink\Plugin\Magento\Cms\Block\Block\CmsBlockOutput" />
+    </type>
+
+    <type name="Magento\Cms\Block\Widget\Block">
+        <plugin name="mstSeoAutolinkCmsWidgetBlock" type="Mirasvit\SeoAutolink\Plugin\Magento\Cms\Block\Block\CmsBlockOutput" />
+    </type>
+
+    <type name="Mirasvit\BlogMx\ViewModel\PostViewModel">
+        <plugin name="mstSeoAutolinkBlogMxPostOutput" type="Mirasvit\SeoAutolink\Plugin\Mirasvit\BlogMx\ViewModel\PostViewModel\BlogPostOutput" />
+    </type>
+
+    <type name="Mirasvit\Blog\Block\Post\View">
+        <plugin name="mstSeoAutolinkBlogPostOutput" type="Mirasvit\SeoAutolink\Plugin\Mirasvit\Blog\Block\Post\View\BlogPostOutput" />
+    </type>
+
+    <type name="Mageplaza\Blog\Block\Frontend">
+        <plugin name="mstSeoAutolinkFrontend" type="Mirasvit\SeoAutolink\Plugin\ThirdParty\Mageplaza\Blog\Block\Frontend" />
+    </type>
+</config>

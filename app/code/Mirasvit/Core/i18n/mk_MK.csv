@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","Услугата %1 не е правилно конфигурирана или не е достапна"
+"Invalid AI request data","Невалидни податоци за AI барање"
+"Request prompt cannot be empty","Промптот на барањето не може да биде празен"
+"Claude API error","Claude API грешка"
+"Invalid Claude API response: missing content","Невалиден Claude API одговор: недостасува содржина"
+"Empty content received from Claude API","Примена празна содржина од Claude API"
+"Gemini API error","Gemini API грешка"
+"Invalid Gemini API response: missing candidates","Невалиден Gemini API одговор: недостасуваат кандидати"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Gemini API одговорот беше скратен бидејќи беше достигнато ограничувањето max_tokens. Размислете за зголемување на поставката max_tokens или користете пократок промпт."
+"Empty content received from Gemini API","Примена празна содржина од Gemini API"
+"AI services are disabled in configuration","AI услугите се оневозможени во конфигурацијата"
+"No default AI provider configured","Нема конфигуриран стандарден AI провајдер"
+"No available AI provider for request validation","Нема достапен AI провајдер за валидација на барања"
+"Request validation failed: %1","Валидацијата на барањето не успеа: %1"
+"All AI providers failed. Last error: %1","Сите AI провајдери не успеаа. Последна грешка: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Неподдржан AI провајдер: %1. Поддржани провајдери: %2"
+"Service class %1 must extend %2","Класата за услуга %1 мора да ја прошири %2"
+"Failed to create AI service for provider %1: %2","Не успеа создавањето на AI услуга за провајдерот %1: %2"
+"Not configured","Не е конфигурирано"
+Unknown,Непознато
+"Unknown API error","Непозната API грешка"
+"Temperature must be between 0 and 2","Температурата мора да биде помеѓу 0 и 2"
+"Max tokens must be greater than 0","Максималниот број на токени мора да биде поголем од 0"
+"Frequency penalty must be between -2 and 2","Казната за фреквенција мора да биде помеѓу -2 и 2"
+"Format output as JSON.","Форматирај го излезот како JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API врати нецелосен одговор бидејќи беше надминат бројот на токени на контекстниот прозорец на моделот."
+"OpenAI API returned no content in the response.","OpenAI API не врати содржина во одговорот."
+"Not Installed","Не е инсталирано"
+"A total of %1 record(s) have been deleted.","Вкупно %1 запис(и) се избришани."
+"The record has been removed.","Записот е отстранет."
+"Disallowed file type.","Недозволен тип на датотека."
+"Can't remove folder %s","Не може да се отстрани папката %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Екстензијата не ги содржи сите потребни датотеки. Ве молиме реинсталирајте ја екстензијата од оригиналниот пакет."
+"Extension Information","Информации за екстензија"
+Status,Статус
+Other,Друго
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron за Magento не работи. За да поставите cron задача, следете ја врската %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron задачите [%1] не работат. Ве молиме проверете ја табелата %2 за замрзнати задачи и отстранете ги."
+Remove,Отстрани
+Error,Грешка
+Missed,Пропуштено
+Running,Работи
+Pending,Чека
+Success,Успех
+"Server gmt time","GMT време на серверот"
+"Last job","Последна задача"
+Executed,Извршено
+none,ништо
+"Cron setup","Cron поставување"
+"Cron Jobs","Cron задачи"
+"No AI-enabled modules are currently active.","Моментално нема активни модули со AI."
+"%1 module(s) using AI functionality:","%1 модул(и) користат AI функционалност:"
+Provider:,Провајдер:
+ai_provider,ai_provider
+"You have the latest version","Ја имате најновата верзија"
+"New version %1 is available","Достапна е нова верзија %1"
+"View %1 details (opens in new window)","Погледни детали за %1 (се отвора во нов прозорец)"
+Details,Детали
+"View %1 user guide (opens in new window)","Погледни кориснички водич за %1 (се отвора во нов прозорец)"
+"User Guide","Кориснички водич"
+"View %1 changelog (opens in new window)","Погледни дневник на промени за %1 (се отвора во нов прозорец)"
+Changelog,Дневник на промени
+"Request new feature for %1 (opens in new window)","Побарај нова функција за %1 (се отвора во нов прозорец)"
+"Request New Feature","Побарај нова функција"
+"Installed Extensions","Инсталирани екстензии"
+"Check changes","Провери промени"
+"Validate All Extensions","Валидирај ги сите екстензии"
+"Suggest Improvement","Предложи подобрување"
+"%1 (opens in new window)","%1 (се отвора во нов прозорец)"
+"More Details","Повеќе детали"
+"Developer settings","Поставки за развивачи"
+"AI Provider Status","Статус на AI провајдер"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Моментално нема овозможени AI провајдери. Ве молиме конфигурирајте AI провајдери во %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 од %2 провајдери овозможени. Можете да управувате со провајдерите во %3."
+Enabled,Овозможено
+Disabled,Оневозможено
+"All tests have been passed","Сите тестови се поминати успешно"
+Module,Модул
+Test,Тест
+"How to fix","Како да се поправи"
+Warning,Предупредување
+Info,Информација
+Failed,Неуспешно
+Today,Денес
+"Last 7 days","Последните 7 дена"
+"Last 30 days","Последните 30 дена"
+"Last 365 days","Последните 365 дена"
+"Mirasvit Extensions Validator","Mirasvit валидатор на екстензии"
+"Mirasvit Menu","Mirasvit мени"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Екстензии
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit екстензии"
+Developer,Развивач
+"Menu Settings","Поставки за мени"
+"Enable Mirasvit Menu","Овозможи Mirasvit мени"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Менито е видливо ако имате најмалку две активни Mirasvit екстензии."
+"Additional CSS Styles","Дополнителни CSS стилови"
+"AI Configuration","AI конфигурација"
+"Modules using AI","Модули кои користат AI"
+"Enable AI features","Овозможи AI функции"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Глобално овозможете или оневозможете ги сите функции базирани на AI во Mirasvit екстензиите.<br>Кога е оневозможено, сите AI функционалности ќе бидат недостапни без оглед на индивидуалните поставки на провајдерот или AI поставки во други модули."
+"Default AI provider","Стандарден AI провајдер"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Изберете примарен AI провајдер за користење кога се конфигурирани повеќе провајдери.<br>Ова ќе се користи како резервен провајдер за сите AI операции кога не е побаран специфичен провајдер."
+"Request timeout","Истек на барање"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Максимално време во секунди за чекање одговори од AI провајдерот.<br> Оставете празно за да го оневозможите истекот.<br> Оваа поставка ќе влијае на сите AI функции во други модули."
+"Maximum tokens per request","Максимален број токени по барање"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Максимален број на токени за генерирање во едно AI барање. Повисоки вредности дозволуваат подолги одговори но ги зголемуваат трошоците.<br> Оставете празно за да го оневозможите ограничувањето.<br> Различни провајдери и модели имаат свои ограничувања.<br> Оваа поставка ќе влијае на сите AI функции во други модули."
+"Default temperature","Стандардна температура"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Контролира случајност во AI одговорите. Пониски вредности произведуваат поконзистентни резултати, повисоки вредности покреативни.<br>Пример:<br><code>0.1</code> - многу конзистентни, фактички одговори<br><code>0.7</code> - балансирана креативност и конзистентност<br><code>1.0</code> - високо креативни и разновидни одговори.<br>Ако е празно, ќе се користи стандардната температура 0.7.<br>Оваа поставка ќе влијае на сите AI функции во други модули.<br>Некои екстензии може да ја надминат оваа поставка."
+"Debug mode","Режим за дебагирање"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Овозможете детално логирање на AI барања и одговори за цели на дебагирање.<br>Предупредување: Ова може да логира чувствителни податоци и да влијае на перформансите. Користете само за развој."
+"OpenAI Configuration","OpenAI конфигурација"
+"Enable OpenAI provider","Овозможи OpenAI провајдер"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Овозможете OpenAI како достапен AI провајдер. Потребна е валидна конфигурација на API клуч."
+"OpenAI API key","OpenAI API клуч"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Вашиот OpenAI API клуч што започнува со 'sk-'. Овој клуч е шифриран и безбедно зачуван.<br>Земете го вашиот API клуч од: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Стандарден OpenAI модел"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Изберете го стандардниот OpenAI модел за AI операции. Различни модели имаат различни способности и трошоци."
+"Claude Configuration","Claude конфигурација"
+"Enable Claude provider","Овозможи Claude провајдер"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Овозможете Anthropic Claude како достапен AI провајдер. Потребна е валидна конфигурација на API клуч."
+"Claude API key","Claude API клуч"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Вашиот Anthropic Claude API клуч што започнува со 'sk-ant-'. Овој клуч е шифриран и безбедно зачуван.<br>Земете го вашиот API клуч од: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Стандарден Claude модел"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Изберете го стандардниот Claude модел за AI операции. Различни модели имаат различни способности и трошоци."
+"Google Gemini Configuration","Google Gemini конфигурација"
+"Enable Gemini provider","Овозможи Gemini провајдер"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Овозможете Google Gemini како достапен AI провајдер. Потребна е валидна конфигурација на API клуч."
+"Gemini API key","Gemini API клуч"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Вашиот Google AI Studio API клуч што започнува со 'AIza'. Овој клуч е шифриран и безбедно зачуван.<br>Земете го вашиот API клуч од: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Стандарден Gemini модел"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Изберете го стандардниот Gemini модел за AI операции. Различни модели имаат различни способности и трошоци."
+"Determine visitor's country, city, and timezone based on their IP address.","Одредете ја земјата, градот и временската зона на посетителот врз основа на неговата IP адреса."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Потребна е бесплатна сметка <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind</a> за автоматски ажурирања (неделна проверка)."
+"Used by:","Користено од:"
+message,порака
+"Error downloading database: %1","Грешка при преземање на базата на податоци: %1"
+"MaxMind credentials not configured","Ингеренциите на MaxMind не се конфигурирани"
+"Failed to download remote hash","Преземањето на далечинскиот хеш не успеа"
+"Database is up to date","Базата на податоци е ажурирана"
+"Failed to download and extract database","Преземањето и екстрахирањето на базата не успеа"
+"Database updated successfully","Базата на податоци е успешно ажурирана"
+"Download failed: %1","Преземањето не успеа: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Оваа екстензија користи GeoLite2 податоци создадени од MaxMind."
+"Database available (auto-update enabled)","База на податоци достапна (автоматско ажурирање овозможено)"
+"Database available (auto-update disabled)","База на податоци достапна (автоматско ажурирање оневозможено)"
+Configure,Конфигурирај
+"Database not available","Базата на податоци не е достапна"
+"Database status:","Статус на базата:"
+"Not available","Не е достапно"
+"Credentials configured. Click the button below to download the database.","Ингеренциите се конфигурирани. Кликнете на копчето подолу за преземање на базата."
+"Download database","Преземи база на податоци"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Внесете ги ингеренциите на MaxMind погоре за овозможување на автоматски преземања, или извршете setup:upgrade за инсталирање на вградената база."
+"Available (auto-update disabled)","Достапно (автоматско ажурирање оневозможено)"
+Version:,Верзија:
+Size:,Големина:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Внесете ги ингеренциите на MaxMind погоре за овозможување на автоматски неделни ажурирања."
+"Available (auto-update enabled)","Достапно (автоматско ажурирање овозможено)"
+"Update database","Ажурирај база на податоци"
+"Database updated successfully.","Базата на податоци е успешно ажурирана."
+Notice,Известување
+"Database is up to date.","Базата на податоци е ажурирана."
+"An error occurred while downloading the database.","Настана грешка при преземање на базата на податоци."
+"IP Geolocation","IP геолокација"
+"Account ID","ID на сметка"
+"License Key","Лиценцен клуч"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Генерирај лиценцен клуч</a>"
+Cron,Cron
+Delete,Избриши
+"Delete items","Избриши ставки"
+"Are you sure you want to delete selected items?","Дали сте сигурни дека сакате да ги избришете избраните ставки?"
+ID,ID
+Code,Код
+Messages,Пораки
+Created,Креирано
+Scheduled,Закажано
+Finished,Завршено

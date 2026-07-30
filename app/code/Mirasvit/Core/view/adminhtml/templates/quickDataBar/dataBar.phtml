@@ -1,0 +1,34 @@
+<?php
+
+use Mirasvit\Core\Service\CspService;
+use Mirasvit\Core\Service\SerializeService;
+
+/** @var \Mirasvit\Core\Ui\QuickDataBar\DataBar $block */
+
+$nonce = CspService::getNonce();
+?>
+
+<div data-bind="scope: 'mstQuickDataBar'">
+    <div class="mst-quickDataBar" data-bind="css: { _ready: isReady() }">
+        <div class="mst-quickDataBar-container">
+            <?php if ($block->getData('isShowDateRange') !== false): ?>
+            <div class="mst-quickDataBar__dateRange">
+                <select data-bind="options: dateRangeList, optionsText: 'label', optionsValue: 'value', value: dateRange"></select>
+            </div>
+            <?php endif; ?>
+
+            <?= /* @noEscape */ $block->getChildHtml() ?>
+        </div>
+    </div>
+</div>
+<script<?php if ($nonce): ?> nonce="<?= $block->escapeHtml($nonce) ?>"<?php endif; ?> type="text/x-magento-init"><?= /* @noEscape */ SerializeService::encode([
+        '*' => [
+            'Magento_Ui/js/core/app' => [
+                'components' => [
+                    'mstQuickDataBar' => [
+                        'component' => 'Mirasvit_Core/js/quickDataBar/dataBar',
+                    ],
+                ],
+            ],
+        ],
+    ]) ?></script>

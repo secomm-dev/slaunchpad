@@ -23,3 +23,11 @@ phase1_capabilities:                           # mirror of registry phase1_capab
   runtime_separation: true
   quota_optimization: true
   governance_deduplication: true
+
+hyva_ai_tools_integration:
+  status: project-local-retrofit
+  upstream_repository: https://github.com/hyva-themes/hyva-ai-tools
+  upstream_commit: 5f094b6e57e6faab9967e2b031cac9c1cd6c9f93
+  hyva_integration_version: "1.0.0"
+  classification: hyva-active
+  selected_profiles: [hyva-theme-core,hyva-module-development]

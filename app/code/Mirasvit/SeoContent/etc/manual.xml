@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../../../module-core/src/Core/etc/manual.xsd">
+    <link action="seo_content_template_index" title="Learn more about SEO Templates management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/template-manager"/>
+    <link action="seo_content_template_edit" title="Learn more about SEO Templates management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/template-manager"/>
+    <link action="seo_content_rewrite_index" title="Learn more about SEO rewrites management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/rewrite-manager"/>
+    <link action="seo_content_rewrite_edit" title="Learn more about SEO rewrites management" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/configuration/rewrite-manager"/>
+    <link action="seo_content_rewrite_import_index" title="Learn more about Import/Export rewrites" url="https://mirasvit.com/manual/magento-2-advanced-seo-suite/how-to/import-export-rewrites"/>
+</config>

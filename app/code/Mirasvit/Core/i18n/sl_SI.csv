@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","Storitev %1 ni pravilno konfigurirana ali ni na voljo"
+"Invalid AI request data","Neveljavni podatki zahteve AI"
+"Request prompt cannot be empty","Poziv zahteve ne sme biti prazen"
+"Claude API error","Napaka Claude API"
+"Invalid Claude API response: missing content","Neveljaven odziv Claude API: manjka vsebina"
+"Empty content received from Claude API","Prazna vsebina prejeta iz Claude API"
+"Gemini API error","Napaka Gemini API"
+"Invalid Gemini API response: missing candidates","Neveljaven odziv Gemini API: manjkajo kandidati"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Odziv Gemini API je bil skrajšan, ker je bila dosežena omejitev max_tokens. Razmislite o povečanju nastavitve max_tokens ali uporabi krajšega poziva."
+"Empty content received from Gemini API","Prazna vsebina prejeta iz Gemini API"
+"AI services are disabled in configuration","Storitve AI so onemogočene v konfiguraciji"
+"No default AI provider configured","Privzeti ponudnik AI ni konfiguriran"
+"No available AI provider for request validation","Ni razpoložljivega ponudnika AI za preverjanje zahtev"
+"Request validation failed: %1","Preverjanje zahteve ni uspelo: %1"
+"All AI providers failed. Last error: %1","Vsi ponudniki AI so spodleteli. Zadnja napaka: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Nepodprt ponudnik AI: %1. Podprti ponudniki: %2"
+"Service class %1 must extend %2","Razred storitve %1 mora razširiti %2"
+"Failed to create AI service for provider %1: %2","Ustvarjanje storitve AI za ponudnika %1 ni uspelo: %2"
+"Not configured","Ni konfigurirano"
+Unknown,Neznano
+"Unknown API error","Neznana napaka API"
+"Temperature must be between 0 and 2","Temperatura mora biti med 0 in 2"
+"Max tokens must be greater than 0","Največje število žetonov mora biti večje od 0"
+"Frequency penalty must be between -2 and 2","Kazen za pogostost mora biti med -2 in 2"
+"Format output as JSON.","Oblikuj izhod kot JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API je vrnil nepopoln odziv, ker je bilo preseženo število žetonov kontekstnega okna modela."
+"OpenAI API returned no content in the response.","OpenAI API ni vrnil vsebine v odzivu."
+"Not Installed","Ni nameščeno"
+"A total of %1 record(s) have been deleted.","Skupno je bilo izbrisanih %1 zapis(ov)."
+"The record has been removed.","Zapis je bil odstranjen."
+"Disallowed file type.","Nedovoljena vrsta datoteke."
+"Can't remove folder %s","Mape %s ni mogoče odstraniti"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Razširitev ne vsebuje vseh potrebnih datotek. Prosimo, ponovno namestite razširitev iz originalnega paketa."
+"Extension Information","Informacije o razširitvi"
+Status,Status
+Other,Drugo
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron za Magento ne teče. Za nastavitev cron opravila sledite povezavi %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron opravila [%1] ne tečejo. Prosimo, preverite tabelo %2 za zamrznjena opravila in jih odstranite."
+Remove,Odstrani
+Error,Napaka
+Missed,Zgrešeno
+Running,Teče
+Pending,V čakanju
+Success,Uspeh
+"Server gmt time","GMT čas strežnika"
+"Last job","Zadnje opravilo"
+Executed,Izvedeno
+none,brez
+"Cron setup","Nastavitev Cron"
+"Cron Jobs","Cron opravila"
+"No AI-enabled modules are currently active.","Trenutno ni aktivnih modulov z AI."
+"%1 module(s) using AI functionality:","%1 modul(ov) uporablja funkcionalnost AI:"
+Provider:,Ponudnik:
+ai_provider,ai_provider
+"You have the latest version","Imate najnovejšo različico"
+"New version %1 is available","Na voljo je nova različica %1"
+"View %1 details (opens in new window)","Ogled podrobnosti %1 (odpre se v novem oknu)"
+Details,Podrobnosti
+"View %1 user guide (opens in new window)","Ogled uporabniškega priročnika %1 (odpre se v novem oknu)"
+"User Guide","Uporabniški priročnik"
+"View %1 changelog (opens in new window)","Ogled dnevnika sprememb %1 (odpre se v novem oknu)"
+Changelog,Dnevnik sprememb
+"Request new feature for %1 (opens in new window)","Zahtevaj novo funkcijo za %1 (odpre se v novem oknu)"
+"Request New Feature","Zahtevaj novo funkcijo"
+"Installed Extensions","Nameščene razširitve"
+"Check changes","Preveri spremembe"
+"Validate All Extensions","Preveri vse razširitve"
+"Suggest Improvement","Predlagaj izboljšavo"
+"%1 (opens in new window)","%1 (odpre se v novem oknu)"
+"More Details","Več podrobnosti"
+"Developer settings","Nastavitve za razvijalce"
+"AI Provider Status","Status ponudnika AI"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Trenutno ni omogočenih ponudnikov AI. Prosimo, konfigurirajte ponudnike AI v %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 od %2 ponudnikov omogočenih. Ponudnike lahko upravljate v %3."
+Enabled,Omogočeno
+Disabled,Onemogočeno
+"All tests have been passed","Vsi testi so bili uspešno opravljeni"
+Module,Modul
+Test,Test
+"How to fix","Kako popraviti"
+Warning,Opozorilo
+Info,Informacija
+Failed,Ni uspelo
+Today,Danes
+"Last 7 days","Zadnjih 7 dni"
+"Last 30 days","Zadnjih 30 dni"
+"Last 365 days","Zadnjih 365 dni"
+"Mirasvit Extensions Validator","Validator razširitev Mirasvit"
+"Mirasvit Menu","Meni Mirasvit"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Razširitve
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Razširitve Mirasvit"
+Developer,Razvijalec
+"Menu Settings","Nastavitve menija"
+"Enable Mirasvit Menu","Omogoči meni Mirasvit"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Meni je viden, če imate vsaj dve aktivni razširitvi Mirasvit."
+"Additional CSS Styles","Dodatni CSS slogi"
+"AI Configuration","Konfiguracija AI"
+"Modules using AI","Moduli, ki uporabljajo AI"
+"Enable AI features","Omogoči funkcije AI"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Globalno omogočite ali onemogočite vse funkcije, ki jih poganja AI, v razširitvah Mirasvit.<br>Ko je onemogočeno, bodo vse funkcije AI nedostopne ne glede na posamezne nastavitve ponudnika ali nastavitve AI v drugih modulih."
+"Default AI provider","Privzeti ponudnik AI"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Izberite primarnega ponudnika AI za uporabo, ko je konfiguriranih več ponudnikov.<br>To bo uporabljeno kot nadomestni ponudnik za vse operacije AI, ko ni zahtevan specifičen ponudnik."
+"Request timeout","Časovna omejitev zahteve"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Največji čas v sekundah za čakanje na odzive ponudnika AI.<br> Pustite prazno za onemogočenje časovne omejitve.<br> Ta nastavitev bo vplivala na vse funkcije AI v drugih modulih."
+"Maximum tokens per request","Največje število žetonov na zahtevo"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Največje število žetonov za generiranje v eni zahtevi AI. Višje vrednosti omogočajo daljše odzive, vendar povečajo stroške.<br> Pustite prazno za onemogočenje omejitve.<br> Različni ponudniki in modeli imajo svoje omejitve.<br> Ta nastavitev bo vplivala na vse funkcije AI v drugih modulih."
+"Default temperature","Privzeta temperatura"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Nadzoruje naključnost v odzivih AI. Nižje vrednosti proizvajajo bolj dosledne rezultate, višje vrednosti bolj ustvarjalne.<br>Primer:<br><code>0.1</code> - zelo dosledni, dejanski odzivi<br><code>0.7</code> - uravnotežena ustvarjalnost in doslednost<br><code>1.0</code> - zelo ustvarjalni in raznovrstni odzivi.<br>Če je prazno, bo uporabljena privzeta temperatura 0.7.<br>Ta nastavitev bo vplivala na vse funkcije AI v drugih modulih.<br>Nekatere razširitve lahko preglasijo to nastavitev."
+"Debug mode","Način odpravljanja napak"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Omogočite podrobno beleženje zahtev in odzivov AI za namene odpravljanja napak.<br>Opozorilo: To lahko beleži občutljive podatke in vpliva na zmogljivost. Uporabljajte samo za razvoj."
+"OpenAI Configuration","Konfiguracija OpenAI"
+"Enable OpenAI provider","Omogoči ponudnika OpenAI"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Omogočite OpenAI kot razpoložljivega ponudnika AI. Zahteva veljavno konfiguracijo API ključa."
+"OpenAI API key","API ključ OpenAI"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Vaš API ključ OpenAI, ki se začne s 'sk-'. Ta ključ je šifriran in varno shranjen.<br>Pridobite svoj API ključ iz: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Privzeti model OpenAI"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Izberite privzeti model OpenAI za operacije AI. Različni modeli imajo različne zmogljivosti in stroške."
+"Claude Configuration","Konfiguracija Claude"
+"Enable Claude provider","Omogoči ponudnika Claude"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Omogočite Anthropic Claude kot razpoložljivega ponudnika AI. Zahteva veljavno konfiguracijo API ključa."
+"Claude API key","API ključ Claude"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Vaš API ključ Anthropic Claude, ki se začne s 'sk-ant-'. Ta ključ je šifriran in varno shranjen.<br>Pridobite svoj API ključ iz: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Privzeti model Claude"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Izberite privzeti model Claude za operacije AI. Različni modeli imajo različne zmogljivosti in stroške."
+"Google Gemini Configuration","Konfiguracija Google Gemini"
+"Enable Gemini provider","Omogoči ponudnika Gemini"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Omogočite Google Gemini kot razpoložljivega ponudnika AI. Zahteva veljavno konfiguracijo API ključa."
+"Gemini API key","API ključ Gemini"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Vaš API ključ Google AI Studio, ki se začne z 'AIza'. Ta ključ je šifriran in varno shranjen.<br>Pridobite svoj API ključ iz: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Privzeti model Gemini"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Izberite privzeti model Gemini za operacije AI. Različni modeli imajo različne zmogljivosti in stroške."
+"Determine visitor's country, city, and timezone based on their IP address.","Določite državo, mesto in časovni pas obiskovalca na podlagi njegovega IP naslova."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Za samodejne posodobitve je potreben brezplačen račun <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind</a> (tedensko preverjanje)."
+"Used by:","Uporablja:"
+message,sporočilo
+"Error downloading database: %1","Napaka pri prenosu podatkovne baze: %1"
+"MaxMind credentials not configured","Poverilnice MaxMind niso konfigurirane"
+"Failed to download remote hash","Prenos oddaljenega hasha ni uspel"
+"Database is up to date","Podatkovna baza je posodobljena"
+"Failed to download and extract database","Prenos in razširitev podatkovne baze ni uspel"
+"Database updated successfully","Podatkovna baza uspešno posodobljena"
+"Download failed: %1","Prenos ni uspel: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Ta razširitev uporablja podatke GeoLite2, ki jih je ustvaril MaxMind."
+"Database available (auto-update enabled)","Podatkovna baza na voljo (samodejna posodobitev omogočena)"
+"Database available (auto-update disabled)","Podatkovna baza na voljo (samodejna posodobitev onemogočena)"
+Configure,Konfiguriraj
+"Database not available","Podatkovna baza ni na voljo"
+"Database status:","Stanje podatkovne baze:"
+"Not available","Ni na voljo"
+"Credentials configured. Click the button below to download the database.","Poverilnice konfigurirane. Kliknite spodnji gumb za prenos podatkovne baze."
+"Download database","Prenesi podatkovno bazo"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Vnesite poverilnice MaxMind zgoraj za omogočanje samodejnih prenosov ali zaženite setup:upgrade za namestitev priložene podatkovne baze."
+"Available (auto-update disabled)","Na voljo (samodejna posodobitev onemogočena)"
+Version:,Različica:
+Size:,Velikost:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Vnesite poverilnice MaxMind zgoraj za omogočanje samodejnih tedenskih posodobitev."
+"Available (auto-update enabled)","Na voljo (samodejna posodobitev omogočena)"
+"Update database","Posodobi podatkovno bazo"
+"Database updated successfully.","Podatkovna baza uspešno posodobljena."
+Notice,Obvestilo
+"Database is up to date.","Podatkovna baza je posodobljena."
+"An error occurred while downloading the database.","Pri prenosu podatkovne baze je prišlo do napake."
+"IP Geolocation","IP geolokacija"
+"Account ID","ID računa"
+"License Key","Licenčni ključ"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Ustvari licenčni ključ</a>"
+Cron,Cron
+Delete,Izbriši
+"Delete items","Izbriši elemente"
+"Are you sure you want to delete selected items?","Ali ste prepričani, da želite izbrisati izbrane elemente?"
+ID,ID
+Code,Koda
+Messages,Sporočila
+Created,Ustvarjeno
+Scheduled,Načrtovano
+Finished,Končano

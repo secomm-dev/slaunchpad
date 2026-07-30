@@ -1,0 +1,63 @@
+# ============================================================================
+# Hyvä integration — upstream manifest  (AUTO-GENERATED — do not hand-edit)
+# ============================================================================
+# Inventory + integrity hashes for the canonical upstream skill BODIES. Bodies
+# live under skills-source/dev-skills/magento/hyva-*/ (canonical, flat). This file
+# is Secomm-owned metadata — NOT a second skill body. Verify with:
+#   bin/project-ai-validate --check-hyva
+# ============================================================================
+schema_version: 1
+upstream:
+  repository_url: https://github.com/hyva-themes/hyva-ai-tools
+  branch: main
+  commit: 5f094b6e57e6faab9967e2b031cac9c1cd6c9f93
+  retrieval_date: "2026-07-28"
+  license: OSL-3.0
+  attribution: "Copyright © 2026-present Hyvä Themes. Each source file licensed OSL-3.0."
+canonical_root: skills-source/dev-skills/magento
+local_mode: deterministic-generated-copy  # NOT symlink — see compatibility-matrix.yaml
+imported_skill_count: 12
+imported_file_count: 42
+files:
+  - { path: hyva-alpine-component/SKILL.md, sha256: 05c58bae5228dc48417589222d1605d7d4e042785c4ebcb67490b2f79a330c44 }
+  - { path: hyva-child-theme/SKILL.md, sha256: e8821ee1b58b089fbb76590671eb0c06b6af8b23360b7bfc3e461867bc23a290 }
+  - { path: hyva-cms-component/SKILL.md, sha256: 2d175c02b034543ffa87c1bdf593910093c08ea75c7587b09575be9202c9ad6c }
+  - { path: hyva-cms-component/assets/templates/component/template.phtml.tpl, sha256: 5fd7829f7605dbe74360b4d8101eb4da9a9f36925d0b299c1e382986e896e3c9 }
+  - { path: hyva-cms-component/references/component-schema.md, sha256: 586028fc2e9edb36725f102ee2a06eb265e0d172df2c1d4ea69979829078ec7b }
+  - { path: hyva-cms-component/references/critical-patterns.md, sha256: 8de82116fc8d43962cf301b6f2d2821827f37c14aa1a524ca87e82e8d2577ef4 }
+  - { path: hyva-cms-component/references/example-component.md, sha256: ab211d027d5381e40a773755d5df0e4552ded659ea28bf84d1778937ccaddf0e }
+  - { path: hyva-cms-component/references/field-types.md, sha256: 47d43e0c14a5744e4e29f09330918b44b92deb683f15eda2fb4e9922353b6aa2 }
+  - { path: hyva-cms-component/references/troubleshooting.md, sha256: 744e8997e68afe7343539e7e0f73958b87890ad68e636a6a048f9605578d17a9 }
+  - { path: hyva-cms-component/references/variant-support.md, sha256: 993d83b3a7c2ce394761ae21bf85a6a8d32fc0ea9b818bb3bf98ff75ee0f0288 }
+  - { path: hyva-cms-components-dump/SKILL.md, sha256: 9858ed2b4914f8fe8cfe7e54cb7e3acea675e388ec727c54218a98f19242b10a }
+  - { path: hyva-cms-components-dump/scripts/dump_cms_components.php, sha256: 13e27ac1386fed14dd431ccafe4e8fea7115160a3b3806195761613a2c7d894d }
+  - { path: hyva-cms-custom-field/SKILL.md, sha256: c888e4f3238d5f8b8acfb29ea25eee69434c0919718a7b7b17b45424aa4dd390 }
+  - { path: hyva-cms-custom-field/assets/templates/basic-field.phtml.tpl, sha256: 43a51ce0367ff9a0b887f565ce2ac11db2aefd5b283d04cfea28c041b2a4042c }
+  - { path: hyva-cms-custom-field/assets/templates/inline-handler.phtml.tpl, sha256: aeb09997afacb066960668c9ba7c6bbafed965d3aac1fe41f1544641a1fcefb0 }
+  - { path: hyva-cms-custom-field/assets/templates/modal-field.phtml.tpl, sha256: c534545c30b9ee4b1d93df2a633682329c9e387d2821f4028fe4fdae96833719 }
+  - { path: hyva-cms-custom-field/assets/templates/modal-handler.phtml.tpl, sha256: 9bb45108e61c7a655300ad62dd60f22fa3d73d71f1efd24a555eff3baf9af0e7 }
+  - { path: hyva-cms-custom-field/references/built-in-handlers.md, sha256: 3be015e21847d897eae509861bacd8e305a974ee80ee1c56dbe77fd46f7cbcca }
+  - { path: hyva-cms-custom-field/references/handler-communication.md, sha256: ea709ca16e9a66a0920728c0ba4663db4ad94702a7131ce7e15957610fc16bd6 }
+  - { path: hyva-cms-custom-field/references/handler-patterns.md, sha256: 54485fb2583ebee35b97b2758bbc618eec51fd7de3307bf27efed2385fb09890 }
+  - { path: hyva-cms-custom-field/references/template-requirements.md, sha256: 7e3ecf3a027a0ca52746358896c7af7547718f6de58910831e1dda1ec03a460b }
+  - { path: hyva-compile-tailwind-css/SKILL.md, sha256: 51d73191638c1f3ad99d6dc10022c509addf5fe0769239cc27b596c048702c18 }
+  - { path: hyva-create-module/SKILL.md, sha256: 77dcf66173f2b5ffed4d56a6f17e5b9d45624317ebf976c6aeca71e564755cd5 }
+  - { path: hyva-create-module/assets/templates/composer.json.tpl, sha256: 6ce49d599b081e9bbce8e0f6dc43b2bb34520869e302f53e8ab2a5403b1dff9c }
+  - { path: hyva-create-module/assets/templates/module.xml.tpl, sha256: 1cd011c971ca95da7f7520984dddb84747e5411864e88d99d47259a3ffbb63ba }
+  - { path: hyva-create-module/assets/templates/registration.php.tpl, sha256: bb6596d47e2a83fc7f602c62dae3d5a9fded8b8eb9f6c6a8603c3d68cca97c88 }
+  - { path: hyva-exec-shell-cmd/SKILL.md, sha256: 068b22a18eda76609a4acf10f40660c2005547ede8b05ce5ee511bcef1a6dc5d }
+  - { path: hyva-exec-shell-cmd/scripts/detect_env.sh, sha256: ad7dbe831f59876a916c2107ed335c36cd18de0ca2fca7d09c9bc250cee84d4d }
+  - { path: hyva-playwright-test/SKILL.md, sha256: da388db280e1425369030100d1435a98b0a228f80e1b17f38441a2ddcff28a01 }
+  - { path: hyva-playwright-test/references/account-patterns.md, sha256: 43102e2bc71605e071c4edc7fc756fc2a22fd7b5a502c9c6d07c73b22a69a9b1 }
+  - { path: hyva-playwright-test/references/cart-patterns.md, sha256: 9bbd79fa2a92506f7e802946c895f04515eadd76e35a04a145f9e37c27753840 }
+  - { path: hyva-playwright-test/references/category-patterns.md, sha256: 9a197fac1b181d41195700ee672b3e68f63eacf345af3d78d3821c2138c7750b }
+  - { path: hyva-playwright-test/references/page-object-patterns.md, sha256: 3b1c84babbffd050207a18a168636aa9ef2511ef7b212ed7768e1d5be9e21af5 }
+  - { path: hyva-playwright-test/references/product-patterns.md, sha256: d47853c498a46b1ad16dc7730ab75c37499e122d54da1b78a23713542ebd0ae2 }
+  - { path: hyva-playwright-test/references/selector-patterns.md, sha256: b7a2491a564aeb14db75c30626d63cfbaa8cfa96a84ff5de17270025a87ada7a }
+  - { path: hyva-render-media-image/SKILL.md, sha256: 55c130bd99e2072eccdcc96e322a5a54d880dbccdce6ad92b0d84d90a9f83518 }
+  - { path: hyva-render-media-image/references/rendering-images.md, sha256: 092e917803701fde91208da60c22b25e83ea407f94cc5a5c59c08cd9a3c7475c }
+  - { path: hyva-theme-list/SKILL.md, sha256: aeba40a0e8efa179a91409c2e16912f46c751b1432cefe6f83c590acb13fe3be }
+  - { path: hyva-theme-list/scripts/list_hyva_themes.sh, sha256: 94e81964b0bfaf25975406d55454180adcff2f1daaff94ffaa7c9b8f7d444221 }
+  - { path: hyva-ui-component/SKILL.md, sha256: 8bb0a4c61905c546f134232aa57e726e4c78f32ec8ce91122f0c5edb3fee597e }
+  - { path: hyva-ui-component/references/components.md, sha256: fe24afbec5883b552b886bab6333cb1f63d63dd95af017c4513534f0fc0b9af4 }
+  - { path: hyva-ui-component/scripts/refresh_catalog.sh, sha256: a6f4689e0e8a2ef2ab153fbe6c0bc048c8d95645cd3890171da2f55bd667c3d7 }

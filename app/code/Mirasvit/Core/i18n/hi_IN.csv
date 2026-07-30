@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1 सेवा ठीक से कॉन्फ़िगर नहीं है या उपलब्ध नहीं है"
+"Invalid AI request data","अमान्य AI अनुरोध डेटा"
+"Request prompt cannot be empty","अनुरोध प्रॉम्प्ट खाली नहीं हो सकता"
+"Claude API error","Claude API त्रुटि"
+"Invalid Claude API response: missing content","अमान्य Claude API प्रतिक्रिया: सामग्री गायब है"
+"Empty content received from Claude API","Claude API से खाली सामग्री प्राप्त हुई"
+"Gemini API error","Gemini API त्रुटि"
+"Invalid Gemini API response: missing candidates","अमान्य Gemini API प्रतिक्रिया: उम्मीदवार गायब हैं"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Gemini API प्रतिक्रिया काट दी गई क्योंकि max_tokens सीमा पूरी हो गई। max_tokens सेटिंग बढ़ाने या छोटे प्रॉम्प्ट का उपयोग करने पर विचार करें।"
+"Empty content received from Gemini API","Gemini API से खाली सामग्री प्राप्त हुई"
+"AI services are disabled in configuration","कॉन्फ़िगरेशन में AI सेवाएं अक्षम हैं"
+"No default AI provider configured","कोई डिफ़ॉल्ट AI प्रदाता कॉन्फ़िगर नहीं है"
+"No available AI provider for request validation","अनुरोध सत्यापन के लिए कोई AI प्रदाता उपलब्ध नहीं है"
+"Request validation failed: %1","अनुरोध सत्यापन विफल: %1"
+"All AI providers failed. Last error: %1","सभी AI प्रदाता विफल रहे। अंतिम त्रुटि: %1"
+"Unsupported AI provider: %1. Supported providers: %2","असमर्थित AI प्रदाता: %1। समर्थित प्रदाता: %2"
+"Service class %1 must extend %2","सेवा वर्ग %1 को %2 का विस्तार करना होगा"
+"Failed to create AI service for provider %1: %2","प्रदाता %1 के लिए AI सेवा बनाने में विफल: %2"
+"Not configured","कॉन्फ़िगर नहीं है"
+Unknown,अज्ञात
+"Unknown API error","अज्ञात API त्रुटि"
+"Temperature must be between 0 and 2","तापमान 0 और 2 के बीच होना चाहिए"
+"Max tokens must be greater than 0","अधिकतम टोकन 0 से अधिक होने चाहिए"
+"Frequency penalty must be between -2 and 2","फ्रीक्वेंसी पेनल्टी -2 और 2 के बीच होनी चाहिए"
+"Format output as JSON.","आउटपुट को JSON के रूप में फॉर्मेट करें।"
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API ने अपूर्ण प्रतिक्रिया लौटाई क्योंकि मॉडल की संदर्भ विंडो टोकन संख्या पार हो गई।"
+"OpenAI API returned no content in the response.","OpenAI API ने प्रतिक्रिया में कोई सामग्री नहीं लौटाई।"
+"Not Installed","इंस्टॉल नहीं है"
+"A total of %1 record(s) have been deleted.","कुल %1 रिकॉर्ड हटा दिए गए हैं।"
+"The record has been removed.","रिकॉर्ड हटा दिया गया है।"
+"Disallowed file type.","अस्वीकृत फ़ाइल प्रकार।"
+"Can't remove folder %s","फ़ोल्डर %s नहीं हटा सकते"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","एक्सटेंशन में सभी आवश्यक फ़ाइलें नहीं हैं। कृपया मूल पैकेज से एक्सटेंशन पुनः इंस्टॉल करें।"
+"Extension Information","एक्सटेंशन जानकारी"
+Status,स्थिति
+Other,अन्य
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Magento के लिए Cron नहीं चल रहा है। Cron जॉब सेट करने के लिए, लिंक %1 का अनुसरण करें"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron जॉब [%1] नहीं चल रहे हैं। कृपया फ्रोज़न जॉब के लिए टेबल %2 की जाँच करें और उन्हें हटाएं।"
+Remove,हटाएं
+Error,त्रुटि
+Missed,छूटा
+Running,चल रहा है
+Pending,लंबित
+Success,सफलता
+"Server gmt time","सर्वर GMT समय"
+"Last job","अंतिम जॉब"
+Executed,निष्पादित
+none,कोई नहीं
+"Cron setup","Cron सेटअप"
+"Cron Jobs","Cron जॉब्स"
+"No AI-enabled modules are currently active.","वर्तमान में कोई AI-सक्षम मॉड्यूल सक्रिय नहीं है।"
+"%1 module(s) using AI functionality:","%1 मॉड्यूल AI कार्यक्षमता का उपयोग कर रहे हैं:"
+Provider:,प्रदाता:
+ai_provider,ai_provider
+"You have the latest version","आपके पास नवीनतम संस्करण है"
+"New version %1 is available","नया संस्करण %1 उपलब्ध है"
+"View %1 details (opens in new window)","%1 विवरण देखें (नई विंडो में खुलता है)"
+Details,विवरण
+"View %1 user guide (opens in new window)","%1 उपयोगकर्ता गाइड देखें (नई विंडो में खुलता है)"
+"User Guide","उपयोगकर्ता गाइड"
+"View %1 changelog (opens in new window)","%1 चेंजलॉग देखें (नई विंडो में खुलता है)"
+Changelog,चेंजलॉग
+"Request new feature for %1 (opens in new window)","%1 के लिए नई सुविधा का अनुरोध करें (नई विंडो में खुलता है)"
+"Request New Feature","नई सुविधा का अनुरोध करें"
+"Installed Extensions","इंस्टॉल किए गए एक्सटेंशन"
+"Check changes","परिवर्तन जाँचें"
+"Validate All Extensions","सभी एक्सटेंशन सत्यापित करें"
+"Suggest Improvement","सुधार सुझाएं"
+"%1 (opens in new window)","%1 (नई विंडो में खुलता है)"
+"More Details","अधिक विवरण"
+"Developer settings","डेवलपर सेटिंग्स"
+"AI Provider Status","AI प्रदाता स्थिति"
+"No AI providers are currently enabled. Please configure AI providers in %1.","वर्तमान में कोई AI प्रदाता सक्षम नहीं है। कृपया %1 में AI प्रदाताओं को कॉन्फ़िगर करें।"
+"%1 of %2 providers enabled. You can manage providers in %3.","%2 में से %1 प्रदाता सक्षम हैं। आप %3 में प्रदाताओं का प्रबंधन कर सकते हैं।"
+Enabled,सक्षम
+Disabled,अक्षम
+"All tests have been passed","सभी परीक्षण पास हो गए"
+Module,मॉड्यूल
+Test,परीक्षण
+"How to fix","कैसे ठीक करें"
+Warning,चेतावनी
+Info,जानकारी
+Failed,विफल
+Today,आज
+"Last 7 days","पिछले 7 दिन"
+"Last 30 days","पिछले 30 दिन"
+"Last 365 days","पिछले 365 दिन"
+"Mirasvit Extensions Validator","Mirasvit एक्सटेंशन वैलिडेटर"
+"Mirasvit Menu","Mirasvit मेनू"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,एक्सटेंशन
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit एक्सटेंशन"
+Developer,डेवलपर
+"Menu Settings","मेनू सेटिंग्स"
+"Enable Mirasvit Menu","Mirasvit मेनू सक्षम करें"
+"The menu is visible, if you have at least two active Mirasvit extensions.","यदि आपके पास कम से कम दो सक्रिय Mirasvit एक्सटेंशन हैं तो मेनू दिखाई देता है।"
+"Additional CSS Styles","अतिरिक्त CSS स्टाइल्स"
+"AI Configuration","AI कॉन्फ़िगरेशन"
+"Modules using AI","AI का उपयोग करने वाले मॉड्यूल"
+"Enable AI features","AI सुविधाएं सक्षम करें"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Mirasvit एक्सटेंशन में सभी AI-संचालित सुविधाओं को वैश्विक रूप से सक्षम या अक्षम करें।<br>अक्षम होने पर, व्यक्तिगत प्रदाता सेटिंग्स या अन्य मॉड्यूल में AI सेटिंग्स की परवाह किए बिना सभी AI कार्यक्षमता अनुपलब्ध होगी।"
+"Default AI provider","डिफ़ॉल्ट AI प्रदाता"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","एकाधिक प्रदाता कॉन्फ़िगर होने पर उपयोग करने के लिए प्राथमिक AI प्रदाता चुनें।<br>जब कोई विशिष्ट प्रदाता अनुरोध नहीं किया जाता है तो इसका उपयोग सभी AI संचालन के लिए फ़ॉलबैक प्रदाता के रूप में किया जाएगा।"
+"Request timeout","अनुरोध टाइमआउट"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","AI प्रदाता प्रतिक्रियाओं की प्रतीक्षा के लिए सेकंड में अधिकतम समय।<br> टाइमआउट अक्षम करने के लिए खाली छोड़ें।<br> यह सेटिंग अन्य मॉड्यूल में सभी AI सुविधाओं को प्रभावित करेगी।"
+"Maximum tokens per request","प्रति अनुरोध अधिकतम टोकन"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","एकल AI अनुरोध में उत्पन्न करने के लिए टोकन की अधिकतम संख्या। उच्च मान लंबी प्रतिक्रियाओं की अनुमति देते हैं लेकिन लागत बढ़ाते हैं।<br> सीमा अक्षम करने के लिए खाली छोड़ें।<br> विभिन्न प्रदाताओं और मॉडलों की अपनी सीमाएं हैं।<br> यह सेटिंग अन्य मॉड्यूल में सभी AI सुविधाओं को प्रभावित करेगी।"
+"Default temperature","डिफ़ॉल्ट तापमान"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","AI प्रतिक्रियाओं में यादृच्छिकता को नियंत्रित करता है। कम मान अधिक सुसंगत परिणाम देते हैं, उच्च मान अधिक रचनात्मक।<br>उदाहरण:<br><code>0.1</code> - बहुत सुसंगत, तथ्यात्मक प्रतिक्रियाएं<br><code>0.7</code> - संतुलित रचनात्मकता और सुसंगतता<br><code>1.0</code> - अत्यधिक रचनात्मक और विविध प्रतिक्रियाएं।<br>यदि खाली है तो डिफ़ॉल्ट तापमान 0.7 का उपयोग किया जाएगा।<br>यह सेटिंग अन्य मॉड्यूल में सभी AI सुविधाओं को प्रभावित करेगी।<br>कुछ एक्सटेंशन इस सेटिंग को ओवरराइड कर सकते हैं।"
+"Debug mode","डीबग मोड"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","डीबगिंग उद्देश्यों के लिए AI अनुरोधों और प्रतिक्रियाओं का विस्तृत लॉगिंग सक्षम करें।<br>चेतावनी: यह संवेदनशील डेटा लॉग कर सकता है और प्रदर्शन को प्रभावित कर सकता है। केवल विकास के लिए उपयोग करें।"
+"OpenAI Configuration","OpenAI कॉन्फ़िगरेशन"
+"Enable OpenAI provider","OpenAI प्रदाता सक्षम करें"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","OpenAI को उपलब्ध AI प्रदाता के रूप में सक्षम करें। वैध API कुंजी कॉन्फ़िगरेशन आवश्यक है।"
+"OpenAI API key","OpenAI API कुंजी"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","आपकी OpenAI API कुंजी जो 'sk-' से शुरू होती है। यह कुंजी एन्क्रिप्टेड है और सुरक्षित रूप से संग्रहीत है।<br>अपनी API कुंजी यहां से प्राप्त करें: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","डिफ़ॉल्ट OpenAI मॉडल"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","AI संचालन के लिए डिफ़ॉल्ट OpenAI मॉडल चुनें। विभिन्न मॉडलों में अलग-अलग क्षमताएं और लागत हैं।"
+"Claude Configuration","Claude कॉन्फ़िगरेशन"
+"Enable Claude provider","Claude प्रदाता सक्षम करें"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Anthropic Claude को उपलब्ध AI प्रदाता के रूप में सक्षम करें। वैध API कुंजी कॉन्फ़िगरेशन आवश्यक है।"
+"Claude API key","Claude API कुंजी"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","आपकी Anthropic Claude API कुंजी जो 'sk-ant-' से शुरू होती है। यह कुंजी एन्क्रिप्टेड है और सुरक्षित रूप से संग्रहीत है।<br>अपनी API कुंजी यहां से प्राप्त करें: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","डिफ़ॉल्ट Claude मॉडल"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","AI संचालन के लिए डिफ़ॉल्ट Claude मॉडल चुनें। विभिन्न मॉडलों में अलग-अलग क्षमताएं और लागत हैं।"
+"Google Gemini Configuration","Google Gemini कॉन्फ़िगरेशन"
+"Enable Gemini provider","Gemini प्रदाता सक्षम करें"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Google Gemini को उपलब्ध AI प्रदाता के रूप में सक्षम करें। वैध API कुंजी कॉन्फ़िगरेशन आवश्यक है।"
+"Gemini API key","Gemini API कुंजी"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","आपकी Google AI Studio API कुंजी जो 'AIza' से शुरू होती है। यह कुंजी एन्क्रिप्टेड है और सुरक्षित रूप से संग्रहीत है।<br>अपनी API कुंजी यहां से प्राप्त करें: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","डिफ़ॉल्ट Gemini मॉडल"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","AI संचालन के लिए डिफ़ॉल्ट Gemini मॉडल चुनें। विभिन्न मॉडलों में अलग-अलग क्षमताएं और लागत हैं।"
+"Determine visitor's country, city, and timezone based on their IP address.","उनके IP पते के आधार पर विज़िटर का देश, शहर और समय क्षेत्र निर्धारित करें।"
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","स्वचालित अपडेट के लिए मुफ्त <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind खाता</a> आवश्यक है (साप्ताहिक जांच)।"
+"Used by:","द्वारा उपयोग किया गया:"
+message,संदेश
+"Error downloading database: %1","डेटाबेस डाउनलोड करने में त्रुटि: %1"
+"MaxMind credentials not configured","MaxMind क्रेडेंशियल कॉन्फ़िगर नहीं हैं"
+"Failed to download remote hash","रिमोट हैश डाउनलोड करने में विफल"
+"Database is up to date","डेटाबेस अप टू डेट है"
+"Failed to download and extract database","डेटाबेस डाउनलोड और एक्सट्रैक्ट करने में विफल"
+"Database updated successfully","डेटाबेस सफलतापूर्वक अपडेट किया गया"
+"Download failed: %1","डाउनलोड विफल: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","यह एक्सटेंशन MaxMind द्वारा बनाए गए GeoLite2 डेटा का उपयोग करता है।"
+"Database available (auto-update enabled)","डेटाबेस उपलब्ध (ऑटो-अपडेट सक्षम)"
+"Database available (auto-update disabled)","डेटाबेस उपलब्ध (ऑटो-अपडेट अक्षम)"
+Configure,कॉन्फ़िगर करें
+"Database not available","डेटाबेस उपलब्ध नहीं है"
+"Database status:","डेटाबेस स्थिति:"
+"Not available","उपलब्ध नहीं"
+"Credentials configured. Click the button below to download the database.","क्रेडेंशियल कॉन्फ़िगर किए गए। डेटाबेस डाउनलोड करने के लिए नीचे दिए गए बटन पर क्लिक करें।"
+"Download database","डेटाबेस डाउनलोड करें"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","स्वचालित डाउनलोड सक्षम करने के लिए ऊपर MaxMind क्रेडेंशियल दर्ज करें, या बंडल किए गए डेटाबेस को इंस्टॉल करने के लिए setup:upgrade चलाएं।"
+"Available (auto-update disabled)","उपलब्ध (ऑटो-अपडेट अक्षम)"
+Version:,संस्करण:
+Size:,आकार:
+"Enter MaxMind credentials above to enable automatic weekly updates.","स्वचालित साप्ताहिक अपडेट सक्षम करने के लिए ऊपर MaxMind क्रेडेंशियल दर्ज करें।"
+"Available (auto-update enabled)","उपलब्ध (ऑटो-अपडेट सक्षम)"
+"Update database","डेटाबेस अपडेट करें"
+"Database updated successfully.","डेटाबेस सफलतापूर्वक अपडेट किया गया।"
+Notice,सूचना
+"Database is up to date.","डेटाबेस अप टू डेट है।"
+"An error occurred while downloading the database.","डेटाबेस डाउनलोड करते समय एक त्रुटि हुई।"
+"IP Geolocation","IP जियोलोकेशन"
+"Account ID","खाता ID"
+"License Key","लाइसेंस कुंजी"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">लाइसेंस कुंजी जनरेट करें</a>"
+Cron,Cron
+Delete,हटाएं
+"Delete items","आइटम हटाएं"
+"Are you sure you want to delete selected items?","क्या आप वाकई चयनित आइटम हटाना चाहते हैं?"
+ID,ID
+Code,कोड
+Messages,संदेश
+Created,बनाया गया
+Scheduled,निर्धारित
+Finished,समाप्त

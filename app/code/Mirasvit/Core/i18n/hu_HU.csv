@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","A(z) %1 szolgáltatás nincs megfelelően konfigurálva vagy nem elérhető"
+"Invalid AI request data","Érvénytelen AI kérési adatok"
+"Request prompt cannot be empty","A kérés promptja nem lehet üres"
+"Claude API error","Claude API hiba"
+"Invalid Claude API response: missing content","Érvénytelen Claude API válasz: hiányzó tartalom"
+"Empty content received from Claude API","Üres tartalom érkezett a Claude API-tól"
+"Gemini API error","Gemini API hiba"
+"Invalid Gemini API response: missing candidates","Érvénytelen Gemini API válasz: hiányzó jelöltek"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","A Gemini API válasz csonkolva lett, mert elérte a max_tokens korlátot. Fontolja meg a max_tokens beállítás növelését vagy rövidebb prompt használatát."
+"Empty content received from Gemini API","Üres tartalom érkezett a Gemini API-tól"
+"AI services are disabled in configuration","Az AI szolgáltatások le vannak tiltva a konfigurációban"
+"No default AI provider configured","Nincs alapértelmezett AI szolgáltató konfigurálva"
+"No available AI provider for request validation","Nincs elérhető AI szolgáltató a kérés validálásához"
+"Request validation failed: %1","A kérés validálása sikertelen: %1"
+"All AI providers failed. Last error: %1","Minden AI szolgáltató sikertelen. Utolsó hiba: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Nem támogatott AI szolgáltató: %1. Támogatott szolgáltatók: %2"
+"Service class %1 must extend %2","A(z) %1 szolgáltatásosztálynak ki kell terjesztenie a(z) %2 osztályt"
+"Failed to create AI service for provider %1: %2","Nem sikerült létrehozni AI szolgáltatást a(z) %1 szolgáltatóhoz: %2"
+"Not configured","Nincs konfigurálva"
+Unknown,Ismeretlen
+"Unknown API error","Ismeretlen API hiba"
+"Temperature must be between 0 and 2","A hőmérsékletnek 0 és 2 között kell lennie"
+"Max tokens must be greater than 0","A maximális tokenszámnak nagyobbnak kell lennie 0-nál"
+"Frequency penalty must be between -2 and 2","Az ismétlődési büntetésnek -2 és 2 között kell lennie"
+"Format output as JSON.","Kimenet formázása JSON-ként."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","Az OpenAI API hiányos választ adott vissza, mert a modell kontextusablak tokenjei számát túllépték."
+"OpenAI API returned no content in the response.","Az OpenAI API nem adott vissza tartalmat a válaszban."
+"Not Installed","Nincs telepítve"
+"A total of %1 record(s) have been deleted.","Összesen %1 rekord törölve."
+"The record has been removed.","A rekord eltávolítva."
+"Disallowed file type.","Nem engedélyezett fájltípus."
+"Can't remove folder %s","A(z) %s mappa nem távolítható el"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","A bővítmény nem tartalmazza az összes szükséges fájlt. Kérjük, telepítse újra a bővítményt az eredeti csomagból."
+"Extension Information","Bővítmény információk"
+Status,Állapot
+Other,Egyéb
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","A Cron a Magentóhoz nem fut. Cron feladat beállításához kövesse a linket: %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","A(z) [%1] cron feladatok nem futnak. Kérjük, ellenőrizze a(z) %2 táblát a lefagyott feladatok miatt és távolítsa el őket."
+Remove,Eltávolítás
+Error,Hiba
+Missed,Kihagyott
+Running,Fut
+Pending,Függőben
+Success,Sikeres
+"Server gmt time","Szerver GMT idő"
+"Last job","Utolsó feladat"
+Executed,Végrehajtva
+none,nincs
+"Cron setup","Cron beállítás"
+"Cron Jobs","Cron feladatok"
+"No AI-enabled modules are currently active.","Jelenleg nincsenek aktív AI-képes modulok."
+"%1 module(s) using AI functionality:","%1 modul használja az AI funkcionalitást:"
+Provider:,Szolgáltató:
+ai_provider,ai_provider
+"You have the latest version","A legújabb verzióval rendelkezik"
+"New version %1 is available","Új verzió érhető el: %1"
+"View %1 details (opens in new window)","%1 részletek megtekintése (új ablakban nyílik meg)"
+Details,Részletek
+"View %1 user guide (opens in new window)","%1 felhasználói útmutató megtekintése (új ablakban nyílik meg)"
+"User Guide","Felhasználói útmutató"
+"View %1 changelog (opens in new window)","%1 változásnapló megtekintése (új ablakban nyílik meg)"
+Changelog,Változásnapló
+"Request new feature for %1 (opens in new window)","Új funkció kérése a(z) %1-hoz (új ablakban nyílik meg)"
+"Request New Feature","Új funkció kérése"
+"Installed Extensions","Telepített bővítmények"
+"Check changes","Változások ellenőrzése"
+"Validate All Extensions","Összes bővítmény validálása"
+"Suggest Improvement","Fejlesztés javaslata"
+"%1 (opens in new window)","%1 (új ablakban nyílik meg)"
+"More Details","További részletek"
+"Developer settings","Fejlesztői beállítások"
+"AI Provider Status","AI szolgáltató állapota"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Jelenleg nincsenek engedélyezett AI szolgáltatók. Kérjük, konfigurálja az AI szolgáltatókat itt: %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1/%2 szolgáltató engedélyezve. A szolgáltatókat itt kezelheti: %3."
+Enabled,Engedélyezve
+Disabled,Letiltva
+"All tests have been passed","Minden teszt sikeresen teljesült"
+Module,Modul
+Test,Teszt
+"How to fix","Javítás módja"
+Warning,Figyelmeztetés
+Info,Információ
+Failed,Sikertelen
+Today,Ma
+"Last 7 days","Utolsó 7 nap"
+"Last 30 days","Utolsó 30 nap"
+"Last 365 days","Utolsó 365 nap"
+"Mirasvit Extensions Validator","Mirasvit bővítmény validátor"
+"Mirasvit Menu","Mirasvit menü"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Bővítmények
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit bővítmények"
+Developer,Fejlesztő
+"Menu Settings","Menü beállítások"
+"Enable Mirasvit Menu","Mirasvit menü engedélyezése"
+"The menu is visible, if you have at least two active Mirasvit extensions.","A menü látható, ha legalább két aktív Mirasvit bővítménnyel rendelkezik."
+"Additional CSS Styles","További CSS stílusok"
+"AI Configuration","AI konfiguráció"
+"Modules using AI","AI-t használó modulok"
+"Enable AI features","AI funkciók engedélyezése"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Globálisan engedélyezze vagy tiltsa le az összes AI-alapú funkciót a Mirasvit bővítményekben.<br>Letiltás esetén az összes AI funkcionalitás elérhetetlen lesz, függetlenül az egyéni szolgáltatói beállításoktól vagy más modulok AI beállításaitól."
+"Default AI provider","Alapértelmezett AI szolgáltató"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Válassza ki az elsődleges AI szolgáltatót, amelyet több szolgáltató konfigurálásakor használ.<br>Ez lesz a tartalék szolgáltató minden AI művelethez, amikor nem kérnek konkrét szolgáltatót."
+"Request timeout","Kérés időtúllépés"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Maximális várakozási idő másodpercben az AI szolgáltató válaszaira.<br> Hagyja üresen az időtúllépés letiltásához.<br> Ez a beállítás az összes AI funkciót érinti más modulokban."
+"Maximum tokens per request","Maximális tokenszám kérésenként"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Egyetlen AI kérésben generálandó tokenek maximális száma. A magasabb értékek hosszabb válaszokat tesznek lehetővé, de növelik a költségeket.<br> Hagyja üresen a korlátozás letiltásához.<br> A különböző szolgáltatóknak és modelleknek saját korlátaik vannak.<br> Ez a beállítás az összes AI funkciót érinti más modulokban."
+"Default temperature","Alapértelmezett hőmérséklet"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Az AI válaszok véletlenszerűségét szabályozza. Az alacsonyabb értékek konzisztensebb eredményeket, a magasabb értékek kreatívabbakat adnak.<br>Példa:<br><code>0.1</code> - nagyon konzisztens, tényszerű válaszok<br><code>0.7</code> - kiegyensúlyozott kreativitás és konzisztencia<br><code>1.0</code> - nagyon kreatív és változatos válaszok.<br>Ha üres, az alapértelmezett 0.7 hőmérséklet lesz használva.<br>Ez a beállítás az összes AI funkciót érinti más modulokban.<br>Egyes bővítmények felülírhatják ezt a beállítást."
+"Debug mode","Hibakeresési mód"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Engedélyezze az AI kérések és válaszok részletes naplózását hibakeresési célokra.<br>Figyelmeztetés: Ez érzékeny adatokat naplózhat és befolyásolhatja a teljesítményt. Csak fejlesztéshez használja."
+"OpenAI Configuration","OpenAI konfiguráció"
+"Enable OpenAI provider","OpenAI szolgáltató engedélyezése"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Engedélyezze az OpenAI-t elérhető AI szolgáltatóként. Érvényes API kulcs konfiguráció szükséges."
+"OpenAI API key","OpenAI API kulcs"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Az OpenAI API kulcsa, amely 'sk-' előtaggal kezdődik. Ez a kulcs titkosítva és biztonságosan tárolva van.<br>Szerezze be API kulcsát innen: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Alapértelmezett OpenAI modell"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Válassza ki az alapértelmezett OpenAI modellt az AI műveletekhez. A különböző modellek eltérő képességekkel és költségekkel rendelkeznek."
+"Claude Configuration","Claude konfiguráció"
+"Enable Claude provider","Claude szolgáltató engedélyezése"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Engedélyezze az Anthropic Claude-ot elérhető AI szolgáltatóként. Érvényes API kulcs konfiguráció szükséges."
+"Claude API key","Claude API kulcs"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Az Anthropic Claude API kulcsa, amely 'sk-ant-' előtaggal kezdődik. Ez a kulcs titkosítva és biztonságosan tárolva van.<br>Szerezze be API kulcsát innen: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Alapértelmezett Claude modell"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Válassza ki az alapértelmezett Claude modellt az AI műveletekhez. A különböző modellek eltérő képességekkel és költségekkel rendelkeznek."
+"Google Gemini Configuration","Google Gemini konfiguráció"
+"Enable Gemini provider","Gemini szolgáltató engedélyezése"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Engedélyezze a Google Geminit elérhető AI szolgáltatóként. Érvényes API kulcs konfiguráció szükséges."
+"Gemini API key","Gemini API kulcs"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","A Google AI Studio API kulcsa, amely 'AIza' előtaggal kezdődik. Ez a kulcs titkosítva és biztonságosan tárolva van.<br>Szerezze be API kulcsát innen: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Alapértelmezett Gemini modell"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Válassza ki az alapértelmezett Gemini modellt az AI műveletekhez. A különböző modellek eltérő képességekkel és költségekkel rendelkeznek."
+"Determine visitor's country, city, and timezone based on their IP address.","Határozza meg a látogató országát, városát és időzónáját az IP-címe alapján."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Az automatikus frissítésekhez ingyenes <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind fiók</a> szükséges (heti ellenőrzés)."
+"Used by:","Használja:"
+message,üzenet
+"Error downloading database: %1","Hiba az adatbázis letöltésekor: %1"
+"MaxMind credentials not configured","MaxMind hitelesítő adatok nincsenek beállítva"
+"Failed to download remote hash","A távoli hash letöltése sikertelen"
+"Database is up to date","Az adatbázis naprakész"
+"Failed to download and extract database","Az adatbázis letöltése és kicsomagolása sikertelen"
+"Database updated successfully","Az adatbázis sikeresen frissítve"
+"Download failed: %1","Letöltés sikertelen: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Ez a bővítmény a MaxMind által létrehozott GeoLite2 adatokat használja."
+"Database available (auto-update enabled)","Adatbázis elérhető (automatikus frissítés engedélyezve)"
+"Database available (auto-update disabled)","Adatbázis elérhető (automatikus frissítés letiltva)"
+Configure,Beállítás
+"Database not available","Adatbázis nem érhető el"
+"Database status:","Adatbázis állapota:"
+"Not available","Nem érhető el"
+"Credentials configured. Click the button below to download the database.","Hitelesítő adatok beállítva. Kattintson az alábbi gombra az adatbázis letöltéséhez."
+"Download database","Adatbázis letöltése"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Adja meg a MaxMind hitelesítő adatokat fent az automatikus letöltések engedélyezéséhez, vagy futtassa a setup:upgrade parancsot a csomagolt adatbázis telepítéséhez."
+"Available (auto-update disabled)","Elérhető (automatikus frissítés letiltva)"
+Version:,Verzió:
+Size:,Méret:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Adja meg a MaxMind hitelesítő adatokat fent az automatikus heti frissítések engedélyezéséhez."
+"Available (auto-update enabled)","Elérhető (automatikus frissítés engedélyezve)"
+"Update database","Adatbázis frissítése"
+"Database updated successfully.","Az adatbázis sikeresen frissítve."
+Notice,Értesítés
+"Database is up to date.","Az adatbázis naprakész."
+"An error occurred while downloading the database.","Hiba történt az adatbázis letöltésekor."
+"IP Geolocation","IP geolokáció"
+"Account ID","Fiók azonosító"
+"License Key","Licenckulcs"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Licenckulcs generálása</a>"
+Cron,Cron
+Delete,Törlés
+"Delete items","Elemek törlése"
+"Are you sure you want to delete selected items?","Biztosan törölni szeretné a kiválasztott elemeket?"
+ID,ID
+Code,Kód
+Messages,Üzenetek
+Created,Létrehozva
+Scheduled,Ütemezve
+Finished,Befejezve

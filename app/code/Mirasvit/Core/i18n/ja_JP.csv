@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1 サービスが正しく設定されていないか、利用できません"
+"Invalid AI request data","無効なAIリクエストデータ"
+"Request prompt cannot be empty","リクエストのプロンプトは空にできません"
+"Claude API error","Claude APIエラー"
+"Invalid Claude API response: missing content","無効なClaude APIレスポンス：コンテンツがありません"
+"Empty content received from Claude API","Claude APIから空のコンテンツを受信しました"
+"Gemini API error","Gemini APIエラー"
+"Invalid Gemini API response: missing candidates","無効なGemini APIレスポンス：候補がありません"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","max_tokens制限に達したため、Gemini APIレスポンスが切り捨てられました。max_tokens設定を増やすか、より短いプロンプトを使用することを検討してください。"
+"Empty content received from Gemini API","Gemini APIから空のコンテンツを受信しました"
+"AI services are disabled in configuration","設定でAIサービスが無効になっています"
+"No default AI provider configured","デフォルトのAIプロバイダーが設定されていません"
+"No available AI provider for request validation","リクエスト検証に利用可能なAIプロバイダーがありません"
+"Request validation failed: %1","リクエストの検証に失敗しました：%1"
+"All AI providers failed. Last error: %1","すべてのAIプロバイダーが失敗しました。最後のエラー：%1"
+"Unsupported AI provider: %1. Supported providers: %2","サポートされていないAIプロバイダー：%1。サポートされているプロバイダー：%2"
+"Service class %1 must extend %2","サービスクラス %1 は %2 を拡張する必要があります"
+"Failed to create AI service for provider %1: %2","プロバイダー %1 のAIサービスの作成に失敗しました：%2"
+"Not configured","未設定"
+Unknown,不明
+"Unknown API error","不明なAPIエラー"
+"Temperature must be between 0 and 2","温度は0から2の間である必要があります"
+"Max tokens must be greater than 0","最大トークン数は0より大きい必要があります"
+"Frequency penalty must be between -2 and 2","頻度ペナルティは-2から2の間である必要があります"
+"Format output as JSON.","出力をJSON形式にフォーマットします。"
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","モデルのコンテキストウィンドウのトークン数を超えたため、OpenAI APIは不完全なレスポンスを返しました。"
+"OpenAI API returned no content in the response.","OpenAI APIはレスポンスにコンテンツを返しませんでした。"
+"Not Installed","未インストール"
+"A total of %1 record(s) have been deleted.","合計 %1 件のレコードが削除されました。"
+"The record has been removed.","レコードが削除されました。"
+"Disallowed file type.","許可されていないファイルタイプです。"
+"Can't remove folder %s","フォルダ %s を削除できません"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","拡張機能に必要なファイルがすべて含まれていません。元のパッケージから拡張機能を再インストールしてください。"
+"Extension Information","拡張機能情報"
+Status,ステータス
+Other,その他
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","MagentoのCronが実行されていません。Cronジョブを設定するには、リンク %1 をご参照ください"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cronジョブ [%1] が実行されていません。テーブル %2 でフリーズしたジョブを確認し、削除してください。"
+Remove,削除
+Error,エラー
+Missed,未実行
+Running,実行中
+Pending,保留中
+Success,成功
+"Server gmt time","サーバーGMT時間"
+"Last job","最後のジョブ"
+Executed,実行済み
+none,なし
+"Cron setup","Cron設定"
+"Cron Jobs","Cronジョブ"
+"No AI-enabled modules are currently active.","現在、AI対応モジュールがアクティブになっていません。"
+"%1 module(s) using AI functionality:","%1 個のモジュールがAI機能を使用しています："
+Provider:,プロバイダー：
+ai_provider,ai_provider
+"You have the latest version","最新バージョンです"
+"New version %1 is available","新しいバージョン %1 が利用可能です"
+"View %1 details (opens in new window)","%1 の詳細を表示（新しいウィンドウで開きます）"
+Details,詳細
+"View %1 user guide (opens in new window)","%1 のユーザーガイドを表示（新しいウィンドウで開きます）"
+"User Guide","ユーザーガイド"
+"View %1 changelog (opens in new window)","%1 の変更履歴を表示（新しいウィンドウで開きます）"
+Changelog,変更履歴
+"Request new feature for %1 (opens in new window)","%1 の新機能をリクエスト（新しいウィンドウで開きます）"
+"Request New Feature","新機能をリクエスト"
+"Installed Extensions","インストール済み拡張機能"
+"Check changes","変更を確認"
+"Validate All Extensions","すべての拡張機能を検証"
+"Suggest Improvement","改善を提案"
+"%1 (opens in new window)","%1（新しいウィンドウで開きます）"
+"More Details","詳細情報"
+"Developer settings","開発者設定"
+"AI Provider Status","AIプロバイダーステータス"
+"No AI providers are currently enabled. Please configure AI providers in %1.","現在、AIプロバイダーが有効になっていません。%1 でAIプロバイダーを設定してください。"
+"%1 of %2 providers enabled. You can manage providers in %3.","%2 個中 %1 個のプロバイダーが有効です。%3 でプロバイダーを管理できます。"
+Enabled,有効
+Disabled,無効
+"All tests have been passed","すべてのテストに合格しました"
+Module,モジュール
+Test,テスト
+"How to fix","修正方法"
+Warning,警告
+Info,情報
+Failed,失敗
+Today,今日
+"Last 7 days","過去7日間"
+"Last 30 days","過去30日間"
+"Last 365 days","過去365日間"
+"Mirasvit Extensions Validator","Mirasvit拡張機能バリデーター"
+"Mirasvit Menu","Mirasvitメニュー"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,拡張機能
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit拡張機能"
+Developer,開発者
+"Menu Settings","メニュー設定"
+"Enable Mirasvit Menu","Mirasvitメニューを有効にする"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Mirasvit拡張機能が2つ以上アクティブな場合、メニューが表示されます。"
+"Additional CSS Styles","追加CSSスタイル"
+"AI Configuration","AI設定"
+"Modules using AI","AIを使用するモジュール"
+"Enable AI features","AI機能を有効にする"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Mirasvit拡張機能全体でAI機能をグローバルに有効または無効にします。<br>無効にすると、個々のプロバイダー設定や他のモジュールのAI設定に関係なく、すべてのAI機能が利用できなくなります。"
+"Default AI provider","デフォルトAIプロバイダー"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","複数のプロバイダーが設定されている場合に使用するプライマリAIプロバイダーを選択します。<br>特定のプロバイダーがリクエストされない場合、すべてのAI操作のフォールバックプロバイダーとして使用されます。"
+"Request timeout","リクエストタイムアウト"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","AIプロバイダーのレスポンスを待つ最大時間（秒）。<br> タイムアウトを無効にするには空のままにしてください。<br> この設定は他のモジュールのすべてのAI機能に影響します。"
+"Maximum tokens per request","リクエストあたりの最大トークン数"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","単一のAIリクエストで生成するトークンの最大数。値が大きいほど長いレスポンスが可能ですが、コストが増加します。<br> 制限を無効にするには空のままにしてください。<br> プロバイダーやモデルによって独自の制限があります。<br> この設定は他のモジュールのすべてのAI機能に影響します。"
+"Default temperature","デフォルト温度"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","AIレスポンスのランダム性を制御します。低い値はより一貫性のある結果を、高い値はより創造的な結果を生成します。<br>例：<br><code>0.1</code> - 非常に一貫性のある事実に基づいたレスポンス<br><code>0.7</code> - 創造性と一貫性のバランス<br><code>1.0</code> - 非常に創造的で多様なレスポンス。<br>空の場合、デフォルト温度0.7が使用されます。<br>この設定は他のモジュールのすべてのAI機能に影響します。<br>一部の拡張機能はこの設定を上書きする場合があります。"
+"Debug mode","デバッグモード"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","デバッグ目的でAIリクエストとレスポンスの詳細なログを有効にします。<br>警告：これにより機密データがログに記録され、パフォーマンスに影響する可能性があります。開発用途のみに使用してください。"
+"OpenAI Configuration","OpenAI設定"
+"Enable OpenAI provider","OpenAIプロバイダーを有効にする"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","OpenAIを利用可能なAIプロバイダーとして有効にします。有効なAPIキーの設定が必要です。"
+"OpenAI API key","OpenAI APIキー"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","'sk-'で始まるOpenAI APIキー。このキーは暗号化され、安全に保存されます。<br>APIキーの取得先：<a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","デフォルトOpenAIモデル"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","AI操作用のデフォルトOpenAIモデルを選択します。モデルによって機能とコストが異なります。"
+"Claude Configuration","Claude設定"
+"Enable Claude provider","Claudeプロバイダーを有効にする"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Anthropic Claudeを利用可能なAIプロバイダーとして有効にします。有効なAPIキーの設定が必要です。"
+"Claude API key","Claude APIキー"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","'sk-ant-'で始まるAnthropic Claude APIキー。このキーは暗号化され、安全に保存されます。<br>APIキーの取得先：<a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","デフォルトClaudeモデル"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","AI操作用のデフォルトClaudeモデルを選択します。モデルによって機能とコストが異なります。"
+"Google Gemini Configuration","Google Gemini設定"
+"Enable Gemini provider","Geminiプロバイダーを有効にする"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Google Geminiを利用可能なAIプロバイダーとして有効にします。有効なAPIキーの設定が必要です。"
+"Gemini API key","Gemini APIキー"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","'AIza'で始まるGoogle AI Studio APIキー。このキーは暗号化され、安全に保存されます。<br>APIキーの取得先：<a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","デフォルトGeminiモデル"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","AI操作用のデフォルトGeminiモデルを選択します。モデルによって機能とコストが異なります。"
+"Determine visitor's country, city, and timezone based on their IP address.","訪問者のIPアドレスに基づいて、国、都市、タイムゾーンを判定します。"
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","自動更新には無料の<a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMindアカウント</a>が必要です（週次チェック）。"
+"Used by:","使用先："
+message,メッセージ
+"Error downloading database: %1","データベースのダウンロードエラー：%1"
+"MaxMind credentials not configured","MaxMind認証情報が設定されていません"
+"Failed to download remote hash","リモートハッシュのダウンロードに失敗しました"
+"Database is up to date","データベースは最新です"
+"Failed to download and extract database","データベースのダウンロードと展開に失敗しました"
+"Database updated successfully","データベースが正常に更新されました"
+"Download failed: %1","ダウンロード失敗：%1"
+"This extension uses GeoLite2 Data created by MaxMind.","この拡張機能はMaxMindが作成したGeoLite2データを使用しています。"
+"Database available (auto-update enabled)","データベース利用可能（自動更新有効）"
+"Database available (auto-update disabled)","データベース利用可能（自動更新無効）"
+Configure,設定
+"Database not available","データベースが利用できません"
+"Database status:","データベースの状態："
+"Not available","利用不可"
+"Credentials configured. Click the button below to download the database.","認証情報が設定されました。下のボタンをクリックしてデータベースをダウンロードしてください。"
+"Download database","データベースをダウンロード"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","自動ダウンロードを有効にするには上記にMaxMind認証情報を入力するか、setup:upgradeを実行してバンドルされたデータベースをインストールしてください。"
+"Available (auto-update disabled)","利用可能（自動更新無効）"
+Version:,バージョン：
+Size:,サイズ：
+"Enter MaxMind credentials above to enable automatic weekly updates.","上記にMaxMind認証情報を入力して、自動週次更新を有効にしてください。"
+"Available (auto-update enabled)","利用可能（自動更新有効）"
+"Update database","データベースを更新"
+"Database updated successfully.","データベースが正常に更新されました。"
+Notice,通知
+"Database is up to date.","データベースは最新です。"
+"An error occurred while downloading the database.","データベースのダウンロード中にエラーが発生しました。"
+"IP Geolocation","IPジオロケーション"
+"Account ID","アカウントID"
+"License Key","ライセンスキー"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">ライセンスキーを生成</a>"
+Cron,Cron
+Delete,削除
+"Delete items","アイテムを削除"
+"Are you sure you want to delete selected items?","選択したアイテムを削除してもよろしいですか？"
+ID,ID
+Code,コード
+Messages,メッセージ
+Created,作成日時
+Scheduled,スケジュール済み
+Finished,完了

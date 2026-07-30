@@ -1,0 +1,181 @@
+"%1 service is not properly configured or available","%1-tjenesten er ikke riktig konfigurert eller tilgjengelig"
+"Invalid AI request data","Ugyldige AI-forespørselsdata"
+"Request prompt cannot be empty","Forespørselsprompten kan ikke være tom"
+"Claude API error","Claude API-feil"
+"Invalid Claude API response: missing content","Ugyldig Claude API-svar: mangler innhold"
+"Empty content received from Claude API","Tomt innhold mottatt fra Claude API"
+"Gemini API error","Gemini API-feil"
+"Invalid Gemini API response: missing candidates","Ugyldig Gemini API-svar: mangler kandidater"
+"Gemini API response was truncated because the max_tokens limit was reached. Consider increasing the max_tokens setting or using a shorter prompt.","Gemini API-svaret ble avkortet fordi max_tokens-grensen ble nådd. Vurder å øke max_tokens-innstillingen eller bruke en kortere prompt."
+"Empty content received from Gemini API","Tomt innhold mottatt fra Gemini API"
+"AI services are disabled in configuration","AI-tjenester er deaktivert i konfigurasjonen"
+"No default AI provider configured","Ingen standard AI-leverandør konfigurert"
+"No available AI provider for request validation","Ingen tilgjengelig AI-leverandør for forespørselsvalidering"
+"Request validation failed: %1","Forespørselsvalidering mislyktes: %1"
+"All AI providers failed. Last error: %1","Alle AI-leverandører mislyktes. Siste feil: %1"
+"Unsupported AI provider: %1. Supported providers: %2","Ikke-støttet AI-leverandør: %1. Støttede leverandører: %2"
+"Service class %1 must extend %2","Tjenesteklassen %1 må utvide %2"
+"Failed to create AI service for provider %1: %2","Kunne ikke opprette AI-tjeneste for leverandør %1: %2"
+"Not configured","Ikke konfigurert"
+Unknown,Ukjent
+"Unknown API error","Ukjent API-feil"
+"Temperature must be between 0 and 2","Temperaturen må være mellom 0 og 2"
+"Max tokens must be greater than 0","Maks tokens må være større enn 0"
+"Frequency penalty must be between -2 and 2","Frekvensstraff må være mellom -2 og 2"
+"Format output as JSON.","Formater utdata som JSON."
+"OpenAI API returned an incomplete response because the model's context window tokens number was exceeded.","OpenAI API returnerte et ufullstendig svar fordi modellens kontekstvindu-tokens ble overskredet."
+"OpenAI API returned no content in the response.","OpenAI API returnerte ikke noe innhold i svaret."
+"Not Installed","Ikke installert"
+"A total of %1 record(s) have been deleted.","Totalt %1 post(er) har blitt slettet."
+"The record has been removed.","Posten har blitt fjernet."
+"Disallowed file type.","Ikke tillatt filtype."
+"Can't remove folder %s","Kan ikke fjerne mappe %s"
+"Extension does not contain all necessary files. Please reinstall the extension from original package.","Utvidelsen inneholder ikke alle nødvendige filer. Vennligst reinstaller utvidelsen fra den originale pakken."
+"Extension Information","Utvidelsesinformasjon"
+Status,Status
+Other,Annet
+"Advanced Reports","Advanced Reports"
+"Layered Navigation","Layered Navigation"
+"Cron for Magento is not running. To setup a cron job, follow the link %1","Cron for Magento kjører ikke. For å sette opp en cron-jobb, følg lenken %1"
+"Cron jobs [%1] are not running. Please check the table %2 for frozen jobs and remove them.","Cron-jobber [%1] kjører ikke. Vennligst sjekk tabellen %2 for frosne jobber og fjern dem."
+Remove,Fjern
+Error,Feil
+Missed,Savnet
+Running,Kjører
+Pending,Venter
+Success,Suksess
+"Server gmt time","Server GMT-tid"
+"Last job","Siste jobb"
+Executed,Utført
+none,ingen
+"Cron setup","Cron-oppsett"
+"Cron Jobs","Cron-jobber"
+"No AI-enabled modules are currently active.","Ingen AI-aktiverte moduler er aktive for øyeblikket."
+"%1 module(s) using AI functionality:","%1 modul(er) bruker AI-funksjonalitet:"
+Provider:,Leverandør:
+ai_provider,ai_provider
+"You have the latest version","Du har den nyeste versjonen"
+"New version %1 is available","Ny versjon %1 er tilgjengelig"
+"View %1 details (opens in new window)","Se %1-detaljer (åpnes i nytt vindu)"
+Details,Detaljer
+"View %1 user guide (opens in new window)","Se %1-brukerveiledning (åpnes i nytt vindu)"
+"User Guide","Brukerveiledning"
+"View %1 changelog (opens in new window)","Se %1-endringslogg (åpnes i nytt vindu)"
+Changelog,Endringslogg
+"Request new feature for %1 (opens in new window)","Be om ny funksjon for %1 (åpnes i nytt vindu)"
+"Request New Feature","Be om ny funksjon"
+"Installed Extensions","Installerte utvidelser"
+"Check changes","Sjekk endringer"
+"Validate All Extensions","Valider alle utvidelser"
+"Suggest Improvement","Foreslå forbedring"
+"%1 (opens in new window)","%1 (åpnes i nytt vindu)"
+"More Details","Flere detaljer"
+"Developer settings","Utviklerinnstillinger"
+"AI Provider Status","AI-leverandørstatus"
+"No AI providers are currently enabled. Please configure AI providers in %1.","Ingen AI-leverandører er aktivert for øyeblikket. Vennligst konfigurer AI-leverandører i %1."
+"%1 of %2 providers enabled. You can manage providers in %3.","%1 av %2 leverandører aktivert. Du kan administrere leverandører i %3."
+Enabled,Aktivert
+Disabled,Deaktivert
+"All tests have been passed","Alle tester har blitt bestått"
+Module,Modul
+Test,Test
+"How to fix","Hvordan fikse"
+Warning,Advarsel
+Info,Info
+Failed,Mislyktes
+Today,I dag
+"Last 7 days","Siste 7 dager"
+"Last 30 days","Siste 30 dager"
+"Last 365 days","Siste 365 dager"
+"Mirasvit Extensions Validator","Mirasvit utvidelsesvalidator"
+"Mirasvit Menu","Mirasvit-meny"
+Core,Core
+Mirasvit,Mirasvit
+Extensions,Utvidelser
+"Mirasvit Marketplace","Mirasvit Marketplace"
+"Mirasvit Extensions","Mirasvit-utvidelser"
+Developer,Utvikler
+"Menu Settings","Menyinnstillinger"
+"Enable Mirasvit Menu","Aktiver Mirasvit-meny"
+"The menu is visible, if you have at least two active Mirasvit extensions.","Menyen er synlig hvis du har minst to aktive Mirasvit-utvidelser."
+"Additional CSS Styles","Ekstra CSS-stiler"
+"AI Configuration","AI-konfigurasjon"
+"Modules using AI","Moduler som bruker AI"
+"Enable AI features","Aktiver AI-funksjoner"
+"Globally enable or disable all AI-powered features across Mirasvit extensions.<br>When disabled, all AI functionality will be unavailable regardless of individual provider settings or AI settings in other modules.","Aktiver eller deaktiver alle AI-drevne funksjoner globalt på tvers av Mirasvit-utvidelser.<br>Når deaktivert, vil all AI-funksjonalitet være utilgjengelig uavhengig av individuelle leverandørinnstillinger eller AI-innstillinger i andre moduler."
+"Default AI provider","Standard AI-leverandør"
+"Select the primary AI provider to use when multiple providers are configured.<br>This will be used as the fallback provider for all AI operations when no specific provider is requested.","Velg den primære AI-leverandøren som skal brukes når flere leverandører er konfigurert.<br>Denne vil bli brukt som reserveleverandør for alle AI-operasjoner når ingen spesifikk leverandør er forespurt."
+"Request timeout","Forespørselstidsavbrudd"
+"Maximum time in seconds to wait for AI provider responses.<br> Leave empty to disable timeout.<br> This setting will affect all AI features in other modules.","Maksimal tid i sekunder å vente på AI-leverandørsvar.<br> La stå tom for å deaktivere tidsavbrudd.<br> Denne innstillingen vil påvirke alle AI-funksjoner i andre moduler."
+"Maximum tokens per request","Maksimale tokens per forespørsel"
+"Maximum number of tokens to generate in a single AI request. Higher values allow longer responses but increase costs.<br> Leave empty to disable limitation.<br> Different providers and models has their own limits.<br> This setting will affect all AI features in other modules.","Maksimalt antall tokens å generere i en enkelt AI-forespørsel. Høyere verdier tillater lengre svar, men øker kostnadene.<br> La stå tom for å deaktivere begrensning.<br> Ulike leverandører og modeller har sine egne grenser.<br> Denne innstillingen vil påvirke alle AI-funksjoner i andre moduler."
+"Default temperature","Standard temperatur"
+"Controls randomness in AI responses. Lower values produce more consistent results, higher values more creative.<br>Example:<br><code>0.1</code> - very consistent, factual responses<br><code>0.7</code> - balanced creativity and consistency<br><code>1.0</code> - highly creative and varied responses.<br>If empty the default temperature 0.7 will be used.<br>This setting will affect all AI features in other modules.<br>Some extensions might override this setting.","Kontrollerer tilfeldighet i AI-svar. Lavere verdier gir mer konsistente resultater, høyere verdier mer kreative.<br>Eksempel:<br><code>0.1</code> - veldig konsistente, faktabaserte svar<br><code>0.7</code> - balansert kreativitet og konsistens<br><code>1.0</code> - svært kreative og varierte svar.<br>Hvis tom, vil standardtemperaturen 0.7 bli brukt.<br>Denne innstillingen vil påvirke alle AI-funksjoner i andre moduler.<br>Noen utvidelser kan overstyre denne innstillingen."
+"Debug mode","Feilsøkingsmodus"
+"Enable detailed logging of AI requests and responses for debugging purposes.<br>Warning: This may log sensitive data and impact performance. Use only for development.","Aktiver detaljert logging av AI-forespørsler og -svar for feilsøkingsformål.<br>Advarsel: Dette kan logge sensitiv data og påvirke ytelsen. Bruk kun for utvikling."
+"OpenAI Configuration","OpenAI-konfigurasjon"
+"Enable OpenAI provider","Aktiver OpenAI-leverandør"
+"Enable OpenAI as an available AI provider. Requires valid API key configuration.","Aktiver OpenAI som en tilgjengelig AI-leverandør. Krever gyldig API-nøkkelkonfigurasjon."
+"OpenAI API key","OpenAI API-nøkkel"
+"Your OpenAI API key starting with 'sk-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>","Din OpenAI API-nøkkel som starter med 'sk-'. Denne nøkkelen er kryptert og lagret sikkert.<br>Få din API-nøkkel fra: <a href=""https://platform.openai.com/api-keys"" target=""_blank"">OpenAI API Keys</a>"
+"Default OpenAI model","Standard OpenAI-modell"
+"Select the default OpenAI model for AI operations. Different models have varying capabilities and costs.","Velg standard OpenAI-modell for AI-operasjoner. Ulike modeller har varierende evner og kostnader."
+"Claude Configuration","Claude-konfigurasjon"
+"Enable Claude provider","Aktiver Claude-leverandør"
+"Enable Anthropic Claude as an available AI provider. Requires valid API key configuration.","Aktiver Anthropic Claude som en tilgjengelig AI-leverandør. Krever gyldig API-nøkkelkonfigurasjon."
+"Claude API key","Claude API-nøkkel"
+"Your Anthropic Claude API key starting with 'sk-ant-'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>","Din Anthropic Claude API-nøkkel som starter med 'sk-ant-'. Denne nøkkelen er kryptert og lagret sikkert.<br>Få din API-nøkkel fra: <a href=""https://console.anthropic.com/"" target=""_blank"">Anthropic Console</a>"
+"Default Claude model","Standard Claude-modell"
+"Select the default Claude model for AI operations. Different models have varying capabilities and costs.","Velg standard Claude-modell for AI-operasjoner. Ulike modeller har varierende evner og kostnader."
+"Google Gemini Configuration","Google Gemini-konfigurasjon"
+"Enable Gemini provider","Aktiver Gemini-leverandør"
+"Enable Google Gemini as an available AI provider. Requires valid API key configuration.","Aktiver Google Gemini som en tilgjengelig AI-leverandør. Krever gyldig API-nøkkelkonfigurasjon."
+"Gemini API key","Gemini API-nøkkel"
+"Your Google AI Studio API key starting with 'AIza'. This key is encrypted and stored securely.<br>Get your API key from: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>","Din Google AI Studio API-nøkkel som starter med 'AIza'. Denne nøkkelen er kryptert og lagret sikkert.<br>Få din API-nøkkel fra: <a href=""https://aistudio.google.com/app/apikey"" target=""_blank"">Google AI Studio</a>"
+"Default Gemini model","Standard Gemini-modell"
+"Select the default Gemini model for AI operations. Different models have varying capabilities and costs.","Velg standard Gemini-modell for AI-operasjoner. Ulike modeller har varierende evner og kostnader."
+"Determine visitor's country, city, and timezone based on their IP address.","Bestem besøkendes land, by og tidssone basert på deres IP-adresse."
+"Free <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind account</a> required for automatic updates (checked weekly).","Gratis <a href=""https://www.maxmind.com/en/geolite2/signup"" target=""_blank"">MaxMind-konto</a> kreves for automatiske oppdateringer (sjekkes ukentlig)."
+"Used by:","Brukt av:"
+message,melding
+"Error downloading database: %1","Feil ved nedlasting av database: %1"
+"MaxMind credentials not configured","MaxMind-legitimasjon er ikke konfigurert"
+"Failed to download remote hash","Kunne ikke laste ned ekstern hash"
+"Database is up to date","Databasen er oppdatert"
+"Failed to download and extract database","Kunne ikke laste ned og pakke ut database"
+"Database updated successfully","Databasen ble oppdatert"
+"Download failed: %1","Nedlasting mislyktes: %1"
+"This extension uses GeoLite2 Data created by MaxMind.","Denne utvidelsen bruker GeoLite2-data opprettet av MaxMind."
+"Database available (auto-update enabled)","Database tilgjengelig (automatisk oppdatering aktivert)"
+"Database available (auto-update disabled)","Database tilgjengelig (automatisk oppdatering deaktivert)"
+Configure,Konfigurer
+"Database not available","Database ikke tilgjengelig"
+"Database status:","Databasestatus:"
+"Not available","Ikke tilgjengelig"
+"Credentials configured. Click the button below to download the database.","Legitimasjon konfigurert. Klikk på knappen nedenfor for å laste ned databasen."
+"Download database","Last ned database"
+"Enter MaxMind credentials above to enable automatic database downloads, or run setup:upgrade to install the bundled database.","Skriv inn MaxMind-legitimasjon ovenfor for å aktivere automatiske nedlastinger, eller kjør setup:upgrade for å installere den medfølgende databasen."
+"Available (auto-update disabled)","Tilgjengelig (automatisk oppdatering deaktivert)"
+Version:,Versjon:
+Size:,Størrelse:
+"Enter MaxMind credentials above to enable automatic weekly updates.","Skriv inn MaxMind-legitimasjon ovenfor for å aktivere automatiske ukentlige oppdateringer."
+"Available (auto-update enabled)","Tilgjengelig (automatisk oppdatering aktivert)"
+"Update database","Oppdater database"
+"Database updated successfully.","Databasen ble oppdatert."
+Notice,Merknad
+"Database is up to date.","Databasen er oppdatert."
+"An error occurred while downloading the database.","Det oppstod en feil under nedlasting av databasen."
+"IP Geolocation","IP-geolokalisering"
+"Account ID","Konto-ID"
+"License Key","Lisensnøkkel"
+"<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generate license key</a>","<a href=""https://www.maxmind.com/en/account/license-key"" target=""_blank"">Generer lisensnøkkel</a>"
+Cron,Cron
+Delete,Slett
+"Delete items","Slett elementer"
+"Are you sure you want to delete selected items?","Er du sikker på at du vil slette valgte elementer?"
+ID,ID
+Code,Kode
+Messages,Meldinger
+Created,Opprettet
+Scheduled,Planlagt
+Finished,Fullført

@@ -1,0 +1,29 @@
+<?php
+/** @var \Mirasvit\Core\Block\Adminhtml\FeatureRequest $block */
+if (!$block->isMirasvit()) {
+    return null;
+}
+return null;
+?>
+<div class="mst-feature-link-wrapper">
+    <a href="<?= $block->escapeUrl($block->getRequestUrl()) ?>" target="_blank" class="mst-feature-link">
+        <?= $block->escapeHtml(__('Suggest Improvement')) ?>
+    </a>
+</div>
+<style>
+    .mst-feature-link-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: right;
+        margin-top: 25px;
+    }
+
+    .mst-feature-link {
+        color: #514943;
+        text-decoration: underline;
+    }
+
+    .mst-feature-link:hover {
+        text-decoration: none;
+    }
+</style>

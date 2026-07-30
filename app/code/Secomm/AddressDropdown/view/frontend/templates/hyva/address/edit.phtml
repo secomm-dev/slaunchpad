@@ -368,8 +368,13 @@ function initCustomerAddressEdit() {
                 const initialRegionId = this.selectedRegion;
                 if (initialRegionId && initialRegionId !== '0') {
                     await this.populateCities(initialRegionId);
+                    // Re-sync the <select> to the saved city: Alpine x-model does not
+                    // re-apply the value once its <option>s are populated asynchronously
+                    // after init (mirrors Luma's citySelect.val(currentCity) post-build).
+                    await this.reapplySelected('selectedCity');
                     if (this.selectedCity) {
                         await this.populateSubCities(this.selectedCity, initialRegionId);
+                        await this.reapplySelected('selectedSubCity');
                     }
                 }
             <?php endif; ?>
@@ -513,6 +518,18 @@ function initCustomerAddressEdit() {
         async loadSubCities(cityName) {
             this.selectedSubCity = '';
             await this.populateSubCities(cityName, this.selectedRegion);
+        },
+        async reapplySelected(key) {
+            // Alpine x-model does not re-apply a <select> value when its <option>s are
+            // populated asynchronously after the model was already set. Toggle through
+            // $nextTick so the saved city/sub_city is re-selected once options exist.
+            const saved = this[key];
+            if (!saved) {
+                return;
+            }
+            this[key] = '';
+            await this.$nextTick();
+            this[key] = saved;
         }
     }
 }

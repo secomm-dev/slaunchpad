@@ -1,0 +1,79 @@
+{
+    "mst_seo_redirect": {
+        "column": {
+            "redirect_id": true,
+            "url_from": true,
+            "url_to": true,
+            "is_redirect_only_error_page": true,
+            "comments": true,
+            "is_active": true,
+            "redirect_type": true
+        },
+        "index": {
+            "Seo redirect Request URL fulltext index": true,
+            "Seo redirect Target URL fulltext index": true,
+            "MST_SEO_REDIRECT_URL_FROM": true,
+            "MST_SEO_REDIRECT_URL_TO": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mst_seo_redirect_store": {
+        "column": {
+            "id": true,
+            "redirect_id": true,
+            "store_id": true
+        },
+        "index": {
+            "MST_SEO_REDIRECT_STORE_STORE_ID": true,
+            "MST_SEO_REDIRECT_STORE_REDIRECT_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MST_SEO_REDIRECT_STORE_STORE_ID_STORE_STORE_ID": true,
+            "MST_SEO_REDIRECT_STORE_REDIRECT_ID_MST_SEO_REDIRECT_REDIRECT_ID": true
+        }
+    },
+    "cms_page": {
+        "column": {
+            "alternate_group": true,
+            "open_graph_iurl": true,
+            "open_graph_image_url": true
+        }
+    },
+    "mst_seo_canonical_rewrite": {
+        "column": {
+            "canonical_rewrite_id": true,
+            "is_active": true,
+            "canonical": true,
+            "reg_expression": true,
+            "conditions_serialized": true,
+            "actions_serialized": true,
+            "sort_order": true,
+            "comments": true
+        },
+        "index": {
+            "MST_SEO_CANONICAL_REWRITE_CANONICAL": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mst_seo_canonical_rewrite_store": {
+        "column": {
+            "id": true,
+            "canonical_rewrite_id": true,
+            "store_id": true
+        },
+        "index": {
+            "MST_SEO_CANONICAL_REWRITE_STORE_STORE_ID": true,
+            "MST_SEO_CANONICAL_REWRITE_STORE_CANONICAL_REWRITE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MST_SEO_CANONICAL_REWRITE_STORE_STORE_ID_STORE_STORE_ID": true,
+            "FK_144731DF13083F1D603AC0D0EB3C3418": true
+        }
+    }
+}

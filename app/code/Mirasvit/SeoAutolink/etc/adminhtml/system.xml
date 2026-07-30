@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="seoautolink" translate="label" type="text" sortOrder="430" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Cross-links</label>
+            <tab>mirasvit</tab>
+            <resource>Mirasvit_SeoAutolink::config_seoautolink</resource>
+
+            <group id="autolink" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Cross-links settings</label>
+                <fieldset_css>mst_seo_group_config</fieldset_css>
+                <comment><![CDATA[Configure how cross-linking behaves across your site content to enhance internal linking structure.]]></comment>
+
+                <field id="target" translate="label comment" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seoautolink/autolink/target</config_path>
+                    <label>Allowed areas for cross-links</label>
+                    <source_model>Mirasvit\SeoAutolink\Model\Config\Source\Target</source_model>
+                    <comment><![CDATA[Select specific content areas where cross-links should be automatically inserted. Limiting to relevant areas improves page load performance.]]></comment>
+                </field>
+
+                <field id="excluded_tags" translate="label comment" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seoautolink/autolink/excluded_tags</config_path>
+                    <label>Restrict link placement in tags</label>
+                    <comment><![CDATA[Specify HTML tags where links should not be inserted (e.g., h1, h2, a, strong). Enter one tag per line without brackets.]]></comment>
+                </field>
+
+                <field id="skip_links_for_page" translate="label comment" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seoautolink/autolink/skip_links_for_page</config_path>
+                    <label>Prevent adding cross-links on pages</label>
+                    <comment><![CDATA[Enter URL patterns (one per line) where cross-links should be disabled. Use * as wildcard (e.g., catalog/product/* or */checkout).]]></comment>
+                </field>
+
+                <field id="add_links_inside_templates" translate="label comment" type="textarea" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seoautolink/autolink/add_links_inside_templates</config_path>
+                    <label>Template paths for link insertion</label>
+                    <comment><![CDATA[Specify template file paths (one per line) where links should be inserted. Note: Processing will fail for templates exceeding 1000 HTML tags due to memory constraints.]]></comment>
+                </field>
+
+                <field id="links_limit_per_page" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seoautolink/autolink/links_limit_per_page</config_path>
+                    <label>Max number of links per page</label>
+                    <comment><![CDATA[Set maximum number of auto-generated cross-links per page. Lower values may improve page load time and prevent over-optimization.]]></comment>
+                </field>
+
+                <field id="stop_keyword_processing" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <config_path>seoautolink/autolink/stop_keyword_processing</config_path>
+                    <label>Avoid duplicate URLs in cross-links</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, if multiple keywords point to the same URL, only the first occurrence will be linked. This prevents duplicate links and improves page load performance.]]></comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

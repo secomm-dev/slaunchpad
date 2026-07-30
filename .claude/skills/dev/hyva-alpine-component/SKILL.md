@@ -1,263 +1,682 @@
-# Create a Hyvä Alpine.js Interactive Component
+---
+name: hyva-alpine-component
+description: Write CSP-compatible Alpine.js components for Hyvä themes in Magento 2. This skill should be used when the user wants to create Alpine components, add interactivity to Hyvä templates, write JavaScript for Hyvä themes, or needs help with Alpine.js patterns that work with Content Security Policy. Trigger phrases include "create alpine component", "add interactivity", "alpine for hyva", "x-data component", "csp compatibility", "csp compliant javascript".
+---
 
-## Purpose
-Use this skill to build an interactive frontend component in a Hyvä theme — a button with optimistic state, a quantity stepper, a mini-form that POSTs to cart, etc. Hyvä uses **Alpine.js**, NOT Knockout/RequireJS. This skill is for Hyvä themes only.
+# Hyvä Alpine Component
 
-## Prerequisites
-- Read `AGENTS.md` Section 7.2 (Hyvä additions): Alpine.js + Tailwind only, NO RequireJS, NO jQuery, NO `data-bind`
-- Read `project-context/03-tech-stack.md` (confirm Hyvä, not Luma) and `project-context/05-conventions.md`
-- A Hyvä theme installed (`vendor/hyva-themes/...` or `app/design/Frontend/Hyva/...`)
-- `tailwind.config.js` reachable for safelisting dynamic classes
+## Overview
 
-## Input
-- **Component purpose** (e.g. "Add to Wishlist with optimistic state")
-- **Endpoint** (Magento controller or `/customer/section/load`)
-- **Data needed at render** (product id, form key, is-in-wishlist flag)
-- **State transitions** (idle → loading → success / error)
+This skill provides guidance for writing CSP-compatible Alpine.js components in Hyvä themes. Alpine CSP is a specialized Alpine.js build that operates without the `unsafe-eval` CSP directive, which is required for PCI-DSS 4.0 compliance on payment-related pages (mandatory from April 1, 2025).
 
-## Generated Files
-- `view/frontend/templates/component/{name}.phtml` (Alpine component template)
-- `view/frontend/web/js/{name}.js` (Alpine component factory — native ES module, NO RequireJS)
-- `view/frontend/layout/{handle}.xml` (layout reference, optional)
-- `tailwind.config.js` (safelist dynamic classes, if any)
+**Key principle:** CSP-compatible code functions in both standard and Alpine CSP builds. Write all Alpine code using CSP patterns for future-proofing.
 
-## Hyvä Hard Rules
-- **No RequireJS** anywhere on the frontend. Use native ES module `import`.
-- **No jQuery**. Use Alpine.js or vanilla `fetch`.
-- **No Knockout `data-bind`**. Use Alpine `x-data`, `x-on` (`@`), `x-bind` (`:`), `x-text`, `x-show`, `x-transition`.
-- **Dynamic Tailwind classes must be safelisted** in `tailwind.config.js` (Tailwind purges classes it cannot see literally).
-- **Form key via `hyva.getFormKey()`**, prices via `hyva.formatPrice()`, cookies via `hyva.getCookie()`.
+## CSP Constraints Summary
 
-## Step-by-Step
+| Capability | Standard Alpine | Alpine CSP |
+|------------|-----------------|------------|
+| Property reads | `x-show="open"` | Same |
+| Negation | `x-show="!open"` | Method: `x-show="isNotOpen"` |
+| Mutations | `@click="open = false"` | Method: `@click="close"` |
+| Method args | `@click="setTab('info')"` | Dataset: `@click="setTab" data-tab="info"` |
+| `x-model` | Available | **Not supported** - use `:value` + `@input` |
+| Range iteration | `x-for="i in 10"` | **Not supported** |
 
-### Step 1: Create the Alpine component factory (ES module)
-Hyvä convention: a JS file exports a function returning the Alpine data object. The `.phtml` template calls it inside `x-data`.
+## Component Structure Pattern
 
-`view/frontend/web/js/wishlist-button.js`:
-```js
-// Native ES module — NO define(), NO requirejs.
-// Hyvä exposes window.hyva with helpers: getFormKey, formatPrice, getCookie, postForm, translate.
+Every Alpine component in Hyvä follows this structure:
 
-export function wishlistButton(productId, initialInWishlist, isLoggedIn) {
-    return {
-        productId: productId,
-        inWishlist: !!initialInWishlist,
-        loading: false,
-        error: '',
-        success: false,
+```html
+<div x-data="initComponentName">
+    <!-- Template content -->
+</div>
+<script>
+    function initComponentName() {
+        return {
+            // Properties
+            propertyName: initialValue,
 
-        // Hyvä provides window.hyva with a Stratus-style event bus and helpers.
-        init() {
-            // React to external wishlist updates (e.g. header counter or another component removing the item).
-            window.addEventListener('hyva:wishlist-changed', (event) => {
-                if (event.detail && event.detail.productId === this.productId) {
-                    this.inWishlist = !!event.detail.inWishlist;
-                }
-            });
-        },
+            // Lifecycle
+            init() {
+                // Called when component initializes
+            },
 
-        async toggle() {
-            if (this.loading) return;
-            this.loading = true;
-            this.error = '';
-            this.success = false;
+            // Methods for state access
+            isPropertyTrue() {
+                return this.propertyName === true;
+            },
 
-            try {
-                if (!isLoggedIn) {
-                    // Redirect to login, preserving the product page as the return target.
-                    window.location.href = '/customer/account/login/referer/' + btoa(window.location.href);
-                    return;
-                }
-
-                const formKey = window.hyva && window.hyva.getFormKey
-                    ? window.hyva.getFormKey()
-                    : '';
-
-                const url = this.inWishlist
-                    ? '/wishlist/index/remove/'
-                    : '/wishlist/index/add/';
-
-                const body = new URLSearchParams({
-                    product: String(this.productId),
-                    form_key: formKey,
-                });
-
-                // No jQuery — fetch with credentials so the customer session cookie is sent.
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: body.toString(),
-                    credentials: 'same-origin',
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok (' + response.status + ')');
-                }
-
-                // Optimistic update — flip state immediately, revert on failure below.
-                const previous = this.inWishlist;
-                this.inWishlist = !this.inWishlist;
-                this.success = true;
-
-                // Broadcast so the header wishlist counter and sibling components update.
-                window.dispatchEvent(new CustomEvent('hyva:wishlist-changed', {
-                    detail: { productId: this.productId, inWishlist: this.inWishlist },
-                }));
-
-                // Refresh the customer section data so the header counter updates server-side.
-                if (window.hyva && window.hyva.refreshCustomerData) {
-                    window.hyva.refreshCustomerData();
-                }
-            } catch (e) {
-                this.error = (e && e.message) ? e.message : 'Could not update wishlist';
-                this.inWishlist = previous; // revert optimistic state
-            } finally {
-                this.loading = false;
-                // Clear success message after 2.5s
-                if (this.success) {
-                    setTimeout(() => { this.success = false; }, 2500);
-                }
+            // Methods for mutations
+            setPropertyValue() {
+                this.propertyName = this.$event.target.value;
             }
-        },
+        }
+    }
+    window.addEventListener('alpine:init', () => Alpine.data('initComponentName', initComponentName), {once: true})
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+```
+
+**Critical requirements:**
+1. Register constructor with `Alpine.data()` inside `alpine:init` event listener
+2. Use `{once: true}` to prevent duplicate registrations
+3. Call `$hyvaCsp->registerInlineScript()` after every `<script>` block
+4. Use `$escaper->escapeJs()` for PHP values in JavaScript strings
+5. Use `$escaper->escapeHtmlAttr()` for data attributes (not `escapeJs`)
+
+## Constructor Functions
+
+### Basic Registration
+
+```javascript
+function initMyComponent() {
+    return {
+        open: false
+    }
+}
+window.addEventListener('alpine:init', () => Alpine.data('initMyComponent', initMyComponent), {once: true})
+```
+
+**Why named global functions?** Constructor functions are declared as named functions in global scope (not inlined in the `Alpine.data()` callback) so they can be proxied and extended in other templates. This is an extensibility feature of Hyvä Themes - other modules or child themes can wrap or override these functions before they are registered with Alpine.
+
+### Composing Multiple Objects
+
+When combining objects (e.g., with `hyva.modal`), use spread syntax inside the constructor:
+
+```javascript
+function initMyModal() {
+    return {
+        ...hyva.modal.call(this),
+        ...hyva.formValidation(this.$el),
+        customProperty: '',
+        customMethod() {
+            // Custom logic
+        }
     };
 }
 ```
 
-### Step 2: Create the `.phtml` template
-`view/frontend/templates/component/wishlist-button.phtml`:
+Use `.call(this)` to pass Alpine context to composed functions.
+
+## Property Access Patterns
+
+### Value Properties with Dot Notation
+
+```javascript
+return {
+    item: {
+        is_visible: true,
+        title: 'Product'
+    }
+}
+```
+
+```html
+<span x-show="item.is_visible" x-text="item.title"></span>
+```
+
+### Transforming Values (Negation, Conditions)
+
+CSP does not allow inline transformations. Create methods instead:
+
+**Wrong (CSP incompatible):**
+```html
+<span x-show="!item.deleted"></span>
+<span x-text="item.title || item.value"></span>
+```
+
+**Correct:**
+```html
+<span x-show="isItemNotDeleted"></span>
+<span x-text="itemLabel"></span>
+```
+
+```javascript
+return {
+    item: { deleted: false, title: '', value: '' },
+
+    isItemNotDeleted() {
+        return !this.item.deleted;
+    },
+    itemLabel() {
+        return this.item.title || this.item.value;
+    }
+}
+```
+
+### Negation Method Shorthand
+
+For simple boolean negation, use bracket notation:
+
+```javascript
+return {
+    deleted: false,
+    ['!deleted']() {
+        return !this.deleted;
+    }
+}
+```
+
+```html
+<template x-if="!deleted">
+    <div>The item is present</div>
+</template>
+```
+
+## Property Mutation Patterns
+
+### Extract Mutations to Methods
+
+**Wrong (CSP incompatible):**
+```html
+<button @click="open = !open">Toggle</button>
+```
+
+**Correct:**
+```html
+<button @click="toggle">Toggle</button>
+```
+
+```javascript
+return {
+    open: false,
+    toggle() {
+        this.open = !this.open;
+    }
+}
+```
+
+### Passing Arguments via Dataset
+
+**Wrong (CSP incompatible):**
+```html
+<button @click="selectItem(123)">Select</button>
+```
+
+**Correct:**
+```html
+<button @click="selectItem" data-item-id="<?= $escaper->escapeHtmlAttr($itemId) ?>">Select</button>
+```
+
+```javascript
+return {
+    selected: null,
+    selectItem() {
+        this.selected = this.$el.dataset.itemId;
+    }
+}
+```
+
+**Important:** Use `escapeHtmlAttr` for data attributes, not `escapeJs`.
+
+### Accessing Event and Loop Variables in Methods
+
+Methods can access Alpine's special properties:
+
+```javascript
+return {
+    onInput() {
+        // Access event
+        const value = this.$event.target.value;
+        this.inputValue = value;
+    },
+    getItemUrl() {
+        // Access x-for loop variable
+        return `${BASE_URL}/product/id/${this.item.id}`;
+    }
+}
+```
+
+## x-model Alternatives
+
+`x-model` is **not available** in Alpine CSP. Use two-way binding patterns instead.
+
+### Text Inputs
+
+```html
+<input type="text"
+       :value="username"
+       @input="setUsername">
+```
+
+```javascript
+return {
+    username: '',
+    setUsername() {
+        this.username = this.$event.target.value;
+    }
+}
+```
+
+### Number Inputs
+
+Use `hyva.safeParseNumber()` for numeric values:
+
+```javascript
+return {
+    quantity: 1,
+    setQuantity() {
+        this.quantity = hyva.safeParseNumber(this.$event.target.value);
+    }
+}
+```
+
+### Textarea
+
+```html
+<textarea @input="setComment" x-text="comment"></textarea>
+```
+
+```javascript
+return {
+    comment: '',
+    setComment() {
+        this.comment = this.$event.target.value;
+    }
+}
+```
+
+### Checkboxes
+
+```html
+<input type="checkbox"
+       :checked="isSubscribed"
+       @change="toggleSubscribed">
+```
+
+```javascript
+return {
+    isSubscribed: false,
+    toggleSubscribed() {
+        this.isSubscribed = this.$event.target.checked;
+    }
+}
+```
+
+### Checkbox Arrays
+
+```html
+<template x-for="option in options" :key="option.id">
+    <input type="checkbox"
+           :value="option.id"
+           :checked="isOptionSelected"
+           @change="toggleOption"
+           :data-option-id="option.id">
+</template>
+```
+
+```javascript
+return {
+    selectedOptions: [],
+    isOptionSelected() {
+        return this.selectedOptions.includes(this.option.id);
+    },
+    toggleOption() {
+        const optionId = this.$el.dataset.optionId;
+        const index = this.selectedOptions.indexOf(optionId);
+        if (index === -1) {
+            this.selectedOptions.push(optionId);
+        } else {
+            this.selectedOptions.splice(index, 1);
+        }
+    }
+}
+```
+
+### Select Elements
+
+```html
+<select @change="setCountry">
+    <template x-for="country in countries" :key="country.code">
+        <option :value="country.code"
+                :selected="isCountrySelected"
+                x-text="country.name"></option>
+    </template>
+</select>
+```
+
+```javascript
+return {
+    selectedCountry: '',
+    isCountrySelected() {
+        return this.selectedCountry === this.country.code;
+    },
+    setCountry() {
+        this.selectedCountry = this.$event.target.value;
+    }
+}
+```
+
+## x-for Patterns
+
+### Basic Iteration
+
+```html
+<template x-for="(product, index) in products" :key="index">
+    <div x-text="product.name"></div>
+</template>
+```
+
+### Using Methods in Loops
+
+Loop variables (`product`, `index`) are accessible in methods:
+
+```html
+<template x-for="(product, index) in products" :key="index">
+    <span :class="getItemClasses" @click="goToProduct" x-text="product.name"></span>
+</template>
+```
+
+```javascript
+return {
+    products: [],
+    getItemClasses() {
+        return {
+            'font-bold': this.index === 0,
+            'text-gray-500': this.product.disabled
+        };
+    },
+    goToProduct() {
+        window.location.href = `${BASE_URL}/product/${this.product.url_key}`;
+    }
+}
+```
+
+### Function as Value Provider
+
+The value provider can be a method (called without parentheses):
+
+```html
+<template x-for="(item, index) in getFilteredItems" :key="index">
+    <div x-text="item.name"></div>
+</template>
+```
+
+```javascript
+return {
+    items: [],
+    filter: '',
+    getFilteredItems() {
+        return this.items.filter(item => item.name.includes(this.filter));
+    }
+}
+```
+
+**Note:** Range iteration (`x-for="i in 10"`) is not supported in Alpine CSP.
+
+## Hyva Utility Functions
+
+The global `hyva` object provides these utilities:
+
+### Form and Security
+- `hyva.getFormKey()` - Get/generate form key for POST requests
+- `hyva.getUenc()` - Base64 encode current URL for redirects
+- `hyva.postForm({action, data, skipUenc})` - Submit a POST form programmatically
+
+### Cookies
+- `hyva.getCookie(name)` - Get cookie value (respects consent)
+- `hyva.setCookie(name, value, days, skipSetDomain)` - Set cookie
+- `hyva.setSessionCookie(name, value, skipSetDomain)` - Set session cookie
+
+### Formatting
+- `hyva.formatPrice(value, showSign, options)` - Format currency
+- `hyva.str(template, ...args)` - String interpolation with %1, %2 placeholders
+- `hyva.strf(template, ...args)` - Zero-based string interpolation (%0, %1)
+
+### Numbers
+- `hyva.safeParseNumber(rawValue)` - Parse number safely (for x-model.number replacement)
+
+### DOM
+- `hyva.replaceDomElement(selector, content)` - Replace DOM element with HTML content
+- `hyva.trapFocus(rootElement)` - Trap focus within element (for modals)
+- `hyva.releaseFocus(rootElement)` - Release focus trap
+
+### Storage
+- `hyva.getBrowserStorage()` - Get localStorage/sessionStorage safely
+
+### Boolean Object Helper
+
+For toggle components, use `hyva.createBooleanObject`:
+
+```javascript
+function initToggle() {
+    return {
+        ...hyva.createBooleanObject('open', false),
+        // Additional methods
+    };
+}
+```
+
+This generates: `open()`, `notOpen()`, `toggleOpen()`, `setOpenTrue()`, `setOpenFalse()`
+
+### Alpine Initialization
+
+```javascript
+hyva.alpineInitialized(fn)  // Run callback after Alpine initializes
+```
+
+## Event Patterns
+
+### Listening to Custom Events
+
+```html
+<div x-data="initMyComponent"
+     @private-content-loaded.window="onPrivateContentLoaded"
+     @update-gallery.window="onGalleryUpdate">
+```
+
+```javascript
+return {
+    onPrivateContentLoaded() {
+        const data = this.$event.detail.data;
+        // Handle customer data
+    },
+    onGalleryUpdate() {
+        const images = this.$event.detail;
+        this.images = images;
+    }
+}
+```
+
+### Dispatching Events
+
+```javascript
+return {
+    updateQuantity() {
+        this.qty = newValue;
+        this.$dispatch('update-qty-' + this.productId, this.qty);
+    }
+}
+```
+
+### Common Hyvä Events
+- `private-content-loaded` - Customer section data loaded
+- `reload-customer-section-data` - Request customer data refresh
+- `update-gallery` - Product gallery images changed
+- `reset-gallery` - Reset gallery to initial state
+
+## Event Listeners Object Pattern
+
+For multiple window/document event listeners, use the `x-bind` pattern:
+
+```html
+<div x-data="initGallery" x-bind="eventListeners">
+```
+
+```javascript
+return {
+    eventListeners: {
+        ['@keydown.window.escape']() {
+            if (!this.fullscreen) return;
+            this.closeFullScreen();
+        },
+        ['@update-gallery.window'](event) {
+            this.receiveImages(event.detail);
+        },
+        ['@keyup.arrow-right.window']() {
+            if (!this.fullscreen) return;
+            this.nextItem();
+        }
+    }
+}
+```
+
+## Dynamic Classes Pattern
+
+Return class objects from methods:
+
+```html
+<div :class="containerClasses">
+```
+
+```javascript
+return {
+    fullscreen: false,
+    containerClasses() {
+        return {
+            'w-full h-full fixed top-0 left-0 bg-white z-50': this.fullscreen,
+            'relative': !this.fullscreen
+        };
+    }
+}
+```
+
+## Passing PHP Data to Components
+
+### Via Data Attributes
+
+```html
+<div x-data="initProductList"
+     data-products="<?= $escaper->escapeHtmlAttr(json_encode($products)) ?>"
+     data-config="<?= $escaper->escapeHtmlAttr(json_encode($config)) ?>">
+```
+
+```javascript
+return {
+    products: [],
+    config: {},
+    init() {
+        this.products = JSON.parse(this.$root.dataset.products || '[]');
+        this.config = JSON.parse(this.$root.dataset.config || '{}');
+    }
+}
+```
+
+### Via Inline JavaScript (with escaping)
+
+```javascript
+function initComponent() {
+    return {
+        productId: '<?= (int) $product->getId() ?>',
+        productName: '<?= $escaper->escapeJs($product->getName()) ?>',
+        config: <?= /* @noEscape */ json_encode($config) ?>
+    }
+}
+```
+
+## Complete Example: Quantity Selector
+
 ```php
 <?php
-/**
- * Copyright © Acme. All rights reserved.
- */
+declare(strict_types=1);
 
-/** @var \Magento\Framework\View\Element\Template $block */
-/** @var \Magento\Framework\Escaper $escaper */
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
 
-/** @var \Hyva\Theme\ViewModel\Customer $customerViewModel */
-$customerViewModel = $block->getData('customer_view_model') ?? $block->getLayout()->createBlock(\Hyva\Theme\ViewModel\Customer::class);
-$product = $block->getData('product');
-$productId = (int) ($product ? $product->getId() : ($block->getData('product_id') ?? 0));
-$isInWishlist = (bool) ($block->getData('is_in_wishlist') ?? false);
-$isLoggedIn = $customerViewModel && method_exists($customerViewModel, 'isLoggedIn') ? $customerViewModel->isLoggedIn() : false;
+/** @var Escaper $escaper */
+/** @var HyvaCsp $hyvaCsp */
+
+$productId = (int) $product->getId();
+$minQty = 1;
+$maxQty = 100;
+$defaultQty = 1;
 ?>
-<script>
-    // Import the factory once per page; Alpine initializes it when the component mounts.
-    (async () => {
-        if (!window.wishlistButtonModule) {
-            window.wishlistButtonModule = await import('<?= $escaper->escapeJs($block->getViewFileUrl('Acme_StorePickup::js/wishlist-button.js')) ?>');
-        }
-        // Register the data factory on the Alpine global so x-data can reference it by name.
-        document.addEventListener('alpine:init', () => {
-            if (window.Alpine && !window.Alpine.data('wishlistButton')) {
-                window.Alpine.data('wishlistButton', (productId, inWishlist, isLoggedIn) =>
-                    window.wishlistButtonModule.wishlistButton(productId, inWishlist, isLoggedIn)
-                );
-            }
-        });
-    })();
-</script>
-
-<div x-data="wishlistButton(<?= $escaper->escapeHtmlAttr($productId) ?>, <?= $isInWishlist ? 'true' : 'false' ?>, <?= $isLoggedIn ? 'true' : 'false' ?>)"
-     x-init="init()"
-     class="inline-block">
-    <button type="button"
-            @click="toggle()"
-            :disabled="loading"
-            :class="loading ? 'opacity-60 cursor-wait' : 'hover:text-red-600'"
-            class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-        <!-- Heart icon — static classes only so Tailwind keeps them -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-             class="w-5 h-5"
-             :class="inWishlist ? 'text-red-500 fill-current' : 'text-gray-400'"
-             viewBox="0 0 24 24"
-             stroke="currentColor"
-             stroke-width="2"
-             fill="none"
-             aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
-        </svg>
-        <span x-text="loading
-            ? '...'
-            : (inWishlist ? '<?= $escaper->escapeHtml(__('In Wishlist')) ?>' : '<?= $escaper->escapeHtml(__('Add to Wishlist')) ?>')"></span>
-    </button>
-
-    <p x-show="success" x-transition x-cloak
-       class="mt-2 text-sm text-green-600">
-        <?= $escaper->escapeHtml(__('Wishlist updated.')) ?>
-    </p>
-    <p x-show="error" x-transition x-cloak
-       class="mt-2 text-sm text-red-600" x-text="error"></p>
+<div x-data="initQtySelector">
+    <label for="qty-<?= $productId ?>" class="sr-only">
+        <?= $escaper->escapeHtml(__('Quantity')) ?>
+    </label>
+    <div class="flex items-center">
+        <button type="button"
+                class="btn"
+                @click="decrement"
+                :disabled="isMinQty"
+                :class="decrementClasses">
+            -
+        </button>
+        <input type="number"
+               id="qty-<?= $productId ?>"
+               name="qty"
+               :value="qty"
+               @input="onInput"
+               min="<?= $minQty ?>"
+               max="<?= $maxQty ?>"
+               class="form-input w-16 text-center">
+        <button type="button"
+                class="btn"
+                @click="increment"
+                :disabled="isMaxQty"
+                :class="incrementClasses">
+            +
+        </button>
+    </div>
 </div>
+<script>
+    function initQtySelector() {
+        return {
+            qty: <?= (int) $defaultQty ?>,
+            minQty: <?= (int) $minQty ?>,
+            maxQty: <?= (int) $maxQty ?>,
+            productId: '<?= $productId ?>',
+
+            onInput() {
+                let value = hyva.safeParseNumber(this.$event.target.value);
+                if (value < this.minQty) value = this.minQty;
+                if (value > this.maxQty) value = this.maxQty;
+                this.qty = value;
+                this.$dispatch('update-qty-' + this.productId, this.qty);
+            },
+
+            increment() {
+                if (this.qty < this.maxQty) {
+                    this.qty++;
+                    this.$dispatch('update-qty-' + this.productId, this.qty);
+                }
+            },
+
+            decrement() {
+                if (this.qty > this.minQty) {
+                    this.qty--;
+                    this.$dispatch('update-qty-' + this.productId, this.qty);
+                }
+            },
+
+            isMinQty() {
+                return this.qty <= this.minQty;
+            },
+
+            isMaxQty() {
+                return this.qty >= this.maxQty;
+            },
+
+            decrementClasses() {
+                return { 'opacity-50 cursor-not-allowed': this.isMinQty() };
+            },
+
+            incrementClasses() {
+                return { 'opacity-50 cursor-not-allowed': this.isMaxQty() };
+            }
+        }
+    }
+    window.addEventListener('alpine:init', () => Alpine.data('initQtySelector', initQtySelector), {once: true})
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
 ```
 
-### Step 3: Reference in layout XML (optional)
-`view/frontend/layout/catalog_product_view.xml`:
-```xml
-<?xml version="1.0"?>
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <body>
-        <referenceContainer name="product.info.main">
-            <block name="product.info.wishlist.acme"
-                   template="Acme_StorePickup::component/wishlist-button.phtml"
-                   after="product.info.addtocart">
-                <arguments>
-                    <argument name="product" xsi:type="object">\Magento\Catalog\Block\Product\View</argument>
-                </arguments>
-            </block>
-        </referenceContainer>
-    </body>
-</page>
-```
+## References
 
-### Step 4: Safelist any dynamic Tailwind classes
-If you build class strings dynamically (e.g. `'text-' + color`), add them to `tailwind.config.js`. The example above uses static classes only, so no safelist needed — but if you later add dynamic colors:
-```js
-// tailwind.config.js (Hyvä theme root)
-module.exports = {
-    // ...
-    safelist: [
-        'text-red-500',
-        'text-green-600',
-        'bg-red-50',
-    ],
-};
-```
+- Hyvä CSP Documentation: https://docs.hyva.io/hyva-themes/writing-code/csp/alpine-csp.html
+- Alpine.js Documentation: https://alpinejs.dev/
+- Example components: `vendor/hyva-themes/magento2-default-theme-csp/`
+- Core utilities: `vendor/hyva-themes/magento2-theme-module/src/view/frontend/templates/page/js/hyva.phtml`
 
-### Step 5: Build and verify
-```bash
-# Regenerate the Hyvä theme's compiled Tailwind/JS if your build pipeline uses it:
-# (Hyvä ships a watcher; run from theme root if needed)
-bin/magento cache:clean
-```
-
-## Coding Rules Applied
-- **Alpine.js only** (AGENTS.md 7.2): `x-data`, `x-on`/`@`, `x-bind`/`:`, `x-text`, `x-show`, `x-transition` — NOT Knockout `data-bind`
-- **NO RequireJS in frontend**: native ES module `import` via `getViewFileUrl(...)` + dynamic import
-- **NO jQuery**: `fetch` with `credentials: 'same-origin'` to send the customer session cookie
-- **Dynamic Tailwind classes safelisted** in `tailwind.config.js` — purge-aware
-- **Hyvä helpers**: `window.hyva.getFormKey()`, `window.hyva.formatPrice()`, `window.hyva.getCookie()`, `window.hyva.refreshCustomerData()`
-
-## Verification
-- [ ] Page loads with no RequireJS errors in the browser console (search for `define is not defined` or `require` references)
-- [ ] No jQuery on the page (`window.jQuery` undefined or your code does not call it)
-- [ ] Click "Add to Wishlist" → button shows `...`, then flips to "In Wishlist", heart fills red
-- [ ] Open DevTools Network → POST to `/wishlist/index/add/` returns 200, header wishlist counter increments
-- [ ] Trigger a network failure (DevTools → Offline) → error message shows, button reverts to original state
-- [ ] Logged-out customer: click redirects to `/customer/account/login/`
-- [ ] Two wishlist buttons on the same page: toggling one updates the other via the `hyva:wishlist-changed` event (shared state via custom event, not a global `$store` abuse)
-
-## Common Mistakes
-- **Using RequireJS (`define`/`require`)**: Hyvä does not load RequireJS on the frontend — the call silently fails. Use native ES `import` and `getViewFileUrl()`.
-- **Referencing jQuery** (`$.ajax`, `$('#id')`): jQuery is not present in Hyvä. Use `fetch` or Alpine's `x-on` bindings.
-- **Knockout `data-bind` left over from a ported Luma template**: nothing renders. Rewrite to Alpine `x-bind`/`x-text`.
-- **Dynamic Tailwind classes purged**: `:class="'text-' + color"` where `color` is a variable — Tailwind's JIT cannot see the literal class, so it is dropped from the build. Either use a lookup object of full class strings, or safelist.
-- **Data not isolated between components**: two instances of the component share state if you put the Alpine data object on `window` once. Register via `Alpine.data(name, factory)` so each `x-data` gets its own instance. For genuinely shared state use `Alpine.store(...)`.
-- **Missing form key on POST**: Magento rejects the request with a redirect to the homepage or a 302. Always include `form_key` from `hyva.getFormKey()`.
-- **Not escaping JS output**: passing product names into inline JS without `$escaper->escapeJs()` causes a quote-injection break. Always escape.
-- **Forgetting `x-cloak` + `[x-cloak] { display: none }`**: Alpine templates flash their default content before Alpine initializes. Add `x-cloak` to elements that must be hidden until ready.
+<!-- Copyright © Hyvä Themes https://hyva.io. All rights reserved. Licensed under OSL 3.0 -->

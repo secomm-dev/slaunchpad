@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- router for changed urls -->
+    <type name="Magento\Framework\App\Router\Base">
+        <plugin name="Mirasvit_SeoFilter::routerPlugin" type="Mirasvit\SeoFilter\Plugin\Frontend\MakeRequestBeforeRouteMatchPlugin" sortOrder="1000"/>
+    </type>
+
+    <!--change attribute urls-->
+    <type name="Magento\Catalog\Model\Layer\Filter\Item">
+        <plugin name="Mirasvit_SeoFilter::getUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\GetFriendlyUrlOnFilterItemPlugin" sortOrder="1000"/>
+        <plugin name="Mirasvit_SeoFilter::getRemoveUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\GetFriendlyRemoveUrlOnFilterItemPlugin" sortOrder="1000"/>
+    </type>
+
+    <!--change size and color urls-->
+    <type name="Magento\Swatches\Block\LayeredNavigation\RenderLayered">
+        <plugin name="Mirasvit_SeoFilter::swatchUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\AddSwatchUrlParamsPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- change clear all url -->
+    <type name="Magento\LayeredNavigation\Block\Navigation\State">
+        <plugin name="Mirasvit_SeoFilter::clearUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\GetClearUrlPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- change pager url -->
+    <type name="Magento\Theme\Block\Html\Pager">
+        <plugin name="Mirasvit_SeoFilter::pageUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\AddQueryParamsOnThemePagerPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- change toolbar url -->
+    <type name="Magento\Catalog\Block\Product\ProductList\Toolbar">
+        <plugin name="Mirasvit_SeoFilter::toolbarUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\AddQueryParamsOnToolbarPagerPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- change slider url -->
+    <type name="Mirasvit\LayeredNavigation\Service\SliderService">
+        <plugin name="Mirasvit_SeoFilter::sliderUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\LayeredNavigation\GetSliderUrlPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- change separator -->
+    <type name="Mirasvit\LayeredNavigation\Block\Renderer\SliderRenderer">
+        <plugin name="Mirasvit_SeoFilter::getSeparator" type="Mirasvit\SeoFilter\Plugin\Frontend\LayeredNavigation\GetSeparatorPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- change attribute clear url -->
+    <type name="Mirasvit\LayeredNavigation\Block\Renderer\AbstractRenderer">
+        <plugin name="Mirasvit_SeoFilter::getAttributeClearUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\LayeredNavigation\GetAttributeClearUrlPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- apply seo-friendly url for smart filter cards -->
+    <type name="Mirasvit\SmartFilter\Service\UrlService">
+        <plugin name="Mirasvit_SeoFilter::smartFilterUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\LayeredNavigation\GetSmartFilterUrlPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- change attribute clear url -->
+    <type name="Mirasvit\LayeredNavigation\Block\Renderer\SwatchRenderer">
+        <plugin name="Mirasvit_SeoFilter::getSwatchClearUrl" type="Mirasvit\SeoFilter\Plugin\Frontend\LayeredNavigation\GetSwatchClearUrlPlugin" sortOrder="1000"/>
+    </type>
+
+    <type name="Magento\Framework\View\Element\AbstractBlock">
+        <plugin name="vendor_module_seo_friendly_get_url" type="Mirasvit\SeoFilter\Plugin\Frontend\SeoFriendlyGetUrlPlugin" sortOrder="1000"/>
+    </type>
+
+    <!-- Swatch preselection for SEO-friendly URLs -->
+    <type name="Magento\Swatches\Block\Product\Renderer\Listing\Configurable">
+        <plugin name="Mirasvit_SeoFilter::AddActiveFilterParams"
+                type="Mirasvit\SeoFilter\Plugin\Frontend\AddActiveFilterParamsPlugin"/>
+        <plugin name="Mirasvit_SeoFilter::FixSwatchCacheKey"
+                type="Mirasvit\SeoFilter\Plugin\Frontend\FixSwatchCacheKeyPlugin"
+                sortOrder="1"/>
+    </type>
+
+    <type name="Hyva\Theme\ViewModel\ProductListItem">
+        <plugin name="Mirasvit_SeoFilter::ExtendProductListItemCacheKey"
+                type="Mirasvit\SeoFilter\Plugin\Frontend\ExtendProductListItemCacheKeyPlugin"/>
+    </type>
+</config>

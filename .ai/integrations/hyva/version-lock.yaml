@@ -1,0 +1,14 @@
+# ============================================================================
+# Hyvä integration — version lock
+# ============================================================================
+# The upstream commit this integration is pinned to. Projects receive THIS commit
+# deterministically; upstream `main` is NEVER auto-followed during project task
+# execution. Bumping requires the explicit update workflow (update-policy.md).
+# ============================================================================
+schema_version: 1
+locked_commit: 5f094b6e57e6faab9967e2b031cac9c1cd6c9f93
+locked_branch: main
+locked_at: "2026-07-28"
+hyva_integration_version: "1.0.0"
+policy: pinned  # discover → inspect diff → review license → update canonical → test → publish → retrofit
+do_not_auto_follow_main: true
