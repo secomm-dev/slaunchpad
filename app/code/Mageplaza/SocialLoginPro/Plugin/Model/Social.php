@@ -32,7 +32,7 @@ use Mageplaza\SocialLogin\Model\SocialFactory;
 /**
  * Class Social
  *
- * @package Mageplaza\SocialLo  gin\Model
+ * @package Mageplaza\SocialLogin\Model
  */
 class Social
 {
@@ -133,10 +133,8 @@ class Social
                     }
                 }
             } else {
-                if ((int)$customerSocial->getCustomerId() !== (int)$customerId) {
-                    // 1 social account only reference to 1 store account, 1 store account can reference to many social account.
-                    $this->messageManager->addError(__('This social channel has been already used by another store account.'));
-                }
+                // 1 social account only reference to 1 store account, 1 store account can reference to many social account.
+                $this->messageManager->addError(__('This social channel has been already used by another store account.'));
             }
             // If customer have multiple accounts common use a social account
             $customerSocial = $this->customerFactory->create()->load($customerId);

@@ -63,7 +63,7 @@ class QuoteSubmitBeforeTest extends TestCase
     protected function setUp(): void
     {
         $this->checkoutSessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(['getOscData'])
+            ->addMethods(['getOscData'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -80,7 +80,7 @@ class QuoteSubmitBeforeTest extends TestCase
             ->getMock();
 
         $eventMock = $this->getMockBuilder(Event::class)
-            ->setMethods(['getOrder', 'getQuote'])
+            ->addMethods(['getOrder', 'getQuote'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->observerMock->expects($this->exactly(2))->method('getEvent')->willReturn($eventMock);
@@ -111,13 +111,9 @@ class QuoteSubmitBeforeTest extends TestCase
                 ]
             );
 
-        $shippingAddressMethods = get_class_methods(Address::class);
-        $shippingAddressMethods[] = 'getUsedGiftWrap';
-        $shippingAddressMethods[] = 'getGiftWrapType';
-        $shippingAddressMethods[] = 'getOscGiftWrapAmount';
-        $shippingAddressMethods[] = 'getBaseOscGiftWrapAmount';
         $shippingAddressMock = $this->getMockBuilder(Address::class)
-            ->setMethods($shippingAddressMethods)
+            ->onlyMethods(['hasData'])
+            ->addMethods(['getUsedGiftWrap', 'getGiftWrapType', 'getOscGiftWrapAmount', 'getBaseOscGiftWrapAmount'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->quoteMock->expects($this->once())->method('getShippingAddress')->willReturn($shippingAddressMock);
@@ -128,22 +124,24 @@ class QuoteSubmitBeforeTest extends TestCase
         $shippingAddressMock->expects($this->once())->method('getBaseOscGiftWrapAmount')
             ->willReturn($baseGiftWrapAmount);
 
+        $orderSetDataCallCount = 0;
         $this->orderMock->expects($this->exactly(6))->method('setData')
-            ->withConsecutive(
-                ['osc_order_comment', $comment],
-                ['osc_delivery_time', $deliveryTime],
-                ['osc_order_house_security_code', $houseSecurityCode],
-                ['gift_wrap_type', $giftWrapType],
-                ['osc_gift_wrap_amount', $giftWrapAmount],
-                ['base_osc_gift_wrap_amount', $baseGiftWrapAmount]
-            )
-            ->willReturnSelf();
+            ->willReturnCallback(function ($key, $value) use (&$orderSetDataCallCount, $comment, $deliveryTime, $houseSecurityCode, $giftWrapType, $giftWrapAmount, $baseGiftWrapAmount) {
+                $orderSetDataCallCount++;
+                match ($orderSetDataCallCount) {
+                    1 => $this->assertEquals(['osc_order_comment', $comment], [$key, $value]),
+                    2 => $this->assertEquals(['osc_delivery_time', $deliveryTime], [$key, $value]),
+                    3 => $this->assertEquals(['osc_order_house_security_code', $houseSecurityCode], [$key, $value]),
+                    4 => $this->assertEquals(['gift_wrap_type', $giftWrapType], [$key, $value]),
+                    5 => $this->assertEquals(['osc_gift_wrap_amount', $giftWrapAmount], [$key, $value]),
+                    6 => $this->assertEquals(['base_osc_gift_wrap_amount', $baseGiftWrapAmount], [$key, $value]),
+                };
+                return $this->orderMock;
+            });
 
-        $quoteItemMethods = get_class_methods(QuoteItem::class);
-        $quoteItemMethods[] = 'getOscGiftWrapAmount';
-        $quoteItemMethods[] = 'getBaseOscGiftWrapAmount';
         $quoteItemMock = $this->getMockBuilder(QuoteItem::class)
-            ->setMethods($quoteItemMethods)
+            ->onlyMethods(['hasData'])
+            ->addMethods(['getOscGiftWrapAmount', 'getBaseOscGiftWrapAmount'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -157,11 +155,16 @@ class QuoteSubmitBeforeTest extends TestCase
         $quoteItemMock->expects($this->once())->method('getOscGiftWrapAmount')->willReturn($giftWrapAmount);
         $quoteItemMock->expects($this->once())->method('getBaseOscGiftWrapAmount')->willReturn($baseGiftWrapAmount);
 
+        $orderItemSetDataCallCount = 0;
         $orderItemMock->expects($this->exactly(2))->method('setData')
-            ->withConsecutive(
-                ['osc_gift_wrap_amount', $giftWrapAmount],
-                ['base_osc_gift_wrap_amount', $baseGiftWrapAmount]
-            )->willReturnSelf();
+            ->willReturnCallback(function ($key, $value) use (&$orderItemSetDataCallCount, $giftWrapAmount, $baseGiftWrapAmount, $orderItemMock) {
+                $orderItemSetDataCallCount++;
+                match ($orderItemSetDataCallCount) {
+                    1 => $this->assertEquals(['osc_gift_wrap_amount', $giftWrapAmount], [$key, $value]),
+                    2 => $this->assertEquals(['base_osc_gift_wrap_amount', $baseGiftWrapAmount], [$key, $value]),
+                };
+                return $orderItemMock;
+            });
 
         $this->quoteSubmitBefore->execute($this->observerMock);
     }

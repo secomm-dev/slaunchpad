@@ -80,7 +80,7 @@ class SaveTest extends TestCase
 
         $this->requestMock = $this->getMockForAbstractClass(RequestInterface::class);
         $this->responseMock = $this->getMockBuilder(ResponseInterface::class)
-            ->setMethods(['representJson'])
+            ->addMethods(['representJson'])
             ->getMockForAbstractClass();
         $context->method('getRequest')->willReturn($this->requestMock);
         $context->method('getResponse')->willReturn($this->responseMock);
@@ -89,7 +89,7 @@ class SaveTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->checkoutSessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(
+            ->addMethods(
                 [
                 'getOscData',
                 'unsOscData'
@@ -128,10 +128,20 @@ class SaveTest extends TestCase
             ->with(52)
             ->willReturnSelf();
         $this->oscHelperMock->expects($this->once())->method('getSurveyQuestion')->willReturn('Question');
+        $setDataCount = 0;
         $this->orderMock->expects($this->exactly(2))
             ->method('setData')
-            ->withConsecutive(['osc_survey_question', 'Question'], ['osc_survey_answers', 'value 1 - value 2 '])
-            ->willReturnSelf();
+            ->willReturnCallback(function ($key, $value) use (&$setDataCount) {
+                $setDataCount++;
+                if ($setDataCount === 1) {
+                    $this->assertEquals('osc_survey_question', $key);
+                    $this->assertEquals('Question', $value);
+                } else {
+                    $this->assertEquals('osc_survey_answers', $key);
+                    $this->assertEquals('value 1 - value 2 ', $value);
+                }
+                return $this->orderMock;
+            });
 
         $this->orderMock->expects($this->once())->method('save')->willReturnSelf();
         $this->checkoutSessionMock->expects($this->once())->method('unsOscData');
@@ -168,10 +178,20 @@ class SaveTest extends TestCase
             ->with(52)
             ->willReturnSelf();
         $this->oscHelperMock->expects($this->once())->method('getSurveyQuestion')->willReturn('Question');
+        $setDataCount2 = 0;
         $this->orderMock->expects($this->exactly(2))
             ->method('setData')
-            ->withConsecutive(['osc_survey_question', 'Question'], ['osc_survey_answers', 'value 1 - value 2 '])
-            ->willReturnSelf();
+            ->willReturnCallback(function ($key, $value) use (&$setDataCount2) {
+                $setDataCount2++;
+                if ($setDataCount2 === 1) {
+                    $this->assertEquals('osc_survey_question', $key);
+                    $this->assertEquals('Question', $value);
+                } else {
+                    $this->assertEquals('osc_survey_answers', $key);
+                    $this->assertEquals('value 1 - value 2 ', $value);
+                }
+                return $this->orderMock;
+            });
 
         $this->orderMock->expects($this->once())->method('save')->willThrowException(new Exception());
 

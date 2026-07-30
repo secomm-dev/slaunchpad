@@ -49,7 +49,7 @@ class AccountManagementTest extends TestCase
     protected function setUp(): void
     {
         $this->checkoutSessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(['getOscData'])
+            ->addMethods(['getOscData'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -81,7 +81,7 @@ class AccountManagementTest extends TestCase
          * @var CustomerInterface $customerMock
          */
         $customerMock = $this->getMockBuilder(CustomerInterface::class)
-            ->setMethods(['setData'])
+            ->addMethods(['setData'])
             ->getMockForAbstractClass();
         $oscData = [
             'register' => true,

@@ -49,7 +49,7 @@ class QuoteValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestBeforeValidateBeforeSubmit()
+    public static function providerTestBeforeValidateBeforeSubmit()
     {
         return [
             [self::once(), false],
@@ -77,13 +77,13 @@ class QuoteValidatorTest extends TestCase
         $quoteMock = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->getMock();
         $quoteMock->expects($this->once())->method('isVirtual')->willReturn($isVirtual);
         $shippingAddressMock = $this->getMockBuilder(Address::class)
-            ->setMethods(['setShouldIgnoreValidation'])
+            ->addMethods(['setShouldIgnoreValidation'])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($isVirtualExpect)->method('getShippingAddress')->willReturn($shippingAddressMock);
 
         $billingAddressMock = $this->getMockBuilder(Address::class)
-            ->setMethods(['setShouldIgnoreValidation'])
+            ->addMethods(['setShouldIgnoreValidation'])
             ->disableOriginalConstructor()
             ->getMock();
         $quoteMock->expects($this->once())->method('getBillingAddress')->willReturn($billingAddressMock);

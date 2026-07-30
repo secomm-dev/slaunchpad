@@ -19,7 +19,30 @@
  * @license   https://www.mageplaza.com/LICENSE.txt
  */
 
-namespace Mageplaza\Osc\Test\Unit\Model\Plugin\OrderAttributes;
+namespace Mageplaza\OrderAttributes\Helper {
+    if (!class_exists(\Mageplaza\OrderAttributes\Helper\Data::class, false)) {
+        class Data {}
+    }
+}
+
+namespace Mageplaza\OrderAttributes\Model {
+    if (!class_exists(\Mageplaza\OrderAttributes\Model\Attribute::class, false)) {
+        class Attribute {}
+    }
+}
+
+namespace Mageplaza\OrderAttributes\Model\Config\Source {
+    if (!class_exists(\Mageplaza\OrderAttributes\Model\Config\Source\Position::class, false)) {
+        class Position {
+            const SHIPPING_TOP = 2;
+            const SHIPPING_BOTTOM = 3;
+            const PAYMENT_TOP = 4;
+            const PAYMENT_BOTTOM = 5;
+        }
+    }
+}
+
+namespace Mageplaza\Osc\Test\Unit\Model\Plugin\OrderAttributes {
 
 use Mageplaza\OrderAttributes\Helper\Data;
 use Mageplaza\OrderAttributes\Model\Attribute;
@@ -49,7 +72,7 @@ class HelperTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestAfterGetFilteredAttributes()
+    public static function providerTestAfterGetFilteredAttributes()
     {
         return [
             [2, true, 3],
@@ -73,7 +96,7 @@ class HelperTest extends TestCase
         /**
          * @var Data $subject
          */
-        $subject = $this->getMockBuilder(Data::class)->disableOriginalConstructor()->getMock();
+        $subject = $this->getMockBuilder(Data::class)->getMock();
         $OAFields = [
             [
                 'code' => 'image',
@@ -85,7 +108,7 @@ class HelperTest extends TestCase
         ];
         $this->helperMock->expects($this->once())->method('getOAFieldPosition')->willReturn($OAFields);
         $attributeMock = $this->getMockBuilder(Attribute::class)
-            ->setMethods(
+            ->addMethods(
                 [
                 'getPosition',
                 'getAttributeCode',
@@ -94,7 +117,6 @@ class HelperTest extends TestCase
                 'setIsRequired'
                 ]
             )
-            ->disableOriginalConstructor()
             ->getMock();
 
         $attributeMock->expects($this->once())->method('getPosition')->willReturn($position);
@@ -104,6 +126,8 @@ class HelperTest extends TestCase
         $attributeMock->expects($this->once())->method('setSortOrder')->willReturn(1);
         $attributeMock->expects($this->once())->method('setIsRequired')->willReturn(false);
 
-        $this->assertEquals([$attributeMock], $this->plugin->afterGetFilteredAttributes($subject, [$attributeMock]));
+        $this->assertEquals([$attributeMock], $this->plugin->afterGetOrderAttributesCollection($subject, [$attributeMock]));
     }
 }
+
+} // end namespace

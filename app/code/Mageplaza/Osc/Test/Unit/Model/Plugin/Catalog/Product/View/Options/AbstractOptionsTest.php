@@ -29,7 +29,6 @@ use Mageplaza\Osc\Model\Plugin\Catalog\Product\View\Options\AbstractOptions;
 use PHPUnit\Framework\MockObject\Matcher\InvokedCount as InvokedCountMatcher;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Log\LoggerInterface;
 use ReflectionException;
 
@@ -65,7 +64,7 @@ class AbstractOptionsTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestBeforeGetOption()
+    public static function providerTestBeforeGetOption()
     {
         return [
             [
@@ -104,11 +103,8 @@ class AbstractOptionsTest extends TestCase
             $methods
         );
 
-        /**
-         * @var PHPUnit_Framework_MockObject_MockObject $layoutMock
-         */
         $layoutMock = $this->getMockBuilder(LayoutInterface::class)
-            ->setMethods(['addHandle'])
+            ->addMethods(['addHandle'])
             ->getMockForAbstractClass();
         $updateMock = $this->getMockForAbstractClass(ProcessorInterface::class);
         $abstractOptionMock->expects($this->once())->method('getLayout')->willReturn($layoutMock);
@@ -137,7 +133,7 @@ class AbstractOptionsTest extends TestCase
 
         $exception = new LocalizedException(__('test'));
         $abstractOptionMock->expects($this->once())->method('getLayout')->willThrowException($exception);
-        $this->loggerMock->expects($this->once())->method('critical')->willReturn($exception);
+        $this->loggerMock->expects($this->once())->method('critical')->with($exception);
 
         $this->plugin->beforeGetOption($abstractOptionMock);
     }

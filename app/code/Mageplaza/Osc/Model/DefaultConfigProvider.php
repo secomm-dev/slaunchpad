@@ -232,7 +232,8 @@ class DefaultConfigProvider implements ConfigProviderInterface
                 )
             ],
             'shippingStorePickup'     => $this->shippingStorePickup(),
-            'enableOscPro'            => $this->_oscHelper->isModuleOutputEnabled('Mageplaza_Osc')
+            'enableOscPro'            => $this->_oscHelper->isModuleOutputEnabled('Mageplaza_Osc'),
+            'isCaptchaEnabledConfig'  => $this->_oscHelper->isCaptchaEnabled()
         ];
     }
 

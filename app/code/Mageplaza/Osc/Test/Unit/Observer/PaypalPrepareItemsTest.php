@@ -65,7 +65,7 @@ class PaypalPrepareItemsTest extends TestCase
             ->getMock();
 
         $eventMock = $this->getMockBuilder(Event::class)
-            ->setMethods(['getCart'])
+            ->addMethods(['getCart'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -75,11 +75,11 @@ class PaypalPrepareItemsTest extends TestCase
         $quoteMock = $this->getMockBuilder(Quote::class)->disableOriginalConstructor()->getMock();
         $this->checkoutSessionMock->expects($this->once())->method('getQuote')->willReturn($quoteMock);
         $shippingAddressMock = $this->getMockBuilder(Address::class)
-            ->setMethods(['getOscGiftWrapAmount'])
+            ->addMethods(['getBaseOscGiftWrapAmount'])
             ->disableOriginalConstructor()->getMock();
         $quoteMock->expects($this->once())->method('getShippingAddress')->willReturn($shippingAddressMock);
         $giftWrapValue = 1000;
-        $shippingAddressMock->expects($this->once())->method('getOscGiftWrapAmount')->willReturn($giftWrapValue);
+        $shippingAddressMock->expects($this->once())->method('getBaseOscGiftWrapAmount')->willReturn($giftWrapValue);
         $cartMock->expects($this->once())->method('addCustomItem')
             ->with(
                 new Phrase('Gift Wrap'),

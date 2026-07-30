@@ -108,7 +108,8 @@ class GiftWrapTest extends TestCase
     public function testAroundProcessWithEmptyExtensionAttributes()
     {
         $quoteAddressTotalMock = $this->getMockBuilder(Total::class)
-            ->setMethods(['getExtensionAttributes', 'setExtensionAttributes', 'getData'])
+            ->onlyMethods(['getData'])
+            ->addMethods(['getExtensionAttributes', 'setExtensionAttributes'])
             ->disableOriginalConstructor()
             ->getMock();
         $addressTotalsMock = ['osc_gift_wrap' => $quoteAddressTotalMock];
@@ -121,6 +122,7 @@ class GiftWrapTest extends TestCase
             ->willReturn(['gift_wrap_amount' => 10]);
         $quoteAddressTotalMock->expects($this->once())->method('getExtensionAttributes')->willReturn(null);
         $totalExtension = $this->getMockBuilder(TotalSegmentExtension::class)
+            ->addMethods(['setGiftWrapAmount'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->totalSegmentExtensionFactoryMock->expects($this->once())->method('create')->willReturn($totalExtension);

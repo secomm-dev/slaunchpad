@@ -21,9 +21,11 @@
 
 namespace Mageplaza\Osc\Test\Unit\Model\Plugin\Customer\Address;
 
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Quote\Model\Quote\Address;
 use Magento\Quote\Model\Quote\Address\ToOrderAddress;
 use Mageplaza\Osc\Model\Plugin\Customer\Address\ConvertQuoteAddressToOrderAddress;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,13 +35,19 @@ use PHPUnit\Framework\TestCase;
 class ConvertQuoteAddressToOrderAddressTest extends TestCase
 {
     /**
+     * @var TimezoneInterface|MockObject
+     */
+    private $timezoneMock;
+
+    /**
      * @var ConvertQuoteAddressToOrderAddress
      */
     private $plugin;
 
     protected function setUp(): void
     {
-        $this->plugin = new ConvertQuoteAddressToOrderAddress();
+        $this->timezoneMock = $this->getMockForAbstractClass(TimezoneInterface::class);
+        $this->plugin = new ConvertQuoteAddressToOrderAddress($this->timezoneMock);
     }
 
     public function testMethod()
@@ -59,7 +67,10 @@ class ConvertQuoteAddressToOrderAddressTest extends TestCase
         /**
          * @var Address $quoteAddressMock
          */
-        $quoteAddressMock = $this->getMockBuilder(Address::class)->disableOriginalConstructor()->getMock();
+        $quoteAddressMock = $this->getMockBuilder(Address::class)
+            ->onlyMethods(['getData'])
+            ->addMethods(['getAddressType'])
+            ->disableOriginalConstructor()->getMock();
         $orderAddressMock = $this->getMockBuilder(\Magento\Sales\Model\Order\Address::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -70,16 +81,26 @@ class ConvertQuoteAddressToOrderAddressTest extends TestCase
 
         $quoteAddressMock->expects($this->exactly(3))
             ->method('getData')
-            ->willReturnOnConsecutiveCalls(['mposc_field_1'], ['mposc_field_2'], ['mposc_field_3'])
-            ->willReturnOnConsecutiveCalls('test1', 'test2', 'test3');
+            ->willReturnMap([
+                ['mposc_field_1', null, 'test1'],
+                ['mposc_field_2', null, 'test2'],
+                ['mposc_field_3', null, 'test3'],
+            ]);
+        $quoteAddressMock->method('getAddressType')->willReturn('shipping');
+        $setDataArgs = [];
         $orderAddressMock->expects($this->exactly(3))
             ->method('setData')
-            ->willReturnOnConsecutiveCalls(
-                ['mposc_field_1', 'test1'],
-                ['mposc_field_2', 'test2'],
-                ['mposc_field_3', 'test3']
-            );
+            ->willReturnCallback(function ($key, $value) use (&$setDataArgs, $orderAddressMock) {
+                $setDataArgs[] = [$key, $value];
+                return $orderAddressMock;
+            });
 
         $this->plugin->aroundConvert($subject, $closureMock, $quoteAddressMock);
+
+        $this->assertEquals([
+            ['mposc_field_1', 'test1'],
+            ['mposc_field_2', 'test2'],
+            ['mposc_field_3', 'test3'],
+        ], $setDataArgs);
     }
 }

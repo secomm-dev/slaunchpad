@@ -122,7 +122,7 @@ class LayoutProcessorTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestGetAddressAttributes()
+    public static function providerTestGetAddressAttributes()
     {
         return [
             [
@@ -198,12 +198,20 @@ class LayoutProcessorTest extends TestCase
         $attributeCollectionMock = $this->getMockBuilder(Collection::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $loadCallCount = 0;
         $this->attributeMetadataDataProviderMock->expects($this->exactly(2))
             ->method('loadAttributesCollection')
-            ->withConsecutive(
-                ['customer_address', 'onestepcheckout_index_index'],
-                ['customer_address', 'customer_register_address']
-            )->willReturn($attributeCollectionMock);
+            ->willReturnCallback(function ($entityType, $formCode) use (&$loadCallCount, $attributeCollectionMock) {
+                $loadCallCount++;
+                if ($loadCallCount === 1) {
+                    $this->assertEquals('customer_address', $entityType);
+                    $this->assertEquals('onestepcheckout_index_index', $formCode);
+                } else {
+                    $this->assertEquals('customer_address', $entityType);
+                    $this->assertEquals('customer_register_address', $formCode);
+                }
+                return $attributeCollectionMock;
+            });
         $attributeMock = $this->getMockBuilder(\Magento\Customer\Model\Attribute::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -221,7 +229,7 @@ class LayoutProcessorTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestAddCustomerAttribute()
+    public static function providerTestAddCustomerAttribute()
     {
         $fields = [
             'postcode' => [

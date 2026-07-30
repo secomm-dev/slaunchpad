@@ -53,7 +53,7 @@ class BlockTest extends TestCase
     {
         $this->helperDataMock = $this->getMockBuilder(Data::class)->disableOriginalConstructor()->getMock();
         $this->requestMock = $this->getMockBuilder(RequestInterface::class)
-            ->setMethods(['getFullActionName'])
+            ->addMethods(['getFullActionName'])
             ->getMockForAbstractClass();
 
         $this->observer = new Block(
@@ -74,7 +74,8 @@ class BlockTest extends TestCase
             ->method('getFullActionName')
             ->willReturn('onestepcheckout_index_index');
         $eventMock = $this->getMockBuilder(Event::class)
-            ->setMethods(['getBlock', 'getTransport'])
+            ->onlyMethods(['getBlock'])
+            ->addMethods(['getTransport'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -83,7 +84,7 @@ class BlockTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $transportMock = $this->getMockBuilder(DataObject::class)
-            ->setMethods(['getHtml', 'setHtml'])
+            ->addMethods(['getHtml', 'setHtml'])
             ->disableOriginalConstructor()->getMock();
 
         $eventMock->expects($this->once())->method('getBlock')->willReturn($blockMock);
@@ -93,10 +94,12 @@ class BlockTest extends TestCase
         $html = 'test';
         $transportMock->expects($this->once())->method('getHtml')->willReturn($html);
         $this->helperDataMock->expects($this->once())->method('jsonEncodeData')->with($oscRoute)->willReturn('"osc"');
+        $this->helperDataMock->expects($this->once())->method('isEnableAmazonPayCv2')->willReturn(false);
         $layoutMock = $this->getMockForAbstractClass(LayoutInterface::class);
         $blockMock->expects($this->once())->method('getLayout')->willReturn($layoutMock);
         $layoutMock->expects($this->once())->method('isBlock')->with('require.js')->willReturn(true);
         $html .= '<script> window.oscRoute = "osc"</script>';
+        $html .= '<script> window.isEnableAmazonPayCv2 = false</script>';
         $transportMock->expects($this->once())->method('setHtml')->with($html);
 
         $this->observer->execute($observerMock);

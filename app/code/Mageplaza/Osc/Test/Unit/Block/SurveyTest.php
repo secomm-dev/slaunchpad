@@ -61,12 +61,8 @@ class SurveyTest extends TestCase
             ->getMock();
 
         $this->checkoutSessionMock = $this->getMockBuilder(CheckoutSession::class)
-            ->setMethods(
-                [
-                'getLastRealOrder',
-                'setOscData'
-                ]
-            )
+            ->onlyMethods(['getLastRealOrder'])
+            ->addMethods(['setOscData'])
             ->disableOriginalConstructor()
             ->getMock();
 

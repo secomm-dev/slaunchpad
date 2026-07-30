@@ -52,14 +52,23 @@ class CustomAttributeListTest extends TestCase
     {
         $attribute = $this->getMockForAbstractClass(AttributeMetadataInterface::class);
 
+        $getAttributeMetadataCounter = 0;
         $this->addressMetadataMock->expects($this->exactly(3))
             ->method('getAttributeMetadata')
-            ->withConsecutive(['mposc_field_1'], ['mposc_field_2'], ['mposc_field_3'])
-            ->willReturnOnConsecutiveCalls($attribute, $attribute, $attribute);
+            ->willReturnCallback(function ($field) use ($attribute, &$getAttributeMetadataCounter) {
+                $expected = ['mposc_field_1', 'mposc_field_2', 'mposc_field_3'];
+                $this->assertSame($expected[$getAttributeMetadataCounter], $field);
+                $getAttributeMetadataCounter++;
+                return $attribute;
+            });
 
+        $getAttributeCodeCounter = 0;
         $attribute->expects($this->exactly(3))
             ->method('getAttributeCode')
-            ->willReturnOnConsecutiveCalls('attribute1', 'attribute2', 'attribute3');
+            ->willReturnCallback(function () use (&$getAttributeCodeCounter) {
+                $returns = ['attribute1', 'attribute2', 'attribute3'];
+                return $returns[$getAttributeCodeCounter++];
+            });
 
         $this->assertEquals(
             [
