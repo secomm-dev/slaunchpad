@@ -25,6 +25,11 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class ShippingDetailsDataBuilder extends AbstractDataBuilder
 {
+    const DEFAULT_WEIGHT_UNIT = 'kg';
+    const DEFAULT_WEIGHT = 500; // default weight 500g if Magento weight is 0
+    const DEFAULT_LENGTH = 10; // default min length 10cm
+    const DEFAULT_WIDTH = 10;   // default min width 10cm
+    const DEFAULT_HEIGHT = 10; // default min height 10cm
 
     public function __construct(
         ConfigInterface       $config,
@@ -69,6 +74,11 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
         $width = ceil($rateRequest->getPackageWidth());
         $height = ceil($rateRequest->getPackageHeight());
 
+        $packageWeight = (int)($rateRequest->getPackageWeight() * $rate);
+        if ($packageWeight <= 0) {
+            $packageWeight = self::DEFAULT_WEIGHT; // default weight 500g if Magento weight is 0
+        }
+
         $data = [
             self::TOKEN => $this->config->getValue('api_token'),
             self::FROM_DISTRICT_ID => $fromDistrictId,
@@ -76,10 +86,10 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
             self::SERVICE_TYPE_ID => null,
             self::TO_DISTRICT_ID => $toDistrictId,
             self::TO_WARD_CODE => $toWardCode,
-            self::WEIGHT => (int)($rateRequest->getPackageWeight() * $rate),
-            self::LENGTH => $length,
-            self::WIDTH => $width,
-            self::HEIGHT => $height,
+            self::WEIGHT => $packageWeight,
+            self::LENGTH => $length ?: self::DEFAULT_LENGTH, // default min length 10cm
+            self::WIDTH => $width ?: self::DEFAULT_WIDTH,   // default min width 10cm
+            self::HEIGHT => $height ?: self::DEFAULT_HEIGHT, // default min height 10cm
             self::COUPON => null,
             self::SHOP_ID => (int)$this->config->getValue('shop_id')
         ];
@@ -118,10 +128,11 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
                 $tmp['name'] = $item->getName();
                 $tmp['code'] = $item->getSku();
                 $tmp['quantity'] = (int)$item->getQty();
-                $tmp['weight'] = ceil($item->getWeight() * $weightRate * $tmp['quantity']);
-                $tmp['width'] = !is_null($item->getWidth()) ? (ceil($item->getWidth()*$tmp['quantity'])) : 0;
-                $tmp['height'] = !is_null($item->getHeight()) ? (ceil($item->getHeight()*$tmp['quantity'])) : 0;
-                $tmp['length'] = !is_null($item->getLength()) ? (ceil($item->getLength()*$tmp['quantity'])) : 0;
+                $itemWeight = ceil($item->getWeight() * $weightRate * $tmp['quantity']);
+                $tmp['weight'] = $itemWeight > 0 ? $itemWeight : self::DEFAULT_WEIGHT;
+                $tmp['width'] = !is_null($item->getWidth()) && $item->getWidth() > 0 ? (ceil($item->getWidth()*$tmp['quantity'])) : self::DEFAULT_WIDTH;
+                $tmp['height'] = !is_null($item->getHeight()) && $item->getHeight() > 0 ? (ceil($item->getHeight()*$tmp['quantity'])) : self::DEFAULT_HEIGHT;
+                $tmp['length'] = !is_null($item->getLength()) && $item->getLength() > 0 ? (ceil($item->getLength()*$tmp['quantity'])) : self::DEFAULT_LENGTH;
 
                 array_push($result, $tmp);
             }

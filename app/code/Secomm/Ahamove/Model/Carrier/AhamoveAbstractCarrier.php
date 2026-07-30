@@ -310,7 +310,7 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
                 ->setRegionCodeTo((string)($regionName ?: $region))
                 ->setStreetTo((string)$this->getFullStreet($request))
                 ->setPostCodeTo((string)$request->getDestPostcode())
-                ->setCountryIdTo((string)$request->getDestCountryId())
+                ->setCountryIdTo((string)$this->ahamoveHelper->getShippingCountryNameByCode($request->getDestCountryId()))
                 ->setNameTo('')
                 ->setRemark('')
                 ->setPhoneTo('');
@@ -318,6 +318,7 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
                 ->setRegionCodeFrom((string)$this->ahamoveHelper->getShippingRegion())
                 ->setStreetFrom((string)$this->ahamoveHelper->getShippingStreet())
                 ->setPostCodeFrom((string)$this->ahamoveHelper->getShippingPostcode())
+                ->setCountryIdFrom((string)$this->ahamoveHelper->getShippingCountryName())
                 ->setNameFrom('')
                 ->setPhoneFrom('');
             return $this->calculateShippingFee($ahamoveAddressFactory);

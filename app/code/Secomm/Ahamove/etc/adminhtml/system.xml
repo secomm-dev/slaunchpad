@@ -89,7 +89,6 @@
                         <label>City of Service</label>
                         <source_model>Secomm\Ahamove\Model\Config\Source\ServiceCityIdConfig</source_model>
                         <config_path>ahamove/general/city_id_service</config_path>
-                        <validate>required</validate>
                         <comment>Select City for Service will be used to when shipping</comment>
                     </field>
                     <field id="refresh_city_button" translate="label" type="button" sortOrder="72" showInDefault="1" showInWebsite="1" showInStore="1">

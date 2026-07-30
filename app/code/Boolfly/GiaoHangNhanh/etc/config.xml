@@ -28,7 +28,7 @@
         </giaohangnhanh_setting>
         <carriers>
             <giaohangnhanh_express>
-                <active>1</active>
+                <active>0</active>
                 <sallowspecific>0</sallowspecific>
                 <model>Boolfly\GiaoHangNhanh\Model\Carrier\GHN\Express</model>
                 <name>E-commerce delivery(Express)</name>
@@ -37,7 +37,7 @@
                 <handling_type>F</handling_type>
             </giaohangnhanh_express>
             <giaohangnhanh_standard>
-                <active>1</active>
+                <active>0</active>
                 <sallowspecific>0</sallowspecific>
                 <model>Boolfly\GiaoHangNhanh\Model\Carrier\GHN\Standard</model>
                 <name>Traditional delivery(Standard)</name>

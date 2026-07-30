@@ -119,8 +119,10 @@ class GenerateRegionCommand extends Command
                 }
             }
             $output->writeln('<info>Generate data successfully.</info>');
+            return 0;
         } else {
             $output->writeln('<error>Generating data was interrupted. Please try again!</error>');
+            return 1;
         }
     }
 

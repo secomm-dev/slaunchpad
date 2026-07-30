@@ -76,6 +76,10 @@ abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\Ahamo
                     ->post();
 
                 $content = $this->api->processResponse($response);
+                if ($this->isDebug()) {
+                    $this->loggerShipping->debug('Ahamove API response after call:');
+                    $this->loggerShipping->debug(json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+                }
                 // Only cache successful results. A failed result (e.g. an auth-fail status code such as 401)
                 // must not be cached, otherwise the fee stays stuck at 0 until the cache TTL expires.
                 if (is_array($content) && count($content) > 0) {
@@ -115,7 +119,7 @@ abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\Ahamo
             }
             $shippingFee = $this->calculateShippingFeeViaPackage($servicePrice);
             return $this->ahamoveHelper->convertPriceToDefaultCurrency($shippingFee);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->_logger->error($exception->getMessage());
             return 0;
         }

@@ -61,12 +61,19 @@ class District implements ArrayInterface
         $storeInfo = $this->storeInformation->getStoreInformationObject($store);
         $districts = $this->config->getDistricts();
         $data = [];
+        $allData = [];
+
+        $storeRegionId = $storeInfo->getRegionId();
+
         foreach ($districts as $district) {
-            if ($district['region_id'] == $storeInfo->getRegionId()) {
-                $data[] = [
-                    'label' => $district['district_name'],
-                    'value' => $district['district_id']
-                ];
+            $option = [
+                'label' => $district['district_name'],
+                'value' => $district['district_id']
+            ];
+            $allData[] = $option;
+
+            if ($storeRegionId && $district['region_id'] == $storeRegionId) {
+                $data[] = $option;
             }
         }
 
@@ -74,6 +81,7 @@ class District implements ArrayInterface
             return $data;
         }
 
-        return [['value' => '', 'label' => __('No district to select.')],];
+        // Fallback: Show all districts if store region isn't selected or didn't match GHN regions
+        return $allData ?: [['value' => '', 'label' => __('No district to select.')]];
     }
 }

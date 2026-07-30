@@ -19,6 +19,7 @@ use Boolfly\GiaoHangNhanh\Model\Carrier\GHN;
 class Standard extends GHN
 {
     const SERVICE_NAME = 'Chuyển phát truyền thống';
+    const SERVICE_TYPE_ID = 5; // GHN API v2 service_type_id for Standard / Hàng nặng
     const MAX_HEIGHT = 20000; //centimeter
     const MAX_WIDTH = 20000; //centimeter
     const MAX_LENGTH = 20000; //centimeter

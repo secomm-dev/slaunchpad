@@ -20,6 +20,7 @@ use Boolfly\GiaoHangNhanh\Model\Carrier\GHN;
 class Express extends GHN
 {
     const SERVICE_NAME = 'Chuyển phát thương mại điện tử';
+    const SERVICE_TYPE_ID = 2; // GHN API v2 service_type_id for Express / Hàng nhẹ
     const MAX_HEIGHT = 200; //centimeter
     const MAX_WIDTH = 200; //centimeter
     const MAX_LENGTH = 200; //centimeter

@@ -237,7 +237,9 @@ abstract class GHN extends AbstractCarrier implements CarrierInterface
     {
         if (count($this->availableServices)) {
             foreach ($this->availableServices as $serviceItem) {
-                if (is_array($serviceItem) && SubjectReader::readServiceName($serviceItem) == static::SERVICE_NAME) {
+                $isMatchName = is_array($serviceItem) && SubjectReader::readServiceName($serviceItem) == static::SERVICE_NAME;
+                $isMatchTypeId = is_array($serviceItem) && defined('static::SERVICE_TYPE_ID') && isset($serviceItem['service_type_id']) && $serviceItem['service_type_id'] == static::SERVICE_TYPE_ID;
+                if ($isMatchName || $isMatchTypeId) {
                     return $serviceItem;
                 }
             }

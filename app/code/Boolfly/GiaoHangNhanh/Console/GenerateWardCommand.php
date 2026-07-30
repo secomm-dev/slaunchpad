@@ -43,17 +43,17 @@ class GenerateWardCommand extends Command
         $this->commandPool = $commandPool;
         parent::__construct($name);
     }
-    
+
     protected function configure()
     {
         $this->setDescription('Generate ward data.');
         parent::configure();
     }
-    
+
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return int|void|null
+     * @return int
      * @throws LocalizedException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -85,8 +85,10 @@ class GenerateWardCommand extends Command
                 }
             }
             $output->writeln('<info>Generate data successfully.</info>');
+            return 0;
         } else {
             $output->writeln('<error>Generating data was interrupted. Please try again!</error>');
+            return 1;
         }
     }
 
@@ -134,7 +136,7 @@ class GenerateWardCommand extends Command
 
     /**
      * Get wards by ID
-     * 
+     *
      * @param int $districtId
      * @return array
      */
@@ -143,7 +145,7 @@ class GenerateWardCommand extends Command
         $commandResult = $this->commandPool->get('get_wards')->execute([
             'district_id' => (int)$districtId,
         ]);
-        
+
         $result = $commandResult->get();
         if (!isset($result['wards'])) {
             return [];

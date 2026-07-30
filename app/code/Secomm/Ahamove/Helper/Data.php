@@ -13,14 +13,14 @@ use Magento\Directory\Model\CurrencyFactory;
 use Magento\Directory\Model\PriceCurrency;
 use Magento\Directory\Model\RegionFactory;
 use Magento\Directory\Model\ResourceModel\Currency;
+use Magento\Framework\App\Area;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Translate\Inline\StateInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Secomm\Ahamove\Model\Config;
-use Magento\Framework\App\Area;
-use Magento\Framework\Translate\Inline\StateInterface;
 use Secomm\Ahamove\Model\Config\Source\Mode;
 
 class Data extends AbstractHelper
@@ -82,7 +82,6 @@ class Data extends AbstractHelper
         return Config::URL_PRODUCTION;
     }
 
-
     /**
      * Get Sandbox Mode.
      *
@@ -128,7 +127,6 @@ class Data extends AbstractHelper
             return $this->getConfig(Config::PRODUCTION_TOKEN);
         }
     }
-
 
     /**
      * Get Phone number of account ahamove.
@@ -339,6 +337,25 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get shipping country name
+     * @return string
+     */
+    public function getShippingCountryName(): string
+    {
+        return $this->getShippingCountryNameByCode($this->getConfig('shipping/origin/country_id'));
+    }
+
+    public function getShippingCountryNameByCode(string $countryCode): string
+    {
+        try {
+            $country = $this->countryFactory->create()->loadByCode($countryCode);
+            return (string)$country->getName();
+        } catch (\Exception $exception) {
+            return $countryCode;
+        }
+    }
+
+    /**
      * Get shipping postcode
      * @return string
      */
@@ -468,7 +485,7 @@ class Data extends AbstractHelper
             $transportSeller = $this->transportBuilder->setTemplateIdentifier(
                 'carriers_ahamove_general_email_notify_webhook'
             )->setTemplateOptions(
-                    ['area' => Area::AREA_FRONTEND,'store' => $storeId]
+                ['area' => Area::AREA_FRONTEND,'store' => $storeId]
             )->setTemplateVars(
                 [
                     'content'=> $content
