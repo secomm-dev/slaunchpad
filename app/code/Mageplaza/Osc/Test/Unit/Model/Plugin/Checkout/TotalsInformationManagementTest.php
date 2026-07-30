@@ -136,9 +136,7 @@ class TotalsInformationManagementTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $cartExtensionMock = $this->getMockBuilder(CartExtensionInterface::class)
-            ->setMethods(['getShippingAssignments'])
-            ->getMockForAbstractClass();
+        $cartExtensionMock = $this->getMockForAbstractClass(CartExtensionInterface::class);
         $this->quoteRepositoryMock->expects($this->once())
             ->method('get')
             ->with($cartId)
@@ -158,9 +156,7 @@ class TotalsInformationManagementTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $cartExtensionMock = $this->getMockBuilder(CartExtensionInterface::class)
-            ->setMethods(['getShippingAssignments'])
-            ->getMockForAbstractClass();
+        $cartExtensionMock = $this->getMockForAbstractClass(CartExtensionInterface::class);
         $this->quoteRepositoryMock->expects($this->once())
             ->method('get')
             ->with($cartId)

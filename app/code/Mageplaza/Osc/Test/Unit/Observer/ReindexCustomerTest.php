@@ -78,7 +78,7 @@ class ReindexCustomerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $eventMock = $this->getMockBuilder(Event::class)
-            ->setMethods(['getOrder'])
+            ->addMethods(['getOrder'])
             ->disableOriginalConstructor()
             ->getMock();
         $observerMock->expects($this->once())->method('getEvent')->willReturn($eventMock);

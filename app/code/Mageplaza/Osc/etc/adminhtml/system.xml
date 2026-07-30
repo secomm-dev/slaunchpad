@@ -99,7 +99,7 @@
                     </field>
                     <field id="route" translate="label comment" type="text" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Route</label>
-                        <validate>letters-only</validate>
+                        <validate>validate-unicode-letters</validate>
                         <comment>Leave empty to use default URL route. Default: onestepcheckout</comment>
                         <depends>
                             <field id="enabled">1</field>

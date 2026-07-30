@@ -363,6 +363,14 @@
                                                             <item name="component" xsi:type="string">Magento_SalesRule/js/view/payment/discount-messages</item>
                                                             <item name="displayArea" xsi:type="string">messages</item>
                                                         </item>
+                                                        <item name="checkout_sales_rule" xsi:type="array">
+                                                            <item name="component" xsi:type="string">Magento_ReCaptchaCheckoutSalesRule/js/checkout-sales-rule</item>
+                                                            <item name="displayArea" xsi:type="string">captcha</item>
+                                                            <item name="formId" xsi:type="string">checkout-sales-rule-request</item>
+                                                            <item name="configSource" xsi:type="string">oscConfig</item>
+                                                            <item name="settings" xsi:type="helper" helper="Mageplaza\Osc\Helper\Data::reCaptchaConfig"/>
+                                                            <item name="reCaptchaId" xsi:type="string">recaptcha-checkout-coupon-apply</item>
+                                                        </item>
                                                     </item>
                                                 </item>
                                                 <item name="addition-information" xsi:type="array">

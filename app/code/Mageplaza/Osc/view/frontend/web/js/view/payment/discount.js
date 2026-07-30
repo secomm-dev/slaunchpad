@@ -36,13 +36,17 @@ define(
         return Component.extend(
             {
                 defaults: {
-                    template: 'Mageplaza_Osc/container/review/discount'
+                    template: 'Mageplaza_Osc/container/review/discount',
+                    isCaptchaEnabledConfig: true
                 },
                 isBlockLoading: discountLoader.isLoading,
 
                 initialize: function () {
                     this._super();
                     this.isApplied(window.checkoutConfig.quoteData.coupon_code);
+
+                    this.isCaptchaEnabled = ko.observable(window.checkoutConfig.oscConfig.isCaptchaEnabledConfig);
+
                     this.isApplied.subscribe(
                         function () {
 

@@ -74,7 +74,7 @@ class ShippingMethodManagementTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestAroundEstimateByAddress()
+    public static function providerTestAroundEstimateByAddress()
     {
         return [
             ['aroundEstimateByAddress', EstimateAddressInterface::class, true],
@@ -104,19 +104,17 @@ class ShippingMethodManagementTest extends TestCase
         };
 
         $cartId = 1;
-        $estimateAddressMethods = get_class_methods($class);
-        if ($isAdditionalMethod) {
-            $estimateAddressMethods[] = 'getStreet';
-            $estimateAddressMethods[] = 'getCity';
-            $estimateAddressMethods[] = 'getId';
-        }
 
         /**
          * @var EstimateAddressInterface $estimateAddressMock
          */
-        $estimateAddressMock = $this->getMockBuilder($class)
-            ->setMethods($estimateAddressMethods)
-            ->getMockForAbstractClass();
+        if ($isAdditionalMethod) {
+            $estimateAddressMock = $this->getMockBuilder($class)
+                ->addMethods(['getStreet', 'getCity', 'getId'])
+                ->getMockForAbstractClass();
+        } else {
+            $estimateAddressMock = $this->getMockForAbstractClass($class);
+        }
         $this->mockSaveAddress($estimateAddressMock);
 
         $this->plugin->{$method}($subject, $closureMock, $cartId, $estimateAddressMock);
@@ -125,7 +123,7 @@ class ShippingMethodManagementTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestAroundEstimateWithQuoteVirtual()
+    public static function providerTestAroundEstimateWithQuoteVirtual()
     {
         return [
             ['aroundEstimateByAddress', EstimateAddressInterface::class],
@@ -159,6 +157,7 @@ class ShippingMethodManagementTest extends TestCase
          * @var EstimateAddressInterface $estimateAddressMock
          */
         $estimateAddressMock = $this->getMockForAbstractClass($class);
+        $estimateAddressMock->method('getCustomAttributes')->willReturn([]);
         $this->mockSaveAddressWithVirtual();
 
         $this->plugin->{$method}($subject, $closureMock, $cartId, $estimateAddressMock);
@@ -260,6 +259,8 @@ class ShippingMethodManagementTest extends TestCase
             AddressInterface::KEY_CITY => 'city',
             AddressInterface::CUSTOMER_ADDRESS_ID => 1
         ];
+
+        $addressMock->method('getCustomAttributes')->willReturn([]);
 
         $shippingAddressMock->expects($this->once())->method('addData')->with($addressData)->willReturnSelf();
         $shippingAddressMock->expects($this->once())->method('save')->willReturnSelf();

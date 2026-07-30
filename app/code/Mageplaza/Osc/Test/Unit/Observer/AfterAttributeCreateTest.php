@@ -52,7 +52,7 @@ class AfterAttributeCreateTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestExecuteWithCustomerAttribute()
+    public static function providerTestExecuteWithCustomerAttribute()
     {
         $fields = [
             [
@@ -139,16 +139,14 @@ class AfterAttributeCreateTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $eventMock = $this->getMockBuilder(Event::class)
-            ->setMethods(['getAttribute'])
+            ->addMethods(['getAttribute'])
             ->disableOriginalConstructor()
             ->getMock();
 
         $observerMock->expects($this->once())->method('getEvent')->willReturn($eventMock);
-        $methods = get_class_methods(CustomerAttribute::class);
-        $methods[] = 'getPosition';
-
         $attributeMock = $this->getMockBuilder(CustomerAttribute::class)
-            ->setMethods($methods)
+            ->onlyMethods(['getAttributeCode', 'getIsRequired', 'isObjectNew', 'getUsedInForms', 'save', 'setDefaultFrontendLabel'])
+            ->addMethods(['getPosition'])
             ->disableOriginalConstructor()->getMock();
         $eventMock->expects($this->once())->method('getAttribute')->willReturn($attributeMock);
         $fieldPosition = [

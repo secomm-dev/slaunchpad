@@ -90,19 +90,36 @@ class SaveTest extends TestCase
     {
         $jsonMock = $this->getMockBuilder(Json::class)->disableOriginalConstructor()->getMock();
         $this->resultJsonFactoryMock->expects($this->once())->method('create')->willReturn($jsonMock);
+        $getParamCount = 0;
         $this->requestMock->expects($this->exactly(2))
             ->method('getParam')
-            ->withConsecutive(
-                ['fields', false],
-                ['oaFields', false]
-            )->willReturn('test');
+            ->willReturnCallback(function ($param, $default = null) use (&$getParamCount) {
+                $getParamCount++;
+                if ($getParamCount === 1) {
+                    $this->assertEquals('fields', $param);
+                    $this->assertFalse($default);
+                } else {
+                    $this->assertEquals('oaFields', $param);
+                    $this->assertFalse($default);
+                }
+                return 'test';
+            });
 
+        $saveConfigCount = 0;
         $this->resourceConfigMock->expects($this->exactly(2))
             ->method('saveConfig')
-            ->withConsecutive(
-                [OscHelper::SORTED_FIELD_POSITION, 'test', ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0],
-                [OscHelper::OA_FIELD_POSITION, 'test', ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0]
-            )->willReturnSelf();
+            ->willReturnCallback(function ($path, $value, $scope, $scopeId) use (&$saveConfigCount) {
+                $saveConfigCount++;
+                if ($saveConfigCount === 1) {
+                    $this->assertEquals(OscHelper::SORTED_FIELD_POSITION, $path);
+                } else {
+                    $this->assertEquals(OscHelper::OA_FIELD_POSITION, $path);
+                }
+                $this->assertEquals('test', $value);
+                $this->assertEquals(ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scope);
+                $this->assertEquals(0, $scopeId);
+                return $this->resourceConfigMock;
+            });
 
         $this->appConfigMock->expects($this->once())->method('reinit')->willReturnSelf();
         $jsonMock->expects($this->once())
@@ -121,19 +138,24 @@ class SaveTest extends TestCase
     {
         $jsonMock = $this->getMockBuilder(Json::class)->disableOriginalConstructor()->getMock();
         $this->resultJsonFactoryMock->expects($this->once())->method('create')->willReturn($jsonMock);
+        $getParamCount2 = 0;
         $this->requestMock->expects($this->exactly(2))
             ->method('getParam')
-            ->withConsecutive(
-                ['fields', false],
-                ['oaFields', false]
-            )->willReturn('test');
+            ->willReturnCallback(function ($param, $default = null) use (&$getParamCount2) {
+                $getParamCount2++;
+                if ($getParamCount2 === 1) {
+                    $this->assertEquals('fields', $param);
+                    $this->assertFalse($default);
+                } else {
+                    $this->assertEquals('oaFields', $param);
+                    $this->assertFalse($default);
+                }
+                return 'test';
+            });
 
         $this->resourceConfigMock->expects($this->atLeastOnce())
             ->method('saveConfig')
-            ->withConsecutive(
-                [OscHelper::SORTED_FIELD_POSITION, 'test', ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0],
-                [OscHelper::OA_FIELD_POSITION, 'test', ScopeConfigInterface::SCOPE_TYPE_DEFAULT, 0]
-            )->willThrowException(new Exception(__('Test')));
+            ->willThrowException(new Exception(__('Test')));
 
         $jsonMock->expects($this->once())
             ->method('setData')

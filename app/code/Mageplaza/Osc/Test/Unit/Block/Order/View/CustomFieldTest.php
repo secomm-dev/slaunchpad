@@ -91,18 +91,32 @@ class CustomFieldTest extends TestCase
             ->willReturn($orderMock);
 
         $billingAddressMock = $this->getMockBuilder(OrderAddressInterface::class)
-            ->setMethods(['getData'])
+            ->addMethods(['getData'])
             ->getMockForAbstractClass();
+        $billingGetDataCallCount = 0;
         $billingAddressMock->expects($this->exactly(3))
             ->method('getData')
-            ->withConsecutive(['mposc_field_1'], ['mposc_field_2'], ['mposc_field_3'])
-            ->willReturnOnConsecutiveCalls('value1', 'value2', '05/26/2020');
+            ->willReturnCallback(function ($key) use (&$billingGetDataCallCount) {
+                $billingGetDataCallCount++;
+                return match ($billingGetDataCallCount) {
+                    1 => (function () use ($key) { $this->assertEquals('mposc_field_1', $key); return 'value1'; })(),
+                    2 => (function () use ($key) { $this->assertEquals('mposc_field_2', $key); return 'value2'; })(),
+                    3 => (function () use ($key) { $this->assertEquals('mposc_field_3', $key); return '05/26/2020'; })(),
+                };
+            });
 
         $orderMock->expects($this->once())->method('getBillingAddress')->willReturn($billingAddressMock);
+        $labelCallCount = 0;
         $this->helperMock->expects($this->exactly(3))
             ->method('getCustomFieldLabel')
-            ->withConsecutive([1], [2], [3])
-            ->willReturnOnConsecutiveCalls('Label1', 'Label2', 'Label3');
+            ->willReturnCallback(function ($index) use (&$labelCallCount) {
+                $labelCallCount++;
+                return match ($labelCallCount) {
+                    1 => (function () use ($index) { $this->assertEquals(1, $index); return 'Label1'; })(),
+                    2 => (function () use ($index) { $this->assertEquals(2, $index); return 'Label2'; })(),
+                    3 => (function () use ($index) { $this->assertEquals(3, $index); return 'Label3'; })(),
+                };
+            });
 
         $result['billing'] = [
             'label' => __('Billing Address'),
@@ -135,27 +149,51 @@ class CustomFieldTest extends TestCase
             ->willReturn($orderMock);
 
         $billingAddressMock = $this->getMockBuilder(OrderAddressInterface::class)
-            ->setMethods(['getData'])
+            ->addMethods(['getData'])
             ->getMockForAbstractClass();
+        $billingGetDataCallCount = 0;
         $billingAddressMock->expects($this->exactly(3))
             ->method('getData')
-            ->withConsecutive(['mposc_field_1'], ['mposc_field_2'], ['mposc_field_3'])
-            ->willReturnOnConsecutiveCalls('value1', 'value2', '05/26/2020');
+            ->willReturnCallback(function ($key) use (&$billingGetDataCallCount) {
+                $billingGetDataCallCount++;
+                return match ($billingGetDataCallCount) {
+                    1 => (function () use ($key) { $this->assertEquals('mposc_field_1', $key); return 'value1'; })(),
+                    2 => (function () use ($key) { $this->assertEquals('mposc_field_2', $key); return 'value2'; })(),
+                    3 => (function () use ($key) { $this->assertEquals('mposc_field_3', $key); return '05/26/2020'; })(),
+                };
+            });
 
         $orderMock->expects($this->once())->method('getBillingAddress')->willReturn($billingAddressMock);
+        $labelCallCount = 0;
         $this->helperMock->expects($this->exactly(6))
             ->method('getCustomFieldLabel')
-            ->withConsecutive([1], [2], [3], [1], [2], [3])
-            ->willReturnOnConsecutiveCalls('Label1', 'Label2', 'Label3', 'Label1', 'Label2', 'Label3');
+            ->willReturnCallback(function ($index) use (&$labelCallCount) {
+                $labelCallCount++;
+                return match ($labelCallCount) {
+                    1 => (function () use ($index) { $this->assertEquals(1, $index); return 'Label1'; })(),
+                    2 => (function () use ($index) { $this->assertEquals(2, $index); return 'Label2'; })(),
+                    3 => (function () use ($index) { $this->assertEquals(3, $index); return 'Label3'; })(),
+                    4 => (function () use ($index) { $this->assertEquals(1, $index); return 'Label1'; })(),
+                    5 => (function () use ($index) { $this->assertEquals(2, $index); return 'Label2'; })(),
+                    6 => (function () use ($index) { $this->assertEquals(3, $index); return 'Label3'; })(),
+                };
+            });
 
         $shippingAddressMock = $this->getMockBuilder(Address::class)
             ->disableOriginalConstructor()
             ->getMock();
 
+        $shippingGetDataCallCount = 0;
         $shippingAddressMock->expects($this->exactly(3))
             ->method('getData')
-            ->withConsecutive(['mposc_field_1'], ['mposc_field_2'], ['mposc_field_3'])
-            ->willReturnOnConsecutiveCalls('value1', 'value2', '05/26/2020');
+            ->willReturnCallback(function ($key) use (&$shippingGetDataCallCount) {
+                $shippingGetDataCallCount++;
+                return match ($shippingGetDataCallCount) {
+                    1 => (function () use ($key) { $this->assertEquals('mposc_field_1', $key); return 'value1'; })(),
+                    2 => (function () use ($key) { $this->assertEquals('mposc_field_2', $key); return 'value2'; })(),
+                    3 => (function () use ($key) { $this->assertEquals('mposc_field_3', $key); return '05/26/2020'; })(),
+                };
+            });
 
         $orderMock->expects($this->once())->method('getShippingAddress')->willReturn($shippingAddressMock);
 
@@ -211,16 +249,30 @@ class CustomFieldTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $shippingGetDataCallCount = 0;
         $shippingAddressMock->expects($this->exactly(3))
             ->method('getData')
-            ->withConsecutive(['mposc_field_1'], ['mposc_field_2'], ['mposc_field_3'])
-            ->willReturnOnConsecutiveCalls('value1', 'value2', '05/26/2020');
+            ->willReturnCallback(function ($key) use (&$shippingGetDataCallCount) {
+                $shippingGetDataCallCount++;
+                return match ($shippingGetDataCallCount) {
+                    1 => (function () use ($key) { $this->assertEquals('mposc_field_1', $key); return 'value1'; })(),
+                    2 => (function () use ($key) { $this->assertEquals('mposc_field_2', $key); return 'value2'; })(),
+                    3 => (function () use ($key) { $this->assertEquals('mposc_field_3', $key); return '05/26/2020'; })(),
+                };
+            });
 
         $orderMock->expects($this->once())->method('getShippingAddress')->willReturn($shippingAddressMock);
+        $labelCallCount = 0;
         $this->helperMock->expects($this->exactly(3))
             ->method('getCustomFieldLabel')
-            ->withConsecutive([1], [2], [3])
-            ->willReturnOnConsecutiveCalls('Label1', 'Label2', 'Label3');
+            ->willReturnCallback(function ($index) use (&$labelCallCount) {
+                $labelCallCount++;
+                return match ($labelCallCount) {
+                    1 => (function () use ($index) { $this->assertEquals(1, $index); return 'Label1'; })(),
+                    2 => (function () use ($index) { $this->assertEquals(2, $index); return 'Label2'; })(),
+                    3 => (function () use ($index) { $this->assertEquals(3, $index); return 'Label3'; })(),
+                };
+            });
 
         $result['shipping'] = [
             'label' => __('Shipping Address'),

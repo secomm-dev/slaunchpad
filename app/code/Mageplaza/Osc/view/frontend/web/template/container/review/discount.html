@@ -53,6 +53,13 @@
                 <!-- ko foreach: getRegion('messages') -->
                 <!-- ko template: getTemplate() --><!-- /ko -->
                 <!--/ko-->
+                <!-- ko if: isCaptchaEnabled() -->
+                <div data-bind="visible: !isApplied()">
+                    <!-- ko foreach: getRegion('captcha') -->
+                    <!-- ko template: getTemplate() --><!-- /ko -->
+                    <!-- /ko -->
+                </div>
+                <!-- /ko -->
             </form>
         </div>
     </div>

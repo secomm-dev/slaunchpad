@@ -68,13 +68,13 @@ class RedirectToOneStepCheckoutTest extends TestCase
          * @var Observer|MockObject $observerMock
          */
         $observerMock = $this->getMockBuilder(Observer::class)
-            ->setMethods(['getRequest'])
+            ->addMethods(['getRequest'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->oscHelperMock->expects($this->once())->method('isEnabled')->willReturn(true);
         $this->oscHelperMock->expects($this->once())->method('isRedirectToOneStepCheckout')->willReturn(true);
         $requestMock = $this->getMockBuilder(RequestInterface::class)
-            ->setMethods(['setParam'])
+            ->addMethods(['setParam'])
             ->getMockForAbstractClass();
         $observerMock->expects($this->once())->method('getRequest')->willReturn($requestMock);
         $this->oscHelperMock->expects($this->once())->method('getOscRoute')->willReturn($oscRoute);

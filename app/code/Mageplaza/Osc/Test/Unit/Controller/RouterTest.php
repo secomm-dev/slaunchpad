@@ -69,7 +69,7 @@ class RouterTest extends TestCase
          * @var RequestInterface $requestMock
          */
         $requestMock = $this->getMockBuilder(RequestInterface::class)
-            ->setMethods(['getPathInfo'])
+            ->addMethods(['getPathInfo'])
             ->getMockForAbstractClass();
         $requestMock->expects($this->once())->method('getPathInfo')->willReturn('test/');
         $this->helperDataMock->expects($this->once())->method('isEnabled')->willReturn(false);
@@ -83,7 +83,7 @@ class RouterTest extends TestCase
          * @var RequestInterface $requestMock
          */
         $requestMock = $this->getMockBuilder(RequestInterface::class)
-            ->setMethods(['getPathInfo'])
+            ->addMethods(['getPathInfo'])
             ->getMockForAbstractClass();
         $requestMock->expects($this->once())->method('getPathInfo')->willReturn('checkout/');
         $this->helperDataMock->expects($this->once())->method('isEnabled')->willReturn(true);
@@ -98,10 +98,9 @@ class RouterTest extends TestCase
          * @var RequestInterface|MockObject $requestMock
          */
         $requestMock = $this->getMockBuilder(RequestInterface::class)
-            ->setMethods(
+            ->addMethods(
                 [
                     'getPathInfo',
-                    'setModuleName',
                     'setControllerName',
                     'setPathInfo',
                     'setAlias'

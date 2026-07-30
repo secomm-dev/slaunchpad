@@ -30,7 +30,9 @@ use Magento\Catalog\Model\Product\Configuration\Item\ItemResolverInterface;
 use Magento\ConfigurableProduct\Block\Product\View\Type\Configurable;
 use Magento\Downloadable\Block\Checkout\Cart\Item\Renderer;
 use Magento\Framework\App\Area;
+use Magento\Framework\App\ObjectManager as AppObjectManager;
 use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\Json\Helper\Data as JsonHelper;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\ObjectManagerInterface;
@@ -115,9 +117,9 @@ class ItemTest extends TestCase
     private $productMock;
 
     /**
-     * @var int
+     * @var array
      */
-    private $at = 0;
+    private $blockReturnMap = [];
 
     protected function setUp(): void
     {
@@ -133,10 +135,8 @@ class ItemTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $viewConfigMethods = get_class_methods(ConfigInterface::class);
-        $viewConfigMethods[] = 'getMediaAttributes';
         $this->viewConfigMock = $this->getMockBuilder(ConfigInterface::class)
-            ->setMethods($viewConfigMethods)
+            ->addMethods(['getMediaAttributes'])
             ->getMockForAbstractClass();
         $this->objectManagerMock = $this->getMockForAbstractClass(ObjectManagerInterface::class);
         $this->repositoryMock = $this->getMockBuilder(Repository::class)
@@ -154,12 +154,13 @@ class ItemTest extends TestCase
                 'objectManager' => $this->objectManagerMock
             ]
         );
+
     }
 
     /**
      * @return array
      */
-    public function providerGetItemOptionsConfigWithConfigurableProduct()
+    public static function providerGetItemOptionsConfigWithConfigurableProduct()
     {
         return [
             [
@@ -170,7 +171,7 @@ class ItemTest extends TestCase
                     ],
                     'configurableAttributes' => [
                         'template' => 'test',
-                        'spConfig' => [],
+                        'spConfig' => '{"sku":[]}',
                     ]
                 ],
                 1,
@@ -180,7 +181,7 @@ class ItemTest extends TestCase
                 [
                     'configurableAttributes' => [
                         'template' => 'test',
-                        'spConfig' => [],
+                        'spConfig' => '{"sku":[]}',
                     ]
                 ],
                 1,
@@ -190,7 +191,7 @@ class ItemTest extends TestCase
                 [
                     'configurableAttributes' => [
                         'template' => 'test',
-                        'spConfig' => [],
+                        'spConfig' => '{"sku":[]}',
                     ]
                 ],
                 new DataObject(),
@@ -220,9 +221,10 @@ class ItemTest extends TestCase
         $configurableMock = $this->getMockBuilder(Configurable::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->layoutMock->expects($this->at($this->at))->method('getBlock')
-            ->with('mposc.configurable.options')
-            ->willReturn($configurableMock);
+        $this->blockReturnMap['mposc.configurable.options'] = $configurableMock;
+        $map = $this->blockReturnMap;
+        $this->layoutMock->method('getBlock')
+            ->willReturnCallback(fn($name) => $map[$name] ?? null);
         $configurableMock->expects($this->once())->method('unsetData')->with('allow_products');
         $configurableMock->expects($this->once())->method('addData')
             ->with(
@@ -237,14 +239,14 @@ class ItemTest extends TestCase
 
         $this->assertEquals(
             $result,
-            $this->helper->getItemOptionsConfig($quoteMock, is_object($item) ? $this->quoteItemMock : $item)
+            $this->helper->getItemOptionsConfig($quoteMock, is_object($item) ? $this->quoteItemMock : $item, true)
         );
     }
 
     /**
      * @return array
      */
-    public function providerGetItemOptionsConfigWithDownloadableProduct()
+    public static function providerGetItemOptionsConfigWithDownloadableProduct()
     {
         return [
             [
@@ -294,9 +296,10 @@ class ItemTest extends TestCase
         $downloadable = $this->getMockBuilder(Renderer::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->layoutMock->expects($this->at($this->at))->method('getBlock')
-            ->with('mposc.downloadable.options')
-            ->willReturn($downloadable);
+        $this->blockReturnMap['mposc.downloadable.options'] = $downloadable;
+        $map = $this->blockReturnMap;
+        $this->layoutMock->method('getBlock')
+            ->willReturnCallback(fn($name) => $map[$name] ?? null);
 
         $downloadable->expects($this->once())->method('setData')
             ->with(
@@ -316,14 +319,14 @@ class ItemTest extends TestCase
 
         $this->assertEquals(
             $result,
-            $this->helper->getItemOptionsConfig($quoteMock, is_object($item) ? $this->quoteItemMock : $item)
+            $this->helper->getItemOptionsConfig($quoteMock, is_object($item) ? $this->quoteItemMock : $item, true)
         );
     }
 
     /**
      * @return array
      */
-    public function providerGetItemOptionsConfigWithBundleProduct()
+    public static function providerGetItemOptionsConfigWithBundleProduct()
     {
         return [
             [
@@ -369,9 +372,10 @@ class ItemTest extends TestCase
         $bundleMock = $this->getMockBuilder(Bundle::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->layoutMock->expects($this->at($this->at))->method('getBlock')
-            ->with('mposc.bundle.options')
-            ->willReturn($bundleMock);
+        $this->blockReturnMap['mposc.bundle.options'] = $bundleMock;
+        $map = $this->blockReturnMap;
+        $this->layoutMock->method('getBlock')
+            ->willReturnCallback(fn($name) => $map[$name] ?? null);
 
         $bundleMock->expects($this->once())->method('setData')
             ->with(
@@ -387,7 +391,7 @@ class ItemTest extends TestCase
 
         $this->assertEquals(
             $result,
-            $this->helper->getItemOptionsConfig($quoteMock, is_object($item) ? $this->quoteItemMock : $item)
+            $this->helper->getItemOptionsConfig($quoteMock, is_object($item) ? $this->quoteItemMock : $item, true)
         );
     }
 
@@ -400,6 +404,32 @@ class ItemTest extends TestCase
      */
     public function initGetItemOptionsConfig($item, $options)
     {
+        $productMetaMock = $this->getMockForAbstractClass(ProductMetadataInterface::class);
+        $productMetaMock->method('getVersion')->willReturn('2.4.6');
+        $this->objectManagerMock->method('get')->willReturnCallback(function ($type) use ($productMetaMock) {
+            if ($type === ProductMetadataInterface::class) {
+                return $productMetaMock;
+            }
+            return null;
+        });
+
+        $jsonHelperMock = $this->getMockBuilder(JsonHelper::class)
+            ->disableOriginalConstructor()->getMock();
+        $jsonHelperMock->method('jsonEncode')->willReturnCallback(function ($value) {
+            return json_encode($value);
+        });
+        $jsonHelperMock->method('jsonDecode')->willReturnCallback(function ($value) {
+            return json_decode($value, true);
+        });
+        $appOmMock = $this->getMockForAbstractClass(ObjectManagerInterface::class);
+        $appOmMock->method('get')->willReturnCallback(function ($type) use ($jsonHelperMock) {
+            if ($type === JsonHelper::class) {
+                return $jsonHelperMock;
+            }
+            return null;
+        });
+        AppObjectManager::setInstance($appOmMock);
+
         $this->quoteItemMock = $this->getMockBuilder(QuoteItem::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -415,11 +445,9 @@ class ItemTest extends TestCase
                 ->willReturn($this->quoteItemMock);
         }
 
-        $productMethods = get_class_methods(Product::class);
-        $productMethods[] = 'setPreconfiguredValues';
-        $productMethods[] = 'getLinksPurchasedSeparately';
         $this->productMock = $this->getMockBuilder(Product::class)
-            ->setMethods($productMethods)
+            ->onlyMethods(['processBuyRequest', 'getOptions'])
+            ->addMethods(['setPreconfiguredValues', 'getLinksPurchasedSeparately'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -433,15 +461,10 @@ class ItemTest extends TestCase
         $this->registryMock->expects($this->once())->method('register')->with('current_product', $this->productMock);
 
         $this->productMock->expects($this->once())->method('getOptions')->willReturn($options);
-        $this->at = 2;
         if ($options) {
             $this->getLayoutMock();
             $optionsMock = $this->getMockBuilder(Options::class)->disableOriginalConstructor()->getMock();
-            $this->layoutMock->expects($this->at($this->at))
-                ->method('getBlock')
-                ->with('mposc.product.options')
-                ->willReturn($optionsMock);
-            $this->at++;
+            $this->blockReturnMap['mposc.product.options'] = $optionsMock;
             $optionsMock->expects($this->once())->method('setProduct')->willReturn($this->productMock);
             $optionsMock->expects($this->once())->method('toHtml')->willReturn('test');
             $optionsMock->expects($this->once())->method('getJsonConfig')->willReturn([]);
@@ -474,7 +497,7 @@ class ItemTest extends TestCase
                 ->willReturnSelf();
 
             $blockMock = $this->getMockBuilder(BlockInterface::class)
-                ->setMethods(['setData'])
+                ->addMethods(['setData'])
                 ->getMockForAbstractClass();
             $this->layoutMock->expects($this->once())->method('getAllBlocks')->willReturn([$blockMock]);
             $blockMock->expects($this->once())->method('setData')->with('area', Area::AREA_FRONTEND)->willReturnSelf();
@@ -486,7 +509,7 @@ class ItemTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestGetItemImages()
+    public static function providerTestGetItemImages()
     {
         $attributes = [
             'type' => 'thumbnail',
@@ -562,19 +585,29 @@ class ItemTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $productMetaMock = $this->getMockForAbstractClass(ProductMetadataInterface::class);
-        $this->objectManagerMock->expects($this->at(0))->method('get')
-            ->with(ProductMetadataInterface::class)
-            ->willReturn($productMetaMock);
         $productMetaMock->expects($this->once())->method('getVersion')->willReturn($version);
         $productMock = $this->getMockForAbstractClass(ProductInterface::class);
         if ($isValidVersion) {
             $itemResolver = $this->getMockForAbstractClass(ItemResolverInterface::class);
-            $this->objectManagerMock->expects($this->at(1))->method('get')
-                ->with(ItemResolverInterface::class)
-                ->willReturn($itemResolver);
-
+            $this->objectManagerMock->method('get')
+                ->willReturnCallback(function ($type) use ($productMetaMock, $itemResolver) {
+                    if ($type === ProductMetadataInterface::class) {
+                        return $productMetaMock;
+                    }
+                    if ($type === ItemResolverInterface::class) {
+                        return $itemResolver;
+                    }
+                    return null;
+                });
             $itemResolver->expects($this->once())->method('getFinalProduct')->willReturn($productMock);
         } else {
+            $this->objectManagerMock->method('get')
+                ->willReturnCallback(function ($type) use ($productMetaMock) {
+                    if ($type === ProductMetadataInterface::class) {
+                        return $productMetaMock;
+                    }
+                    return null;
+                });
             $item->expects($this->once())->method('getProduct')->willReturn($productMock);
         }
 

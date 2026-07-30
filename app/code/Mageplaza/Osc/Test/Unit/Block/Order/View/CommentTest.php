@@ -72,7 +72,7 @@ class CommentTest extends TestCase
     public function testGetOrderComment()
     {
         $orderMock = $this->getMockBuilder(Order::class)
-            ->setMethods(['getOscOrderComment'])
+            ->addMethods(['getOscOrderComment'])
             ->disableOriginalConstructor()->getMock();
         $this->coreRegistryMock->expects($this->once())
             ->method('registry')

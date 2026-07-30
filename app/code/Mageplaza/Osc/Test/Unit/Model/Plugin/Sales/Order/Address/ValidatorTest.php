@@ -67,7 +67,7 @@ class ValidatorTest extends TestCase
          * @var Address $addressMock
          */
         $addressMock = $this->getMockBuilder(Address::class)
-            ->setMethods(['setShouldIgnoreValidation'])
+            ->addMethods(['setShouldIgnoreValidation'])
             ->disableOriginalConstructor()->getMock();
         $this->helperMock->expects($this->once())->method('isEnabled')->willReturn(true);
         $addressMock->expects($this->once())->method('setShouldIgnoreValidation')->with(true);
