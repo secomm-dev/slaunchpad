@@ -33,9 +33,12 @@ class Shipping
             $rateRequest->setShippingAddress($shippingAddress);
             $this->setValueAttribute($rateRequest);
 
-            // if ($district = $shippingAddress->getDistrict()) {
-            //     $rateRequest->setDistrict($district);
-            // }
+            if ($district = $shippingAddress->getDistrict()) {
+                $rateRequest->setDistrict($district);
+            }
+            if ($districtId = $shippingAddress->getDistrictId()) {
+                $rateRequest->setDistrictId($districtId);
+            }
         } catch (LocalizedException $exception) {
             return;
         }

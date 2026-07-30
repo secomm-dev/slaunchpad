@@ -5,15 +5,15 @@
  *  * See COPYING.txt for license details.
  *  *
  *  * @author    info@boolfly.com
- * *  @project   Giao hang nhanh
+ *  * @project   Giao hang nhanh
  */
 namespace Boolfly\GiaoHangNhanh\Model\Service\Request;
 
+use Boolfly\GiaoHangNhanh\Helper\Rate;
 use Boolfly\GiaoHangNhanh\Model\Config;
 use Boolfly\GiaoHangNhanh\Model\Service\Helper\SubjectReader;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Boolfly\GiaoHangNhanh\Helper\Rate;
 use Boolfly\IntegrationBase\Model\Service\ConfigInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\Quote\AddressFactory;
 use Magento\Store\Model\Information;
 use Magento\Store\Model\StoreManagerInterface;
@@ -25,7 +25,7 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class ShippingDetailsDataBuilder extends AbstractDataBuilder
 {
-    const DEFAULT_WEIGHT_UNIT = 'kg';
+    const DEFAULT_WEIGHT_UNIT = 'kgs';
     const DEFAULT_WEIGHT = 500; // default weight 500g if Magento weight is 0
     const DEFAULT_LENGTH = 10; // default min length 10cm
     const DEFAULT_WIDTH = 10;   // default min width 10cm
@@ -48,7 +48,6 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
             $helperRate
         );
     }
-
 
     /**
      * @param array $buildSubject
@@ -104,10 +103,10 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
         if (isset($buildSubject['total_order'])) {
             $data[self::COD_VALUE] = $buildSubject['total_order'];
         }
- 
+
         return $data;
     }
-    
+
     /**
      * Get all items of order
      * @param \Magento\Quote\Model\Quote\Item[] $items
@@ -123,7 +122,7 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
              * 5: Traditional Delivery
              * 2: E-commerce Delivery
              */
-            foreach($items as $item){
+            foreach ($items as $item) {
                 $tmp = [];
                 $tmp['name'] = $item->getName();
                 $tmp['code'] = $item->getSku();
