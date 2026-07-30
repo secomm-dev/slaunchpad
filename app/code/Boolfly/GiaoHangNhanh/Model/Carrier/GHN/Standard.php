@@ -33,16 +33,16 @@ class Standard extends GHN
 
     public function canDisplay($request): bool
     {
-        $length = ceil($request->getPackageLength());
-        $width = ceil($request->getPackageWidth());
-        $height = ceil($request->getPackageHeight());
+        $length = ceil($request->getPackageLength() ?? 0);
+        $width = ceil($request->getPackageWidth() ?? 0);
+        $height = ceil($request->getPackageHeight() ?? 0);
         //If not set value, that means no limit
 
         $maxWeight = $this->getMaxWeight() ?: self::MAX_WEIGHT;
         $maxWidth = $this->getMaxWidth() ?: self::MAX_WIDTH;
         $maxHeight = $this->getMaxHeight() ?: self::MAX_HEIGHT;
         $maxLength = $this->getMaxLength() ?: self::MAX_LENGTH;
-        $weightKgMagento = $this->ghnHelperData->convertToKilograms($request->getPackageWeight());
+        $weightKgMagento = $this->ghnHelperData->convertToKilograms($request->getPackageWeight() ?? 0);
         $ruleWeightKgGhn = ($length * $width * $height) / 5000;
         $maxConvertedMassOrder = $this->getMaxConvertedMassOrder() ?: self::MAX_CONVERTED_MASS;
         if ($length <= $maxLength && $width <= $maxWidth && $height <= $maxHeight && $weightKgMagento <= $maxWeight && $ruleWeightKgGhn <= $maxConvertedMassOrder) {

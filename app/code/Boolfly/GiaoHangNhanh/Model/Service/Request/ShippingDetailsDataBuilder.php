@@ -70,9 +70,9 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
             $fromDistrictId = '';
             $fromWardCode = '';
         }
-        $length = ceil($rateRequest->getPackageLength());
-        $width = ceil($rateRequest->getPackageWidth());
-        $height = ceil($rateRequest->getPackageHeight());
+        $length = ceil((float)($rateRequest->getPackageLength() ?? 0));
+        $width = ceil((float)($rateRequest->getPackageWidth() ?? 0));
+        $height = ceil((float)($rateRequest->getPackageHeight() ?? 0));
 
         $packageWeight = (int)($rateRequest->getPackageWeight() * $rate);
         if ($packageWeight <= 0) {
