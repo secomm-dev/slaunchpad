@@ -1,0 +1,148 @@
+<?php
+/**
+ * Copyright © Magefan (support@magefan.com). All rights reserved.
+ * Please visit Magefan.com for license details (https://magefan.com/end-user-license-agreement).
+ */
+
+declare(strict_types=1);
+
+namespace Magefan\AdminUserGuide\Block\Adminhtml;
+
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\View\Element\Template;
+use Magefan\AdminUserGuide\Model\XmlReader;
+use Magefan\AdminUserGuide\Model\Config;
+use Magento\Framework\AuthorizationInterface;
+
+class Help extends \Magento\Framework\View\Element\Template
+{
+    /**
+     * @var XmlReader
+     */
+    private $xmlReader;
+
+    /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * @var AuthorizationInterface
+     */
+    private $authorization;
+
+    /**
+     * Help constructor.
+     *
+     * @param Template\Context $context
+     * @param XmlReader $xmlReader
+     * @param Config $config
+     * @param AuthorizationInterface $authorization
+     * @param array $data
+     */
+    public function __construct(
+        Template\Context $context,
+        XmlReader $xmlReader,
+        Config $config,
+        AuthorizationInterface $authorization,
+        array $data = []
+    ) {
+        parent::__construct($context, $data);
+        $this->xmlReader = $xmlReader;
+        $this->config = $config;
+        $this->authorization = $authorization;
+    }
+
+    /**
+     * Get link ot the help page
+     *
+     * @return array
+     * @throws FileSystemException
+     */
+    public function getPageHelp()
+    {
+        $data = [];
+        if (!$this->authorization->isAllowed('Magefan_AdminUserGuide::help')) {
+            return $data;
+        }
+
+        if (!$this->config->isEnabled()) {
+            return $data;
+        }
+
+        $guideData = $this->xmlReader->get();
+
+        $fullActionName = str_replace('_', '-', $this->getRequest()->getFullActionName());
+        $secondActionName = $fullActionName;
+
+        if ('adminhtml-system-config-edit' == $secondActionName) {
+            $secondActionName .= '-section-' . $this->getRequest()->getParam('section');
+        }
+
+        $data = [];
+        if ($guideData) {
+            foreach ($guideData as $item) {
+                if (empty($item['class']) || empty($item['title'])) {
+                    continue;
+                }
+
+                $classes = explode(' ', $item['class']);
+                if (in_array($fullActionName, $classes)
+                    || in_array($secondActionName, $classes)
+                ) {
+                    $links = $this->getLinks($item);
+
+                    if (!count($links)) {
+                        continue;
+                    }
+
+                    foreach ($links as $klink => $link) {
+                        if (false !== strpos($link, 'magefan.com') &&
+                            false === strpos($link, 'utm_source')
+                        ) {
+                            $linkInfo = explode('#', $link);
+                            $linkInfo[0] .= (false !== strpos($linkInfo[0], '?')) ? '&' : '?';
+                            $linkInfo[0] .= 'utm_source=admin&utm_medium=admin-user-guide';
+                            $linkInfo[0] .= '&utm_campaign=admin-user-guide';
+                            $link = implode('#', $linkInfo);
+                            $links[$klink] = $link;
+                        }
+                    }
+
+                    $data[] = [
+                        'title' => $item['title'],
+                        'links' => $links
+                    ];
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get links from item
+     *
+     * @param array $item
+     * @return array
+     */
+    private function getLinks($item)
+    {
+        $links = [];
+        $itemsCount = count($item);
+        for ($i = 0; $i <= $itemsCount - 2; $i++) {
+            if ($i == 0) {
+                if (isset($item['link'])) {
+                    $links[] = $item['link'];
+                }
+                $i++;
+            } else {
+                if (isset($item['link' . $i])) {
+                    $links[] = $item['link' . $i];
+                }
+            }
+        }
+
+        return $links;
+    }
+}
