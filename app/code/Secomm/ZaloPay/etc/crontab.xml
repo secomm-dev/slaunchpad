@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="secomm_zalopay_refund_cronjob" instance="Secomm\ZaloPay\Cron\RefundCronjob" method="execute">
+            <!--At every 15th minute-->
+            <schedule>*/15 * * * *</schedule>
+        </job>
+        <job name="secomm_zalopay_refund_cleanup_cronjob" instance="Secomm\ZaloPay\Cron\RefundCleanupCronjob" method="execute">
+            <!--At 00:00 on day-of-month 1-->
+            <schedule>0 0 1 * *</schedule>
+        </job>
+    </group>
+</config>
