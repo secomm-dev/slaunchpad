@@ -9,9 +9,9 @@
  */
 namespace Secomm\GiaoHangNhanh\Model\Service\Validator;
 
-use Secomm\IntegrationBase\Model\Service\ConfigInterface;
-use Secomm\IntegrationBase\Model\Service\Validator\AbstractValidator;
-use Secomm\IntegrationBase\Model\Service\Validator\ResultInterfaceFactory;
+use Secomm\GiaoHangNhanh\Model\Integration\ConfigInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Validator\AbstractValidator;
+use Secomm\GiaoHangNhanh\Model\Integration\Validator\ResultInterfaceFactory;
 
 /**
  * Class AbstractResponseValidator

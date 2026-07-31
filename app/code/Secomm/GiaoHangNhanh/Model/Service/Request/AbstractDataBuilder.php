@@ -11,8 +11,8 @@ namespace Secomm\GiaoHangNhanh\Model\Service\Request;
 
 use Secomm\GiaoHangNhanh\Helper\Rate;
 use Secomm\GiaoHangNhanh\Model\Config;
-use Secomm\IntegrationBase\Model\Service\ConfigInterface;
-use Secomm\IntegrationBase\Model\Service\Request\BuilderInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\ConfigInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Request\BuilderInterface;
 use Magento\Quote\Model\Quote\AddressFactory;
 use Magento\Store\Model\Information;
 use Magento\Store\Model\StoreManagerInterface;

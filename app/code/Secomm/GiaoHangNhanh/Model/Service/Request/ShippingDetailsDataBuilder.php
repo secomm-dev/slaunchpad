@@ -12,7 +12,7 @@ namespace Secomm\GiaoHangNhanh\Model\Service\Request;
 use Secomm\GiaoHangNhanh\Helper\Rate;
 use Secomm\GiaoHangNhanh\Model\Config;
 use Secomm\GiaoHangNhanh\Model\Service\Helper\SubjectReader;
-use Secomm\IntegrationBase\Model\Service\ConfigInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\ConfigInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\Quote\AddressFactory;
 use Magento\Store\Model\Information;

@@ -18,7 +18,7 @@ use Magento\Sales\Api\Data\OrderInterface;
  *
  * @package Secomm\GiaoHangNhanh\Model\Service\Helper
  */
-class SubjectReader extends \Secomm\IntegrationBase\Model\Service\SubjectReader
+class SubjectReader extends \Secomm\GiaoHangNhanh\Model\Integration\SubjectReader
 {
     /**
      * Reads rate request from subject

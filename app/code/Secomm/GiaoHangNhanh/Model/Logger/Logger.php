@@ -9,7 +9,7 @@
  */
 namespace Secomm\GiaoHangNhanh\Model\Logger;
 
-use Secomm\IntegrationBase\Model\Logger\Logger as BaseLogger;
+use Secomm\GiaoHangNhanh\Model\Integration\Logger\Logger as BaseLogger;
 
 /**
  * Class Logger

@@ -9,7 +9,7 @@
  */
 namespace Secomm\GiaoHangNhanh\Observer;
 
-use Secomm\IntegrationBase\Model\Service\Command\CommandPoolInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Command\CommandPoolInterface;
 use Exception;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;

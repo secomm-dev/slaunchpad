@@ -9,14 +9,14 @@
  */
 namespace Secomm\GiaoHangNhanh\Model\Service\Command;
 
-use Secomm\IntegrationBase\Model\Service\Command;
-use Secomm\IntegrationBase\Model\Service\Command\CommandException;
-use Secomm\IntegrationBase\Model\Service\CommandInterface;
-use Secomm\IntegrationBase\Model\Service\Http\ClientInterface;
-use Secomm\IntegrationBase\Model\Service\Http\TransferFactoryInterface;
-use Secomm\IntegrationBase\Model\Service\Request\BuilderInterface;
-use Secomm\IntegrationBase\Model\Service\Response\HandlerInterface;
-use Secomm\IntegrationBase\Model\Service\Validator\ValidatorInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Command;
+use Secomm\GiaoHangNhanh\Model\Integration\Command\CommandException;
+use Secomm\GiaoHangNhanh\Model\Integration\CommandInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\ClientInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\TransferFactoryInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Request\BuilderInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Response\HandlerInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Validator\ValidatorInterface;
 use Psr\Log\LoggerInterface;
 
 /**

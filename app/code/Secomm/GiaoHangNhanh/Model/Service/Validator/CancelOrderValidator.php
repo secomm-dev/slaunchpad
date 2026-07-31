@@ -10,7 +10,7 @@
 namespace Secomm\GiaoHangNhanh\Model\Service\Validator;
 
 use Secomm\GiaoHangNhanh\Model\Service\Helper\SubjectReader;
-use Secomm\IntegrationBase\Model\Service\Validator\ResultInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Validator\ResultInterface;
 
 /**
  * Class CancelOrderValidator

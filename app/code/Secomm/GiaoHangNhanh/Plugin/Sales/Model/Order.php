@@ -10,7 +10,7 @@
 namespace Secomm\GiaoHangNhanh\Plugin\Sales\Model;
 
 use Secomm\GiaoHangNhanh\Model\Service\Helper\SubjectReader;
-use Secomm\IntegrationBase\Model\Service\Command\CommandPoolInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Command\CommandPoolInterface;
 use Exception;
 use Magento\Sales\Model\Order as MageOrder;
 use Psr\Log\LoggerInterface;

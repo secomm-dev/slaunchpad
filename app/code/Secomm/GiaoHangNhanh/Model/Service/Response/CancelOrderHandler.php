@@ -10,7 +10,7 @@
 namespace Secomm\GiaoHangNhanh\Model\Service\Response;
 
 use Secomm\GiaoHangNhanh\Model\Service\Helper\SubjectReader;
-use Secomm\IntegrationBase\Model\Service\Response\HandlerInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Response\HandlerInterface;
 use Magento\Sales\Model\Order;
 
 /**

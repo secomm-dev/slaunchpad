@@ -437,7 +437,6 @@ return [
         'Secomm_Base' => 1,
         'Secomm_DisableFileUpload' => 1,
         'Secomm_GiaoHangNhanh' => 1,
-        'Secomm_IntegrationBase' => 1,
         'Secomm_VietNamAddress' => 1,
         'Secomm_VietNamMarket' => 1,
         'Smile_ElasticsuiteAdminNotification' => 1,

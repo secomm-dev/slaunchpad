@@ -9,12 +9,12 @@
  */
 namespace Secomm\GiaoHangNhanh\Model\Service\Http\Client;
 
-use Secomm\IntegrationBase\Model\Logger\Logger;
-use Secomm\IntegrationBase\Model\Service\Http\ClientException;
-use Secomm\IntegrationBase\Model\Service\Http\ClientInterface;
-use Secomm\IntegrationBase\Model\Service\Http\ConverterException;
-use Secomm\IntegrationBase\Model\Service\Http\ConverterInterface;
-use Secomm\IntegrationBase\Model\Service\Http\TransferInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Logger\Logger;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\ClientException;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\ClientInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\ConverterException;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\ConverterInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\TransferInterface;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\HTTP\Client\CurlFactory;
 

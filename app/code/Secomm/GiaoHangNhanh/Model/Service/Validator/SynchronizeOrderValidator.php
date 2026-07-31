@@ -11,7 +11,7 @@ namespace Secomm\GiaoHangNhanh\Model\Service\Validator;
 
 use Secomm\GiaoHangNhanh\Model\Service\Helper\SubjectReader;
 use Secomm\GiaoHangNhanh\Model\Service\Request\AbstractDataBuilder;
-use Secomm\IntegrationBase\Model\Service\Validator\ResultInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Validator\ResultInterface;
 
 /**
  * Class SynchronizeOrderValidator

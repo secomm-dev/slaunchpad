@@ -9,8 +9,8 @@
  */
 namespace Secomm\GiaoHangNhanh\Model\Service\Http\Converter;
 
-use Secomm\IntegrationBase\Model\Service\Http\ConverterException;
-use Secomm\IntegrationBase\Model\Service\Http\ConverterInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\ConverterException;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\ConverterInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Psr\Log\LoggerInterface;
 

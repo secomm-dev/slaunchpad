@@ -10,7 +10,7 @@
 namespace Secomm\GiaoHangNhanh\Console;
 
 use Secomm\GiaoHangNhanh\Model\Service\Helper\SubjectReader;
-use Secomm\IntegrationBase\Model\Service\Command\CommandPoolInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Command\CommandPoolInterface;
 use Magento\Directory\Model\RegionFactory;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;

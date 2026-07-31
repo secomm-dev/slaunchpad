@@ -9,7 +9,7 @@
  */
 namespace Secomm\GiaoHangNhanh\Console;
 
-use Secomm\IntegrationBase\Model\Service\Command\CommandPoolInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Command\CommandPoolInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
 use Symfony\Component\Console\Command\Command;

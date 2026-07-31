@@ -1,5 +1,29 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Secomm\GiaoHangNhanh\Model\Integration\Command\CommandPoolInterface" type="Secomm\GiaoHangNhanh\Model\Integration\Command\CommandPool"/>
+    <preference for="Secomm\GiaoHangNhanh\Model\Integration\Validator\ResultInterface" type="Secomm\GiaoHangNhanh\Model\Integration\Validator\Result"/>
+    <type name="Secomm\GiaoHangNhanh\Model\Integration\Http\Client\Zend">
+        <arguments>
+            <argument name="converter" xsi:type="object">Secomm\GiaoHangNhanh\Model\Integration\Http\Converter\JsonToArray</argument>
+        </arguments>
+    </type>
+    <virtualType name="Secomm\GiaoHangNhanh\Model\Integration\Logger\VirtualDebug" type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/secomm_ghn_integration.log</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Secomm\GiaoHangNhanh\Model\Integration\Logger\VirtualLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="debug" xsi:type="object">Secomm\GiaoHangNhanh\Model\Integration\Logger\VirtualDebug</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\GiaoHangNhanh\Model\Integration\Logger\Logger">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\GiaoHangNhanh\Model\Integration\Logger\VirtualLogger</argument>
+        </arguments>
+    </type>
     <!-- <preference for="Magento\Customer\Controller\Address\FormPost" type="Secomm\GiaoHangNhanh\Controller\Customer\Address\FormPost"/> -->
     <type name="Secomm\GiaoHangNhanh\Console\GenerateRegionCommand">
         <arguments>
@@ -78,7 +102,7 @@
             <argument name="commandPool" xsi:type="object">GhnCommandPool</argument>
         </arguments>
     </type>
-    <virtualType name="GhnCommandPool" type="Secomm\IntegrationBase\Model\Service\Command\CommandPool">
+    <virtualType name="GhnCommandPool" type="Secomm\GiaoHangNhanh\Model\Integration\Command\CommandPool">
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="get_services" xsi:type="string">GetServicesCommand</item>
@@ -204,7 +228,7 @@
             <argument name="converter" xsi:type="object">Secomm\GiaoHangNhanh\Model\Service\Http\Converter\JsonToArray</argument>
         </arguments>
     </virtualType>
-    <virtualType name="GhnConfig" type="Secomm\IntegrationBase\Model\Service\Config\Config">
+    <virtualType name="GhnConfig" type="Secomm\GiaoHangNhanh\Model\Integration\Config\Config">
         <arguments>
             <argument name="integrationType" xsi:type="const">Secomm\GiaoHangNhanh\Model\Config::INTEGRATION_TYPE</argument>
             <argument name="pathPattern" xsi:type="const">Secomm\GiaoHangNhanh\Model\Config::DEFAULT_PATH_PATTERN</argument>

@@ -10,10 +10,10 @@
 namespace Secomm\GiaoHangNhanh\Model\Service\Http;
 
 use Secomm\GiaoHangNhanh\Model\Service\Helper\Authorization;
-use Secomm\IntegrationBase\Model\Service\ConfigInterface;
-use Secomm\IntegrationBase\Model\Service\Http\TransferBuilder;
-use Secomm\IntegrationBase\Model\Service\Http\TransferFactoryInterface;
-use Secomm\IntegrationBase\Model\Service\Http\TransferInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\ConfigInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\TransferBuilder;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\TransferFactoryInterface;
+use Secomm\GiaoHangNhanh\Model\Integration\Http\TransferInterface;
 
 /**
  * Class TransferFactory

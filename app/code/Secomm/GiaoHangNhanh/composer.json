@@ -2,8 +2,7 @@
     "name": "secomm/module-giaohangnhanh",
     "description": "Giao hang nhanh shipping method",
     "require": {
-        "php": "~7.1.3||~7.2.0||~7.3.0",
-        "secomm/module-integration-base": "^1.0.0"
+        "php": "~7.1.3||~7.2.0||~7.3.0"
     },
     "type": "magento2-module",
     "license": [
