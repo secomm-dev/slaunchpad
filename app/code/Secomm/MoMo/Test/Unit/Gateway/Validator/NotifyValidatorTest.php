@@ -15,7 +15,7 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Validator\ResultInterface;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 use PHPUnit\Framework\TestCase;
-use Secomm\MoMo\Gateway\Config\Config;
+use Secomm\MoMo\Model\Config;
 use Secomm\MoMo\Gateway\Helper\Signature;
 use Secomm\MoMo\Gateway\Validator\NotifyValidator;
 
@@ -77,9 +77,10 @@ class NotifyValidatorTest extends TestCase
                 return $result;
             });
 
-        // Order adapter exposes grand total — the amount to compare against.
+        // Order adapter exposes grand total + entity id — the values to compare against.
         $this->orderAdapter = $this->createMock(OrderAdapter::class);
         $this->orderAdapter->method('getGrandTotalAmount')->willReturn(1000.0);
+        $this->orderAdapter->method('getId')->willReturn(123);
 
         $this->validator = new NotifyValidator($this->resultFactory, $this->config, $this->signature);
     }
@@ -192,6 +193,26 @@ class NotifyValidatorTest extends TestCase
             'amount' => 500, // mismatched — order grand total is 1000.
             'transId' => 'T-1',
             'resultCode' => 0,
+        ]);
+
+        $this->validator->validate($this->subject($response));
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * extraData that does not map to the order entity id is rejected — fetch-to-confirm.
+     *
+     * @return void
+     */
+    public function testExtraDataMismatchFails(): void
+    {
+        $response = $this->signed([
+            'orderId' => 'ORD-1',
+            'amount' => 1000,
+            'transId' => 'T-1',
+            'resultCode' => 0,
+            'extraData' => base64_encode('999'), // wrong entity id
         ]);
 
         $this->validator->validate($this->subject($response));

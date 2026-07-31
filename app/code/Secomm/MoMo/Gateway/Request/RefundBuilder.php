@@ -12,7 +12,7 @@ namespace Secomm\MoMo\Gateway\Request;
 
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
-use Secomm\MoMo\Gateway\Config\Config;
+use Secomm\MoMo\Model\Config;
 use Secomm\MoMo\Gateway\Helper\Signature;
 use Secomm\MoMo\Gateway\Response\TransactionHandler;
 

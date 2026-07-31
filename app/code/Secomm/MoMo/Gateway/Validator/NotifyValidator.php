@@ -16,7 +16,7 @@ namespace Secomm\MoMo\Gateway\Validator;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Validator\AbstractValidator;
 use Magento\Payment\Gateway\Validator\ResultInterface;
-use Secomm\MoMo\Gateway\Config\Config;
+use Secomm\MoMo\Model\Config;
 use Secomm\MoMo\Gateway\Helper\Signature;
 
 class NotifyValidator extends AbstractValidator
@@ -100,6 +100,16 @@ class NotifyValidator extends AbstractValidator
                 'MoMo amount mismatch (expected %1, got %2).',
                 [$expectedAmount, $notifyAmount ?? 'unknown']
             );
+        }
+
+        // Fetch-to-confirm (paysquad): if extraData is returned, verify it maps
+        // back to THIS order's entity id. Guards against orderId-only spoofing.
+        $extraData = (string)($response['extraData'] ?? '');
+        if ($extraData !== '') {
+            $decoded = base64_decode($extraData, true);
+            if ($decoded === false || (string)$order->getId() !== $decoded) {
+                $errors[] = __('MoMo extraData does not match the order.');
+            }
         }
 
         return $this->createResult(empty($errors), $errors);

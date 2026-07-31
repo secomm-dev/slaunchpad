@@ -42,13 +42,23 @@ class ReturnValidator extends AbstractResponseValidator
     }
 
     /**
+     * ZaloPay return callback status: 1 = paid, anything else = not paid.
+     */
+    private const STATUS_PAID = 1;
+
+    /**
      * Validate return callback from ZaloPay redirect.
      *
      * NOTE: The Return (redirect) callback is NOT the authoritative payment
      * confirmation — IPN is. ZaloPay return URL exposes GET params with field
-     * names that differ from the request (appid, apptransid, amount, apptime,
-     * embeddata, item, mac). We validate leniently here: amount + transaction
-     * reference; MAC is verified authoritatively by the IPN flow.
+     * names that differ from the request (appid, apptransid, status, amount,
+     * apptime, embeddata, item, mac). We validate here: status (paid) +
+     * transaction reference + best-effort amount; MAC is verified
+     * authoritatively by the IPN flow.
+     *
+     * IMPORTANT: status must equal 1 (paid). Without this check an un-paid
+     * return (e.g. customer let the payment page timer expire) would be treated
+     * as success because apptransid is always present.
      *
      * @param array $validationSubject
      * @return ResultInterface
@@ -59,8 +69,9 @@ class ReturnValidator extends AbstractResponseValidator
     {
         $response = SubjectReader::readResponse($validationSubject);
 
-        // Transaction id is the hard requirement (proves it is a real ZaloPay callback).
-        $validationResult = $this->validateTransactionId($response);
+        // status=1 is the hard proof the customer actually paid on the ZaloPay page.
+        $validationResult = $this->validateTransactionId($response)
+            && $this->validatePaymentStatus($response);
 
         // Amount check is best-effort. The Return redirect is non-authoritative
         // (IPN confirms authoritatively), so if VND conversion is not possible
@@ -80,6 +91,19 @@ class ReturnValidator extends AbstractResponseValidator
         }
 
         return $this->createResult($validationResult, $errorMessages);
+    }
+
+    /**
+     * Validate the ZaloPay payment status on Return: must be 1 (paid).
+     *
+     * @param array $response
+     * @return bool
+     */
+    protected function validatePaymentStatus(array $response): bool
+    {
+        $status = $response['status'] ?? null;
+
+        return $status !== null && (int)$status === self::STATUS_PAID;
     }
 
     /**

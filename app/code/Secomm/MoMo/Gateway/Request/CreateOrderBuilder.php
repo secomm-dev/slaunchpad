@@ -12,7 +12,7 @@ namespace Secomm\MoMo\Gateway\Request;
 
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
-use Secomm\MoMo\Gateway\Config\Config;
+use Secomm\MoMo\Model\Config;
 use Secomm\MoMo\Gateway\Helper\Signature;
 
 class CreateOrderBuilder implements BuilderInterface
@@ -59,16 +59,18 @@ class CreateOrderBuilder implements BuilderInterface
         // validated to VND before this method runs.
         $amount = (int)SubjectReader::readAmount($buildSubject);
         $extraData = base64_encode((string)$order->getEntityId());
+        // Encode text fields so characters like & = cannot break the rawSignature.
         $orderInfo = (string)__('Payment for order #%1', $orderId);
 
-        // rawSignature MUST follow MoMo's exact field order.
+        // rawSignature MUST follow MoMo's exact field order. Text values are
+        // URL-encoded so reserved characters (&, =) cannot alter the signature.
         $rawParams = [
             'accessKey' => $this->config->getAccessKey(),
             'amount' => $amount,
             'extraData' => $extraData,
             'ipnUrl' => $this->config->getNotifyUrl(),
             'orderId' => $orderId,
-            'orderInfo' => $orderInfo,
+            'orderInfo' => rawurlencode($orderInfo),
             'partnerCode' => $this->config->getPartnerCode(),
             'redirectUrl' => $this->config->getReturnUrl(),
             'requestId' => $requestId,

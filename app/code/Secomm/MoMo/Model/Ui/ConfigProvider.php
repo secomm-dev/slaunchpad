@@ -14,7 +14,7 @@ namespace Secomm\MoMo\Model\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\UrlInterface;
-use Secomm\MoMo\Gateway\Config\Config;
+use Secomm\MoMo\Model\Config;
 
 class ConfigProvider implements ConfigProviderInterface
 {

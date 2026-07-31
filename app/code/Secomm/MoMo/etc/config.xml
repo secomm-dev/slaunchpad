@@ -22,7 +22,7 @@
                 <order_status>pending_payment</order_status>
                 <can_initialize>1</can_initialize>
                 <can_authorize>0</can_authorize>
-                <can_capture>1</can_capture>
+                <can_capture>0</can_capture>
                 <can_void>0</can_void>
                 <can_refund>1</can_refund>
                 <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>

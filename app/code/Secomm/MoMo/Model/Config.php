@@ -5,13 +5,17 @@
  * Reads payment/momo_payment/* values, decrypts the encrypted secret/access keys
  * and resolves the MoMo API endpoint by sandbox mode.
  *
+ * Per checklist §2, the module-wide config reader (ScopeConfigInterface wrapper,
+ * secret decryption, endpoint builder) lives at Model/Config.php — mirroring
+ * Magento\Paypal\Model\Config — not in Gateway/Config/.
+ *
  * @author    Secomm Teams
  * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
  * @package   Secomm_MoMo
  */
 declare(strict_types=1);
 
-namespace Secomm\MoMo\Gateway\Config;
+namespace Secomm\MoMo\Model;
 
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Payment\Gateway\ConfigInterface;
@@ -58,7 +62,7 @@ class Config
      * @param EncryptorInterface $encryptor
      */
     public function __construct(
-        \Magento\Payment\Gateway\ConfigInterface $config,
+        ConfigInterface $config,
         EncryptorInterface $encryptor
     ) {
         $this->config = $config;

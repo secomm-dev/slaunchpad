@@ -108,8 +108,16 @@ class Notify extends Action implements CsrfAwareActionInterface, HttpPostActionI
         try {
             $incrementId = (string)($response['orderId'] ?? '');
             $order = $this->loadOrderByIncrementId($incrementId);
-            if ($order === null || $order->getState() !== Order::STATE_PENDING_PAYMENT) {
-                // Already processed or unknown — acknowledge so MoMo stops retrying.
+
+            if ($order === null) {
+                // Unknown order — do not acknowledge as success (could be spam/probe).
+                $resultJson->setHttpResponseCode(404);
+
+                return $resultJson->setData(['resultCode' => 1, 'message' => 'Order not found']);
+            }
+
+            if ($order->getState() !== Order::STATE_PENDING_PAYMENT) {
+                // Already processed (idempotent) — acknowledge so MoMo stops retrying.
                 return $resultJson->setData(['resultCode' => 0]);
             }
 

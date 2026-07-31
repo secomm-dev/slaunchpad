@@ -17,7 +17,7 @@
     </virtualType>
 
     <!-- Module-wide config reader (decrypt secret_key, build endpoint by mode) -->
-    <type name="Secomm\MoMo\Gateway\Config\Config">
+    <type name="Secomm\MoMo\Model\Config">
         <arguments>
             <argument name="config" xsi:type="object">MoMoConfig</argument>
         </arguments>
@@ -80,7 +80,7 @@
     <!-- Refund command (/v2/gateway/api/refund) -->
     <virtualType name="MoMoRefundTransferFactory" type="Secomm\MoMo\Gateway\Http\TransferFactory">
         <arguments>
-            <argument name="urlPath" xsi:type="const">Secomm\MoMo\Gateway\Config\Config::PATH_REFUND</argument>
+            <argument name="urlPath" xsi:type="const">Secomm\MoMo\Model\Config::PATH_REFUND</argument>
         </arguments>
     </virtualType>
     <virtualType name="MoMoRefundCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
