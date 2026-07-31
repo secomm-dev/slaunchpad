@@ -1,0 +1,221 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLoginPro
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var Social $block */
+
+use Mageplaza\SocialLoginPro\Block\Manager\Social;
+
+$helperData  = $this->helper(\Mageplaza\SocialLoginPro\Helper\Data::class);
+$modal = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class)
+    ->createModal()
+    ->withDialogRefName('my-dialog')
+    ->withContent('
+        <div id="popup_comfirm" class="bg-white rounded-md shadow-md p-4 w-80 min-h-[150px] text-center flex flex-col justify-between">
+         <p class="text-gray-800 text-base font-semibold">' . __('Are you sure to disconnect from this social channel?') . '</p>
+            <div class="mt-4 flex justify-center gap-4">
+                <button @click="hideMyDialog()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                  ' . __('Cancel') . '
+                </button>
+                <button @click="confirmDisconnect(); hideMyDialog()" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                  ' . __('Confirm') . '
+                </button>
+            </div>
+        </div>
+    ');
+?>
+
+<div x-data="{
+    ...hyva.modal(),
+    selectedSocial: null,
+    init() {
+        window.openMyDialog = function (social) {
+            this.selectedSocial = social;
+            this.show('my-dialog');
+        }.bind(this);
+        window.hideMyDialog = function () {
+            this.hide('my-dialog');
+        }.bind(this);
+    },
+    confirmDisconnect() {
+        if (this.selectedSocial) {
+            fetch(this.selectedSocial.ajaxUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'type=' + this.selectedSocial.btnKey
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(() => {
+                alert('Lỗi Ajax. Vui lòng thử lại!');
+            });
+        }
+    }
+}" x-init="init()">
+    <?= /* @noEscape */ $modal ?>
+</div>
+
+
+<div class="block block-dashboard-social-login">
+    <h2 class="block-title my-6 flex justify-between items-center card">
+        <span class="text-2xl block"><?= /* @noEscape */
+            __('Activate Social Login Connect') ?></span>
+    </h2>
+    <div class="block-content mp-12">
+        <div class="flex flex-wrap justify-between -m-4">
+            <div class="w-full p-4">
+                <div class="flex p-8 sm:flex-row flex-col h-full card">
+                    <div class="box-content">
+                        <div class="block social-login-authentication-popup col-mp">
+                            <div x-data="initSocials()" style=" display: flex; flex-wrap: wrap;">
+                                <template x-for="(social, key) in socials" :key="key">
+                                    <div class="block-content" style="float: left; margin-right: 5px;">
+                                        <div class="actions-toolbar social-btn"
+                                             :class="social.label.toLowerCase() + '-login'">
+                                            <a class="btn btn-block btn-social" style="text-align: center;"
+                                               :class="'btn-' + social.btnKey.toLowerCase()"
+                                               :href="social.connected ? social.ajaxUrl : social.login_url"
+                                               @click.prevent="handleClick(social)">
+                                                <span class="fa" :class="'fa-' + social.btnKey.toLowerCase()"></span>
+                                                <span x-text="social.connected ? 'Disconnect' : social.label"></span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Popup Modal -->
+<div x-data="{ showPopup: false, message: '', type: 'success' }">
+    <!-- Modal -->
+    <template x-if="showPopup">
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+                <!-- Icon -->
+                <div class="flex items-center justify-center mb-3">
+                    <template x-if="type === 'success'">
+                        <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </template>
+                    <template x-if="type === 'error'">
+                        <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </template>
+                </div>
+
+                <!-- Nội dung -->
+                <p class="text-center text-lg font-medium" x-text="message"></p>
+
+                <!-- Nút đóng -->
+                <button @click="showPopup = false"
+                        class="mt-4 w-full text-white py-2 rounded-lg hover:bg-blue-600">
+                    OK
+                </button>
+            </div>
+        </div>
+    </template>
+    <div x-data="initSocials()">
+        <template x-for="social in socials" :key="social.btnKey">
+            <button @click="handleClick(social)" class="px-4 py-2 rounded text-white">
+                <span x-text="social.label"></span>
+            </button>
+        </template>
+
+        <!-- Popup Confirm -->
+        <div x-data="{ showConfirm: false, confirmMessage: '', confirmCallback: null }">
+            <template x-if="showConfirm">
+                <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+                        <p class="text-center text-lg font-medium" x-text="confirmMessage"></p>
+                        <div class="mt-4 flex justify-between">
+                            <button @click="showConfirm = false" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">
+                                Hủy
+                            </button>
+                            <button @click="confirmCallback(); showConfirm = false" class="px-4 py-2 bg-red-500 text-white rounded-lg">
+                                Xác nhận
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <script>
+
+        /**
+         *
+         * @returns {{handleClick(*): void, socials: *}}
+         */
+        function initSocials() {
+            return {
+                socials: <?= /* @noEscape */  $block->getAvailableSocialsPro(); ?>,
+
+                handleClick(social) {
+                    if (social.connected) {
+                        openMyDialog(social);
+                    } else {
+                        var date = new Date();
+                        var currentTime = date.getTime();
+                        var popupParams = getPopupParams(500, 420);
+                        window.open(social.login_url + '?' + currentTime, social.label, popupParams);
+                    }
+                }
+            };
+        }
+        /**
+         *
+         * @param w
+         * @param h
+         * @param l
+         * @param t
+         * @returns {string}
+         */
+        function getPopupParams(w = 500, h = 420, l = null, t = null) {
+            var screenX = window.screenX ?? window.screenLeft;
+            var screenY = window.screenY ?? window.screenTop;
+            var outerWidth = window.outerWidth ?? document.body.clientWidth;
+            var outerHeight = window.outerHeight ?? (document.body.clientHeight - 22);
+
+            var left = l ?? Math.round(screenX + (outerWidth - w) / 2);
+            var top = t ?? Math.round(screenY + (outerHeight - h) / 2.5);
+
+            return `width=${w},height=${h},left=${left},top=${top}`;
+        }
+    </script>
+
+
+

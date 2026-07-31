@@ -88,15 +88,16 @@ class StaticBlockTest extends TestCase
     {
         $this->layoutMock = $this->getMockForAbstractClass(LayoutInterface::class);
         $this->staticBock->setLayout($this->layoutMock);
+        $this->oscHelperMock->expects($this->once())->method('isEnabled')->willReturn(true);
         $this->oscHelperMock->expects($this->once())->method('isEnableStaticBlock')->willReturn(false);
 
-        $this->staticBock->getStaticBlock();
+        $this->assertEquals([], $this->staticBock->getStaticBlock());
     }
 
     /**
      * @return array
      */
-    public function providerTestGetStaticBlock()
+    public static function providerTestGetStaticBlock()
     {
         return [
             [
@@ -195,19 +196,28 @@ class StaticBlockTest extends TestCase
     {
         $this->layoutMock = $this->getMockForAbstractClass(LayoutInterface::class);
         $this->staticBock->setLayout($this->layoutMock);
+        $this->oscHelperMock->expects($this->once())->method('isEnabled')->willReturn(true);
         $this->oscHelperMock->expects($this->once())->method('isEnableStaticBlock')->willReturn(true);
         $this->oscHelperMock->expects($this->once())->method('getStaticBlockList')->willReturn($staticBlockList);
         $blockInterfaceMock = $this->getMockBuilder(BlockInterface::class)
-            ->setMethods(['setBlockId'])
+            ->addMethods(['setBlockId'])
             ->getMockForAbstractClass();
 
         $this->layoutMock->expects($this->exactly(2))
             ->method('createBlock')
             ->with(Block::class)->willReturn($blockInterfaceMock);
+        $setBlockIdCallCount = 0;
         $blockInterfaceMock->expects($this->exactly(2))
             ->method('setBlockId')
-            ->withConsecutive([1], [2])
-            ->willReturnSelf();
+            ->willReturnCallback(function ($blockId) use (&$setBlockIdCallCount, $blockInterfaceMock) {
+                $setBlockIdCallCount++;
+                if ($setBlockIdCallCount === 1) {
+                    $this->assertEquals(1, $blockId);
+                } else {
+                    $this->assertEquals(2, $blockId);
+                }
+                return $blockInterfaceMock;
+            });
         $blockInterfaceMock->expects($this->exactly(2))
             ->method('toHtml')
             ->willReturnOnConsecutiveCalls('test1', 'test2');

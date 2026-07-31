@@ -37,6 +37,7 @@ use Magento\Framework\Locale\Resolver;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Newsletter\Model\Subscriber;
+use Magento\ReCaptchaUi\Model\UiConfigResolverInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Address extends Data
@@ -93,6 +94,7 @@ class Address extends Data
      * @param ReinitableConfigInterface     $appConfig
      * @param Subscriber                    $subscriber
      * @param Session                       $checkoutSession
+     * @param UiConfigResolverInterface     $captchaUiConfigResolver
      */
     public function __construct(
         Context $context,
@@ -108,17 +110,18 @@ class Address extends Data
         Config $resourceConfig,
         ReinitableConfigInterface $appConfig,
         Subscriber $subscriber,
-        Session $checkoutSession
+        Session $checkoutSession,
+        UiConfigResolverInterface $captchaUiConfigResolver
     ) {
-        $this->_directoryList = $directoryList;
-        $this->_localeResolver = $localeResolver;
-        $this->_regionModel = $regionModel;
-        $this->addressHelper = $addressHelper;
+        $this->_directoryList                = $directoryList;
+        $this->_localeResolver               = $localeResolver;
+        $this->_regionModel                  = $regionModel;
+        $this->addressHelper                 = $addressHelper;
         $this->attributeMetadataDataProvider = $attributeMetadataDataProvider;
-        $this->resourceConfig = $resourceConfig;
-        $this->appConfig = $appConfig;
+        $this->resourceConfig                = $resourceConfig;
+        $this->appConfig                     = $appConfig;
 
-        parent::__construct($context, $objectManager, $storeManager, $encryptor, $json, $subscriber, $checkoutSession);
+        parent::__construct($context, $objectManager, $storeManager, $encryptor, $json, $subscriber, $checkoutSession, $captchaUiConfigResolver);
     }
 
     /**

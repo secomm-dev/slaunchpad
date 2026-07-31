@@ -1,0 +1,24 @@
+{
+    "zalo_pay_refund": {
+        "column": {
+            "entity_id": true,
+            "order_id": true,
+            "increment_id": true,
+            "additional_information": true,
+            "m_refund_id": true,
+            "is_processed": true,
+            "credit_memo_id": true,
+            "amount": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "ZALO_PAY_REFUND_ENTITY_ID": true,
+            "ZALO_PAY_REFUND_CREDIT_MEMO_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "ZALO_PAY_REFUND_CREDIT_MEMO_ID_SALES_CREDITMEMO_ENTITY_ID": true
+        }
+    }
+}

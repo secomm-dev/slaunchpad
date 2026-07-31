@@ -90,10 +90,9 @@ class GuestCheckoutManagementTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $quoteIdMethods = get_class_methods(QuoteIdMask::class);
-        $quoteIdMethods[] = 'getQuoteId';
         $this->quoteIdMaskMock = $this->getMockBuilder(QuoteIdMask::class)
-            ->setMethods($quoteIdMethods)
+            ->onlyMethods(['load'])
+            ->addMethods(['getQuoteId'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -179,7 +178,7 @@ class GuestCheckoutManagementTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestSaveEmailToQuote()
+    public static function providerTestSaveEmailToQuote()
     {
         return [
             [
@@ -201,10 +200,8 @@ class GuestCheckoutManagementTest extends TestCase
      */
     public function testSaveEmailToQuote($result, $isThrow)
     {
-        $quoteMethods = get_class_methods(Quote::class);
-        $quoteMethods[] = 'setCustomerEmail';
         $quoteMock = $this->getMockBuilder(Quote::class)
-            ->setMethods($quoteMethods)
+            ->addMethods(['setCustomerEmail'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->cartRepositoryMock->expects($this->once())->method('getActive')

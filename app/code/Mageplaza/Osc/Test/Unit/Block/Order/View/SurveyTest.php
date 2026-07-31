@@ -76,7 +76,7 @@ class SurveyTest extends TestCase
     public function testGetSurveyQuestion()
     {
         $orderMock = $this->getMockBuilder(Order::class)
-            ->setMethods(['getOscSurveyQuestion'])
+            ->addMethods(['getOscSurveyQuestion'])
             ->disableOriginalConstructor()->getMock();
         $this->coreRegistryMock->expects($this->once())
             ->method('registry')
@@ -100,7 +100,7 @@ class SurveyTest extends TestCase
     public function testGetSurveyAnswers()
     {
         $orderMock = $this->getMockBuilder(Order::class)
-            ->setMethods(['getOscSurveyAnswers'])
+            ->addMethods(['getOscSurveyAnswers'])
             ->disableOriginalConstructor()->getMock();
         $this->coreRegistryMock->expects($this->once())
             ->method('registry')

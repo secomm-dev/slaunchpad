@@ -55,52 +55,50 @@ use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Mageplaza\Osc\Controller\Index\Index;
 use Mageplaza\Osc\Helper\Data;
-use PHPUnit\Framework\MockObject\Matcher\InvokedCount as InvokedCount;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Log\LoggerInterface;
 use ReflectionException;
 
 class IndexTest extends TestCase
 {
     /**
-     * @var ProductRepository|PHPUnit_Framework_MockObject_MockObject
+     * @var ProductRepository|MockObject
      */
     private $productRepositoryMock;
 
     /**
-     * @var StoreManagerInterface|PHPUnit_Framework_MockObject_MockObject
+     * @var StoreManagerInterface|MockObject
      */
     private $storeManagerMock;
 
     /**
-     * @var Cart|PHPUnit_Framework_MockObject_MockObject
+     * @var Cart|MockObject
      */
     private $cartMock;
 
     /**
-     * @var Configurable|PHPUnit_Framework_MockObject_MockObject
+     * @var Configurable|MockObject
      */
     private $configurableMock;
 
     /**
-     * @var TotalsCollector|PHPUnit_Framework_MockObject_MockObject
+     * @var TotalsCollector|MockObject
      */
     private $totalsCollectorMock;
 
     /**
-     * @var ShippingMethodManagementInterface|PHPUnit_Framework_MockObject_MockObject
+     * @var ShippingMethodManagementInterface|MockObject
      */
     private $shippingMethodManagementMock;
 
     /**
-     * @var CheckoutSession|PHPUnit_Framework_MockObject_MockObject
+     * @var CheckoutSession|MockObject
      */
     private $checkoutSessionMock;
 
     /**
-     * @var Data|PHPUnit_Framework_MockObject_MockObject
+     * @var Data|MockObject
      */
     private $helperMock;
 
@@ -169,7 +167,7 @@ class IndexTest extends TestCase
         $this->cartMock = $this->getMockBuilder(Cart::class)->disableOriginalConstructor()->getMock();
         $this->configurableMock = $this->getMockBuilder(Configurable::class)->disableOriginalConstructor()->getMock();
         $this->checkoutSessionMock = $this->getMockBuilder(CheckoutSession::class)
-            ->setMethods(['setCartWasUpdated'])
+            ->addMethods(['setCartWasUpdated'])
             ->disableOriginalConstructor()->getMock();
 
         $this->storeManagerMock = $this->getMockForAbstractClass(StoreManagerInterface::class);
@@ -178,20 +176,21 @@ class IndexTest extends TestCase
         $this->shippingMethodManagementMock = $this->getMockForAbstractClass(ShippingMethodManagementInterface::class);
 
         $this->requestMock = $this->getMockBuilder(RequestInterface::class)
-            ->setMethods(['isSecure', 'getHeader'])
+            ->addMethods(['getHeader', 'getRequestString'])
             ->getMockForAbstractClass();
         $this->quoteRepositoryMock = $this->getMockForAbstractClass(CartRepositoryInterface::class);
         $this->loggerMock = $this->getMockForAbstractClass(LoggerInterface::class);
 
         $this->resultRedirectFactoryMock = $this->getMockBuilder(RedirectFactory::class)
             ->disableOriginalConstructor()
-            ->setMethods(['create'])
+            ->onlyMethods(['create'])
             ->getMock();
 
         $contextMock->method('getResultRedirectFactory')->willReturn($this->resultRedirectFactoryMock);
         $contextMock->method('getMessageManager')->willReturn($this->messageManager);
         $contextMock->method('getObjectManager')->willReturn($this->objectManagerMock);
         $contextMock->method('getRequest')->willReturn($this->requestMock);
+        $this->requestMock->method('getRequestString')->willReturn('onestepcheckout/');
         $this->indexController = $this->objectManager->getObject(
             Index::class,
             [
@@ -234,6 +233,7 @@ class IndexTest extends TestCase
     public function testExecuteWithGuestCheckoutDisabled()
     {
         $this->helperMock->expects($this->once())->method('isEnabled')->willReturn(true);
+        $this->helperMock->method('getOscRoute')->willReturn('onestepcheckout');
         $onepageMock = $this->getMockBuilder(Onepage::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -271,7 +271,7 @@ class IndexTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestExecuteWithAddProductCoupon()
+    public static function providerTestExecuteWithAddProductCoupon()
     {
         return [
             [
@@ -313,12 +313,9 @@ class IndexTest extends TestCase
         $onepageMock = $this->getMockBuilder(Onepage::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $quoteMethods = get_class_methods(Quote::class);
-        $quoteMethods[] = 'getHasError';
-        $quoteMethods[] = 'getCouponCode';
-        $quoteMethods[] = 'setCouponCode';
         $quoteMock = $this->getMockBuilder(Quote::class)
-            ->setMethods($quoteMethods)
+            ->onlyMethods(['hasItems', 'validateMinimumAmount', 'getShippingAddress', 'getItemsCount', 'collectTotals'])
+            ->addMethods(['getHasError', 'getCouponCode', 'setCouponCode'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -334,10 +331,19 @@ class IndexTest extends TestCase
             ->with($quoteMock)
             ->willReturn(true);
 
-        $this->requestMock->expects($this->at(0))
+        $getParamCallCount = 0;
+        $this->requestMock->expects($this->exactly(2))
             ->method('getParam')
-            ->with('sku')
-            ->willReturn($sku);
+            ->willReturnCallback(function ($param) use (&$getParamCallCount, $sku, $coupon) {
+                $getParamCallCount++;
+                if ($getParamCallCount === 1) {
+                    $this->assertEquals('sku', $param);
+                    return $sku;
+                } else {
+                    $this->assertEquals('coupon', $param);
+                    return $coupon;
+                }
+            });
 
         if ($sku) {
             $storeMock = $this->getMockForAbstractClass(StoreInterface::class);
@@ -398,10 +404,19 @@ class IndexTest extends TestCase
                     ->method('getConfigurableAttributesAsArray')
                     ->with($productMock)
                     ->willReturn($attributes);
+                $getDataCallCount = 0;
                 $productMock->expects($this->exactly(2))
                     ->method('getData')
-                    ->withConsecutive(['size'], ['color'])
-                    ->willReturnOnConsecutiveCalls('5594', '5477');
+                    ->willReturnCallback(function ($key) use (&$getDataCallCount) {
+                        $getDataCallCount++;
+                        if ($getDataCallCount === 1) {
+                            $this->assertEquals('size', $key);
+                            return '5594';
+                        } else {
+                            $this->assertEquals('color', $key);
+                            return '5477';
+                        }
+                    });
                 $requestInfoMock = [
                     'product' => 1,
                     'super_attribute' => [
@@ -430,16 +445,11 @@ class IndexTest extends TestCase
         $quoteMock->expects($this->once())->method('getHasError')->willReturn(false);
         $quoteMock->expects($this->once())->method('validateMinimumAmount')->willReturn($isMinAmount);
 
-        $this->requestMock->expects($this->at(1))
-            ->method('getParam')
-            ->with('coupon')
-            ->willReturn($coupon);
-
         if ($coupon) {
             $quoteMock->expects($this->once())->method('getCouponCode')->willReturn('');
             $quoteMock->expects($this->once())->method('getItemsCount')->willReturn(true);
             $addressMock = $this->getMockBuilder(Address::class)
-                ->setMethods(['setCollectShippingRates'])
+                ->addMethods(['setCollectShippingRates'])
                 ->disableOriginalConstructor()
                 ->getMock();
             $quoteMock->expects($this->once())->method('getShippingAddress')->willReturn($addressMock);
@@ -452,7 +462,7 @@ class IndexTest extends TestCase
         }
 
         $redirectPath = 'onestepcheckout';
-        $this->helperMock->expects($this->once())->method('getOscRoute')->willReturn($redirectPath);
+        $this->helperMock->method('getOscRoute')->willReturn($redirectPath);
 
         $resultRedirectMock = $this->getMockBuilder(Redirect::class)
             ->disableOriginalConstructor()->getMock();
@@ -469,36 +479,36 @@ class IndexTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestExecuteWithRegenerateSessionId()
+    public static function providerTestExecuteWithRegenerateSessionId()
     {
         return [
             [
                 'secure' => false,
-                'referer' => 'https://abcd.com/',
+                'refer' => 'https://abcd.com/',
                 'expectedCall' => self::once()
             ],
             [
                 'secure' => true,
-                'referer' => false,
+                'refer' => false,
                 'expectedCall' => self::once()
             ],
             [
                 'secure' => true,
-                'referer' => 'http://abcd.com/',
+                'refer' => 'http://abcd.com/',
                 'expectedCall' => self::once()
             ],
             [
                 'secure' => true,
-                'referer' => 'https://abcd.com/',
+                'refer' => 'https://abcd.com/',
                 'expectedCall' => self::never()
             ],
         ];
     }
 
     /**
-     * @param string       $refer
-     * @param boolean      $secure
-     * @param InvokedCount $expectedCall
+     * @param string  $refer
+     * @param boolean $secure
+     * @param mixed   $expectedCall
      *
      * @dataProvider providerTestExecuteWithRegenerateSessionId
      *
@@ -507,14 +517,14 @@ class IndexTest extends TestCase
      */
     public function testExecuteWithRegenerateSessionId($secure, $refer, $expectedCall)
     {
+        $this->helperMock->method('getOscRoute')->willReturn('onestepcheckout');
         $this->helperMock->expects($this->once())->method('isEnabled')->willReturn(true);
         $onepageMock = $this->getMockBuilder(Onepage::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $quoteMethods = get_class_methods(Quote::class);
-        $quoteMethods[] = 'getHasError';
         $quoteMock = $this->getMockBuilder(Quote::class)
-            ->setMethods($quoteMethods)
+            ->onlyMethods(['hasItems', 'validateMinimumAmount', 'getShippingAddress'])
+            ->addMethods(['getHasError'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -530,10 +540,19 @@ class IndexTest extends TestCase
             ->with($quoteMock)
             ->willReturn(true);
 
+        $getParamCount = 0;
         $this->requestMock->expects($this->exactly(2))
             ->method('getParam')
-            ->withConsecutive(['sku'], ['coupon'])
-            ->willReturnOnConsecutiveCalls([], '');
+            ->willReturnCallback(function ($param) use (&$getParamCount) {
+                $getParamCount++;
+                if ($getParamCount === 1) {
+                    $this->assertEquals('sku', $param);
+                    return [];
+                } else {
+                    $this->assertEquals('coupon', $param);
+                    return '';
+                }
+            });
 
         $quoteMock->expects($this->once())->method('hasItems')->willReturn(true);
         $quoteMock->expects($this->once())->method('getHasError')->willReturn(false);
@@ -548,11 +567,16 @@ class IndexTest extends TestCase
 
         $this->customerSessionMock->expects($expectedCall)->method('regenerateId')->willReturnSelf();
         $addressMock = $this->getMockBuilder(Address::class)
-            ->setMethods(['setCollectShippingRates', 'getCountryId'])
+            ->onlyMethods(['getCountryId'])
+            ->addMethods(['setCollectShippingRates'])
             ->disableOriginalConstructor()
             ->getMock();
         $addressMock->method('getCountryId')->willReturn('US');
         $quoteMock->expects($this->once())->method('getShippingAddress')->willReturn($addressMock);
+
+        $this->checkoutSessionMock->expects($this->once())->method('setCartWasUpdated')->with(false);
+        $this->shippingMethodManagementMock->method('getList')->willReturn([]);
+
         $resultPageMock = $this->getMockBuilder(Page::class)
             ->disableOriginalConstructor()->getMock();
         $this->resultPageFactoryMock->expects($this->once())->method('create')->willReturn($resultPageMock);
@@ -570,36 +594,33 @@ class IndexTest extends TestCase
 
     /**
      * @return array
-     * @throws ReflectionException
      */
-    public function providerTestExecuteWithInitDefaultMethod()
+    public static function providerTestExecuteWithInitDefaultMethod()
     {
-        $shippingMethodMock = $this->getMockForAbstractClass(ShippingMethodInterface::class);
-        $shippingMethod2Mock = $this->getMockForAbstractClass(ShippingMethodInterface::class);
         $shippingMethodCode = 'tablerate_bestway';
 
         return [
             [
                 'UK',
-                [$shippingMethodMock],
+                1,
                 $shippingMethodCode,
                 false
             ],
             [
                 '',
-                [$shippingMethodMock, $shippingMethod2Mock],
+                2,
                 '',
                 true
             ],
             [
                 'UK',
-                [],
+                0,
                 '',
                 false
             ],
             [
                 'UK',
-                [$shippingMethodMock, $shippingMethod2Mock],
+                2,
                 $shippingMethodCode,
                 true
             ]
@@ -608,7 +629,7 @@ class IndexTest extends TestCase
 
     /**
      * @param string $defaultCountryId
-     * @param array  $shippingMethodsMock
+     * @param int    $shippingMethodCount
      * @param string $shippingMethod
      * @param string $isShowHeaderFooter
      *
@@ -619,18 +640,23 @@ class IndexTest extends TestCase
      */
     public function testExecuteWithInitDefaultMethod(
         $defaultCountryId,
-        $shippingMethodsMock,
+        $shippingMethodCount,
         $shippingMethod,
         $isShowHeaderFooter
     ) {
+        $shippingMethodsMock = [];
+        for ($i = 0; $i < $shippingMethodCount; $i++) {
+            $shippingMethodsMock[] = $this->getMockForAbstractClass(ShippingMethodInterface::class);
+        }
+
+        $this->helperMock->method('getOscRoute')->willReturn('onestepcheckout');
         $this->helperMock->expects($this->once())->method('isEnabled')->willReturn(true);
         $onepageMock = $this->getMockBuilder(Onepage::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $quoteMethods = get_class_methods(Quote::class);
-        $quoteMethods[] = 'getHasError';
         $quoteMock = $this->getMockBuilder(Quote::class)
-            ->setMethods($quoteMethods)
+            ->onlyMethods(['hasItems', 'validateMinimumAmount', 'getShippingAddress', 'getId'])
+            ->addMethods(['getHasError'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -646,10 +672,19 @@ class IndexTest extends TestCase
             ->with($quoteMock)
             ->willReturn(true);
 
+        $getParamCount = 0;
         $this->requestMock->expects($this->exactly(2))
             ->method('getParam')
-            ->withConsecutive(['sku'], ['coupon'])
-            ->willReturnOnConsecutiveCalls([], '');
+            ->willReturnCallback(function ($param) use (&$getParamCount) {
+                $getParamCount++;
+                if ($getParamCount === 1) {
+                    $this->assertEquals('sku', $param);
+                    return [];
+                } else {
+                    $this->assertEquals('coupon', $param);
+                    return '';
+                }
+            });
 
         $quoteMock->expects($this->once())->method('hasItems')->willReturn(true);
         $quoteMock->expects($this->once())->method('getHasError')->willReturn(false);
@@ -665,10 +700,9 @@ class IndexTest extends TestCase
         $this->checkoutSessionMock->expects($this->once())->method('setCartWasUpdated')->with(false);
         $onepageMock->expects($this->once())->method('initCheckout')->willReturnSelf();
 
-        $shippingAddressMethods = get_class_methods(Address::class);
-        $shippingAddressMethods [] = 'setCollectShippingRates';
         $shippingAddressMock = $this->getMockBuilder(Address::class)
-            ->setMethods($shippingAddressMethods)
+            ->onlyMethods(['getCountryId', 'setCountryId', 'save'])
+            ->addMethods(['setCollectShippingRates'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -748,14 +782,14 @@ class IndexTest extends TestCase
 
     public function testExecuteWithInitDefaultMethodException()
     {
+        $this->helperMock->method('getOscRoute')->willReturn('onestepcheckout');
         $this->helperMock->expects($this->once())->method('isEnabled')->willReturn(true);
         $onepageMock = $this->getMockBuilder(Onepage::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $quoteMethods = get_class_methods(Quote::class);
-        $quoteMethods[] = 'getHasError';
         $quoteMock = $this->getMockBuilder(Quote::class)
-            ->setMethods($quoteMethods)
+            ->onlyMethods(['hasItems', 'validateMinimumAmount', 'getShippingAddress'])
+            ->addMethods(['getHasError'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -771,10 +805,19 @@ class IndexTest extends TestCase
             ->with($quoteMock)
             ->willReturn(true);
 
+        $getParamCount = 0;
         $this->requestMock->expects($this->exactly(2))
             ->method('getParam')
-            ->withConsecutive(['sku'], ['coupon'])
-            ->willReturnOnConsecutiveCalls([], '');
+            ->willReturnCallback(function ($param) use (&$getParamCount) {
+                $getParamCount++;
+                if ($getParamCount === 1) {
+                    $this->assertEquals('sku', $param);
+                    return [];
+                } else {
+                    $this->assertEquals('coupon', $param);
+                    return '';
+                }
+            });
 
         $quoteMock->expects($this->once())->method('hasItems')->willReturn(true);
         $quoteMock->expects($this->once())->method('getHasError')->willReturn(false);
@@ -790,10 +833,9 @@ class IndexTest extends TestCase
         $this->checkoutSessionMock->expects($this->once())->method('setCartWasUpdated')->with(false);
         $onepageMock->expects($this->once())->method('initCheckout')->willReturnSelf();
 
-        $shippingAddressMethods = get_class_methods(Address::class);
-        $shippingAddressMethods [] = 'setCollectShippingRates';
         $shippingAddressMock = $this->getMockBuilder(Address::class)
-            ->setMethods($shippingAddressMethods)
+            ->onlyMethods(['getCountryId'])
+            ->addMethods(['setCollectShippingRates'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -828,7 +870,7 @@ class IndexTest extends TestCase
     /**
      * @return array
      */
-    public function providerTestExecuteWithException()
+    public static function providerTestExecuteWithException()
     {
         return [
             [true],
@@ -849,16 +891,14 @@ class IndexTest extends TestCase
     {
         $storeId = 1;
 
+        $this->helperMock->method('getOscRoute')->willReturn('onestepcheckout');
         $this->helperMock->expects($this->once())->method('isEnabled')->willReturn(true);
         $onepageMock = $this->getMockBuilder(Onepage::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $quoteMethods = get_class_methods(Quote::class);
-        $quoteMethods[] = 'getHasError';
-        $quoteMethods[] = 'getCouponCode';
-        $quoteMethods[] = 'setCouponCode';
         $quoteMock = $this->getMockBuilder(Quote::class)
-            ->setMethods($quoteMethods)
+            ->onlyMethods(['hasItems'])
+            ->addMethods(['getHasError', 'getCouponCode', 'setCouponCode'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -874,7 +914,7 @@ class IndexTest extends TestCase
             ->with($quoteMock)
             ->willReturn(true);
 
-        $this->requestMock->expects($this->at(0))
+        $this->requestMock->expects($this->once())
             ->method('getParam')
             ->with('sku')
             ->willReturn(['MB-001' => 1]);

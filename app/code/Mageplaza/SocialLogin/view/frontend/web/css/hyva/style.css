@@ -106,28 +106,6 @@
     --tw-ring-shadow: 0 0 #000 ;
 }
 
-#popup_test input[type="text"],
-#popup_test input[type="password"],
-#popup_test input[type="url"],
-#popup_test input[type="tel"],
-#popup_test input[type="search"],
-#popup_test input[type="number"],
-#popup_test input[type*="date"],
-#popup_test input[type="email"] {
-    background: #ffffff;
-    background-clip: padding-box;
-    border: 1px solid #c2c2c2;
-    border-radius: 1px;
-    font-size: 14px;
-    height: 32px;
-    min-height: 32px;
-    line-height: 1.42857143;
-    padding: 0 9px;
-    vertical-align: baseline;
-    width: 100%;
-    box-sizing: border-box;
-}
-
 #popup_test fieldset .field.field-reserved, form .field.field-reserved {
     margin-bottom: 0;
 }

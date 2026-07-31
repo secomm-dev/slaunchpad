@@ -21,7 +21,6 @@
 
 namespace Mageplaza\Osc\Test\Unit\Block\Adminhtml\Plugin;
 
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Sales\Block\Adminhtml\Order\View\Tab\Info;
 use PHPUnit\Framework\TestCase;
 
@@ -32,12 +31,6 @@ class OrderViewTabInfoTest extends TestCase
      */
     public function testAfterGetGiftOptionsHtml()
     {
-        $objectManagerHelper = new ObjectManager($this);
-        /**
-         * @var Info $saleTabInfo
-         */
-        $saleTabInfo = $objectManagerHelper->getObject(Info::class);
-
-        $this->assertTrue(method_exists($saleTabInfo, 'getGiftOptionsHtml'));
+        $this->assertTrue(method_exists(Info::class, 'getGiftOptionsHtml'));
     }
 }

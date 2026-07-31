@@ -46,6 +46,7 @@ use Magento\GiftCard\Block\Catalog\Product\View\Type\Giftcard;
 use Magento\Newsletter\Model\Subscriber;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Item as QuoteItem;
+use Magento\ReCaptchaUi\Model\UiConfigResolverInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Item extends Data
@@ -88,19 +89,20 @@ class Item extends Data
     /**
      * Item constructor.
      *
-     * @param Context                $context
-     * @param ObjectManagerInterface $objectManager
-     * @param StoreManagerInterface  $storeManager
-     * @param EncryptorInterface     $encryptor
-     * @param Json                   $json
-     * @param LayoutFactory          $layoutFactory
-     * @param BuilderFactory         $builderFactory
-     * @param Registry               $registry
-     * @param Image                  $catalogHelper
-     * @param ConfigInterface        $viewConfig
-     * @param Repository             $repository
-     * @param Subscriber             $subscriber
-     * @param Session                $checkoutSession
+     * @param Context                   $context
+     * @param ObjectManagerInterface    $objectManager
+     * @param StoreManagerInterface     $storeManager
+     * @param EncryptorInterface        $encryptor
+     * @param Json                      $json
+     * @param LayoutFactory             $layoutFactory
+     * @param BuilderFactory            $builderFactory
+     * @param Registry                  $registry
+     * @param Image                     $catalogHelper
+     * @param ConfigInterface           $viewConfig
+     * @param Repository                $repository
+     * @param Subscriber                $subscriber
+     * @param Session                   $checkoutSession
+     * @param UiConfigResolverInterface $captchaUiConfigResolver
      */
     public function __construct(
         Context $context,
@@ -115,7 +117,8 @@ class Item extends Data
         ConfigInterface $viewConfig,
         Repository $repository,
         Subscriber $subscriber,
-        Session $checkoutSession
+        Session $checkoutSession,
+        UiConfigResolverInterface $captchaUiConfigResolver
     ) {
         $this->layoutFactory  = $layoutFactory;
         $this->builderFactory = $builderFactory;
@@ -124,7 +127,7 @@ class Item extends Data
         $this->viewConfig     = $viewConfig;
         $this->repository     = $repository;
 
-        parent::__construct($context, $objectManager, $storeManager, $encryptor, $json, $subscriber, $checkoutSession);
+        parent::__construct($context, $objectManager, $storeManager, $encryptor, $json, $subscriber, $checkoutSession, $captchaUiConfigResolver);
     }
 
     /**

@@ -26,6 +26,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Option\ArrayInterface;
 use Mageplaza\Osc\Helper\Data as OscHelper;
 use Magento\Payment\Helper\Data as PaymentHelper;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\App\RequestInterface;
 
 /**
  * Class PaymentMethods
@@ -49,6 +51,21 @@ class PaymentMethods implements ArrayInterface
     protected $_oscHelper;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var ScopeConfigInterface
+     */
+    protected $scopeConfig;
+
+    /**
+     * @var RequestInterface
+     */
+    protected $request;
+
+    /**
      * PaymentMethods constructor.
      *
      * @param OscHelper $oscHelper
@@ -56,10 +73,16 @@ class PaymentMethods implements ArrayInterface
      */
     public function __construct(
         OscHelper $oscHelper,
-        PaymentHelper $paymentHelper
+        PaymentHelper $paymentHelper,
+        StoreManagerInterface $storeManager,
+        ScopeConfigInterface $scopeConfig,
+        RequestInterface $request,
     ) {
         $this->_oscHelper = $oscHelper;
         $this->_paymentHelper = $paymentHelper;
+        $this->storeManager = $storeManager;
+        $this->scopeConfig = $scopeConfig;
+        $this->request = $request;
     }
 
     /**
@@ -69,22 +92,36 @@ class PaymentMethods implements ArrayInterface
     {
         $options = [['label' => __('No'), 'value' => '']];
 
+        $storeCode = $this->request->getParam('store');
+        $storeId = $storeCode
+            ? $this->storeManager->getStore($storeCode)->getId()
+            : $this->storeManager->getStore()->getId();
+
         $payments = $this->_paymentHelper->getPaymentMethods();
-        
+
         foreach ($payments as $paymentCode => $paymentModel) {
+            $isActive = $this->scopeConfig->getValue(
+                'payment/' . $paymentCode . '/active',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                $storeId
+            );
+
             if (strpos($paymentCode, 'payment_services') !== false) {
                 if (isset($paymentModel['can_use_checkout']) && $paymentModel['can_use_checkout'] == 1) {
-                    $options[$paymentCode] = [
-                        'label' => $paymentModel['title'],
+                    $options[] = [
+                        'label' => $paymentModel['title'] ?? $paymentCode,
                         'value' => $paymentCode
                     ];
                 }
-            }
-            if (!isset($paymentModel['active']) || $paymentModel['active'] == 0) {
                 continue;
             }
+
+            if (!$isActive) {
+                continue;
+            }
+
             if ($paymentCode !== 'free' && isset($paymentModel['title'])) {
-                $options[$paymentCode] = [
+                $options[] = [
                     'label' => $paymentModel['title'],
                     'value' => $paymentCode
                 ];

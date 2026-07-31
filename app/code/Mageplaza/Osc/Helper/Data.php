@@ -33,6 +33,7 @@ use Magento\Framework\View\DesignInterface;
 use Magento\Newsletter\Model\Subscriber;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Item;
+use Magento\ReCaptchaUi\Model\UiConfigResolverInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Mageplaza\Core\Helper\AbstractData;
@@ -88,6 +89,11 @@ class Data extends AbstractData
     protected $checkoutSession;
 
     /**
+     * @var UiConfigResolverInterface
+     */
+    protected $captchaUiConfigResolver;
+
+    /**
      * Data constructor.
      *
      * @param Context $context
@@ -97,6 +103,7 @@ class Data extends AbstractData
      * @param Json $json
      * @param Subscriber $subscriber
      * @param Session $checkoutSession
+     * @param UiConfigResolverInterface $captchaUiConfigResolver
      */
     public function __construct(
         Context $context,
@@ -105,12 +112,14 @@ class Data extends AbstractData
         EncryptorInterface $encryptor,
         Json $json,
         Subscriber $subscriber,
-        Session $checkoutSession
+        Session $checkoutSession,
+        UiConfigResolverInterface $captchaUiConfigResolver
     ) {
-        $this->encryptor       = $encryptor;
-        $this->json            = $json;
-        $this->subscriber      = $subscriber;
-        $this->checkoutSession = $checkoutSession;
+        $this->encryptor               = $encryptor;
+        $this->json                    = $json;
+        $this->subscriber              = $subscriber;
+        $this->checkoutSession         = $checkoutSession;
+        $this->captchaUiConfigResolver = $captchaUiConfigResolver;
 
         parent::__construct($context, $objectManager, $storeManager);
     }
@@ -468,6 +477,30 @@ class Data extends AbstractData
     }
 
     /**
+     * @return array
+     */
+    public function reCaptchaConfig()
+    {
+        try {
+            return $this->captchaUiConfigResolver->get('coupon_code');
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCaptchaEnabled()
+    {
+        $reCaptchaConfig =  $this->reCaptchaConfig();
+        if ($reCaptchaConfig === []) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Comment will be hided if this function return 'true'
      *
      * @param null $store
@@ -677,6 +710,9 @@ class Data extends AbstractData
      */
     public function isShowMultiAddessCheckoutLink($store = null)
     {
+        if ($this->scopeConfig->getValue('hyva_theme_fallback/general/enable', ScopeInterface::SCOPE_STORE, $store)) {
+            return false;
+        }
         return $this->getDisplayConfig('show_multi_address_checkout_link', $store);
     }
 
