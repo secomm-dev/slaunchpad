@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Secomm MoMo payment method declaration
+ *
+ * @author    Secomm Teams
+ * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
+ */
+-->
+<payment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Payment:etc/payment.xsd">
+    <methods>
+        <method name="momo_payment">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+    </methods>
+</payment>

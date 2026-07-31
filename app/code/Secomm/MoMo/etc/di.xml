@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Secomm MoMo DI (gateway facade + config). Commands wired incrementally per milestone.
+ *
+ * @author    Secomm Teams
+ * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Gateway config reader (methodCode = momo_payment) -->
+    <virtualType name="MoMoConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">momo_payment</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Module-wide config reader (decrypt secret_key, build endpoint by mode) -->
+    <type name="Secomm\MoMo\Gateway\Config\Config">
+        <arguments>
+            <argument name="config" xsi:type="object">MoMoConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Value handler pool -->
+    <virtualType name="MoMoValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">MoMoConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MoMoConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">MoMoConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Validator pool -->
+    <virtualType name="MoMoValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">MoMoCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MoMoCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">MoMoConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Logger for gateway client -->
+    <virtualType name="MoMoLogger" type="Magento\Payment\Model\Method\Logger">
+        <arguments>
+            <argument name="config" xsi:type="object">MoMoConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- HTTP client (Laminas) with JSON->array converter -->
+    <virtualType name="MoMoHttpClient" type="Secomm\MoMo\Gateway\Http\Client\Laminas">
+        <arguments>
+            <argument name="logger" xsi:type="object">MoMoLogger</argument>
+            <argument name="converter" xsi:type="object">Secomm\MoMo\Gateway\Http\Converter\JsonToArray</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Create order command (/v2/gateway/api/create) -->
+    <virtualType name="MoMoCreateOrderCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Secomm\MoMo\Gateway\Request\CreateOrderBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Secomm\MoMo\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">MoMoHttpClient</argument>
+            <argument name="handler" xsi:type="object">Secomm\MoMo\Gateway\Response\CreateOrderHandler</argument>
+            <argument name="validator" xsi:type="object">Secomm\MoMo\Gateway\Validator\CreateOrderValidator</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Refund command (/v2/gateway/api/refund) -->
+    <virtualType name="MoMoRefundTransferFactory" type="Secomm\MoMo\Gateway\Http\TransferFactory">
+        <arguments>
+            <argument name="urlPath" xsi:type="const">Secomm\MoMo\Gateway\Config\Config::PATH_REFUND</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MoMoRefundCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Secomm\MoMo\Gateway\Request\RefundBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">MoMoRefundTransferFactory</argument>
+            <argument name="client" xsi:type="object">MoMoHttpClient</argument>
+            <argument name="handler" xsi:type="object">Secomm\MoMo\Gateway\Response\RefundHandler</argument>
+            <argument name="validator" xsi:type="object">Secomm\MoMo\Gateway\Validator\RefundValidator</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Command pool: get_pay_url (M2); refund/complete wired in M3-M4 -->
+    <virtualType name="MoMoCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="initialize" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
+                <item name="get_pay_url" xsi:type="string">MoMoCreateOrderCommand</item>
+                <item name="notify" xsi:type="string">MoMoNotifyCommand</item>
+                <item name="refund" xsi:type="string">MoMoRefundCommand</item>
+                <item name="capture" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
+                <item name="cancel_order" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Redirect controller needs the command pool -->
+    <type name="Secomm\MoMo\Controller\Payment\Redirect">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
+        </arguments>
+    </type>
+
+    <!-- Notify (IPN) command: validate signature + finalize order -->
+    <virtualType name="MoMoNotifyCommand" type="Secomm\MoMo\Gateway\Command\NotifyCommand">
+        <arguments>
+            <argument name="validator" xsi:type="object">Secomm\MoMo\Gateway\Validator\NotifyValidator</argument>
+            <argument name="handler" xsi:type="object">Secomm\MoMo\Gateway\Response\TransactionHandler</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Notify controller needs the command pool -->
+    <type name="Secomm\MoMo\Controller\Payment\Notify">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
+        </arguments>
+    </type>
+
+    <!-- Payment method facade (Adapter — required by spec §10) -->
+    <virtualType name="MoMoFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="string">momo_payment</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">MoMoValueHandlerPool</argument>
+            <argument name="validatorPool" xsi:type="object">MoMoValidatorPool</argument>
+            <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
+        </arguments>
+    </virtualType>
+</config>
