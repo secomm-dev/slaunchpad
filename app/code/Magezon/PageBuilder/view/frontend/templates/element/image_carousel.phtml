@@ -1,0 +1,121 @@
+<?php
+$coreHelper      = $this->helper('\Magezon\Core\Helper\Data');
+$builderHelper   = $this->helper('\Magezon\Builder\Helper\Data');
+$element         = $this->getElement();
+$title           = $coreHelper->filter($element->getData('title'));
+$titleAlign      = $element->getData('title_align');
+$titleTag        = $element->getData('title_tag');
+$description     = $coreHelper->filter($element->getData('description'));
+$showLine        = $element->getData('show_line');
+$linePosition    = $element->getData('line_position');
+$items           = $this->toObjectArray($element->getItems());
+$onclick         = $element->getData('onclick');
+$lazyLoad        = $element->getData('owl_lazyload');
+$hoverEffect     = $element->getData('hover_effect');
+$displayOnHover  = $element->getData('display_on_hover');
+$overlayColor    = $element->getData('overlay_color');
+$carouselOptions = $this->getOwlCarouselOptions();
+$classes         = $this->getOwlCarouselClasses();
+$size            = $this->getsize();
+$id              = time() . uniqid();
+$contentPosition = $element->getData('content_position') ? $element->getData('content_position') : 'middle-center';
+if ($contentPosition) $classes[] = 'image-content-' . $contentPosition;
+if ($onclick=='magnific') $classes[] = 'mgz-magnific';
+if ($hoverEffect) $classes[] = 'hover-type-' . $hoverEffect . '-wrapper';
+if ($displayOnHover) $classes[] = 'item-content-hover';
+?>
+<div class="mgz-block">
+	<?php if ($title || $description) { ?>
+	<div class="mgz-block-heading mgz-block-heading-align-<?= $block->escapeHtmlAttr($titleAlign) ?><?= $showLine ? ' mgz-block-heading-line' : '' ?> mgz-block-heading-line-position-<?= $block->escapeHtmlAttr($linePosition) ?>">
+		<?php if ($title) { ?>
+			<<?= $block->escapeHtmlAttr($titleTag) ?> class="title"><?= /* @noEscape */ $title ?></<?= $block->escapeHtmlAttr($titleTag) ?>>
+		<?php } ?>
+		<?php if ($description) { ?>
+			<div class="info"><?= /* @noEscape */ $description ?></div>
+		<?php } ?>
+	</div>
+	<?php } ?>
+	<div class="mgz-block-content">
+	<?php if ($items && count($items)) { ?>
+		<div id="<?= $block->escapeHtmlAttr($id) ?>" class="mgz-carousel mgz-image-hovers owl-carousel <?= $block->escapeHtmlAttr(implode(' ', $classes)) ?>"
+			data-type="gallery">
+			<?php foreach ($items as $item) { ?>
+				<?php
+				if (!$item['image']) continue;
+				$title       = $coreHelper->filter($item['title']);
+				$description = $coreHelper->filter($item['description']);
+				$src         = $this->getImage($item['image']);
+				$link        = $linkTitle = $blank = $nofollow = '';
+				$popupType   = 'image';
+				if ($onclick) {
+					if ($onclick == 'magnific') {
+						if ($item['popup_image']) {
+							$link = $builderHelper->getImageUrl($item['popup_image']);
+						} else if ($item['video_map']) {
+							$link = $item['video_map'];
+							$popupType = 'iframe';
+						} else {
+							$link = $builderHelper->getImageUrl($item['image']);
+						}
+						$linkTitle = $item['popup_title'] ? $coreHelper->filter($item['popup_title']) : $title;
+					}
+					if ($onclick == 'custom_link' && $item['custom_link']) {
+						$_link     = $this->getLinkParams($item['custom_link']);
+						$link      = $_link['url'];
+						$blank     = $_link['blank'];
+						$nofollow  = $_link['nofollow'];
+						$linkTitle = $_link['title'];
+					}
+				}
+				?>
+				<div class="item mgz-carousel-item <?= $block->escapeHtmlAttr($hoverEffect ? 'hover-type-' . $hoverEffect : '') ?>">
+					<div class="item-inner mgz-flex-position-<?= $block->escapeHtmlAttr($contentPosition) ?>">
+						<?php if ($link) { ?>
+							<a class="mgz-carousel-<?= $block->escapeHtmlAttr($onclick) ?>"
+								data-type="<?= $block->escapeHtmlAttr($popupType) ?>"
+								href="<?= $block->escapeUrl($link) ?>"
+								title="<?= $block->escapeHtml($linkTitle) ?>"
+								 <?= $blank ? 'target="_blank"' : '' ?> 
+								 <?= $nofollow ? 'rel="nofollow"' : '' ?>>
+							<?php } ?>
+							<img <?= isset($size['width']) ? 'width="' . $block->escapeHtmlAttr($size['width']) . '"' : '' ?> <?= isset($size['height']) ? 'height="' . $block->escapeHtmlAttr($size['height']) . '"' : '' ?> class="owl-item-image <?= $lazyLoad ? 'owl-lazy' : '' ?>" <?= $lazyLoad ? 'data-src="' . $block->escapeUrl($src) . '"' : '' ?> src="<?= $lazyLoad ? '' : $block->escapeUrl($src) ?>" alt="<?= $block->escapeHtml($title) ?>"/>
+							<?php if ($link) { ?>
+							</a>
+						<?php } ?>
+						<?php if (($title || $description) && (!$contentPosition || $contentPosition != 'none')) { ?>
+							<div class="item-content">
+								<?php if ($title) { ?>
+									<div class="item-title"><?= /* @noEscape */$title ?></div>
+								<?php } ?>
+								<?php if ($description) { ?>
+									<div class="item-description"><?= /* @noEscape */$description ?></div>
+								<?php } ?>
+							</div>
+						<?php } ?>
+						<?php if ($overlayColor) { ?>
+							<div class="mgz-overlay"></div>
+						<?php } ?>
+					</div>
+				</div>
+			<?php } ?>
+		</div>
+		<script>
+		function waitForJquery(callback) {
+			if (window.jQuery) {
+				callback(window.jQuery);
+			} else {
+				setTimeout(() => waitForJquery(callback), 50);
+			}
+		}
+
+		require(['jquery', 'Magezon_Builder/js/carousel'], function($) {
+			$('#<?= $block->escapeJs($id) ?>').carousel(<?= /* @noEscape */ $coreHelper->serialize($carouselOptions) ?>);
+		}, function() {
+			waitForJquery(function($) {
+				$('#<?= $block->escapeJs($id) ?>').carousel(<?= /* @noEscape */ $coreHelper->serialize($carouselOptions) ?>);
+			});
+		});
+		</script>
+	<?php } ?>
+	</div>
+</div>
