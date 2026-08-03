@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Secomm MoMo frontend DI (checkout config provider — spec §12: only in frontend scope).
+ *
+ * @author    Secomm Teams
+ * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="momo_config_provider" xsi:type="object">Secomm\MoMo\Model\Ui\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

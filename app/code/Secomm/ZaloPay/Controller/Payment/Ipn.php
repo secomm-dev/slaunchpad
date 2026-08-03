@@ -12,6 +12,7 @@ namespace Secomm\ZaloPay\Controller\Payment;
 use Secomm\ZaloPay\Gateway\Helper\TransactionReader;
 use Secomm\ZaloPay\Logger\Logger;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
@@ -30,7 +31,6 @@ use Magento\Payment\Gateway\Helper\ContextHelper;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderFactory;
 
 class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
@@ -50,9 +50,14 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
     private PaymentDataObjectFactory $paymentDataObjectFactory;
 
     /**
-     * @var OrderFactory
+     * @var OrderRepositoryInterface
      */
-    private OrderFactory $orderFactory;
+    private OrderRepositoryInterface $orderRepository;
+
+    /**
+     * @var SearchCriteriaBuilder
+     */
+    private SearchCriteriaBuilder $searchCriteriaBuilder;
 
     /**
      * @var Logger
@@ -70,7 +75,8 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
      * @param Context $context
      * @param MethodInterface $method
      * @param PaymentDataObjectFactory $paymentDataObjectFactory
-     * @param OrderFactory $orderFactory
+     * @param OrderRepositoryInterface $orderRepository
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param SerializerJson $serializer
      * @param CommandPoolInterface $commandPool
      * @param Logger $logger
@@ -79,7 +85,8 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
         Context $context,
         MethodInterface $method,
         PaymentDataObjectFactory $paymentDataObjectFactory,
-        OrderFactory $orderFactory,
+        OrderRepositoryInterface $orderRepository,
+        SearchCriteriaBuilder $searchCriteriaBuilder,
         SerializerJson $serializer,
         CommandPoolInterface $commandPool,
         Logger $logger
@@ -88,7 +95,8 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
         $this->commandPool = $commandPool;
         $this->method = $method;
         $this->paymentDataObjectFactory = $paymentDataObjectFactory;
-        $this->orderFactory = $orderFactory;
+        $this->orderRepository = $orderRepository;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->serializer = $serializer;
         $this->logger = $logger;
     }
@@ -117,7 +125,13 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
                 $response['trans_data'] = $this->serializer->unserialize($response['data']);
             }
             $orderIncrementId = TransactionReader::readOrderId($response);
-            $order            = $this->orderFactory->create()->loadByIncrementId($orderIncrementId);
+            $order            = $this->loadOrderByIncrementId($orderIncrementId);
+            if ($order === null) {
+                $resultJson->setHttpResponseCode(404);
+                $data = ['errors' => true, 'messages' => __('Order not found.')];
+
+                return $resultJson->setData($data);
+            }
             $payment          = $order->getPayment();
             ContextHelper::assertOrderPayment($payment);
             if ($payment->getMethod() === $this->method->getCode()
@@ -143,6 +157,26 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
         }
 
         return $resultJson->setData($data);
+    }
+
+    /**
+     * Load an order by increment id via the repository (no deprecated ->load()).
+     *
+     * @param string $incrementId
+     * @return \Magento\Sales\Api\Data\OrderInterface|null
+     */
+    private function loadOrderByIncrementId(string $incrementId)
+    {
+        if ($incrementId === '') {
+            return null;
+        }
+
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('increment_id', $incrementId)
+            ->create();
+        $orders = $this->orderRepository->getList($searchCriteria)->getItems();
+
+        return $orders ? reset($orders) : null;
     }
 
     /**
