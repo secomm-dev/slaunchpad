@@ -1,0 +1,41 @@
+<?php
+$coreHelper   = $this->helper('\Magezon\Core\Helper\Data');
+$element      = $this->getElement();
+$title        = $coreHelper->filter($element->getData('title'));
+$titleAlign   = $element->getData('title_align');
+$titleTag     = $element->getData('title_tag') ? $element->getData('title_tag') : 'h2';
+$description  = $coreHelper->filter($element->getData('description'));
+$showLine     = $element->getData('show_line');
+$linePosition = $element->getData('line_position');
+$categories   = $this->getCategories();
+$id           = $element->getHtmlId();
+?>
+<div class="mgz-block">
+	<?php if ($title || $description) { ?>
+	<div class="mgz-block-heading mgz-block-heading-align-<?= $block->escapeHtmlAttr($titleAlign) ?><?= $showLine ? ' mgz-block-heading-line' : '' ?> mgz-block-heading-line-position-<?= $block->escapeHtmlAttr($linePosition) ?>">
+		<?php if ($title) { ?>
+			<<?= $block->escapeHtmlAttr($titleTag) ?> class="title"><?= /* @noEscape */ $title ?></<?= $block->escapeHtmlAttr($titleTag) ?>>
+		<?php } ?>
+		<?php if ($description) { ?>
+			<div class="info"><?= /* @noEscape */ $description ?></div>
+		<?php } ?>
+	</div>
+	<?php } ?>
+	<div class="mgz-block-content">
+		<div class="mgz-element-categories-list">
+			<?= $this->getCategoriesHtml($categories) ?>
+		</div>
+		<script>
+			require(['jquery'], function($) {
+				$('.<?= $block->escapeJs($id) ?> .active').parents('li').addClass('active');
+				$('.<?= $block->escapeJs($id) ?> .active').children('ul').slideDown();
+				$('.<?= $block->escapeJs($id) ?> .opener').click(function(e) {
+					e.preventDefault();
+					$(this).closest('li').toggleClass('active');
+					$(this).closest('li').siblings('li').removeClass('active').children('ul').slideUp();
+					$(this).closest('li').children('ul').slideToggle('active');
+				});
+			});
+		</script>
+	</div>
+</div>
