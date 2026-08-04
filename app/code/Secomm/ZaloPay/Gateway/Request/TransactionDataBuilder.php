@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Request;
 
@@ -20,19 +21,13 @@ class TransactionDataBuilder extends AbstractDataBuilder implements BuilderInter
     const METHOD = 'method';
 
     /**
-     * @var string
-     */
-    private $requestType;
-
-    /**
      * TransactionDataBuilder constructor.
      *
      * @param $requestType
      */
     public function __construct(
-        $requestType
+        private $requestType
     ) {
-        $this->requestType = $requestType;
     }
 
     /**

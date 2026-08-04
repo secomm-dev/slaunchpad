@@ -7,6 +7,8 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
+
 namespace Secomm\ZaloPay\Gateway\Http;
 
 use Magento\Framework\Serialize\Serializer\Json;
@@ -21,33 +23,6 @@ use Secomm\ZaloPay\Gateway\Helper\Authorization;
 abstract class AbstractTransferFactory implements TransferFactoryInterface
 {
     /**
-     * @var ConfigInterface
-     */
-    protected ConfigInterface $config;
-
-    /**
-     * @var TransferBuilder
-     */
-    protected TransferBuilder $transferBuilder;
-
-    /**
-     * Authenticate & generate Headers
-     *
-     * @var Authorization
-     */
-    private Authorization $authorization;
-
-    /**
-     * @var Json
-     */
-    protected Json $serializer;
-
-    /**
-     * @var null
-     */
-    protected $urlPath;
-
-    /**
      * AbstractTransferFactory constructor.
      *
      * @param ConfigInterface $config
@@ -57,17 +32,12 @@ abstract class AbstractTransferFactory implements TransferFactoryInterface
      * @param null            $urlPath
      */
     public function __construct(
-        ConfigInterface $config,
-        TransferBuilder $transferBuilder,
-        Json $serializer,
-        Authorization $authorization,
-        $urlPath = null
+        protected readonly ConfigInterface $config,
+        protected readonly TransferBuilder $transferBuilder,
+        protected readonly Json            $serializer,
+        private readonly Authorization     $authorization,
+        protected readonly ?string         $urlPath = null
     ) {
-        $this->config          = $config;
-        $this->transferBuilder = $transferBuilder;
-        $this->authorization   = $authorization;
-        $this->serializer      = $serializer;
-        $this->urlPath         = $urlPath;
     }
 
     /**

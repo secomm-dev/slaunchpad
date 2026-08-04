@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace Secomm\MoMo\Model;
 
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Exception\ValidatorException;
 use Magento\Payment\Gateway\ConfigInterface;
 
 class Config
@@ -46,27 +47,15 @@ class Config
     /**#@-*/
 
     /**
-     * @var ConfigInterface
-     */
-    private ConfigInterface $config;
-
-    /**
-     * @var EncryptorInterface
-     */
-    private EncryptorInterface $encryptor;
-
-    /**
      * Constructor
      *
      * @param ConfigInterface $config
      * @param EncryptorInterface $encryptor
      */
     public function __construct(
-        ConfigInterface $config,
-        EncryptorInterface $encryptor
+        private readonly ConfigInterface $config,
+        private readonly EncryptorInterface $encryptor
     ) {
-        $this->config = $config;
-        $this->encryptor = $encryptor;
     }
 
     /**
@@ -174,7 +163,7 @@ class Config
         }
         try {
             return $this->encryptor->decrypt($value);
-        } catch (\Exception $e) {
+        } catch (ValidatorException $e) {
             return $value;
         }
     }

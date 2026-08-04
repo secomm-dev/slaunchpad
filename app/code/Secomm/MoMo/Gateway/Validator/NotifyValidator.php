@@ -44,16 +44,6 @@ class NotifyValidator extends AbstractValidator
     ];
 
     /**
-     * @var Config
-     */
-    private Config $config;
-
-    /**
-     * @var Signature
-     */
-    private Signature $signature;
-
-    /**
      * Constructor
      *
      * @param \Magento\Payment\Gateway\Validator\ResultInterfaceFactory $resultFactory
@@ -62,12 +52,10 @@ class NotifyValidator extends AbstractValidator
      */
     public function __construct(
         \Magento\Payment\Gateway\Validator\ResultInterfaceFactory $resultFactory,
-        Config $config,
-        Signature $signature
+        private readonly Config $config,
+        private readonly Signature $signature
     ) {
         parent::__construct($resultFactory);
-        $this->config = $config;
-        $this->signature = $signature;
     }
 
     /**

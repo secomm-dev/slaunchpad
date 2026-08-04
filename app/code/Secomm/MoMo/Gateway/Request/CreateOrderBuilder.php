@@ -18,27 +18,15 @@ use Secomm\MoMo\Gateway\Helper\Signature;
 class CreateOrderBuilder implements BuilderInterface
 {
     /**
-     * @var Config
-     */
-    private Config $config;
-
-    /**
-     * @var Signature
-     */
-    private Signature $signature;
-
-    /**
      * Constructor
      *
      * @param Config $config
      * @param Signature $signature
      */
     public function __construct(
-        Config $config,
-        Signature $signature
+        private readonly Config $config,
+        private readonly Signature $signature
     ) {
-        $this->config = $config;
-        $this->signature = $signature;
     }
 
     /**

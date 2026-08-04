@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Validator;
 
@@ -17,26 +18,9 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Validator\ResultInterface;
-use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 
 class CompleteValidator extends AbstractResponseValidator
 {
-
-    /**
-     * CompleteValidator constructor.
-     *
-     * @param ResultInterfaceFactory $resultFactory
-     * @param Authorization $authorization
-     * @param Rate $helperRate
-     */
-    public function __construct(
-        ResultInterfaceFactory $resultFactory,
-        Authorization          $authorization,
-        Rate                   $helperRate
-    ) {
-        parent::__construct($resultFactory, $authorization, $helperRate);
-    }
-
     /**
      * @param array $validationSubject
      * @return ResultInterface

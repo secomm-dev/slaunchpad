@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Request;
 
@@ -21,26 +22,14 @@ use Magento\Store\Model\StoreManagerInterface;
 class ZaloAppInfoDataBuilder extends AbstractDataBuilder implements BuilderInterface
 {
     /**
-     * @var ConfigInterface
-     */
-    private ConfigInterface $config;
-
-    /**
-     * @var DateTime
-     */
-    private DateTime $dateTime;
-
-    /**
      * ZaloAppInfoDataBuilder constructor.
      * @param ConfigInterface $config
      * @param DateTime $dateTime
      */
     public function __construct(
-        ConfigInterface $config,
-        DateTime        $dateTime
+        private readonly ConfigInterface $config,
+        private readonly DateTime        $dateTime
     ) {
-        $this->config = $config;
-        $this->dateTime = $dateTime;
     }
 
     /**

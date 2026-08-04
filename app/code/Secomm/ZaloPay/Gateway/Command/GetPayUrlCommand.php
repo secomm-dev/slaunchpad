@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Command;
 
@@ -26,31 +27,6 @@ use Magento\Payment\Gateway\Validator\ValidatorInterface;
 class GetPayUrlCommand implements CommandInterface
 {
     /**
-     * @var BuilderInterface
-     */
-    private BuilderInterface $requestBuilder;
-
-    /**
-     * @var TransferFactoryInterface
-     */
-    private TransferFactoryInterface $transferFactory;
-
-    /**
-     * @var ClientInterface
-     */
-    private ClientInterface $client;
-
-    /**
-     * @var ValidatorInterface
-     */
-    private ValidatorInterface $validator;
-
-    /**
-     * @var ArrayResultFactory
-     */
-    private ArrayResultFactory $resultFactory;
-
-    /**
      * Constructor
      *
      * @param BuilderInterface $requestBuilder
@@ -60,17 +36,12 @@ class GetPayUrlCommand implements CommandInterface
      * @param ValidatorInterface $validator
      */
     public function __construct(
-        BuilderInterface         $requestBuilder,
-        TransferFactoryInterface $transferFactory,
-        ClientInterface          $client,
-        ArrayResultFactory       $resultFactory,
-        ValidatorInterface       $validator
+        private readonly BuilderInterface         $requestBuilder,
+        private readonly TransferFactoryInterface $transferFactory,
+        private readonly ClientInterface          $client,
+        private readonly ArrayResultFactory       $resultFactory,
+        private readonly ValidatorInterface       $validator
     ) {
-        $this->requestBuilder = $requestBuilder;
-        $this->transferFactory = $transferFactory;
-        $this->client = $client;
-        $this->resultFactory = $resultFactory;
-        $this->validator = $validator;
     }
 
     /**

@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Request;
 
@@ -32,16 +33,6 @@ class OrderAdditionalInformationDataBuilder extends AbstractDataBuilder implemen
     const DESCRIPTION_TEXT = 'ZaloPay Integration for Magento 2';
 
     /**
-     * @var Json
-     */
-    private Json $serializer;
-
-    /**
-     * @var Rate
-     */
-    private Rate $helperRate;
-
-    /**
      * OrderAdditionalInformationDataBuilder constructor.
      *
      * @param Json $serializer
@@ -50,13 +41,11 @@ class OrderAdditionalInformationDataBuilder extends AbstractDataBuilder implemen
      * @param UrlInterface $url
      */
     public function __construct(
-        Json                      $serializer,
-        Rate                      $helperRate,
+        private readonly Json     $serializer,
+        private readonly Rate     $helperRate,
         protected ConfigInterface $config,
         protected UrlInterface    $url
     ) {
-        $this->serializer = $serializer;
-        $this->helperRate = $helperRate;
     }
 
     /**

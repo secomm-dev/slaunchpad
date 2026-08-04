@@ -28,18 +28,12 @@ class SuccessValidatorPlugin
     private const ZALO_PAY_METHOD_CODE = "zalopay";
 
     /**
-     * @var TimezoneInterface
-     */
-    private TimezoneInterface $timezone;
-
-    /**
      * Constructor
      *
      * @param TimezoneInterface $timezone
      */
-    public function __construct(TimezoneInterface $timezone)
+    public function __construct(private readonly TimezoneInterface $timezone)
     {
-        $this->timezone = $timezone;
     }
 
     /**

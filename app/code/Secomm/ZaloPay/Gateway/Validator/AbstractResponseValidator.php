@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Validator;
 
@@ -98,16 +99,6 @@ abstract class AbstractResponseValidator extends AbstractValidator
     const TRANS_DATA = 'trans_data';
 
     /**
-     * @var Rate
-     */
-    protected Rate $helperRate;
-
-    /**
-     * @var Authorization
-     */
-    protected Authorization $authorization;
-
-    /**
      * AbstractResponseValidator constructor.
      *
      * @param ResultInterfaceFactory $resultFactory
@@ -116,12 +107,10 @@ abstract class AbstractResponseValidator extends AbstractValidator
      */
     public function __construct(
         ResultInterfaceFactory $resultFactory,
-        Authorization          $authorization,
-        Rate                   $helperRate
+        protected readonly Authorization $authorization,
+        protected readonly Rate          $helperRate
     ) {
         parent::__construct($resultFactory);
-        $this->helperRate = $helperRate;
-        $this->authorization = $authorization;
     }
 
     /**

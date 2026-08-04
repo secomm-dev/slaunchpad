@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Command;
 
@@ -25,27 +26,15 @@ use Magento\Sales\Model\Order\Payment;
 class UpdateOrderCommand implements CommandInterface
 {
     /**
-     * @var ConfigInterface
-     */
-    private ConfigInterface $config;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private OrderRepositoryInterface $orderRepository;
-
-    /**
      * Constructor
      *
      * @param ConfigInterface $config
      * @param OrderRepositoryInterface $orderRepository
      */
     public function __construct(
-        ConfigInterface          $config,
-        OrderRepositoryInterface $orderRepository
+        private readonly ConfigInterface          $config,
+        private readonly OrderRepositoryInterface $orderRepository
     ) {
-        $this->config = $config;
-        $this->orderRepository = $orderRepository;
     }
 
     /**

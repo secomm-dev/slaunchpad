@@ -7,6 +7,8 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
+
 namespace Secomm\ZaloPay\Controller\Payment;
 
 use Secomm\ZaloPay\Gateway\Helper\TransactionReader;
@@ -35,41 +37,6 @@ use Magento\Sales\Model\Order;
 class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
     /**
-     * @var CommandPoolInterface
-     */
-    private CommandPoolInterface $commandPool;
-
-    /**
-     * @var MethodInterface
-     */
-    private MethodInterface $method;
-
-    /**
-     * @var PaymentDataObjectFactory
-     */
-    private PaymentDataObjectFactory $paymentDataObjectFactory;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private OrderRepositoryInterface $orderRepository;
-
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private SearchCriteriaBuilder $searchCriteriaBuilder;
-
-    /**
-     * @var Logger
-     */
-    private Logger $logger;
-
-    /**
-     * @var SerializerJson
-     */
-    private SerializerJson $serializer;
-
-    /**
      * Ipn constructor.
      *
      * @param Context $context
@@ -83,22 +50,15 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
      */
     public function __construct(
         Context $context,
-        MethodInterface $method,
-        PaymentDataObjectFactory $paymentDataObjectFactory,
-        OrderRepositoryInterface $orderRepository,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
-        SerializerJson $serializer,
-        CommandPoolInterface $commandPool,
-        Logger $logger
+        private readonly MethodInterface $method,
+        private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly SearchCriteriaBuilder $searchCriteriaBuilder,
+        private readonly SerializerJson $serializer,
+        private readonly CommandPoolInterface $commandPool,
+        private readonly Logger $logger
     ) {
         parent::__construct($context);
-        $this->commandPool = $commandPool;
-        $this->method = $method;
-        $this->paymentDataObjectFactory = $paymentDataObjectFactory;
-        $this->orderRepository = $orderRepository;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->serializer = $serializer;
-        $this->logger = $logger;
     }
 
     /**

@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Command;
 
@@ -30,40 +31,7 @@ class RefundQueryCommand implements CommandInterface
         'amount',
         'description'
     ];
-    /**
-     * @var BuilderInterface
-     */
-    private BuilderInterface $requestBuilder;
 
-    /**
-     * @var TransferFactoryInterface
-     */
-    private TransferFactoryInterface $transferFactory;
-
-    /**
-     * @var ClientInterface
-     */
-    private ClientInterface $client;
-
-    /**
-     * @var HandlerInterface
-     */
-    private HandlerInterface $handler;
-
-    /**
-     * @var ValidatorInterface
-     */
-    private ValidatorInterface $validator;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
-     * @var ErrorMessageMapperInterface
-     */
-    private ?ErrorMessageMapperInterface $errorMessageMapper;
     private $mRefundId;
 
     /**
@@ -76,21 +44,14 @@ class RefundQueryCommand implements CommandInterface
      * @param ErrorMessageMapperInterface|null $errorMessageMapper
      */
     public function __construct(
-        BuilderInterface            $requestBuilder,
-        TransferFactoryInterface    $transferFactory,
-        ClientInterface             $client,
-        LoggerInterface             $logger,
-        HandlerInterface            $handler = null,
-        ValidatorInterface          $validator = null,
-        ErrorMessageMapperInterface $errorMessageMapper = null
+        private readonly BuilderInterface            $requestBuilder,
+        private readonly TransferFactoryInterface    $transferFactory,
+        private readonly ClientInterface             $client,
+        private readonly LoggerInterface             $logger,
+        private ?HandlerInterface                    $handler = null,
+        private ?ValidatorInterface                  $validator = null,
+        private ?ErrorMessageMapperInterface         $errorMessageMapper = null
     ) {
-        $this->requestBuilder = $requestBuilder;
-        $this->transferFactory = $transferFactory;
-        $this->client = $client;
-        $this->handler = $handler;
-        $this->validator = $validator;
-        $this->logger = $logger;
-        $this->errorMessageMapper = $errorMessageMapper;
     }
 
     /**

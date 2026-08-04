@@ -19,27 +19,15 @@ use Secomm\MoMo\Gateway\Response\TransactionHandler;
 class RefundBuilder implements BuilderInterface
 {
     /**
-     * @var Config
-     */
-    private Config $config;
-
-    /**
-     * @var Signature
-     */
-    private Signature $signature;
-
-    /**
      * Constructor
      *
      * @param Config $config
      * @param Signature $signature
      */
     public function __construct(
-        Config $config,
-        Signature $signature
+        private readonly Config $config,
+        private readonly Signature $signature
     ) {
-        $this->config = $config;
-        $this->signature = $signature;
     }
 
     /**

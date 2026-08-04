@@ -4,6 +4,7 @@
  * @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Query\Refund;
 
@@ -22,31 +23,6 @@ use Magento\Framework\Api\SearchResultsInterfaceFactory;
 class GetListQuery
 {
     /**
-     * @var CollectionProcessorInterface
-     */
-    private CollectionProcessorInterface $collectionProcessor;
-
-    /**
-     * @var RefundCollectionFactory
-     */
-    private RefundCollectionFactory $entityCollectionFactory;
-
-    /**
-     * @var RefundDataMapper
-     */
-    private RefundDataMapper $entityDataMapper;
-
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private SearchCriteriaBuilder $searchCriteriaBuilder;
-
-    /**
-     * @var SearchResultsInterfaceFactory
-     */
-    private SearchResultsInterfaceFactory $searchResultFactory;
-
-    /**
      * @param CollectionProcessorInterface $collectionProcessor
      * @param RefundCollectionFactory $entityCollectionFactory
      * @param RefundDataMapper $entityDataMapper
@@ -54,17 +30,12 @@ class GetListQuery
      * @param SearchResultsInterfaceFactory $searchResultFactory
      */
     public function __construct(
-        CollectionProcessorInterface  $collectionProcessor,
-        RefundCollectionFactory       $entityCollectionFactory,
-        RefundDataMapper              $entityDataMapper,
-        SearchCriteriaBuilder         $searchCriteriaBuilder,
-        SearchResultsInterfaceFactory $searchResultFactory
+        private readonly CollectionProcessorInterface  $collectionProcessor,
+        private readonly RefundCollectionFactory       $entityCollectionFactory,
+        private readonly RefundDataMapper              $entityDataMapper,
+        private readonly SearchCriteriaBuilder         $searchCriteriaBuilder,
+        private readonly SearchResultsInterfaceFactory $searchResultFactory
     ) {
-        $this->collectionProcessor = $collectionProcessor;
-        $this->entityCollectionFactory = $entityCollectionFactory;
-        $this->entityDataMapper = $entityDataMapper;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->searchResultFactory = $searchResultFactory;
     }
 
     /**

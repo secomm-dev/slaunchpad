@@ -18,7 +18,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Validator\ResultInterface;
-use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 
 /**
  * ReturnValidator for ZaloPay redirect callback (GET params)
@@ -26,21 +25,6 @@ use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
  */
 class ReturnValidator extends AbstractResponseValidator
 {
-    /**
-     * ReturnValidator constructor.
-     *
-     * @param ResultInterfaceFactory $resultFactory
-     * @param Authorization $authorization
-     * @param Rate $helperRate
-     */
-    public function __construct(
-        ResultInterfaceFactory $resultFactory,
-        Authorization $authorization,
-        Rate $helperRate
-    ) {
-        parent::__construct($resultFactory, $authorization, $helperRate);
-    }
-
     /**
      * ZaloPay return callback status: 1 = paid, anything else = not paid.
      */

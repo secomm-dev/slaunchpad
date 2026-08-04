@@ -31,31 +31,6 @@ use Secomm\MoMo\Gateway\Helper\TransactionReader;
 class Redirect extends Action implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
     /**
-     * @var CommandPoolInterface
-     */
-    private CommandPoolInterface $commandPool;
-
-    /**
-     * @var Session
-     */
-    private Session $checkoutSession;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private OrderRepositoryInterface $orderRepository;
-
-    /**
-     * @var PaymentDataObjectFactory
-     */
-    private PaymentDataObjectFactory $paymentDataObjectFactory;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
      * Constructor
      *
      * @param Context $context
@@ -67,18 +42,13 @@ class Redirect extends Action implements CsrfAwareActionInterface, HttpPostActio
      */
     public function __construct(
         Context $context,
-        CommandPoolInterface $commandPool,
-        Session $checkoutSession,
-        OrderRepositoryInterface $orderRepository,
-        PaymentDataObjectFactory $paymentDataObjectFactory,
-        LoggerInterface $logger
+        private readonly CommandPoolInterface $commandPool,
+        private readonly Session $checkoutSession,
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
+        private readonly LoggerInterface $logger
     ) {
         parent::__construct($context);
-        $this->commandPool = $commandPool;
-        $this->checkoutSession = $checkoutSession;
-        $this->orderRepository = $orderRepository;
-        $this->paymentDataObjectFactory = $paymentDataObjectFactory;
-        $this->logger = $logger;
     }
 
     /**
