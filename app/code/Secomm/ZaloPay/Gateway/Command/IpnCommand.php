@@ -25,12 +25,12 @@ class IpnCommand implements CommandInterface
     /**
      * IpnCommand constructor.
      *
-     * @param UpdateDetailsCommand $updateDetailsCommand
-     * @param UpdateOrderCommand $updateOrderCommand
+     * @param CommandInterface $updateDetailsCommand
+     * @param CommandInterface $updateOrderCommand
      */
     public function __construct(
-        private readonly UpdateDetailsCommand $updateDetailsCommand,
-        private readonly UpdateOrderCommand $updateOrderCommand
+        private readonly CommandInterface $updateDetailsCommand,
+        private readonly CommandInterface $updateOrderCommand
     ) {
     }
 

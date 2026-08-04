@@ -24,12 +24,12 @@ class CompleteCommand implements CommandInterface
     /**
      * CompleteCommand constructor.
      *
-     * @param CompleteUpdateDetailsCommand $updateDetailsCommand
-     * @param UpdateOrderCommand $updateOrderCommand
+     * @param CommandInterface $updateDetailsCommand
+     * @param CommandInterface $updateOrderCommand
      */
     public function __construct(
-        private readonly CompleteUpdateDetailsCommand $updateDetailsCommand,
-        private readonly UpdateOrderCommand          $updateOrderCommand
+        private readonly CommandInterface $updateDetailsCommand,
+        private readonly CommandInterface $updateOrderCommand
     ) {
     }
 

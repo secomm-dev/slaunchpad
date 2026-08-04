@@ -61,10 +61,10 @@ class CompleteValidator extends AbstractResponseValidator
      * Validate total amount.
      *
      * @param array $response
-     * @param array|string $amount
+     * @param int|float|string|array $amount
      * @return boolean
      */
-    protected function validateTotalAmount(array $response, array|string $amount): bool
+    protected function validateTotalAmount(array $response, int|float|string|array $amount): bool
     {
         return isset($response[AbstractDataBuilder::TRANS_DATA][self::TOTAL_AMOUNT])
             && (string)($response[AbstractDataBuilder::TRANS_DATA][self::TOTAL_AMOUNT]) === (string)$amount;

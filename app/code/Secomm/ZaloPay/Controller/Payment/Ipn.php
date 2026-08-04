@@ -72,6 +72,8 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
         if (!$this->getRequest()->isPost()) {
             return;
         }
+        $rawContent = (string)$this->getRequest()->getContent();
+        $this->logger->info('ZaloPay IPN Hit. Content: ' . $rawContent . ' Params: ' . json_encode($this->getRequest()->getParams()));
         /** @var Json $resultJson */
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         $data       = [
@@ -79,14 +81,27 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
             'messages' => __('Something went wrong white execute.')
         ];
         try {
-            $response = $this->getRequest()->getContent();
-            if ($response && is_string($response)) {
-                $response               = $this->serializer->unserialize($response);
+            $response = [];
+            if ($rawContent !== '') {
+                try {
+                    $response = $this->serializer->unserialize($rawContent);
+                } catch (\Exception $e) {
+                    $response = $this->getRequest()->getParams();
+                }
+            } else {
+                $response = $this->getRequest()->getParams();
+            }
+
+            if (isset($response['data']) && is_string($response['data'])) {
                 $response['trans_data'] = $this->serializer->unserialize($response['data']);
             }
+
+            $this->logger->info('ZaloPay IPN Parsed Response: ' . json_encode($response));
+
             $orderIncrementId = TransactionReader::readOrderId($response);
             $order            = $this->loadOrderByIncrementId($orderIncrementId);
             if ($order === null) {
+                $this->logger->error('ZaloPay IPN Order Not Found: ' . $orderIncrementId);
                 $resultJson->setHttpResponseCode(404);
                 $data = ['errors' => true, 'messages' => __('Order not found.')];
 
@@ -94,6 +109,13 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
             }
             $payment          = $order->getPayment();
             ContextHelper::assertOrderPayment($payment);
+            $this->logger->info(sprintf(
+                'ZaloPay IPN Order #%s payment method: %s (expected: %s), order state: %s',
+                $orderIncrementId,
+                $payment->getMethod(),
+                $this->method->getCode(),
+                $order->getState()
+            ));
             if ($payment->getMethod() === $this->method->getCode()
                 && $order->getState() === Order::STATE_PENDING_PAYMENT) {
                 $paymentDataObject = $this->paymentDataObjectFactory->create($payment);
@@ -105,13 +127,21 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
                         'amount' => $order->getTotalDue()
                     ]
                 );
+                $this->logger->info('ZaloPay IPN Command executed successfully for order #' . $orderIncrementId);
                 $data = [
                     'errors' => false,
                     'messages' => __('Success')
                 ];
+            } else {
+                $this->logger->warning(sprintf(
+                    'ZaloPay IPN condition not met for order #%s. Payment method: %s, State: %s',
+                    $orderIncrementId,
+                    $payment->getMethod(),
+                    $order->getState()
+                ));
             }
         } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
+            $this->logger->error('ZaloPay IPN Exception: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             $this->messageManager->addErrorMessage(__('Transaction has been declined. Please try again later.'));
             $resultJson->setHttpResponseCode(500);
         }
