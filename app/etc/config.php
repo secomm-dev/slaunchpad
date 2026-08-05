@@ -446,6 +446,7 @@ return [
         'Secomm_AddressDropdown' => 1,
         'Secomm_Base' => 1,
         'Secomm_DisableFileUpload' => 1,
+        'Secomm_MoMo' => 1,
         'Secomm_VietNamAddress' => 1,
         'Secomm_VietNamMarket' => 1,
         'Secomm_ZaloPay' => 1,
@@ -461,6 +462,7 @@ return [
         'Smile_ElasticsuiteIndices' => 1,
         'Smile_ElasticsuiteAnalytics' => 1,
         'Smile_ElasticsuiteVirtualCategory' => 1,
+        'Snowdog_Menu' => 1,
         'Vnpayment_VNPAY' => 1
     ]
 ];
