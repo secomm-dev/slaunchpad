@@ -49,4 +49,8 @@
         <plugin name="execute"
                 type="Secomm\Ahamove\Plugin\NewShipmentOrder"/>
     </type>
+    <type name="Magento\Sales\Block\Adminhtml\Order\View">
+        <plugin name="add_push_ahamove_order_button_plugin"
+                type="Secomm\Ahamove\Plugin\Adminhtml\AddPushAhamoveOrderButtonPlugin"/>
+    </type>
 </config>

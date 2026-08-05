@@ -37,7 +37,6 @@ class AhamoveAddress extends DataObject implements AhamoveAddressInterface
         'street',
         'city',
         'region_code',
-        'country_id',
     ];
 
     /**

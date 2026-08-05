@@ -103,18 +103,22 @@ class CreateShipment
             $order = $this->orderRepository->get($package->getOrderId());
             $params = $this->prepareShippingData($order, $package->getService());
 
+            $this->logger->info("Creating Ahamove order for Order #{$order->getIncrementId()} with params: " . json_encode($params, JSON_UNESCAPED_UNICODE), [], __METHOD__);
+
             $response = $this->api->name('Create Order Ahamove')
                 ->withContentType('application/json')
-                ->withHeader('Authorization: Bearer ' . $this->ahamoveHelperData->getToken())
+                ->withHeader('Authorization: Bearer ' . $this->ahamoveHelperData->getToken($order->getStoreId()))
                 ->to(Config::URL_AHAMOVE_CREATE_ORDER)
                 ->withData($params)
                 ->asJsonResponse(true)
                 ->post();
 
-            if ($response->status == Config\Source\ApiRequest\Status::STATUS_CODE_SUCCESS) {
+            if (isset($response->status) && $response->status == Config\Source\ApiRequest\Status::STATUS_CODE_SUCCESS) {
                 $response->content['order']['status_label'] = $this->ahamoveHelperData->getStatusLabel($response->content['order']['status']);
+                $this->logger->info("Ahamove order created successfully: " . json_encode($response->content, JSON_UNESCAPED_UNICODE), [], __METHOD__);
                 return $response->content;
             } else {
+                $this->logger->error("Ahamove order creation failed with status: " . json_encode($response, JSON_UNESCAPED_UNICODE), [], __METHOD__);
                 return false;
             }
         } catch (Exception $e) {

@@ -117,6 +117,18 @@
                         <config_path>ahamove/general/notify_shipment</config_path>
                         <comment>Send email shipment for customer</comment>
                     </field>
+                    <field id="auto_push_shipment" translate="label" type="select" sortOrder="74" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Auto Push Shipment To Ahamove</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>ahamove/general/auto_push_shipment</config_path>
+                        <comment>Automatically create order on Ahamove when saving Magento shipment</comment>
+                    </field>
+                    <field id="manual_push_button" translate="label" type="select" sortOrder="75" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Show Manual Push Button In Admin</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>ahamove/general/manual_push_button</config_path>
+                        <comment>Show 'Send to Ahamove' button on Admin Shipment View page</comment>
+                    </field>
                     <field id="debug" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Debug</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

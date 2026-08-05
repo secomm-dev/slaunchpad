@@ -23,7 +23,7 @@ class NewShipmentOrder
      */
     public function afterExecute(Index $subject, $result): void
     {
-        if ($result && method_exists($result, 'getStatus') && $result->getStatus() === 'COMPLETED') {
+        if ($result->getStatus() === 'COMPLETED') {
             $this->eventManager->dispatch(
                 'evt_packaging_manager_auto_create_shipment',
                 ['package' => $result]

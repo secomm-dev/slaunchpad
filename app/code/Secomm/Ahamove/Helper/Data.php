@@ -490,4 +490,49 @@ class Data extends AbstractHelper
         }
         $this->inlineTranslation->resume();
     }
+
+    /**
+     * Resolves Ahamove Service ID using constants from AhamoveShippingMethod
+     * (e.g. SGN-BIKE, SGN-VAN-500, SGN-2H-PUBLIC)
+     *
+     * @param string $shippingMethod
+     * @param mixed $storeId
+     * @return string
+     */
+    public function resolveServiceId(string $shippingMethod, $storeId = null): string
+    {
+        $cityId = (string)$this->getConfig(Config::AHAMOVE_GENERAL_CITY_ID_SERVICE, $storeId);
+        if (empty($cityId)) {
+            $cityId = 'SGN';
+        }
+
+        $serviceCode = '';
+        $shippingMethodLower = strtolower($shippingMethod);
+
+        if (str_contains($shippingMethodLower, 'standard')) {
+            foreach (\Secomm\Ahamove\Model\Carrier\ShippingMethod\AhamoveShippingMethod::GROUP_STANDARD as $subMethod => $ahaCode) {
+                if (str_contains($shippingMethodLower, $subMethod)) {
+                    $serviceCode = $ahaCode;
+                    break;
+                }
+            }
+            if (empty($serviceCode)) {
+                $serviceCode = \Secomm\Ahamove\Model\Carrier\ShippingMethod\AhamoveShippingMethod::GROUP_STANDARD['bike'];
+            }
+        } elseif (str_contains($shippingMethodLower, 'express')) {
+            foreach (\Secomm\Ahamove\Model\Carrier\ShippingMethod\AhamoveShippingMethod::GROUP_EXPRESS as $subMethod => $ahaCode) {
+                if (str_contains($shippingMethodLower, $subMethod)) {
+                    $serviceCode = $ahaCode;
+                    break;
+                }
+            }
+            if (empty($serviceCode)) {
+                $serviceCode = \Secomm\Ahamove\Model\Carrier\ShippingMethod\AhamoveShippingMethod::GROUP_EXPRESS['two_hours'];
+            }
+        } else {
+            $serviceCode = 'BIKE';
+        }
+
+        return strtoupper($cityId . '-' . $serviceCode);
+    }
 }

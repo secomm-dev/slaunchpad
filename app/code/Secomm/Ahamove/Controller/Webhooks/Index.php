@@ -17,6 +17,7 @@ use Secomm\Ahamove\Logger\Logger;
 
 class Index extends Action implements CsrfAwareActionInterface, HttpPostActionInterface
 {
+
     /**
      * @var Logger
      */
@@ -85,7 +86,7 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
 
                 $ahamoveOrderData = [
                     'order_ahamove_id' => $data['_id'] ?? '',
-                    'track_number' => $data['tracking_code'] ?? '',
+                    'track_number' => $data['order']['tracking_code'] ?? '',
                     'status' => $status,
                     'shared_link' => $data['shared_link'] ?? '',
                     'order_data' => json_encode($data)

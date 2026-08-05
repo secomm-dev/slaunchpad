@@ -8,6 +8,8 @@
                 <mode>sandbox</mode>
                 <payment_type>BALANCE</payment_type>
                 <notify_shipment>1</notify_shipment>
+                <auto_push_shipment>0</auto_push_shipment>
+                <manual_push_button>1</manual_push_button>
                 <debug>0</debug>
                 <method>api_shipping</method>
                 <percentage_difference>10</percentage_difference>

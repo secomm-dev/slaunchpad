@@ -5,4 +5,8 @@
         <observer name="secomm_ahamove_core_layout_render_element_observer"
                   instance="Secomm\Ahamove\Observer\Admin\CoreLayoutRenderElementObserver"/>
     </event>
+    <event name="sales_order_shipment_save_after">
+        <observer name="secomm_ahamove_sales_order_shipment_save_after"
+                  instance="Secomm\Ahamove\Observer\Sales\OrderShipmentSaveAfter"/>
+    </event>
 </config>
