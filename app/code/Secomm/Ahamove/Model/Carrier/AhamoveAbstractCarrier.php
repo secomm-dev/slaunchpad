@@ -340,7 +340,8 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
      */
     protected function loadFromCache(array $params): array|bool
     {
-        $cacheKey = $this->ahamoveHelper->generateCacheKey($this->serializer->serialize($params));
+        $storeId = (string)$this->getStore();
+        $cacheKey = $this->ahamoveHelper->generateCacheKey($storeId . '_' . $this->serializer->serialize($params));
         $cacheData = $this->cache->load($cacheKey);
         if ($cacheData) {
             $result = $this->serializer->unserialize($cacheData);

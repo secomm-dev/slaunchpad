@@ -34,43 +34,48 @@ class RefreshToken implements ObserverInterface
     {
         $response = null;
         $data = $observer->getData('data');
+        $storeId = $observer->getData('store_id');
         try {
-            $response = $this->reloadToken();
-            if ($response['status'] == Status::STATUS_CODE_SUCCESS) {
+            $response = $this->reloadToken($storeId);
+            if (isset($response['status']) && $response['status'] == Status::STATUS_CODE_SUCCESS) {
                 $dataContent = $response['content'];
-                $this->configWriter->save(
-                    Config::STAGING_TOKEN,
-                    $dataContent['token']
-                );
-                $this->configWriter->save(
-                    Config::STAGING_TOKEN_REFRESH,
-                    $dataContent['refresh_token']
-                );
+                $isStaging = $this->helperDataAhamove->isStagingMode($storeId);
+                $tokenPath = $isStaging ? Config::STAGING_TOKEN : Config::PRODUCTION_TOKEN;
+                $refreshTokenPath = $isStaging ? Config::STAGING_TOKEN_REFRESH : Config::PRODUCTION_TOKEN_REFRESH;
+
+                $scope = $storeId ? \Magento\Store\Model\ScopeInterface::SCOPE_STORES : \Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
+                $scopeId = $storeId ?: 0;
+
+                $this->configWriter->save($tokenPath, $dataContent['token'], $scope, $scopeId);
+                $this->configWriter->save($refreshTokenPath, $dataContent['refresh_token'], $scope, $scopeId);
                 $this->helperDataAhamove->flushCache();
-                $this->logger->info('Reload token success', [], __METHOD__);
+                $this->logger->info('Reload token success for store: ' . $scopeId, [], __METHOD__);
             } else {
-                throw new \Exception(json_encode($response['content']));
+                throw new \Exception(json_encode($response['content'] ?? []));
             }
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage());
         } finally {
-            $data->setResponse($response);
+            if ($data) {
+                $data->setResponse($response);
+            }
         }
     }
 
     /**
      * Call API to get Ahamove token
      *
+     * @param mixed $storeId
      * @return array
      * @throws \Exception
      */
-    public function reloadToken(): array
+    public function reloadToken($storeId = null): array
     {
         $params = [
-            'api_key' => $this->helperDataAhamove->getAPIKey(),
-            'mobile' => $this->helperDataAhamove->getMobilePhoneValue()
+            'api_key' => $this->helperDataAhamove->getAPIKey($storeId),
+            'mobile' => $this->helperDataAhamove->getMobilePhoneValue($storeId)
         ];
-        $url = $this->helperDataAhamove->getUrlAhamove() . Config::GET_REFRESH_TOKEN;
+        $url = $this->helperDataAhamove->getUrlAhamove($storeId) . Config::GET_REFRESH_TOKEN;
         $curl = curl_init();
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,

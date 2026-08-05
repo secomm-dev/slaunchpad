@@ -74,9 +74,9 @@ class Data extends AbstractHelper
      *
      * @return mixed
      */
-    public function getUrlAhamove()
+    public function getUrlAhamove($storeId = null)
     {
-        if ($this->getMode() == Mode::SANDBOX_MODE) {
+        if ($this->getMode($storeId) == Mode::SANDBOX_MODE) {
             return Config::URL_SANDBOX;
         }
         return Config::URL_PRODUCTION;
@@ -85,60 +85,65 @@ class Data extends AbstractHelper
     /**
      * Get Sandbox Mode.
      *
+     * @param mixed $storeId
      * @return mixed
      */
-    public function getMode()
+    public function getMode($storeId = null)
     {
-        return $this->getConfig(Config::MODE_PATH);
+        return $this->getConfig(Config::MODE_PATH, $storeId);
     }
 
     /**
      * Get API_key for connect refresh.
      *
+     * @param mixed $storeId
      * @return mixed
      */
-    public function getAPIKey()
+    public function getAPIKey($storeId = null)
     {
-        if ($this->isStagingMode()) {
-            return $this->getConfig(Config::STAGING_API_KEY);
+        if ($this->isStagingMode($storeId)) {
+            return $this->getConfig(Config::STAGING_API_KEY, $storeId);
         } else {
-            return $this->getConfig(Config::PRODUCTION_API_KEY);
+            return $this->getConfig(Config::PRODUCTION_API_KEY, $storeId);
         }
     }
 
     /**
+     * @param mixed $storeId
      * @return bool
      */
-    public function isStagingMode(): bool
+    public function isStagingMode($storeId = null): bool
     {
-        return $this->getMode() == Mode::SANDBOX_MODE;
+        return $this->getMode($storeId) == Mode::SANDBOX_MODE;
     }
 
     /**
      * Get Token for connect API.
      *
+     * @param mixed $storeId
      * @return mixed
      */
-    public function getToken()
+    public function getToken($storeId = null)
     {
-        if ($this->isStagingMode()) {
-            return $this->getConfig(Config::STAGING_TOKEN);
+        if ($this->isStagingMode($storeId)) {
+            return $this->getConfig(Config::STAGING_TOKEN, $storeId);
         } else {
-            return $this->getConfig(Config::PRODUCTION_TOKEN);
+            return $this->getConfig(Config::PRODUCTION_TOKEN, $storeId);
         }
     }
 
     /**
      * Get Phone number of account ahamove.
      *
+     * @param mixed $storeId
      * @return mixed
      */
-    public function getMobilePhoneValue()
+    public function getMobilePhoneValue($storeId = null)
     {
-        if ($this->isStagingMode()) {
-            return $this->getConfig(Config::STAGING_PHONE_NUMBER);
+        if ($this->isStagingMode($storeId)) {
+            return $this->getConfig(Config::STAGING_PHONE_NUMBER, $storeId);
         } else {
-            return $this->getConfig(Config::PRODUCTION_PHONE_NUMBER);
+            return $this->getConfig(Config::PRODUCTION_PHONE_NUMBER, $storeId);
         }
     }
 
@@ -195,11 +200,16 @@ class Data extends AbstractHelper
      * Get Config with path
      *
      * @param string $path
+     * @param mixed $storeId
      * @return mixed
      */
-    public function getConfig(string $path)
+    public function getConfig(string $path, $storeId = null)
     {
-        return $this->scopeConfig->getValue($path, $this->scope);
+        return $this->scopeConfig->getValue(
+            $path,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     /**
@@ -209,27 +219,7 @@ class Data extends AbstractHelper
      */
     public function flushCache(): void
     {
-        $listTypes = [
-            'config',
-            'layout',
-            'block_html',
-            'collections',
-            'reflection',
-            'db_ddl',
-            'eav',
-            'config_integration',
-            'config_integration_api',
-            'full_page',
-            'translate',
-            'config_webservice'
-        ];
-
-        foreach ($listTypes as $type) {
-            $this->cacheTypeList->cleanType($type);
-        }
-        foreach ($this->cacheFrontendPool as $cacheFrontend) {
-            $cacheFrontend->getBackend()->clean();
-        }
+        $this->cacheTypeList->cleanType('config');
     }
 
     /**

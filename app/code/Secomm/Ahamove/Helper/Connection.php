@@ -2,18 +2,18 @@
 
 namespace Secomm\Ahamove\Helper;
 
-use Secomm\Ahamove\Helper\Data as AhamoveHelper;
-use Secomm\Ahamove\Model\Config;
-use Secomm\Ahamove\Model\Connect\Api;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
+use Secomm\Ahamove\Helper\Data as AhamoveHelper;
+use Secomm\Ahamove\Model\Config;
+use Secomm\Ahamove\Model\Connect\Api;
 use stdClass;
 
 class Connection
 {
     /**
-     * @var API
+     * @var Api
      */
     protected $api;
 
@@ -37,8 +37,7 @@ class Connection
         ResourceConnection   $resourceConnection,
         AhamoveHelper        $ahamoveHelper,
         ScopeConfigInterface $scopeConfig
-    )
-    {
+    ) {
         $this->api = $api;
         $this->resourceConnection = $resourceConnection;
         $this->ahamoveHelper = $ahamoveHelper;

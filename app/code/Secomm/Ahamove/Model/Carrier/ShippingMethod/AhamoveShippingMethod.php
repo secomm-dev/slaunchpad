@@ -83,7 +83,9 @@ abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\Ahamo
                 // Only cache successful results. A failed result (e.g. an auth-fail status code such as 401)
                 // must not be cached, otherwise the fee stays stuck at 0 until the cache TTL expires.
                 if (is_array($content) && count($content) > 0) {
-                    $this->cache->save($this->serializer->serialize($content), $this->ahamoveHelper->generateCacheKey($this->serializer->serialize($params)), [], 300);
+                    $storeId = (string)$this->getStore();
+                    $cacheKey = $this->ahamoveHelper->generateCacheKey($storeId . '_' . $this->serializer->serialize($params));
+                    $this->cache->save($this->serializer->serialize($content), $cacheKey, [], 300);
                 }
             }
 
@@ -784,7 +786,9 @@ abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\Ahamo
                 // Only cache successful results. A failed result (e.g. an auth-fail status code such as 401)
                 // must not be cached, otherwise the fee stays stuck at 0 until the cache TTL expires.
                 if (is_array($content) && count($content) > 0) {
-                    $this->cache->save($this->serializer->serialize($content), $this->ahamoveHelper->generateCacheKey($this->serializer->serialize($params)), [], 300);
+                    $storeId = (string)$this->getStore();
+                    $cacheKey = $this->ahamoveHelper->generateCacheKey($storeId . '_' . $this->serializer->serialize($params));
+                    $this->cache->save($this->serializer->serialize($content), $cacheKey, [], 300);
                 }
             }
             $maximumHeight = $this->getSizeByService($service, 'height');

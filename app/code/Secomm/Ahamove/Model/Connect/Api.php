@@ -237,31 +237,24 @@ class Api extends CurlBuilder implements
     public function processResponse(mixed $response)
     {
         try {
-            if (gettype($response) === 'object') {
-                if ($response->status === Status::STATUS_CODE_SYSTEM_PROCESS_ERROR) {
-                    throw new Exception($response->content['description']);
-                } else {
-                    if ($response->status === Status::STATUS_CODE_SUCCESS) {
-                        return $response->content;
-                    } else {
-                        return $response->status;
-                    }
+            if (is_object($response)) {
+                if (isset($response->status) && $response->status === Status::STATUS_CODE_SYSTEM_PROCESS_ERROR) {
+                    throw new Exception($response->content['description'] ?? 'System Process Error');
                 }
-            } else {
-                if ($response['status'] === Status::STATUS_CODE_SYSTEM_PROCESS_ERROR) {
-                    if ($response->status === Status::STATUS_CODE_SUCCESS) {
-                        return $response['content'];
-                    } else {
-                        return $response['status'];
-                    }
-                }else {
-                    if ($response['status'] === Status::STATUS_CODE_SUCCESS) {
-                        return $response['content'];
-                    } else {
-                        return $response['status'];
-                    }
+                if (isset($response->status) && $response->status === Status::STATUS_CODE_SUCCESS) {
+                    return $response->content;
                 }
+                return $response->status ?? null;
+            } elseif (is_array($response)) {
+                if (isset($response['status']) && $response['status'] === Status::STATUS_CODE_SYSTEM_PROCESS_ERROR) {
+                    throw new Exception($response['content']['description'] ?? 'System Process Error');
+                }
+                if (isset($response['status']) && $response['status'] === Status::STATUS_CODE_SUCCESS) {
+                    return $response['content'] ?? [];
+                }
+                return $response['status'] ?? null;
             }
+            return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage());
         }
@@ -402,9 +395,12 @@ class Api extends CurlBuilder implements
     /**
      * This function is called when the token has expired
      */
-    public function refreshToken()
+    public function refreshToken($storeId = null)
     {
-        $data = new \Magento\Framework\DataObject(['response' => null]);
+        $data = new \Magento\Framework\DataObject([
+            'response' => null,
+            'store_id' => $storeId
+        ]);
         $this->_eventManager->dispatch('refresh_ahamove_token', ['data' => $data]);
         $response = $data->getResponse();
         return $response;

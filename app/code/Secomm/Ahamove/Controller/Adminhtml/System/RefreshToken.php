@@ -75,32 +75,46 @@ class RefreshToken extends Action implements HttpPostActionInterface
         $resultJson = $this->resultJsonFactory->create();
 
         try {
+            $storeId = $this->getRequest()->getParam('store');
+            $websiteId = $this->getRequest()->getParam('website');
+
+            if ($storeId) {
+                $scope = \Magento\Store\Model\ScopeInterface::SCOPE_STORES;
+                $scopeId = $storeId;
+            } elseif ($websiteId) {
+                $scope = \Magento\Store\Model\ScopeInterface::SCOPE_WEBSITES;
+                $scopeId = $websiteId;
+            } else {
+                $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
+                $scopeId = 0;
+            }
+
             $response = $this->connection->reloadToken();
 
-            if ($response->status == Status::STATUS_CODE_SUCCESS) {
+            if ($response && isset($response->status) && $response->status == Status::STATUS_CODE_SUCCESS) {
                 $dataContent = $response->content;
-                if ($this->helperDataAhamove->isStagingMode()){
+                if ($this->helperDataAhamove->isStagingMode($scopeId)){
                     $this->configWriter->save(
                         Config::STAGING_TOKEN,
                         $dataContent['token'],
-                        ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-                        $scopeId = 0);
+                        $scope,
+                        $scopeId);
                     $this->configWriter->save(
                         Config::STAGING_TOKEN_REFRESH,
                         $dataContent['refresh_token'],
-                        ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-                        $scopeId = 0);
+                        $scope,
+                        $scopeId);
                 }else{
                     $this->configWriter->save(
                         Config::PRODUCTION_TOKEN,
                         $dataContent['token'],
-                        ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-                        $scopeId = 0);
+                        $scope,
+                        $scopeId);
                     $this->configWriter->save(
                         Config::PRODUCTION_TOKEN_REFRESH,
                         $dataContent['refresh_token'],
-                        ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-                        $scopeId = 0);
+                        $scope,
+                        $scopeId);
                 }
 
                 $this->helperDataAhamove->flushCache();

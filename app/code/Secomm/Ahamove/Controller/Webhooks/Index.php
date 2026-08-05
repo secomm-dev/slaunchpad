@@ -102,10 +102,14 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
                     $content = "Ahamove order id='{$data['_id']}' failed, external id='{$incrementId}'";
                     $this->helperData->sendNotifyWebhookAhamove($content);
                 }
+
+                return $ahamoveOrderStatus;
             }
         } catch (\Exception $e) {
             $this->logger->error('Webhook : ' . $e->getMessage());
         }
+
+        return null;
     }
 
     /**

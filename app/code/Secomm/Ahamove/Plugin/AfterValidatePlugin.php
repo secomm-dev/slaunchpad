@@ -42,6 +42,7 @@ class AfterValidatePlugin
             return $result;
         }
         $validationErrors = [__($generalMessage)];
-        return [$this->validationResultFactory->create(['errors' => $validationErrors])];
+        $result[] = $this->validationResultFactory->create(['errors' => $validationErrors]);
+        return $result;
     }
 }
