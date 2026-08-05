@@ -62,12 +62,16 @@ class UpdateOrderCommand implements CommandInterface
         ContextHelper::assertOrderPayment($payment);
 
         if ($order->getState() === Order::STATE_PENDING_PAYMENT) {
-            switch ($this->config->getValue('payment_action')) {
-                case MethodInterface::ACTION_AUTHORIZE_CAPTURE:
-                    $payment->capture();
-                    break;
-            }
+            // Only the IPN (authoritative) captures the order. The Return
+            // redirect is non-authoritative — capturing here would mark an
+            // order paid before the server-side IPN confirms the payment,
+            // so an un-paid/expired return could be treated as success.
             if (TransactionReader::isIpn($commandSubject)) {
+                switch ($this->config->getValue('payment_action')) {
+                    case MethodInterface::ACTION_AUTHORIZE_CAPTURE:
+                        $payment->capture();
+                        break;
+                }
                 $message = __('IPN "%1"', 'Success');
                 $payment->prependMessage($message);
                 $order->addCommentToStatusHistory($message);

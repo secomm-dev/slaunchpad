@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Secomm MoMo ACL
+ *
+ * @author    Secomm Teams
+ * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Secomm_MoMo::config_momo" title="Secomm MoMo" translate="title" sortOrder="60"/>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>
