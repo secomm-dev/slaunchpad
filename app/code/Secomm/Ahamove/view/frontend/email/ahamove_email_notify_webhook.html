@@ -1,0 +1,37 @@
+<!--
+/**
+ * @author Secomm Team
+ * @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+ -->
+<!--@subject Create shipment on Ahamove failed @-->
+
+<!--@styles
+body,td,p,h1 { color:#222222 !important; font:'Poppins', sans-serif!important; }
+td.header { text-align: center; }
+p { font-size:14px; line-height:16px; margin:0 0 16px 0; }
+h1 { font-size:22px; font-weight:normal; line-height:22px; margin:0 0 11px 0; }
+@-->
+{{template config_path="design/email/header_template"}}
+<body style="background:#F6F6F6; font-family:Verdana, Arial, Helvetica, sans-serif; font-size:12px; margin:0; padding:0;">
+	<div style="background:#F6F6F6; font-family:Verdana, Arial, Helvetica, sans-serif; font-size:12px; margin:0; padding:0;">
+		<table cellspacing="0" cellpadding="0" border="0" height="100%" width="100%">
+			<tr>
+				<td align="center" valign="top" style="padding:20px 0 20px 0">
+					<!-- [ header starts here] -->
+					<table bgcolor="FFFFFF" cellspacing="0" cellpadding="10" border="0" width="650" style="border:1px solid #E0E0E0;">
+						<tr>
+							<td valign="top">
+                                <h1>Dear admin,</h1>
+                                <div style="font-size:12px; line-height:16px; margin:0 0 16px 0;">{{var content|raw }}</div>
+                                <p>Thank you</p>
+							</td>
+						</tr>
+					</table>
+				</td>
+			 </tr>
+		</table>
+	</div>
+</body>
+{{template config_path="design/email/footer_template"}}

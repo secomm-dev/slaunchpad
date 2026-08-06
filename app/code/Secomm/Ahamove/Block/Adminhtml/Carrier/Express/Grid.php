@@ -1,0 +1,158 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+namespace Secomm\Ahamove\Block\Adminhtml\Carrier\Express;
+
+class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
+{
+    /**
+     * Website filter
+     *
+     * @var int
+     */
+    protected $websiteId;
+
+    /**
+     * Condition filter
+     *
+     * @var string
+     */
+    protected $conditionName;
+
+    /**
+     * @var \Secomm\Ahamove\Model\Carrier\ShippingMethod\Express
+     */
+    protected $tablerate;
+
+    /**
+     * @var \Secomm\Ahamove\Model\ResourceModel\Carrier\ShippingMethod\Express\CollectionFactory
+     */
+    protected $collectionFactory;
+
+    /**
+     * @param \Magento\Backend\Block\Template\Context $context
+     * @param \Magento\Backend\Helper\Data $backendHelper
+     * @param \Secomm\Ahamove\Model\ResourceModel\Carrier\ShippingMethod\Express\CollectionFactory $collectionFactory
+     * @param \Secomm\Ahamove\Model\Carrier\ShippingMethod\Express $tablerate
+     * @param array $data
+     */
+    public function __construct(
+        \Magento\Backend\Block\Template\Context $context,
+        \Magento\Backend\Helper\Data $backendHelper,
+        \Secomm\Ahamove\Model\ResourceModel\Carrier\ShippingMethod\Express\CollectionFactory $collectionFactory,
+        \Secomm\Ahamove\Model\Carrier\ShippingMethod\Express $tablerate,
+        array $data = []
+    ) {
+        $this->collectionFactory = $collectionFactory;
+        $this->tablerate = $tablerate;
+        parent::__construct($context, $backendHelper, $data);
+    }
+
+    /**
+     * Define grid properties
+     *
+     * @return void
+     */
+    protected function _construct()
+    {
+        parent::_construct();
+        $this->setId('shippingAhamoveExpressGrid');
+        $this->_exportPageSize = 10000;
+    }
+
+    /**
+     * Set current website
+     *
+     * @param int $websiteId
+     * @return $this
+     */
+    public function setWebsiteId($websiteId)
+    {
+        $this->websiteId = $this->_storeManager->getWebsite($websiteId)->getId();
+        return $this;
+    }
+
+    /**
+     * Retrieve current website id
+     *
+     * @return int
+     */
+    public function getWebsiteId()
+    {
+        if ($this->websiteId === null) {
+            $this->websiteId = $this->_storeManager->getWebsite()->getId();
+        }
+        return $this->websiteId;
+    }
+
+    /**
+     * Set current website
+     *
+     * @param string $name
+     * @return $this
+     */
+    public function setConditionName($name)
+    {
+        $this->conditionName = $name;
+        return $this;
+    }
+
+    /**
+     * Retrieve current website id
+     *
+     * @return int
+     */
+    public function getConditionName()
+    {
+        return $this->conditionName;
+    }
+
+    /**
+     * Prepare shipping table rate collection
+     *
+     * @return \Secomm\Ahamove\Block\Adminhtml\Carrier\Express\Grid
+     */
+    protected function _prepareCollection()
+    {
+        /** @var $collection \Secomm\Ahamove\Model\ResourceModel\Carrier\ShippingMethod\Express\Collection */
+        $collection = $this->collectionFactory->create();
+        $collection->setConditionFilter($this->getConditionName())->setWebsiteFilter($this->getWebsiteId());
+
+        $this->setCollection($collection);
+
+        return parent::_prepareCollection();
+    }
+
+    /**
+     * Prepare table columns
+     *
+     * @return \Magento\Backend\Block\Widget\Grid\Extended
+     */
+    protected function _prepareColumns()
+    {
+        $this->addColumn(
+            'dest_country',
+            ['header' => __('Country'), 'index' => 'dest_country', 'default' => '*']
+        );
+
+        $this->addColumn(
+            'dest_region',
+            ['header' => __('Region/State'), 'index' => 'dest_region', 'default' => '*']
+        );
+
+        $this->addColumn(
+            'dest_zip',
+            ['header' => __('Zip/Postal Code'), 'index' => 'dest_zip', 'default' => '*']
+        );
+
+        $label = $this->tablerate->getCode('condition_name_short', $this->getConditionName());
+        $this->addColumn('condition_value', ['header' => $label, 'index' => 'condition_value']);
+
+        $this->addColumn('price', ['header' => __('Shipping Price'), 'index' => 'price']);
+
+        return parent::_prepareColumns();
+    }
+}

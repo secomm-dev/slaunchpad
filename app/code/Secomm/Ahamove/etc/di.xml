@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Preference -->
+    <preference for="Secomm\Ahamove\Api\ConnectInterface" type="Secomm\Ahamove\Model\Connect\Api"/>
+    <preference for="Secomm\Ahamove\Api\Data\AhamoveAddressInterface" type="Secomm\Ahamove\Model\Data\AhamoveAddress"/>
+
+    <!-- Command Console -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="secomm_ahamove_generate_city_command" xsi:type="object">
+                    Secomm\Ahamove\Console\Command\GenerateCityCommand
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\Ahamove\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\Ahamove\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">ahamove-shipping-method</argument>
+            <argument name="handlers"  xsi:type="array">
+                <item name="system" xsi:type="object">Secomm\Ahamove\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Quote\Model\ValidationRules\ShippingMethodValidationRule">
+        <plugin name="after_validate_plugin" type="Secomm\Ahamove\Plugin\AfterValidatePlugin" sortOrder="1"/>
+    </type>
+    <preference for="Secomm\Ahamove\Api\Data\PackageItemInterface"
+                type="Secomm\Ahamove\Model\Data\PackageItem"/>
+
+    <preference for="Secomm\Ahamove\Api\PackageInterface"
+                type="Secomm\Ahamove\Model\Package"/>
+
+    <type name="Secomm\Ahamove\Model\Carrier\ShippingMethod\AhamoveShippingMethod">
+        <arguments>
+            <argument name="shippingTablerates" xsi:type="array">
+                <item name="ahamove_standard" xsi:type="object">Secomm\Ahamove\Model\ResourceModel\Carrier\ShippingMethod\StandardFactory</item>
+                <item name="ahamove_express" xsi:type="object">Secomm\Ahamove\Model\ResourceModel\Carrier\ShippingMethod\ExpressFactory</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\Ahamove\Controller\Webhooks\Index">
+        <plugin name="execute"
+                type="Secomm\Ahamove\Plugin\NewShipmentOrder"/>
+    </type>
+    <type name="Magento\Sales\Block\Adminhtml\Order\View">
+        <plugin name="add_push_ahamove_order_button_plugin"
+                type="Secomm\Ahamove\Plugin\Adminhtml\AddPushAhamoveOrderButtonPlugin"/>
+    </type>
+</config>

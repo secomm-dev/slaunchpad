@@ -1,0 +1,50 @@
+[
+    {
+        "name": "IDLE",
+        "status_code": "IDLE",
+        "title": "Scheduled order confirmed",
+        "description": "Scheduled order confirmed, the supplier will see the order in driver app by the time specified"
+    },
+    {
+        "name": "ASSIGNING",
+        "status_code": "ASSIGNING",
+        "title": "Finding a supplier",
+        "description": "Finding a supplier"
+    },
+    {
+        "name": "ACCEPTED",
+        "status_code": "ACCEPTED",
+        "title": "Once supplier accepts the order",
+        "description": "Once supplier accepts the order, the order status will be changed to ACCEPTED"
+    },
+    {
+        "name": "IN PROCESS",
+        "status_code": "IN PROCESS",
+        "title": "The supplier collects the package at the pickup location",
+        "description": "When the supplier collects the package at the pickup location, he will click “Pick up” and the order status will be changed to IN PROCESS"
+    },
+    {
+        "name": "COMPLETED",
+        "status_code": "COMPLETED",
+        "title": "The supplier completes the order",
+        "description": "When the supplier completes the order, the order status will be changed to COMPLETED (It does not mean the package is delivered. Check the delivery status description below)"
+    },
+    {
+        "name": "CANCELLED",
+        "status_code": "CANCELLED",
+        "title": "When an order is canceled for any reason",
+        "description": "The supplier cancels the order / The user cancels the order / there is no suppliers accepting order after a certain period of time (depending on service type), the order status will be changed to CANCELLED"
+    },
+    {
+        "name": "IN_RETURN",
+        "status_code": "IN_RETURN",
+        "title": "In return the package",
+        "description": "When supplier return the package to pickup location in case failed delivery"
+    },
+    {
+        "name": "RETURNED",
+        "status_code": "RETURNED",
+        "title": "Return the package",
+        "description": "When supplier return the package to pickup location in case failed delivery"
+    }
+]

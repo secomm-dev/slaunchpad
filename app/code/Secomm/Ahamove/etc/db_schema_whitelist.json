@@ -1,0 +1,94 @@
+{
+    "ahamove_city": {
+        "column": {
+            "entity_id": true,
+            "city_id": true,
+            "country_id": true,
+            "name": true,
+            "name_vi_vn": true,
+            "level": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "AHAMOVE_CITY_CITY_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "ahamove_city_detail": {
+        "column": {
+            "entity_id": true,
+            "city_id": true,
+            "name": true,
+            "name_vi_vn": true,
+            "country_id": true,
+            "location": true,
+            "contract_number": true,
+            "merchant_contract_number": true,
+            "animated_url": true,
+            "same_district_delivery": true,
+            "level": true,
+            "level_vn": true,
+            "area_id": true,
+            "service_city_id": true,
+            "public_service": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "AHAMOVE_CITY_DETAIL_CITY_ID_AHAMOVE_CITY_CITY_ID": true
+        }
+    },
+    "ahamove_standard": {
+        "column": {
+            "pk": true,
+            "website_id": true,
+            "dest_country_id": true,
+            "dest_region_id": true,
+            "dest_zip": true,
+            "condition_name": true,
+            "condition_value": true,
+            "price": true,
+            "cost": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "UNQ_3DPZA8ZTQU7APA3WPY7SAPOZYMHUHUFK": true
+        }
+    },
+    "ahamove_express": {
+        "column": {
+            "pk": true,
+            "website_id": true,
+            "dest_country_id": true,
+            "dest_region_id": true,
+            "dest_zip": true,
+            "condition_name": true,
+            "condition_value": true,
+            "price": true,
+            "cost": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "UNQ_8OOGLN57QD9CPFE92KEQDRSI0GVBB4V6": true
+        }
+    },
+    "ahamove_order_status": {
+        "column": {
+            "entity_id": true,
+            "order_ahamove_id": true,
+            "track_number": true,
+            "status": true,
+            "shared_link": true,
+            "order_data": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+      }
+}

@@ -444,6 +444,7 @@ return [
         'PayPal_BraintreeGraphQl' => 1,
         'PayPal_BraintreeReward' => 1,
         'Secomm_AddressDropdown' => 1,
+        'Secomm_Ahamove' => 1,
         'Secomm_Base' => 1,
         'Secomm_DisableFileUpload' => 1,
         'Secomm_MoMo' => 1,

@@ -1,0 +1,28 @@
+<?php
+
+namespace Secomm\Ahamove\Block\Adminhtml\Shipping;
+
+use Secomm\Ahamove\Block\Adminhtml\Shipping\Entity\GenericButton;
+use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderInterface;
+
+/**
+ * Back to list button.
+ */
+class BackButton extends GenericButton implements ButtonProviderInterface
+{
+    /**
+     * Retrieve Back To Grid button settings.
+     *
+     * @return array
+     */
+    public function getButtonData(): array
+    {
+        return $this->wrapButtonSettings(
+            __('Back To Grid')->getText(),
+            'back',
+            sprintf("location.href = '%s';", $this->getUrl('*/*/')),
+            [],
+            10
+        );
+    }
+}
