@@ -1,0 +1,49 @@
+<?php
+/** @var Category $block */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\NodeType\Category;
+
+?>
+<?php
+$nodeId = $block->getId();
+$class = $block->getMenuClass();
+$categoryUrl = $block->getCategoryUrl($nodeId);
+$categoryUrl = $categoryUrl ?: '#';
+$dataAttribute = '';
+$imageUrl = $block->getImageUrl();
+$imageAltText = $block->getImageAltText();
+$imageWidth = $block->getImageWidth();
+$imageHeight = $block->getImageHeight();
+
+if ($block->getIsViewAllLink()) {
+    $title = __('View All');
+    $classLink = $class . '__inner-link';
+} else {
+    $classLink = $block->getIsRoot() ? $class . '__link' : $class . '__inner-link';
+    $title = $block->getTitle();
+
+    if ($nodeId) {
+        $dataAttribute = ' data-menu="menu-' . $nodeId . '"';
+    }
+}
+?>
+
+<a
+    href="<?= $categoryUrl ?>"
+    class="<?= $classLink ?>"
+    <?= $dataAttribute ?>
+>
+    <?= $title ?>
+</a>
+
+<?php if ($imageUrl): ?>
+    <img
+        src="<?= $block->escapeUrl($imageUrl); ?>"
+        alt="<?= $block->escapeHtmlAttr($imageAltText); ?>"
+        loading="lazy"
+        width="<?= $escaper->escapeHtmlAttr($imageWidth) ?>"
+        height="<?= $escaper->escapeHtmlAttr($imageHeight) ?>"
+    />
+<?php endif; ?>
