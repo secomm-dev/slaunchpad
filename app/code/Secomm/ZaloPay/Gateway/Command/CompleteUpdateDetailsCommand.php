@@ -27,27 +27,15 @@ use Magento\Sales\Model\Order\Payment;
 class CompleteUpdateDetailsCommand implements CommandInterface
 {
     /**
-     * @var ValidatorInterface
-     */
-    protected ValidatorInterface $validator;
-
-    /**
-     * @var HandlerInterface
-     */
-    protected HandlerInterface $handler;
-
-    /**
      * CompleteUpdateDetailsCommand constructor.
      *
      * @param ValidatorInterface $validator
      * @param HandlerInterface $handler
      */
     public function __construct(
-        ValidatorInterface $validator,
-        HandlerInterface   $handler
+        protected readonly ValidatorInterface $validator,
+        protected readonly HandlerInterface   $handler
     ) {
-        $this->validator = $validator;
-        $this->handler = $handler;
     }
 
     /**

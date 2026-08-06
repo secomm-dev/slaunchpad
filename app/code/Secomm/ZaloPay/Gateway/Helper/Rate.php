@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Helper;
 
@@ -23,19 +24,13 @@ class Rate
     const CURRENCY_CODE = 'VND';
 
     /**
-     * @var Data
-     */
-    private Data $helperData;
-
-    /**
      * OrderDetailsDataBuilder constructor.
      *
      * @param Data $helperData
      */
     public function __construct(
-        Data $helperData,
+        private readonly Data $helperData,
     ) {
-        $this->helperData = $helperData;
     }
 
     /**

@@ -4,6 +4,7 @@
  * @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Mapper;
 
@@ -19,17 +20,11 @@ use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 class RefundDataMapper
 {
     /**
-     * @var RefundInterfaceFactory
-     */
-    private RefundInterfaceFactory $entityDtoFactory;
-
-    /**
      * @param RefundInterfaceFactory $entityDtoFactory
      */
     public function __construct(
-        RefundInterfaceFactory $entityDtoFactory
+        private readonly RefundInterfaceFactory $entityDtoFactory
     ) {
-        $this->entityDtoFactory = $entityDtoFactory;
     }
 
     /**

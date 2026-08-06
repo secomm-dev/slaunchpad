@@ -34,36 +34,6 @@ use Psr\Log\LoggerInterface;
 class Notify extends Action implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
     /**
-     * @var CommandPoolInterface
-     */
-    private CommandPoolInterface $commandPool;
-
-    /**
-     * @var PaymentDataObjectFactory
-     */
-    private PaymentDataObjectFactory $paymentDataObjectFactory;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private OrderRepositoryInterface $orderRepository;
-
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private SearchCriteriaBuilder $searchCriteriaBuilder;
-
-    /**
-     * @var SerializerJson
-     */
-    private SerializerJson $serializer;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
      * Constructor
      *
      * @param Context $context
@@ -76,20 +46,14 @@ class Notify extends Action implements CsrfAwareActionInterface, HttpPostActionI
      */
     public function __construct(
         Context $context,
-        CommandPoolInterface $commandPool,
-        PaymentDataObjectFactory $paymentDataObjectFactory,
-        OrderRepositoryInterface $orderRepository,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
-        SerializerJson $serializer,
-        LoggerInterface $logger
+        private readonly CommandPoolInterface $commandPool,
+        private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly SearchCriteriaBuilder $searchCriteriaBuilder,
+        private readonly SerializerJson $serializer,
+        private readonly LoggerInterface $logger
     ) {
         parent::__construct($context);
-        $this->commandPool = $commandPool;
-        $this->paymentDataObjectFactory = $paymentDataObjectFactory;
-        $this->orderRepository = $orderRepository;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->serializer = $serializer;
-        $this->logger = $logger;
     }
 
     /**

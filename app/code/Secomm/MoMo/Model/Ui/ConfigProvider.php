@@ -21,27 +21,15 @@ class ConfigProvider implements ConfigProviderInterface
     public const CODE = 'momo_payment';
 
     /**
-     * @var Config
-     */
-    private Config $config;
-
-    /**
-     * @var UrlInterface
-     */
-    private UrlInterface $urlBuilder;
-
-    /**
      * Constructor
      *
      * @param Config $config
      * @param UrlInterface $urlBuilder
      */
     public function __construct(
-        Config $config,
-        UrlInterface $urlBuilder
+        private readonly Config $config,
+        private readonly UrlInterface $urlBuilder
     ) {
-        $this->config = $config;
-        $this->urlBuilder = $urlBuilder;
     }
 
     /**

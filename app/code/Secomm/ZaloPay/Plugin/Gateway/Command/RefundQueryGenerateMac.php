@@ -4,6 +4,8 @@
  * @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
+
 namespace Secomm\ZaloPay\Plugin\Gateway\Command;
 
 use Secomm\ZaloPay\Gateway\Helper\Authorization;
@@ -18,19 +20,13 @@ use Magento\Payment\Gateway\Request\BuilderComposite;
 class RefundQueryGenerateMac
 {
     /**
-     * @var Authorization
-     */
-    private Authorization $authorization;
-
-    /**
      * PayUrlGenerateMac constructor.
      *
      * @param Authorization $authorization
      */
     public function __construct(
-        Authorization $authorization
+        private readonly Authorization $authorization
     ) {
-        $this->authorization = $authorization;
     }
 
     /**

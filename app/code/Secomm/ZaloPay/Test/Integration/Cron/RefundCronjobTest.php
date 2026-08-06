@@ -7,6 +7,7 @@
  * @copyright Copyright (c) 2023. Secomm All rights reserved.
  * @see COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Test\Integration\Cron;
 

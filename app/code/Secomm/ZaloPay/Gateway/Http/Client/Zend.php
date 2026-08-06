@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Http\Client;
 
@@ -22,33 +23,15 @@ use Magento\Payment\Model\Method\Logger;
 class Zend implements ClientInterface
 {
     /**
-     * @var LaminasClientFactory
-     */
-    private LaminasClientFactory $clientFactory;
-
-    /**
-     * @var ConverterInterface | null
-     */
-    private ?ConverterInterface $converter;
-
-    /**
-     * @var Logger
-     */
-    private Logger $logger;
-
-    /**
      * @param LaminasClientFactory $clientFactory
      * @param Logger $logger
      * @param ConverterInterface | null $converter
      */
     public function __construct(
-        LaminasClientFactory  $clientFactory,
-        Logger                $logger,
-        ConverterInterface    $converter = null
+        private readonly LaminasClientFactory  $clientFactory,
+        private readonly Logger                $logger,
+        private ?ConverterInterface            $converter = null
     ) {
-        $this->clientFactory = $clientFactory;
-        $this->converter = $converter;
-        $this->logger = $logger;
     }
 
     /**
@@ -60,7 +43,7 @@ class Zend implements ClientInterface
     public function placeRequest(TransferInterface $transferObject): array
     {
         $log = [
-            'request' => $transferObject->getBody(),
+            'request' => $this->maskSensitiveData($transferObject->getBody()),
             'request_uri' => $transferObject->getUri()
         ];
         $result = [];
@@ -86,5 +69,28 @@ class Zend implements ClientInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Mask signature/secret fields in the request payload before it is written to the debug log.
+     *
+     * @param mixed $body
+     * @return mixed
+     */
+    private function maskSensitiveData($body)
+    {
+        if (!is_array($body)) {
+            return $body;
+        }
+
+        $sensitiveKeys = ['mac', 'signature', 'hmac', 'secret', 'secretkey', 'key2', 'access_key', 'secret_key'];
+        foreach ($body as $key => $value) {
+            $normalized = strtolower((string) $key);
+            if (in_array($normalized, $sensitiveKeys, true)) {
+                $body[$key] = '****';
+            }
+        }
+
+        return $body;
     }
 }

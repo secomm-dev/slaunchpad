@@ -4,6 +4,7 @@
  * @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Command\Refund;
 
@@ -21,33 +22,15 @@ use Psr\Log\LoggerInterface;
 class SaveCommand
 {
     /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
-     * @var RefundModelFactory
-     */
-    private RefundModelFactory $modelFactory;
-
-    /**
-     * @var RefundResource
-     */
-    private RefundResource $resource;
-
-    /**
      * @param LoggerInterface $logger
      * @param RefundModelFactory $modelFactory
      * @param RefundResource $resource
      */
     public function __construct(
-        LoggerInterface    $logger,
-        RefundModelFactory $modelFactory,
-        RefundResource     $resource
+        private readonly LoggerInterface    $logger,
+        private readonly RefundModelFactory $modelFactory,
+        private readonly RefundResource     $resource
     ) {
-        $this->logger = $logger;
-        $this->modelFactory = $modelFactory;
-        $this->resource = $resource;
     }
 
     /**

@@ -10,17 +10,31 @@ declare(strict_types=1);
 
 namespace Secomm\MoMo\Gateway\Http\Converter;
 
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Payment\Gateway\Http\ConverterInterface;
 
 class JsonToArray implements ConverterInterface
 {
     /**
+     * Constructor
+     *
+     * @param Json $serializer
+     */
+    public function __construct(
+        private readonly Json $serializer
+    ) {
+    }
+
+    /**
      * @inheritdoc
      */
     public function convert($response): array
     {
-        $decoded = json_decode((string)$response, true);
-
-        return is_array($decoded) ? $decoded : [];
+        try {
+            $decoded = $this->serializer->unserialize((string)$response);
+            return is_array($decoded) ? $decoded : [];
+        } catch (\InvalidArgumentException $e) {
+            return [];
+        }
     }
 }

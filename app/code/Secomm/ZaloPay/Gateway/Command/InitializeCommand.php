@@ -7,6 +7,8 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
+
 namespace Secomm\ZaloPay\Gateway\Command;
 
 use Magento\Payment\Gateway\Helper\ContextHelper;

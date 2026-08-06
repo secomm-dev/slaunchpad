@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Helper;
 
@@ -22,27 +23,15 @@ class Authorization
     protected string $params;
 
     /**
-     * @var ConfigInterface
-     */
-    private ConfigInterface $config;
-
-    /**
-     * @var EncryptorInterface
-     */
-    private EncryptorInterface $encryptor;
-
-    /**
      * Authorization constructor.
      *
      * @param ConfigInterface $config
      * @param EncryptorInterface $encryptor
      */
     public function __construct(
-        ConfigInterface    $config,
-        EncryptorInterface $encryptor
+        private readonly ConfigInterface    $config,
+        private readonly EncryptorInterface $encryptor
     ) {
-        $this->config = $config;
-        $this->encryptor = $encryptor;
     }
 
     /**

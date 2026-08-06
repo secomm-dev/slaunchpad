@@ -30,26 +30,6 @@ class TransactionHandler implements HandlerInterface
     public const RESULT_CODE = 'resultCode';
 
     /**
-     * @var InvoiceService
-     */
-    private InvoiceService $invoiceService;
-
-    /**
-     * @var InvoiceRepositoryInterface
-     */
-    private InvoiceRepositoryInterface $invoiceRepository;
-
-    /**
-     * @var InvoiceSender
-     */
-    private InvoiceSender $invoiceSender;
-
-    /**
-     * @var TransactionFactory
-     */
-    private TransactionFactory $transactionFactory;
-
-    /**
      * Constructor
      *
      * @param InvoiceService $invoiceService
@@ -58,15 +38,11 @@ class TransactionHandler implements HandlerInterface
      * @param TransactionFactory $transactionFactory
      */
     public function __construct(
-        InvoiceService $invoiceService,
-        InvoiceRepositoryInterface $invoiceRepository,
-        InvoiceSender $invoiceSender,
-        TransactionFactory $transactionFactory
+        private readonly InvoiceService $invoiceService,
+        private readonly InvoiceRepositoryInterface $invoiceRepository,
+        private readonly InvoiceSender $invoiceSender,
+        private readonly TransactionFactory $transactionFactory
     ) {
-        $this->invoiceService = $invoiceService;
-        $this->invoiceRepository = $invoiceRepository;
-        $this->invoiceSender = $invoiceSender;
-        $this->transactionFactory = $transactionFactory;
     }
 
     /**

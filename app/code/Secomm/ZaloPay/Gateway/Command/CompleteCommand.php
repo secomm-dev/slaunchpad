@@ -22,27 +22,15 @@ use Magento\Payment\Gateway\CommandInterface;
 class CompleteCommand implements CommandInterface
 {
     /**
-     * @var CompleteUpdateDetailsCommand
-     */
-    private CompleteUpdateDetailsCommand $updateDetailsCommand;
-
-    /**
-     * @var UpdateOrderCommand
-     */
-    private UpdateOrderCommand $updateOrderCommand;
-
-    /**
      * CompleteCommand constructor.
      *
-     * @param CompleteUpdateDetailsCommand $updateDetailsCommand
-     * @param UpdateOrderCommand $updateOrderCommand
+     * @param CommandInterface $updateDetailsCommand
+     * @param CommandInterface $updateOrderCommand
      */
     public function __construct(
-        CompleteUpdateDetailsCommand $updateDetailsCommand,
-        UpdateOrderCommand          $updateOrderCommand
+        private readonly CommandInterface $updateDetailsCommand,
+        private readonly CommandInterface $updateOrderCommand
     ) {
-        $this->updateDetailsCommand = $updateDetailsCommand;
-        $this->updateOrderCommand = $updateOrderCommand;
     }
 
     /**
