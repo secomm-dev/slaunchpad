@@ -1,0 +1,33 @@
+<?php
+/** @var Menu $block */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\Menu;
+
+?>
+<?php if ($block->getMenu()): ?>
+    <?php
+    $parentNode = $block->getParentNode();
+    $title = $parentNode->getTitle();
+    ?>
+    <ul class="space-y-2"
+        title="<?= $escaper->escapeHtmlAttr($title) ?>"
+    >
+        <?php foreach ($block->getSubmenuNodes() as $node): ?>
+            <?php
+            $childrenLevel = $node->getLevel() + 1;
+            $children = $block->getNodes($childrenLevel, $node);
+            $node->setIsParent((bool) $children);
+            $nodeType = $node->getType();
+            $nodeClasses = $node->getClasses();
+            ?>
+            <li class="<?= /* @noEscape */ (string) $nodeType === 'wrapper' ? $escaper->escapeHtmlAttr($nodeClasses) : '' ?>">
+                <div class="group">
+                    <?= /* @noEscape */ $block->renderMenuNode($node) ?>
+                </div>
+                <?= $block->renderSubmenu($children, $node, $childrenLevel) ?>
+            </li>
+        <?php endforeach ?>
+    </ul>
+<?php endif; ?>

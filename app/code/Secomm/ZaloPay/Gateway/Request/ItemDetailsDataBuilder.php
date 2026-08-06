@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Request;
 
@@ -46,20 +47,6 @@ class ItemDetailsDataBuilder extends AbstractDataBuilder implements BuilderInter
     const ITEM_QTY = 'itemquantity';
 
     /**
-     * @var Json
-     */
-    private $serializer;
-    /**
-     * @var Rate
-     */
-    private $helperRate;
-
-    /**
-     * @var Escaper
-     */
-    private $escaper;
-
-    /**
      * ItemDetailsDataBuilder constructor.
      * @param Rate $helperRate
      * @param Escaper $escaper
@@ -67,14 +54,11 @@ class ItemDetailsDataBuilder extends AbstractDataBuilder implements BuilderInter
      * @param Data $data
      */
     public function __construct(
-        Rate           $helperRate,
-        Escaper        $escaper,
-        Json           $serializer,
-        protected Data $data
+        private readonly Rate    $helperRate,
+        private readonly Escaper $escaper,
+        private readonly Json    $serializer,
+        protected Data           $data
     ) {
-        $this->serializer = $serializer;
-        $this->helperRate = $helperRate;
-        $this->escaper = $escaper;
     }
 
     /**

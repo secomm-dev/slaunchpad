@@ -25,21 +25,6 @@ use Magento\Payment\Model\Method\Logger;
 class Laminas implements ClientInterface
 {
     /**
-     * @var LaminasClientFactory
-     */
-    private LaminasClientFactory $clientFactory;
-
-    /**
-     * @var ConverterInterface|null
-     */
-    private ?ConverterInterface $converter;
-
-    /**
-     * @var Logger
-     */
-    private Logger $logger;
-
-    /**
      * Constructor
      *
      * @param LaminasClientFactory $clientFactory
@@ -47,13 +32,10 @@ class Laminas implements ClientInterface
      * @param ConverterInterface|null $converter
      */
     public function __construct(
-        LaminasClientFactory $clientFactory,
-        Logger $logger,
-        ConverterInterface $converter = null
+        private readonly LaminasClientFactory $clientFactory,
+        private readonly Logger $logger,
+        private ?ConverterInterface $converter = null
     ) {
-        $this->clientFactory = $clientFactory;
-        $this->converter = $converter;
-        $this->logger = $logger;
     }
 
     /**
@@ -67,7 +49,7 @@ class Laminas implements ClientInterface
     public function placeRequest(TransferInterface $transferObject): array
     {
         $log = [
-            'request' => $transferObject->getBody(),
+            'request' => $this->maskSensitiveData($transferObject->getBody()),
             'request_uri' => $transferObject->getUri(),
         ];
         $result = [];
@@ -91,5 +73,36 @@ class Laminas implements ClientInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Mask signature/secret fields in the request payload before writing to log.
+     *
+     * @param mixed $body
+     * @return mixed
+     */
+    private function maskSensitiveData($body)
+    {
+        if (is_string($body)) {
+            $decoded = json_decode($body, true);
+            if (is_array($decoded)) {
+                return $this->maskSensitiveData($decoded);
+            }
+            return $body;
+        }
+
+        if (!is_array($body)) {
+            return $body;
+        }
+
+        $sensitiveKeys = ['signature', 'secretkey', 'accesskey', 'secret_key', 'access_key', 'partnercode'];
+        foreach ($body as $key => $value) {
+            $normalized = strtolower((string) $key);
+            if (in_array($normalized, $sensitiveKeys, true)) {
+                $body[$key] = '****';
+            }
+        }
+
+        return $body;
     }
 }

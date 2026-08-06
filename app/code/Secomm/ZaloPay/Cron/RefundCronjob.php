@@ -4,9 +4,12 @@
  * @copyright Copyright (c) 2024. Secomm All rights reserved (https://www.secomm.vn)
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Cron;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Secomm\ZaloPay\Api\Data\RefundInterface;
@@ -28,34 +31,9 @@ use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollectionFactory;
 class RefundCronjob
 {
     /**
-     * @var RefundCollectionFactory
+     * Payment method active config path.
      */
-    private RefundCollectionFactory $refundCollectionFactory;
-
-    /**
-     * @var CreditmemoRepositoryInterface
-     */
-    private CreditmemoRepositoryInterface $creditmemoRepository;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
-     * @var RefundQueryCommand
-     */
-    private RefundQueryCommand $refundQueryCommand;
-
-    /**
-     * @var DateTime
-     */
-    private DateTime $dateTime;
-
-    /**
-     * @var Authorization
-     */
-    private Authorization $authorization;
+    private const XML_PATH_ACTIVE = 'payment/zalopay/active';
 
     /**
      * RefundCronjob constructor.
@@ -66,21 +44,19 @@ class RefundCronjob
      * @param RefundQueryCommand $refundQueryCommand
      * @param DateTime $dateTime
      * @param Authorization $authorization
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Json $serializer
      */
     public function __construct(
-        RefundCollectionFactory       $refundCollectionFactory,
-        CreditmemoRepositoryInterface $creditmemoRepository,
-        LoggerInterface               $logger,
-        RefundQueryCommand            $refundQueryCommand,
-        DateTime                      $dateTime,
-        Authorization                 $authorization
+        private readonly RefundCollectionFactory       $refundCollectionFactory,
+        private readonly CreditmemoRepositoryInterface $creditmemoRepository,
+        private readonly LoggerInterface               $logger,
+        private readonly RefundQueryCommand            $refundQueryCommand,
+        private readonly DateTime                      $dateTime,
+        private readonly Authorization                 $authorization,
+        private readonly ScopeConfigInterface          $scopeConfig,
+        private readonly Json                          $serializer
     ) {
-        $this->refundCollectionFactory = $refundCollectionFactory;
-        $this->creditmemoRepository = $creditmemoRepository;
-        $this->logger = $logger;
-        $this->refundQueryCommand = $refundQueryCommand;
-        $this->dateTime = $dateTime;
-        $this->authorization = $authorization;
     }
 
     /**
@@ -90,6 +66,10 @@ class RefundCronjob
      */
     public function execute()
     {
+        if (!$this->isActive()) {
+            return;
+        }
+
         try {
             $this->logger->info('Cron Start');
             // Get a collection of refunds where 'is_processed' is false
@@ -100,7 +80,7 @@ class RefundCronjob
                 $creditMemoId = $refund->getCreditMemoId();
                 $creditMemo = $this->creditmemoRepository->get($creditMemoId);
                 $timestamp = $this->dateTime->timestamp() * 1000;
-                $commandSubject = json_decode($refund->getAdditionalInformation(), true);
+                $commandSubject = $this->serializer->unserialize($refund->getAdditionalInformation());
                 $commandSubject[AbstractDataBuilder::TIMESTAMP] = $timestamp;
                 //Remove old Mac
                 unset($commandSubject[AbstractDataBuilder::MAC]);
@@ -137,5 +117,15 @@ class RefundCronjob
         $refundCollection = $this->refundCollectionFactory->create();
         $refundCollection->addFieldToFilter('is_processed', ['eq' => RefundInterface::NOT_PROCESSED]);
         return $refundCollection;
+    }
+
+    /**
+     * Check whether the ZaloPay payment method is enabled.
+     *
+     * @return bool
+     */
+    private function isActive(): bool
+    {
+        return (bool) $this->scopeConfig->isSetFlag(self::XML_PATH_ACTIVE);
     }
 }

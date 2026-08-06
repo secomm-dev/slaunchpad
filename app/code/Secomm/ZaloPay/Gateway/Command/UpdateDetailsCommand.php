@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Command;
 
@@ -22,27 +23,15 @@ use Magento\Sales\Model\Order\Payment;
 class UpdateDetailsCommand implements CommandInterface
 {
     /**
-     * @var ValidatorInterface
-     */
-    protected ValidatorInterface $validator;
-
-    /**
-     * @var HandlerInterface
-     */
-    protected HandlerInterface $handler;
-
-    /**
      * UpdateDetailsCommand constructor.
      *
      * @param ValidatorInterface $validator
      * @param HandlerInterface $handler
      */
     public function __construct(
-        ValidatorInterface $validator,
-        HandlerInterface   $handler
+        protected readonly ValidatorInterface $validator,
+        protected readonly HandlerInterface   $handler
     ) {
-        $this->validator = $validator;
-        $this->handler = $handler;
     }
 
     /**

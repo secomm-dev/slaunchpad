@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Controller\Payment;
 
@@ -41,36 +42,6 @@ use Psr\Log\LoggerInterface;
 class Start extends Action implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
     /**
-     * @var CommandPoolInterface
-     */
-    private CommandPoolInterface $commandPool;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
-     * @var PaymentDataObjectFactory
-     */
-    private PaymentDataObjectFactory $paymentDataObjectFactory;
-
-    /**
-     * @var Session
-     */
-    private Session $checkoutSession;
-
-    /**
-     * @var PaymentFailuresInterface
-     */
-    private mixed $paymentFailures;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private OrderRepositoryInterface $orderRepository;
-
-    /**
      * Start constructor.
      *
      * @param Context $context
@@ -83,20 +54,14 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
      */
     public function __construct(
         Context $context,
-        CommandPoolInterface $commandPool,
-        LoggerInterface $logger,
-        OrderRepositoryInterface $orderRepository,
-        PaymentDataObjectFactory $paymentDataObjectFactory,
-        Session $checkoutSession,
-        PaymentFailuresInterface $paymentFailures
+        private readonly CommandPoolInterface $commandPool,
+        private readonly LoggerInterface $logger,
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
+        private readonly Session $checkoutSession,
+        private readonly PaymentFailuresInterface $paymentFailures
     ) {
         parent::__construct($context);
-        $this->commandPool = $commandPool;
-        $this->logger = $logger;
-        $this->paymentDataObjectFactory = $paymentDataObjectFactory;
-        $this->checkoutSession = $checkoutSession;
-        $this->paymentFailures = $paymentFailures;
-        $this->orderRepository = $orderRepository;
     }
 
     /**

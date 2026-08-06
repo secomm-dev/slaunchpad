@@ -20,11 +20,6 @@ use Secomm\ZaloPay\Gateway\Helper\Rate;
 class TotalMinMaxPlugin
 {
     /**
-     * @var Rate
-     */
-    private Rate $rate;
-
-    /**
      * ZaloPay method code
      */
     private const ZALO_PAY_METHOD_CODE = "zalopay";
@@ -44,9 +39,8 @@ class TotalMinMaxPlugin
      *
      * @param Rate $rate
      */
-    public function __construct(Rate $rate)
+    public function __construct(private readonly Rate $rate)
     {
-        $this->rate = $rate;
     }
 
     /**

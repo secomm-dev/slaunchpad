@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   Layered Navigation
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Plugin\Gateway\Command;
 
@@ -17,19 +18,13 @@ use Magento\Payment\Gateway\Request\BuilderComposite;
 class PayUrlGenerateMac
 {
     /**
-     * @var Authorization
-     */
-    private Authorization $authorization;
-
-    /**
      * PayUrlGenerateMac constructor.
      *
      * @param Authorization $authorization
      */
     public function __construct(
-        Authorization $authorization
+        private readonly Authorization $authorization
     ) {
-        $this->authorization = $authorization;
     }
 
     /**

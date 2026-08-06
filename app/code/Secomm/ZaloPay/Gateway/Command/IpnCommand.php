@@ -23,27 +23,15 @@ use Magento\Payment\Gateway\CommandInterface;
 class IpnCommand implements CommandInterface
 {
     /**
-     * @var UpdateDetailsCommand
-     */
-    private UpdateDetailsCommand $updateDetailsCommand;
-
-    /**
-     * @var UpdateOrderCommand
-     */
-    private UpdateOrderCommand $updateOrderCommand;
-
-    /**
      * IpnCommand constructor.
      *
-     * @param UpdateDetailsCommand $updateDetailsCommand
-     * @param UpdateOrderCommand $updateOrderCommand
+     * @param CommandInterface $updateDetailsCommand
+     * @param CommandInterface $updateOrderCommand
      */
     public function __construct(
-        UpdateDetailsCommand $updateDetailsCommand,
-        UpdateOrderCommand $updateOrderCommand
+        private readonly CommandInterface $updateDetailsCommand,
+        private readonly CommandInterface $updateOrderCommand
     ) {
-        $this->updateDetailsCommand = $updateDetailsCommand;
-        $this->updateOrderCommand = $updateOrderCommand;
     }
 
     /**

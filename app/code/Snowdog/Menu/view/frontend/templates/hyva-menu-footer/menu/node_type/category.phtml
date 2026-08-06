@@ -1,0 +1,41 @@
+<?php
+/** @var Category $block */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\NodeType\Category;
+
+?>
+<?php
+$nodeId = $block->getId();
+$categoryUrl = $block->getCategoryUrl($nodeId) ?: '#';
+$imageUrl = $block->getImageUrl();
+$imageAltText = $block->getImageAltText();
+$imageWidth = $block->getImageWidth();
+$imageHeight = $block->getImageHeight();
+$title = $block->getTitle();
+$nodeClasses = $block->getNodeClasses();
+?>
+
+<?php if ($imageUrl): ?>
+    <a href="<?= $escaper->escapeUrl($categoryUrl) ?>"
+        class="transition-opacity group-hover:opacity-80"
+        tabindex="-1"
+    >
+        <img
+            src="<?= $escaper->escapeUrl($imageUrl) ?>"
+            alt="<?= $escaper->escapeHtmlAttr($imageAltText) ?>"
+            loading="lazy"
+            width="<?= $escaper->escapeHtmlAttr($imageWidth) ?>"
+            height="<?= $escaper->escapeHtmlAttr($imageHeight) ?>"
+        />
+    </a>
+<?php endif; ?>
+<a href="<?= $escaper->escapeUrl($categoryUrl) ?>"
+    class="snowdog-menu-link <?= $escaper->escapeHtmlAttr($nodeClasses) ?>"
+    <?php if ($nodeId): ?>
+        data-menu="menu-<?= $escaper->escapeHtmlAttr($nodeId) ?>"
+    <?php endif; ?>
+>
+    <?= $escaper->escapeHtml($title) ?>
+</a>

@@ -1,0 +1,106 @@
+<?php
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\Menu;
+
+/** @var Menu $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var HeroiconsSolid $heroiconsSolid */
+$heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
+
+$menu = $block->getMenu();
+$uniqueId = '_' . uniqid();
+?>
+
+<?php if ($menu): ?>
+    <script>
+        'use strict';
+
+        const initTopmenuDesktop<?= $escaper->escapeHtml($uniqueId) ?> = () => ({
+            openSubmenuId: null,
+            toggleSubmenu(menuNode) {
+                if (menuNode === this.openSubmenuId) {
+                    this.openSubmenuId = null
+                    hyva.releaseFocus()
+                } else {
+                    this.openSubmenuId = menuNode
+                    this.$nextTick(() => {
+                        hyva.trapFocus(this.$refs['submenu-' + menuNode])
+                    })
+                }
+            },
+            onSubmenuEscape(event) {
+                event.stopPropagation()
+                this.$refs['sr-button-' + this.openSubmenuId]?.focus()
+                this.openSubmenuId = null
+            }
+        })
+    </script>
+
+    <div x-data="initTopmenuDesktop<?= $escaper->escapeHtml($uniqueId) ?>()"
+        class="
+            <?= $escaper->escapeHtmlAttr($menu->getCssClass()) ?>
+            navigation hidden w-full bg-container-darker lg:block
+        "
+    >
+        <nav
+            class="snowdog-topmenu-desktop container lg:block"
+            aria-label="<?= $escaper->escapeHtmlAttr(__('Main menu')) ?>"
+        >
+            <ul
+                class="relative flex justify-between h-20"
+                @mouseleave="openSubmenuId = null"
+            >
+                <?php foreach ($block->getNodes() as $node): ?>
+                    <?php
+                    $childrenLevel = $node->getLevel() + 1;
+                    $children = $block->getNodes($childrenLevel, $node);
+                    $node->setIsParent((bool) $children);
+                    $additionalClasses = $node->getClasses() ? ' ' . $node->getClasses() : '';
+                    $nodeId = $node->getId();
+                    $title = $node->getTitle();
+                    $nodeType = $node->getType();
+                    $nodeClasses = $node->getClasses();
+                    ?>
+                    <li class="
+                            flex items-center justify-between px-6
+                            <?= /* @noEscape */ (string) $nodeType === 'wrapper' ? $escaper->escapeHtmlAttr($nodeClasses) : '' ?>
+                        "
+                        :class="{
+                            'bg-white rounded-t-lg shadow-md' : '<?= /* @noEscape */ !!$children ?>' && openSubmenuId === '<?= /* @noEscape */ (string) $nodeId ?>'
+                        }"
+                        @mouseenter="openSubmenuId = '<?= /* @noEscape */ (string) $nodeId ?>'"
+                        @keydown.escape="onSubmenuEscape"
+                    >
+                        <div class="group uppercase [&>a]:py-7 [&>a]:!text-primary">
+                            <?= /* @noEscape */ $block->renderMenuNode($node) ?>
+                        </div>
+                        <?php if ($children): ?>
+                            <div class="relative">
+                                <button
+                                    type="button"
+                                    class="flex items-center ml-2 transition-transform duration-300"
+                                    :class="{
+                                        'rotate-180' : openSubmenuId === '<?= /* @noEscape */ (string) $nodeId ?>'
+                                    }"
+                                    x-ref="sr-button-<?= /* @noEscape */ (string) $nodeId ?>"
+                                    :aria-expanded="openSubmenuId === '<?= /* @noEscape */ (string) $nodeId ?>' ? 'true' : 'false'"
+                                    @click="toggleSubmenu('<?= /* @noEscape */ (string) $nodeId ?>')"
+                                >
+                                    <?= $heroiconsSolid->chevronDownHtml('text-primary-darker', 20, 20, ['aria-hidden' => 'true']) ?>
+                                    <span class="sr-only">
+                                        <?= $escaper->escapeHtml(__('Toggle submenu for %1', $title)) ?>
+                                    </span>
+                                </button>
+                            </div>
+                        <?php endif; ?>
+                        <?= /* @noEscape */ $block->renderSubmenu($children, $node, $childrenLevel) ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </nav>
+    </div>
+<?php endif; ?>

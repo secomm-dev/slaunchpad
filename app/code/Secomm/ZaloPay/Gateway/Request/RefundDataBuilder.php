@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Request;
 
@@ -24,21 +25,6 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
 class RefundDataBuilder extends AbstractDataBuilder implements BuilderInterface
 {
     /**
-     * @var ConfigInterface
-     */
-    private $config;
-
-    /**
-     * @var Rate
-     */
-    private $helperRate;
-
-    /**
-     * @var DateTime
-     */
-    private $dateTime;
-
-    /**
      * RefundDataBuilder constructor.
      *
      * @param ConfigInterface $config
@@ -46,13 +32,10 @@ class RefundDataBuilder extends AbstractDataBuilder implements BuilderInterface
      * @param Rate $helperRate
      */
     public function __construct(
-        ConfigInterface $config,
-        DateTime        $dateTime,
-        Rate            $helperRate
+        private readonly ConfigInterface $config,
+        private readonly DateTime        $dateTime,
+        private readonly Rate            $helperRate
     ) {
-        $this->config = $config;
-        $this->helperRate = $helperRate;
-        $this->dateTime = $dateTime;
     }
 
     /**

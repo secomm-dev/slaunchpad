@@ -7,6 +7,8 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
+
 namespace Secomm\ZaloPay\Gateway\Http;
 
 use Magento\Payment\Gateway\Http\Transfer;

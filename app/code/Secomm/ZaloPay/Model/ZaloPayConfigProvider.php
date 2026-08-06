@@ -7,6 +7,8 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
+
 namespace Secomm\ZaloPay\Model;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
@@ -18,21 +20,6 @@ use Magento\Payment\Helper\Data as PaymentHelper;
 class ZaloPayConfigProvider implements ConfigProviderInterface
 {
     /**
-     * @var PaymentHelper
-     */
-    protected PaymentHelper $paymentHelper;
-
-    /**
-     * @var UrlInterface
-     */
-    protected UrlInterface $urlBuilder;
-
-    /**
-     * @var Repository
-     */
-    private Repository $assetRepository;
-
-    /**
      * ZaloPayConfigProvider constructor.
      *
      * @param Repository    $assetRepository
@@ -40,13 +27,10 @@ class ZaloPayConfigProvider implements ConfigProviderInterface
      * @param UrlInterface  $urlBuilder
      */
     public function __construct(
-        Repository $assetRepository,
-        PaymentHelper $paymentHelper,
-        UrlInterface $urlBuilder
+        private readonly Repository    $assetRepository,
+        protected readonly PaymentHelper $paymentHelper,
+        protected readonly UrlInterface  $urlBuilder
     ) {
-        $this->paymentHelper   = $paymentHelper;
-        $this->urlBuilder      = $urlBuilder;
-        $this->assetRepository = $assetRepository;
     }
 
     /**

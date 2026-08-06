@@ -31,26 +31,6 @@ use Magento\Sales\Model\Service\CreditmemoService;
 class CreditmemoServicePlugin
 {
     /**
-     * @var ResourceConnection
-     */
-    private ResourceConnection $resource;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private OrderRepositoryInterface $orderRepository;
-
-    /**
-     * @var RefundAdapterInterface
-     */
-    private RefundAdapterInterface $refundAdapter;
-
-    /**
-     * @var InvoiceRepositoryInterface
-     */
-    private InvoiceRepositoryInterface $invoiceRepository;
-
-    /**
      * Constructor
      *
      * @param ResourceConnection $resource
@@ -59,15 +39,11 @@ class CreditmemoServicePlugin
      * @param InvoiceRepositoryInterface $invoiceRepository
      */
     public function __construct(
-        ResourceConnection $resource,
-        OrderRepositoryInterface $orderRepository,
-        RefundAdapterInterface $refundAdapter,
-        InvoiceRepositoryInterface $invoiceRepository
+        private readonly ResourceConnection $resource,
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly RefundAdapterInterface $refundAdapter,
+        private readonly InvoiceRepositoryInterface $invoiceRepository
     ) {
-        $this->resource = $resource;
-        $this->orderRepository = $orderRepository;
-        $this->refundAdapter = $refundAdapter;
-        $this->invoiceRepository = $invoiceRepository;
     }
 
     /**

@@ -20,27 +20,15 @@ use Magento\Payment\Gateway\Validator\ValidatorInterface;
 class NotifyCommand implements CommandInterface
 {
     /**
-     * @var ValidatorInterface
-     */
-    private ValidatorInterface $validator;
-
-    /**
-     * @var HandlerInterface
-     */
-    private HandlerInterface $handler;
-
-    /**
      * Constructor
      *
      * @param ValidatorInterface $validator
      * @param HandlerInterface $handler
      */
     public function __construct(
-        ValidatorInterface $validator,
-        HandlerInterface $handler
+        private readonly ValidatorInterface $validator,
+        private readonly HandlerInterface $handler
     ) {
-        $this->validator = $validator;
-        $this->handler = $handler;
     }
 
     /**

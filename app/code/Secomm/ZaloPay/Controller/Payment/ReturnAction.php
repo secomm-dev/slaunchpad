@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Controller\Payment;
 
@@ -24,36 +25,6 @@ use Psr\Log\LoggerInterface;
 class ReturnAction extends AppAction
 {
     /**
-     * @var CommandPoolInterface
-     */
-    private $commandPool;
-
-    /**
-     * @var Session
-     */
-    private $checkoutSession;
-
-    /**
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
-     * @var OrderRepositoryInterface
-     */
-    private $orderRepository;
-
-    /**
-     * @var MethodInterface
-     */
-    private $method;
-
-    /**
-     * @var PaymentDataObjectFactory
-     */
-    private $paymentDataObjectFactory;
-
-    /**
      * ReturnAction constructor.
      *
      * @param Context $context
@@ -65,21 +36,15 @@ class ReturnAction extends AppAction
      */
     public function __construct(
         Context                                $context,
-        Session                                $checkoutSession,
-        MethodInterface                        $method,
-        PaymentDataObjectFactory               $paymentDataObjectFactory,
-        OrderRepositoryInterface               $orderRepository,
-        CommandPoolInterface                   $commandPool,
+        private readonly Session               $checkoutSession,
+        private readonly MethodInterface       $method,
+        private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly CommandPoolInterface  $commandPool,
         protected \Secomm\ZaloPay\Helper\Data $data,
-        LoggerInterface                        $logger
+        private readonly LoggerInterface       $logger
     ) {
         parent::__construct($context);
-        $this->commandPool = $commandPool;
-        $this->checkoutSession = $checkoutSession;
-        $this->orderRepository = $orderRepository;
-        $this->method = $method;
-        $this->paymentDataObjectFactory = $paymentDataObjectFactory;
-        $this->logger = $logger;
     }
 
     /**

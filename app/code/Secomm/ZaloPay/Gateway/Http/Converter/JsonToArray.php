@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Http\Converter;
 
@@ -18,27 +19,15 @@ use Psr\Log\LoggerInterface;
 class JsonToArray implements ConverterInterface
 {
     /**
-     * @var LoggerInterface
-     */
-    protected LoggerInterface $logger;
-
-    /**
-     * @var Json
-     */
-    private Json $serializer;
-
-    /**
      * JsonToArray constructor.
      *
      * @param Json $serializer
      * @param LoggerInterface $logger
      */
     public function __construct(
-        Json            $serializer,
-        LoggerInterface $logger
+        private readonly Json            $serializer,
+        protected readonly LoggerInterface $logger
     ) {
-        $this->logger = $logger;
-        $this->serializer = $serializer;
     }
 
     /**

@@ -7,6 +7,7 @@
  *  * @author    Secomm Teams
  * *  @project   ZaloPay
  */
+declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Command;
 
@@ -34,6 +35,8 @@ use Secomm\ZaloPay\Helper\RefundProcessor;
 use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin;
 
+use Magento\Framework\Serialize\Serializer\Json;
+
 /**
  * Class InitializeCommand
  *
@@ -41,40 +44,6 @@ use Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin;
 class RefundCommand implements CommandInterface
 {
     const PREFIX_ZALO_PAY_MESSAGE = 'Zalopay: ';
-    /**
-     * @var BuilderInterface
-     */
-    private BuilderInterface $requestBuilder;
-
-    /**
-     * @var TransferFactoryInterface
-     */
-    private TransferFactoryInterface $transferFactory;
-
-    /**
-     * @var ClientInterface
-     */
-    private ClientInterface $client;
-
-    /**
-     * @var HandlerInterface
-     */
-    private HandlerInterface $handler;
-
-    /**
-     * @var ValidatorInterface
-     */
-    private ValidatorInterface $validator;
-
-    /**
-     * @var Logger
-     */
-    private Logger $logger;
-
-    /**
-     * @var ErrorMessageMapperInterface
-     */
-    private ?ErrorMessageMapperInterface $errorMessageMapper;
 
     /**
      * @var mixed|string
@@ -86,32 +55,33 @@ class RefundCommand implements CommandInterface
      * @param TransferFactoryInterface $transferFactory
      * @param ClientInterface $client
      * @param Logger $logger
+     * @param RefundQueryCommand $refundQueryCommand
+     * @param SaveCommand $saveCommand
+     * @param RefundInterfaceFactory $refundTransactionInterfaceFactory
+     * @param RequestInterface $request
+     * @param ManagerInterface $messageManager
+     * @param Rate $rate
+     * @param Json $serializer
      * @param HandlerInterface|null $handler
      * @param ValidatorInterface|null $validator
      * @param ErrorMessageMapperInterface|null $errorMessageMapper
      */
     public function __construct(
-        BuilderInterface                 $requestBuilder,
-        TransferFactoryInterface         $transferFactory,
-        ClientInterface                  $client,
-        Logger                           $logger,
-        protected RefundQueryCommand     $refundQueryCommand,
-        protected SaveCommand            $saveCommand,
-        protected RefundInterfaceFactory $refundTransactionInterfaceFactory,
-        protected RequestInterface       $request,
-        protected ManagerInterface       $messageManager,
-        protected Rate                   $rate,
-        HandlerInterface                 $handler = null,
-        ValidatorInterface               $validator = null,
-        ErrorMessageMapperInterface      $errorMessageMapper = null
+        private readonly BuilderInterface           $requestBuilder,
+        private readonly TransferFactoryInterface   $transferFactory,
+        private readonly ClientInterface            $client,
+        private readonly Logger                     $logger,
+        protected RefundQueryCommand                $refundQueryCommand,
+        protected SaveCommand                       $saveCommand,
+        protected RefundInterfaceFactory            $refundTransactionInterfaceFactory,
+        protected RequestInterface                  $request,
+        protected ManagerInterface                  $messageManager,
+        protected Rate                              $rate,
+        private readonly Json                       $serializer,
+        private ?HandlerInterface                   $handler = null,
+        private ?ValidatorInterface                 $validator = null,
+        private ?ErrorMessageMapperInterface        $errorMessageMapper = null
     ) {
-        $this->requestBuilder = $requestBuilder;
-        $this->transferFactory = $transferFactory;
-        $this->client = $client;
-        $this->handler = $handler;
-        $this->validator = $validator;
-        $this->logger = $logger;
-        $this->errorMessageMapper = $errorMessageMapper;
     }
 
     /**
@@ -213,7 +183,7 @@ class RefundCommand implements CommandInterface
                 $creditMemo->setState(CreditmemoPlugin::STATE_PROCESSING);
                 $refundTransactionFactory->setIsProcessed(RefundInterface::NOT_PROCESSED);
                 $creditMemo->save();
-                $refundTransactionFactory->setAdditionalInformation(json_encode($requestDataQuery));
+                $refundTransactionFactory->setAdditionalInformation($this->serializer->serialize($requestDataQuery));
                 $refundTransactionFactory->setCreditMemoId((int)$creditMemo->getId());
                 $this->saveCommand->execute($refundTransactionFactory);
             }
