@@ -463,6 +463,7 @@ return [
         'Smile_ElasticsuiteIndices' => 1,
         'Smile_ElasticsuiteAnalytics' => 1,
         'Smile_ElasticsuiteVirtualCategory' => 1,
+        'Snowdog_Menu' => 1,
         'Vnpayment_VNPAY' => 1
     ]
 ];
