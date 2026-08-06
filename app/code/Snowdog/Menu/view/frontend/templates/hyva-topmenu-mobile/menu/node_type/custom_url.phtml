@@ -1,0 +1,36 @@
+<?php
+/** @var CustomUrl $block */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\NodeType\CustomUrl;
+
+?>
+<?php
+$nodeId = $block->getId();
+$url = $block->getCustomUrl($nodeId);
+$title = $block->getTitle();
+$dataAttribute = 'data-menu="menu-' . $nodeId . '"';
+$nodeClasses = $block->getNodeClasses();
+?>
+
+<?php if ($url): ?>
+    <a class="cursor-pointer snowdog-menu-link-topmenu-mobile <?= $escaper->escapeHtmlAttr($nodeClasses) ?>"
+        href="<?= $escaper->escapeUrl($url) ?>"
+        <?php if ($block->getTarget()): ?>
+            target="_blank"
+            rel="noopener"
+        <?php endif ?>
+        <?= $dataAttribute ?>
+    >
+        <?= $escaper->escapeHtml($title) ?>
+    </a>
+<?php else: ?>
+    <span
+        class="snowdog-menu-link-topmenu-mobile <?= $escaper->escapeHtmlAttr($nodeClasses) ?>"
+        tabindex="0"
+        <?= $dataAttribute ?>
+    >
+        <?= $escaper->escapeHtml($title) ?>
+    </span>
+<?php endif ?>

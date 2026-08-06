@@ -1,0 +1,28 @@
+<?php
+/** @var Category $block */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\NodeType\Category;
+
+?>
+<?php
+$nodeId = $block->getId();
+$categoryUrl = $block->getCategoryUrl($nodeId) ?: '#';
+$nodeClasses = $block->getNodeClasses();
+
+if ($block->getIsViewAllLink()) {
+    $title = __('View All');
+} else {
+    $title = $block->getTitle();
+}
+?>
+
+<a href="<?= $escaper->escapeUrl($categoryUrl) ?>"
+    class="cursor-pointer snowdog-menu-link-topmenu-mobile <?= $escaper->escapeHtmlAttr($nodeClasses) ?>"
+    <?php if ($nodeId): ?>
+        data-menu="menu-<?= $escaper->escapeHtmlAttr($nodeId) ?>"
+    <?php endif; ?>
+>
+    <?= $escaper->escapeHtml($title) ?>
+</a>

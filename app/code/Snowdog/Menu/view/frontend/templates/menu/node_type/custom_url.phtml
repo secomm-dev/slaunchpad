@@ -1,0 +1,60 @@
+<?php
+/** @var CustomUrl $block */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\NodeType\CustomUrl;
+
+?>
+<?php
+$attributes = [];
+$class = $block->getMenuClass();
+$imageUrl = $block->getImageUrl();
+$imageAltText = $block->getImageAltText();
+$imageWidth = $block->getImageWidth();
+$imageHeight = $block->getImageHeight();
+$nodeId = $block->getId();
+$url = $block->getCustomUrl($nodeId);
+
+if ($block->getIsViewAllLink()) {
+    $title = __('View All');
+    $classLink = $class . '__inner-link';
+} else {
+    $classLink = $block->getIsRoot() ? $class . '__link' : $class . '__inner-link';
+    $title = $block->getTitle();
+    if ($block->getId()) {
+        $attributes[] = 'data-menu="menu-' . $block->getId() . '"';
+    }
+}
+$attributes[] = 'class="' . $classLink . '"';
+
+if ($block->getTarget()) {
+    $attributes[] = 'target="_blank" rel="noopener"';
+}
+$allAttributes = implode(' ', $attributes);
+?>
+<?php if ($url): ?>
+    <a
+        href="<?= $block->escapeUrl($url); ?>"
+        <?= $allAttributes; ?>
+    >
+        <?= $block->escapeHtml($title); ?>
+    </a>
+<?php else: ?>
+    <span
+        <?= $allAttributes; ?>
+        tabindex="0"
+    >
+        <?= $block->escapeHtml($title); ?>
+    </span>
+<?php endif; ?>
+
+<?php if ($imageUrl): ?>
+    <img
+        src="<?= $block->escapeUrl($imageUrl); ?>"
+        alt="<?= $block->escapeHtmlAttr($imageAltText); ?>"
+        loading="lazy"
+        width="<?= $escaper->escapeHtmlAttr($imageWidth) ?>"
+        height="<?= $escaper->escapeHtmlAttr($imageHeight) ?>"
+    />
+<?php endif; ?>

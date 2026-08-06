@@ -32,6 +32,9 @@
         },
         {
             "src": "vendor/hyva-themes/magento2-smile-elasticsuite/src"
+        },
+        {
+            "src": "app/code/Snowdog/Menu"
         }
     ]
 }

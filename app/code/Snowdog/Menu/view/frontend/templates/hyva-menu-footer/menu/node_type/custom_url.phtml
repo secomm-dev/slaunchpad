@@ -1,0 +1,67 @@
+<?php
+/** @var CustomUrl $block */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\NodeType\CustomUrl;
+
+?>
+<?php
+$nodeId = $block->getId();
+$imageUrl = $block->getImageUrl();
+$imageAltText = $block->getImageAltText();
+$imageWidth = $block->getImageWidth();
+$imageHeight = $block->getImageHeight();
+$url = $block->getCustomUrl($nodeId);
+$title = $block->getTitle();
+$dataAttribute = 'data-menu="menu-' . $nodeId . '"';
+$nodeClasses = $block->getNodeClasses();
+?>
+
+<?php if ($url): ?>
+    <?php if ($imageUrl): ?>
+        <a href="<?= $escaper->escapeUrl($url) ?>"
+            class="transition-opacity group-hover:opacity-80"
+            tabindex="-1"
+            <?php if ($block->getTarget()): ?>
+                target="_blank"
+                rel="noopener"
+            <?php endif ?>
+        >
+            <img src="<?= $escaper->escapeUrl($imageUrl) ?>"
+                alt="<?= $escaper->escapeHtmlAttr($imageAltText) ?>"
+                loading="lazy"
+                width="<?= $escaper->escapeHtmlAttr($imageWidth) ?>"
+                height="<?= $escaper->escapeHtmlAttr($imageHeight) ?>"
+            />
+        </a>
+    <?php endif; ?>
+    <a href="<?= $escaper->escapeUrl($url) ?>"
+        class="snowdog-menu-link <?= $escaper->escapeHtmlAttr($nodeClasses) ?>"
+        <?php if ($nodeId): ?>
+            data-menu="menu-<?= $escaper->escapeHtmlAttr($nodeId) ?>"
+        <?php endif; ?>
+        <?php if ($block->getTarget()): ?>
+            target="_blank"
+            rel="noopener"
+        <?php endif ?>
+        <?= $dataAttribute ?>
+    >
+        <?= $escaper->escapeHtml($title) ?>
+    </a>
+<?php else: ?>
+    <?php if ($imageUrl): ?>
+        <img src="<?= $escaper->escapeUrl($imageUrl) ?>"
+            alt="<?= $escaper->escapeHtmlAttr($imageAltText) ?>"
+            loading="lazy"
+            width="<?= $escaper->escapeHtmlAttr($imageWidth) ?>"
+            height="<?= $escaper->escapeHtmlAttr($imageHeight) ?>"
+        />
+    <?php endif ?>
+    <span class="block py-3 <?= $escaper->escapeHtmlAttr($nodeClasses) ?>"
+        tabindex="0"
+        <?= $dataAttribute ?>
+    >
+        <?= $escaper->escapeHtml($title) ?>
+    </span>
+<?php endif ?>

@@ -1,0 +1,42 @@
+<?php
+/** @var Product $block */
+/** @var Escaper $escaper */
+
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\NodeType\Product;
+
+?>
+<?php
+$nodeId = $block->getId();
+$class = $block->getMenuClass();
+$productUrl = $block->getProductUrl($nodeId);
+$productUrl = $productUrl ?: '#';
+$dataAttribute = '';
+$classLink = $block->getIsRoot() ? $class . '__link' : $class . '__inner-link';
+$title = $block->getTitle();
+$imageUrl = $block->getImageUrl();
+$imageAltText = $block->getImageAltText();
+$imageWidth = $block->getImageWidth();
+$imageHeight = $block->getImageHeight();
+
+if ($nodeId) {
+    $dataAttribute = ' data-menu="menu-' . $nodeId . '"';
+}
+?>
+
+<a
+    href="<?= $productUrl ?>"
+    class="<?= $classLink ?>"
+    <?= $dataAttribute ?>
+>
+    <?= $title ?>
+</a>
+<?php if ($imageUrl): ?>
+    <img
+        src="<?= $block->escapeUrl($imageUrl); ?>"
+        alt="<?= $block->escapeHtmlAttr($imageAltText); ?>"
+        loading="lazy"
+        width="<?= $escaper->escapeHtmlAttr($imageWidth) ?>"
+        height="<?= $escaper->escapeHtmlAttr($imageHeight) ?>"
+    />
+<?php endif; ?>
