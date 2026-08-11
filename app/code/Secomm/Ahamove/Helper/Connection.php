@@ -136,23 +136,4 @@ class Connection
             [$pairOfColAndVal['col'] . '= ? ' => $pairOfColAndVal['val']]
         );
     }
-
-    public function insertProvinceCity()
-    {
-        $objectManager = ObjectManager::getInstance();
-        $ahamoveCityCollection = $objectManager->create('\Secomm\Ahamove\Model\ResourceModel\AhamoveCity\AhamoveCityCollection');
-        $tableNameRegion = $this->resourceConnection->getTableName('directory_country_region');
-        $tableNameRegionName = $this->resourceConnection->getTableName('directory_country_region_name');
-
-        foreach ($ahamoveCityCollection->getItems() as $item) {
-            $binds = ['country_id' => $item->getCountryId(), 'code' => $item->getCityId(), 'default_name' => $item->getName()];
-            if (!$this->checkRecordExist($tableNameRegion, $binds, ['col' => 'code', 'val' => $item->getCityId()])) {
-                $this->resourceConnection->getConnection()->insert($tableNameRegion, $binds);
-                $regionId = $this->resourceConnection->getConnection()->lastInsertId($tableNameRegion);
-                $binds = ['locale' => 'vi_VN', 'region_id' => $regionId, 'name' => $item->getNameViVn()];
-                $this->resourceConnection->getConnection()->insert($tableNameRegionName, $binds);
-            }
-
-        }
-    }
 }

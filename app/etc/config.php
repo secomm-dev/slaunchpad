@@ -447,6 +447,7 @@ return [
         'Secomm_Ahamove' => 1,
         'Secomm_Base' => 1,
         'Secomm_DisableFileUpload' => 1,
+        'Secomm_GiaoHangNhanh' => 1,
         'Secomm_MoMo' => 1,
         'Secomm_VietNamAddress' => 1,
         'Secomm_VietNamMarket' => 1,

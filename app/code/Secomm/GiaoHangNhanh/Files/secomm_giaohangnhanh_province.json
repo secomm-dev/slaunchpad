@@ -1,0 +1,457 @@
+[
+  {
+    "entity_id": 1,
+    "province_id": 2002,
+    "country_id": "1",
+    "code": "4",
+    "province_name": "Hà Nội 02"
+  },
+  {
+    "entity_id": 2,
+    "province_id": 298,
+    "country_id": "1",
+    "code": "298",
+    "province_name": "Test - Alert - Tỉnh - 001"
+  },
+  {
+    "entity_id": 3,
+    "province_id": 269,
+    "country_id": "1",
+    "code": "20",
+    "province_name": "Lào Cai"
+  },
+  {
+    "entity_id": 4,
+    "province_id": 268,
+    "country_id": "1",
+    "code": "321",
+    "province_name": "Hưng Yên"
+  },
+  {
+    "entity_id": 5,
+    "province_id": 267,
+    "country_id": "1",
+    "code": "218",
+    "province_name": "Hòa Bình"
+  },
+  {
+    "entity_id": 6,
+    "province_id": 266,
+    "country_id": "1",
+    "code": "22",
+    "province_name": "Sơn La"
+  },
+  {
+    "entity_id": 7,
+    "province_id": 265,
+    "country_id": "1",
+    "code": "230",
+    "province_name": "Điện Biên"
+  },
+  {
+    "entity_id": 8,
+    "province_id": 264,
+    "country_id": "1",
+    "code": "231",
+    "province_name": "Lai Châu"
+  },
+  {
+    "entity_id": 9,
+    "province_id": 263,
+    "country_id": "1",
+    "code": "29",
+    "province_name": "Yên Bái"
+  },
+  {
+    "entity_id": 10,
+    "province_id": 262,
+    "country_id": "1",
+    "code": "56",
+    "province_name": "Bình Định"
+  },
+  {
+    "entity_id": 11,
+    "province_id": 261,
+    "country_id": "1",
+    "code": "68",
+    "province_name": "Ninh Thuận"
+  },
+  {
+    "entity_id": 12,
+    "province_id": 260,
+    "country_id": "1",
+    "code": "57",
+    "province_name": "Phú Yên"
+  },
+  {
+    "entity_id": 13,
+    "province_id": 259,
+    "country_id": "1",
+    "code": "60",
+    "province_name": "Kon Tum"
+  },
+  {
+    "entity_id": 14,
+    "province_id": 258,
+    "country_id": "1",
+    "code": "62",
+    "province_name": "Bình Thuận"
+  },
+  {
+    "entity_id": 15,
+    "province_id": 253,
+    "country_id": "1",
+    "code": "781",
+    "province_name": "Bạc Liêu"
+  },
+  {
+    "entity_id": 16,
+    "province_id": 252,
+    "country_id": "1",
+    "code": "780",
+    "province_name": "Cà Mau"
+  },
+  {
+    "entity_id": 17,
+    "province_id": 250,
+    "country_id": "1",
+    "code": "711",
+    "province_name": "Hậu Giang"
+  },
+  {
+    "entity_id": 18,
+    "province_id": 249,
+    "country_id": "1",
+    "code": "241",
+    "province_name": "Bắc Ninh"
+  },
+  {
+    "entity_id": 19,
+    "province_id": 248,
+    "country_id": "1",
+    "code": "240",
+    "province_name": "Bắc Giang"
+  },
+  {
+    "entity_id": 20,
+    "province_id": 247,
+    "country_id": "1",
+    "code": "25",
+    "province_name": "Lạng Sơn"
+  },
+  {
+    "entity_id": 21,
+    "province_id": 246,
+    "country_id": "1",
+    "code": "26",
+    "province_name": "Cao Bằng"
+  },
+  {
+    "entity_id": 22,
+    "province_id": 245,
+    "country_id": "1",
+    "code": "281",
+    "province_name": "Bắc Kạn"
+  },
+  {
+    "entity_id": 23,
+    "province_id": 244,
+    "country_id": "1",
+    "code": "280",
+    "province_name": "Thái Nguyên"
+  },
+  {
+    "entity_id": 24,
+    "province_id": 243,
+    "country_id": "1",
+    "code": "510",
+    "province_name": "Quảng Nam"
+  },
+  {
+    "entity_id": 25,
+    "province_id": 242,
+    "country_id": "1",
+    "code": "55",
+    "province_name": "Quảng Ngãi"
+  },
+  {
+    "entity_id": 26,
+    "province_id": 241,
+    "country_id": "1",
+    "code": "501",
+    "province_name": "Đắk Nông"
+  },
+  {
+    "entity_id": 27,
+    "province_id": 240,
+    "country_id": "1",
+    "code": "66",
+    "province_name": "Tây Ninh"
+  },
+  {
+    "entity_id": 28,
+    "province_id": 239,
+    "country_id": "1",
+    "code": "651",
+    "province_name": "Bình Phước"
+  },
+  {
+    "entity_id": 29,
+    "province_id": 238,
+    "country_id": "1",
+    "code": "53",
+    "province_name": "Quảng Trị"
+  },
+  {
+    "entity_id": 30,
+    "province_id": 237,
+    "country_id": "1",
+    "code": "52",
+    "province_name": "Quảng Bình"
+  },
+  {
+    "entity_id": 31,
+    "province_id": 236,
+    "country_id": "1",
+    "code": "39",
+    "province_name": "Hà Tĩnh"
+  },
+  {
+    "entity_id": 32,
+    "province_id": 235,
+    "country_id": "1",
+    "code": "38",
+    "province_name": "Nghệ An"
+  },
+  {
+    "entity_id": 33,
+    "province_id": 234,
+    "country_id": "1",
+    "code": "37",
+    "province_name": "Thanh Hóa"
+  },
+  {
+    "entity_id": 34,
+    "province_id": 233,
+    "country_id": "1",
+    "code": "30",
+    "province_name": "Ninh Bình"
+  },
+  {
+    "entity_id": 35,
+    "province_id": 232,
+    "country_id": "1",
+    "code": "351",
+    "province_name": "Hà Nam"
+  },
+  {
+    "entity_id": 36,
+    "province_id": 231,
+    "country_id": "1",
+    "code": "350",
+    "province_name": "Nam Định"
+  },
+  {
+    "entity_id": 37,
+    "province_id": 230,
+    "country_id": "1",
+    "code": "33",
+    "province_name": "Quảng Ninh"
+  },
+  {
+    "entity_id": 38,
+    "province_id": 229,
+    "country_id": "1",
+    "code": "210",
+    "province_name": "Phú Thọ"
+  },
+  {
+    "entity_id": 39,
+    "province_id": 228,
+    "country_id": "1",
+    "code": "27",
+    "province_name": "Tuyên Quang"
+  },
+  {
+    "entity_id": 40,
+    "province_id": 227,
+    "country_id": "1",
+    "code": "219",
+    "province_name": "Hà Giang"
+  },
+  {
+    "entity_id": 41,
+    "province_id": 226,
+    "country_id": "1",
+    "code": "36",
+    "province_name": "Thái Bình"
+  },
+  {
+    "entity_id": 42,
+    "province_id": 225,
+    "country_id": "1",
+    "code": "320",
+    "province_name": "Hải Dương"
+  },
+  {
+    "entity_id": 43,
+    "province_id": 224,
+    "country_id": "1",
+    "code": "31",
+    "province_name": "Hải Phòng"
+  },
+  {
+    "entity_id": 44,
+    "province_id": 223,
+    "country_id": "1",
+    "code": "54",
+    "province_name": "Thừa Thiên Huế"
+  },
+  {
+    "entity_id": 45,
+    "province_id": 221,
+    "country_id": "1",
+    "code": "211",
+    "province_name": "Vĩnh Phúc"
+  },
+  {
+    "entity_id": 46,
+    "province_id": 220,
+    "country_id": "1",
+    "code": "710",
+    "province_name": "Cần Thơ"
+  },
+  {
+    "entity_id": 47,
+    "province_id": 219,
+    "country_id": "1",
+    "code": "77",
+    "province_name": "Kiên Giang"
+  },
+  {
+    "entity_id": 48,
+    "province_id": 218,
+    "country_id": "1",
+    "code": "79",
+    "province_name": "Sóc Trăng"
+  },
+  {
+    "entity_id": 49,
+    "province_id": 217,
+    "country_id": "1",
+    "code": "76",
+    "province_name": "An Giang"
+  },
+  {
+    "entity_id": 50,
+    "province_id": 216,
+    "country_id": "1",
+    "code": "67",
+    "province_name": "Đồng Tháp"
+  },
+  {
+    "entity_id": 51,
+    "province_id": 215,
+    "country_id": "1",
+    "code": "70",
+    "province_name": "Vĩnh Long"
+  },
+  {
+    "entity_id": 52,
+    "province_id": 214,
+    "country_id": "1",
+    "code": "74",
+    "province_name": "Trà Vinh"
+  },
+  {
+    "entity_id": 53,
+    "province_id": 213,
+    "country_id": "1",
+    "code": "75",
+    "province_name": "Bến Tre"
+  },
+  {
+    "entity_id": 54,
+    "province_id": 212,
+    "country_id": "1",
+    "code": "73",
+    "province_name": "Tiền Giang"
+  },
+  {
+    "entity_id": 55,
+    "province_id": 211,
+    "country_id": "1",
+    "code": "72",
+    "province_name": "Long An"
+  },
+  {
+    "entity_id": 56,
+    "province_id": 210,
+    "country_id": "1",
+    "code": "500",
+    "province_name": "Đắk Lắk"
+  },
+  {
+    "entity_id": 57,
+    "province_id": 209,
+    "country_id": "1",
+    "code": "63",
+    "province_name": "Lâm Đồng"
+  },
+  {
+    "entity_id": 58,
+    "province_id": 208,
+    "country_id": "1",
+    "code": "58",
+    "province_name": "Khánh Hòa"
+  },
+  {
+    "entity_id": 59,
+    "province_id": 207,
+    "country_id": "1",
+    "code": "59",
+    "province_name": "Gia Lai"
+  },
+  {
+    "entity_id": 60,
+    "province_id": 206,
+    "country_id": "1",
+    "code": "64",
+    "province_name": "Bà Rịa - Vũng Tàu"
+  },
+  {
+    "entity_id": 61,
+    "province_id": 205,
+    "country_id": "1",
+    "code": "65",
+    "province_name": "Bình Dương"
+  },
+  {
+    "entity_id": 62,
+    "province_id": 204,
+    "country_id": "1",
+    "code": "61",
+    "province_name": "Đồng Nai"
+  },
+  {
+    "entity_id": 63,
+    "province_id": 203,
+    "country_id": "1",
+    "code": "511",
+    "province_name": "Đà Nẵng"
+  },
+  {
+    "entity_id": 64,
+    "province_id": 202,
+    "country_id": "1",
+    "code": "8",
+    "province_name": "Hồ Chí Minh"
+  },
+  {
+    "entity_id": 65,
+    "province_id": 201,
+    "country_id": "1",
+    "code": "4",
+    "province_name": "Hà Nội"
+  }
+]
