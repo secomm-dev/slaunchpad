@@ -35,6 +35,9 @@ class Config
     const CANCELING_ORDER_URL = 'cancel_order_url';
     const GETTING_PROVINCES_URL = 'get_provinces_url';
     const GETTING_WARDS_URL = 'get_wards_url';
+    const XML_PATH_AUTO_SYNC_ON_PLACE_ORDER = 'giaohangnhanh_setting/general/auto_sync_on_place_order';
+    const XML_PATH_ENABLE_ADMIN_MANUAL_SYNC_BUTTON = 'giaohangnhanh_setting/general/enable_admin_manual_sync_button';
+    const XML_PATH_AUTO_SYNC_ON_SHIPMENT_CREATE = 'giaohangnhanh_setting/general/auto_sync_on_shipment_create';
 
     /**
      * @var int
@@ -70,6 +73,45 @@ class Config
         $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
         $this->districtResource = $districtResource;
+    }
+
+    /**
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    public function isAutoSyncOnPlaceOrder(): bool
+    {
+        return (bool) $this->scopeConfig->isSetFlag(
+            self::XML_PATH_AUTO_SYNC_ON_PLACE_ORDER,
+            ScopeInterface::SCOPE_STORE,
+            $this->getStoreId()
+        );
+    }
+
+    /**
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    public function isEnableAdminManualSyncButton(): bool
+    {
+        return (bool) $this->scopeConfig->isSetFlag(
+            self::XML_PATH_ENABLE_ADMIN_MANUAL_SYNC_BUTTON,
+            ScopeInterface::SCOPE_STORE,
+            $this->getStoreId()
+        );
+    }
+
+    /**
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    public function isAutoSyncOnShipmentCreate(): bool
+    {
+        return (bool) $this->scopeConfig->isSetFlag(
+            self::XML_PATH_AUTO_SYNC_ON_SHIPMENT_CREATE,
+            ScopeInterface::SCOPE_STORE,
+            $this->getStoreId()
+        );
     }
 
     /**

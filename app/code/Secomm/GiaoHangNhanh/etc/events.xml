@@ -6,4 +6,7 @@
     <event name="order_cancel_after">
         <observer name="cancel_giaohangnhanh_shipment_for_order" instance="Secomm\GiaoHangNhanh\Observer\SalesOrderCancelAfterObserver"/>
     </event>
+    <event name="sales_order_shipment_save_after">
+        <observer name="sync_giaohangnhanh_on_shipment_create" instance="Secomm\GiaoHangNhanh\Observer\SalesShipmentSaveAfterObserver"/>
+    </event>
 </config>

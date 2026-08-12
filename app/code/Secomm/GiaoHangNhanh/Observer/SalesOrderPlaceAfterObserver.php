@@ -29,15 +29,23 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
     private $publisher;
 
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
      * @param LoggerInterface $logger
      * @param PublisherInterface $publisher
+     * @param Config $config
      */
     public function __construct(
         LoggerInterface $logger,
-        PublisherInterface $publisher
+        PublisherInterface $publisher,
+        Config $config
     ) {
         $this->logger = $logger;
         $this->publisher = $publisher;
+        $this->config = $config;
     }
 
     /**
@@ -48,15 +56,20 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
         /** @var \Magento\Sales\Model\Order $order */
         $order = $observer->getEvent()->getOrder();
 
-        if (false !== strpos($order->getShippingMethod(), Config::GHN_CODE)) {
-            try {
-                $this->publisher->publish(
-                    'ghn.sync.order',
-                    json_encode(['order_id' => $order->getId()])
-                );
-            } catch (\Exception $e) {
-                $this->logger->error('[GHN] Failed to dispatch sync message: ' . $e->getMessage());
-            }
+        if (false === strpos($order->getShippingMethod(), Config::GHN_CODE)) {
+            return;
+        }
+        if (!$this->config->isAutoSyncOnPlaceOrder()) {
+            return;
+        }
+
+        try {
+            $this->publisher->publish(
+                'ghn.sync.order',
+                json_encode(['order_id' => $order->getId()])
+            );
+        } catch (\Exception $e) {
+            $this->logger->error('[GHN] Failed to dispatch sync message: ' . $e->getMessage());
         }
     }
 }

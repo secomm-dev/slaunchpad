@@ -65,6 +65,24 @@
                         <validate>required-entry</validate>
                         <comment>Select Payment method will be used COD amount when shipping</comment>
                     </field>
+                    <field id="auto_sync_on_place_order" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Auto Sync on Place Order</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>giaohangnhanh_setting/general/auto_sync_on_place_order</config_path>
+                        <comment>Automatically push order sync message to queue right after order placement</comment>
+                    </field>
+                    <field id="enable_admin_manual_sync_button" translate="label" type="select" sortOrder="81" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable Admin Manual Sync Button</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>giaohangnhanh_setting/general/enable_admin_manual_sync_button</config_path>
+                        <comment>Show "Sync GHN" button in Admin Order View page</comment>
+                    </field>
+                    <field id="auto_sync_on_shipment_create" translate="label" type="select" sortOrder="82" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Auto Sync on Shipment Creation</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>giaohangnhanh_setting/general/auto_sync_on_shipment_create</config_path>
+                        <comment>Automatically push order sync message to queue when warehouse creates shipment</comment>
+                    </field>
                 </group>
                 <group id="advanced_settings" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Advanced Settings</label>

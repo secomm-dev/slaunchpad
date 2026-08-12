@@ -46,7 +46,10 @@ class OrderSyncConsumer
     {
         try {
             $data = json_decode($message, true);
-            $orderId = (int) ($data['order_id'] ?? 0);
+            if (is_string($data)) {
+                $data = json_decode($data, true);
+            }
+            $orderId = is_array($data) ? (int) ($data['order_id'] ?? 0) : (int)$message;
 
             if (!$orderId) {
                 $this->logger->error('[GHN OrderSync] Invalid order_id in message');

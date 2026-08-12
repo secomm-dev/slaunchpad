@@ -87,7 +87,6 @@
         </arguments>
     </type>
     <type name="Secomm\GiaoHangNhanh\Observer\SalesOrderCancelAfterObserver" />
-    <type name="Secomm\GiaoHangNhanh\Observer\SalesOrderPlaceAfterObserver" />
     <type name="Secomm\GiaoHangNhanh\Plugin\Sales\Model\Order" />
     <virtualType name="GhnCommandPool" type="Secomm\GiaoHangNhanh\IntegrationBase\Model\Service\Command\CommandPool">
         <arguments>
@@ -270,6 +269,16 @@
     <type name="Secomm\GiaoHangNhanh\Console\GenerateWardCommand">
         <arguments>
             <argument name="name" xsi:type="string">ghn:ward:generate</argument>
+            <argument name="commandPool" xsi:type="object">GhnCommandPool</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\GiaoHangNhanh\Model\Queue\OrderSyncConsumer">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">GhnCommandPool</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\GiaoHangNhanh\Model\Queue\OrderCancelConsumer">
+        <arguments>
             <argument name="commandPool" xsi:type="object">GhnCommandPool</argument>
         </arguments>
     </type>
