@@ -190,7 +190,7 @@ define([
             let self = this;
             if ($('#custom-city-select-billing').length === 0 && $(CUSTOM_SUB_CITY_SELECTOR).length === 0) {
                 let subCityElement = $('<input type="hidden" name="billingAddress.sub_city" />');
-                let cityDiv = $('<div class="field mp-clear col-mp mp-6 required select _required shipping-address-city" name="billingAddress.customCity"></div>');
+                let cityDiv = $('<div class="field mp-clear required select _required shipping-address-city" name="billingAddress.customCity"></div>');
                 let cityLabel = $('<label class="label" for="custom-city-select">' + $.mage.__('City') + '</label>');
                 let customCitySelect = $('<select required id="custom-city-select" name="custom_city" class="field input">')
                     .append($('<option></option>').attr('value', '').text($.mage.__('Please select a city')));

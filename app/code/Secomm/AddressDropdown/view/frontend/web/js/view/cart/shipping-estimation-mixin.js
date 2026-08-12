@@ -187,6 +187,13 @@ define( [
             let customCitySelect = $(this.CUSTOM_CITY_SELECTOR);
             customCitySelect.empty().append($('<option></option>').attr('value', '').text($.mage.__('Please select a city')));
 
+            // Sort cities alphabetically (A-Z) using the Vietnamese locale so that
+            if (cities && cities.length) {
+                cities.sort(function (a, b) {
+                    return (a.label || '').localeCompare((b.label || ''), 'vi', { sensitivity: 'base' });
+                });
+            }
+
             cities?.forEach(function (city) {
                 customCitySelect.append($('<option></option>').attr('value', city.default_name).text(city.label));
             });
@@ -231,6 +238,14 @@ define( [
         updateSubCityDropdown: function (subCities, currentSubCity) {
             let customSubCitySelect = $(this.CUSTOM_SUB_CITY_SELECTOR);
             customSubCitySelect.empty().append($('<option></option>').attr('value', '').text($.mage.__('Please select a sub-city')));
+
+            // Sort sub-cities alphabetically (A-Z) using the Vietnamese locale so
+            // that diacritics are ordered correctly before rendering the options.
+            if (subCities && subCities.length) {
+                subCities.sort(function (a, b) {
+                    return (a.label || '').localeCompare((b.label || ''), 'vi', { sensitivity: 'base' });
+                });
+            }
 
             subCities.forEach(function (subCity) {
                 customSubCitySelect.append($('<option></option>').attr('value', subCity.default_name).text(subCity.label));
