@@ -41,11 +41,9 @@
                 <visible>false</visible>
             </settings>
         </field>
-        <field name="country_id" formElement="input">
+        <field name="country_id" formElement="hidden">
             <settings>
                 <dataType>text</dataType>
-                <label translate="true">Country ID</label>
-                <visible>false</visible>
                 <dataScope>country_id</dataScope>
             </settings>
         </field>
@@ -174,6 +172,17 @@
                     </settings>
                 </select>
             </formElements>
+        </field>
+        <field name="priority" formElement="input">
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Priority</label>
+                <dataScope>priority</dataScope>
+                <notice translate="true">Higher value = preferred when multiple GHN addresses map to the same city.</notice>
+                <validation>
+                    <rule name="validate-number" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
         </field>
     </fieldset>
 </form>

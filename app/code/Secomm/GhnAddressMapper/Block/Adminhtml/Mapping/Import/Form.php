@@ -11,7 +11,7 @@ class Form extends Generic
         /** @var \Magento\Framework\Data\Form $form */
         $form = $this->_formFactory->create([
             'data' => [
-                'id' => 'import_form',
+                'id' => 'edit_form',
                 'action' => $this->getUrl('ghn_address_mapper/mapping/import'),
                 'method' => 'post',
                 'enctype' => 'multipart/form-data'

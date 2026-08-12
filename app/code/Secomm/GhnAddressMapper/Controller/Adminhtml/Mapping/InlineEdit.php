@@ -38,6 +38,9 @@ class InlineEdit extends Action
                 if (isset($data['status'])) {
                     $mapping->setStatus((int)$data['status']);
                 }
+                if (isset($data['priority'])) {
+                    $mapping->setPriority((int)$data['priority']);
+                }
                 if (isset($data['ghn_province_id'])) {
                     $mapping->setGhnProvinceId((int)$data['ghn_province_id']);
                 }
@@ -48,9 +51,16 @@ class InlineEdit extends Action
                     $mapping->setGhnWardCode($data['ghn_ward_code']);
                 }
 
+                // Clear denormalized names so repository re-enriches from reference data
+                $mapping->setRegionName(null);
+                $mapping->setCityName(null);
+                $mapping->setGhnProvinceName(null);
+                $mapping->setGhnDistrictName(null);
+                $mapping->setGhnWardName(null);
+
                 $this->repository->save($mapping);
             } catch (\Exception $e) {
-                $messages[] = __('[ID %1] Could not save mapping.', $entityId);
+                $messages[] = __('[ID %1] Could not save: %2', $entityId, $e->getMessage());
                 $error = true;
             }
         }

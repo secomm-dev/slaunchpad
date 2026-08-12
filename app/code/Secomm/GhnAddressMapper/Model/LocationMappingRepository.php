@@ -50,7 +50,7 @@ class LocationMappingRepository implements LocationMappingRepositoryInterface
         return $searchResults;
     }
 
-    public function save(LocationMappingInterface $mapping): LocationMappingInterface
+    public function save(LocationMappingInterface $mapping, bool $cleanCache = true): LocationMappingInterface
     {
         try {
             if (!$mapping->getCountryId()) {
@@ -73,7 +73,9 @@ class LocationMappingRepository implements LocationMappingRepositoryInterface
             }
 
             $this->resource->save($mapping);
-            $this->cleanCache();
+            if ($cleanCache) {
+                $this->cleanCache();
+            }
             return $mapping;
         } catch (\Exception $e) {
             throw new CouldNotSaveException(__('Could not save mapping: %1', $e->getMessage()));
@@ -99,6 +101,17 @@ class LocationMappingRepository implements LocationMappingRepositoryInterface
     public function findByAddress(int $regionId, int $cityId): ?LocationMappingInterface
     {
         $row = $this->resource->findByAddress($regionId, $cityId);
+        if (!$row) {
+            return null;
+        }
+        $mapping = $this->dataFactory->create();
+        $mapping->setData($row);
+        return $mapping;
+    }
+
+    public function findByMapping(int $cityId, string $ghnWardCode): ?LocationMappingInterface
+    {
+        $row = $this->resource->findByMapping($cityId, $ghnWardCode);
         if (!$row) {
             return null;
         }

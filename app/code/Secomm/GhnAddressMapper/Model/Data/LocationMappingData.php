@@ -143,6 +143,16 @@ class LocationMappingData extends AbstractModel implements LocationMappingInterf
         return $this->setData(self::STATUS, $status);
     }
 
+    public function getPriority(): int
+    {
+        return (int)$this->getData(self::PRIORITY);
+    }
+
+    public function setPriority(int $priority): LocationMappingInterface
+    {
+        return $this->setData(self::PRIORITY, $priority);
+    }
+
     public function getCreatedAt(): ?string
     {
         return $this->getData(self::CREATED_AT);

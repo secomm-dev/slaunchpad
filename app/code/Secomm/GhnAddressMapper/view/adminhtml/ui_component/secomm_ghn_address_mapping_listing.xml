@@ -144,6 +144,14 @@
                 <sorting>desc</sorting>
             </settings>
         </column>
+        <column name="region_id" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <filter>select</filter>
+                <label translate="true">Region (Magento)</label>
+                <dataType>select</dataType>
+                <options class="Secomm\GhnAddressMapper\Ui\Component\Listing\Column\RegionOptions"/>
+            </settings>
+        </column>
         <column name="city_name">
             <settings>
                 <filter>text</filter>
@@ -204,6 +212,14 @@
                         <rule name="required-entry" xsi:type="boolean">true</rule>
                     </validation>
                 </editor>
+            </settings>
+        </column>
+        <column name="priority">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Priority</label>
+                <dataType>text</dataType>
+                <sorting>desc</sorting>
             </settings>
         </column>
         <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date">

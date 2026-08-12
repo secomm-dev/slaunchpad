@@ -28,6 +28,17 @@ class Save extends Action
         $resultRedirect = $this->resultRedirectFactory->create();
         $data = $this->getRequest()->getPostValue();
 
+        // TEMP DIAGNOSTIC — remove after verifying POST structure
+        $this->logger->info('GHN Address Mapper: Save POST debug', [
+            'top_level_keys' => array_keys((array)$data),
+            'has_data_key' => isset($data['data']),
+            'data_keys' => isset($data['data']) ? array_keys((array)$data['data']) : null,
+            'country_id_direct' => $data['country_id'] ?? '__MISSING__',
+            'country_id_nested' => $data['data']['country_id'] ?? '__MISSING__',
+            'region_id_direct' => $data['region_id'] ?? '__MISSING__',
+            'region_id_nested' => $data['data']['region_id'] ?? '__MISSING__',
+        ]);
+
         if (!$data) {
             return $resultRedirect->setPath('*/*/');
         }
@@ -50,6 +61,7 @@ class Save extends Action
             $mapping->setGhnWardCode((string)($data['ghn_ward_code'] ?? ''));
 
             $mapping->setStatus((int)($data['status'] ?? 1));
+            $mapping->setPriority((int)($data['priority'] ?? 0));
 
             // Clear human-readable names so repository re-enriches from reference data
             $mapping->setRegionName(null);
@@ -61,14 +73,14 @@ class Save extends Action
             $this->repository->save($mapping);
             $this->messageManager->addSuccessMessage(__('Mapping saved successfully.'));
 
-            return $resultRedirect->setPath('*/*/');
+            return $resultRedirect->setPath('ghn_address_mapper/mapping/index');
         } catch (NoSuchEntityException $e) {
             $this->logger->error('GHN Address Mapper: Save — entity not found', ['id' => $id, 'exception' => $e]);
             $this->messageManager->addErrorMessage(__('Could not find the mapping.'));
             return $resultRedirect->setPath('*/*/');
         } catch (CouldNotSaveException $e) {
             $this->logger->error('GHN Address Mapper: Save — could not save', ['id' => $id, 'exception' => $e]);
-            $this->messageManager->addErrorMessage(__('Could not save mapping. Please try again.'));
+            $this->messageManager->addErrorMessage($e->getLogMessage());
             return $resultRedirect->setPath('*/*/edit', ['entity_id' => $id]);
         } catch (\Exception $e) {
             $this->logger->error('GHN Address Mapper: Save — unexpected error', ['id' => $id, 'exception' => $e]);

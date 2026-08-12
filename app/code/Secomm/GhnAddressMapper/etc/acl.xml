@@ -3,20 +3,31 @@
     <acl>
         <resources>
             <resource id="Magento_Backend::admin">
-                <resource id="MenuSecomm_Base::menu" title="Secomm" translate="title" sortOrder="10">
-                    <resource id="Secomm_GhnAddressMapper::menu"
-                              title="Menu"
+                <resource id="Secomm_GhnAddressMapper::mapping"
+                          title="GHN Address Mapping"
+                          translate="title"
+                          sortOrder="100">
+                    <resource id="Secomm_GhnAddressMapper::mapping_read"
+                              title="View Mapping"
                               translate="title"
-                              sortOrder="100"/>
-                    <resource id="Secomm_GhnAddressMapper::mapping"
-                              title="GHN Address Mapping"
+                              sortOrder="10"/>
+                    <resource id="Secomm_GhnAddressMapper::mapping_save"
+                              title="Save Mapping"
                               translate="title"
                               sortOrder="20"/>
-                    <resource id="Secomm_GhnAddressMapper::config"
-                              title="Configuration"
+                    <resource id="Secomm_GhnAddressMapper::mapping_delete"
+                              title="Delete Mapping"
                               translate="title"
-                              sortOrder="100"/>
+                              sortOrder="30"/>
+                    <resource id="Secomm_GhnAddressMapper::mapping_import"
+                              title="Import Mapping"
+                              translate="title"
+                              sortOrder="40"/>
                 </resource>
+                <resource id="Secomm_GhnAddressMapper::config"
+                          title="GHN Address Configuration"
+                          translate="title"
+                          sortOrder="110"/>
             </resource>
         </resources>
     </acl>

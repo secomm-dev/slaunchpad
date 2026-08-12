@@ -28,25 +28,34 @@ class LocationMapping extends AbstractDb
             ->where('region_id = ?', $regionId)
             ->where('city_id = ?', $cityId)
             ->where('status = ?', 1)
+            ->order('priority DESC, entity_id DESC')
             ->limit(1);
         $result = $connection->fetchRow($select);
         return $result ?: null;
     }
 
     /**
-     * @param int $regionId
+     * Status-agnostic lookup by the natural dedup key (city_id + ghn_ward_code).
+     * Used by the CSV importer to detect whether a specific mapping already exists.
+     *
      * @param int $cityId
-     * @return array
+     * @param string $ghnWardCode
+     * @return array|null
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function findDuplicates(int $regionId, int $cityId): array
+    public function findByMapping(int $cityId, string $ghnWardCode): ?array
     {
+        if ($cityId <= 0 || $ghnWardCode === '') {
+            return null;
+        }
         $connection = $this->getConnection();
         $select = $connection->select()
-            ->from($this->getMainTable(), self::ID_FIELD)
-            ->where('region_id = ?', $regionId)
-            ->where('city_id = ?', $cityId);
-        return $connection->fetchCol($select);
+            ->from($this->getMainTable())
+            ->where('city_id = ?', $cityId)
+            ->where('ghn_ward_code = ?', $ghnWardCode)
+            ->limit(1);
+        $result = $connection->fetchRow($select);
+        return $result ?: null;
     }
 
     /**
@@ -120,35 +129,35 @@ class LocationMapping extends AbstractDb
         return $connection->fetchOne($select) ?: null;
     }
 
-    public function getRegionNameById(int $regionId): ?string
+    public function getRegionNameById(int $regionId, string $locale = 'vi_VN'): ?string
     {
         if (!$regionId) {
             return null;
         }
         $connection = $this->getConnection();
+
+        try {
+            $select = $connection->select()
+                ->from(['r' => $this->getTable('directory_country_region')], [])
+                ->joinLeft(
+                    ['rn' => $this->getTable('directory_country_region_name')],
+                    $connection->quoteInto('r.region_id = rn.region_id AND rn.locale = ?', $locale),
+                    ['region_name' => 'COALESCE(rn.name, r.default_name)']
+                )
+                ->where('r.region_id = ?', $regionId);
+            $result = $connection->fetchOne($select);
+            if ($result !== false) {
+                return $result;
+            }
+        } catch (\Exception) {
+            // Locale name table may not exist — fall through to default_name query
+        }
+
         $select = $connection->select()
             ->from($this->getTable('directory_country_region'), 'default_name')
             ->where('region_id = ?', $regionId);
 
         return $connection->fetchOne($select) ?: null;
-    }
-
-    /**
-     * @param int $provinceId
-     * @param int $districtId
-     * @param string $wardCode
-     * @return array
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    public function findDuplicatesGhn(int $provinceId, int $districtId, string $wardCode): array
-    {
-        $connection = $this->getConnection();
-        $select = $connection->select()
-            ->from($this->getMainTable(), self::ID_FIELD)
-            ->where('ghn_province_id = ?', $provinceId)
-            ->where('ghn_district_id = ?', $districtId)
-            ->where('ghn_ward_code = ?', $wardCode);
-        return $connection->fetchCol($select);
     }
 
     public function getProvinceName(int $provinceId): ?string
@@ -185,6 +194,157 @@ class LocationMapping extends AbstractDb
             ->from($this->getTable('secomm_giaohangnhanh_ward'), 'ward_name')
             ->where('ward_code = ?', $wardCode);
         return $connection->fetchOne($select) ?: null;
+    }
+
+    /**
+     * Bulk resolve region_id => default_name for a set of region IDs.
+     *
+     * @param int[] $regionIds
+     * @return array<int, string|null>
+     */
+    public function getRegionNameMap(array $regionIds): array
+    {
+        if (empty($regionIds)) {
+            return [];
+        }
+        $regionIds = array_filter(array_map('intval', $regionIds));
+        if (empty($regionIds)) {
+            return [];
+        }
+
+        $connection = $this->getConnection();
+        $map = [];
+        foreach (array_chunk(array_unique($regionIds), 500) as $chunk) {
+            $select = $connection->select()
+                ->from($this->getTable('directory_country_region'), ['region_id', 'default_name'])
+                ->where('region_id IN (?)', $chunk);
+            foreach ($connection->fetchAll($select) as $row) {
+                $map[(int)$row['region_id']] = $row['default_name'];
+            }
+        }
+        return $map;
+    }
+
+    /**
+     * Bulk resolve city_id => display name for a set of city IDs.
+     *
+     * @param int[] $cityIds
+     * @param string $locale
+     * @return array<int, string|null>
+     */
+    public function getCityNameMap(array $cityIds, string $locale = 'vi_VN'): array
+    {
+        if (empty($cityIds)) {
+            return [];
+        }
+        $cityIds = array_filter(array_map('intval', $cityIds));
+        if (empty($cityIds)) {
+            return [];
+        }
+
+        $connection = $this->getConnection();
+        $map = [];
+        foreach (array_chunk(array_unique($cityIds), 500) as $chunk) {
+            $select = $connection->select()
+                ->from(['c' => $this->getTable('directory_region_city')], ['c.city_id'])
+                ->joinLeft(
+                    ['cn' => $this->getTable('directory_region_city_name')],
+                    $connection->quoteInto('c.city_id = cn.city_id AND cn.locale = ?', $locale),
+                    ['city_name' => 'COALESCE(cn.name, c.default_name)']
+                )
+                ->where('c.city_id IN (?)', $chunk);
+            foreach ($connection->fetchAll($select) as $row) {
+                $map[(int)$row['city_id']] = $row['city_name'];
+            }
+        }
+        return $map;
+    }
+
+    /**
+     * Bulk resolve province_id => province_name for a set of GHN province IDs.
+     *
+     * @param int[] $provinceIds
+     * @return array<int, string|null>
+     */
+    public function getProvinceNameMap(array $provinceIds): array
+    {
+        if (empty($provinceIds)) {
+            return [];
+        }
+        $provinceIds = array_filter(array_map('intval', $provinceIds));
+        if (empty($provinceIds)) {
+            return [];
+        }
+
+        $connection = $this->getConnection();
+        $map = [];
+        foreach (array_chunk(array_unique($provinceIds), 500) as $chunk) {
+            $select = $connection->select()
+                ->from($this->getTable('secomm_giaohangnhanh_province'), ['province_id', 'province_name'])
+                ->where('province_id IN (?)', $chunk);
+            foreach ($connection->fetchAll($select) as $row) {
+                $map[(int)$row['province_id']] = $row['province_name'];
+            }
+        }
+        return $map;
+    }
+
+    /**
+     * Bulk resolve district_id => district_name for a set of GHN district IDs.
+     *
+     * @param int[] $districtIds
+     * @return array<int, string|null>
+     */
+    public function getDistrictNameMap(array $districtIds): array
+    {
+        if (empty($districtIds)) {
+            return [];
+        }
+        $districtIds = array_filter(array_map('intval', $districtIds));
+        if (empty($districtIds)) {
+            return [];
+        }
+
+        $connection = $this->getConnection();
+        $map = [];
+        foreach (array_chunk(array_unique($districtIds), 500) as $chunk) {
+            $select = $connection->select()
+                ->from($this->getTable('secomm_giaohangnhanh_district'), ['district_id', 'district_name'])
+                ->where('district_id IN (?)', $chunk);
+            foreach ($connection->fetchAll($select) as $row) {
+                $map[(int)$row['district_id']] = $row['district_name'];
+            }
+        }
+        return $map;
+    }
+
+    /**
+     * Bulk resolve ward_code => ward_name for a set of GHN ward codes.
+     *
+     * @param string[] $wardCodes
+     * @return array<string, string|null>
+     */
+    public function getWardNameMap(array $wardCodes): array
+    {
+        if (empty($wardCodes)) {
+            return [];
+        }
+        $wardCodes = array_filter(array_unique($wardCodes), fn($code) => $code !== '');
+        if (empty($wardCodes)) {
+            return [];
+        }
+
+        $connection = $this->getConnection();
+        $map = [];
+        foreach (array_chunk($wardCodes, 500) as $chunk) {
+            $select = $connection->select()
+                ->from($this->getTable('secomm_giaohangnhanh_ward'), ['ward_code', 'ward_name'])
+                ->where('ward_code IN (?)', $chunk);
+            foreach ($connection->fetchAll($select) as $row) {
+                $map[$row['ward_code']] = $row['ward_name'];
+            }
+        }
+        return $map;
     }
 
     /**

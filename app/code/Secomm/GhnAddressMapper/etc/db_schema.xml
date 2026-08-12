@@ -7,12 +7,14 @@
                 comment="Entity ID"/>
         <column xsi:type="varchar" name="country_id" nullable="false" length="10" default="VN"
                 comment="Country ID"/>
-        <column xsi:type="int" name="region_id" padding="10" unsigned="true" nullable="false"
+        <column xsi:type="int" name="region_id" padding="10" unsigned="true" nullable="true"
                 comment="Magento Region ID"/>
         <column xsi:type="int" name="city_id" padding="10" unsigned="true" nullable="true"
                 comment="Magento City ID (directory_region_city.city_id, locale-independent key)"/>
         <column xsi:type="varchar" name="city_name" nullable="true" length="255"
                 comment="City Name (display cache, populated from directory_region_city by city_id)"/>
+        <column xsi:type="varchar" name="region_name" nullable="true" length="255"
+                comment="Region Name (display cache, populated from directory_country_region by region_id)"/>
         <column xsi:type="int" name="ghn_province_id" padding="10" unsigned="true" nullable="false"
                 comment="GHN Province ID"/>
         <column xsi:type="varchar" name="ghn_province_name" nullable="true" length="255"
@@ -27,6 +29,8 @@
                 comment="GHN Ward Name"/>
         <column xsi:type="smallint" name="status" padding="6" unsigned="false" nullable="false" default="1"
                 comment="Status 1=Enabled 0=Disabled"/>
+        <column xsi:type="smallint" name="priority" padding="6" unsigned="false" nullable="false" default="0"
+                comment="Priority (higher = preferred when 1 city maps to N GHN addresses)"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false"
                 default="CURRENT_TIMESTAMP" comment="Created At"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false"
@@ -34,25 +38,27 @@
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="entity_id"/>
         </constraint>
-        <constraint xsi:type="unique" referenceId="GHN_ADDR_MAP_UNIQUE_CITY">
-            <column name="city_id"/>
-        </constraint>
         <constraint xsi:type="foreign"
                     referenceId="GHN_ADDR_MAP_REGION_ID_DIR_COUNTRY_REGION_REGION_ID"
                     table="secomm_ghn_address_mapping_location"
                     column="region_id"
                     referenceTable="directory_country_region"
                     referenceColumn="region_id"
-                    onDelete="CASCADE"/>
+                    onDelete="SET NULL"/>
         <constraint xsi:type="foreign"
                     referenceId="GHN_ADDR_MAP_CITY_ID_DIR_REGION_CITY_CITY_ID"
                     table="secomm_ghn_address_mapping_location"
                     column="city_id"
                     referenceTable="directory_region_city"
                     referenceColumn="city_id"
-                    onDelete="CASCADE"/>
+                    onDelete="SET NULL"/>
         <index referenceId="GHN_ADDR_MAP_REGION_ID" indexType="btree">
             <column name="region_id"/>
+        </index>
+        <index referenceId="GHN_ADDR_MAP_CITY_ID_STATUS_PRIORITY" indexType="btree">
+            <column name="city_id"/>
+            <column name="status"/>
+            <column name="priority"/>
         </index>
         <index referenceId="GHN_ADDR_MAP_GHN_PROVINCE_ID" indexType="btree">
             <column name="ghn_province_id"/>

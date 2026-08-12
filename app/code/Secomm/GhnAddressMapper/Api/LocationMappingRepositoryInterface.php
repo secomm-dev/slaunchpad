@@ -26,10 +26,11 @@ interface LocationMappingRepositoryInterface
 
     /**
      * @param LocationMappingInterface $mapping
+     * @param bool $cleanCache Whether to clean the mapping cache after save (default true)
      * @return LocationMappingInterface
      * @throws CouldNotSaveException
      */
-    public function save(LocationMappingInterface $mapping): LocationMappingInterface;
+    public function save(LocationMappingInterface $mapping, bool $cleanCache = true): LocationMappingInterface;
 
     /**
      * @param LocationMappingInterface $mapping
@@ -52,4 +53,14 @@ interface LocationMappingRepositoryInterface
      * @return LocationMappingInterface|null
      */
     public function findByAddress(int $regionId, int $cityId): ?LocationMappingInterface;
+
+    /**
+     * Status-agnostic lookup by the natural dedup key (city_id + ghn_ward_code).
+     * Used by the CSV importer to detect whether a specific mapping already exists.
+     *
+     * @param int $cityId
+     * @param string $ghnWardCode
+     * @return LocationMappingInterface|null
+     */
+    public function findByMapping(int $cityId, string $ghnWardCode): ?LocationMappingInterface;
 }

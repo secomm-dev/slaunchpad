@@ -32,22 +32,25 @@ class ValidateMappingCommand extends Command
         $output->writeln('<info>=== GHN Address Mapping Validation Report ===</info>');
         $output->writeln('');
 
-        // Check duplicates by city_id
-        $output->writeln('<info>Checking for duplicates...</info>');
-        $dupeSelect = $connection->select()
-            ->from($table, ['city_id', 'cnt' => new \Zend_Db_Expr('COUNT(*)')])
+        // Check ambiguous priority: multiple active (status=1) mappings for the same city_id
+        // with the same highest priority — resolver cannot deterministically pick one.
+        $output->writeln('<info>Checking for ambiguous priority conflicts...</info>');
+        $ambiguousSelect = $connection->select()
+            ->from(['m' => $table], ['city_id', 'priority', 'cnt' => new \Zend_Db_Expr('COUNT(*)')])
+            ->where('status = 1')
             ->where('city_id IS NOT NULL')
-            ->group(['city_id'])
+            ->group(['city_id', 'priority'])
             ->having('cnt > 1');
-        $dupes = $connection->fetchAll($dupeSelect);
-        if (count($dupes) > 0) {
-            $output->writeln('<error>Found ' . count($dupes) . ' duplicate city_id entries:</error>');
-            foreach ($dupes as $dupe) {
-                $output->writeln(sprintf('  city_id %s (x%d)', $dupe['city_id'], $dupe['cnt']));
+        $ambiguous = $connection->fetchAll($ambiguousSelect);
+        if (count($ambiguous) > 0) {
+            $output->writeln('<error>Found ' . count($ambiguous) . ' city_id(s) with multiple active mappings at the same priority:</error>');
+            foreach ($ambiguous as $row) {
+                $output->writeln(sprintf('  city_id %s at priority %d (x%d active rows)', $row['city_id'], $row['priority'], $row['cnt']));
                 $issues++;
             }
+            $output->writeln('<comment>  Set distinct priorities to control which GHN address is resolved at checkout.</comment>');
         } else {
-            $output->writeln('<info>  No duplicates found.</info>');
+            $output->writeln('<info>  No ambiguous priority conflicts found.</info>');
         }
         $output->writeln('');
 

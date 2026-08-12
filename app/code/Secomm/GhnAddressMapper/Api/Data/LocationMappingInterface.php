@@ -16,6 +16,7 @@ interface LocationMappingInterface
     const GHN_DISTRICT_NAME = 'ghn_district_name';
     const GHN_WARD_CODE = 'ghn_ward_code';
     const GHN_WARD_NAME = 'ghn_ward_name';
+    const PRIORITY = 'priority';
     const STATUS = 'status';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -162,6 +163,17 @@ interface LocationMappingInterface
      * @return self
      */
     public function setStatus(int $status): self;
+
+    /**
+     * @return int
+     */
+    public function getPriority(): int;
+
+    /**
+     * @param int $priority
+     * @return self
+     */
+    public function setPriority(int $priority): self;
 
     /**
      * @return string|null
