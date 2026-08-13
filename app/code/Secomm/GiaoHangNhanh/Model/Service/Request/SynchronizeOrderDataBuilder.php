@@ -16,7 +16,6 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\Quote\AddressFactory;
 use Magento\Store\Model\Information;
 use Magento\Store\Model\StoreManagerInterface;
-//use Secomm\ShippingDimensions\Plugin\Model\Shipping as ShippingDimensions;
 //use Amasty\CheckoutDeliveryDate\Model\DeliveryFactory;
 //use Amasty\CheckoutDeliveryDate\Model\ResourceModel\Delivery as ResourceModelDelivery;
 
@@ -38,9 +37,6 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
         Config                $baseConfig,
         Rate                  $helperRate,
         LocationResolverInterface $locationResolver
-//        protected ShippingDimensions $shippingDimensions,
-//        ResourceModelDelivery $resourceModelDelivery,
-//        DeliveryFactory $deliveryFactory
     )
     {
         parent::__construct(
@@ -52,8 +48,6 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
             $helperRate,
             $locationResolver
         );
-//        $this->deliveryFactory = $deliveryFactory;
-//        $this->resourceModelDelivery = $resourceModelDelivery;
     }
 
     /**
@@ -95,20 +89,12 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
         $toAddress = $order->getShippingAddress()->getStreetLine(1);
         $serviceTypeId = (int)SubjectReader::readShippingServiceTypeId($buildSubject);
         $items = $this->getItems($order);
-//        $total = $this->shippingDimensions->getTotal($order->getItems());
-//        $width = $total['totalWidth'];
-//        $height = $total['totalHeight'];
-//        $length = $total['totalLength'];
         $clientOrderCode = $order->getIncrementId();
 
         $note = '';
-//        try {
-//            $delivery = $this->deliveryFactory->create();
-//            $this->resourceModelDelivery->load($delivery, $order->getQuoteId(), "quote_id");
-//            $note = $delivery->getComment();
-//        } catch (\Exception $e) {
-//        }
-
+        $length = 1;
+        $width = 1;
+        $height = 1;
 
         $data = [
             self::TOKEN => $this->config->getValue('api_token'),
@@ -124,9 +110,9 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
             self::SERVICE_ID => (int)SubjectReader::readShippingServiceId($buildSubject),
             self::SERVICE_TYPE_ID => $serviceTypeId,
             self::WEIGHT => (int)($order->getWeight() * $weightRate),
-//            self::LENGTH => $length,
-//            self::WIDTH => $width,
-//            self::HEIGHT => $height,
+            self::LENGTH => $length,
+            self::WIDTH => $width,
+            self::HEIGHT => $height,
             self::TO_NAME => $toName,
             self::TO_PHONE => $toPhone,
             self::TO_ADDRESS => $toAddress,
@@ -135,7 +121,7 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
             self::COUPON => '',
             self::ITEMS => $items,
             self::CLIENT_ORDER_CODE => $clientOrderCode,
-//            self::NOTE => $note,
+            self::NOTE => $note,
         ];
 
         // Has the order with payment COD?
