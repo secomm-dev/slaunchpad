@@ -1,0 +1,52 @@
+<?php
+/**
+ * SL-013 / FEAT-007 (DEC-019/025): config `city` field markup for the generic dependent
+ * dropdown. The native input (rendered by the element) is the config value carrier; the
+ * city_select (ward) and sub_city_select are populated by the cascade JS. Both extra
+ * selects are hidden until the JS has ward/sub-city data for the chosen country/region.
+ *
+ * @var \Secomm\AddressDropdown\Block\Adminhtml\System\Config\Field\City $block
+ * @var \Magento\Framework\Data\Form\Element\AbstractElement $element
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$element = $block->getElement();
+$cityInputId = $block->getData('city_input_id');
+$citySelectId = $block->getData('city_select_id');
+$subCitySelectId = $block->getData('sub_city_select_id');
+
+$initConfig = [
+    'cityInputId' => $cityInputId,
+    'citySelectId' => $citySelectId,
+    'subCitySelectId' => $subCitySelectId,
+    'currentCity' => (string) $block->getData('current_city'),
+    'currentSubCity' => '',
+];
+
+$initJson = json_encode(
+    ['Secomm_AddressDropdown/js/config/address-city' => $initConfig],
+    JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP
+);
+?>
+<div class="secomm-config-address-city"
+     data-mage-init='<?= /* @noEscape */ $initJson ?>'>
+    <span class="secomm-config-city-input" style="display: inline-block">
+        <?= /* @noEscape */ $element->getElementHtml() ?>
+    </span>
+    <span class="secomm-config-city-select" style="display: none">
+        <select id="<?= $escaper->escapeHtmlAttr($citySelectId) ?>"
+                class="secomm-config-city-select-el"
+                data-secomm-city-select="1"
+                autocomplete="off">
+            <option value=""><?= $escaper->escapeHtml(__('Please select a city')) ?></option>
+        </select>
+    </span>
+    <span class="secomm-config-subcity-select" style="display: none">
+        <select id="<?= $escaper->escapeHtmlAttr($subCitySelectId) ?>"
+                class="secomm-config-subcity-select-el"
+                data-secomm-subcity-select="1"
+                autocomplete="off">
+            <option value=""><?= $escaper->escapeHtml(__('Please select a sub-city')) ?></option>
+        </select>
+    </span>
+</div>

@@ -91,6 +91,8 @@ This is a required field.,Đây là một trường bắt buộc.
 Select a city,Chọn Phường/Xã
 Select a sub-city,Chọn Phường/Xã
 Select a region,Chọn Tỉnh/Thành phố
+Select a Ward/Commune,Chọn Phường/Xã
+Please select a Ward/Commune.,Vui lòng chọn Phường/Xã.
 New Address,Địa chỉ mới
 Address Dropdown,Danh sách Địa chỉ chọn
 General Configuration,Cấu hình chung

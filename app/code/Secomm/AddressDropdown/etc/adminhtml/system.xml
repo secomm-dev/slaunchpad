@@ -20,5 +20,25 @@
                 </field>
             </group>
         </section>
+
+        <!-- SL-013 / FEAT-007 (DEC-019/025): override the core config `city` field on the two
+             admin origin surfaces with a dependent-ward dropdown renderer (frontend_model).
+             Minimal id-based override: Magento merges the frontend_model child onto the
+             existing core field, keeping core type/label/sortOrder. Generic, country-agnostic;
+             VN behaviour/label/validate is owned by Secomm_VietNamAddress. -->
+        <section id="general">
+            <group id="store_information">
+                <field id="city">
+                    <frontend_model>Secomm\AddressDropdown\Block\Adminhtml\System\Config\Field\City</frontend_model>
+                </field>
+            </group>
+        </section>
+        <section id="shipping">
+            <group id="origin">
+                <field id="city">
+                    <frontend_model>Secomm\AddressDropdown\Block\Adminhtml\System\Config\Field\City</frontend_model>
+                </field>
+            </group>
+        </section>
     </system>
 </config>

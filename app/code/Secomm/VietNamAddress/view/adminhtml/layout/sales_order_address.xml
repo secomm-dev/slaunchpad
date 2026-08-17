@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- The standalone order-address editor does not inherit the create-order handle. -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="js">
+            <block class="Magento\Backend\Block\Template"
+                   name="secomm_vietnam_order_address_cascade"
+                   template="Secomm_VietNamAddress::order/address-cascade-init.phtml"/>
+        </referenceContainer>
+    </body>
+</page>
