@@ -5,6 +5,7 @@
         <resources>
             <resource id="Magento_Backend::admin">
                 <resource id="Secomm_Ahamove::manage" title="Ahamove Manager"/>
+                <resource id="Secomm_Ahamove::ahamove_settings" title="Ahamove Settings"/>
             </resource>
         </resources>
     </acl>

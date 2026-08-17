@@ -18,11 +18,14 @@ class NewShipmentOrder
 
     /**
      * @param Index $subject
-     * @param null $result
+     * @param mixed $result
      * @return void
      */
     public function afterExecute(Index $subject, $result): void
     {
+        if ($result === null) {
+            return;
+        }
         if ($result->getStatus() === 'COMPLETED') {
             $this->eventManager->dispatch(
                 'evt_packaging_manager_auto_create_shipment',

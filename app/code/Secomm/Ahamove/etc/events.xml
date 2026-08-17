@@ -10,4 +10,8 @@
     <event name="refresh_ahamove_token">
         <observer name="refresh_ahamove_token_observer" instance="Secomm\Ahamove\Observer\RefreshToken"/>
     </event>
+    <event name="sales_order_shipment_save_after">
+        <observer name="secomm_ahamove_sales_order_shipment_save_after"
+                  instance="Secomm\Ahamove\Observer\Sales\OrderShipmentSaveAfter"/>
+    </event>
 </config>

@@ -10,9 +10,11 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\NotFoundException;
+use Magento\Framework\Encryption\Helper\Security;
 use Secomm\Ahamove\Logger\Logger;
 
 class Index extends Action implements CsrfAwareActionInterface, HttpPostActionInterface
@@ -30,6 +32,7 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
     protected $orderConverter;
     protected $shipmentExtensionFactory;
     protected $helperData;
+    protected $scopeConfig;
 
     public function __construct(
         Logger                     $logger,
@@ -41,7 +44,8 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
         \Magento\Sales\Model\Convert\OrderFactory $convertOrderFactory,
         \Magento\Framework\DB\TransactionFactory $transactionFactory,
         \Magento\Sales\Api\Data\ShipmentExtensionFactory $shipmentExtensionFactory,
-        \Secomm\Ahamove\Helper\Data $helperData
+        \Secomm\Ahamove\Helper\Data $helperData,
+        ScopeConfigInterface       $scopeConfig
     ) {
         $this->logger = $logger;
         $this->moduleDir = $moduleDir;
@@ -52,7 +56,55 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
         $this->transactionFactory = $transactionFactory;
         $this->shipmentExtensionFactory = $shipmentExtensionFactory;
         $this->helperData = $helperData;
+        $this->scopeConfig = $scopeConfig;
         parent::__construct($context);
+    }
+
+    /**
+     * Validate webhook request source by comparing api_key in the payload
+     * against the configured Ahamove API key.
+     *
+     * Ahamove authenticates webhook callbacks by including the partner's
+     * api_key field in the JSON payload body — it does NOT use HMAC signatures.
+     *
+     * @param string $rawBody
+     * @return bool
+     */
+    private function validateWebhookSignature(string $rawBody): bool
+    {
+        $data = json_decode($rawBody, true);
+
+        if (!isset($data['api_key']) || empty($data['api_key'])) {
+            $this->logger->warning('Webhook payload missing api_key field');
+            return false;
+        }
+
+        $mode = (string)$this->scopeConfig->getValue(
+            'ahamove/general/mode',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+
+        $configPath = $mode === 'production'
+            ? 'ahamove/general/production_api_key'
+            : 'ahamove/general/staging_api_key';
+
+        $expectedApiKey = (string)$this->scopeConfig->getValue(
+            $configPath,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+
+        if (empty($expectedApiKey)) {
+            $this->logger->warning('Webhook API key not configured (' . $configPath . ' is empty)');
+            return false;
+        }
+
+        $match = Security::compareStrings($expectedApiKey, $data['api_key']);
+
+        if (!$match) {
+            $this->logger->warning('Webhook api_key mismatch');
+        }
+
+        return $match;
     }
 
     /**
@@ -63,8 +115,16 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
      */
     public function execute()
     {
-        $data = $this->getRequest()->getContent();
-        $data = json_decode($data, true);
+        $rawBody = $this->getRequest()->getContent();
+
+        if (!$this->validateWebhookSignature($rawBody)) {
+            $this->logger->warning('Webhook authentication failed');
+            $this->getResponse()->setHttpResponseCode(401);
+            $this->getResponse()->setBody(json_encode(['error' => 'Unauthorized']));
+            return;
+        }
+
+        $data = json_decode($rawBody, true);
 
         try {
             if (isset($data['_id']) && !empty($data['_id'])) {
@@ -74,9 +134,9 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
                     if (isset($data['path'][1]['status']) && isset($data['path'][1]['fail_comment'])) {
                         $status = $data['path'][1]['status'];
                         $statusLabel = $data['path'][1]['fail_comment'];
-                    } elseif (isset($data['path'][0]['status']) && isset($data['path'][1]['fail_comment'])) {
-                        $status = $data['path'][1]['status'];
-                        $statusLabel = $data['path'][1]['fail_comment'];
+                    } elseif (isset($data['path'][0]['status']) && isset($data['path'][0]['fail_comment'])) {
+                        $status = $data['path'][0]['status'];
+                        $statusLabel = $data['path'][0]['fail_comment'];
                     }
                 }
 
@@ -132,34 +192,12 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
     }
 
     /**
-     * Get status label of ahamove service
+     * Get status label of ahamove service — delegates to Helper
      * @param string $statusCode
      * @return string
-     * @throws \Exception
      */
-    public function getStatusLabel($statusCode=null)
+    public function getStatusLabel($statusCode = null)
     {
-        $statusLabel = '';
-        try {
-            $filePath = $this->moduleDir->getModuleDir('', 'Secomm_Ahamove') . '/File/shipping_status.json';
-            $jsonData = file_get_contents($filePath);
-            $dataShippingStatus = json_decode($jsonData, true);
-
-            if (count($dataShippingStatus) == 0) {
-                return $statusLabel;
-            }
-
-            foreach ($dataShippingStatus as $data) {
-                if (strtoupper($data['status_code']) == strtoupper($statusCode)) {
-                    $statusLabel = $data['title'];
-                    break;
-                }
-            }
-
-            return $statusLabel;
-        } catch (\Exception $e) {
-        }
-
-        return $statusLabel;
+        return $this->helperData->getStatusLabel($statusCode);
     }
 }

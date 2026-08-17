@@ -76,11 +76,11 @@ class ErrorMessageManager extends \Magento\Framework\Session\SessionManager
     }
 
     /**
-     * Unset session data
+     * Unset session data — do NOT destroy the session as it would
+     * affect the customer's active session on storefront.
      */
     public function __destruct()
     {
         $this->storage->unsetData(self::SESSION_NAME);
-        parent::destroy();
     }
 }

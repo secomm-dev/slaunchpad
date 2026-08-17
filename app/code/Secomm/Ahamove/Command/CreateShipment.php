@@ -145,7 +145,7 @@ class CreateShipment
                         'carrier_code' => $order->getShippingMethod(),
                         'number' => $dataResponse['order_id'],
                         'title' => $order->getShippingDescription(),
-                        'description' => 'des status' . $dataResponse['shared_link'],
+                        'description' => 'Ahamove tracking: ' . $dataResponse['shared_link'],
                     ]
                 ];
 
@@ -239,14 +239,6 @@ class CreateShipment
             'path' => $data,
             'items' => $items,
         ];
-    }
-
-    /**
-     * @return mixed
-     */
-    private function getServiceId()
-    {
-        return $this->ahamoveHelperData->getAhamoveService();
     }
 
     /**

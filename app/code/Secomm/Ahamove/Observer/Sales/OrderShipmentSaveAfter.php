@@ -16,7 +16,6 @@ use Secomm\Ahamove\Helper\Data as AhamoveHelper;
 use Secomm\Ahamove\Logger\Logger;
 use Secomm\Ahamove\Model\Carrier\ShippingMethod\Express;
 use Secomm\Ahamove\Model\Carrier\ShippingMethod\Standard;
-use Secomm\Ahamove\Model\Command\CreateShipment;
 use Secomm\Ahamove\Model\PackageFactory;
 
 class OrderShipmentSaveAfter implements ObserverInterface
