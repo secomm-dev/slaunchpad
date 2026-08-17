@@ -31,3 +31,11 @@ hyva_ai_tools_integration:
   hyva_integration_version: "1.0.0"
   classification: hyva-active
   selected_profiles: [hyva-theme-core,hyva-module-development]
+
+<!-- BEGIN applied_capabilities -->
+applied_capabilities:
+  hyva-global-style-foundation:
+    skill_version: 1.0.0
+    transformer_version: 2.1.0
+    contract_schema_version: 1
+<!-- END applied_capabilities -->

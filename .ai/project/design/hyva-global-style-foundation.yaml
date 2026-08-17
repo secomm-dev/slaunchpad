@@ -1,0 +1,82 @@
+# hyva-global-style-foundation — slaunchpad project governance record.
+# Auto-created by project-ai-upgrade --capability hyva (TBD template), then
+# populated 2026-08-14 with repository-derived values only. Design decisions
+# remain explicitly unresolved until approved project records exist.
+#
+# AI-FACING ONLY. Production builds read the THEME-OWNED contract
+# (<theme>/web/tailwind/tokens/contract.yaml) — never this file.
+schema_version: 1
+
+capability: hyva-global-style-foundation
+
+versions:                      # propagated by retrofit; see applied_capabilities in .ai/toolkit/toolkit-version.md
+  skill: 1.0.0
+  contract: 1
+  transformer: 2.1.0
+
+project:                       # derived from composer.json / theme.xml / web/tailwind
+  platform: magento            # magento/product-community-edition 2.4.8-p5
+  frontend: hyva
+  tailwind: 4                  # tailwindcss ^4.3.1 + @tailwindcss/cli ^4.3.1, CSS-first (no tailwind.config.js)
+
+theme:
+  parent: Hyva/default
+  child: app/design/frontend/Secomm/launchpad
+  sibling: app/design/frontend/Secomm/launchpad_fashion   # grandchild (parent Secomm/launchpad), near-empty
+
+tailwind_entry: web/tailwind/tailwind-source.css          # relative to child theme root
+
+existing_semantic_hooks:       # current consumers a future foundation must map into (audit 2026-08-14)
+  color: [--color-primary, --color-secondary, --color-on-primary, --color-on-secondary,
+          --color-bg, --color-fg, --color-fg-secondary, --color-ink, --color-ink-muted,
+          --color-container, --color-container-darker, --color-container-lighter]
+  form: [--form-bg, --form-color, --form-stroke, --form-px, --form-radius, --form-active-color]
+  btn: [--btn-bg, --btn-color, --btn-stroke, --btn-hover-bg, --btn-hover-color, --btn-hover-stroke,
+        --btn-active-bg, --btn-active-color, --btn-active-stroke, --btn-disabled-bg,
+        --btn-disabled-color, --btn-disabled-stroke]
+  outline: [--outline-size, --outline-offset, --outline-transition]
+
+existing_generated_ownership:  # Hyva-native generation (hyva.config.json tokens → hyva-tokens.css) —
+  path: web/tailwind/generated/   # separate from this skill's future design-tokens output; do not conflate
+  files: [hyva-source.css, hyva-tokens.css]
+
+build_commands:                # from web/tailwind/package.json
+  build: npm run build          # run in app/design/frontend/Secomm/launchpad/web/tailwind
+  watch: npm run watch
+
+# ---------------------------------------------------------------------------
+# NOT derivable from the repository — unresolved until design input / approval.
+# Do not guess these values.
+# ---------------------------------------------------------------------------
+token_source:
+  path: unresolved              # no *.tokens.json / Figma DTCG export exists in this project yet
+
+production_transformer:
+  path: unresolved              # theme-owned copy — deferred by task scope (no theme files copied yet)
+  version_applied: none
+
+production_contract:
+  path: unresolved              # theme-owned contract — created at first foundation run
+  schema_version: unresolved
+
+generated_output:
+  path: unresolved              # future design-tokens.css (distinct from generated/hyva-tokens.css)
+  manifest: unresolved
+
+approved_modes:                 # requires approved design decision (evidence: none exists)
+  color: unresolved             # NOTE hyva.config.json currently defines --color-primary/secondary
+  brand: unresolved             # from a single inline token set — no Figma mode model exists
+  font: unresolved
+
+typography:
+  breakpoint_token: unresolved  # design decision; no responsive token scale exists yet
+  note: no custom font/typography rules in the child theme — inherits Hyva/default
+
+validation_pages: unresolved    # no representative-page decision recorded
+
+figma:
+  file_id: unresolved
+  foundations_node: unresolved
+  master_components_nodes: unresolved
+
+audit_rule_overrides: []        # none — no project-specific audit rules yet (contract-level concern once tokens exist)

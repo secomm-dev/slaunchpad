@@ -1,0 +1,4 @@
+{
+  "$extensions": { "com.figma.modeName": "base" },
+  "ink": { "$type": "color", "$value": { "components": [0.1, 0.1, 0.18], "alpha": 1 } }
+}

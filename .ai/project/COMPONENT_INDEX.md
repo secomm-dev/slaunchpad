@@ -12,6 +12,8 @@
 | CMP-CHECKOUT | Mageplaza One Step Checkout (Osc/OscPro/OscUltimate) — replaces default checkout | current | app/code/Mageplaza/Osc* | — (SL-002 pending) | DEC-8 (boundary) | Secomm FE | 1afdfc8 | 2026-07-21 |
 | CMP-THEME | Hyvä child theme Secomm/launchpad (+ launchpad_fashion) — Tailwind v4 + Alpine + Magewire | current | app/design/frontend/Secomm/launchpad; app/design/frontend/Secomm/launchpad_fashion | — | DEC-9 (dual-theme) | Secomm FE | 1afdfc8 | 2026-07-21 |
 | CMP-PAYMENT-MOLLIE | Mollie payments (composer, Hyvä compat — active gateway) | current | vendor/mollie/* (composer) | — | — | Secomm BE | 1afdfc8 | 2026-07-21 |
+| CMP-VNADDR | Vietnam address data layer (province/city/ward seed + vi_VN names) — Secomm_VietNamAddress (data-only, sequences AddressDropdown) | current | app/code/Secomm/VietNamAddress; app/code/Secomm/AddressDropdown (data tables) | FEAT-005 | DEC-7 · DEC-8 · DEC-9 · DEC-017 · DEC-019 · DEC-020 | Secomm BE | 1afdfc8 | 2026-07-21 |
+| CMP-GHTK | GHTK shipping carrier (Secomm_Ghtk) — fee-first scope: rate calc only (SL-008+SL-009 ready); order/shipment sync (SL-010) PARKED; services.giaohangtietkiem.vn | proposed | app/code/Secomm/Ghtk (NEW) | FEAT-006 | DEC-018 · DEC-019 · DEC-020 · DEC-021 · DEC-022 (accepted) · DEC-023 · DEC-024 (parked w/ order sync) | Secomm BE | 1afdfc8 | 2026-07-30 |
 
 ## Notes
 

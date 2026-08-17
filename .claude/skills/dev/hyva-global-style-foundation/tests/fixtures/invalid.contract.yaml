@@ -1,0 +1,4 @@
+schema_version: 2
+bogus_key: true
+collections:
+  color: { path: colors }

@@ -1,0 +1,12 @@
+{
+  "lift": {
+    "md": {
+      "base": {
+        "x": { "$type": "number", "$value": 0 },
+        "y": { "$type": "number", "$value": 6 },
+        "blur": { "$type": "number", "$value": 16 },
+        "spread": { "$type": "number", "$value": 0 }
+      }
+    }
+  }
+}

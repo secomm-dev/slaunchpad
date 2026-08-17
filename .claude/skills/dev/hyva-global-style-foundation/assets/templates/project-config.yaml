@@ -1,0 +1,38 @@
+# hyva-global-style-foundation — project governance record.
+# Copy to .ai/project/design/hyva-global-style-foundation.yaml for an
+# applicable project (auto-created by project-ai-upgrade --capability hyva
+# when the skill is installed; never overwritten once present).
+#
+# This file is AI-FACING ONLY. Production builds read the THEME-OWNED contract
+# (<theme>/web/tailwind/tokens/contract.yaml) — never this file.
+# Do not invent values: leave undecided fields as TBD and report them.
+schema_version: 1
+
+theme:
+  parent: TBD            # e.g. Hyva/default — detected from theme.xml
+  child: TBD             # e.g. app/design/frontend/<Vendor>/<theme>
+
+token_source:
+  path: TBD              # theme-owned immutable export directory
+
+production_transformer:
+  path: TBD              # e.g. <theme>/web/tailwind/scripts/token-transformer.mjs
+  version_applied: TBD   # transformer_version from design-tokens.manifest.json
+
+production_contract:
+  path: TBD              # e.g. <theme>/web/tailwind/tokens/contract.yaml
+  schema_version: TBD
+
+generated_output:
+  path: TBD              # e.g. <theme>/web/tailwind/generated/design-tokens.css
+  manifest: TBD          # e.g. <theme>/web/tailwind/generated/design-tokens.manifest.json
+
+approved_modes:          # production allowlist + rationale (decision evidence)
+  color: []              # e.g. [light]
+  brand: []              # e.g. [default]
+  font: []               # e.g. [default]
+
+typography:
+  breakpoint_token: TBD  # from the theme contract (generation.breakpoint)
+
+validation_pages: []     # e.g. [homepage, category, product] — representative pages only

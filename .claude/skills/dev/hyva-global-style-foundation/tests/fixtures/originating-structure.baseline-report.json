@@ -1,0 +1,55 @@
+{
+  "files": [
+    "buttons/primary.tokens.json",
+    "colors/dark.tokens.json",
+    "colors/light.tokens.json",
+    "effects.tokens.json",
+    "font/default.tokens.json",
+    "sizes.tokens.json",
+    "theme/default.tokens.json",
+    "typography/desktop.tokens.json",
+    "typography/mobile.tokens.json"
+  ],
+  "fileCount": 9,
+  "tokenCount": 85,
+  "productionAllowlist": {
+    "colorModes": [
+      "light"
+    ],
+    "brandThemes": [
+      "default"
+    ],
+    "fontModes": [
+      "default"
+    ],
+    "typographyModes": [
+      "mobile",
+      "desktop"
+    ]
+  },
+  "auditOnlyModes": {
+    "colorModes": [
+      "dark"
+    ],
+    "brandThemes": [],
+    "fontModes": []
+  },
+  "jsonErrors": [],
+  "duplicateFigmaVariableIds": [],
+  "normalizedCasingConflicts": [],
+  "nonCanonicalCasing": [],
+  "brokenAliasMetadata": [],
+  "incompleteModes": [
+    {
+      "file": "colors/dark.tokens.json",
+      "missing": [
+        "other/legacy-warning"
+      ]
+    }
+  ],
+  "invalidValues": [],
+  "suspiciousButtonCtaZeros": [
+    "buttons/primary.tokens.json:cta/primary/border-width"
+  ],
+  "generatedBytes": 2640
+}

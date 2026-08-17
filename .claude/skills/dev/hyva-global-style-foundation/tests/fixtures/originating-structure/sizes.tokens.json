@@ -1,0 +1,19 @@
+{
+  "spacing": {
+    "1": { "$type": "number", "$value": 4 },
+    "2": { "$type": "number", "$value": 8 },
+    "4": { "$type": "number", "$value": 16 },
+    "6": { "$type": "number", "$value": 24 }
+  },
+  "radius": {
+    "sm": { "$type": "number", "$value": 4 },
+    "md": { "$type": "number", "$value": 6 },
+    "xl": { "$type": "number", "$value": 12 },
+    "card": { "$type": "number", "$value": 20 },
+    "full": { "$type": "number", "$value": 9999 }
+  },
+  "breakpoint": {
+    "mobile": { "$type": "number", "$value": 480 },
+    "desktop_sm": { "$type": "number", "$value": 1280 }
+  }
+}

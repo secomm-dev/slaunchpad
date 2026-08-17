@@ -1,0 +1,12 @@
+{
+  "$extensions": { "com.figma.modeName": "default" },
+  "sans": {
+    "family": { "$type": "string", "$value": "Inter" },
+    "weight-base": { "$type": "number", "$value": 400 },
+    "weight-strong": { "$type": "number", "$value": 600 }
+  },
+  "display": {
+    "family": { "$type": "string", "$value": "Manrope" },
+    "weight-base": { "$type": "number", "$value": 700 }
+  }
+}

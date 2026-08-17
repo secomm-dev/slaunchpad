@@ -1,0 +1,19 @@
+{
+  "$extensions": { "com.figma.modeName": "day" },
+  "base": {
+    "ink": { "$type": "color", "$value": { "hex": "#1a1a2e" } },
+    "canvas": { "$type": "color", "$value": { "components": [0.98, 0.98, 1], "alpha": 1 } }
+  },
+  "tint": {
+    "md": {
+      "base": { "$type": "color", "$value": { "components": [0, 0, 0], "alpha": 0.18 } }
+    }
+  },
+  "action": {
+    "primary-bg": {
+      "$type": "color",
+      "$value": { "components": [0.29, 0.38, 0.92], "alpha": 1 },
+      "$extensions": { "com.figma.aliasData": { "targetVariableName": "ink", "targetVariableSetName": "branding" } }
+    }
+  }
+}

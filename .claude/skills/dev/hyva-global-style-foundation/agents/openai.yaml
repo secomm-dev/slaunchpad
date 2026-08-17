@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hyvä Global Style Foundation"
+  short_description: "Build Hyvä global styles from Figma"
+  default_prompt: "Use $hyva-global-style-foundation to turn approved Figma foundations, components and token exports into a validated Hyvä Tailwind CSS v4 global-style system."

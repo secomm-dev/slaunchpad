@@ -32,6 +32,7 @@ profile_compatibility:
   hyva-ui: { requires_feature_flag: hyva_ui }
   hyva-cms: { requires_feature_flag: hyva_cms }
   hyva-testing: { requires_feature_flag: playwright }
+  hyva-style-foundation: { requires_feature_flag: tailwind_v4, note: "Tailwind v4 CSS-first only; a Tailwind v3 theme must not activate hyva-global-style-foundation" }
   hyva-full: { requires_explicit_selection: true }
 local_mode:
   chosen: deterministic-generated-copy
