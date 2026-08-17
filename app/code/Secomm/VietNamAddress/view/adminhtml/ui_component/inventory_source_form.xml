@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Keep MSI Source persistence on the native `city` field; the component only changes its VN UI. -->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="address">
+        <field name="city"
+               component="Secomm_VietNamAddress/js/form/element/source-city"
+               formElement="input"
+               sortOrder="40">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">City</label>
+            </settings>
+        </field>
+    </fieldset>
+</form>

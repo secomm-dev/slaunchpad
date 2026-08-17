@@ -1,0 +1,40 @@
+{
+  "$extensions": { "com.figma.modeName": "light" },
+  "core": {
+    "primary": {
+      "$type": "color",
+      "$value": { "components": [0.184, 0.34, 0.65], "alpha": 1 },
+      "$extensions": { "com.figma.variableId": "var-color-primary" }
+    },
+    "secondary": {
+      "$type": "color",
+      "$value": { "components": [0.55, 0.25, 0.75], "alpha": 1 },
+      "$extensions": { "com.figma.variableId": "var-color-secondary" }
+    },
+    "surface": { "$type": "color", "$value": { "components": [1, 1, 1], "alpha": 1 } },
+    "on-surface": { "$type": "color", "$value": { "components": [0.07, 0.09, 0.15], "alpha": 1 } }
+  },
+  "semantic": {
+    "action-bg": {
+      "$type": "color",
+      "$value": { "components": [0.184, 0.34, 0.65], "alpha": 1 },
+      "$extensions": { "com.figma.aliasData": { "targetVariableName": "primary", "targetVariableSetName": "theme" } }
+    },
+    "action-label": {
+      "$type": "color",
+      "$value": { "components": [1, 1, 1], "alpha": 1 },
+      "$extensions": { "com.figma.aliasData": { "targetVariableName": "on-primary", "targetVariableSetName": "theme" } }
+    },
+    "surface-muted": { "$type": "color", "$value": { "components": [0.96, 0.96, 0.98], "alpha": 1 } }
+  },
+  "effects": {
+    "shadows": {
+      "md": {
+        "ambient": { "$type": "color", "$value": { "components": [0, 0, 0], "alpha": 0.12 } }
+      }
+    }
+  },
+  "other": {
+    "legacy-warning": { "$type": "color", "$value": { "hex": "#ff0000" } }
+  }
+}

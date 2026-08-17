@@ -1,0 +1,58 @@
+# Token transform contract — project template.
+# Copy to a THEME-OWNED path (suggested: <theme>/web/tailwind/tokens/contract.yaml)
+# and adapt to this project's Figma/DTCG export layout. Production builds read
+# this copy — never a file under .ai/, .claude/ or other AI-tooling directories.
+#
+# Leave any value the project has not decided yet as TBD and let the audit
+# report surface it; do not invent modes that were not exported/approved.
+schema_version: 1
+
+input:
+  source_dir: TBD            # e.g. tokens — resolved relative to this contract file
+  file_suffix: .tokens.json
+  mode_resolution: figma-then-filename
+
+collections:                  # semantic role -> location in the export tree
+  color:       { path: TBD, mode_source: filename }   # one file per color mode
+  brand:       { path: TBD, mode_source: filename }   # one file per brand theme
+  font:        { path: TBD, mode_source: filename }   # one file per font mode
+  # Optional audit-only collections (component tokens, etc.):
+  # component: { path: TBD, mode_source: filename }
+  typography:
+    path: TBD
+    modes: { base: TBD, responsive: TBD }             # responsive optional
+  sizes:   { file: TBD }        # e.g. sizes.tokens.json (path may include dirs)
+  effects: { file: TBD }        # e.g. effects.tokens.json
+
+generation:
+  approved_modes: { color: TBD, brand: TBD, font: TBD }  # production allowlist only
+  typography:
+    property_keys: [family, size, line-height, letter-spacing, weight-base, weight-strong]
+    unitless_key_pattern: '^(weight-base|weight-strong)$'
+  breakpoint:
+    token: TBD                 # e.g. breakpoint/desktop (path inside the sizes collection)
+    fallback: TBD              # explicit, required only if the token may be absent
+  preserve_alias_collections: [TBD]  # collections whose alias targets stay var() references
+
+exclude:
+  paths: []                    # e.g. [other/**] for documentation-only exports
+
+audit:
+  rules: []                    # e.g. [{ kind: suspicious_zero, collection: component, path_prefix: banner/ }]
+
+output:
+  namespaces: { source: ds, typography: ds-type, effect: ds-effect }
+  theme_map:
+    spacing_prefix: spacing/
+    radius_prefix: radius/
+    breakpoint_prefix: breakpoint/
+    # Optional: emit only radii that differ from framework defaults
+    # radius_defaults: { xs: 2px, sm: 4px, md: 6px, lg: 8px, xl: 12px, 2xl: 16px, 3xl: 24px, 4xl: 32px, full: 9999px }
+  shadow:
+    root_prefix: shadow/
+    color_path_prefix: effects/shadows/
+    default_color: TBD         # explicit fallback for shadows without a color token
+
+# severity:                     # optional per-project overrides, defaults:
+#   json_error: fail
+#   normalization_collision: fail

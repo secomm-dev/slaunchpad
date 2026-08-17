@@ -1,0 +1,22 @@
+{
+  "$extensions": { "com.figma.modeName": "mobile" },
+  "display": {
+    "family": { "$type": "string", "$value": "Manrope, sans-serif" },
+    "size": { "$type": "number", "$value": 32 },
+    "line-height": { "$type": "number", "$value": 40 },
+    "letter-spacing": { "$type": "number", "$value": -0.5 },
+    "weight-base": { "$type": "number", "$value": 700 }
+  },
+  "body": {
+    "family": { "$type": "string", "$value": "Inter, sans-serif" },
+    "size": { "$type": "number", "$value": 16 },
+    "line-height": { "$type": "number", "$value": 24 },
+    "weight-base": { "$type": "number", "$value": 400 },
+    "weight-strong": { "$type": "number", "$value": 600 }
+  },
+  "caption": {
+    "size": { "$type": "number", "$value": 12 },
+    "line-height": { "$type": "number", "$value": 16 },
+    "note": { "$type": "string", "$value": "not emitted (property_keys filter)" }
+  }
+}

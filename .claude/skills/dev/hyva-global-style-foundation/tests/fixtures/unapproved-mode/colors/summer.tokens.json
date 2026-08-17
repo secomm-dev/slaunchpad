@@ -1,0 +1,6 @@
+{
+  "$extensions": { "com.figma.modeName": "summer" },
+  "core": {
+    "sand": { "$type": "color", "$value": { "hex": "#f2e8cf" } }
+  }
+}

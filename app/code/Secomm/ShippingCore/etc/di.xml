@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- SL-015 / DEC-SL015-001: default origin provider = Magento Shipping Origin.
+         A future module (e.g. Secomm_ShippingFulfillment) replaces this preference
+         (or decorates via plugin) to supply an MSI-source-based runtime origin —
+         carriers consume OriginInterface and never change. -->
+    <preference for="Secomm\ShippingCore\Api\OriginProviderInterface"
+                type="Secomm\ShippingCore\Model\OriginProvider\ShippingOriginProvider"/>
+    <preference for="Secomm\ShippingCore\Api\ShippingContextInterface"
+                type="Secomm\ShippingCore\Model\ShippingContext"/>
+    <preference for="Secomm\ShippingCore\Api\OriginInterface"
+                type="Secomm\ShippingCore\Model\Origin"/>
+    <!-- SL-017 / DEC-SL017-001: single tracking pipeline (webhook + Tracking API + cron). -->
+    <preference for="Secomm\ShippingCore\Api\Tracking\CarrierTrackingProcessorInterface"
+                type="Secomm\ShippingCore\Model\Tracking\ShipmentTrackingProcessor"/>
+</config>

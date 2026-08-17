@@ -1,0 +1,13 @@
+{
+  "$extensions": { "com.figma.modeName": "default" },
+  "primary": {
+    "$type": "color",
+    "$value": { "components": [0.184, 0.34, 0.65], "alpha": 1 },
+    "$extensions": { "com.figma.variableId": "var-theme-primary" }
+  },
+  "secondary": { "$type": "color", "$value": { "components": [0.55, 0.25, 0.75], "alpha": 1 } },
+  "on-primary": { "$type": "color", "$value": { "components": [1, 1, 1], "alpha": 1 } },
+  "on-secondary": { "$type": "color", "$value": { "components": [1, 1, 1], "alpha": 1 } },
+  "font-sans": { "$type": "string", "$value": "Inter, sans-serif" },
+  "font-display": { "$type": "string", "$value": "Manrope, sans-serif" }
+}

@@ -1,0 +1,14 @@
+<!-- Non-VN remains Magento's native City input; VN persists the selected ward in the same observable. -->
+<div data-bind="visible: !isVietnam()">
+    <input class="admin__control-text" type="text"
+           data-bind="event: {change: userChanges}, value: value, hasFocus: focused, valueUpdate: valueUpdate,
+           attr: {name: inputName, placeholder: placeholder, 'aria-describedby': noticeId, id: uid,
+           disabled: disabled, maxlength: 255}"/>
+</div>
+<div data-bind="visible: isVietnam">
+    <select class="admin__control-select"
+            data-bind="value: value, options: cityOptions, optionsValue: 'value', optionsText: 'label',
+            optionsCaption: cityCaption, hasFocus: focused,
+            attr: {name: inputName, id: uid, disabled: disabled() || isLoading(),
+            'aria-describedby': noticeId, 'aria-label': noticeId}"></select>
+</div>

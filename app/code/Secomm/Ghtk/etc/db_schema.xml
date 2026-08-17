@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!--
+        GHTK address mapping — canonical key (country_id, region_id, ward_id).
+        VN 2-level model: ward (phường/xã) = the city level, so ward_id references
+        Secomm_AddressDropdown directory_region_city.city_id (stable PK). The
+        sub-city (3rd) level is NOT used for 2-level VN.
+        ward_name columns are display/audit/import support only (NOT a join key).
+        Carrier-owned (DEC-018/019); no FK to address tables so the mapping stays stable
+        across address-data re-seeds.
+    -->
+    <table name="secomm_ghtk_address_map" resource="default" engine="innodb" comment="GHTK Address Mapping">
+        <column xsi:type="int" name="map_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Map Id"/>
+        <column xsi:type="varchar" name="country_id" nullable="false" length="2" comment="Country Id (ISO)"/>
+        <column xsi:type="int" name="region_id" padding="10" unsigned="true" nullable="false" identity="false"
+                comment="Region Id (directory_country_region)"/>
+        <column xsi:type="int" name="ward_id" padding="10" unsigned="true" nullable="false" identity="false"
+                comment="Ward Id (directory_region_city.city_id — VN 2-level ward)"/>
+        <column xsi:type="varchar" name="source_province_name" nullable="true" length="255"
+                comment="Source province display name (audit/import only)"/>
+        <column xsi:type="varchar" name="source_ward_name" nullable="true" length="255"
+                comment="Source ward display name (audit/import only)"/>
+        <column xsi:type="varchar" name="ghtk_province" nullable="false" length="255" comment="GHTK province name"/>
+        <column xsi:type="varchar" name="ghtk_district" nullable="true" length="255" comment="GHTK district name (optional)"/>
+        <column xsi:type="varchar" name="ghtk_ward" nullable="false" length="255" comment="GHTK ward name"/>
+        <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" identity="false"
+                default="1" comment="Is Active"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"
+                comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP"
+                comment="Updated At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="map_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_GHTK_ADDRESS_MAP_COUNTRY_REGION_WARD">
+            <column name="country_id"/>
+            <column name="region_id"/>
+            <column name="ward_id"/>
+        </constraint>
+        <index referenceId="SECOMM_GHTK_ADDRESS_MAP_REGION_ID" indexType="btree">
+            <column name="region_id"/>
+        </index>
+        <index referenceId="SECOMM_GHTK_ADDRESS_MAP_IS_ACTIVE" indexType="btree">
+            <column name="is_active"/>
+        </index>
+    </table>
+</schema>

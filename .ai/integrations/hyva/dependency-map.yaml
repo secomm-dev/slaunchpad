@@ -1,10 +1,12 @@
 # ============================================================================
 # Hyvä integration — dependency map
 # ============================================================================
-# Mirrors the upstream `requires:` frontmatter so dependency resolution has one
-# declarative source (cross-checked against each SKILL.md frontmatter by the
-# validator). Resolution is recursive; only dependencies of SELECTED skills are
-# installed. Utility skills are pulled in as dependencies, not as top-level picks.
+# Mirrors the upstream `requires:` frontmatter (and the `requires:` of
+# Secomm-authored canonical Hyvä skills such as hyva-global-style-foundation) so
+# dependency resolution has one declarative source (cross-checked against each
+# SKILL.md frontmatter by the validator). Resolution is recursive; only
+# dependencies of SELECTED skills are installed. Utility skills are pulled in as
+# dependencies, not as top-level picks.
 # ============================================================================
 schema_version: 1
 source_of_truth: "upstream SKILL.md `requires:` frontmatter (this file mirrors it)"
@@ -16,6 +18,7 @@ dependencies:
   hyva-cms-components-dump: [hyva-exec-shell-cmd]
   hyva-cms-custom-field: [hyva-exec-shell-cmd, hyva-create-module]
   hyva-compile-tailwind-css: [hyva-exec-shell-cmd, hyva-theme-list]
+  hyva-global-style-foundation: [hyva-exec-shell-cmd, hyva-theme-list, hyva-compile-tailwind-css]
   hyva-create-module: [hyva-exec-shell-cmd]
   hyva-exec-shell-cmd: []
   hyva-playwright-test: []

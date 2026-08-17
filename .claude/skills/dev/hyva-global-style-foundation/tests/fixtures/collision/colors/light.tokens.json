@@ -1,0 +1,6 @@
+{
+  "core": {
+    "Primary": { "$type": "color", "$value": { "hex": "#0000ff" } },
+    "primary": { "$type": "color", "$value": { "hex": "#ff0000" } }
+  }
+}

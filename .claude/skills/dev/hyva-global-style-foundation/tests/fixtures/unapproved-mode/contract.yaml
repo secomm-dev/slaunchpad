@@ -1,0 +1,5 @@
+schema_version: 1
+collections:
+  color: { path: colors, mode_source: filename }
+generation:
+  approved_modes: { color: summer }

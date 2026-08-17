@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Secomm_Ghtk::ghtk" title="GHTK" translate="title" sortOrder="60">
+                    <resource id="Secomm_Ghtk::manage_map" title="Manage Address Mapping" translate="title" sortOrder="10"/>
+                    <resource id="Secomm_Ghtk::config" title="GHTK Configuration" translate="title" sortOrder="20"/>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

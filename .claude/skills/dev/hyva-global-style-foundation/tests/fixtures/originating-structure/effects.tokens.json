@@ -1,0 +1,30 @@
+{
+  "opacity": {
+    "disabled": { "$type": "string", "$value": "0.5" },
+    "muted": { "$type": "string", "$value": "0.65" }
+  },
+  "shadow": {
+    "md": {
+      "ambient": {
+        "x": { "$type": "number", "$value": 0 },
+        "y": { "$type": "number", "$value": 4 },
+        "blur": { "$type": "number", "$value": 12 },
+        "spread": { "$type": "number", "$value": 0 }
+      },
+      "key": {
+        "x": { "$type": "number", "$value": 0 },
+        "y": { "$type": "number", "$value": 2 },
+        "blur": { "$type": "number", "$value": 6 },
+        "spread": { "$type": "number", "$value": 0 }
+      }
+    },
+    "lg": {
+      "ambient": {
+        "x": { "$type": "number", "$value": 0 },
+        "y": { "$type": "number", "$value": 8 },
+        "blur": { "$type": "number", "$value": 24 },
+        "spread": { "$type": "number", "$value": 0 }
+      }
+    }
+  }
+}

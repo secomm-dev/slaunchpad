@@ -1,0 +1,10 @@
+{
+  "$extensions": { "com.figma.modeName": "light" },
+  "semantic": {
+    "action": {
+      "$type": "color",
+      "$value": { "components": [0.1, 0.2, 0.3], "alpha": 1 },
+      "$extensions": { "com.figma.aliasData": { "targetVariableName": "missing-primary", "targetVariableSetName": "ghost" } }
+    }
+  }
+}

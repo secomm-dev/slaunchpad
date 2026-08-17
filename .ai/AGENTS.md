@@ -455,6 +455,7 @@ Other documentation tasks:
 - Update `.ai/toolkit/generation-log.md` if context is regenerated
 - **Keep working memory current:** update `project-context/memory/CURRENT_STATE.md` and `NEXT_TASK.md` at milestones. Append to `DECISIONS.md` when a decision is made and `LESSONS_LEARNED.md` when something notable is learned. AI generates diffs; a human reviews and commits. Never store secrets, PII, full logs, or scratch in memory files.
 - **Resume before continuing:** at the start of any session continuing existing work, reconstruct state from the memory files before changing code (planning-first, Section 7.1).
+- **Decision records must reference a work item:** every `DEC-XXX` record MUST carry a non-empty `work_items:` frontmatter list (≥1 of `FEAT-`/`SL-`/`BUG-`/`REL-`), anchoring the decision to the work-item(s) it decides so concurrent staff cannot re-open the same subject under a different DEC-ID. `work_items: []` is valid only when `decision_type` is `process`/`tooling`/`governance` (process-only decisions). Enforced by `bin/project-ai-validate --check-records` (soft WARN by default; hard-fail under `DEC_WORK_ITEMS_HARD=1`). **Naming (2026-08-17):** decision files mới đặt tên theo primary work-item — `DEC-{CODE}-{NNN}.md` (`{CODE}` = work-item ID bỏ gạch nối, uppercase: SL-015→SL015; `{NNN}` = sequence 3 chữ số theo work-item; vd `DEC-SL015-001.md`); exempt process/tooling/governance giữ legacy global `DEC-NNN.md`; legacy file không rename; validator chấp nhận cả hai format và WARN khi prefix id mới không khớp `work_items` entry đầu tiên.
 
 ---
 

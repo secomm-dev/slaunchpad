@@ -1,0 +1,12 @@
+{
+  "gap": {
+    "2": { "$type": "number", "$value": 8 },
+    "4": { "$type": "number", "$value": 16 }
+  },
+  "corner": {
+    "pill": { "$type": "number", "$value": 9999 }
+  },
+  "viewports": {
+    "desktop": { "$type": "number", "$value": 1024 }
+  }
+}

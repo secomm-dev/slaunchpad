@@ -19,7 +19,7 @@
 #
 # Usage:
 #   bin/project-ai-validate                 # auto-detect
-#   bin/project-ai-validate --check-adapters|--check-cheatsheet|--check-commands|--check-refs|--check-records|--check-modes|--check-project-state
+#   bin/project-ai-validate --check-adapters|--check-cheatsheet|--check-commands|--check-refs|--check-records|--check-modes|--check-project-state|--check-hyva
 #   bin/project-ai-validate --project /path/to/generated/project
 #   bin/project-ai-validate --quiet
 # Exit: 0 = clean, 1 = material contract violation.
@@ -27,7 +27,7 @@
 set -uo pipefail
 
 QUIET=0; PROJECT=""; ROOT_OVERRIDE=""
-RUN_ALL=1; C_ADAPTERS=0; C_CHEAT=0; C_CMDS=0; C_REFS=0; C_RECORDS=0; C_MODES=0; C_PSTATE=0; C_RSEP=0; C_CEFF=0; C_GOV=0
+RUN_ALL=1; C_ADAPTERS=0; C_CHEAT=0; C_CMDS=0; C_REFS=0; C_RECORDS=0; C_MODES=0; C_PSTATE=0; C_RSEP=0; C_CEFF=0; C_GOV=0; C_HYVA=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=1; shift ;;
@@ -41,6 +41,7 @@ while [ $# -gt 0 ]; do
     --check-runtime-separation) RUN_ALL=0; C_RSEP=1; shift ;;
     --check-context-efficiency) RUN_ALL=0; C_CEFF=1; shift ;;
     --check-governance-dedup) RUN_ALL=0; C_GOV=1; shift ;;
+    --check-hyva) RUN_ALL=0; C_HYVA=1; shift ;;
     --project) PROJECT="$2"; shift 2 ;;
     --root) ROOT_OVERRIDE="$2"; shift 2 ;;
     -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
@@ -227,8 +228,14 @@ if [ $C_RECORDS -eq 1 ]; then
     else
       rec_out="$(python3 - "$REC" <<'PYREC'
 import sys, os, re
+# Phase 1b+: decision work_items contract. Soft (WARN to stderr, exit 0) by
+# default; set DEC_WORK_ITEMS_HARD=1 to promote missing/malformed work_items to
+# FAIL. Anchors each DEC to >=1 work-item (FEAT-/SL-/BUG-/REL-) so concurrent
+# staff cannot re-open the same subject under a different DEC-ID.
+WORK_ITEMS_HARD = os.environ.get('DEC_WORK_ITEMS_HARD', '0') in ('1', 'true', 'yes')
 rec = sys.argv[1]
 fails = []
+warns = []
 def frontmatter(path):
     with open(path, encoding='utf-8') as fh: txt = fh.read()
     m = re.match(r'^---\r?\n(.*?)\r?\n---(?:\r?\n|$)', txt, re.S)
@@ -277,6 +284,26 @@ for kind in req:
         iid = (field_vals(fm, 'id') or [''])[0]
         if iid and not iid.startswith(prefix[kind]):
             fails.append(rel + ': id ' + iid + ' should start with ' + prefix[kind])
+        # Decision work_items contract (Phase 1b+): >=1 FEAT-/SL-/BUG-/REL- unless exempt.
+        if kind == 'decisions':
+            _wis = field_vals(fm, 'work_items')
+            _dtype = (field_vals(fm, 'decision_type') or [''])[0].strip()
+            _exempt = _dtype in ('process', 'tooling', 'governance')
+            _wi_target = fails if WORK_ITEMS_HARD else warns
+            if not _exempt and len(_wis) == 0:
+                _wi_target.append(rel + ': decision missing work_items (>=1 of FEAT-/SL-/BUG-/REL-); set decision_type: process|tooling|governance to exempt')
+            for _wi in _wis:
+                if not re.match(r'^(FEAT|SL|BUG|REL)-[0-9]{3,}$', _wi):
+                    _wi_target.append(rel + ': work_items entry not FEAT-/SL-/BUG-/REL-NNN: ' + _wi)
+            # Entry h (2026-08-17): per-work-item file naming DEC-{CODE}-{NNN} (CODE = work-item
+            # ID without hyphens, e.g. SL-015 -> SL015). Both legacy DEC-NNN and the new format
+            # are accepted; soft-WARN when a new-format id prefix does not match the first
+            # work_items entry (the primary work-item that should name the file).
+            _ih = re.match(r'^DEC-((?:FEAT|SL|BUG|REL)[0-9]{3,})-[0-9]{3,}$', iid)
+            if _ih and _wis:
+                _first = (_wis[0] or '').replace('-', '')
+                if _first != _ih.group(1):
+                    warns.append(rel + ': id ' + iid + ' prefix does not match first work_items entry ' + _wis[0] + ' (expected DEC-' + _first + '-NNN, or reorder work_items so the primary work-item is first)')
         for dv in field_vals(fm, 'decisions'):
             m = re.search(r'(DEC-[A-Za-z0-9_-]+)', dv)
             if m:
@@ -333,6 +360,7 @@ for kind in req:
                         continue
                     if did not in (_summ_val(_expected) or []):
                         fails.append(rel + ': decision_approval_summary drift — ' + did + ' status=' + _st + ' ⇒ expected in ' + _expected)
+for w in warns: print('WARN: ' + w, file=sys.stderr)
 for x in fails: print('FAIL: ' + x)
 sys.exit(1 if fails else 0)
 PYREC
@@ -503,6 +531,58 @@ if [ $C_GOV -eq 1 ]; then
     grep -q "Canonical source (Phase 1f dedup)" "$ROOT/core/quality-gates.md" && grep -q "Canonical source (Phase 1f dedup)" "$ROOT/core/delivery-governance.md" && note "quality-gates/delivery-governance canonical markers present" || warn "gate canonical markers missing"
   else
     note "governance dedup is toolkit-source; instance check = AGENTS.md distillation review"
+  fi
+fi
+
+# --- Hyva integration (opt-in --check-hyva; auto-runs in PROJECT mode if .ai/integrations/hyva exists) ---
+if [ $C_HYVA -eq 1 ] || { [ "$MODE" = "project" ] && [ -n "${P:-}" ] && [ -d "$P/.ai/integrations/hyva" ]; }; then
+  echo "--- hyva-integration ($MODE) ---"
+  if [ "$MODE" = "toolkit" ]; then
+    DEV="$ROOT/skills-source/dev-skills/magento"; INT="$ROOT/shared-core/integrations/hyva"
+    MAN="$ROOT/skills-source/dev-skills/dev-skill-manifest.yaml"; UM="$INT/upstream-manifest.yaml"; DM="$INT/dependency-map.yaml"
+    [ -d "$DEV" ] || fail "canonical dev-skill root missing"
+    [ -d "$DEV/hyva" ] && fail "nested magento/hyva/ directory present (skills must be flat)" || note "no nested magento/hyva/ (flat)"
+    nb="$(find "$INT" -name SKILL.md -not -path "*/retired-secomm-skills/*" 2>/dev/null | wc -l)"
+    [ "$nb" -eq 0 ] && note "no skill body under shared-core/integrations/hyva/ (metadata only)" || fail "$nb skill body file(s) under integrations/hyva/ (must be metadata only)"
+    if command -v python3 >/dev/null 2>&1 && [ -f "$MAN" ] && [ -f "$UM" ] && [ -f "$DM" ]; then
+      python3 - "$MAN" "$DEV" "$UM" "$DM" <<'PY' && note "manifest deps/closures resolve + upstream sha256 verify + dependency-map consistent" || { errors=$((errors+1)); }
+import sys, yaml, pathlib, hashlib
+man=yaml.safe_load(open(sys.argv[1])); dev=pathlib.Path(sys.argv[2]); um=yaml.safe_load(open(sys.argv[3])); dm=yaml.safe_load(open(sys.argv[4]))['dependencies']
+skills=man['skills']; deps={k:v.get('dependencies',[]) for k,v in skills.items()}; errs=[]
+for s,dl in deps.items():
+    if not (dev/s/'SKILL.md').is_file(): errs.append(f"canonical SKILL.md missing: {s}")
+    for d in dl:
+        if d not in skills: errs.append(f"unresolved dependency {d} (from {s})")
+for p,pd in man['profiles'].items():
+    for s in pd['skills']:
+        if s not in skills: errs.append(f"profile {p} references unknown skill {s}")
+        elif (dev/s/'SKILL.md').is_file() is False: errs.append(f"profile {p} skill not canonical: {s}")
+for f in um['files']:
+    p=dev/f['path']
+    if not p.is_file(): errs.append(f"upstream-manifest missing file {f['path']}")
+    elif hashlib.sha256(p.read_bytes()).hexdigest()!=f['sha256']: errs.append(f"sha256 mismatch {f['path']}")
+for s,dl in dm.items():
+    fm=(dev/s/'SKILL.md').read_text().split('---')
+    req=fm[1].split('requires:')[1].split('\n')[0].strip() if len(fm)>1 and 'requires:' in fm[1] else ''
+    parsed=[x.strip() for x in req.split(',')] if req else []
+    if parsed!=dl: errs.append(f"dependency-map vs frontmatter mismatch: {s}")
+for e in errs: print("FAIL: "+e)
+sys.exit(1 if errs else 0)
+PY
+    else warn "python3/pyyaml or manifest files unavailable — skipped manifest/sha256 deep checks"; fi
+    note "canonical Hyva dev-skills: $(ls -d "$DEV"/hyva-* 2>/dev/null | wc -l) (flat, direct children)"
+  else
+    DEV="$P/.claude/skills/dev"; INT="$P/.ai/integrations/hyva"
+    n="$(ls -d "$DEV"/hyva-* 2>/dev/null | wc -l)"
+    [ "$n" -gt 0 ] && note "project Hyva dev-skills installed: $n" || fail "no Hyva dev-skills under .claude/skills/dev/"
+    for f in SECOMM_OVERLAY.md provenance.yaml version-lock.yaml upstream-manifest.yaml; do
+      [ -f "$INT/$f" ] && note "integration metadata present: $f" || fail "integration metadata missing: .ai/integrations/hyva/$f"
+    done
+    [ -f "$P/codex/AGENTS.md" ] && { grep -q "BEGIN Secomm Hyva skills routing" "$P/codex/AGENTS.md" && note "Codex routing present (STATIC)" || warn "codex/AGENTS.md present but Hyva routing absent"; }
+    [ -f "$P/.github/copilot-instructions.md" ] && { grep -q "BEGIN Secomm Hyva skills routing" "$P/.github/copilot-instructions.md" && note "Copilot routing present (STATIC)" || warn ".github/copilot-instructions.md present but Hyva routing absent"; }
+    note "Codex/Copilot discoverability = STATIC VALIDATION ONLY (natural-language routing; runtime invocation not automated)"
+    if [ -n "${ROOT:-}" ]; then ap="$(grep -rl "$ROOT/" "$DEV" "$INT" 2>/dev/null | wc -l)"; [ "$ap" -eq 0 ] && note "no absolute generator-path refs in installed content" || fail "absolute generator-path reference in installed content"; fi
+    grep -q "hyva_ai_tools_integration" "$P/.ai/toolkit/toolkit-version.md" 2>/dev/null && note "toolkit-version hyva stamp present" || warn "toolkit-version hyva stamp absent"
   fi
 fi
 
