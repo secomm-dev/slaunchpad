@@ -85,8 +85,8 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
         $toWardCode = $location['toWardCode'] ?? "";
 
         $toName = $order->getCustomerName();
-        $toPhone = $order->getShippingAddress()->getTelephone();
-        $toAddress = $order->getShippingAddress()->getStreetLine(1);
+        $toPhone = $shippingAddress ? $shippingAddress->getTelephone() : '';
+        $toAddress = $this->getToAddress($shippingAddress);
         $serviceTypeId = (int)SubjectReader::readShippingServiceTypeId($buildSubject);
         $items = $this->getItems($order);
         $clientOrderCode = $order->getIncrementId();
@@ -179,5 +179,22 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
             . $storeInfo->getData('city') . ', ' . $storeInfo->getData('region') . ', ' . $storeInfo->getData('country');
 
         return $address;
+    }
+
+    /**
+     * Get address of shippingAddress
+     * @param \Magento\Quote\Model\Quote\Address $shippingAddress
+     * @return string
+     */
+    public function getToAddress($shippingAddress)
+    {
+        if (!$shippingAddress) {
+            return '';
+        }
+
+        $streetLines = $shippingAddress->getStreet();
+        $address = implode(', ', array_filter($streetLines)) . ', ' . $shippingAddress->getCity() . ', ' . $shippingAddress->getRegion() . ', ' . $shippingAddress->getCountryId();
+
+        return $address ? $address : '';
     }
 }

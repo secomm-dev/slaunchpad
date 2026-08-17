@@ -28,7 +28,7 @@ class LocationMapping extends AbstractDb
             ->where('region_id = ?', $regionId)
             ->where('city_id = ?', $cityId)
             ->where('status = ?', 1)
-            ->order('priority DESC, entity_id DESC')
+            ->order(['priority DESC', 'entity_id DESC'])
             ->limit(1);
         $result = $connection->fetchRow($select);
         return $result ?: null;
