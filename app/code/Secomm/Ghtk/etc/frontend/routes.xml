@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <!-- SL-017: GHTK webhook receiver — POST /ghtk/webhook/index
+         (configure in the GHTK dashboard; append ?secret=<webhook_secret> when set). -->
+    <router id="standard">
+        <route id="ghtk" frontName="ghtk">
+            <module name="Secomm_Ghtk"/>
+        </route>
+    </router>
+</config>

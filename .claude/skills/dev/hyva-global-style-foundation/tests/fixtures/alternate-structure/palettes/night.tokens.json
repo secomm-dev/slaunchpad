@@ -1,0 +1,6 @@
+{
+  "$extensions": { "com.figma.modeName": "night" },
+  "base": {
+    "ink": { "$type": "color", "$value": { "hex": "#e8e8f0" } }
+  }
+}

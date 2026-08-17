@@ -1,0 +1,22 @@
+# Different directory names, mode names, namespaces, prefixes and breakpoint
+# token than the originating layout — proves the transformer needs contract
+# changes only, never code changes.
+schema_version: 1
+input: { mode_resolution: filename-only }
+collections:
+  color: { path: palettes, mode_source: filename }
+  brand: { path: branding, mode_source: filename }
+  font: { path: fonts, mode_source: filename }
+  typography:
+    path: type
+    modes: { base: small, responsive: wide }
+  sizes: { file: tokens/dimensions.tokens.json }
+  effects: { file: tokens/elevation.tokens.json }
+generation:
+  approved_modes: { color: day, brand: base, font: regular }
+  breakpoint: { token: viewports/desktop, fallback: 1024px }
+  preserve_alias_collections: [branding]
+output:
+  namespaces: { source: dsrc, typography: dt, effect: dxf }
+  theme_map: { spacing_prefix: gap/, radius_prefix: corner/, breakpoint_prefix: viewports/ }
+  shadow: { root_prefix: lift/, color_path_prefix: tint/, default_color: 'rgb(10 10 10 / 0.2)' }

@@ -1,0 +1,9 @@
+{
+  "$extensions": { "com.figma.modeName": "small" },
+  "heading": {
+    "family": { "$type": "string", "$value": "Public Sans, sans-serif" },
+    "size": { "$type": "number", "$value": 24 },
+    "line-height": { "$type": "number", "$value": 32 },
+    "weight-strong": { "$type": "number", "$value": 700 }
+  }
+}

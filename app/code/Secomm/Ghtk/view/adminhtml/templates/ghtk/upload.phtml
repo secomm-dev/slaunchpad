@@ -1,0 +1,72 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+/**
+ * @var \Magento\Backend\Block\Template $block
+ */
+?>
+<div class="secomm-ghtk-mapping">
+    <p><strong><?= $block->escapeHtml(__('GHTK Address Mapping — CSV Import (Replace All)')) ?></strong></p>
+    <p class="note">
+        <?= $block->escapeHtml(
+            __('Uploading replaces the ENTIRE mapping table with the CSV content. '
+               . 'Rows absent from the CSV are removed. The whole file is validated first; '
+               . 'any invalid row aborts the import with no changes.')
+        ) ?>
+    </p>
+
+    <form id="secomm-ghtk-upload-form"
+          action="<?= $block->escapeHtmlAttr($block->getUrl('ghtk/ghtk/upload')) ?>"
+          method="post"
+          enctype="multipart/form-data"
+          data-mage-init='{"validation":{}}'>
+        <input name="form_key" type="hidden" value="<?= $block->escapeHtmlAttr($block->getFormKey()) ?>"/>
+
+        <fieldset class="admin__fieldset">
+            <div class="admin__field">
+                <label class="admin__field-label" for="mapping_csv">
+                    <?= $block->escapeHtml(__('CSV File')) ?>
+                </label>
+                <div class="admin__field-control">
+                    <input id="mapping_csv"
+                           name="mapping_csv"
+                           type="file"
+                           accept=".csv,text/csv"
+                           class="admin__control-file"/>
+                    <p class="note">
+                        <?= $block->escapeHtml(__('Header: %1', 'country_id,region_id,ward_id,ghtk_province,ghtk_district,ghtk_ward,is_active')) ?>
+                    </p>
+                </div>
+            </div>
+        </fieldset>
+
+        <button class="action-primary" type="submit">
+            <?= $block->escapeHtml(__('Replace Mapping')) ?>
+        </button>
+    </form>
+
+    <p style="margin-top:2em;">
+        <a href="<?= $block->escapeHtmlAttr($block->getUrl('ghtk/ghtk/samplecsv')) ?>">
+            <?= $block->escapeHtml(__('Download sample CSV')) ?>
+        </a>
+    </p>
+</div>
+
+<script>
+    require(['jquery'], function ($) {
+        $('#secomm-ghtk-upload-form').on('submit', function (e) {
+            if (!$('#mapping_csv').val()) {
+                e.preventDefault();
+                return;
+            }
+            // Replace-all safety net: confirm before wiping the mapping table.
+            if (!window.confirm('<?= $block->escapeJsQuote(__('Replace-all: this overwrites the ENTIRE GHTK mapping table. Continue?')) ?>')) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>

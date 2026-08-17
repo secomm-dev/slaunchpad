@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <carriers>
+            <ghtk>
+                <model>Secomm\Ghtk\Model\Carrier\Ghtk</model>
+                <active>0</active>
+                <title>GHTK</title>
+                <name>GHTK Express</name>
+                <!-- VN-only gate (also enforced in code: AC-014) -->
+                <sallowspecific>1</sallowspecific>
+                <specificcountry>VN</specificcountry>
+                <specificerrmsg>This shipping method is not available for your address.</specificerrmsg>
+                <showmethod>0</showmethod>
+                <sort_order>10</sort_order>
+                <!-- GHTK API + reliability (single config abstraction, see GhtkConfig) -->
+                <api_base_url>https://services.giaohangtietkiem.vn</api_base_url>
+                <api_token></api_token>
+                <x_client_source></x_client_source>
+                <transport>road</transport>
+                <!-- Pickup -->
+                <pick_address_id></pick_address_id>
+                <pick_province></pick_province>
+                <pick_district></pick_district>
+                <pick_ward></pick_ward>
+                <!-- Weight contract (DEC-022): unit NOT assumed -->
+                <weight_unit>kg</weight_unit>
+                <min_weight>0.1</min_weight>
+                <!-- Rate composition (DEC-022 Q1): base fee.fee + selected include -->
+                <rate_include></rate_include>
+                <!-- COD (SL-016 / DEC-SL016-001): methods collecting at the door -->
+                <cod_method_codes>cashondelivery</cod_method_codes>
+                <!-- Tracking (SL-017 / DEC-SL017-001): webhook primary; API reconciliation opt-in -->
+                <webhook_secret></webhook_secret>
+                <tracking_refresh_enabled>0</tracking_refresh_enabled>
+                <tracking_refresh_threshold_hours>6</tracking_refresh_threshold_hours>
+                <!-- Reliability defaults -->
+                <timeout_connect>2</timeout_connect>
+                <timeout_total>5</timeout_total>
+                <retry_max>1</retry_max>
+                <cache_ttl>600</cache_ttl>
+            </ghtk>
+        </carriers>
+    </default>
+</config>

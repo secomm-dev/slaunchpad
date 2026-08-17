@@ -14,4 +14,8 @@
         <plugin name="update_subcity"
                 type="Secomm\AddressDropdown\Plugin\ActionsPlugin"/>
     </type>
+    <type name="Magento\Sales\Block\Adminhtml\Order\Create\Form\Address">
+        <plugin name="secomm_addressdropdown_admin_order_address_form"
+                type="Secomm\AddressDropdown\Plugin\Adminhtml\OrderAddressFormPlugin"/>
+    </type>
 </config>

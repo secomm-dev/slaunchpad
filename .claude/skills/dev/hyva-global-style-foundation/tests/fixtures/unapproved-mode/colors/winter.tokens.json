@@ -1,0 +1,6 @@
+{
+  "$extensions": { "com.figma.modeName": "winter" },
+  "core": {
+    "sand": { "$type": "color", "$value": { "hex": "#dfe7ef" } }
+  }
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  ~ Secomm_VietNamAddress — SL-011 / FEAT-007 (DEC-019/025)
+  ~ Adminhtml-scoped server-side validation of the VN 2-level ward(province) relationship
+  ~ for a customer-address save. Mirrors the cart estimate plugin (etc/frontend/di.xml,
+  ~ SL-003/FEAT-005). The generic dropdown cascade lives in Secomm_AddressDropdown; only
+  ~ the VN-specific rule is owned here.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Customer\Api\AddressRepositoryInterface">
+        <plugin name="secomm_vietnam_customer_validate_ward" type="Secomm\VietNamAddress\Plugin\Customer\Address\ValidateVietNamWard" />
+    </type>
+
+    <!-- SL-013 / FEAT-007 (DEC-019/025): validate ward(province) for the VN origin saved in
+         Store Information (general/store_information) and Shipping Origin (shipping/origin). -->
+    <type name="Magento\Config\Model\Config">
+        <plugin name="secomm_vietnam_config_validate_ward" type="Secomm\VietNamAddress\Plugin\Adminhtml\Config\ValidateVietNamWard" />
+    </type>
+</config>

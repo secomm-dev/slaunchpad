@@ -1,0 +1,6 @@
+{
+  "$extensions": { "com.figma.modeName": "regular" },
+  "main": {
+    "family": { "$type": "string", "$value": "Public Sans" }
+  }
+}

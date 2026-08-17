@@ -4,6 +4,16 @@
 <!-- Nằm tại: .ai/project-context/memory/DECISIONS.md -->
 <!-- APPEND-ONLY — không bao giờ xóa hoặc viết lại decision quá khứ; supersede bằng entry mới link entry cũ. -->
 <!-- KHÔNG store secrets, PII, hoặc cross-client data. Xem project-memory-standard.md. -->
+<!-- Phase 1a compat-pointer index: canonical DEC-XXX records live in .ai/records/decisions/DEC-XXX.md.
+     Below the legacy ADR block, keep a one-line index per DEC pointing to the canonical file:
+       - [DEC-NNN](../../records/decisions/DEC-NNN.md) — title (status; work_items: FEAT-006, SL-009, SL-010)
+     New records (Entry h, 2026-08-17) are named per primary work-item — index them the same way:
+       - [DEC-SL015-001](../../records/decisions/DEC-SL015-001.md) — title (status; work_items: SL-015)
+     ({CODE} = work-item ID without hyphens: SL-015→SL015, FEAT-006→FEAT006; {NNN} = 3-digit per-work-item
+     sequence. Legacy DEC-NNN entries stay as written — append-only, never renamed.)
+     The one-liner SHOULD carry (status; work_items: …) so the durable index is self-describing for conflict
+     checks (two staff scanning can see which work-items are already decided). work_items mirrors the DEC
+     record frontmatter (process/tooling/governance decisions → `work_items: none`). -->
 
 > Append một ADR mới cho mỗi architecture / business / technical decision quan trọng.
 > AI draft; SA/TL approve decision. File này ngăn re-litigate decision đã chốt.
