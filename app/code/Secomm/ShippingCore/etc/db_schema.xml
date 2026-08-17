@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!-- SL-017 / DEC-SL017-001 §2: carrier-agnostic tracking state. Native Track/sales
+         entities have no status column; persistent extension attributes would need their
+         own table anyway; the reconciliation cron must query normalized_status + staleness
+         (not possible on a text description). UNIQUE(carrier_code, tracking_number). -->
+    <table name="secomm_carrier_tracking_state" resource="default" engine="innodb" comment="Secomm carrier tracking state (SL-017)">
+        <column xsi:type="int" name="entity_id" unsigned="false" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="carrier_code" nullable="false" length="32" comment="Carrier code (e.g. ghtk)"/>
+        <column xsi:type="varchar" name="tracking_number" nullable="false" length="64" comment="Tracking number (Magento track_number)"/>
+        <column xsi:type="int" name="shipment_entity_id" unsigned="false" nullable="true" comment="sales_shipment.entity_id"/>
+        <column xsi:type="varchar" name="normalized_status" nullable="false" length="32" comment="NormalizedTrackingStatus constant"/>
+        <column xsi:type="varchar" name="carrier_status_code" nullable="true" length="64" comment="Raw carrier status code"/>
+        <column xsi:type="varchar" name="carrier_status_message" nullable="true" length="255" comment="Raw carrier status message"/>
+        <column xsi:type="timestamp" name="carrier_status_updated_at" on_update="false" nullable="true" comment="Carrier-side status time"/>
+        <column xsi:type="timestamp" name="last_synced_at" on_update="false" nullable="true" comment="Last pipeline sync"/>
+        <column xsi:type="varchar" name="source" nullable="true" length="16" comment="Last update source (webhook|api)"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_CARRIER_TRACKING_STATE_CARRIER_NUMBER">
+            <column name="carrier_code"/>
+            <column name="tracking_number"/>
+        </constraint>
+        <index referenceId="SECOMM_CARRIER_TRACKING_STATE_STATUS" indexType="btree">
+            <column name="normalized_status"/>
+        </index>
+        <index referenceId="SECOMM_CARRIER_TRACKING_STATE_SYNCED" indexType="btree">
+            <column name="last_synced_at"/>
+        </index>
+    </table>
+</schema>

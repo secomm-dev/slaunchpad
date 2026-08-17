@@ -1,0 +1,26 @@
+{
+    "secomm_carrier_tracking_state": {
+        "column": {
+            "entity_id": true,
+            "carrier_code": true,
+            "tracking_number": true,
+            "shipment_entity_id": true,
+            "normalized_status": true,
+            "carrier_status_code": true,
+            "carrier_status_message": true,
+            "carrier_status_updated_at": true,
+            "last_synced_at": true,
+            "source": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "SECOMM_CARRIER_TRACKING_STATE_STATUS": true,
+            "SECOMM_CARRIER_TRACKING_STATE_SYNCED": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_CARRIER_TRACKING_STATE_CARRIER_NUMBER": true
+        }
+    }
+}
