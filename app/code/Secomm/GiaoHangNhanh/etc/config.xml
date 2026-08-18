@@ -24,6 +24,7 @@
                 <shop_id></shop_id>
                 <get_wards_url>master-data/ward</get_wards_url>
                 <is_develop_mode>1</is_develop_mode>
+                <sync_mode>async</sync_mode>
                 <auto_sync_on_place_order>0</auto_sync_on_place_order>
                 <enable_admin_manual_sync_button>1</enable_admin_manual_sync_button>
                 <auto_sync_on_shipment_create>0</auto_sync_on_shipment_create>

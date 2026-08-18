@@ -6,6 +6,7 @@
 namespace Secomm\GiaoHangNhanh\Observer;
 
 use Secomm\GiaoHangNhanh\Model\Config;
+use Secomm\GiaoHangNhanh\Model\Service\OrderSyncService;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\MessageQueue\PublisherInterface;
@@ -22,12 +23,15 @@ class SalesShipmentSaveAfterObserver implements ObserverInterface
      * @param LoggerInterface $logger
      * @param PublisherInterface $publisher
      * @param Config $config
+     * @param OrderSyncService $orderSyncService
      */
     public function __construct(
         private readonly LoggerInterface $logger,
         private readonly PublisherInterface $publisher,
-        private readonly Config $config
-    ) {}
+        private readonly Config $config,
+        private readonly OrderSyncService $orderSyncService
+    ) {
+    }
 
     /**
      * @param Observer $observer
@@ -51,6 +55,15 @@ class SalesShipmentSaveAfterObserver implements ObserverInterface
         }
 
         if (!$this->config->isAutoSyncOnShipmentCreate()) {
+            return;
+        }
+
+        if ($this->config->isDirectSyncMode()) {
+            try {
+                $this->orderSyncService->sync($order);
+            } catch (\Exception $e) {
+                $this->logger->error('[GHN] Direct sync failed on shipment save: ' . $e->getMessage());
+            }
             return;
         }
 

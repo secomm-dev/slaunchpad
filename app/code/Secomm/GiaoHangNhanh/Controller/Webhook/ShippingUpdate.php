@@ -12,6 +12,9 @@ use Secomm\GiaoHangNhanh\Command\Track\SaveCommand;
 use Secomm\GiaoHangNhanh\Helper\OrderStatus;
 use Secomm\GiaoHangNhanh\Logger\Logger;
 use Secomm\GiaoHangNhanh\Model\Data\TrackDataFactory;
+use Secomm\GiaoHangNhanh\Model\Tracking\GhnStatusMapper;
+use Secomm\ShippingCore\Api\Tracking\CarrierTrackingProcessorInterface;
+use Secomm\ShippingCore\Model\Tracking\TrackingUpdate;
 use Exception;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Action\HttpPostActionInterface;
@@ -27,11 +30,13 @@ use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order\Status\HistoryFactory;
+use Secomm\GiaoHangNhanh\Model\Config;
 
 class ShippingUpdate implements CsrfAwareActionInterface, HttpPostActionInterface
 {
     const STATUS_CODE_SUCCESS = 200;
     const STATUS_CODE_ERROR = 500;
+    const WEBHOOK_PATH = 'webhook';
     const STATUS_LABEL = [
         self::STATUS_CODE_SUCCESS => 'Success',
         self::STATUS_CODE_ERROR => 'Error'
@@ -92,6 +97,20 @@ class ShippingUpdate implements CsrfAwareActionInterface, HttpPostActionInterfac
     ];
 
     /**
+     * Carrier codes under which GHN Magento shipment tracks may be stored
+     * (FEAT-008 / AC-001). OrderSyncService::createShipment() writes the
+     * service-level code ('giaohangnhanh_standard' / 'giaohangnhanh_express');
+     * Config::GHN_CODE ('giaohangnhanh') covers legacy rows. Most specific
+     * first — the ShippingCore pipeline matches sales_shipment_track.carrier_code
+     * exactly.
+     */
+    const CARRIER_CODE_CANDIDATES = [
+        'giaohangnhanh_standard',
+        'giaohangnhanh_express',
+        Config::GHN_CODE
+    ];
+
+    /**
      * @param SaveCommand $saveCommand
      * @param TrackDataFactory $trackDataFactory
      * @param Logger $logger
@@ -101,6 +120,8 @@ class ShippingUpdate implements CsrfAwareActionInterface, HttpPostActionInterfac
      * @param JsonFactory $jsonResultFactory
      * @param HttpRequest $request
      * @param JsonSerializer $jsonSerializer
+     * @param CarrierTrackingProcessorInterface $trackingProcessor
+     * @param GhnStatusMapper $statusMapper
      */
     public function __construct(
         private readonly SaveCommand              $saveCommand,
@@ -111,7 +132,9 @@ class ShippingUpdate implements CsrfAwareActionInterface, HttpPostActionInterfac
         private readonly HistoryFactory           $historyFactory,
         private readonly JsonFactory              $jsonResultFactory,
         private readonly HttpRequest              $request,
-        private readonly JsonSerializer           $jsonSerializer
+        private readonly JsonSerializer           $jsonSerializer,
+        private readonly CarrierTrackingProcessorInterface $trackingProcessor,
+        private readonly GhnStatusMapper          $statusMapper
     ) {
     }
 
@@ -221,6 +244,56 @@ class ShippingUpdate implements CsrfAwareActionInterface, HttpPostActionInterfac
                 $order = $this->orderRepository->get($orderId);
                 $this->handleOrderStatus($order, $statusCode);
                 $this->writeNote($order, $statusCode);
+
+                // Integrate with Secomm_ShippingCore tracking pipeline
+                try {
+                    $normalizedStatus = $this->statusMapper->map($statusCode);
+                    $occurredAt = isset($data['Time']) ? strtotime($data['Time']) : null;
+                    $baseUpdate = new TrackingUpdate(
+                        carrierCode: self::CARRIER_CODE_CANDIDATES[0],
+                        trackingNumber: (string)$orderCode,
+                        normalizedStatus: $normalizedStatus,
+                        carrierStatusCode: (string)$statusCode,
+                        carrierStatusMessage: OrderStatus::getStatusDescription($statusCode),
+                        occurredAt: ($occurredAt !== false ? $occurredAt : null),
+                        source: self::WEBHOOK_PATH,
+                        raw: $data
+                    );
+
+                    // FEAT-008 / AC-001: GHN Magento tracks are stored with the service-level
+                    // carrier code ('giaohangnhanh_standard' / 'giaohangnhanh_express' —
+                    // OrderSyncService::GHN_SERVICE) while legacy rows may carry the base
+                    // 'giaohangnhanh' (Config::GHN_CODE). ShippingCore matches
+                    // sales_shipment_track.carrier_code exactly, so try every candidate until
+                    // one resolves (mirror GHTK webhook).
+                    $resolved = false;
+                    foreach (self::CARRIER_CODE_CANDIDATES as $candidate) {
+                        $candidateUpdate = $candidate === $baseUpdate->getCarrierCode()
+                            ? $baseUpdate
+                            : new TrackingUpdate(
+                                $candidate,
+                                $baseUpdate->getTrackingNumber(),
+                                $baseUpdate->getNormalizedStatus(),
+                                $baseUpdate->getCarrierStatusCode(),
+                                $baseUpdate->getCarrierStatusMessage(),
+                                $baseUpdate->getOccurredAt(),
+                                $baseUpdate->getSource(),
+                                $baseUpdate->getRaw()
+                            );
+                        if ($this->trackingProcessor->process($candidateUpdate)) {
+                            $resolved = true;
+                            break;
+                        }
+                    }
+                    if (!$resolved) {
+                        $this->logger->info(
+                            'GHN tracking update processed but no Magento shipment track matched.',
+                            ['tracking_number' => $orderCode, 'status' => $statusCode]
+                        );
+                    }
+                } catch (Exception $e) {
+                    $this->logger->error('Failed to process tracking update via ShippingCore: ' . $e->getMessage());
+                }
             } else {
                 $trackDataFactory->setResultCode(TrackInterface::RESULT_CODE_ERROR);
             }

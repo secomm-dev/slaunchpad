@@ -11,13 +11,13 @@ use Secomm\GiaoHangNhanh\Helper\Rate;
 use Secomm\GiaoHangNhanh\Model\Config;
 use Secomm\GiaoHangNhanh\Model\Service\Helper\SubjectReader;
 use Secomm\GiaoHangNhanh\IntegrationBase\Model\Service\ConfigInterface;
+use Secomm\ShippingCore\Api\OriginProviderInterface;
+use Secomm\ShippingCore\Model\ShippingContextFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\Quote\AddressFactory;
 use Magento\Store\Model\Information;
 use Magento\Store\Model\StoreManagerInterface;
-//use Amasty\CheckoutDeliveryDate\Model\DeliveryFactory;
-//use Amasty\CheckoutDeliveryDate\Model\ResourceModel\Delivery as ResourceModelDelivery;
 
 /**
  * Class SynchronizeOrderDataBuilder
@@ -26,9 +26,17 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class SynchronizeOrderDataBuilder extends AbstractDataBuilder
 {
-    protected $resourceModelDelivery;
-    protected $deliveryFactory;
-
+    /**
+     * @param ConfigInterface $config
+     * @param StoreManagerInterface $storeManager
+     * @param Information $storeInformation
+     * @param AddressFactory $addressFactory
+     * @param Config $baseConfig
+     * @param Rate $helperRate
+     * @param LocationResolverInterface $locationResolver
+     * @param ShippingContextFactory $shippingContextFactory
+     * @param OriginProviderInterface $originProvider
+     */
     public function __construct(
         ConfigInterface       $config,
         StoreManagerInterface $storeManager,
@@ -36,7 +44,9 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
         AddressFactory        $addressFactory,
         Config                $baseConfig,
         Rate                  $helperRate,
-        LocationResolverInterface $locationResolver
+        LocationResolverInterface $locationResolver,
+        private readonly ShippingContextFactory $shippingContextFactory,
+        private readonly OriginProviderInterface $originProvider
     )
     {
         parent::__construct(
@@ -62,16 +72,24 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
         $weightRate = $this->baseConfig->getWeightUnit() == self::DEFAULT_WEIGHT_UNIT ? Config::KGS_G : Config::LBS_G;
         $store = $this->storeManager->getStore();
         $storeInfo = $this->storeInformation->getStoreInformationObject($store);
-        $fromAddress = $this->getFromAddress($storeInfo);
+
+        // Resolve origin via Secomm_ShippingCore
+        $context = $this->shippingContextFactory->create(
+            storeId: (int)$store->getId(),
+            carrierCode: Config::GHN_CODE,
+            quoteId: $order->getQuoteId() !== null ? (int)$order->getQuoteId() : null
+        );
+        $origin = $this->originProvider->resolve($context);
+
+        $fromWardName = $origin->getWard() ?? '';
+        $fromProvinceName = $origin->getProvince() ?? '';
+        $fromDistrictName = $origin->getDistrict() ?? '';
+        $fromAddress = $this->getFromAddress($origin); // $origin->getStreet() ??
 
         if ($this->getIsDevelopMode()) {
             $fromWardName = 'Phường 17';
             $fromDistrictName = 'Quận Phú Nhuận';
             $fromProvinceName = 'Hồ Chí Minh';
-        } else {
-            $fromWardName = '';
-            $fromDistrictName = '';
-            $fromProvinceName = '';
         }
 
         $shippingAddress = $order->getShippingAddress();
@@ -170,15 +188,15 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
 
     /**
      * Get address of storeInfo
-     * @param \Magento\Framework\DataObject $storeInfo
+     * @param $origin
      * @return string
      */
-    public function getFromAddress($storeInfo)
+    public function getFromAddress($origin)
     {
-        $address = $storeInfo->getData('street_line1') . ' ' . $storeInfo->getData('street_line2') . ', '
-            . $storeInfo->getData('city') . ', ' . $storeInfo->getData('region') . ', ' . $storeInfo->getData('country');
-
-        return $address;
+        if (!$origin) {
+            return '';
+        }
+        return $origin->getStreet() . ', ' . $origin->getWard() . ', ' . $origin->getProvince() . ', ' . $origin->getCountryId();
     }
 
     /**

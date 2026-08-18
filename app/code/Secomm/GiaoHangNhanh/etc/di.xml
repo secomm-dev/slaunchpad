@@ -272,7 +272,7 @@
             <argument name="commandPool" xsi:type="object">GhnCommandPool</argument>
         </arguments>
     </type>
-    <type name="Secomm\GiaoHangNhanh\Model\Queue\OrderSyncConsumer">
+    <type name="Secomm\GiaoHangNhanh\Model\Service\OrderSyncService">
         <arguments>
             <argument name="commandPool" xsi:type="object">GhnCommandPool</argument>
         </arguments>
@@ -310,4 +310,9 @@
         </arguments>
     </type>
     <preference for="Secomm\GiaoHangNhanh\Api\Data\TrackInterface" type="Secomm\GiaoHangNhanh\Model\Data\TrackData"/>
+    <type name="Secomm\GiaoHangNhanh\Controller\Webhook\ShippingUpdate">
+        <arguments>
+            <argument name="statusMapper" xsi:type="object">Secomm\GiaoHangNhanh\Model\Tracking\GhnStatusMapper</argument>
+        </arguments>
+    </type>
 </config>

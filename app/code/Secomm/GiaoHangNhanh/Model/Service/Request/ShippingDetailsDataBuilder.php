@@ -14,6 +14,8 @@ use Secomm\GiaoHangNhanh\Helper\Rate;
 use Secomm\GiaoHangNhanh\IntegrationBase\Model\Service\ConfigInterface;
 use Secomm\GiaoHangNhanh\Model\Config;
 use Secomm\GiaoHangNhanh\Model\Service\Helper\SubjectReader;
+use Secomm\ShippingCore\Api\OriginProviderInterface;
+use Secomm\ShippingCore\Model\ShippingContextFactory;
 
 /**
  * Class ShippingDetailsDataBuilder
@@ -29,7 +31,9 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
         AddressFactory        $addressFactory,
         Config                $baseConfig,
         Rate                  $helperRate,
-        LocationResolverInterface $locationResolver
+        LocationResolverInterface $locationResolver,
+        private readonly ShippingContextFactory $shippingContextFactory,
+        private readonly OriginProviderInterface $originProvider
     ) {
         parent::__construct(
             $config,
@@ -58,17 +62,21 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
         $cityId = $shippingAddress ? (int)$shippingAddress->getData('city_id') : (int)$rateRequest->getData('city_id');
         $ward = $shippingAddress ? (string)$shippingAddress->getData('sub_city') : '';
 
+        // Resolve origin via Secomm_ShippingCore
+        $context = $this->shippingContextFactory->fromRateRequest($rateRequest, Config::GHN_CODE);
+        $origin = $this->originProvider->resolve($context);
+        $locationFrom = $this->resolveGhnLocation((int)$origin->getRegionId(), $origin->getWard());
+        $fromDistrictId = $locationFrom['toDistrictId'];
+        $fromWardCode = $locationFrom['toWardCode'];
+
         if ($this->getIsDevelopMode()) {
             $fromDistrictId = 1457;
             $fromWardCode = '21715';
-        } else {
-            $fromDistrictId = null;
-            $fromWardCode = null;
         }
 
-        $location = $this->resolveGhnLocation((int)$regionId, $city, $cityId);
-        $toDistrictId = $location['toDistrictId'];
-        $toWardCode = $location['toWardCode'];
+        $locationTo = $this->resolveGhnLocation((int)$regionId, $city, $cityId);
+        $toDistrictId = $locationTo['toDistrictId'];
+        $toWardCode = $locationTo['toWardCode'];
 
         $length = ceil($rateRequest->getPackageLength());
         $width = ceil($rateRequest->getPackageWidth());

@@ -6,6 +6,7 @@
 namespace Secomm\GiaoHangNhanh\Observer;
 
 use Secomm\GiaoHangNhanh\Model\Config;
+use Secomm\GiaoHangNhanh\Model\Service\OrderSyncService;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\MessageQueue\PublisherInterface;
@@ -19,33 +20,17 @@ use Psr\Log\LoggerInterface;
 class SalesOrderPlaceAfterObserver implements ObserverInterface
 {
     /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var PublisherInterface
-     */
-    private $publisher;
-
-    /**
-     * @var Config
-     */
-    private $config;
-
-    /**
      * @param LoggerInterface $logger
      * @param PublisherInterface $publisher
      * @param Config $config
+     * @param OrderSyncService $orderSyncService
      */
     public function __construct(
-        LoggerInterface $logger,
-        PublisherInterface $publisher,
-        Config $config
+        private readonly LoggerInterface $logger,
+        private readonly PublisherInterface $publisher,
+        private readonly Config $config,
+        private readonly OrderSyncService $orderSyncService
     ) {
-        $this->logger = $logger;
-        $this->publisher = $publisher;
-        $this->config = $config;
     }
 
     /**
@@ -56,10 +41,19 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
         /** @var \Magento\Sales\Model\Order $order */
         $order = $observer->getEvent()->getOrder();
 
-        if (false === strpos($order->getShippingMethod(), Config::GHN_CODE)) {
+        if (false === strpos((string) $order->getShippingMethod(), Config::GHN_CODE)) {
             return;
         }
         if (!$this->config->isAutoSyncOnPlaceOrder()) {
+            return;
+        }
+
+        if ($this->config->isDirectSyncMode()) {
+            try {
+                $this->orderSyncService->sync($order);
+            } catch (\Exception $e) {
+                $this->logger->error('[GHN] Direct sync failed on place order: ' . $e->getMessage());
+            }
             return;
         }
 

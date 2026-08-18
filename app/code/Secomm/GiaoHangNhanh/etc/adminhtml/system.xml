@@ -65,6 +65,12 @@
                         <validate>required-entry</validate>
                         <comment>Select Payment method will be used COD amount when shipping</comment>
                     </field>
+                    <field id="sync_mode" translate="label" type="select" sortOrder="79" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Sync Mode</label>
+                        <source_model>Secomm\GiaoHangNhanh\Model\Config\Source\SyncMode</source_model>
+                        <config_path>giaohangnhanh_setting/general/sync_mode</config_path>
+                        <comment>Select Async (Message Queue) or Direct (Immediate execution during order/shipment creation)</comment>
+                    </field>
                     <field id="auto_sync_on_place_order" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Auto Sync on Place Order</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

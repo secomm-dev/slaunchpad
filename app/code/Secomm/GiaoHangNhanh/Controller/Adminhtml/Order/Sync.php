@@ -6,14 +6,17 @@
 namespace Secomm\GiaoHangNhanh\Controller\Adminhtml\Order;
 
 use Secomm\GiaoHangNhanh\Model\Config;
+use Secomm\GiaoHangNhanh\Model\Service\OrderSyncService;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\MessageQueue\PublisherInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 
 /**
- * Admin controller to manually queue a GHN sync for an order.
- * Does NOT call GHN API directly — delegates to the queue consumer (same flow as auto-sync).
+ * Admin controller to manually sync a GHN order.
+ *
+ * - Direct mode: calls GHN API immediately and shows real success/error to admin.
+ * - Async mode: publishes to queue (same flow as auto-sync).
  */
 class Sync extends Action
 {
@@ -32,18 +35,20 @@ class Sync extends Action
      * @param OrderRepositoryInterface $orderRepository
      * @param PublisherInterface $publisher
      * @param Config $config
+     * @param OrderSyncService $orderSyncService
      */
     public function __construct(
         Context $context,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly PublisherInterface $publisher,
-        private readonly Config $config
+        private readonly Config $config,
+        private readonly OrderSyncService $orderSyncService
     ) {
         parent::__construct($context);
     }
 
     /**
-     * Queue a GHN sync message for the given order
+     * Sync GHN order — directly or via queue depending on Sync Mode config.
      *
      * @return \Magento\Framework\Controller\ResultInterface
      */
@@ -70,10 +75,32 @@ class Sync extends Action
                 return $resultRedirect->setPath('sales/order/view', ['order_id' => $orderId]);
             }
 
-            $this->publisher->publish(self::TOPIC, json_encode(['order_id' => $orderId]));
-            $this->messageManager->addSuccessMessage(__('GHN sync has been queued for this order.'));
+            if ($this->config->isDirectSyncMode()) {
+                // --- Direct mode: gọi GHN API ngay lập tức ---
+                $this->orderSyncService->sync($order);
+
+                // Sau khi sync thành công, reload order để lấy tracking_code mới được lưu
+                $order = $this->orderRepository->get($orderId);
+                $trackingCode = $order->getTrackingCode();
+
+                if ($trackingCode) {
+                    $this->messageManager->addSuccessMessage(
+                        __('Đơn hàng đã được đồng bộ trực tiếp lên GHN. Mã vận đơn: %1', $trackingCode)
+                    );
+                } else {
+                    $this->messageManager->addSuccessMessage(__('Đơn hàng đã được đồng bộ lên GHN thành công.'));
+                }
+            } else {
+                // --- Async mode (mặc định): đẩy vào Message Queue ---
+                $this->publisher->publish(self::TOPIC, json_encode(['order_id' => $orderId]));
+                $this->messageManager->addSuccessMessage(__('GHN sync has been queued for this order.'));
+            }
         } catch (\Exception $e) {
-            $this->messageManager->addErrorMessage(__('Failed to queue GHN sync: %1', $e->getMessage()));
+            if ($this->config->isDirectSyncMode()) {
+                $this->messageManager->addErrorMessage(__('Đồng bộ GHN thất bại: %1', $e->getMessage()));
+            } else {
+                $this->messageManager->addErrorMessage(__('Failed to queue GHN sync: %1', $e->getMessage()));
+            }
         }
 
         return $resultRedirect->setPath('sales/order/view', ['order_id' => $orderId]);

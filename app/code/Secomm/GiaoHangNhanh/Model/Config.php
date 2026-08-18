@@ -38,6 +38,7 @@ class Config
     const XML_PATH_AUTO_SYNC_ON_PLACE_ORDER = 'giaohangnhanh_setting/general/auto_sync_on_place_order';
     const XML_PATH_ENABLE_ADMIN_MANUAL_SYNC_BUTTON = 'giaohangnhanh_setting/general/enable_admin_manual_sync_button';
     const XML_PATH_AUTO_SYNC_ON_SHIPMENT_CREATE = 'giaohangnhanh_setting/general/auto_sync_on_shipment_create';
+    const XML_PATH_SYNC_MODE = 'giaohangnhanh_setting/general/sync_mode';
 
     /**
      * @var int
@@ -112,6 +113,26 @@ class Config
             ScopeInterface::SCOPE_STORE,
             $this->getStoreId()
         );
+    }
+
+    /**
+     * @return string
+     */
+    public function getSyncMode(): string
+    {
+        return (string) ($this->scopeConfig->getValue(
+            self::XML_PATH_SYNC_MODE,
+            ScopeInterface::SCOPE_STORE,
+            $this->getStoreId()
+        ) ?: \Secomm\GiaoHangNhanh\Model\Config\Source\SyncMode::SYNC_MODE_ASYNC);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDirectSyncMode(): bool
+    {
+        return $this->getSyncMode() === \Secomm\GiaoHangNhanh\Model\Config\Source\SyncMode::SYNC_MODE_DIRECT;
     }
 
     /**
