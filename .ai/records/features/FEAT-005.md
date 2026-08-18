@@ -2,6 +2,9 @@
 id: FEAT-005
 title: 'Vietnam shipping address support — full VN hierarchy across cart estimate + shipping methods (extend Secomm_VietNamAddress)'
 mode: A                      # Tier-2: shipping + address data (AGENTS.md §12)
+specification_level: FULL
+spec_status: VALID
+specification_ref: ../../specs/SPEC-SL-003-vn-cart-shipping-estimate.md
 risk: high
 status: proposed
 created: 2026-07-29

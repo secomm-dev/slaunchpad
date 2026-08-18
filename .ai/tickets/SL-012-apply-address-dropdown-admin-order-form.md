@@ -5,7 +5,7 @@
 **Estimate:** ~12–20h
 **Mode:** A (chạm order + customer/PII data → Tier-2)
 **Feature:** [FEAT-007](../records/features/FEAT-007.md) (parent — admin VN dropdown architecture) — extends CMP-ADDR ([FEAT-001](../records/features/FEAT-001.md)); related [FEAT-005](../records/features/FEAT-005.md)
-**Spec ref:** [admin-vn-address-order-form.md](../specs/admin-vn-address-order-form.md) (mini-spec — Mode A; approach chưa chốt — xem Open Questions)
+**Spec ref:** [admin-vn-address-order-form.md](../specs/SPEC-SL-012-admin-vn-address-order-form.md) (mini-spec — Mode A; approach chưa chốt — xem Open Questions)
 **Risk tier:** Tier 2 (order management §9 L397 + customer data/PII L398; AddressDropdown L421)
 **Author:** AI draft · **Date:** 2026-08-03 · **Status:** Proposed
 **Related:** [SL-011](SL-011-apply-address-dropdown-admin-customer-form.md) (customer) · [SL-013](SL-013-apply-address-dropdown-admin-store-information.md) (store info) · [SL-014](SL-014-apply-address-dropdown-admin-msi-source.md) (MSI source)

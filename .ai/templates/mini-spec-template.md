@@ -2,20 +2,25 @@
 
 | Field | Value |
 |-------|-------|
-| ID | MINI-{NNN} |
+| Specification ID | {TICKET-ID} — Mini-Spec embedded, identity = chính ticket (KHÔNG tạo file riêng, KHÔNG ID riêng; `MINI-{NNN}` deprecated) |
+| Specification Level | MINI |
 | Ticket | |
 | Mode | B |
 | Author | |
 | Date | |
 | Estimate | {X}h |
 
-## What
+## Goal
 
-{2-5 câu: những gì cần làm}
+{Task giải quyết vấn đề gì và tại sao}
 
-## Why
+## Expected Behavior
 
-{Business reason}
+{Sau khi hoàn thành hệ thống phải behave thế nào}
+
+## Constraints / Rules
+
+{Business/technical invariants không được phá}
 
 ## Acceptance Criteria
 
@@ -23,17 +28,13 @@
 - [ ] AC-2: ...
 - [ ] AC-3: ...
 
-## Technical Notes
-
-{Các implementation consideration quan trọng, affected areas}
-
-## Risks
-
-- {risk và mitigation}
-
 ## Out of Scope
 
 - {exclude rõ ràng}
+
+## Technical Notes / Risks
+
+{Implementation consideration, affected areas, risk/mitigation — không redefine behavior}
 
 ## Open Questions
 

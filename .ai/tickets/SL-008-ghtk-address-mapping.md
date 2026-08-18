@@ -108,5 +108,5 @@ Name-normalized fallback chỉ khi request cũ không có `ward_id` (compatibili
 
 ## Related
 
-- Spec: [ghtk-address-mapping](../specs/ghtk-address-mapping.md) · Plan: [SL-008 plan](../plans/SL-008-implementation-plan.md)
+- Spec: [ghtk-address-mapping](../specs/SPEC-SL-008-ghtk-address-mapping.md) · Plan: [SL-008 plan](../plans/SL-008-implementation-plan.md)
 - Feature: [FEAT-006](../records/features/FEAT-006.md) · Decisions: [DEC-020](../records/decisions/DEC-020.md) (canonical key+fallback) · [DEC-021](../records/decisions/DEC-021.md) (resolver split) · [DEC-018](../records/decisions/DEC-018.md) · [DEC-019](../records/decisions/DEC-019.md)

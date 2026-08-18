@@ -4,7 +4,7 @@
 **Priority:** High
 **Estimate:** ~16–32h (sau research OSC seam — SA/TL confirm)
 **Mode:** A
-**Spec:** _TBD — downstream `.ai/specs/launchpad-osc-address.md` (chưa tạo)_
+**Spec:** [launchpad-osc-address.md](../specs/SPEC-SL-002-launchpad-osc-address.md) (backfilled 2026-08-18 — draft; giữ TBD research points)
 **Decisions:** [DEC-7](../project-context/memory/DECISIONS.md) (Strategy B) · [DEC-8](../project-context/memory/DECISIONS.md) (module/Launchpad boundary)
 **Depends on:** [SL-001](SL-001-apply-hyva-theme-addressdropdown.md) (module phải expose Hyvä address component/dữ liệu)
 **Approval:** ✅ Approved 2026-07-16 (user as SA/TL) — AC testable; **caveat**: plan contingent on OSC seam research (state 3)

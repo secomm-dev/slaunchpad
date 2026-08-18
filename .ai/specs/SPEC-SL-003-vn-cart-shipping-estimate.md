@@ -1,5 +1,9 @@
 # Feature Spec: VN 2-level Cart "Estimate Shipping and Tax" (SL-003)
 
+Specification ID: SPEC-SL-003
+Feature ID: NONE
+Specification Level: FULL
+
 <!-- Spec cho ticket SL-003 · Mode A · Stack: Magento 2.4.8-p5 + Hyvä 3.x (+ Luma support) -->
 <!-- AI draft — chờ SA/TL signoff (spec-approval, Level 2). Tier-2 (shipping + address data). -->
 <!-- Parent feature: FEAT-005 (VN shipping address support). Decisions: DEC-017 / DEC-018 / DEC-019 / DEC-8. -->

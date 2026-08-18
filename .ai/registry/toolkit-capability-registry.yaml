@@ -235,7 +235,7 @@ capabilities:
     aliases: []
     mutating: false
     approval_gate: none
-    inputs: { required: ["ticket or spec"], optional: [] }
+    inputs: { required: ["valid Full Spec or ticket with valid embedded Mini-Spec"], optional: [] }
     outputs: { paths: [], types: ["implementation-plan"] }
     tools:
       claude:  { enabled: true, adapter: "shared-core/functions/implement-task.md", invocation: "NL: make an implementation plan", invocation_type: function, validation_status: nl-only }
@@ -252,7 +252,7 @@ capabilities:
     aliases: []
     mutating: true
     approval_gate: "plan-then-code (Hard Gate 3)"
-    inputs: { required: ["task or spec"], optional: [] }
+    inputs: { required: ["task with spec_status=VALID", "plan/approach with Specification reference"], optional: [] }
     outputs: { paths: [], types: ["code"] }
     tools:
       claude:  { enabled: true, adapter: "shared-core/functions/implement-task.md", invocation: "NL: implement this feature", invocation_type: function, validation_status: nl-only }

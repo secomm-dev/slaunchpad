@@ -1,5 +1,9 @@
 # Implementation Plan: SL-001 — Hyvä-native AddressDropdown (MODULE layer)
 
+| Field | Value |
+|---|---|
+| Specification | specs/addressdropdown-hyva.md |
+
 > ⚠️ **LEGACY (Phase 1a) — superseded by [`records/features/FEAT-001.md`](../records/features/FEAT-001.md).** Read-only; excluded from default context loading; pending equivalence validation. Note: this plan (2026-07-16) is Hyva-only and **predates DEC-9** — the canonical FEAT-001 reconciles the drift to dual-theme. Do not edit — update FEAT-001 instead.
 
 > Mode A · **Plan only — chưa viết code** (Hard Gate 3: No Code Without Plan).

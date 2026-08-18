@@ -94,5 +94,5 @@ Hiện thực Magento shipping carrier `Secomm_Ghtk` (carrier code `ghtk`): đă
 
 ## Related
 
-- Spec: [ghtk-carrier-rate](../specs/ghtk-carrier-rate.md) · Plan: [SL-009 plan](../plans/SL-009-implementation-plan.md)
+- Spec: [ghtk-carrier-rate](../specs/SPEC-SL-009-ghtk-carrier-rate.md) · Plan: [SL-009 plan](../plans/SL-009-implementation-plan.md)
 - Feature: [FEAT-006](../records/features/FEAT-006.md) · Depends on [SL-008](SL-008-ghtk-address-mapping.md) · Decisions: [DEC-021](../records/decisions/DEC-021.md) (resolver split) · [DEC-022](../records/decisions/DEC-022.md) (weight + rate composition)

@@ -19,7 +19,7 @@
 #
 # Usage:
 #   bin/project-ai-validate                 # auto-detect
-#   bin/project-ai-validate --check-adapters|--check-cheatsheet|--check-commands|--check-refs|--check-records|--check-modes|--check-project-state|--check-hyva
+#   bin/project-ai-validate --check-adapters|--check-cheatsheet|--check-commands|--check-refs|--check-records|--check-specs|--check-modes|--check-project-state|--check-hyva
 #   bin/project-ai-validate --project /path/to/generated/project
 #   bin/project-ai-validate --quiet
 # Exit: 0 = clean, 1 = material contract violation.
@@ -27,7 +27,7 @@
 set -uo pipefail
 
 QUIET=0; PROJECT=""; ROOT_OVERRIDE=""
-RUN_ALL=1; C_ADAPTERS=0; C_CHEAT=0; C_CMDS=0; C_REFS=0; C_RECORDS=0; C_MODES=0; C_PSTATE=0; C_RSEP=0; C_CEFF=0; C_GOV=0; C_HYVA=0
+RUN_ALL=1; C_ADAPTERS=0; C_CHEAT=0; C_CMDS=0; C_REFS=0; C_RECORDS=0; C_SPECS=0; C_MODES=0; C_PSTATE=0; C_RSEP=0; C_CEFF=0; C_GOV=0; C_HYVA=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=1; shift ;;
@@ -36,6 +36,7 @@ while [ $# -gt 0 ]; do
     --check-commands) RUN_ALL=0; C_CMDS=1; shift ;;
     --check-refs) RUN_ALL=0; C_REFS=1; shift ;;
     --check-records) RUN_ALL=0; C_RECORDS=1; shift ;;
+    --check-specs) RUN_ALL=0; C_SPECS=1; shift ;;
     --check-modes) RUN_ALL=0; C_MODES=1; shift ;;
     --check-project-state) RUN_ALL=0; C_PSTATE=1; shift ;;
     --check-runtime-separation) RUN_ALL=0; C_RSEP=1; shift ;;
@@ -48,7 +49,7 @@ while [ $# -gt 0 ]; do
     *) echo "unknown flag: $1" >&2; exit 2 ;;
   esac
 done
-[ $RUN_ALL -eq 1 ] && { C_ADAPTERS=1; C_CHEAT=1; C_CMDS=1; C_REFS=1; C_RECORDS=1; C_MODES=1; C_PSTATE=1; C_RSEP=1; }
+[ $RUN_ALL -eq 1 ] && { C_ADAPTERS=1; C_CHEAT=1; C_CMDS=1; C_REFS=1; C_RECORDS=1; C_SPECS=1; C_MODES=1; C_PSTATE=1; C_RSEP=1; }
 
 errors=0; warnings=0
 note(){ [ $QUIET -eq 0 ] && echo "ok:   $*" || true; }
@@ -372,6 +373,78 @@ PYREC
         errors=$((errors + $(printf '%s\n' "$rec_out" | grep -c '^FAIL:')))
       fi
     fi
+  fi
+fi
+
+# -----------------------------------------------------------------------------
+# Check: SpecReadinessGuard. Active/executable work is ALWAYS a hard block;
+# inactive/historical legacy artifacts are WARN-only so bulk validation remains
+# usable during migration. Plans must identify their behavioral specification.
+# -----------------------------------------------------------------------------
+if [ $C_SPECS -eq 1 ]; then
+  echo "--- specs ($MODE) ---"
+  if [ "$MODE" = "toolkit" ]; then
+    [ -f "$ROOT/shared-core/rules/spec-first.md" ] || fail "missing canonical Spec-First policy"
+    grep -q 'NO VALID SPECIFICATION' "$ROOT/shared-core/rules/spec-first.md" || fail "Spec-First policy missing invariant"
+    note "Spec-First policy present (toolkit)"
+  elif ! command -v python3 >/dev/null 2>&1; then
+    fail "python3 required for --check-specs in project mode"
+  else
+    spec_out="$(python3 - "$P" <<'PYSPEC'
+import pathlib, re, sys
+root = pathlib.Path(sys.argv[1]); ai = root / '.ai'
+fails=[]; warns=[]
+active = re.compile(r'^(ready|plannable|planned|implementable|in_progress|active)$', re.I)
+required = ['Goal','Expected Behavior','Constraints / Rules','Out of Scope','Acceptance Criteria']
+def text(p):
+    try: return p.read_text(encoding='utf-8')
+    except OSError: return ''
+def fm_val(s, name):
+    m=re.search(r'^'+re.escape(name)+r':\s*([^#\n]+)',s,re.M)
+    return m.group(1).strip().strip('"\'') if m else ''
+def emit(path, msg, hard):
+    (fails if hard else warns).append(('IMPLEMENTATION BLOCKED — ' if hard else '') + f'{path}: {msg}')
+def check_record(p):
+    s=text(p); status=fm_val(s,'status'); level=fm_val(s,'specification_level').upper(); ss=fm_val(s,'spec_status').upper(); ref=fm_val(s,'specification_ref')
+    hard=bool(active.match(status))
+    if level not in ('MINI','FULL'): emit(p, 'missing/invalid specification_level', hard); return
+    if ss != 'VALID': emit(p, 'spec_status is not VALID', hard); return
+    if level=='MINI':
+        for h in required:
+            if not re.search(r'^#{2,3}\s+'+re.escape(h)+r'\s*$',s,re.M): emit(p, 'Mini-Spec missing '+h, hard)
+    elif not ref or ref.lower() in ('embedded mini-spec','embedded mini spec'):
+        emit(p, 'FULL specification_ref is missing', hard)
+    else:
+        target=(p.parent / ref).resolve()
+        if not target.exists() and not (root/ref).exists(): emit(p, 'FULL specification_ref does not resolve: '+ref, hard)
+for d in [ai/'records'/'features', ai/'records'/'bugs']:
+    if d.is_dir():
+        for p in d.glob('*.md'): check_record(p)
+for p in (ai/'tickets').glob('*.md') if (ai/'tickets').is_dir() else []:
+    s=text(p); hard=bool(re.search(r'^\*?\*?Status:\*?\*?\s*(Ready|Planned|In Progress|Active)',s,re.M|re.I))
+    if re.search(r'^\*?\*?Specification:\*?\*?\s*(?:\{.*\}|$)',s,re.M): emit(p,'missing Specification reference',hard)
+    if '## Mini Spec' in s:
+        for h in required:
+            if not re.search(r'^#{3,4}\s+'+re.escape(h)+r'\s*$',s,re.M): emit(p,'Mini-Spec missing '+h,hard)
+# Spec naming convention (DEC-SL019-001): SPEC-<OWNER-ID>-<slug>.md files must
+# carry a matching "Specification ID: SPEC-<OWNER-ID>" header. Slug-only legacy
+# files are grandfathered (never matched by the prefix pattern, never checked).
+for p in sorted((ai/'specs').glob('*.md')) if (ai/'specs').is_dir() else []:
+    mid_file = re.match(r'^(SPEC-(?:FEAT|BUG|REL|SL|TASK)-[0-9]{3,})-', p.name)
+    if not mid_file:
+        continue
+    mid_hdr = re.search(r'^Specification ID:\s*([^\s#]+)', text(p), re.M)
+    expected_id = mid_file.group(1)
+    if mid_hdr is None or mid_hdr.group(1).strip() != expected_id:
+        emit(p, 'naming mismatch: filename owner requires header "Specification ID: ' + expected_id + '"', True)
+for p in (ai/'plans').glob('*.md') if (ai/'plans').is_dir() else []:
+    if not re.search(r'^\|\s*Specification\s*\|\s*[^|{}][^|]*\|',text(p),re.M): emits=fails.append; emits(str(p)+': plan missing required Specification reference')
+for x in warns: print('WARN: '+x)
+for x in fails: print('FAIL: '+x)
+sys.exit(1 if fails else 0)
+PYSPEC
+)"
+    if [ $? -eq 0 ]; then note "SpecReadinessGuard OK (project)"; else printf '%s\n' "$spec_out"; errors=$((errors + $(printf '%s\n' "$spec_out" | grep -c '^FAIL:'))); fi
   fi
 fi
 

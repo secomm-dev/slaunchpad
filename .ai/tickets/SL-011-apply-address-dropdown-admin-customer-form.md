@@ -5,7 +5,7 @@
 **Estimate:** ~6–10h
 **Mode:** A (chạm customer/PII data → Tier-2; migrate VN logic ra generic module)
 **Feature:** [FEAT-007](../records/features/FEAT-007.md) (parent — admin VN dropdown architecture) — extends CMP-ADDR ([FEAT-001](../records/features/FEAT-001.md)); related [FEAT-005](../records/features/FEAT-005.md)
-**Spec ref:** [admin-vn-address-customer-form](../specs/admin-vn-address-customer-form.md) — **APPROVED 2026-08-03** (user acting as SA/TL; Q1/Q2/Q3 resolved in [plan](../plans/SL-011-implementation-plan.md)); architecture = [DEC-025](../records/decisions/DEC-025.md)
+**Spec ref:** [admin-vn-address-customer-form](../specs/SPEC-SL-011-admin-vn-address-customer-form.md) — **APPROVED 2026-08-03** (user acting as SA/TL; Q1/Q2/Q3 resolved in [plan](../plans/SL-011-implementation-plan.md)); architecture = [DEC-025](../records/decisions/DEC-025.md)
 **Risk tier:** Tier 2 (customer data / PII — AGENTS §9 L398, L421)
 **Author:** AI draft · **Date:** 2026-08-03 · **Status:** Proposed
 **Related:** [SL-012](SL-012-apply-address-dropdown-admin-order-form.md) · [SL-013](SL-013-apply-address-dropdown-admin-store-information.md) · [SL-014](SL-014-apply-address-dropdown-admin-msi-source.md)

@@ -1,15 +1,19 @@
 # Implementation Plan: SL-003 — VN 2-level Cart "Estimate Shipping and Tax" (Luma + Hyvä)
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-003-vn-cart-shipping-estimate.md |
+
 > Mode A · **Plan only — chưa viết code** (Hard Gate 3: No Code Without Plan).
 > Tier-2 (shipping estimate + address/customer data — §12) → escalate SA/TL; code review trước/sau.
-> Parent: [FEAT-005](../records/features/FEAT-005.md). Spec: [vn-cart-shipping-estimate](../specs/vn-cart-shipping-estimate.md).
+> Parent: [FEAT-005](../records/features/FEAT-005.md). Spec: [vn-cart-shipping-estimate](../specs/SPEC-SL-003-vn-cart-shipping-estimate.md).
 
 ## Metadata
 
 | Field | Value |
 |-------|-------|
 | Ticket | [SL-003](../tickets/SL-003-hyva-cart-estimate-city-cascade.md) |
-| Spec | [vn-cart-shipping-estimate](../specs/vn-cart-shipping-estimate.md) (Draft) |
+| Spec | [vn-cart-shipping-estimate](../specs/SPEC-SL-003-vn-cart-shipping-estimate.md) (Draft) |
 | Feature | [FEAT-005](../records/features/FEAT-005.md) |
 | Author | AI draft |
 | Reviewer (TL) | user (acting as SA/TL) — approved 2026-07-29 |

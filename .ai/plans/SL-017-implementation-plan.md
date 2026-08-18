@@ -1,5 +1,9 @@
 # SL-017 Implementation Plan — GHTK carrier tracking (webhook primary + API fallback + shared pipeline)
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-017-ghtk-carrier-tracking.md |
+
 > **Mode A** · Tier 2 · Status: **Approved 2026-08-17 (user acting as SA/TL; DEC-SL017-001 accepted) — Phase C cleared**
 > Audit 2026-08-17 (Magento 2.4.8-p5 vendor + working tree). Build trên SL-015/SL-016.
 

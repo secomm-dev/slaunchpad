@@ -4,11 +4,34 @@
 **Priority:** Critical / High / Medium / Low
 **Estimate:** {X}h
 **Mode:** A / B / C / D
-**Spec:** {link tới spec/mini-spec nếu có}
+**Specification Level:** MINI / FULL
+**Spec Status:** DRAFT / VALID / INVALID
+**Specification:** {REQUIRED: canonical Full Spec path, or `Embedded Mini-Spec`}
 
 ## Description
 
 {Mô tả rõ ràng những gì cần làm}
+
+## Mini Spec
+
+> Required when `Specification Level: MINI`. Full-Spec tickets reference their
+> shared canonical spec instead of duplicating these rules.
+
+### Goal
+
+{Task giải quyết vấn đề gì}
+
+### Expected Behavior
+
+{Hệ thống phải behave thế nào sau khi hoàn thành}
+
+### Constraints / Rules
+
+{Rules/invariants không được phá}
+
+### Out of Scope
+
+{Không làm gì}
 
 ## Acceptance Criteria
 

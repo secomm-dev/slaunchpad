@@ -9,7 +9,7 @@ Refactor code để improve quality (SOLID/DRY/perf/readability) MÀ KHÔNG đ�
 - Prompt snippet: "Refactor {area}: improve theo SOLID/DRY/standards, preserve behavior, có test. Small patch; one PR one concern."
 
 ## Required inputs
-- Refactor target (area/file) + reason (tech debt / readability / perf)
+- Refactor target + reason plus valid Mini-Spec (behavior-preservation contract) or Full Spec reference
 
 ## Required project files to read
 - `.ai/project-context/engineering-standards/` (SOLID, DEVELOPMENT, REFACTORING, CODING, DESIGN_PATTERN)
@@ -25,7 +25,7 @@ ENGINEERING_PRINCIPLES → SOLID, DEVELOPMENT, REFACTORING, CODING, DESIGN_PATTE
 - Hook: `before-task`, `before-commit`
 
 ## Execution steps
-1. Load standards; ensure test safety net tồn tại (hoặc add trước).
+1. Run SpecReadinessGuard; if invalid, return `IMPLEMENTATION BLOCKED` before adding/modifying tests or code. Then load standards; ensure test safety net tồn tại.
 2. Refactor preserve behavior (extract method/class, rename, remove dead code) — small patch.
 3. Run test → green (behavior unchanged).
 4. Pre-review; evidence (test-result before/after).

@@ -5,7 +5,7 @@
 **Estimate:** ~4–8h (sau khi D1 confirm)
 **Mode:** A (Tier-2: shipping estimate + address data — §12; hiện thực nhỏ nhưng area Tier-2)
 **Feature:** [FEAT-005](../records/features/FEAT-005.md) (ticket đầu — cart estimate; FEAT-001 AC-005 để region-based, FEAT-005 mở rộng cho VN)
-**Spec:** [.ai/specs/vn-cart-shipping-estimate.md](../specs/vn-cart-shipping-estimate.md) (Draft — chờ SA/TL)
+**Spec:** [.ai/specs/SPEC-SL-003-vn-cart-shipping-estimate.md](../specs/SPEC-SL-003-vn-cart-shipping-estimate.md) (Draft — chờ SA/TL)
 **Plan:** [.ai/plans/SL-003-implementation-plan.md](../plans/SL-003-implementation-plan.md) (Mode A, Plan only)
 **Risk tier:** Tier 2
 **Author:** AI draft · **Date:** 2026-07-29 · **Status:** Proposed — D1 answered (cần); chờ quyết định structure + module placement

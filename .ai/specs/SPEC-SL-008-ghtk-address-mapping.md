@@ -1,5 +1,9 @@
 # Feature Spec — GHTK address mapping (SL-008)
 
+Specification ID: SPEC-SL-008
+Feature ID: NONE
+Specification Level: FULL
+
 <!-- Generated for Secomm Launchpad · Stack: Magento 2.4.8-p5 + Hyvä 3.x -->
 <!-- Spec cho ticket SL-008 (fee scope). Parent: FEAT-006. Mode A · Tier-2. -->
 <!-- Decisions: DEC-020 (accepted, path B) · DEC-021 (accepted) · DEC-018/019/DEC-8. -->

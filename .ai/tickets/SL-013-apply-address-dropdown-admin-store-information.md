@@ -5,7 +5,7 @@
 **Estimate:** ~10–16h
 **Mode:** B (standard feature — reassess → A nếu chạm config schema)
 **Feature:** [FEAT-007](../records/features/FEAT-007.md) (parent — admin VN dropdown architecture) — extends CMP-ADDR ([FEAT-001](../records/features/FEAT-001.md)); related [FEAT-005](../records/features/FEAT-005.md)
-**Spec ref:** [admin-vn-address-store-config](../specs/admin-vn-address-store-config.md) (mini-spec — Mode B; approach inject dependent dropdown vào core config field `city` qua `frontend_model`; Q1/Q2/Q3 resolved trong [plan](../plans/SL-013-implementation-plan.md); architecture = [DEC-025](../records/decisions/DEC-025.md)) — **drafted 2026-08-07 · pending TL approval**
+**Spec ref:** [admin-vn-address-store-config](../specs/SPEC-SL-013-admin-vn-address-store-config.md) (mini-spec — Mode B; approach inject dependent dropdown vào core config field `city` qua `frontend_model`; Q1/Q2/Q3 resolved trong [plan](../plans/SL-013-implementation-plan.md); architecture = [DEC-025](../records/decisions/DEC-025.md)) — **drafted 2026-08-07 · pending TL approval**
 **Risk tier:** Tier 1 (admin config; ảnh hưởng PDF/print origin + carrier/TableRate origin — reversible)
 **Author:** AI draft · **Date:** 2026-08-03 · **Status:** Implemented 2026-08-07 (pending QC L3 + TL code review)
 **Related:** [SL-011](SL-011-apply-address-dropdown-admin-customer-form.md) · [SL-012](SL-012-apply-address-dropdown-admin-order-form.md) · [SL-014](SL-014-apply-address-dropdown-admin-msi-source.md)

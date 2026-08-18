@@ -7,6 +7,7 @@
 | Field | Value |
 |-------|-------|
 | Ticket / Spec | {TICKET-ID / SPEC-ID} |
+| Specification | {REQUIRED: Full Spec path/section or `Embedded Mini-Spec — TICKET-ID`} |
 | Author | |
 | Reviewer (TL) | |
 | Workflow Mode | A / B |
@@ -15,6 +16,10 @@
 ## 1. Approach
 
 {Mô tả cách tiếp cận — vì sao chọn hướng này, các lựa chọn đã xét (nếu có), ADR liên quan.}
+
+> Plan derives behavior from **Specification** above. If implementation analysis
+> conflicts with it, stop and return to the specification stage; do not silently
+> redefine requirements here.
 
 ## 2. Files affected
 
