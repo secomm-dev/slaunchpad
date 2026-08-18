@@ -42,6 +42,8 @@ use Secomm\Ahamove\Model\Data\AhamoveAddressFactory;
 use Secomm\Ahamove\Model\Data\PackageItemFactory;
 use Secomm\Ahamove\Model\PackageFactory;
 use Secomm\Ahamove\Model\ResourceModel\AhamoveOrderStatus\CollectionFactory;
+use Secomm\ShippingCore\Api\OriginProviderInterface;
+use Secomm\ShippingCore\Model\ShippingContextFactory;
 
 abstract class AhamoveAbstractCarrier extends AbstractCarrier implements CarrierInterface
 {
@@ -126,6 +128,8 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
         protected AddressFactory        $quoteAddressFactory,
         protected PackageItemFactory    $packageItemFactory,
         protected PackageFactory        $packageFactory,
+        protected ShippingContextFactory $shippingContextFactory,
+        protected OriginProviderInterface $originProvider,
         array                           $shippingTablerates = [],
         array                           $data = []
     ) {
@@ -277,10 +281,20 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
                 ->setNameTo((string)$request->getDestFirstname())
                 ->setRemark('')
                 ->setPhoneTo((string)$request->getDestTelephone());
-            $ahamoveAddressFactory->setCityFrom($this->ahamoveHelper->getCity())
-                ->setRegionCodeFrom((string)$this->ahamoveHelper->getShippingRegion())
-                ->setStreetFrom((string)$this->ahamoveHelper->getShippingStreet())
-                ->setPostCodeFrom((string)$this->ahamoveHelper->getShippingPostcode())
+
+            // Resolve origin via Secomm_ShippingCore
+            $context = $this->shippingContextFactory->fromRateRequest($request, $this->_code);
+            $origin = $this->originProvider->resolve($context);
+
+            $cityFrom = $origin->getWard() ?? $this->ahamoveHelper->getCity();
+            $regionCodeFrom = $origin->getProvince() ?? (string)$this->ahamoveHelper->getShippingRegion();
+            $streetFrom = $origin->getStreet() ?? (string)$this->ahamoveHelper->getShippingStreet();
+            $postCodeFrom = $origin->getPostcode() ?? (string)$this->ahamoveHelper->getShippingPostcode();
+
+            $ahamoveAddressFactory->setCityFrom($cityFrom)
+                ->setRegionCodeFrom($regionCodeFrom)
+                ->setStreetFrom($streetFrom)
+                ->setPostCodeFrom($postCodeFrom)
                 ->setCountryIdFrom((string)$this->ahamoveHelper->getShippingCountryName())
                 ->setNameFrom((string)$this->ahamoveHelper->getStoreName())
                 ->setPhoneFrom((string)$this->ahamoveHelper->getMobilePhoneValue());

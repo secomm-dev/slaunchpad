@@ -1,63 +1,48 @@
-<?php
-/**
- * @author Secomm SCS Team
+<?php declare(strict_types=1);
+/*
+ * @author Secomm Team
  * @copyright Copyright (c) 2023. Secomm All rights reserved (https://www.secomm.vn)
  * See COPYING.txt for license details.
  */
+
 namespace Secomm\Ahamove\Controller\Webhooks;
 
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\Exception\NotFoundException;
+use Magento\Framework\Controller\Result\Json;
+use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Encryption\Helper\Security;
 use Secomm\Ahamove\Logger\Logger;
+use Secomm\Ahamove\Helper\Data as AhamoveHelperData;
+use Secomm\Ahamove\Model\AhamoveOrderStatusFactory;
+use Secomm\Ahamove\Model\ResourceModel\AhamoveOrderStatus as AhamoveOrderStatusResource;
+use Secomm\Ahamove\Model\Tracking\WebhookTrackingBridge;
 
-class Index extends Action implements CsrfAwareActionInterface, HttpPostActionInterface
+class Index implements CsrfAwareActionInterface, HttpPostActionInterface
 {
-
     /**
-     * @var Logger
+     * @param Logger $logger
+     * @param AhamoveOrderStatusResource $ahamoveOrderStatusResource
+     * @param AhamoveOrderStatusFactory $ahamoveOrderStatusFactory
+     * @param AhamoveHelperData $helperData
+     * @param ScopeConfigInterface $scopeConfig
+     * @param JsonFactory $jsonResultFactory
+     * @param RequestInterface $request
+     * @param WebhookTrackingBridge $trackingBridge
      */
-    protected $logger;
-    protected $moduleDir;
-    protected $ahamoveOrderStatusResource;
-    protected $ahamoveOrderStatusFactory;
-    protected $orderRepository;
-    protected $transactionFactory;
-    protected $orderConverter;
-    protected $shipmentExtensionFactory;
-    protected $helperData;
-    protected $scopeConfig;
-
     public function __construct(
-        Logger                     $logger,
-        Context                    $context,
-        \Magento\Framework\Module\Dir\Reader $moduleDir,
-        \Secomm\Ahamove\Model\ResourceModel\AhamoveOrderStatus $ahamoveOrderStatusResource,
-        \Secomm\Ahamove\Model\AhamoveOrderStatusFactory $ahamoveOrderStatusFactory,
-        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
-        \Magento\Sales\Model\Convert\OrderFactory $convertOrderFactory,
-        \Magento\Framework\DB\TransactionFactory $transactionFactory,
-        \Magento\Sales\Api\Data\ShipmentExtensionFactory $shipmentExtensionFactory,
-        \Secomm\Ahamove\Helper\Data $helperData,
-        ScopeConfigInterface       $scopeConfig
+        private readonly Logger $logger,
+        private readonly AhamoveOrderStatusResource $ahamoveOrderStatusResource,
+        private readonly AhamoveOrderStatusFactory $ahamoveOrderStatusFactory,
+        private readonly AhamoveHelperData $helperData,
+        private readonly ScopeConfigInterface $scopeConfig,
+        private readonly JsonFactory $jsonResultFactory,
+        private readonly RequestInterface $request,
+        private readonly WebhookTrackingBridge $trackingBridge
     ) {
-        $this->logger = $logger;
-        $this->moduleDir = $moduleDir;
-        $this->ahamoveOrderStatusResource = $ahamoveOrderStatusResource;
-        $this->ahamoveOrderStatusFactory = $ahamoveOrderStatusFactory;
-        $this->orderRepository = $orderRepository;
-        $this->orderConverter = $convertOrderFactory->create();
-        $this->transactionFactory = $transactionFactory;
-        $this->shipmentExtensionFactory = $shipmentExtensionFactory;
-        $this->helperData = $helperData;
-        $this->scopeConfig = $scopeConfig;
-        parent::__construct($context);
     }
 
     /**
@@ -66,9 +51,6 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
      *
      * Ahamove authenticates webhook callbacks by including the partner's
      * api_key field in the JSON payload body — it does NOT use HMAC signatures.
-     *
-     * @param string $rawBody
-     * @return bool
      */
     private function validateWebhookSignature(string $rawBody): bool
     {
@@ -108,69 +90,92 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
     }
 
     /**
-     * Execute action based on request and return result
-     *
-     * @return void
-     * @throws NotFoundException
+     * @return Json
      */
-    public function execute()
+    public function execute(): Json
     {
-        $rawBody = $this->getRequest()->getContent();
+        $rawBody = $this->request->getContent();
+
+        if (empty($rawBody)) {
+            return $this->jsonResultFactory->create()->setData(['error' => true, 'message' => 'Empty request']);
+        }
 
         if (!$this->validateWebhookSignature($rawBody)) {
             $this->logger->warning('Webhook authentication failed');
-            $this->getResponse()->setHttpResponseCode(401);
-            $this->getResponse()->setBody(json_encode(['error' => 'Unauthorized']));
-            return;
+            return $this->jsonResultFactory->create()
+                ->setHttpResponseCode(401)
+                ->setData(['error' => true, 'message' => 'Unauthorized']);
         }
 
         $data = json_decode($rawBody, true);
-
-        try {
-            if (isset($data['_id']) && !empty($data['_id'])) {
-                $status = $data['status'] ?? '';
-                $statusLabel = '';
-                if ($status == 'COMPLETED') {
-                    if (isset($data['path'][1]['status']) && isset($data['path'][1]['fail_comment'])) {
-                        $status = $data['path'][1]['status'];
-                        $statusLabel = $data['path'][1]['fail_comment'];
-                    } elseif (isset($data['path'][0]['status']) && isset($data['path'][0]['fail_comment'])) {
-                        $status = $data['path'][0]['status'];
-                        $statusLabel = $data['path'][0]['fail_comment'];
-                    }
-                }
-
-                if (empty($statusLabel)) {
-                    $statusLabel = $this->getStatusLabel($status);
-                }
-
-                $ahamoveOrderData = [
-                    'order_ahamove_id' => $data['_id'] ?? '',
-                    'track_number' => $data['order']['tracking_code'] ?? '',
-                    'status' => $status,
-                    'shared_link' => $data['shared_link'] ?? '',
-                    'order_data' => json_encode($data)
-                ];
-
-                // Save Status Shipping from Ahamove
-                $ahamoveOrderStatus = $this->ahamoveOrderStatusFactory->create();
-                $ahamoveOrderStatus->setData($ahamoveOrderData);
-                $this->ahamoveOrderStatusResource->save($ahamoveOrderStatus);
-
-                // send notify to seller when shipment on ahamove failed
-                if (in_array($status, ['CANCELLED', 'RETURNED', 'IN_RETURN', 'FAILED'])) {
-                    $incrementId = $data['external_id'] ?? $data['supplier_id'] ?? 'N/A';
-                    $content = "Ahamove order id='{$data['_id']}' failed, external id='{$incrementId}'";
-                    $this->helperData->sendNotifyWebhookAhamove($content);
-                }
-
-                return $ahamoveOrderStatus;
-            }
-        } catch (\Exception $e) {
-            $this->logger->error('Webhook : ' . $e->getMessage());
+        if (!is_array($data)) {
+            return $this->jsonResultFactory->create()->setData(['error' => true, 'message' => 'Invalid JSON']);
         }
 
-        return null;
+        try {
+            if (empty($data['_id'])) {
+                return $this->jsonResultFactory->create()->setData(['error' => true, 'message' => 'Missing _id']);
+            }
+
+            $status = $data['status'] ?? '';
+            $statusLabel = '';
+            if ($status === 'COMPLETED') {
+                if (isset($data['path'][1]['status']) && isset($data['path'][1]['fail_comment'])) {
+                    $status = $data['path'][1]['status'];
+                    $statusLabel = $data['path'][1]['fail_comment'];
+                } elseif (isset($data['path'][0]['status']) && isset($data['path'][0]['fail_comment'])) {
+                    $status = $data['path'][0]['status'];
+                    $statusLabel = $data['path'][0]['fail_comment'];
+                }
+            }
+            if (empty($statusLabel)) {
+                $statusLabel = $this->helperData->getStatusLabel($status);
+            }
+
+            // Resolve tracking code: try order.tracking_code, parse shared_link (e.g. /s/260818VNWB7M), or path[1].tracking_number
+            $trackNumber = $data['order']['tracking_code'] ?? '';
+            if (empty($trackNumber) && !empty($data['shared_link'])) {
+                $pathParts = explode('/', parse_url($data['shared_link'], PHP_URL_PATH) ?: '');
+                $trackNumber = end($pathParts);
+            }
+            if (empty($trackNumber) && !empty($data['path'][1]['tracking_number'])) {
+                $trackNumber = $data['path'][1]['tracking_number'];
+            }
+
+            // Save raw Ahamove status record (audit / admin tracking display)
+            $ahamoveOrderData = [
+                'order_ahamove_id' => $data['_id'] ?? '',
+                'track_number'     => $trackNumber,
+                'status'           => $status,
+                'shared_link'      => $data['shared_link'] ?? '',
+                'order_data'       => json_encode($data),
+            ];
+            $ahamoveOrderStatus = $this->ahamoveOrderStatusFactory->create();
+            $ahamoveOrderStatus->setData($ahamoveOrderData);
+            $this->ahamoveOrderStatusResource->save($ahamoveOrderStatus);
+            // Notify seller on failure/cancellation statuses
+            if (in_array($status, ['CANCELLED', 'RETURNED', 'IN_RETURN', 'FAILED'], true)) {
+                $incrementId = $data['external_id'] ?? $data['supplier_id'] ?? 'N/A';
+                $content = "Ahamove order id='{$data['_id']}' failed, external id='{$incrementId}'";
+                $this->helperData->sendNotifyWebhookAhamove($content);
+            }
+
+            // Feed Secomm_ShippingCore tracking pipeline (deduplication + out-of-order protection)
+            if (!empty($trackNumber)) {
+                try {
+                    $this->trackingBridge->process($data, (string)$trackNumber);
+                } catch (\Throwable $e) {
+                    $this->logger->error('Failed to process Ahamove tracking via ShippingCore: ' . $e->getMessage());
+                }
+            } else {
+                $this->logger->warning('[Webhook] Cannot forward to WebhookTrackingBridge because tracking_code is empty in payload');
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error('Ahamove Webhook error: ' . $e->getMessage());
+            return $this->jsonResultFactory->create()->setData(['error' => true, 'message' => 'Internal error']);
+        }
+
+        return $this->jsonResultFactory->create()->setData(['success' => true]);
     }
 
     /**
@@ -189,15 +194,5 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
     public function validateForCsrf(RequestInterface $request): ?bool
     {
         return true;
-    }
-
-    /**
-     * Get status label of ahamove service — delegates to Helper
-     * @param string $statusCode
-     * @return string
-     */
-    public function getStatusLabel($statusCode = null)
-    {
-        return $this->helperData->getStatusLabel($statusCode);
     }
 }

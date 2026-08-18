@@ -4,6 +4,9 @@
     <module name="Secomm_Ahamove">
         <sequence>
             <module name="Magento_Shipping"/>
+            <module name="Magento_Sales"/>
+            <module name="Magento_Directory"/>
+            <module name="Secomm_ShippingCore"/>
         </sequence>
     </module>
 </config>

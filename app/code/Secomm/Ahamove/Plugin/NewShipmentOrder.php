@@ -19,18 +19,17 @@ class NewShipmentOrder
     /**
      * @param Index $subject
      * @param mixed $result
-     * @return void
+     * @return mixed
      */
-    public function afterExecute(Index $subject, $result): void
+    public function afterExecute(Index $subject, mixed $result): mixed
     {
-        if ($result === null) {
-            return;
-        }
-        if ($result->getStatus() === 'COMPLETED') {
+        if ($result instanceof \Secomm\Ahamove\Model\AhamoveOrderStatus && $result->getStatus() === 'COMPLETED') {
             $this->eventManager->dispatch(
                 'evt_packaging_manager_auto_create_shipment',
                 ['package' => $result]
             );
         }
+
+        return $result;
     }
 }
