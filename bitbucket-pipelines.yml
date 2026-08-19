@@ -63,7 +63,7 @@ pipelines:
   branches:
     development:
       - step: *build
-      - parallel:
-          # - step: *security-check
-          # - step: *unit-test
+      # - parallel:
+      # - step: *security-check
+      # - step: *unit-test
       - step: *deploy-staging
