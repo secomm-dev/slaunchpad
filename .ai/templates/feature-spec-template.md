@@ -1,10 +1,14 @@
 # Feature Spec: {Tên feature}
 
+> Filename: `SPEC-{OWNER-ID}-{slug}.md` (vd `SPEC-FEAT-006-ghtk-shipping-carrier.md`) — naming canonical: `rules/spec-first.md` §Spec Naming.
+
 ## Metadata
 
 | Field | Value |
 |-------|-------|
-| Spec ID | SPEC-{NNN} |
+| Specification ID | SPEC-{OWNER-ID} — owner = Feature ID (spec thuộc feature) hoặc Ticket ID (standalone); stable, không phụ thuộc slug |
+| Feature ID | {FEATURE-ID} hoặc NONE (standalone ticket spec) |
+| Specification Level | FULL |
 | Author | |
 | Status | Draft / Review / Approved |
 | Date | |
@@ -24,6 +28,11 @@
 - [ ] ...
 
 ### US-002: ...
+
+## System Behaviour
+
+{Canonical expected behavior, main flows, edge cases and failure behavior. A
+Full Spec is valid only when this section and testable acceptance criteria exist.}
 
 ## 3. Scope
 

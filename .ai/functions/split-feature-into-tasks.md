@@ -1,6 +1,7 @@
 # split-feature-into-tasks
 
 > Function (VI guidance). Copy vào `.ai/functions/split-feature-into-tasks.md`.
+> **Phase 1a:** subtask split KHÔNG còn là default — chỉ khi parallel ownership cần (xem `no-duplicate-knowledge.md`). Canonical = một `.ai/records/features/FEAT-*.md`; legacy ticket/task list retained non-default.
 
 ## Mục đích
 Break một feature thành task có thể implement — mỗi task có AC, scope hẹp, dependency, sequence.

@@ -5,7 +5,7 @@
 **Estimate:** ~8–14h
 **Mode:** B (standard feature — reassess nếu Source dùng cho shipping-origin/rate logic)
 **Feature:** [FEAT-007](../records/features/FEAT-007.md) (parent — admin VN dropdown architecture) — extends CMP-ADDR ([FEAT-001](../records/features/FEAT-001.md)); related [FEAT-005](../records/features/FEAT-005.md)
-**Spec ref:** [admin-vn-address-msi-source-form](../specs/admin-vn-address-msi-source-form.md) (mini-spec — approach extend `inventory_source_form`; drafted 2026-08-07, pending TL review)
+**Spec ref:** [admin-vn-address-msi-source-form](../specs/SPEC-SL-014-admin-vn-address-msi-source-form.md) (mini-spec — approach extend `inventory_source_form`; drafted 2026-08-07, pending TL review)
 **Risk tier:** Tier 1 (admin source form; address data inventory source — low blast) — *Tier 2 nếu Source feed shipping rate logic*
 **Author:** AI draft · **Date:** 2026-08-03 · **Status:** Proposed
 **Related:** [SL-011](SL-011-apply-address-dropdown-admin-customer-form.md) · [SL-012](SL-012-apply-address-dropdown-admin-order-form.md) · [SL-013](SL-013-apply-address-dropdown-admin-store-information.md)
@@ -72,6 +72,6 @@ Ticket = apply cascade 2-level region→city(ward) vào Source form.
 
 ## Planning Record
 
-- **Spec**: [admin-vn-address-msi-source-form](../specs/admin-vn-address-msi-source-form.md)
+- **Spec**: [admin-vn-address-msi-source-form](../specs/SPEC-SL-014-admin-vn-address-msi-source-form.md)
 - **Plan**: [SL-014-implementation-plan](../plans/SL-014-implementation-plan.md)
 - **Approval**: Pending TL review (Level-2). Implementation must not be merged or released before approval and QC.

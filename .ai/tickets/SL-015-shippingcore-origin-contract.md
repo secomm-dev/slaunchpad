@@ -59,5 +59,5 @@ Mục tiêu architecture (invariant):
 
 ## Related
 
-- Plan: [SL-015 plan](../plans/SL-015-implementation-plan.md) · Decision: [DEC-SL015-001](../records/decisions/DEC-SL015-001.md) (accepted)
+- Plan: [SL-015 plan](../plans/SL-015-implementation-plan.md) · Spec: [shippingcore-origin-contract.md](../specs/SPEC-SL-015-shippingcore-origin-contract.md) · Decision: [DEC-SL015-001](../records/decisions/DEC-SL015-001.md) (accepted)
 - Builds on: [FEAT-006](../records/features/FEAT-006.md) (SL-008/009) · DEC-020/021/022/023 · SL-013/SL-014 (admin VN ward trên Shipping Origin + MSI Source)

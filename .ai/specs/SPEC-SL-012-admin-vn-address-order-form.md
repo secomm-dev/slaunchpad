@@ -1,5 +1,9 @@
 # Feature Spec — Admin VN 2-level address dropdown trên order form (SL-012)
 
+Specification ID: SPEC-SL-012
+Feature ID: NONE
+Specification Level: FULL
+
 <!-- Generated for Secomm Launchpad · Stack: Magento 2.4.8-p5 + Hyvä 3.x -->
 <!-- Spec cho ticket SL-012 (create + edit order address). Parent: FEAT-007. Mode A · Tier-2 (order/PII). -->
 <!-- Decisions: DEC-025 (global mechanism + country adapter; sub_city generic 3rd level) · DEC-020 (ward = city level, name-string persistence tech-debt) · DEC-019 (generic Magento-default; VN → VietNamAddress) · DEC-17 (VN capability lives in VietNamAddress). -->

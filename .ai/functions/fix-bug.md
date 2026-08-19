@@ -14,7 +14,7 @@ Reproduce → root-cause → minimal fix → test → evidence cho một bug fix
 - Prompt snippet: "Fix bug {ticket}: reproduce → root-cause → minimal fix → test → evidence. Read AGENTS.md §12 (high-risk) + §7.2 (coding standard) + project-context/06. Trong scope; không refactor."
 
 ## Required inputs
-- Bug report (ticket, steps to reproduce, expected vs actual)
+- Bug report plus valid embedded Mini-Spec (or Full Spec reference); diagnosis may start without it, code changes may not
 - (Optional) error log, stack trace
 
 ## Required project files to read
@@ -48,7 +48,7 @@ Reproduce → root-cause → minimal fix → test → evidence cho một bug fix
 4. **Load skills**: task (impact), testcase (test case)
 5. **Load agent**: developer
 6. **Research (if needed)**: reproduce bug, inspect code/log → root cause (confirmed, không suspected)
-7. **Execute**: viết reproducing test → minimal fix (stop the bleeding, không refactor) → run test green
+7. **Guard then execute**: before a reproducing-test change or fix, validate Mini/FULL spec; if invalid return `IMPLEMENTATION BLOCKED` and create the specification stage. Then viết reproducing test → minimal fix → run test green
 8. **Validate**: pre-review (no critical); scope clean; business rule (02) respect
 9. **Collect evidence**: reproducing test + fix diff + test-result green → `.ai/evidence/{ticket}/`
 10. **Update memory**: CURRENT_STATE (status), CONTINUOUS_LEARNING (bug pattern), 06 (risk)

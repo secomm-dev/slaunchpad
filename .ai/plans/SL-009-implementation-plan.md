@@ -1,15 +1,19 @@
 # Implementation Plan: SL-009 — GHTK carrier + rate calculation
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-009-ghtk-carrier-rate.md |
+
 > Mode A · **Plan only — chưa viết code** (Hard Gate 3: No Code Without Plan).
 > Tier-2 (shipping carrier + external API + secret token + checkout-critical rate path — §12) → escalate SA/TL; code review trước/sau.
-> Parent: [FEAT-006](../records/features/FEAT-006.md). Ticket: [SL-009](../tickets/SL-009-ghtk-carrier-rate.md). Spec: [ghtk-carrier-rate](../specs/ghtk-carrier-rate.md).
+> Parent: [FEAT-006](../records/features/FEAT-006.md). Ticket: [SL-009](../tickets/SL-009-ghtk-carrier-rate.md). Spec: [ghtk-carrier-rate](../specs/SPEC-SL-009-ghtk-carrier-rate.md).
 
 ## Metadata
 
 | Field | Value |
 |-------|-------|
 | Ticket | [SL-009](../tickets/SL-009-ghtk-carrier-rate.md) |
-| Spec | [ghtk-carrier-rate](../specs/ghtk-carrier-rate.md) |
+| Spec | [ghtk-carrier-rate](../specs/SPEC-SL-009-ghtk-carrier-rate.md) |
 | Feature | [FEAT-006](../records/features/FEAT-006.md) |
 | Author | AI draft |
 | Reviewer (TL) | user (acting as SA/TL) — **pending approval** |

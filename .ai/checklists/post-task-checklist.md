@@ -17,6 +17,7 @@ Hook "wrap up a task" cho developer (trước khi request review). Confirm work 
 
 ## Business Rules & Context
 
+- [ ] Record which Mini-/Full-Spec was implemented, acceptance criteria passed, and constraints/invariants verified
 - [ ] Business rules trong project-context/02_BUSINESS_RULES.md được respect
 - [ ] High-risk area check đã thực hiện so với AGENTS.md Section 12
 

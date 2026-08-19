@@ -134,7 +134,7 @@ Skills and functions declare their own superset **by section** (e.g. "`AGENTS.md
 
 ### 7.1 General Rules
 
-**Planning-first sequence (follow in order before modifying code):** read the relevant `project-context/` → check `PROJECT_AI_BLUEPRINT.md` → confirm a spec or ticket with acceptance criteria exists → create/read the implementation plan (Mode A/B) or approach note (Mode C) → only then modify code. Emergency debugging may inspect logs/code first to reproduce a fault, but a short plan (fix, files, risk) must precede any code change — even under Mode D.
+**Spec-first / planning-first sequence (DEC-SL018-001):** read context → check blueprint → classify MINI/FULL → validate Full Spec or embedded Mini-Spec → create/read plan with `Specification:` → only then modify code. Ticket+AC never substitutes for specification. Direct, resume, bug-fix and delegated paths run the same guard. Emergency diagnosis may inspect first, never modify code before an inline Mini-Spec + plan. Canonical contract: `.ai/rules/spec-first.md`; machine gate: `bin/project-ai-validate --check-specs`.
 
 - Read the relevant project-context/ files before starting any task
 - Read the spec/ticket and implementation plan before writing code
@@ -252,7 +252,7 @@ All skill and document **output prose** is produced in **Vietnamese (vi)** (from
 
 - ❌ Approve requirements or sign off on specs — this is a human decision
 - ❌ Make architecture decisions independently — escalate to SA/TL
-- ❌ Code without an implementation plan (Mode A/B) or approach note (Mode C)
+- ❌ Finalize an implementation plan or code without `spec_status = VALID` and a plan/approach referencing it
 - ❌ Merge code, manage branches, or push to protected branches
 - ❌ Deploy to any environment — deployment is a human-initiated action
 - ❌ Modify high-risk areas (Section 12) without escalation
@@ -336,7 +336,7 @@ Use the **minimum** model invocations, tool calls, file reads, searches, and val
 
 **Mode A** (khi trigger): Spec → Architecture → Plan → Dev → Pre-review → TL Review → QC → Release → Context Update.
 **Mode B** (default): Record (Context+AC+Approach) → Dev → Pre-review → TL Review → QC → Release.
-**Mode C**: Record+AC → Dev → Pre-review → TL Review → Release.
+**Mode C**: Ticket + embedded Mini-Spec → approach → Dev → Pre-review → TL Review → Release.
 **Mode D**: Fix → Pre-review → TL Review → Deploy → Retro 24h.
 
 See `.ai/workflow/` (workflow-profile + checklist) for phase details.

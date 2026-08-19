@@ -2,6 +2,9 @@
 id: FEAT-001
 title: Dual-theme (Luma + Hyva) AddressDropdown — MODULE layer (SL-001)
 mode: A                      # original ticket Mode A — Tier 2 GraphQL surface
+specification_level: FULL
+spec_status: VALID
+specification_ref: ../../specs/addressdropdown-hyva.md
 risk: high
 status: done                 # customer form + cart + cleanup done; AC-011 (resolver) deferred
 created: 2026-07-16

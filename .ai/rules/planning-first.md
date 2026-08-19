@@ -4,7 +4,7 @@
 
 ## Rule
 
-**Không modify code khi chưa có plan.** Follow sequence: đọc project context → check `PROJECT_AI_BLUEPRINT.md` → confirm spec/AC → plan (Mode A/B) hoặc approach note (Mode C) → chỉ khi đó code.
+**Không finalize plan hoặc modify code khi chưa có valid specification.** Follow sequence: đọc project context → check `PROJECT_AI_BLUEPRINT.md` → classify MINI/FULL → validate spec → plan (Mode A/B) hoặc approach note (Mode C) → chỉ khi đó code. Canonical contract: `spec-first.md`.
 
 ## Khi nào apply
 

@@ -1,5 +1,9 @@
 # Feature Spec — Admin VN 2-level address dropdown trên Store Information + Shipping Origin config (SL-013)
 
+Specification ID: SPEC-SL-013
+Feature ID: NONE
+Specification Level: FULL
+
 <!-- Generated for Secomm Launchpad · Stack: Magento 2.4.8-p5 + Hyvä 3.x -->
 <!-- Spec cho ticket SL-013 (merged: Store Information + Shipping Origin). Parent: FEAT-007. Mode B · Tier-1 (admin config; reversible). -->
 <!-- Decisions: DEC-025 (global mechanism + country adapter; sub_city generic 3rd level) · DEC-020 (ward = city level, name-string persistence) · DEC-019 (generic Magento-default; VN → VietNamAddress) · DEC-17 (VN capability lives in VietNamAddress). -->

@@ -2,6 +2,9 @@
 id: FEAT-XXX
 title: Human-readable feature title
 mode: B                      # A | B | C | D — chọn per work item, KHÔNG route theo effort (RM-05)
+specification_level: FULL    # FULL | MINI
+spec_status: DRAFT           # DRAFT | VALID | INVALID
+specification_ref:           # canonical Full Spec path/section, or Embedded Mini-Spec
 risk: low                    # low | medium | high
 status: proposed             # proposed | in_progress | done | superseded
 created: 2026-07-21
@@ -41,6 +44,12 @@ supersedes: []               # record IDs record này thay thế
 ## Context
 
 {Problem statement, business need, trigger. Nếu consolidate từ legacy, link ticket/spec nguồn. Tối đa 3–5 đoạn.}
+
+## Specification
+
+For `FULL`, link the canonical feature spec and the relevant invariants. For
+`MINI`, embed Goal, Expected Behavior, Constraints / Rules, Out of Scope, and
+Acceptance Criteria here before the record is executable.
 
 ## Requirements
 

@@ -1,5 +1,9 @@
 # SL-016 Implementation Plan — GHTK order submit qua Magento native shipping-label flow
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-016-ghtk-native-label-flow.md |
+
 > **Mode A** · Tier 2 · Status: **Approved 2026-08-17 (user acting as SA/TL; DEC-SL016-001 accepted) — Phase C cleared**
 > Audit 2026-08-17 trên Magento 2.4.8-p5 vendor code + working tree.
 

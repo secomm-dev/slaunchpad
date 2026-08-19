@@ -1,15 +1,19 @@
 # Kế hoạch triển khai: SL-012 — Apply VN 2-level address dropdown trên admin order form
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-012-admin-vn-address-order-form.md |
+
 > Mode A · **Chỉ plan, chưa viết code** (Hard Gate: no code without plan).
 > Tier-2 (order + customer/PII data, §12) → cần SA/TL sign-off trước khi implement.
-> Parent: [FEAT-007](../records/features/FEAT-007.md). Ticket: [SL-012](../tickets/SL-012-apply-address-dropdown-admin-order-form.md). Spec: [admin-vn-address-order-form](../specs/admin-vn-address-order-form.md).
+> Parent: [FEAT-007](../records/features/FEAT-007.md). Ticket: [SL-012](../tickets/SL-012-apply-address-dropdown-admin-order-form.md). Spec: [admin-vn-address-order-form](../specs/SPEC-SL-012-admin-vn-address-order-form.md).
 
 ## Metadata
 
 | Field | Value |
 |-------|-------|
 | Ticket | [SL-012](../tickets/SL-012-apply-address-dropdown-admin-order-form.md) |
-| Spec | [admin-vn-address-order-form](../specs/admin-vn-address-order-form.md) |
+| Spec | [admin-vn-address-order-form](../specs/SPEC-SL-012-admin-vn-address-order-form.md) |
 | Feature | [FEAT-007](../records/features/FEAT-007.md) |
 | Author | AI draft |
 | Reviewer (TL) | user (acting as SA/TL) — pending approval |
