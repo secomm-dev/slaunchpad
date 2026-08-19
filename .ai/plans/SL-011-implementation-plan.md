@@ -1,15 +1,19 @@
 # Implementation Plan: SL-011 — Admin VN 2-level address dropdown (customer-address form)
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-011-admin-vn-address-customer-form.md |
+
 > Mode A · **Plan only — chưa viết code** (Hard Gate: No Code Without Plan; §7.1).
 > Tier-2 (customer/PII — §9 L398, §12 AddressDropdown L421) → escalate SA/TL; code review trước/sau.
-> Parent: [FEAT-007](../records/features/FEAT-007.md). Ticket: [SL-011](../tickets/SL-011-apply-address-dropdown-admin-customer-form.md). Spec: [admin-vn-address-customer-form](../specs/admin-vn-address-customer-form.md) — **approved 2026-08-03 (user acting as SA/TL)**.
+> Parent: [FEAT-007](../records/features/FEAT-007.md). Ticket: [SL-011](../tickets/SL-011-apply-address-dropdown-admin-customer-form.md). Spec: [admin-vn-address-customer-form](../specs/SPEC-SL-011-admin-vn-address-customer-form.md) — **approved 2026-08-03 (user acting as SA/TL)**.
 
 ## Metadata
 
 | Field | Value |
 |-------|-------|
 | Ticket | [SL-011](../tickets/SL-011-apply-address-dropdown-admin-customer-form.md) |
-| Spec | [admin-vn-address-customer-form](../specs/admin-vn-address-customer-form.md) — **approved** |
+| Spec | [admin-vn-address-customer-form](../specs/SPEC-SL-011-admin-vn-address-customer-form.md) — **approved** |
 | Feature | [FEAT-007](../records/features/FEAT-007.md) |
 | Author | AI draft |
 | Reviewer (TL) | user (acting as SA/TL) — **pending plan approval** |

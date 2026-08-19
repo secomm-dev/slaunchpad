@@ -1,5 +1,9 @@
 # Feature Spec — GHTK carrier + rate calculation (SL-009)
 
+Specification ID: SPEC-SL-009
+Feature ID: NONE
+Specification Level: FULL
+
 <!-- Generated for Secomm Launchpad · Stack: Magento 2.4.8-p5 + Hyvä 3.x -->
 <!-- Spec cho ticket SL-009 (fee scope). Parent: FEAT-006. Mode A · Tier-2. -->
 <!-- Depends on SL-008 (DestinationAddressResolver + mapping table). -->

@@ -8,6 +8,7 @@ Hook "start of task" lightweight cho developer (trước khi viết code). Confi
 - [ ] Đã đọc relevant project-context/ files (01, 02 business rules, 04 code areas, 06 risks)
 - [ ] Nếu resume: đã chạy [continue](../skills-source/continue/SKILL.md) — confirm đang ở đâu
 - [ ] Đã đọc ticket/spec + acceptance criteria của nó
+- [ ] `specification_level` đã classify và `spec_status = VALID`; Mini-Spec has Goal/Expected Behavior/Constraints/Out of Scope/AC or Full Spec reference resolves
 
 ## Scope Clear
 
@@ -18,7 +19,7 @@ Hook "start of task" lightweight cho developer (trước khi viết code). Confi
 ## Plan Exists
 
 - [ ] Implementation plan đã review (Mode A/B) hoặc approach note đã viết (Mode C)
-- [ ] Plan reference ticket/spec mà nó implement
+- [ ] Plan/approach includes `Specification:` and does not redefine the behavioral contract
 - [ ] Emergency debug only: đã inspect logs/code, nhưng short plan được viết trước mọi change
 
 ## Risk & Dependency Check

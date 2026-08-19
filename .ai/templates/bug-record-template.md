@@ -2,6 +2,9 @@
 id: BUG-XXX
 title: Bug title
 mode: C
+specification_level: MINI    # FULL | MINI
+spec_status: DRAFT           # DRAFT | VALID | INVALID
+specification_ref: Embedded Mini-Spec
 risk: low                    # low | medium | high
 status: proposed             # proposed | in_progress | done | wontfix
 created: 2026-07-21
@@ -33,6 +36,23 @@ supersedes: []
 ## Summary
 
 {Một đoạn mô tả bug + user-facing impact.}
+
+## Mini Spec
+
+### Goal
+{Bug/task giải quyết gì}
+
+### Expected Behavior
+{Behavior đúng cần được khôi phục}
+
+### Constraints / Rules
+{Invariant không được phá}
+
+### Out of Scope
+{Không sửa gì ngoài bug này}
+
+### Acceptance Criteria
+- AC-001: ...
 
 ## Steps to Reproduce
 

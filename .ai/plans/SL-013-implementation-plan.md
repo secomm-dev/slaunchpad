@@ -1,15 +1,19 @@
 # Kế hoạch triển khai: SL-013 — Apply VN 2-level address dropdown trên admin Store Information + Shipping Origin config
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-013-admin-vn-address-store-config.md |
+
 > Mode B · **Chỉ plan, chưa viết code** (Hard Gate: No Code Without Plan; §7.1).
 > Tier-1 (admin config surface; PDF/print origin + carrier/TableRate origin — reversible). Reassess → A nếu approach đòi đổi config schema (không dự định).
-> Parent: [FEAT-007](../records/features/FEAT-007.md). Ticket: [SL-013](../tickets/SL-013-apply-address-dropdown-admin-store-information.md). Spec: [admin-vn-address-store-config](../specs/admin-vn-address-store-config.md).
+> Parent: [FEAT-007](../records/features/FEAT-007.md). Ticket: [SL-013](../tickets/SL-013-apply-address-dropdown-admin-store-information.md). Spec: [admin-vn-address-store-config](../specs/SPEC-SL-013-admin-vn-address-store-config.md).
 
 ## Metadata
 
 | Field | Value |
 |-------|-------|
 | Ticket | [SL-013](../tickets/SL-013-apply-address-dropdown-admin-store-information.md) |
-| Spec | [admin-vn-address-store-config](../specs/admin-vn-address-store-config.md) |
+| Spec | [admin-vn-address-store-config](../specs/SPEC-SL-013-admin-vn-address-store-config.md) |
 | Feature | [FEAT-007](../records/features/FEAT-007.md) |
 | Author | AI draft |
 | Reviewer (TL) | user — **pending plan approval** (Level-2) |

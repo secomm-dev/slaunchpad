@@ -1,0 +1,69 @@
+# Bitbucket Pipelines - Magento Site Deployment
+# -----
+image: secomm/php:8.3-fpm
+
+definitions:
+  steps:
+    - step: &build
+        name: "Build code"
+        caches:
+          - composer
+        script:
+          # - echo $AUTH > auth.json
+          - export COMPOSER_ALLOW_SUPERUSER=1
+          - composer install
+        artifacts:
+          - vendor/**
+
+    # - step: &security-check
+    #     name: "Security Check"
+    #     script:
+    #       - export COMPOSER_ALLOW_SUPERUSER=1
+    #       # Check for known vulnerabilities in production dependencies
+    #       - composer audit --no-dev --format=table || true # Fail if vulnerabilities found, but allow pipeline to continue for non-blocking feedback
+    #       # Also audit dev dependencies for completeness (non-blocking)
+    #       - composer audit --format=table || true
+
+    # - step: &unit-test
+    #     name: "Unit Test"
+    #     script:
+    #       - export COMPOSER_ALLOW_SUPERUSER=1
+    #       # Run Magento 2 unit tests from dev/tests/unit with proper bootstrap
+    #       - vendor/bin/phpunit --configuration dev/tests/unit/phpunit.xml.dist
+
+    - step: &deploy-staging
+        name: "Deployment to Staging"
+        deployment: staging
+        trigger: "manual"
+        script:
+          - artifact=slaunchpad-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT.zip
+          # Create robots.txt with disallow all for staging
+          - |
+            cat > robots.txt <<EOF
+            User-agent: *
+            Disallow: /
+            EOF
+          # Create deployment zip (exclude unnecessary files)
+          - zip -qr $artifact . -x "*.git*" "pub/media/*" "magento2-sample-data/*" "var/*"
+          # Transfer zip to staging server
+          - scp -o StrictHostKeyChecking=no -P$STAGE_PORT $artifact $STAGE_USER@$STAGE_HOST:$DEPLOY_DIR/
+          # Deploy on staging: unzip, sync to WEB_ROOT/src, run make update
+          - |
+            export DEPLOY_DIR=$DEPLOY_DIR WEB_ROOT=$WEB_ROOT ZIP_FILE=$artifact && \
+            ssh -o StrictHostKeyChecking=no -p$STAGE_PORT \
+            $STAGE_USER@$STAGE_HOST "cd $DEPLOY_DIR && \
+            unzip -q -o $ZIP_FILE -d slaunchpad-release && \
+            sudo chown -R web:web $WEB_ROOT/src/ && \
+            rsync -az --delete --exclude='pub/media' --exclude='app/etc/env.php' \
+            --exclude='pub/static' --exclude='var' slaunchpad-release/ $WEB_ROOT/src/ && \
+            cd $WEB_ROOT && make update && \
+            rm -rf $DEPLOY_DIR/slaunchpad-release $DEPLOY_DIR/slaunchpad-*.zip"
+
+pipelines:
+  branches:
+    development:
+      - step: *build
+      # - parallel:
+      # - step: *security-check
+      # - step: *unit-test
+      - step: *deploy-staging

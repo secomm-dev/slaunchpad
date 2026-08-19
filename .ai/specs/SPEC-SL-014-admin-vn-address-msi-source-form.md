@@ -1,4 +1,8 @@
-# Mini-Spec: SL-014 - VN City dropdown cho admin MSI Source form
+# Spec: SL-014 - VN City dropdown cho admin MSI Source form
+
+Specification ID: SPEC-SL-014
+Feature ID: NONE
+Specification Level: FULL
 
 > **Project**: Secomm Launchpad | **Stack**: Magento 2.4.8-p5 + Hyva 3.x
 > **Mode**: B | **Risk tier**: Tier 1 (reassess Tier 2 neu Source duoc dung lam shipping/pickup origin)

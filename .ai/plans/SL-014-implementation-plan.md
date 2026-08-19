@@ -1,8 +1,12 @@
 # Ke hoach trien khai: SL-014 - Apply VN City dropdown tren admin MSI Source form
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-014-admin-vn-address-msi-source-form.md |
+
 > Mode B | Tier 1, reassess Tier 2 neu MSI Source cap du lieu cho shipping/pickup origin.
 > **Status: Draft - cho TL approval. Khong duoc xem implementation la complete truoc QC.**
-> Ticket: [SL-014](../tickets/SL-014-apply-address-dropdown-admin-msi-source.md) | Spec: [admin-vn-address-msi-source-form](../specs/admin-vn-address-msi-source-form.md)
+> Ticket: [SL-014](../tickets/SL-014-apply-address-dropdown-admin-msi-source.md) | Spec: [admin-vn-address-msi-source-form](../specs/SPEC-SL-014-admin-vn-address-msi-source-form.md)
 
 ## Metadata
 

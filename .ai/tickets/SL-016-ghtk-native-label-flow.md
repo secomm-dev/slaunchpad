@@ -52,5 +52,5 @@ Chuyển `Secomm_Ghtk` sang **Magento native shipping-label lifecycle**: merchan
 
 ## Related
 
-- Plan: [SL-016 plan](../plans/SL-016-implementation-plan.md) · Decision: [DEC-SL016-001](../records/decisions/DEC-SL016-001.md) (accepted — supersedes DEC-023)
+- Plan: [SL-016 plan](../plans/SL-016-implementation-plan.md) · Spec: [ghtk-native-label-flow.md](../specs/SPEC-SL-016-ghtk-native-label-flow.md) · Decision: [DEC-SL016-001](../records/decisions/DEC-SL016-001.md) (accepted — supersedes DEC-023)
 - Resumes/redirects: [SL-010](SL-010-ghtk-order-sync.md) · Builds on: [SL-015](SL-015-shippingcore-origin-contract.md) + DEC-SL015-001 · DEC-024 partial-resolve (B3/B8/B14 + defaults B1/B4/B6/B7)

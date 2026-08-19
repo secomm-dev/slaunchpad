@@ -1,15 +1,19 @@
 # Implementation Plan: SL-008 — GHTK address mapping
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-008-ghtk-address-mapping.md |
+
 > Mode A · **Plan only — chưa viết code** (Hard Gate 3: No Code Without Plan).
 > Tier-2 (shipping data + admin upload + address data — §12) → escalate SA/TL; code review trước/sau.
-> Parent: [FEAT-006](../records/features/FEAT-006.md). Ticket: [SL-008](../tickets/SL-008-ghtk-address-mapping.md). Spec: [ghtk-address-mapping](../specs/ghtk-address-mapping.md).
+> Parent: [FEAT-006](../records/features/FEAT-006.md). Ticket: [SL-008](../tickets/SL-008-ghtk-address-mapping.md). Spec: [ghtk-address-mapping](../specs/SPEC-SL-008-ghtk-address-mapping.md).
 
 ## Metadata
 
 | Field | Value |
 |-------|-------|
 | Ticket | [SL-008](../tickets/SL-008-ghtk-address-mapping.md) |
-| Spec | [ghtk-address-mapping](../specs/ghtk-address-mapping.md) |
+| Spec | [ghtk-address-mapping](../specs/SPEC-SL-008-ghtk-address-mapping.md) |
 | Feature | [FEAT-006](../records/features/FEAT-006.md) |
 | Author | AI draft |
 | Reviewer (TL) | user (acting as SA/TL) — **pending approval** |

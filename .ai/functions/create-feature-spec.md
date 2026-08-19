@@ -29,11 +29,15 @@ Generate feature spec (Mode A) hoặc mini-spec (Mode B) từ requirement/ticket
 3. Generate user story + testable AC + technical note + edge case + out-of-scope.
 4. SA/TL review trước khi giao dev.
 
+## Naming (bắt buộc — canonical `.ai/rules/spec-first.md` §Spec Naming)
+- Full Spec: resolve owner TRƯỚC khi đặt tên — `SPEC-<FEATURE-ID>-<slug>.md` (spec thuộc feature, tối đa 1 canonical/feature) hoặc `SPEC-<TICKET-ID>-<slug>.md` (standalone). Specification ID = `SPEC-<OWNER-ID>` — slug không phải identity; KHÔNG sinh `SPEC-{NNN}`/generic khi đã có owner ID.
+- Mini-Spec: embedded trong ticket — Specification ID = Ticket ID, KHÔNG file riêng (`MINI-{NNN}` deprecated).
+
 ## Expected output
 Spec document (feature-spec hoặc mini-spec) theo template.
 
 ## Evidence required
-Spec lưu `.ai/specs/{feature}.md`; SA/TL review signoff.
+Feature record (default, Phase 1a) lưu `.ai/records/features/FEAT-{feature}.md` theo `feature-record-template.md`; legacy spec `.ai/specs/{feature}.md` chỉ khi cần backward compat. SA/TL review signoff.
 
 ## Memory files to update
 - `DECISIONS.md` (scope decision nếu significant)

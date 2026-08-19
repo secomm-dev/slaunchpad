@@ -52,5 +52,5 @@ Tracking lifecycle cho `Secomm_Ghtk` theo hướng lean + Magento-native + reusa
 
 ## Related
 
-- Plan: [SL-017 plan](../plans/SL-017-implementation-plan.md) · Decision: [DEC-SL017-001](../records/decisions/DEC-SL017-001.md) (accepted)
+- Plan: [SL-017 plan](../plans/SL-017-implementation-plan.md) · Spec: [ghtk-carrier-tracking.md](../specs/SPEC-SL-017-ghtk-carrier-tracking.md) · Decision: [DEC-SL017-001](../records/decisions/DEC-SL017-001.md) (accepted)
 - Builds on: SL-016 (track persistence, API client) + SL-015 (ShippingCore) · DEC-023 (webhook-first inbound — phần kept-deferred giờ hiện thực) · DEC-SL016-001 (no order-state mutation)

@@ -2,6 +2,9 @@
 id: FEAT-006
 title: 'GHTK shipping carrier module (Secomm_Ghtk) — services.giaohangtietkiem.vn'
 mode: A                      # Tier-2: shipping carrier + external API + secret token + order/shipment sync
+specification_level: FULL
+spec_status: VALID
+specification_ref: ../../specs/SPEC-SL-009-ghtk-carrier-rate.md
 risk: high
 status: proposed
 created: 2026-07-30
@@ -149,7 +152,7 @@ Pending (proposed). QC covers: rate GHTK đúng trên cart estimate + checkout (
 ## References
 
 - Sub-tickets: [SL-008](../../tickets/SL-008-ghtk-address-mapping.md) (mapping) · [SL-009](../../tickets/SL-009-ghtk-carrier-rate.md) (carrier+rate) · [SL-010](../../tickets/SL-010-ghtk-order-sync.md) (order sync — ⛔ parked)
-- Specs (fee scope): [ghtk-address-mapping](../../specs/ghtk-address-mapping.md) (SL-008) · [ghtk-carrier-rate](../../specs/ghtk-carrier-rate.md) (SL-009)
+- Specs (fee scope): [ghtk-address-mapping](../../specs/SPEC-SL-008-ghtk-address-mapping.md) (SL-008) · [ghtk-carrier-rate](../../specs/SPEC-SL-009-ghtk-carrier-rate.md) (SL-009)
 - Plans (fee scope): [SL-008 plan](../../plans/SL-008-implementation-plan.md) · [SL-009 plan](../../plans/SL-009-implementation-plan.md)
 - Related: [FEAT-005](FEAT-005.md) (VN shipping address — carrier consume address; ward_id canonical note via DEC-020)
 - Decisions: [DEC-018](../decisions/DEC-018.md) · [DEC-019](../decisions/DEC-019.md) · DEC-8 (accepted) · [DEC-020](../decisions/DEC-020.md) · [DEC-021](../decisions/DEC-021.md) · [DEC-022](../decisions/DEC-022.md) · [DEC-023](../decisions/DEC-023.md) · [DEC-024](../decisions/DEC-024.md) (proposed)

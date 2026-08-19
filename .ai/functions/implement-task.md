@@ -9,7 +9,7 @@ Implement code theo approved plan, trong scope. Orchestrator cho development pha
 - (Sau `/plan` + research) Prompt snippet: "Implement task {ticket} theo plan. Trong scope; follow conventions; update memory + evidence."
 
 ## Required inputs
-- Approved implementation plan (Mode A/B) hoặc approach note (Mode C)
+- Valid specification (`spec_status = VALID`) plus approved implementation plan (Mode A/B) hoặc approach note (Mode C) that contains `Specification:`
 
 ## Required project files to read
 - `AGENTS.md` (§7 coding standard, §12 high-risk)
@@ -26,7 +26,8 @@ Implement code theo approved plan, trong scope. Orchestrator cho development pha
 `.ai/project-context/engineering-standards/`: ENGINEERING_PRINCIPLES → DEVELOPMENT, CODING, SOLID, SECURITY, PERFORMANCE + `technologies/{tech}`. (Rule `engineering-standards-enforcement.md` — load trước khi code; self-validate sau.)
 
 ## Execution steps
-1. Hook `before-task` (context loaded, plan tồn tại).
+1. Run the shared SpecReadinessGuard: resolve MINI/FULL; if invalid, return `IMPLEMENTATION BLOCKED` from `rules/spec-first.md` and do not change code.
+2. Hook `before-task` (context loaded, specification + plan tồn tại).
 2. Code theo plan, trong scope, follow convention.
 3. Không modify high-risk area không escalate (§12).
 4. Hook `after-task` (pre-review done, memory updated).
@@ -45,7 +46,7 @@ Code change (commit) trong scope + AI pre-review result.
 
 ## Failure handling
 - High-risk area touch → STOP, escalate Tier 2.
-- Plan không match reality → pause, update plan (TL approve) — không code quanh.
+- Plan không match reality or conflicts with specification → pause, return to specification review; không code quanh.
 - Scope creep → reject, giữ scope hẹp.
 
 ## When to improve/update

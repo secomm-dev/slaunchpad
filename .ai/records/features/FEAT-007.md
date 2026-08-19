@@ -2,6 +2,9 @@
 id: FEAT-007
 title: 'Admin VN 2-level address dropdown (global mechanism + VietNamAddress adapter)'
 mode: A                      # spans customer/PII + order (Tier-2) across sub-tickets
+specification_level: FULL
+spec_status: VALID
+specification_ref: ../../specs/SPEC-SL-011-admin-vn-address-customer-form.md
 risk: high
 status: proposed
 created: 2026-08-03

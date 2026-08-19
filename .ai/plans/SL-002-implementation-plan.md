@@ -1,5 +1,9 @@
 # Implementation Plan: SL-002 — Launchpad OSC Address Integration
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-002-launchpad-osc-address.md (backfilled 2026-08-18 — draft, giữ TBD research của ticket) |
+
 > Mode A · **Plan only — chưa viết code**. Draft — chờ **OSC seam research (state 3)** + TL **`plan-approval` (Level 2)**.
 > ⚠️ Plan này **contingent**: OSC seam chưa chốt (Knockout-based) → nhiều step ở mức approach, detail sẽ cụ thể hoá sau research.
 
@@ -8,7 +12,7 @@
 | Field | Value |
 |-------|-------|
 | Ticket | [SL-002](../tickets/SL-002-launchpad-osc-address-integration.md) |
-| Spec | _TBD — `.ai/specs/launchpad-osc-address.md` (chưa tạo, sau research)_ |
+| Spec | _TBD — `.ai/specs/SPEC-SL-002-launchpad-osc-address.md` (chưa tạo, sau research)_ |
 | Author | AI draft |
 | Reviewer (TL) | [TBD] |
 | Workflow Mode | A |

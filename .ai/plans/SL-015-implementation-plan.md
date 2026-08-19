@@ -1,5 +1,9 @@
 # SL-015 Implementation Plan — Secomm ShippingCore origin contract + GHTK origin refactor
 
+| Field | Value |
+|---|---|
+| Specification | specs/SPEC-SL-015-shippingcore-origin-contract.md |
+
 > **Mode A** · Tier 2 · Status: **Approved 2026-08-17 (user acting as SA/TL; DEC-SL015-001 accepted) — Phase C implement cleared**
 > Scope: tạo `Secomm_ShippingCore` (origin contract + default provider) + refactor `Secomm_Ghtk` consume contract. Không implement fulfillment/MSI routing.
 > Audit performed 2026-08-17 trên working tree (branch `development`).
