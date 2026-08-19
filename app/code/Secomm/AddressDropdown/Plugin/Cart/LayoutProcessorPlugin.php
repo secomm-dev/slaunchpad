@@ -3,15 +3,12 @@
 namespace Secomm\AddressDropdown\Plugin\Cart;
 
 use Magento\Checkout\Block\Cart\LayoutProcessor;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
 class LayoutProcessorPlugin
 {
     public function __construct(
-        protected LoggerInterface $logger,
-        protected ScopeConfigInterface $scopeConfig
+        protected LoggerInterface $logger
     )
     {
         $this->logger = $logger;
@@ -21,12 +18,6 @@ class LayoutProcessorPlugin
     {
         $fieldsAttribute = ['city', 'custom_city', 'subCity', 'custom_sub_city'];
         $template = 'ui/form/field';
-
-        $defaultCountry = (string) $this->scopeConfig->getValue(
-            'general/country/default',
-            ScopeInterface::SCOPE_STORE
-        );
-        $cityLabel = $defaultCountry === 'VN' ? __('Ward/Commune') : __('City');
         $cityField = [
             'component' => 'Magento_Ui/js/form/element/abstract',
             'config' => [
@@ -57,7 +48,7 @@ class LayoutProcessorPlugin
                 'elementTmpl' => 'ui/form/element/select',
             ],
             'dataScope' => 'shippingAddress.custom_attributes.custom_city',
-            'label' => $cityLabel,
+            'label' => __('City'),
             'provider' => 'checkoutProvider',
             'sortOrder' => 114,
             'validation' => [

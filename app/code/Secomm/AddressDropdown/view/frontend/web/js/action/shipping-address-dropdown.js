@@ -28,8 +28,6 @@ define([
     const SUB_CITY_ERROR = '#co-shipping-form #custom-subcity-error';
     const CITY_DEFAULT = '#co-shipping-form [name="shippingAddress.city"]';
     return Component.extend({
-        isRegionChanging: false,
-
         getCountryId: function () {
             let countryId = $(COUNTRY_SELECTOR).val()
                 || $('#co-shipping-form [name="shippingAddress.country_id"]').val();
@@ -180,7 +178,7 @@ define([
             let self = this;
             if ($(CUSTOM_CITY_SELECTOR).length === 0 && $(CUSTOM_SUB_CITY_SELECTOR).length === 0) {
                 let subCityElement = $('<input type="hidden" name="shippingAddress.sub_city" />');
-                let cityDiv = $('<div class="field mp-clear required select _required shipping-address-city" name="shippingAddress.customCity"></div>');
+                let cityDiv = $('<div class="field mp-clear col-mp mp-6 required select _required shipping-address-city" name="shippingAddress.customCity"></div>');
                 let cityLabel = $('<label class="label" for="custom-city-select">' + $.mage.__('Ward/Commune') + '</label>');
                 let customCitySelect = $('<select required id="custom-city-select" name="custom_city" class="field input">')
                     .append($('<option></option>').attr('value', '').text($.mage.__('Please select a city')));
@@ -221,23 +219,11 @@ define([
                 if (selectedRegionId && self.isVietnamCountry()) {
                     self.loadCities(selectedRegionId, function () {
                         let shippingAddress = quote.shippingAddress();
-                        if (shippingAddress && shippingAddress.city) {
+                        if (shippingAddress) {
                             let cachedCity = shippingAddress.city;
-                            let cachedSubCity = (shippingAddress.extension_attributes
-                                && shippingAddress.extension_attributes.sub_city)
-                                || $(CUSTOM_ATTR_SUB_CITY).val() || '';
-                            let matched = customCitySelect.find('option').filter(function () {
-                                return $(this).text() === cachedCity || $(this).val() === cachedCity;
-                            }).first();
-                            if (matched.length) {
-                                customCitySelect.val(matched.val());
-                                // sync KO viewmodel with label of city
-                                let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
-                                if (cityInputViewModel && cityInputViewModel.value) {
-                                    cityInputViewModel.value(matched.text());
-                                    $(CITY_SELECTOR).val(matched.text()).trigger('change');
-                                }
-                                self.loadSubCities(matched.val(), cachedSubCity);
+                            if (cachedCity) {
+                                customCitySelect.val(cachedCity).trigger('change');
+                                self.loadSubCities(cachedCity, "");
                             }
                         }
                     });
@@ -250,22 +236,21 @@ define([
             let self = this;
 
             customCitySelect.on('change', function () {
-                let selectedOption = $(this).find('option:selected');
-                let defaultName = $(this).val() ?? "";
-                let cityLabel = selectedOption.text() || defaultName;
+                let selectedCity = $(this).val() ?? "";
                 let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
                 if (cityInputViewModel && cityInputViewModel.value) {
-                    cityInputViewModel.value(cityLabel);
-                    $(CITY_SELECTOR).val(cityLabel).trigger('change');
+                    cityInputViewModel.value(selectedCity);
+                    $(CITY_SELECTOR).val(selectedCity).trigger('change');
                 }
-                let hash = window.location.hash;
+                let hash = '';
+                hash = window.location.hash;
                 if (hash === '#shipping') {
                     setShippingInformationAction();
                     $(CITY_ERROR).hide();
                     $(CUSTOM_CITY_SELECTOR).removeClass('custom-error');
                 }
                 if (self.isVietnamCountry()) {
-                    self.loadSubCities(defaultName, "");
+                    self.loadSubCities(selectedCity, "");
                 }
             });
         },
@@ -301,22 +286,25 @@ define([
                 }
                 let selectedRegionId = $(this).val();
                 let cityInput = $(CITY_SELECTOR);
-
-                // Mark this as changing region so that CityDropdown update does not auto-restore the old city
-                self.isRegionChanging = true;
-
-                // Clear city/sub-city DOM and KO viewmodel
-                let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
-                if (cityInputViewModel && cityInputViewModel.value) {
-                    cityInputViewModel.value('');
-                }
-                $(CUSTOM_CITY_SELECTOR).val('');
-                cityInput.val('').trigger('change');
-                $(CUSTOM_ATTR_SUB_CITY).val('').trigger('change');
+                $(CUSTOM_CITY_SELECTOR).val("").trigger('change');
+                cityInput.val("").trigger('change');
                 customCitySelect.empty().append($('<option></option>').attr('value', '').text($.mage.__('Please select a city')));
                 customSubCitySelect.empty().append($('<option></option>').attr('value', '').text($.mage.__('Please select a sub-city')));
 
-                self.loadCities(selectedRegionId, null);
+                self.loadCities(selectedRegionId, function () {
+                    let shippingAddress = quote.shippingAddress();
+                    if (shippingAddress) {
+                        let cachedCity = shippingAddress.city;
+                        if (cachedCity) {
+                            customCitySelect.val(cachedCity).trigger('change');
+                            self.loadSubCities(cachedCity, "");
+                        }
+                    }
+                });
+
+                if (cityInput.val() === "") {
+                    $(CUSTOM_ATTR_SUB_CITY).val("").trigger('change');
+                }
             });
         },
 
@@ -380,14 +368,11 @@ define([
                         return;
                     }
                     if (response.data && response.data.GetListCity && response.data.GetListCity.length > 0) {
-                        self.updateCityDropdown(response.data.GetListCity, typeof callback === 'function');
+                        self.updateCityDropdown(response.data.GetListCity);
                     } else {
-                        self.updateCityDropdown([], false);
+                        self.updateCityDropdown([])
                     }
                     self.cityVisible();
-                    if (typeof callback === 'function') {
-                        callback();
-                    }
                 },
                 error: function (xhr, status, error) {
                     console.error('Request failed:', error);
@@ -435,45 +420,27 @@ define([
             });
         },
 
-        updateCityDropdown: function (cities, suppressChange) {
+        updateCityDropdown: function (cities) {
             let self = this;
             let customCitySelect = $(CUSTOM_CITY_SELECTOR);
             cities.sort(function (a, b) {
                 return a.label.localeCompare(b.label, 'vi', { sensitivity: 'base' });
             });
+            self.updatePostcodePlaceholderByDom('#co-shipping-form');
 
             customCitySelect.empty().append($('<option selected></option>').attr('value', '').text($.mage.__('Please select a city')));
 
             cities.forEach(function (city) {
-                customCitySelect.append(
-                    $('<option></option>')
-                        .attr('value', city.default_name)
-                        .attr('data-label', city.label)
-                        .text(city.label)
-                );
+                customCitySelect.append($('<option></option>').attr('value', city.default_name).text(city.label));
             });
 
-            // If changing regions, do not auto-restore the old city; reset the flag and stop.
-            if (self.isRegionChanging) {
-                self.isRegionChanging = false;
-                customCitySelect.val('');
-                return;
-            }
-            // Flow init: Synchronize the dropdown with the KO viewmodel (if a city has been saved)
-            // suppressChange = true when there is a callback for further processing
-            // suppressChange = false when there is no callback (no restore)
             let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
             if (cityInputViewModel && cityInputViewModel.value) {
                 let currentCity = cityInputViewModel.value();
-                let matched = cities.find(function (c) {
-                    return c.label === currentCity || c.default_name === currentCity;
-                });
-                if (currentCity && matched) {
-                    // Only set the value in the dropdown, DO NOT trigger 'change'
-                    // KO sync + sub-city loading will be handled by the callback in setupCitySubCity
-                    customCitySelect.val(matched.default_name);
+                if (currentCity && cities.find(element => element.default_name === currentCity)) {
+                    customCitySelect.val(currentCity).trigger('change');
                 } else {
-                    customCitySelect.val('');
+                    customCitySelect.val("").trigger('change');
                 }
             }
         },

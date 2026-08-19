@@ -50,8 +50,6 @@ define([
                         $('#sub-city-container').hide();
 
                         let selectedCountryId = $(this).val();
-                        // Toggle city label between "Ward/Commune" (Vietnam) and the default "City" label
-                        self._updateCityLabel(selectedCountryId);
                         self._loadRegions(selectedCountryId);
                     });
 
@@ -65,8 +63,6 @@ define([
                     // Load cities if currentCity is set
                     let initialRegionId = $('#region_id').val();
                     this._loadCities(initialRegionId, this.options.currentCity);
-                    // Sync the city label with the current country on init
-                    self._updateCityLabel($('#country').val());
                     clearInterval(regionInterval);
                 }
             }, 500);
@@ -159,23 +155,6 @@ define([
         },
 
         /**
-         * Toggle the city field label between "Ward/Commune" (Vietnam) and the default label.
-         * @private
-         * @param {String} countryId - The currently selected country id.
-         */
-        _updateCityLabel: function (countryId) {
-            let $cityLabel = $('#city-label');
-            if (!$cityLabel.length) {
-                return;
-            }
-            if (countryId === 'VN') {
-                $cityLabel.text($.mage.__('Ward/Commune'));
-            } else {
-                $cityLabel.text($cityLabel.data('default-label') || $.mage.__('City'));
-            }
-        },
-
-        /**
          * Load sub-cities based on cityId.
          * @private
          * @param {String} cityId - The city ID to load sub-cities for.
@@ -234,12 +213,6 @@ define([
             let citySelect = $('#city-select'); // Assuming this is your city dropdown element
 
             citySelect.empty();
-
-            // Sort cities alphabetically (A-Z) using Vietnamese locale so that
-            // diacritics are ordered correctly before rendering the options.
-            cities.sort(function (a, b) {
-                return (a.label || '').localeCompare((b.label || ''), 'vi', { sensitivity: 'base' });
-            });
 
             if (cities.length > 0) {
                 citySelect.append($('<option></option>').attr('value', '').text($.mage.__('Select a city')));
