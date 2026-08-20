@@ -29,9 +29,9 @@ Generate feature spec (Mode A) hoặc mini-spec (Mode B) từ requirement/ticket
 3. Generate user story + testable AC + technical note + edge case + out-of-scope.
 4. SA/TL review trước khi giao dev.
 
-## Naming (bắt buộc — canonical `.ai/rules/spec-first.md` §Spec Naming)
-- Full Spec: resolve owner TRƯỚC khi đặt tên — `SPEC-<FEATURE-ID>-<slug>.md` (spec thuộc feature, tối đa 1 canonical/feature) hoặc `SPEC-<TICKET-ID>-<slug>.md` (standalone). Specification ID = `SPEC-<OWNER-ID>` — slug không phải identity; KHÔNG sinh `SPEC-{NNN}`/generic khi đã có owner ID.
-- Mini-Spec: embedded trong ticket — Specification ID = Ticket ID, KHÔNG file riêng (`MINI-{NNN}` deprecated).
+## Naming (bắt buộc — canonical `.ai/rules/spec-first.md` §Spec Naming + `rules/work-item-identity.md` §7)
+- Full Spec: resolve owner TRƯỚC khi đặt tên — `SPEC-<FEATURE-ID>-<slug>.md` (spec thuộc feature, tối đa 1 canonical/feature) hoặc `SPEC-<ITEM-ID>-<slug>.md` (standalone Task/Bug/Spike). OWNER-ID **P2A dual format**: legacy (`FEAT-006`, `SL-015`) hoặc collision-safe mint từ `bin/project-ai-idgen` (`TASK-4P8DX2` → `SPEC-TASK-4P8DX2-calculate-express-delivery-eligibility.md`). Specification ID = `SPEC-<OWNER-ID>` — slug không phải identity; KHÔNG sinh `SPEC-{NNN}`/generic khi đã có owner ID.
+- Mini-Spec: embedded trong ticket/record — Specification ID = Item ID, KHÔNG file riêng (`MINI-{NNN}` deprecated).
 
 ## Expected output
 Spec document (feature-spec hoặc mini-spec) theo template.

@@ -19,7 +19,7 @@
 #
 # Usage:
 #   bin/project-ai-validate                 # auto-detect
-#   bin/project-ai-validate --check-adapters|--check-cheatsheet|--check-commands|--check-refs|--check-records|--check-specs|--check-modes|--check-project-state|--check-hyva
+#   bin/project-ai-validate --check-adapters|--check-cheatsheet|--check-commands|--check-refs|--check-records|--check-identity|--check-specs|--check-modes|--check-project-state|--check-hyva
 #   bin/project-ai-validate --project /path/to/generated/project
 #   bin/project-ai-validate --quiet
 # Exit: 0 = clean, 1 = material contract violation.
@@ -27,7 +27,7 @@
 set -uo pipefail
 
 QUIET=0; PROJECT=""; ROOT_OVERRIDE=""
-RUN_ALL=1; C_ADAPTERS=0; C_CHEAT=0; C_CMDS=0; C_REFS=0; C_RECORDS=0; C_SPECS=0; C_MODES=0; C_PSTATE=0; C_RSEP=0; C_CEFF=0; C_GOV=0; C_HYVA=0
+RUN_ALL=1; C_ADAPTERS=0; C_CHEAT=0; C_CMDS=0; C_REFS=0; C_RECORDS=0; C_SPECS=0; C_MODES=0; C_PSTATE=0; C_RSEP=0; C_CEFF=0; C_GOV=0; C_HYVA=0; C_IDENT=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=1; shift ;;
@@ -36,6 +36,7 @@ while [ $# -gt 0 ]; do
     --check-commands) RUN_ALL=0; C_CMDS=1; shift ;;
     --check-refs) RUN_ALL=0; C_REFS=1; shift ;;
     --check-records) RUN_ALL=0; C_RECORDS=1; shift ;;
+    --check-identity) RUN_ALL=0; C_IDENT=1; shift ;;
     --check-specs) RUN_ALL=0; C_SPECS=1; shift ;;
     --check-modes) RUN_ALL=0; C_MODES=1; shift ;;
     --check-project-state) RUN_ALL=0; C_PSTATE=1; shift ;;
@@ -49,7 +50,7 @@ while [ $# -gt 0 ]; do
     *) echo "unknown flag: $1" >&2; exit 2 ;;
   esac
 done
-[ $RUN_ALL -eq 1 ] && { C_ADAPTERS=1; C_CHEAT=1; C_CMDS=1; C_REFS=1; C_RECORDS=1; C_SPECS=1; C_MODES=1; C_PSTATE=1; C_RSEP=1; }
+[ $RUN_ALL -eq 1 ] && { C_ADAPTERS=1; C_CHEAT=1; C_CMDS=1; C_REFS=1; C_RECORDS=1; C_IDENT=1; C_SPECS=1; C_MODES=1; C_PSTATE=1; C_RSEP=1; }
 
 errors=0; warnings=0
 note(){ [ $QUIET -eq 0 ] && echo "ok:   $*" || true; }
@@ -216,9 +217,10 @@ fi
 if [ $C_RECORDS -eq 1 ]; then
   echo "--- records ($MODE) ---"
   if [ "$MODE" = "toolkit" ]; then
-    for t in feature-record bug-record release-record decision-record; do
+    for t in feature-record task-record bug-record spike-record release-record decision-record; do
       [ -f "$ROOT/templates/$t-template.md" ] || fail "missing canonical record template: templates/$t-template.md"
     done
+    [ -f "$ROOT/templates/project-config-template.yaml" ] || fail "missing project config template: templates/project-config-template.yaml (P2A)"
     note "canonical record templates present (toolkit)"
   else
     REC="$P/.ai/records"
@@ -263,11 +265,17 @@ def field_vals(fm, key):
     return vals
 req = {
  'features': ['id','status','mode','components','changes_project_state','verified_against_commit'],
+ 'tasks':     ['id','status','components','changes_project_state'],
  'bugs':      ['id','status','components','changes_project_state'],
+ 'spikes':    ['id','status','components','changes_project_state'],
  'releases':  ['id','status'],
  'decisions': ['id','status'],
 }
-prefix = {'features':'FEAT-','bugs':'BUG-','releases':'REL-','decisions':'DEC-'}
+prefix = {'features':'FEAT-','tasks':'TASK-','bugs':'BUG-','spikes':'SPIKE-','releases':'REL-','decisions':'DEC-'}
+# P2A dual-format work-item ids (work-item-identity.md §2): new collision-safe
+# (<TYPE>-<6 Crockford Base32 chars, no I/L/O/U>) OR legacy (<ABBR>-<NNN+>).
+NEW_ID = re.compile(r'^(FEAT|TASK|BUG|SPIKE|REL)-[0-9ABCDEFGHJKMNPQRSTVWXYZ]{6}$')
+LEGACY_ID = re.compile(r'^[A-Z][A-Z0-9]{1,7}-[0-9]{3,}$')
 _dec_md = os.path.join(rec, '..', 'project-context', 'memory', 'DECISIONS.md')
 _dec_md_text = ''
 if os.path.exists(_dec_md):
@@ -292,15 +300,16 @@ for kind in req:
             _exempt = _dtype in ('process', 'tooling', 'governance')
             _wi_target = fails if WORK_ITEMS_HARD else warns
             if not _exempt and len(_wis) == 0:
-                _wi_target.append(rel + ': decision missing work_items (>=1 of FEAT-/SL-/BUG-/REL-); set decision_type: process|tooling|governance to exempt')
+                _wi_target.append(rel + ': decision missing work_items (>=1 work-item ID, P2A dual format); set decision_type: process|tooling|governance to exempt')
             for _wi in _wis:
-                if not re.match(r'^(FEAT|SL|BUG|REL)-[0-9]{3,}$', _wi):
-                    _wi_target.append(rel + ': work_items entry not FEAT-/SL-/BUG-/REL-NNN: ' + _wi)
-            # Entry h (2026-08-17): per-work-item file naming DEC-{CODE}-{NNN} (CODE = work-item
-            # ID without hyphens, e.g. SL-015 -> SL015). Both legacy DEC-NNN and the new format
-            # are accepted; soft-WARN when a new-format id prefix does not match the first
+                if not (NEW_ID.match(_wi) or LEGACY_ID.match(_wi)):
+                    _wi_target.append(rel + ': work_items entry not a valid work-item ID (new FEAT|TASK|BUG|SPIKE|REL-XXXXXX or legacy ABBR-NNN): ' + _wi)
+            # Entry h (2026-08-17) + P2A: per-work-item file naming DEC-{CODE}-{NNN}
+            # (CODE = work-item ID without hyphens: SL-015 -> SL015; TASK-4P8DX2 ->
+            # TASK4P8DX2). Both legacy DEC-NNN and the new format are accepted;
+            # soft-WARN when a new-format id prefix does not match the first
             # work_items entry (the primary work-item that should name the file).
-            _ih = re.match(r'^DEC-((?:FEAT|SL|BUG|REL)[0-9]{3,})-[0-9]{3,}$', iid)
+            _ih = re.match(r'^DEC-([A-Z0-9]+)-[0-9]{3}$', iid)
             if _ih and _wis:
                 _first = (_wis[0] or '').replace('-', '')
                 if _first != _ih.group(1):
@@ -377,9 +386,180 @@ PYREC
 fi
 
 # -----------------------------------------------------------------------------
+# Check: work-item identity model (P2A, 2026-08-20 — shared-core/rules/work-item-identity.md).
+#   toolkit mode → canonical sources present (identity rule, idgen, templates) + idgen self-test.
+#   project mode → .ai/toolkit/project.yaml code contract; dual-format ids; duplicate
+#   canonical ids; parent resolution; project_code match; display-title rendering
+#   (metadata authoritative, display derived); legacy alias uniqueness.
+# -----------------------------------------------------------------------------
+if [ $C_IDENT -eq 1 ]; then
+  echo "--- identity ($MODE) ---"
+  if [ "$MODE" = "toolkit" ]; then
+    [ -f "$ROOT/shared-core/rules/work-item-identity.md" ] || fail "missing canonical identity rule: shared-core/rules/work-item-identity.md"
+    [ -f "$ROOT/bin/project-ai-idgen" ] || fail "missing id minter: bin/project-ai-idgen"
+    [ -x "$ROOT/bin/project-ai-idgen" ] || fail "bin/project-ai-idgen is not executable"
+    if [ -x "$ROOT/bin/project-ai-idgen" ]; then
+      _sfx="$("$ROOT/bin/project-ai-idgen" TASK --suffix 2>/dev/null || true)"
+      printf '%s' "$_sfx" | grep -Eq '^[0-9ABCDEFGHJKMNPQRSTVWXYZ]{6}$' \
+        || fail "idgen self-test failed (suffix not 6-char Crockford Base32): ${_sfx:-<empty>}"
+      "$ROOT/bin/project-ai-idgen" --validate "TASK-${_sfx}" >/dev/null 2>&1 \
+        || fail "idgen self-test failed (minted id rejected by its own validator)"
+    fi
+    note "identity canonical sources present + idgen self-test OK (toolkit)"
+  elif ! command -v python3 >/dev/null 2>&1; then
+    fail "python3 required for --check-identity in project mode"
+  else
+    ident_out="$(python3 - "$P" <<'PYIDENT'
+import sys, re, pathlib
+root = pathlib.Path(sys.argv[1]); ai = root / '.ai'
+fails = []; warns = []
+NEW_ID     = re.compile(r'^(FEAT|TASK|BUG|SPIKE|REL)-[0-9ABCDEFGHJKMNPQRSTVWXYZ]{6}$')
+LEGACY_ID  = re.compile(r'^[A-Z][A-Z0-9]{1,7}-[0-9]{3,}$')
+CODE_RE    = re.compile(r'^[A-Z][A-Z0-9]{1,7}$')
+TYPE_PREFIX = {'features':'FEAT','tasks':'TASK','bugs':'BUG','spikes':'SPIKE','releases':'REL'}
+def frontmatter(path):
+    try: txt = path.read_text(encoding='utf-8')
+    except OSError: return '', ''
+    m = re.match(r'^---\r?\n(.*?)\r?\n---\r?\n?(.*)$', txt, re.S)
+    return (m.group(1), m.group(2)) if m else ('', txt)
+def fm_val(fm, key):
+    m = re.search(r'^'+re.escape(key)+r':\s*(.*)$', fm, re.M)
+    if not m: return ''
+    v = m.group(1).strip()
+    if v.startswith(("'", '"')) and v.endswith(("'", '"')) and len(v) >= 2: return v[1:-1]
+    return re.sub(r'\s+#.*$', '', v).strip()
+def parse_parent(fm):
+    lines = fm.splitlines()
+    for i, ln in enumerate(lines):
+        if re.match(r'^parent:', ln):
+            rest = re.sub(r'#.*$', '', ln.split(':', 1)[1]).strip()
+            if rest in ('', 'null', 'None', '~', '{}'):
+                blk = []
+                for j in range(i + 1, len(lines)):
+                    if re.match(r'^\s', lines[j]): blk.append(lines[j].strip())
+                    else: break
+                mt = re.search(r'^id:\s*([A-Za-z0-9-]+)', '\n'.join(blk), re.M)
+                return mt.group(1) if mt else None
+            m = re.search(r'id:\s*([A-Za-z0-9-]+)', rest)
+            return m.group(1) if m else None
+    return None
+def fm_list(fm, key):
+    m = re.search(r'^'+re.escape(key)+r':\s*\[([^\]]*)\]', fm, re.M)
+    if not m: return []
+    return [v.strip().strip('\'"') for v in m.group(1).split(',') if v.strip()]
+# --- collect records ---------------------------------------------------------
+recs = []   # (kind, rel, fm, body, iid)
+for kind, pf in TYPE_PREFIX.items():
+    d = ai / 'records' / kind
+    if not d.is_dir(): continue
+    for p in sorted(d.glob('*.md')):
+        fm, body = frontmatter(p)
+        iid = fm_val(fm, 'id')
+        recs.append((kind, 'records/' + kind + '/' + p.name, fm, body, iid))
+has_new = any(NEW_ID.match(i or '') for *_, i in recs)
+feature_ids = {i for k, *_, i in recs if k == 'features' and i}
+# --- 1. project.yaml (SSOT cho project code) ---------------------------------
+cfg = ai / 'toolkit' / 'project.yaml'
+code = ''
+if not cfg.exists():
+    if has_new:
+        fails.append('missing .ai/toolkit/project.yaml — required once new-format work items exist (P2A work-item-identity.md §1)')
+    else:
+        warns.append('no .ai/toolkit/project.yaml (pre-P2A project — run project-ai-upgrade to bootstrap; not guessed)')
+else:
+    cfgtxt = cfg.read_text(encoding='utf-8')
+    def cfg_val(key):
+        m = re.search(r'^[ \t]*' + re.escape(key) + r':[ \t]*(.*)$', cfgtxt, re.M)
+        if not m: return ''
+        v = m.group(1).strip()
+        if v.startswith(("'", '"')) and v.endswith(("'", '"')) and len(v) >= 2: return v[1:-1]
+        return re.sub(r'\s+#.*$', '', v).strip()
+    code = cfg_val('code')
+    if not code:
+        fails.append('.ai/toolkit/project.yaml: missing project.code')
+    elif code == 'PENDING':
+        warns.append('project code is PENDING — set an explicit code (regex ^[A-Z][A-Z0-9]{1,7}$) in .ai/toolkit/project.yaml before creating new work items; never guessed silently')
+        code = ''
+    elif not CODE_RE.match(code):
+        fails.append('.ai/toolkit/project.yaml: project.code ' + code + ' fails ^[A-Z][A-Z0-9]{1,7}$ (2-8 chars, uppercase)')
+    if not cfg_val('name'):
+        warns.append('.ai/toolkit/project.yaml: project.name empty')
+# --- 2. per-record identity checks -------------------------------------------
+seen = {}
+legacy_n = 0
+for kind, rel, fm, body, iid in recs:
+    pf = TYPE_PREFIX[kind]
+    if not iid: continue
+    if not iid.startswith(pf + '-'):
+        fails.append(rel + ': id ' + iid + ' should start with ' + pf + '-')
+    if iid in seen:
+        fails.append(rel + ': DUPLICATE canonical id ' + iid + ' (also ' + seen[iid] + ') — re-mint the newer item with project-ai-idgen and update its references')
+    else:
+        seen[iid] = rel
+    if NEW_ID.match(iid):
+        title = fm_val(fm, 'title')
+        pc = fm_val(fm, 'project_code')
+        if pc and code and pc != code:
+            fails.append(rel + ': project_code ' + pc + ' != project.yaml code ' + code + ' (stale after project-code change — update frontmatter)')
+        par = parse_parent(fm)
+        if par:
+            if not par.startswith('FEAT-'):
+                fails.append(rel + ': parent must be a Feature id, got ' + par)
+            elif par not in feature_ids:
+                fails.append(rel + ': parent feature unresolved: ' + par + ' (no matching record under records/features/)')
+        if code and title:
+            h1 = next((ln[2:].strip() for ln in body.splitlines() if ln.startswith('# ')), None)
+            expected = '[' + code + ']' + ('[' + par + ']' if par else '') + '[' + iid + '] ' + title
+            if h1 is None:
+                fails.append(rel + ': new-format record missing display title H1 (expected "' + expected + '")')
+            elif h1 != expected:
+                fails.append(rel + ': display title stale/mismatched — H1 "' + h1 + '" != rendered "' + expected + '" (metadata authoritative; re-render after parent/code/title change)')
+    else:
+        legacy_n += 1
+if legacy_n:
+    warns.append(str(legacy_n) + ' legacy-format record(s) grandfathered (display-title + project_code checks skipped — P2A §10)')
+# --- 3. legacy_ids aliases ----------------------------------------------------
+claims = {}
+for kind, rel, fm, body, iid in recs:
+    for lid in fm_list(fm, 'legacy_ids'):
+        if lid in seen:
+            fails.append(rel + ': legacy_ids entry ' + lid + ' collides with a canonical id (' + seen[lid] + ')')
+        elif lid in claims and claims[lid] != rel:
+            fails.append('legacy id ' + lid + ' claimed by both ' + claims[lid] + ' and ' + rel + ' (exactly one canonical owner per legacy alias)')
+        else:
+            claims[lid] = rel
+# --- 4. legacy tickets/ duplicate numbers ------------------------------------
+tdir = ai / 'tickets'
+if tdir.is_dir():
+    tids = {}
+    for p in sorted(tdir.glob('*.md')):
+        m = re.match(r'^([A-Z][A-Z0-9]{1,7}-[0-9]{3,})', p.name)
+        if not m: continue
+        t = m.group(1)
+        if t in tids:
+            fails.append('tickets/' + p.name + ': duplicate legacy ticket id ' + t + ' (also ' + tids[t] + ')')
+        tids[t] = p.name
+for w in warns: print('WARN: ' + w)
+for x in fails: print('FAIL: ' + x)
+sys.exit(1 if fails else 0)
+PYIDENT
+)"
+    if [ $? -eq 0 ]; then
+      note "work-item identity contract OK (project)"
+    else
+      printf '%s\n' "$ident_out"
+      errors=$((errors + $(printf '%s\n' "$ident_out" | grep -c '^FAIL:')))
+    fi
+  fi
+fi
+
+# -----------------------------------------------------------------------------
 # Check: SpecReadinessGuard. Active/executable work is ALWAYS a hard block;
 # inactive/historical legacy artifacts are WARN-only so bulk validation remains
 # usable during migration. Plans must identify their behavioral specification.
+# DEC-SL018-002 hardening: an ACTIVE ticket must embed its own Mini-Spec (a parent
+# Full-Spec reference alone is not the slice's behavioral contract) and must
+# carry a plan artifact (## Approach section or a Plan: link under .ai/plans/).
 # -----------------------------------------------------------------------------
 if [ $C_SPECS -eq 1 ]; then
   echo "--- specs ($MODE) ---"
@@ -417,20 +597,31 @@ def check_record(p):
     else:
         target=(p.parent / ref).resolve()
         if not target.exists() and not (root/ref).exists(): emit(p, 'FULL specification_ref does not resolve: '+ref, hard)
-for d in [ai/'records'/'features', ai/'records'/'bugs']:
+for d in [ai/'records'/'features', ai/'records'/'tasks', ai/'records'/'bugs', ai/'records'/'spikes']:
     if d.is_dir():
         for p in d.glob('*.md'): check_record(p)
 for p in (ai/'tickets').glob('*.md') if (ai/'tickets').is_dir() else []:
     s=text(p); hard=bool(re.search(r'^\*?\*?Status:\*?\*?\s*(Ready|Planned|In Progress|Active)',s,re.M|re.I))
-    if re.search(r'^\*?\*?Specification:\*?\*?\s*(?:\{.*\}|$)',s,re.M): emit(p,'missing Specification reference',hard)
+    spec_line=re.search(r'^\*?\*?Specification:\*?\*?\s*([^#\n]*)',s,re.M)
+    if spec_line is None or spec_line.group(1).strip() in ('','{...}','{spec}'):
+        emit(p,'missing Specification reference',hard)
     if '## Mini Spec' in s:
         for h in required:
             if not re.search(r'^#{3,4}\s+'+re.escape(h)+r'\s*$',s,re.M): emit(p,'Mini-Spec missing '+h,hard)
-# Spec naming convention (DEC-SL019-001): SPEC-<OWNER-ID>-<slug>.md files must
-# carry a matching "Specification ID: SPEC-<OWNER-ID>" header. Slug-only legacy
-# files are grandfathered (never matched by the prefix pattern, never checked).
+    elif hard:
+        emit(p,'active ticket missing embedded Mini Spec (parent Full-Spec reference alone is not the ticket behavioral contract)',hard)
+    if hard:
+        plan_names=[ln.split('/')[-1] for ln in re.findall(r'plans/[A-Za-z0-9._-]+\.md',s)]
+        has_plan_file=any((ai/'plans'/n).exists() for n in plan_names)
+        has_approach=bool(re.search(r'^#{2,3}\s+Approach\s*$',s,re.M))
+        if not (has_approach or has_plan_file):
+            emit(p,'active ticket missing plan artifact (## Approach section, or a Plan: link resolving under .ai/plans/)',hard)
+# Spec naming convention (DEC-SL019-001 + P2A dual owner format): SPEC-<OWNER-ID>-<slug>.md
+# files must carry a matching "Specification ID: SPEC-<OWNER-ID>" header. OWNER-ID is a
+# work-item ID — legacy ABBR-NNN (FEAT-006, SL-019) or new collision-safe TASK-4P8DX2.
+# Slug-only legacy files are grandfathered (never matched by the prefix pattern, never checked).
 for p in sorted((ai/'specs').glob('*.md')) if (ai/'specs').is_dir() else []:
-    mid_file = re.match(r'^(SPEC-(?:FEAT|BUG|REL|SL|TASK)-[0-9]{3,})-', p.name)
+    mid_file = re.match(r'^(SPEC-(?:(?:FEAT|BUG|REL|SL|TASK)-[0-9]{3,}|(?:FEAT|TASK|BUG|SPIKE|REL)-[0-9ABCDEFGHJKMNPQRSTVWXYZ]{6}))-', p.name)
     if not mid_file:
         continue
     mid_hdr = re.search(r'^Specification ID:\s*([^\s#]+)', text(p), re.M)

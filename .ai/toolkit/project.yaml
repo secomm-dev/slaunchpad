@@ -1,0 +1,22 @@
+# Project configuration — canonical project identity (P2A, 2026-08-20)
+# Output: .ai/toolkit/project.yaml — SINGLE SOURCE OF TRUTH cho project identity.
+# Canonical rules: shared-core/rules/work-item-identity.md §1.
+#
+# - project.code được hỏi/xác nhận MỘT LẦN lúc initialization (engine gợi ý từ
+#   project name; human xác nhận). Sau khi persist → authoritative — KHÔNG re-infer
+#   từ folder/repo/workspace name.
+# - Regex code: ^[A-Z][A-Z0-9]{1,7}$ (2–8 ký tự). Đổi code: sửa ở đây + chạy
+#   `bin/project-ai-validate --check-identity` (audit display titles) — KHÔNG
+#   regenerate work-item IDs.
+# - `code: PENDING` = migration P2A bootstrap chưa xác định được code (không đoán
+#   mò) — TL phải set trước khi tạo work item mới.
+# - Upgrade engine chỉ tạo file này khi THIẾU; không bao giờ overwrite.
+
+schema_version: 1
+project:
+  name: Secomm Launchpad
+  code: SLP
+code_history:
+  - {code: SL, changed: 2026-08-20, note: "P2A bootstrap detect SL (unambiguous from SL-xxx ticket filenames)"}
+  - {code: SLP, changed: 2026-08-20, note: "TL workflow — chuẩn hóa theo work-item-identity.md §1; --check-identity audit clean (chưa có new-format record nào); KHÔNG regenerate work-item IDs"}
+

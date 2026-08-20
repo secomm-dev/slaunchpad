@@ -6,7 +6,7 @@
 
 | Field | Value |
 |-------|-------|
-| Ticket / Spec | {TICKET-ID / SPEC-ID} |
+| Ticket / Spec | {TICKET-ID / SPEC-ID — P2A: TASK-XXXXXX… hoặc legacy SL-NNN; SPEC-TASK-XXXXXX-… hoặc SPEC-SL-NNN-…} |
 | Specification | {REQUIRED: Full Spec path/section or `Embedded Mini-Spec — TICKET-ID`} |
 | Author | |
 | Reviewer (TL) | |

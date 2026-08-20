@@ -7,7 +7,7 @@
 **Feature:** [FEAT-006](../records/features/FEAT-006.md) (GHTK carrier)
 **Placement:** `app/code/Secomm/Ghtk/`
 **Risk tier:** Tier 2
-**Author:** AI draft · **Date:** 2026-07-30 · **Status:** Ready *(gating met: DEC-021 + DEC-022 accepted)*
+**Author:** AI draft · **Date:** 2026-07-30 · **Status:** Dev complete *(legacy reconciliation 2026-08-19, DEC-SL018-002: shipped trong FEAT-006 — Ghtk carrier rate live tại `Secomm/Ghtk/Model/{Carrier,Fee}`; status "Ready" stale từ 2026-07-30)*
 
 ## Description
 

@@ -26,7 +26,9 @@ Phân tích một ticket/task: requirement, risk, affected area, dependency, eff
 1. Đọc `AGENTS.md §9 (mode), §12 (high-risk)` + relevant `project-context/` — skip nếu đã load trong run này (function-template §Efficiency).
 2. Chạy skill `task` với ticket.
 3. Cross-check high-risk area (§12); flag Tier 2 escalation nếu touch payment/checkout/order/DB/security.
-4. Produce structured output.
+4. **Phân loại container (P2A — `rules/work-item-identity.md` §3):** requirement có phải một *capability* chứa nhiều work item độc lập có thể deliver riêng không? CÓ → Feature (FEAT-) làm parent; KHÔNG → standalone Task/Bug/Spike — **KHÔNG tự tạo Feature một-ticket chỉ để ticket có parent**.
+5. Nếu phân tích dẫn tới việc tạo work item mới: mint ID bằng `bin/project-ai-idgen <TYPE> --project <dir>` (collision-safe; KHÔNG quét max+1), tạo canonical record dưới `.ai/records/{features,tasks,bugs,spikes}/`, set `parent` metadata + display title H1 theo rule.
+6. Produce structured output.
 
 ## Expected output
 Ticket analysis: summary, scope (affected files/areas), risks (severity), missing info, approach, effort range, escalation (yes/no + tier).

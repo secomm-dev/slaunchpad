@@ -1,5 +1,5 @@
 ---
-id: DEC-{CODE}-{NNN}         # naming (Entry h, 2026-08-17): {CODE} = primary work-item ID bỏ gạch nối, uppercase (SL-015→SL015, FEAT-006→FEAT006); {NNN} = suffix 3 chữ số tăng dần THEO work-item (001, 002…). Ví dụ: DEC-SL015-001. Legacy DEC-NNN (global sequence) vẫn hợp lệ cho record tạo trước 2026-08-17 + decision_type process/tooling/governance (exempt, không work_items).
+id: DEC-{CODE}-{NNN}         # naming (Entry h, 2026-08-17): {CODE} = primary work-item ID bỏ gạch nối, uppercase. P2A chấp nhận cả work-item mới (TASK-4P8DX2 → DEC-TASK4P8DX2-001) lẫn legacy (SL-015→SL015, FEAT-006→FEAT006); {NNN} = suffix 3 chữ số tăng dần THEO work-item (001, 002…). Ví dụ: DEC-SL015-001, DEC-TASK4P8DX2-001. Legacy DEC-NNN (global sequence) vẫn hợp lệ cho record tạo trước 2026-08-17 + decision_type process/tooling/governance (exempt, không work_items).
 title: Decision title
 status: proposed             # proposed | accepted | rejected | superseded | deprecated  (B1: rejected added; status buckets into the parent record's decision_approval_summary)
 owners: []                   # approver roles e.g. [sa, tl] — canonical approval owner (B1 §1)
@@ -10,7 +10,7 @@ last_verified: 2026-07-21
 verified_against_commit:
 supersedes: []               # DEC IDs decision này thay thế
 superseded_by:               # DEC ID thay thế decision này (empty nếu current)
-work_items: []               # REQUIRED ≥1 work-item ID (FEAT-/SL-/BUG-/REL-) — anchor decision vào work-item để chống re-open cùng chủ đề dưới DEC-ID khác. [] chỉ hợp lệ khi decision_type ∈ {process, tooling, governance}. Validator (`bin/project-ai-validate --check-records`) parse field này. Entry ĐẦU TIÊN = primary work-item → quyết định file prefix (work_items: [SL-015, FEAT-006] → file DEC-SL015-001.md).
+work_items: []               # REQUIRED ≥1 work-item ID — P2A dual format: FEAT-/TASK-/BUG-/SPIKE-/REL-XXXXXX (new) hoặc legacy SL-/FEAT-/BUG-/REL-NNN. Anchor decision vào work-item để chống re-open cùng chủ đề dưới DEC-ID khác. [] chỉ hợp lệ khi decision_type ∈ {process, tooling, governance}. Validator (`bin/project-ai-validate --check-records`) parse field này. Entry ĐẦU TIÊN = primary work-item → quyết định file prefix (work_items: [TASK-4P8DX2, FEAT-7K3M9Q] → file DEC-TASK4P8DX2-001.md).
 ---
 
 # Decision Record: {Tiêu đề decision}
@@ -46,8 +46,10 @@ work_items: []               # REQUIRED ≥1 work-item ID (FEAT-/SL-/BUG-/REL-) 
 
 > `work_items` (frontmatter) là canonical — validator parse. Mục này chỉ thêm narrative/link, KHÔNG được contradict `work_items`.
 
-- Features: FEAT-XXX
-- Bugs: BUG-XXX
-- Releases: REL-XXX
+- Features: FEAT-XXXXXX (hoặc legacy FEAT-NNN)
+- Tasks: TASK-XXXXXX
+- Bugs: BUG-XXXXXX
+- Spikes: SPIKE-XXXXXX
+- Releases: REL-XXXXXX
 - Legacy source: SL-XXX (read-only, nếu có)
 - DECISIONS.md index: `ADR-XXXX` (compatibility pointer — Navigator `adr_ref` vẫn resolve qua đây)

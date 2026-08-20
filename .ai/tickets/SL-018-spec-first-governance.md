@@ -44,4 +44,5 @@ Bịt mọi lối "Ticket → Plan → Implement" không có specification; mọ
 ## Related
 
 - Plan: [SL-018 plan](../plans/SL-018-implementation-plan.md) · Decision: [DEC-SL018-001](../records/decisions/DEC-SL018-001.md) (proposed)
+- Hardening kế thừa: [DEC-SL018-002](../records/decisions/DEC-SL018-002.md) (accepted 2026-08-19 — ticket activation contract: Mini-Spec + plan artifact bắt buộc ở tầng ticket; trigger audit SL-020)
 - Audit source: prompt SA/TL 2026-08-17 (§17 report trong plan Part 1)

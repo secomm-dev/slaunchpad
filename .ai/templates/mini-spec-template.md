@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Specification ID | {TICKET-ID} — Mini-Spec embedded, identity = chính ticket (KHÔNG tạo file riêng, KHÔNG ID riêng; `MINI-{NNN}` deprecated) |
+| Specification ID | {TICKET-ID} — Mini-Spec embedded, identity = chính ticket (KHÔNG tạo file riêng, KHÔNG ID riêng; `MINI-{NNN}` deprecated). P2A: TICKET-ID = TASK-/BUG-/SPIKE-XXXXXX (new) hoặc legacy SL-NNN |
 | Specification Level | MINI |
 | Ticket | |
 | Mode | B |
