@@ -37,6 +37,10 @@ These components require copying template files to the theme directory.
 - **B-overlay**: Transform the Hyvä Cookie Notice into something new with this UI Component, that adds a new look and feel.
 - **C-simple-elegant**: Transform the Hyvä Cookie Notice into something new with this UI Component, that adds a new look and feel.
 
+### embed
+
+- **A-basic**: Embed YouTube and Vimeo videos with a native iframe, an optional JS lazy-load mode that shows a poster image and play button before loading the player.
+
 ### footer
 
 - **A-clean**: Transform the Hyvä Footer into something new with this UI Component, that adds a new look and feel.
@@ -61,6 +65,10 @@ These components require copying template files to the theme directory.
 - **A-spinner**: Transform the Hyvä loader into something new with this UI Component, that adds a new look and feel.
 - **B-ping**: Transform the Hyvä loader into something new with this UI Component, that adds a new look and feel.
 - **C-dancers**: Transform the Hyvä loader into something new with this UI Component, that adds a new look and feel.
+
+### map
+
+- **A-default**: This component displays a Google map with one or more location markers.
 
 ### menu
 
@@ -214,5 +222,5 @@ This plugin demonstrates how to integrate Design Tokens into a Hyvä theme.
 
 ---
 
-_Generated on: 2026-01-08 20:24:03_
+_Generated on: 2026-08-20 16:54:48_
 _Hyva UI path: 

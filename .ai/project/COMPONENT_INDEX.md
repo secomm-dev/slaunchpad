@@ -19,7 +19,7 @@
 
 ## Notes
 
-- **CMP-VNPAY = `suspect`**: hardening (FEAT-HEHJQ4 / DEC-FEATHEHJQ4-001..015) is `proposed`, not yet implemented — re-audit the IPN flow before relying on it. Flip to `current` after FEAT-HEHJQ4 lands + QC L3 passes.
+- **CMP-VNPAY = `suspect`**: hardening (FEAT-HEHJQ4 / DEC-FEATHEHJQ4-001..006) is `proposed`, not yet implemented — re-audit the IPN flow before relying on it. Flip to `current` after FEAT-HEHJQ4 lands + QC L3 passes.
 - **Stable IDs (RM-08):** a renamed/merged component keeps its ID or records `supersedes`/`superseded_by`. Records reference these IDs via `components:` frontmatter.
 - **Status drives scoped re-audit:** `current` = credible; `suspect`/`stale` = re-audit only that component's source areas (not the whole project).
 - Update via `shared-core/functions/update-project-state.md` when a record → Done.

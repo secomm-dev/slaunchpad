@@ -17,7 +17,7 @@
 ## Known & decided (durable)
 
 - DEC-7 Strategy B (Hyvä-native) · DEC-8 module/Launchpad boundary · DEC-9 dual-theme (Luma+Hyva) — address module.
-- DEC-FEATHEHJQ4-001..015 — VNPAY IPN hardening decisions (status `proposed`; SA/TL to accept): signature, status mapping, retry, idempotency, audit storage, payload versioning.
+- DEC-FEATHEHJQ4-001..006 — VNPAY IPN hardening decisions (status `proposed`; SA/TL to accept): signature, status mapping, retry, idempotency, audit storage, payload versioning.
 - Tier-2 escalation required for payment/checkout/security/schema/contract (AGENTS §11/§12).
 
 ## Active risks / known limitations (summary — full list in `project-context/06`)
@@ -35,8 +35,8 @@
 ## Current focus / phase
 
 - **Phase 1a–1d artifacts done**; **1e/1f** semantic-only (satisfied in AGENTS §8.5/§8.6/§9 + `rules/no-duplicate-knowledge.md` — no separate artifact). Migration markers P1A–P1F stamped 2026-07-23 (CHANGELOG 1.3.0).
-- **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..015 `proposed`).
-- **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..015 `proposed`).
+- **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..006 `proposed`).
+- **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..006 `proposed`).
 
 <!--
 DURABLE snapshot. Update via update-project-state when a record → Done.
