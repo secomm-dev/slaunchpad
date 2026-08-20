@@ -1,12 +1,12 @@
 # Feature Spec: {Tên feature}
 
-> Filename: `SPEC-{OWNER-ID}-{slug}.md` (vd `SPEC-FEAT-006-ghtk-shipping-carrier.md`) — naming canonical: `rules/spec-first.md` §Spec Naming.
+> Filename: `SPEC-{OWNER-ID}-{slug}.md` — OWNER-ID dual format (P2A): legacy `SPEC-FEAT-006-ghtk-shipping-carrier.md` hoặc collision-safe `SPEC-TASK-4P8DX2-calculate-express-delivery-eligibility.md`. Naming canonical: `rules/spec-first.md` §Spec Naming + `rules/work-item-identity.md` §7.
 
 ## Metadata
 
 | Field | Value |
 |-------|-------|
-| Specification ID | SPEC-{OWNER-ID} — owner = Feature ID (spec thuộc feature) hoặc Ticket ID (standalone); stable, không phụ thuộc slug |
+| Specification ID | SPEC-{OWNER-ID} — owner = Feature ID (spec thuộc feature) hoặc standalone Task/Bug/Spike/REL ID; stable, không phụ thuộc slug |
 | Feature ID | {FEATURE-ID} hoặc NONE (standalone ticket spec) |
 | Specification Level | FULL |
 | Author | |

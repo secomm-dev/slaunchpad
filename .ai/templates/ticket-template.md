@@ -1,4 +1,8 @@
-# {Tiêu đề ticket}
+# {Tiêu đề ticket — Verb + Object/Outcome (work-item-identity.md §6)}
+
+<!-- LEGACY ticket form (pre-P2A) — `.ai/tickets/` là legacy read-only. Item MỚI (P2A):
+     tạo canonical record `.ai/records/tasks|bugs|spikes/TASK-XXXXXX.md` (mint id bằng
+     `bin/project-ai-idgen`) với frontmatter parent/display title — xem work-item-identity.md. -->
 
 **Type:** Feature / Bug / Task / Change Request
 **Priority:** Critical / High / Medium / Low

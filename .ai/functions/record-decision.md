@@ -12,11 +12,11 @@ Ghi một decision bền vững: canonical `.ai/records/decisions/DEC-{CODE}-{NN
 
 ## Required inputs
 - Decision (what), context (why), rationale (why this option), consequence
-- **work_items** (≥1 work-item ID: `FEAT-`/`SL-`/`BUG-`/`REL-`) — bắt buộc khi reserve, là anchor gắn decision vào work-item (chống re-open cùng chủ đề dưới DEC-ID khác khi nhiều staff làm song song). `work_items: []` chỉ hợp lệ khi `decision_type ∈ {process, tooling, governance}` (decision dạng quy trình/tooling không có work-item).
+- **work_items** (≥1 work-item ID — **P2A dual format**: `FEAT-/TASK-/BUG-/SPIKE-/REL-XXXXXX` collision-safe mới hoặc legacy `SL-/FEAT-/BUG-/REL-NNN`; xem `rules/work-item-identity.md` §2) — bắt buộc khi reserve, là anchor gắn decision vào work-item (chống re-open cùng chủ đề dưới DEC-ID khác khi nhiều staff làm song song). `work_items: []` chỉ hợp lệ khi `decision_type ∈ {process, tooling, governance}` (decision dạng quy trình/tooling không có work-item).
 
 ## Required project files to read
 - `DECISIONS.md` (next DEC/ADR number; tránh duplicate) + `.ai/records/decisions/` (canonical store)
-- `records/features/`, `records/bugs/`, `records/releases/`, legacy `tickets/` — để resolve/confirm các ID trong `work_items` (link, KHÔNG restate)
+- `records/features/`, `records/tasks/`, `records/bugs/`, `records/spikes/`, `records/releases/`, legacy `tickets/` — để resolve/confirm các ID trong `work_items` (link, KHÔNG restate)
 - `templates/decision-record-template.md` (canonical) + `templates/decisions-template.md` (DECISIONS.md skeleton)
 
 ## Dependencies
@@ -26,7 +26,7 @@ Ghi một decision bền vững: canonical `.ai/records/decisions/DEC-{CODE}-{NN
 
 ## Execution steps
 1. **Reserve DEC-ID (chống race khi nhiều staff làm song song):**
-   - **Naming per-work-item (Entry h, 2026-08-17):** DEC-ID = `DEC-{CODE}-{NNN}` với `{CODE}` = primary work-item ID (entry đầu tiên của `work_items`) bỏ gạch nối, uppercase (`SL-015`→`SL015`, `FEAT-006`→`FEAT006`); `{NNN}` = suffix 3 chữ số.
+   - **Naming per-work-item (Entry h, 2026-08-17; P2A mở rộng alphabet):** DEC-ID = `DEC-{CODE}-{NNN}` với `{CODE}` = primary work-item ID (entry đầu tiên của `work_items`) bỏ gạch nối, uppercase — dual format: legacy `SL-015`→`SL015`, `FEAT-006`→`FEAT006`, hoặc P2A `TASK-4P8DX2`→`TASK4P8DX2`; `{NNN}` = suffix 3 chữ số. (Per-work-item suffix vẫn max+1 + disk-lock: namespace của MỘT work item đã được serialize bởi lock — đây không phải allocation toàn cục; work-item IDs themselves luôn mint bằng `bin/project-ai-idgen`, không max+1.)
    - Scan `.ai/records/decisions/DEC-{CODE}-*.md` (namespace của primary work-item), parse suffix, tính `next = max + 1` (append-only — KHÔNG tái dùng gap của DEC superseded/deleted). Hai staff trên hai ticket khác nhau không bao giờ đụng namespace → không còn trùng tên file toàn project.
    - **Exempt path:** decision_type ∈ {process, tooling, governance} (`work_items: []`) → giữ numbering legacy global: scan `DEC-<số>.md`, `next = max + 1`, file `DEC-{next}.md`.
    - Tạo ngay file chỉ chứa frontmatter (`id, title, status: draft, owners, decision_type, work_items: [...], created`). Sự tồn tại của file trên disk là lock; `work_items` là input bắt buộc lúc reserve. Nếu 2 agent race cùng namespace, agent thứ hai thấy placeholder (max đã tăng) → lấy số kế tiếp.

@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+# =============================================================================
+# project-ai-idgen — mint collision-safe canonical work-item IDs.
+#
+# Canonical identity model (see shared-core/rules/work-item-identity.md):
+#   <TYPE>-<SUFFIX>     e.g. TASK-4P8DX2, FEAT-7K3M9Q, BUG-9N2KCF
+#   TYPE   ∈ FEAT | TASK | BUG | SPIKE | REL
+#   SUFFIX = 6 chars, Crockford Base32 alphabet 0123456789ABCDEFGHJKMNPQRSTVWXYZ
+#            (no I/L/O/U — ambiguous characters excluded)
+#
+# Generation: one 4-byte draw from /dev/urandom (uniform 32-bit), encoded as
+# 6 base-32 chars. 2^32 is an exact multiple of 32^6 (=2^30) so the encoding is
+# unbiased. NO sequential allocation, NO "scan max + 1" — two agents on two
+# branches/worktrees can mint concurrently without coordination.
+#
+# Collision handling (layered):
+#   1. in-invocation dedupe (--count N always returns N distinct IDs);
+#   2. --project <dir> checks each minted ID is unused anywhere under <dir>/.ai
+#      and re-mints (max 10 attempts) — local existence check, NOT allocation;
+#   3. bin/project-ai-validate --check-identity FAILs on duplicate canonical IDs
+#      (merge-time backstop: re-mint the newer item and update its references).
+#
+# Usage:
+#   bin/project-ai-idgen TASK                      # mint one TASK-xxxxxx
+#   bin/project-ai-idgen FEAT --count 5            # 5 distinct FEAT ids
+#   bin/project-ai-idgen BUG --project /var/www/x  # avoid ids already used in x/.ai
+#   bin/project-ai-idgen --validate TASK-4P8DX2    # regex-check an id (exit 0/1)
+#   bin/project-ai-idgen --suffix                  # print bare 6-char suffix
+# Exit: 0 ok, 1 invalid input/collision-exhausted, 2 usage error.
+# =============================================================================
+set -uo pipefail
+
+ALPHABET="0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+SUFFIX_LEN=6
+TYPES="FEAT TASK BUG SPIKE REL"
+ID_REGEX='^(FEAT|TASK|BUG|SPIKE|REL)-[0-9ABCDEFGHJKMNPQRSTVWXYZ]{6}$'
+LEGACY_REGEX='^[A-Z][A-Z0-9]{1,7}-[0-9]{3,}$'
+
+usage(){ sed -n '2,10p' "$0" >&2; }
+die(){ echo "idgen: $*" >&2; exit 1; }
+
+# encode <n> <len> — big-endian base32 of non-negative n, padded to len
+encode(){
+  local n=$1 len=$2 i c out=""
+  for ((i=0; i<len; i++)); do
+    c=$(( n % 32 )); out="${ALPHABET:c:1}${out}"; n=$(( n / 32 ))
+  done
+  printf '%s' "$out"
+}
+
+# rand32 — uniform 0..2^32-1 from /dev/urandom (4 bytes, decimal via od)
+rand32(){
+  local b
+  b="$(od -An -N4 -tu4 /dev/urandom 2>/dev/null | tr -d ' \t\n')" \
+    || die "/dev/urandom unavailable (required for collision-safe ids)"
+  [ -n "$b" ] || die "/dev/urandom read failed"
+  printf '%s' "$b"
+}
+
+mint_suffix(){ encode "$(rand32)" "$SUFFIX_LEN"; }
+
+# id_used <suffix> <project> — does any "-<suffix>" token already appear in the
+# project's work-item surfaces? (reserve the suffix across ALL types so the same
+# 6 chars never label two different items)
+id_used(){
+  local suffix="$1" proj="$2" surfaces
+  [ -d "$proj/.ai" ] || return 1
+  surfaces=()
+  [ -d "$proj/.ai/records" ] && surfaces+=("$proj/.ai/records")
+  [ -d "$proj/.ai/tickets" ] && surfaces+=("$proj/.ai/tickets")
+  [ -d "$proj/.ai/specs" ] && surfaces+=("$proj/.ai/specs")
+  [ -d "$proj/.ai/plans" ] && surfaces+=("$proj/.ai/plans")
+  [ ${#surfaces[@]} -eq 0 ] && return 1
+  grep -rqe "-${suffix}" "${surfaces[@]}" 2>/dev/null
+}
+
+TYPE=""; COUNT=1; PROJECT=""; MODE="mint"; CHECK_ID=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    FEAT|TASK|BUG|SPIKE|REL) TYPE="$1"; shift ;;
+    --count) COUNT="$2"; shift 2 ;;
+    --project) PROJECT="$2"; shift 2 ;;
+    --suffix) MODE="suffix"; shift ;;
+    --validate) MODE="validate"; CHECK_ID="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage; die "unknown argument: $1" ;;
+  esac
+done
+
+case "$MODE" in
+  validate)
+    printf '%s' "$CHECK_ID" | grep -Eq "$ID_REGEX" && exit 0
+    printf '%s' "$CHECK_ID" | grep -Eq "$LEGACY_REGEX" && { echo "note: $CHECK_ID matches the LEGACY id format (accepted for pre-P2A items only)" >&2; exit 0; }
+    die "not a valid work-item id: $CHECK_ID (expected <TYPE>-<6 chars>, alphabet 0-9 A-Z minus I/L/O/U)"
+    ;;
+  suffix)
+    [ -n "$TYPE" ] || { usage; die "missing TYPE (one of: $TYPES)" ; }
+    mint_suffix; echo; exit 0
+    ;;
+esac
+
+[ -n "$TYPE" ] || { usage; die "missing TYPE (one of: $TYPES)"; }
+case "$COUNT" in ''|*[!0-9]*) die "--count must be a positive integer";; esac
+[ "$COUNT" -ge 1 ] || die "--count must be >= 1"
+
+declare -A seen=()
+minted=0; attempts=0
+while [ "$minted" -lt "$COUNT" ]; do
+  attempts=$((attempts+1))
+  [ "$attempts" -le $((COUNT * 10)) ] || die "could not mint $COUNT unique ids after $attempts draws (rerun or widen suffix)"
+  sfx="$(mint_suffix)"
+  [ -n "${seen[$sfx]:-}" ] && continue
+  if [ -n "$PROJECT" ] && id_used "$sfx" "$PROJECT"; then
+    echo "note: suffix $sfx already used in $PROJECT/.ai — re-minting" >&2
+    continue
+  fi
+  seen[$sfx]=1
+  echo "${TYPE}-${sfx}"
+  minted=$((minted+1))
+done
+exit 0

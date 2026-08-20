@@ -34,6 +34,17 @@ reusable feature · feature nhiều ticket · cross-module · architecture chang
 
 **Full Spec đứng TRƯỚC ticket decomposition** — mọi ticket con reference cùng canonical spec (một spec cho cả feature; không duplicate business rules ra nhiều spec).
 
+## Ticket activation contract (DEC-SL018-002)
+
+Một ticket chỉ được activate (`Ready|Planned|In Progress|Active`) khi thoả **CẢ HAI**:
+
+1. **Embedded `## Mini Spec` đủ 5 sections** ngay trong ticket — **kể cả khi ticket là slice của feature có Full Spec**. Dòng `Specification:` tham chiếu Full Spec vẫn bắt buộc (trace + canonical) nhưng **KHÔNG thay thế** Mini-Spec: Full Spec là behavioral contract của FEATURE; Mini-Spec là behavioral contract của SLICE (Goal / Expected Behavior / Constraints / Out of Scope / AC riêng của ticket). Ticket có reference mà không có Mini-Spec ⇒ **chưa executable**.
+2. **Plan artifact**: Mode A/B → dòng `Plan:` trỏ file `.ai/plans/*.md` **tồn tại** (file phải có `| Specification |` row); Mode C → section `## Approach` ngay trong ticket. Approach viết inline trong dòng status **KHÔNG tính** — nó không phải artifact reviewable được.
+
+**Gap gốc (SL-020, 2026-08-19):** ticket active reference parent Full Spec → gate pass dù bản thân ticket không có behavioral contract riêng; approach nằm trong status line → không artifact nào bị check. Gate đo "sự tồn tại tham chiếu" thay vì "nội dung hợp lệ của slice".
+
+Machine gate: `bin/project-ai-validate --check-specs` hard-fail ticket active vi phạm một trong hai (thiếu Mini-Spec / thiếu header / thiếu plan artifact / thiếu Specification reference).
+
 ## Classification trước artifacts
 
 ```text
@@ -54,7 +65,7 @@ Required: Full Spec reference, or Embedded Mini-Spec (with Expected Behavior + A
 Create/complete the specification before planning or implementation.
 ```
 
-4. **Machine validator (SpecReadinessGuard):** `bin/project-ai-validate --check-specs` — scan canonical records (`specification_level` / `spec_status` / `specification_ref` frontmatter) + legacy tickets + plans. Record ở trạng thái executable (ready/planned/in_progress/active…) thiếu spec hợp lệ ⇒ **FAIL**; trạng thái non-active ⇒ WARN (legacy — enforce khi activate, xem "Legacy tickets"); plan KHÔNG có dòng `| Specification | … |` ⇒ FAIL. Được gọi trực tiếp để implement? Agent vẫn phải check spec (rule này) — validator không thay thế prompt-side check.
+4. **Machine validator (SpecReadinessGuard):** `bin/project-ai-validate --check-specs` — scan canonical records (`specification_level` / `spec_status` / `specification_ref` frontmatter) + legacy tickets + plans. Record ở trạng thái executable (ready/planned/in_progress/active…) thiếu spec hợp lệ ⇒ **FAIL**; trạng thái non-active ⇒ WARN (legacy — enforce khi activate, xem "Legacy tickets"); plan KHÔNG có dòng `| Specification | … |` ⇒ FAIL; **ticket active thiếu embedded Mini-Spec hoặc plan artifact (`## Approach` / `Plan:` link resolve) ⇒ FAIL** (DEC-SL018-002). Được gọi trực tiếp để implement? Agent vẫn phải check spec (rule này) — validator không thay thế prompt-side check.
 
 ## Executable task — definition
 
@@ -62,6 +73,7 @@ Create/complete the specification before planning or implementation.
 [ ] Requirement/ticket exists
 [ ] Specification level determined (MINI/FULL)
 [ ] Valid Full Spec OR embedded Mini-Spec exists
+[ ] Ticket active: embedded Mini-Spec + Specification reference + plan artifact (## Approach hoặc Plan: link) — DEC-SL018-002
 [ ] Acceptance Criteria exists
 [ ] Out of Scope / constraints sufficiently clear
 [ ] Plan references specification (dòng "Specification:" trong plan)
@@ -91,22 +103,22 @@ Definition of Done không chỉ check plan completion — mỗi ticket phải x�
 
 Spec **identity đến từ Feature/Ticket owner**; slug chỉ là suffix dễ đọc — KHÔNG phải identity.
 
-**Generic pattern:** `SPEC-<OWNER-ID>-<slug>.md` — OWNER-ID = FEATURE-ID (spec thuộc feature) hoặc TICKET-ID (standalone: SL-/BUG-/TASK-/REL-).
+**Generic pattern:** `SPEC-<OWNER-ID>-<slug>.md` — OWNER-ID = FEATURE-ID (spec thuộc feature) hoặc ID của standalone work item. **P2A dual format** (work-item-identity.md §7): OWNER-ID nhận cả legacy (`FEAT-006`, `SL-015`, `BUG-042`) lẫn collision-safe mới mint từ `bin/project-ai-idgen` (`TASK-4P8DX2`, `SPIKE-3D7RQM`).
 
 - **Full Spec thuộc Feature** (nhiều ticket, canonical — tối đa 1 spec/feature):
-  - Filename: `SPEC-<FEATURE-ID>-<slug>.md` (vd `SPEC-FEAT-006-ghtk-shipping-carrier.md`)
-  - Specification ID: `SPEC-FEAT-006`
-- **Full Spec thuộc standalone Ticket**: `SPEC-<TICKET-ID>-<slug>.md` (vd `SPEC-BUG-042-fix-cod-calculation.md`, `SPEC-SL-015-shippingcore-origin-contract.md`); ID = `SPEC-BUG-042`.
-- **Mini-Spec**: embedded trong ticket — **KHÔNG file riêng, KHÔNG ID riêng**: `Specification Level: MINI` + `Specification ID: <TICKET-ID>` (placeholder `MINI-{NNN}` deprecated).
+  - Filename: `SPEC-<FEATURE-ID>-<slug>.md` (vd `SPEC-FEAT-006-ghtk-shipping-carrier.md` legacy, `SPEC-FEAT-7K3M9Q-express-delivery.md` P2A)
+  - Specification ID: `SPEC-FEAT-006` / `SPEC-FEAT-7K3M9Q`
+- **Full Spec thuộc standalone work item**: `SPEC-<ITEM-ID>-<slug>.md` (vd `SPEC-BUG-042-fix-cod-calculation.md`, `SPEC-TASK-4P8DX2-calculate-express-delivery-eligibility.md`); ID = `SPEC-BUG-042`.
+- **Mini-Spec**: embedded trong ticket/record — **KHÔNG file riêng, KHÔNG ID riêng**: `Specification Level: MINI` + `Specification ID: <ITEM-ID>` (placeholder `MINI-{NNN}` deprecated).
 - **Metadata header của Full Spec** (khớp filename): `Specification ID: SPEC-<OWNER-ID>` · `Feature ID: <FEATURE-ID> | NONE` · `Specification Level: FULL`.
 - **Slug**: lowercase kebab-case, ngắn, descriptive, tiếng Anh kỹ thuật (vd `ghtk-shipping-carrier`, `fix-cod-calculation`). Đổi slug KHÔNG đổi Specification ID.
-- **Machine-resolvable**: `^SPEC-(FEAT|BUG|REL|SL|TASK)-[0-9]{3,}-[a-z0-9]+(-[a-z0-9]+)*\.md$`
+- **Machine-resolvable (dual — legacy owner hoặc P2A collision-safe owner)**: `^SPEC-((FEAT|BUG|REL|SL|TASK)-[0-9]{3,}|(FEAT|TASK|BUG|SPIKE|REL)-[0-9ABCDEFGHJKMNPQRSTVWXYZ]{6})-[a-z0-9]+(-[a-z0-9]+)*\.md$`
 - **Cấm** khi đã có owner ID: `SPEC.md`, `SPEC-001.md`, `SPEC-{NNN}` global, `feature-spec.md`, `specification.md`, `final-spec-v2.md`, file Mini-Spec riêng.
 - **Legacy**: file slug-only hiện có giữ nguyên (grandfathered); rename-on-touch qua safe workflow khi spec được sửa/activate + update refs — không bulk rename.
 
 ## Liên kết
 
-- Rule kèm: `planning-first.md` (plan gate nằm sau spec gate) · `no-duplicate-knowledge.md` (một spec cho feature)
+- Rule kèm: `planning-first.md` (plan gate nằm sau spec gate) · `no-duplicate-knowledge.md` (một spec cho feature) · `work-item-identity.md` (P2A — work-item ID dual format, §7 spec mapping)
 - Gate: `core/quality-gates.md` (Gate 1/3) · `core/delivery-governance.md` · `core/definition-of-ready.md`
 - State: `shared-core/workflows/WORKFLOW_STATE_MODEL.md`
 - Validator: `bin/project-ai-validate --check-specs`

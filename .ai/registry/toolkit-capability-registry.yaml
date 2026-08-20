@@ -39,6 +39,14 @@ phase1_capabilities:
   quota_optimization: true             # 1e — context-loading + quota (RM-05)
   governance_deduplication: true       # 1f — one canonical source per governance concept
 
+# P2A work-item identity model (2026-08-20) — shared-core/rules/work-item-identity.md
+phase2_capabilities:
+  project_code: true                   # P2A — .ai/toolkit/project.yaml (canonical project code)
+  collision_safe_ids: true             # P2A — bin/project-ai-idgen; no max+1 allocation
+  parent_relationship: true            # P2A — parent frontmatter (mutable metadata)
+  display_names: true                  # P2A — [CODE][FEAT-…][TASK-…] rendered from metadata
+  legacy_aliases: true                 # P2A — grandfathered ids + legacy_ids/external_refs
+
 # --------------------------------------------------------------------------
 # Group: navigator — always-available navigation intents (every role/project)
 # Backed by real Claude skills (skills-source/nav-*) + the canonical Navigator

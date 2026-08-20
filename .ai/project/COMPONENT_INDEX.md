@@ -14,6 +14,8 @@
 | CMP-PAYMENT-MOLLIE | Mollie payments (composer, Hyvä compat — active gateway) | current | vendor/mollie/* (composer) | — | — | Secomm BE | 1afdfc8 | 2026-07-21 |
 | CMP-VNADDR | Vietnam address data layer (province/city/ward seed + vi_VN names) — Secomm_VietNamAddress (data-only, sequences AddressDropdown) | current | app/code/Secomm/VietNamAddress; app/code/Secomm/AddressDropdown (data tables) | FEAT-005 | DEC-7 · DEC-8 · DEC-9 · DEC-017 · DEC-019 · DEC-020 | Secomm BE | 1afdfc8 | 2026-07-21 |
 | CMP-GHTK | GHTK shipping carrier (Secomm_Ghtk) — fee-first scope: rate calc only (SL-008+SL-009 ready); order/shipment sync (SL-010) PARKED; services.giaohangtietkiem.vn | proposed | app/code/Secomm/Ghtk (NEW) | FEAT-006 | DEC-018 · DEC-019 · DEC-020 · DEC-021 · DEC-022 (accepted) · DEC-023 · DEC-024 (parked w/ order sync) | Secomm BE | 1afdfc8 | 2026-07-30 |
+| CMP-PROMOTION | Secomm Promotion group base/foundation (Secomm_Promotion) — anchor only, no business logic; Magento SalesRule stays the promotion engine | current | app/code/Secomm/Promotion | FEAT-008 | DEC-FEAT008-001 | Secomm BE | d871a85f | 2026-08-19 |
+| CMP-PROMOTIONMAXDISCOUNT | Per-rule Maximum Discount Cap cho by_percent Sales Rules — cap collector sort 310 + LRM redistribution; scaffold landed (SL-020), data model/engine/UI pending (SL-021..025) | proposed | app/code/Secomm/PromotionMaxDiscount | FEAT-008 | DEC-FEAT008-001 | Secomm BE | d871a85f | 2026-08-19 |
 
 ## Notes
 

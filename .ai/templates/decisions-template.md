@@ -9,8 +9,10 @@
        - [DEC-NNN](../../records/decisions/DEC-NNN.md) — title (status; work_items: FEAT-006, SL-009, SL-010)
      New records (Entry h, 2026-08-17) are named per primary work-item — index them the same way:
        - [DEC-SL015-001](../../records/decisions/DEC-SL015-001.md) — title (status; work_items: SL-015)
-     ({CODE} = work-item ID without hyphens: SL-015→SL015, FEAT-006→FEAT006; {NNN} = 3-digit per-work-item
-     sequence. Legacy DEC-NNN entries stay as written — append-only, never renamed.)
+     P2A (2026-08-20): work-item IDs dual format — legacy (SL-015→SL015, FEAT-006→FEAT006) hoặc
+     collision-safe mới (TASK-4P8DX2→TASK4P8DX2):
+       - [DEC-TASK4P8DX2-001](../../records/decisions/DEC-TASK4P8DX2-001.md) — title (status; work_items: TASK-4P8DX2)
+     ({NNN} = 3-digit per-work-item sequence. Legacy DEC-NNN entries stay as written — append-only, never renamed.)
      The one-liner SHOULD carry (status; work_items: …) so the durable index is self-describing for conflict
      checks (two staff scanning can see which work-items are already decided). work_items mirrors the DEC
      record frontmatter (process/tooling/governance decisions → `work_items: none`). -->

@@ -8,7 +8,7 @@ schema_version: 1                              # registry schema_version
 generator_commit: "{generator_commit}"         # toolkit git sha at generation
 generated_at: "{YYYY-MM-DDTHH:MM:SSZ}"         # fresh-generation timestamp
 last_upgraded_at: "-"                          # "-" until first project-ai-upgrade; ISO8601 after
-applied_migrations: []                         # B3 marker store — P1A..P1F stamped as applied
+applied_migrations: []                         # B3 marker store — P1A..P1F + P2A stamped as applied
 phase1_capabilities:                           # mirror of registry phase1_capabilities (source of truth)
   canonical_records: true
   per_work_item_mode: true
@@ -16,6 +16,12 @@ phase1_capabilities:                           # mirror of registry phase1_capab
   runtime_separation: true
   quota_optimization: true
   governance_deduplication: true
+phase2_capabilities:                           # mirror of registry phase2_capabilities (P2A identity model)
+  project_code: true
+  collision_safe_ids: true
+  parent_relationship: true
+  display_names: true
+  legacy_aliases: true
 ---
 
 # Toolkit Version
@@ -30,6 +36,7 @@ phase1_capabilities:                           # mirror of registry phase1_capab
 | generated_at | {generated_at} |
 | last_upgraded_at | {last_upgraded_at or "-"} |
 | applied_migrations | {applied_migrations or "none"} |
+| project_code | {.ai/toolkit/project.yaml → project.code (P2A; authoritative — do not re-infer)} |
 | generator_route | PROJECT_INITIALIZATION |
 | target_project | {resolved_target} |
 | target_resolved_via | {resolved_via} |

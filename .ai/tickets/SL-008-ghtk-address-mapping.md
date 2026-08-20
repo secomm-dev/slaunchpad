@@ -7,7 +7,7 @@
 **Feature:** [FEAT-006](../records/features/FEAT-006.md) (GHTK carrier)
 **Placement:** `app/code/Secomm/Ghtk/`
 **Risk tier:** Tier 2
-**Author:** AI draft · **Date:** 2026-07-30 · **Status:** Ready *(gating met: DEC-020 accepted, path B; CSV contract + fallback semantics chốt)*
+**Author:** AI draft · **Date:** 2026-07-30 · **Status:** Dev complete *(legacy reconciliation 2026-08-19, DEC-SL018-002: shipped trong FEAT-006 — Ghtk address mapping live tại `Secomm/Ghtk/Model/Address`; status "Ready" stale từ 2026-07-30)*
 
 ## Description
 

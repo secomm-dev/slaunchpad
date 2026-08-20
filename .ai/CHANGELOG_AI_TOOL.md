@@ -2,6 +2,36 @@
 
 > Runtime log of changes to this project's `.ai/` AI-toolkit. Updated via the `update-project-ai-tool` function (governed by `.ai/rules/ai-tool-self-update.md` + `before-ai-tool-update` / `after-ai-tool-update` hooks). One entry per change; never delete.
 
+## [2026-08-20] — P2A Work-Item Identity Model (toolkit Entry (k); migration P2A_WORK_ITEM_IDENTITY; DEC-026)
+
+### Added
+- **`.ai/toolkit/project.yaml`** — canonical project identity SSOT: `name: Secomm Launchpad`, `code: SLP` (P2A bootstrap detect `SL` unambiguous từ 22 ticket filenames → TL workflow đổi `SL→SLP` kèm `code_history`; audit `--check-identity` clean; KHÔNG regenerate work-item IDs).
+- **`.ai/bin/project-ai-idgen`** — collision-safe ID minter (`<TYPE>-<6 ký tự Crockford Base32>`, vd `TASK-4P8DX2`): 4-byte `/dev/urandom` → base32 uniform, existence-check re-mint, KHÔNG max+1 — an toàn multi-agent/multi-branch.
+- **`.ai/rules/work-item-identity.md`** — canonical identity rule (project code §1, ID algorithm+regex §2, types+no-auto-Feature §3, parent metadata §4, display renderer §5, naming §6, spec mapping §7, DEC §8, external_refs/legacy_ids §9, migration policy §10, validation §11, training example §12).
+- **`.ai/records/tasks/` + `.ai/records/spikes/`** — canonical homes cho TASK/SPIKE records mới.
+- Templates mới: `task-record-template.md`, `spike-record-template.md`.
+
+### Changed
+- `.ai/bin/project-ai-validate` — thêm `--check-identity` (project code + PENDING flag, dual-format ids, duplicate canonical id, parent resolve, `project_code` match, display H1 == render, `legacy_ids` uniqueness); mọi ID regex chuyển dual format (legacy `SL-NNN`/`FEAT-NNN` + mới `TASK-4P8DX2`): work_items, DEC naming (suy prefix từ `work_items[0]` — chấp nhận `DEC-TASK4P8DX2-001`), SPEC owner (`SPEC-TASK-4P8DX2-slug.md`); records check covers tasks/spikes.
+- 17 file toolkit-owned synced `--force` (rules/spec-first, no-duplicate-knowledge; functions/analyze-ticket, record-decision, create-feature-spec; templates ×10; registry) — identical-propagation từ toolkit (98/98 contract tests PASS).
+- `.ai/AGENTS.md` §14 — bullet identity model (manual semantic follow-up, shared-owned).
+- `toolkit-version.md` — stamp `P2A_WORK_ITEM_IDENTITY` + `phase2_capabilities` (registry sync).
+
+### Preserved (KHÔNG đổi)
+- Toàn bộ legacy `SL-001..SL-025` tickets, `FEAT-001..008`, DEC records, SPEC files — grandfathered (class A/B), không rename, không re-mint; vẫn resolve qua dual-format validators. `applied_migrations: [P1A..P1F, P2A_WORK_ITEM_IDENTITY]`.
+
+### Notes
+- Applied via `bash secomm-production-ai-toolkit/bin/project-ai-upgrade --project /var/www/html/slaunchpad --apply --force` (idempotent; 4 ADD, 17 UPDATE --force, migration P2A bootstrap, 20 preserved). Validate sau retrofit: 0 FAIL / 0 WARN. Dry-run re-run: IN SYNC.
+- Work item MỚI từ 2026-08-20: mint bằng `.ai/bin/project-ai-idgen`, record dưới `.ai/records/{tasks,bugs,spikes,features}/`, `parent` metadata nếu thuộc Feature, H1 display title `[SLP][…]`, spec `SPEC-<ITEM-ID>-<slug>.md`.
+
+## [2026-08-19] — Spec-First ticket activation hardening (DEC-SL018-002; toolkit-first backport)
+
+### Changed
+- `.ai/rules/spec-first.md` — thêm §"Ticket activation contract (DEC-SL018-002)": ticket active cần embedded `## Mini Spec` (parent Full-Spec reference KHÔNG thay thế) + plan artifact (`## Approach` hoặc `Plan:` link resolve); cập nhật SpecificationGuard layer 4 + executable-task checklist.
+- `.ai/bin/project-ai-validate` — SpecReadinessGuard ticket loop: FAIL khi active ticket thiếu Mini-Spec / thiếu plan artifact / Specification line vắng-hoặc-rỗng.
+- Reconcile legacy: SL-008/SL-009 stale "Ready" → "Dev complete" (shipped trong FEAT-006; surfacing khi hardening).
+- Nguồn: toolkit canonical `secomm-production-ai-toolkit` (`shared-core/rules/spec-first.md` + `bin/project-ai-validate` + Test Q ticket-tier trong `bin/run-contract-tests` — 62/62 PASS); identical-propagation về project. Trigger audit: SL-020 implement mà chưa có ticket-level spec/plan.
+
 ## [1.0.0] — 2026-07-14
 
 ### Added

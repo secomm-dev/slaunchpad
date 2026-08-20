@@ -14,8 +14,8 @@
 
 > A later toolkit sync can compare this version against the current `shared-core/` to detect "behind current". Update via the `update-project-ai-tool` function; log changes in `.ai/CHANGELOG_AI_TOOL.md`.
 
-applied_migrations: [P1A_CANONICAL_RECORDS,P1B_PER_WORK_ITEM_MODE,P1C_PROJECT_MEMORY_INDEX,P1D_RUNTIME_SEPARATION,P1E_CONTEXT_QUOTA_OPTIMIZATION,P1F_GOVERNANCE_DEDUPLICATION]
-last_upgraded_at: 2026-07-23
+applied_migrations: [P1A_CANONICAL_RECORDS,P1B_PER_WORK_ITEM_MODE,P1C_PROJECT_MEMORY_INDEX,P1D_RUNTIME_SEPARATION,P1E_CONTEXT_QUOTA_OPTIMIZATION,P1F_GOVERNANCE_DEDUPLICATION,P2A_WORK_ITEM_IDENTITY]
+last_upgraded_at: 2026-08-20T05:48:33Z
 phase1_capabilities:                           # mirror of registry phase1_capabilities (source of truth)
   canonical_records: true
   per_work_item_mode: true
