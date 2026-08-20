@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">secomm_ghn_address_mapping_form.secomm_ghn_address_mapping_form_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Location Mapping</item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="save" class="Secomm\GhnAddressMapper\Block\Adminhtml\Mapping\Edit\SaveButton"/>
+            <button name="back" class="Secomm\GhnAddressMapper\Block\Adminhtml\Mapping\Edit\BackButton"/>
+            <button name="delete" class="Secomm\GhnAddressMapper\Block\Adminhtml\Mapping\Edit\DeleteButton"/>
+        </buttons>
+        <namespace>secomm_ghn_address_mapping_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>secomm_ghn_address_mapping_form.secomm_ghn_address_mapping_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="secomm_ghn_address_mapping_form_data_source" component="Magento_Ui/js/form/provider">
+        <settings>
+            <submitUrl path="ghn_address_mapper/mapping/save"/>
+        </settings>
+        <dataProvider class="Secomm\GhnAddressMapper\Ui\DataProvider\Mapping\FormDataProvider" name="secomm_ghn_address_mapping_form_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <fieldset name="general">
+        <settings>
+            <label/>
+        </settings>
+        <field name="entity_id" formElement="input">
+            <settings>
+                <dataType>text</dataType>
+                <visible>false</visible>
+            </settings>
+        </field>
+        <field name="country_id" formElement="hidden">
+            <settings>
+                <dataType>text</dataType>
+                <dataScope>country_id</dataScope>
+            </settings>
+        </field>
+    </fieldset>
+    <fieldset name="magento_address">
+        <settings>
+            <label translate="true">Magento Address</label>
+        </settings>
+        <field name="region_id" formElement="select">
+            <settings>
+                <dataType>select</dataType>
+                <label translate="true">Region</label>
+                <dataScope>region_id</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\GhnAddressMapper\Ui\Component\Listing\Column\RegionOptions"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="city_id" formElement="select">
+            <settings>
+                <dataType>select</dataType>
+                <label translate="true">City</label>
+                <dataScope>city_id</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\GhnAddressMapper\Ui\Component\Form\CityOptions"/>
+                        <filterBy>
+                            <field>region_id</field>
+                            <target>${ $.provider }:${ $.parentScope }.region_id</target>
+                        </filterBy>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+    </fieldset>
+    <fieldset name="ghn_address">
+        <settings>
+            <label translate="true">GHN Address</label>
+        </settings>
+        <field name="ghn_province_id" formElement="select">
+            <settings>
+                <dataType>select</dataType>
+                <label translate="true">GHN Province</label>
+                <dataScope>ghn_province_id</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\GhnAddressMapper\Ui\Component\Listing\Column\GhnProvinceOptions"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="ghn_district_id" formElement="select">
+            <settings>
+                <dataType>select</dataType>
+                <label translate="true">GHN District</label>
+                <dataScope>ghn_district_id</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\GhnAddressMapper\Ui\Component\Form\GhnDistrictOptions"/>
+                        <filterBy>
+                            <field>ghn_province_id</field>
+                            <target>${ $.provider }:${ $.parentScope }.ghn_province_id</target>
+                        </filterBy>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="ghn_ward_code" formElement="select">
+            <settings>
+                <dataType>select</dataType>
+                <label translate="true">GHN Ward</label>
+                <dataScope>ghn_ward_code</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\GhnAddressMapper\Ui\Component\Form\GhnWardOptions"/>
+                        <filterBy>
+                            <field>ghn_district_id</field>
+                            <target>${ $.provider }:${ $.parentScope }.ghn_district_id</target>
+                        </filterBy>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+    </fieldset>
+    <fieldset name="settings">
+        <settings>
+            <label translate="true">Settings</label>
+        </settings>
+        <field name="status" formElement="select">
+            <settings>
+                <dataType>select</dataType>
+                <label translate="true">Status</label>
+                <dataScope>status</dataScope>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="priority" formElement="input">
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Priority</label>
+                <dataScope>priority</dataScope>
+                <notice translate="true">Higher value = preferred when multiple GHN addresses map to the same city.</notice>
+                <validation>
+                    <rule name="validate-number" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+    </fieldset>
+</form>

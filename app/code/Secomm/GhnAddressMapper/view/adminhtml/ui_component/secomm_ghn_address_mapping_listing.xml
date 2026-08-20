@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">secomm_ghn_address_mapping_listing.secomm_ghn_address_mapping_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="add">
+                <url path="*/*/edit"/>
+                <class>primary</class>
+                <label translate="true">Add New Mapping</label>
+            </button>
+            <button name="download_sample">
+                <url path="*/*/downloadSample"/>
+                <class>action-default</class>
+                <label translate="true">Download Sample CSV</label>
+            </button>
+            <button name="download_reference_pack">
+                <url path="*/*/downloadReferencePack"/>
+                <class>action-default</class>
+                <label translate="true">Download Reference Pack</label>
+            </button>
+            <button name="import">
+                <url path="*/*/importForm"/>
+                <class>action-default</class>
+                <label translate="true">Import CSV</label>
+            </button>
+            <button name="export">
+                <url path="*/*/export"/>
+                <class>action-default</class>
+                <label translate="true">Export CSV</label>
+            </button>
+        </buttons>
+        <spinner>secomm_ghn_address_mapping_columns</spinner>
+        <deps>
+            <dep>secomm_ghn_address_mapping_listing.secomm_ghn_address_mapping_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="secomm_ghn_address_mapping_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">entity_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Secomm_GhnAddressMapper::mapping</aclResource>
+        <dataProvider class="Secomm\GhnAddressMapper\Ui\DataProvider\Mapping\ListingDataProvider" name="secomm_ghn_address_mapping_listing_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filterSearch name="fulltext"/>
+        <filters name="listing_filters">
+            <filterSelect name="region_id" provider="${ $.parentName }">
+                <settings>
+                    <caption translate="true">-- Select Region --</caption>
+                    <options class="Secomm\GhnAddressMapper\Ui\Component\Listing\Column\RegionOptions"/>
+                    <label translate="true">Region</label>
+                    <dataScope>region_id</dataScope>
+                </settings>
+            </filterSelect>
+            <filterInput name="city_name" provider="${ $.parentName }">
+                <settings>
+                    <label translate="true">City</label>
+                    <dataScope>city_name</dataScope>
+                </settings>
+            </filterInput>
+            <filterSelect name="ghn_province_id" provider="${ $.parentName }">
+                <settings>
+                    <caption translate="true">-- Select GHN Province --</caption>
+                    <options class="Secomm\GhnAddressMapper\Ui\Component\Listing\Column\GhnProvinceOptions"/>
+                    <label translate="true">GHN Province</label>
+                    <dataScope>ghn_province_id</dataScope>
+                </settings>
+            </filterSelect>
+            <filterSelect name="status" provider="${ $.parentName }">
+                <settings>
+                    <caption translate="true">-- Select Status --</caption>
+                    <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                    <label translate="true">Status</label>
+                    <dataScope>status</dataScope>
+                </settings>
+            </filterSelect>
+        </filters>
+        <massaction name="listing_massaction">
+            <action name="delete">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">delete</item>
+                        <item name="label" xsi:type="string" translate="true">Delete</item>
+                        <item name="url" xsi:type="url" path="ghn_address_mapper/mapping/massDelete"/>
+                        <item name="confirm" xsi:type="array">
+                            <item name="title" xsi:type="string" translate="true">Delete items</item>
+                            <item name="message" xsi:type="string" translate="true">Are you sure you want to delete selected items?</item>
+                        </item>
+                    </item>
+                </argument>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="secomm_ghn_address_mapping_columns">
+        <settings>
+            <editorConfig>
+                <param name="clientConfig" xsi:type="array">
+                    <item name="saveUrl" xsi:type="url" path="ghn_address_mapper/mapping/inlineEdit"/>
+                    <item name="validateBeforeSave" xsi:type="boolean">false</item>
+                </param>
+                <param name="indexField" xsi:type="string">entity_id</param>
+                <param name="enabled" xsi:type="boolean">true</param>
+                <param name="selectProvider" xsi:type="string">secomm_ghn_address_mapping_listing.secomm_ghn_address_mapping_listing.secomm_ghn_address_mapping_columns.ids</param>
+            </editorConfig>
+            <childDefaults>
+                <param name="fieldAction" xsi:type="array">
+                    <item name="provider" xsi:type="string">secomm_ghn_address_mapping_listing.secomm_ghn_address_mapping_listing.secomm_ghn_address_mapping_columns_editor</item>
+                    <item name="target" xsi:type="string">startEditing</item>
+                    <item name="params" xsi:type="array">
+                        <item name="0" xsi:type="string">${ $.$data.rowIndex }</item>
+                        <item name="1" xsi:type="boolean">true</item>
+                    </item>
+                </param>
+            </childDefaults>
+        </settings>
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>entity_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="entity_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="region_id" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <filter>select</filter>
+                <label translate="true">Region (Magento)</label>
+                <dataType>select</dataType>
+                <options class="Secomm\GhnAddressMapper\Ui\Component\Listing\Column\RegionOptions"/>
+            </settings>
+        </column>
+        <column name="city_name">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">City (Magento)</label>
+                <dataType>text</dataType>
+            </settings>
+        </column>
+        <column name="ghn_province_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">GHN Province ID</label>
+                <dataType>text</dataType>
+            </settings>
+        </column>
+        <column name="ghn_province_name">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">GHN Province Name</label>
+                <dataType>text</dataType>
+            </settings>
+        </column>
+        <column name="ghn_district_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">GHN District ID</label>
+                <dataType>text</dataType>
+            </settings>
+        </column>
+        <column name="ghn_district_name">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">GHN District Name</label>
+                <dataType>text</dataType>
+            </settings>
+        </column>
+        <column name="ghn_ward_code">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">GHN Ward Code</label>
+                <dataType>text</dataType>
+            </settings>
+        </column>
+        <column name="ghn_ward_name">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">GHN Ward Name</label>
+                <dataType>text</dataType>
+            </settings>
+        </column>
+        <column name="status" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                <filter>select</filter>
+                <label translate="true">Status</label>
+                <dataType>select</dataType>
+                <editor>
+                    <validation>
+                        <rule name="required-entry" xsi:type="boolean">true</rule>
+                    </validation>
+                </editor>
+            </settings>
+        </column>
+        <column name="priority">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Priority</label>
+                <dataType>text</dataType>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Created</label>
+            </settings>
+        </column>
+        <column name="updated_at" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Updated</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Secomm\GhnAddressMapper\Ui\Component\Listing\Column\Actions" sortOrder="200">
+            <settings>
+                <label translate="true">Actions</label>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

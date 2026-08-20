@@ -18,6 +18,8 @@ use Secomm\Ahamove\Logger\Logger;
 use Secomm\Ahamove\Model\Config;
 use Secomm\Ahamove\Model\Connect\Api;
 use Secomm\Ahamove\Model\Data\AhamoveAddressFactory;
+use Secomm\ShippingCore\Api\OriginProviderInterface;
+use Secomm\ShippingCore\Model\ShippingContextFactory;
 
 class CreateShipment
 {
@@ -78,6 +80,8 @@ class CreateShipment
         Api                   $api,
         AhamoveHelperData     $ahamoveHelperData,
         Logger                $logger,
+        protected readonly ShippingContextFactory $shippingContextFactory,
+        protected readonly OriginProviderInterface $originProvider
     ) {
         $this->orderRepository = $orderRepository;
         $this->shipmentFactory = $shipmentFactory;
@@ -145,7 +149,7 @@ class CreateShipment
                         'carrier_code' => $order->getShippingMethod(),
                         'number' => $dataResponse['order_id'],
                         'title' => $order->getShippingDescription(),
-                        'description' => 'des status' . $dataResponse['shared_link'],
+                        'description' => 'Ahamove tracking: ' . $dataResponse['shared_link'],
                     ]
                 ];
 
@@ -186,10 +190,24 @@ class CreateShipment
         $shippingAddress = $order->getShippingAddress();
         $ahamoveAddressFactory = $this->ahamoveAddressFactory->create();
         $items = [];
-        $ahamoveAddressFactory->setCityFrom($this->ahamoveHelperData->getCity())
-            ->setRegionCodeFrom((string)$this->ahamoveHelperData->getShippingRegion())
-            ->setStreetFrom((string)$this->ahamoveHelperData->getShippingStreet())
-            ->setPostCodeFrom((string)$this->ahamoveHelperData->getShippingPostcode())
+
+        // Resolve origin via Secomm_ShippingCore
+        $context = $this->shippingContextFactory->create(
+            storeId: (int)$order->getStoreId(),
+            carrierCode: 'ahamove',
+            quoteId: $order->getQuoteId() !== null ? (int)$order->getQuoteId() : null
+        );
+        $origin = $this->originProvider->resolve($context);
+
+        $cityFrom = $origin->getWard() ?? $this->ahamoveHelperData->getCity();
+        $regionCodeFrom = $origin->getProvince() ?? (string)$this->ahamoveHelperData->getShippingRegion();
+        $streetFrom = $origin->getStreet() ?? (string)$this->ahamoveHelperData->getShippingStreet();
+        $postCodeFrom = $origin->getPostcode() ?? (string)$this->ahamoveHelperData->getShippingPostcode();
+
+        $ahamoveAddressFactory->setCityFrom($cityFrom)
+            ->setRegionCodeFrom($regionCodeFrom)
+            ->setStreetFrom($streetFrom)
+            ->setPostCodeFrom($postCodeFrom)
             ->setNameFrom('')
             ->setPhoneFrom('');
 
@@ -239,14 +257,6 @@ class CreateShipment
             'path' => $data,
             'items' => $items,
         ];
-    }
-
-    /**
-     * @return mixed
-     */
-    private function getServiceId()
-    {
-        return $this->ahamoveHelperData->getAhamoveService();
     }
 
     /**

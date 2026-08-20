@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <!-- Title-->
+        <add id="Secomm_GhnAddressMapper::menu"
+             title="GHN" module="Secomm_GhnAddressMapper"
+             sortOrder="10" parent="MenuSecomm_Base::menu"
+             resource="Secomm_GhnAddressMapper::menu"/>
+
+        <add id="Secomm_GhnAddressMapper::mapping"
+             title="GHN Address Mapping"
+             module="Secomm_GhnAddressMapper"
+             translate="title"
+             sortOrder="20"
+             parent="Secomm_GhnAddressMapper::menu"
+             action="ghn_address_mapper/mapping/index"
+             resource="Secomm_GhnAddressMapper::mapping"/>
+
+        <add id="Secomm_GhnAddressMapper::config"
+             title="GHN Address Mapping Config"
+             module="Secomm_GhnAddressMapper"
+             translate="title"
+             sortOrder="20"
+             parent="Secomm_GhnAddressMapper::menu"
+             action="adminhtml/system_config/edit/section/ghn_address_mapper"
+             resource="Secomm_GhnAddressMapper::config"/>
+    </menu>
+</config>

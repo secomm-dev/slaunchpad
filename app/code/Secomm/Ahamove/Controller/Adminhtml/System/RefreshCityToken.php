@@ -93,8 +93,9 @@ class RefreshCityToken extends Action implements HttpPostActionInterface
                             ['col' => 'city_id', 'val' => $item['_id']]
                         );
                         if (isset($item['_id']) && !empty($item['_id'])) {
+                            $cityDetailsUrl = Config::URL_AHAMOVE_CITY_DETAILS . '?city_id=' . $item['_id'];
                             $cityDetails = $this->connection->getDataFromApi(
-                                Config::URL_AHAMOVE_CITY_DETAILS . $item['_id'],
+                                $cityDetailsUrl,
                                 "Sync data City details from Ahamove"
                             );
                             if ($cityDetails->status == Status::STATUS_CODE_SUCCESS) {

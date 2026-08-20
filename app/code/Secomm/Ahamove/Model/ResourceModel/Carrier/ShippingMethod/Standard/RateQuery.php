@@ -45,7 +45,6 @@ class RateQuery
             ') OR (',
             [
                 "dest_country_id = :country_id AND dest_region_id = :region_id AND dest_zip = :city",
-                "dest_country_id = :country_id AND dest_region_id = :region_id AND dest_zip = :city",
                 "dest_country_id = :country_id AND dest_region_id = :region_id AND dest_zip = ''",
 
                 // Handle asterisk in dest_zip field
@@ -54,7 +53,6 @@ class RateQuery
                 "dest_country_id = '0' AND dest_region_id = :region_id AND dest_zip = '*'",
                 "dest_country_id = '0' AND dest_region_id = 0 AND dest_zip = '*'",
                 "dest_country_id = :country_id AND dest_region_id = 0 AND dest_zip = ''",
-                "dest_country_id = :country_id AND dest_region_id = 0 AND dest_zip = :city",
                 "dest_country_id = :country_id AND dest_region_id = 0 AND dest_zip = :city"
             ]
         ) . ')';
@@ -90,8 +88,6 @@ class RateQuery
             ':website_id' => (int)$this->request->getWebsiteId(),
             ':country_id' => $this->request->getDestCountryId(),
             ':region_id' => (int)$this->request->getDestRegionId(),
-            ':postcode' => $this->request->getDestPostcode(),
-            ':postcode_prefix' => $this->getDestPostcodePrefix(),
             ':city' => strtoupper($this->request->getDestCity() ?? ""),
         ];
 
@@ -121,19 +117,5 @@ class RateQuery
     public function getRequest()
     {
         return $this->request;
-    }
-
-    /**
-     * Returns the entire postcode if it contains no dash or the part of it prior to the dash in the other case
-     *
-     * @return string
-     */
-    private function getDestPostcodePrefix()
-    {
-        if (!preg_match("/^(.+)-(.+)$/", $this->request->getDestPostcode() ?? '', $zipParts)) {
-            return $this->request->getDestPostcode();
-        }
-
-        return $zipParts[1];
     }
 }

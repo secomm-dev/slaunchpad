@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Preferences -->
+    <preference for="Secomm\GhnAddressMapper\Api\LocationMappingRepositoryInterface"
+                type="Secomm\GhnAddressMapper\Model\LocationMappingRepository"/>
+    <preference for="Secomm\GhnAddressMapper\Api\LocationResolverInterface"
+                type="Secomm\GhnAddressMapper\Model\LocationResolver"/>
+    <preference for="Secomm\GhnAddressMapper\Api\Data\LocationMappingInterface"
+                type="Secomm\GhnAddressMapper\Model\Data\LocationMappingData"/>
+    <preference for="Secomm\GhnAddressMapper\Api\Data\LocationResultInterface"
+                type="Secomm\GhnAddressMapper\Model\Data\LocationResult"/>
+    <preference for="Secomm\GhnAddressMapper\Api\Data\LocationMappingSearchResultsInterface"
+                type="Secomm\GhnAddressMapper\Model\Data\LocationMappingSearchResults"/>
+
+    <!-- Cache: LocationResolver uses CacheInterface, auto-resolved by DI -->
+    <type name="Secomm\GhnAddressMapper\Model\LocationResolver">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\GhnAddressMapper\Logger\VirtualLogger</argument>
+        </arguments>
+    </type>
+
+    <!-- Logger -->
+    <virtualType name="Secomm\GhnAddressMapper\Logger\VirtualHandler" type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/secomm_ghn_address_mapper.log</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Secomm\GhnAddressMapper\Logger\VirtualLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="debug" xsi:type="object">Secomm\GhnAddressMapper\Logger\VirtualHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\GhnAddressMapper\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">GHNAddressMapper</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Secomm\GhnAddressMapper\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- CLI Commands -->
+    <type name="Secomm\GhnAddressMapper\Console\ValidateMappingCommand">
+        <arguments>
+            <argument name="name" xsi:type="string">ghn:mapping:validate</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\GhnAddressMapper\Console\ExportMappingCommand">
+        <arguments>
+            <argument name="name" xsi:type="string">ghn:mapping:export</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\GhnAddressMapper\Console\ImportMappingCommand">
+        <arguments>
+            <argument name="name" xsi:type="string">ghn:mapping:import</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="ghn_mapping_validate" xsi:type="object">Secomm\GhnAddressMapper\Console\ValidateMappingCommand</item>
+                <item name="ghn_mapping_export" xsi:type="object">Secomm\GhnAddressMapper\Console\ExportMappingCommand</item>
+                <item name="ghn_mapping_import" xsi:type="object">Secomm\GhnAddressMapper\Console\ImportMappingCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
+</config>

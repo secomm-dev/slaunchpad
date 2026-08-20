@@ -53,7 +53,7 @@ class Api extends CurlBuilder implements
      *
      * @var bool
      */
-    protected bool $flat = false;
+    protected bool $isTokenRefreshed = false;
 
     /**
      * Connect constructor.
@@ -87,9 +87,9 @@ class Api extends CurlBuilder implements
         $this->packageOptions['data']['token'] = !is_null($token) ? $token : $this->config->getToken();
         $response = parent::post($isResend);
         $result = $this->processResponse($response);
-        if (($result === Status::STATUS_CODE_TOKEN_NOT_FOUND || $result === Status::STATUS_CODE_AUTHENTICATION_FAIL) && !$this->flat) {
+        if (($result === Status::STATUS_CODE_TOKEN_NOT_FOUND || $result === Status::STATUS_CODE_AUTHENTICATION_FAIL) && !$this->isTokenRefreshed) {
             //refresh token and re-run only one time
-            $this->flat = true;
+            $this->isTokenRefreshed = true;
             $responseToken = $this->refreshToken();
             $responseToken = $this->processResponse($responseToken);
             $token = $responseToken['token'];
@@ -106,32 +106,6 @@ class Api extends CurlBuilder implements
     public function get($isResend = false): mixed
     {
         return parent::get($isResend);
-    }
-
-    /**
-     * @param string $url
-     * @return CurlBuilder
-     * @throws Exception
-     */
-    public function toResource($url)
-    {
-        try {
-            $url = $this->buildResourceUrl($url);
-        } catch (Exception $exception) {
-            throw new Exception('Invalid URL');
-        }
-
-        return parent::to($url);
-    }
-
-    /**
-     * @param $action
-     * @return string
-     * @throws NoSuchEntityException
-     */
-    protected function buildResourceUrl($action): string
-    {
-        return $this->config->getEndpointApiShip24() . $action;
     }
 
     /**
@@ -216,7 +190,7 @@ class Api extends CurlBuilder implements
         $this->curlOptions['HTTPHEADER'] = [];
         $this->curlOptions['URL'] = '';
         $this->packageOptions['data'] = [];
-        $this->flat = false;
+        $this->isTokenRefreshed = false;
 
         return $this;
     }
@@ -277,30 +251,17 @@ class Api extends CurlBuilder implements
         $this->returnResponseObject();
 
         // Fire event before sent
-        $tracer = $this->tracer->beforeSend($this);
-        // Backoff strategy parameters
-        $maxRetries = 5; // Maximum number of retries
-        $baseDelay = 1; // Initial delay in seconds
-        $retryAttempts = 0;
-        do {
-            $result = $this->loadFromCache();
-            if ($result !== false) {
-                break;
-            }
-            $result = parent::send();
-            if ($result->status === Status::STATUS_CODE_AUTHENTICATION_FAIL) {
-                $retryAttempts++;
+        $this->tracer->beforeSend($this);
 
-                if ($retryAttempts <= $maxRetries) {
-                    $delay = $baseDelay * (2 ** ($retryAttempts - 1)); // Exponential backoff
-                    sleep($delay); // Wait for the calculated delay before retrying
-                }
-            } else {
-                //save the response to cache
+        // Try loading from cache first, then make a single API call
+        $result = $this->loadFromCache();
+        if ($result === false) {
+            $result = parent::send();
+            if ($result->status !== Status::STATUS_CODE_AUTHENTICATION_FAIL) {
+                // Save the response to cache only on success
                 $this->cacheResponse($result);
-                break; // API call succeeded, exit the loop
             }
-        } while ($retryAttempts <= $maxRetries);
+        }
 
         // Fire event after sent
         $this->tracer->afterSend($this, $result);
@@ -378,7 +339,7 @@ class Api extends CurlBuilder implements
             $this->serializer->serialize($result),
             $this->actionName,
             [\Magento\Framework\App\Config::CACHE_TAG],
-            8640
+            86400
         );
     }
 

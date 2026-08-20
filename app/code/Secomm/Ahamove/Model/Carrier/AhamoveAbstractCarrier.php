@@ -8,7 +8,6 @@
 namespace Secomm\Ahamove\Model\Carrier;
 
 use Exception;
-use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Directory\Model\CountryFactory;
 use Magento\Directory\Model\RegionFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -16,19 +15,15 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Config\CacheInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Model\AbstractModel;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Address\RateRequest;
 use Magento\Quote\Model\Quote\Address\RateResult\Error;
 use Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory;
 use Magento\Quote\Model\Quote\Address\RateResult\Method;
 use Magento\Quote\Model\Quote\Address\RateResult\MethodFactory;
 use Magento\Quote\Model\Quote\AddressFactory;
-use Magento\Quote\Model\QuoteFactory;
-use Magento\Sales\Model\OrderRepository;
 use Magento\Shipping\Model\Carrier\AbstractCarrier;
 use Magento\Shipping\Model\Carrier\CarrierInterface;
 use Magento\Shipping\Model\Rate\Result;
@@ -38,7 +33,6 @@ use Magento\Shipping\Model\Tracking\ResultFactory as TrackingResultFactory;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 use Secomm\Ahamove\Api\Data\AhamoveAddressInterface;
-use Secomm\Ahamove\Command\CreateShipment;
 use Secomm\Ahamove\Helper\Data as AhamoveHelper;
 use Secomm\Ahamove\Logger\Logger as LoggerShipping;
 use Secomm\Ahamove\Model\AhamoveOrderStatus;
@@ -46,27 +40,13 @@ use Secomm\Ahamove\Model\Config;
 use Secomm\Ahamove\Model\Connect\Api;
 use Secomm\Ahamove\Model\Data\AhamoveAddressFactory;
 use Secomm\Ahamove\Model\Data\PackageItemFactory;
-use Secomm\Ahamove\Model\ErrorMessageManager;
 use Secomm\Ahamove\Model\PackageFactory;
 use Secomm\Ahamove\Model\ResourceModel\AhamoveOrderStatus\CollectionFactory;
+use Secomm\ShippingCore\Api\OriginProviderInterface;
+use Secomm\ShippingCore\Model\ShippingContextFactory;
 
 abstract class AhamoveAbstractCarrier extends AbstractCarrier implements CarrierInterface
 {
-    const SERVICE_IDS = [
-        [
-            "_id" => Config::SERVICE_ID_POOL
-        ],
-        [
-            "_id" => Config::SERVICE_ID_VAN
-        ],
-        [
-            "_id" => Config::SERVICE_ID_FOUR_HOURS
-        ],
-        [
-            "_id" => Config::SERVICE_ID_BIKE
-        ],
-    ];
-
     const ADVANCED_SETTINGS = [
         'active',
         'name',
@@ -106,7 +86,6 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
     protected $shippingTablerates;
 
     /**
-     * GHN constructor.
      * @param ScopeConfigInterface $scopeConfig
      * @param ErrorFactory $rateErrorFactory
      * @param LoggerInterface $logger
@@ -123,8 +102,9 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
      * @param TimezoneInterface $timezone
      * @param TrackingResultFactory $trackFactory
      * @param StatusFactory $trackStatusFactory
-     * @param CheckoutSession $checkoutSession
-     * @param ErrorMessageManager $errorMessageManager
+     * @param CollectionFactory $ahamoveOrderStatusCollectionFactory
+     * @param PackageItemFactory $packageItemFactory
+     * @param PackageFactory $packageFactory
      * @param array $data
      */
     public function __construct(
@@ -144,16 +124,12 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
         protected TimezoneInterface     $timezone,
         protected TrackingResultFactory $trackFactory,
         protected StatusFactory         $trackStatusFactory,
-        protected CheckoutSession       $checkoutSession,
-        protected ErrorMessageManager   $errorMessageManager,
-        protected PackageItemFactory    $packageItemFactory,
-        protected PackageFactory        $packageFactory,
-        protected RequestInterface      $request,
-        protected OrderRepository       $orderRepository,
-        protected QuoteFactory          $quote,
-        protected CreateShipment        $createShipment,
         protected CollectionFactory     $ahamoveOrderStatusCollectionFactory,
         protected AddressFactory        $quoteAddressFactory,
+        protected PackageItemFactory    $packageItemFactory,
+        protected PackageFactory        $packageFactory,
+        protected ShippingContextFactory $shippingContextFactory,
+        protected OriginProviderInterface $originProvider,
         array                           $shippingTablerates = [],
         array                           $data = []
     ) {
@@ -281,15 +257,6 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
     }
 
     /**
-     * @param string $message
-     * @return void
-     */
-    protected function setErrorMessage(string $message): void
-    {
-        $this->errorMessageManager->setErrorMessage($message);
-    }
-
-    /**
      * @param RateRequest $request
      * @return float
      * @throws Exception
@@ -311,16 +278,26 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
                 ->setStreetTo((string)$this->getFullStreet($request))
                 ->setPostCodeTo((string)$request->getDestPostcode())
                 ->setCountryIdTo((string)$this->ahamoveHelper->getShippingCountryNameByCode($request->getDestCountryId()))
-                ->setNameTo('')
+                ->setNameTo((string)$request->getDestFirstname())
                 ->setRemark('')
-                ->setPhoneTo('');
-            $ahamoveAddressFactory->setCityFrom($this->ahamoveHelper->getCity())
-                ->setRegionCodeFrom((string)$this->ahamoveHelper->getShippingRegion())
-                ->setStreetFrom((string)$this->ahamoveHelper->getShippingStreet())
-                ->setPostCodeFrom((string)$this->ahamoveHelper->getShippingPostcode())
+                ->setPhoneTo((string)$request->getDestTelephone());
+
+            // Resolve origin via Secomm_ShippingCore
+            $context = $this->shippingContextFactory->fromRateRequest($request, $this->_code);
+            $origin = $this->originProvider->resolve($context);
+
+            $cityFrom = $origin->getWard() ?? $this->ahamoveHelper->getCity();
+            $regionCodeFrom = $origin->getProvince() ?? (string)$this->ahamoveHelper->getShippingRegion();
+            $streetFrom = $origin->getStreet() ?? (string)$this->ahamoveHelper->getShippingStreet();
+            $postCodeFrom = $origin->getPostcode() ?? (string)$this->ahamoveHelper->getShippingPostcode();
+
+            $ahamoveAddressFactory->setCityFrom($cityFrom)
+                ->setRegionCodeFrom($regionCodeFrom)
+                ->setStreetFrom($streetFrom)
+                ->setPostCodeFrom($postCodeFrom)
                 ->setCountryIdFrom((string)$this->ahamoveHelper->getShippingCountryName())
-                ->setNameFrom('')
-                ->setPhoneFrom('');
+                ->setNameFrom((string)$this->ahamoveHelper->getStoreName())
+                ->setPhoneFrom((string)$this->ahamoveHelper->getMobilePhoneValue());
             return $this->calculateShippingFee($ahamoveAddressFactory);
         } catch (Exception $exception) {
             return 0;
@@ -400,45 +377,6 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
         } else {
             return false;
         }
-    }
-
-    /**
-     * Get current quote id
-     *
-     * @return int
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    protected function getCurrentQuoteId(): ?int
-    {
-        $quote = $this->getQuote();
-        if (is_null($quote)) {
-            return null;
-        }
-        return $this->getQuote()->getEntityId();
-    }
-
-    /**
-     * Get current shipping method
-     *
-     * @return string
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    protected function getShippingMethod(): string
-    {
-        $quote = $this->getQuote();
-        if (is_null($quote)) {
-            return '';
-        }
-        $shippingMethod = $quote->getShippingAddress()->getShippingMethod();
-        if (is_null($shippingMethod)) {
-            return '';
-        }
-        $length = strlen($shippingMethod);
-        $halfLength = floor($length / 2);
-        $shippingMethod = substr($shippingMethod, 0, $halfLength);
-        return $shippingMethod;
     }
 
     /**

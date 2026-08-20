@@ -28,15 +28,15 @@
         <column xsi:type="varchar" name="name_vi_vn" nullable="false" length="255" comment="City Name vi_vn"/>
         <column xsi:type="varchar" name="country_id" nullable="false" length="255" comment="Country ID"/>
         <column xsi:type="varchar" name="location" nullable="false" length="255" comment="Location"/>
-        <column xsi:type="int" name="contract_number" nullable="true" comment="Location"/>
-        <column xsi:type="int" name="merchant_contract_number" nullable="true" comment="Location"/>
-        <column xsi:type="varchar" name="animated_url" nullable="true" length="255" comment="Location"/>
-        <column xsi:type="int" name="same_district_delivery" nullable="true" comment="Location"/>
-        <column xsi:type="varchar" name="level" nullable="true" length="255" comment="Level"/>
-        <column xsi:type="varchar" name="level_vn" nullable="true" length="255" comment="Level"/>
-        <column xsi:type="int" name="area_id" nullable="true" comment="Level"/>
-        <column xsi:type="varchar" name="service_city_id" nullable="true" length="255" comment="Level"/>
-        <column xsi:type="int" name="public_service" nullable="true" comment="Level"/>
+        <column xsi:type="int" name="contract_number" nullable="true" comment="Contract Number"/>
+        <column xsi:type="int" name="merchant_contract_number" nullable="true" comment="Merchant Contract Number"/>
+        <column xsi:type="varchar" name="animated_url" nullable="true" length="255" comment="Animated URL"/>
+        <column xsi:type="int" name="same_district_delivery" nullable="true" comment="Same District Delivery Flag"/>
+        <column xsi:type="varchar" name="level" nullable="true" length="255" comment="City Level"/>
+        <column xsi:type="varchar" name="level_vn" nullable="true" length="255" comment="City Level (Vietnamese)"/>
+        <column xsi:type="int" name="area_id" nullable="true" comment="Area ID"/>
+        <column xsi:type="varchar" name="service_city_id" nullable="true" length="255" comment="Service City ID"/>
+        <column xsi:type="int" name="public_service" nullable="true" comment="Public Service Flag"/>
         <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false"/>
         <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
