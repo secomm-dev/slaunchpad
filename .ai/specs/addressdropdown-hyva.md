@@ -1,11 +1,11 @@
-# Feature Spec — Dual-theme (Luma + Hyva) AddressDropdown — MODULE Layer (SL-001)
+# Feature Spec — Dual-theme (Luma + Hyva) AddressDropdown — MODULE Layer (TASK-88NDV5)
 
-> ⚠️ **LEGACY (Phase 1a) — superseded by [`records/features/FEAT-001.md`](../records/features/FEAT-001.md).** Read-only; excluded from default context loading; pending equivalence validation. Material knowledge consolidated into the canonical feature record. Do not edit — update FEAT-001 instead.
+> ⚠️ **LEGACY (Phase 1a) — superseded by [`records/features/FEAT-YVN39K.md`](../records/features/FEAT-YVN39K.md).** Read-only; excluded from default context loading; pending equivalence validation. Material knowledge consolidated into the canonical feature record. Do not edit — update FEAT-YVN39K instead.
 
-<!-- Spec cho ticket SL-001 · Mode A · Stack: Magento 2.4.8-p5 + Hyvä 3.x (+ Luma support) -->
+<!-- Spec cho ticket TASK-88NDV5 · Mode A · Stack: Magento 2.4.8-p5 + Hyvä 3.x (+ Luma support) -->
 <!-- AI draft — chờ SA/TL signoff (workflow gate `spec-approval`, Level 2). -->
-<!-- SCOPE (revised per DEC-8 + DEC-9): SL-001 = MODULE layer, theme-agnostic (Luma + Hyva), KHÔNG coupling OSC. -->
-<!-- OSC integration → ticket riêng SL-002 (Launchpad package). -->
+<!-- SCOPE (revised per DEC-8 + DEC-9): TASK-88NDV5 = MODULE layer, theme-agnostic (Luma + Hyva), KHÔNG coupling OSC. -->
+<!-- OSC integration → ticket riêng TASK-FMAN1B (Launchpad package). -->
 
 ---
 
@@ -13,7 +13,7 @@
 
 **Feature name**: Dual-theme (Luma + Hyva) frontend cho `Secomm_AddressDropdown` — **MODULE layer** (generic surfaces, reusable)
 
-**Ticket reference**: [SL-001](../tickets/SL-001-apply-hyva-theme-addressdropdown.md)
+**Ticket reference**: [TASK-88NDV5](../tickets/TASK-88NDV5-apply-hyva-theme-addressdropdown.md)
 
 **Feature type**: Refactor (frontend — dual-theme)
 
@@ -21,19 +21,19 @@
 
 **Architecture decisions**:
 - **DEC-7**: Strategy B — Hyvä-native (Alpine.js + `.phtml` + Tailwind v4). *(refined by DEC-9)*
-- **DEC-8**: Reusability boundary — module sở hữu **generic Magento-native surfaces**; **OSC coupling bị cấm trong module** → OSC thuộc package **Launchpad** (SL-002).
+- **DEC-8**: Reusability boundary — module sở hữu **generic Magento-native surfaces**; **OSC coupling bị cấm trong module** → OSC thuộc package **Launchpad** (TASK-FMAN1B).
 - **DEC-9**: **Dual-theme** — module hỗ trợ BOTH Luma (native jQuery/Knockout) VÀ Hyva (native Alpine). Theme switch qua `hyva_` layout handle (zero-PHP). Không còn Hyva-only.
 
 **Status**: ✅ **Approved** 2026-07-16 (spec-approval). Architecture refined 2026-07-17 (DEC-9 dual-theme). Implementation done for customer form + cart + cleanup; Step 1 (resolver, Q1) deferred.
 
-**Business rules áp dụng**: BR-001 (i18n vi/en — both themes), BR-002 (module portion: customer address + cart cascade — 3 cấp VN: country→region[tỉnh]→city[phường/xã]). BR-004 (OSC) → **SL-002**.
+**Business rules áp dụng**: BR-001 (i18n vi/en — both themes), BR-002 (module portion: customer address + cart cascade — 3 cấp VN: country→region[tỉnh]→city[phường/xã]). BR-004 (OSC) → **TASK-FMAN1B**.
 
 ---
 
 ## Scope Boundary (DEC-8 + DEC-9)
 
 - **IN — module (reusable, theme-agnostic)**: customer address form + cart shipping estimation — **cả Luma + Hyva**. Default/Luma checkout integration giữ (Luma path, inert trên Hyva/OSC).
-- **OUT → SL-002 (Launchpad package)**: Mageplaza OSC address integration + mọi code coupling OSC.
+- **OUT → TASK-FMAN1B (Launchpad package)**: Mageplaza OSC address integration + mọi code coupling OSC.
 - **Leak cleanup**: module **không** reference `Mageplaza_Osc` hay `Secomm_Ahamove` (DEC-8). Remove dead ref Ahamave (AC-010).
 
 ---
@@ -63,7 +63,7 @@
 - [ ] **AC-012** (Default-checkout — Luma path): Luma `checkout_index_index.xml` (Knockout) active trên Luma default-checkout; **inert** trên Hyva/OSC (project này).
 - [ ] **AC-013** (Module-enable gating): `ifconfig="address/general/enable"` — khi disable, cả 2 theme dùng default Magento form (không VN dropdown).
 
-_(OSC AC → SL-002.)_
+_(OSC AC → TASK-FMAN1B.)_
 
 ---
 
@@ -110,7 +110,7 @@ _(OSC AC → SL-002.)_
 | Core Magento GraphQL (Country/Region) + `directory_country_region` | data | available | Hyva cart + both forms region |
 | `Secomm_VietNamAddress` (VN data 3 cấp + i18n) | data | installed | data + VN labels dict |
 | Luma restore source (lsoul sibling / dangling blobs) | infra | available | module untracked in git |
-| Mageplaza OSC | — | NOT a dependency | → SL-002 |
+| Mageplaza OSC | — | NOT a dependency | → TASK-FMAN1B |
 
 ---
 
@@ -129,7 +129,7 @@ _(OSC AC → SL-002.)_
 
 ## Out of Scope
 
-- **Mageplaza OSC integration** → SL-002 (Launchpad).
+- **Mageplaza OSC integration** → TASK-FMAN1B (Launchpad).
 - Admin migration; backend `Api`/`Model`/`Setup`/import.
 - `Secomm_VietNamAddress` data set internals.
 - Default-checkout Luma JS VN-hardcoding align (follow-up).
@@ -152,8 +152,8 @@ _(OSC AC → SL-002.)_
 1. **Q1 — Resolver cache/undeprecate** (AC-011): SA quyết (Tier 2 GraphQL). ⛔ Deferred.
 2. **Multi-store (BR-TBD-001)**: theme scope `launchpad` / `launchpad_fashion`? — stakeholder.
 
-_(OSC seam → SL-002.)_
+_(OSC seam → TASK-FMAN1B.)_
 
 ---
 
-<!-- Cross-ref: 02_BUSINESS_RULES.md (BR-001/002), 03_ARCHITECTURE_AND_INTEGRATIONS.md, 10_CHECKOUT_PAYMENT_SHIPPING_ORDER_FLOW.md, DEC-7 (Strategy B, refined), DEC-8 (module/Launchpad boundary), DEC-9 (dual-theme), SL-002 (OSC) -->
+<!-- Cross-ref: 02_BUSINESS_RULES.md (BR-001/002), 03_ARCHITECTURE_AND_INTEGRATIONS.md, 10_CHECKOUT_PAYMENT_SHIPPING_ORDER_FLOW.md, DEC-7 (Strategy B, refined), DEC-8 (module/Launchpad boundary), DEC-9 (dual-theme), TASK-FMAN1B (OSC) -->

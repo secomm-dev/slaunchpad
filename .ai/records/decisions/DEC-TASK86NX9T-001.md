@@ -1,0 +1,66 @@
+---
+id: DEC-TASK86NX9T-001
+legacy_ids: [DEC-SL017-001]
+title: 'Carrier tracking architecture — shared pipeline in Secomm_ShippingCore (TrackingUpdate → CarrierTrackingProcessor → normalized status + carrier state store); webhook primary, Tracking API reconciliation; sticky-terminal ordering; carrier status NEVER mutates Magento order state; one shared state table justified over sales extension attributes'
+status: accepted
+owners: [sa, tl]
+decision_type: architecture
+approval_date: 2026-08-17
+created: 2026-08-17
+last_verified: 2026-08-17
+verified_against_commit:
+supersedes: []
+superseded_by:
+work_items: [TASK-86NX9T]
+---
+
+# Decision Record: Carrier tracking architecture (ShippingCore pipeline + GHTK webhook/API)
+
+<!-- CANONICAL DECISION STORE. ACCEPTED 2026-08-17 — approved by user acting as SA/TL (chat "approve", Level 2; kèm TASK-86NX9T plan approval → Phase C cleared). -->
+<!-- Index pointer: `.ai/project-context/memory/DECISIONS.md` -->
+<!-- Thực thi phần "webhook-first inbound" còn deferred từ DEC-TASKKV328X-001 (outbound đã bị DEC-TASKKM6YAT-001 supersede). -->
+
+## Context
+
+TASK-KM6YAT lưu tracking number qua native flow nhưng chưa có trạng thái vận chuyển: không webhook, không Tracking API, không status model (`isTrackingAvailable()` = false, tracking state không tồn tại ở đâu). Yêu cầu TASK-86NX9T: tracking đầy đủ theo hướng lean/Magento-native/reusable cho GHN/Ahamove sau này, không biến Ghtk thành OMS.
+
+Audit (2026-08-17): `sales_shipment_track` không có status column (chỉ track_number/description/title/…); Magento không có native shipment delivery-state; Ahamove (legacy) dùng webhook CSRF-exempt + bảng status riêng (`ahamove_order_status`) — precedent trong project; Sales extension attributes persistent trên entity cũng cần table riêng. GHTK webhook không có signature documented (Q-EXT); Tracking API endpoint chưa verify.
+
+Tier-2 (shipping + external webhook endpoint + DB schema + shipment state) → Level-2, SA/TL.
+
+## Decision (proposed)
+
+1. **Shared pipeline trong `Secomm_ShippingCore`** (carrier-agnostic, không chứa GHTK codes): `TrackingUpdateInterface` (carrierCode, trackingNumber, carrierStatusCode, carrierStatusMessage, occurredAt?, source, raw) → `CarrierTrackingProcessorInterface::process()` → `NormalizedTrackingStatus` (CREATED, PICKING, PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, DELIVERY_FAILED, RETURNING, RETURNED, CANCELLED, UNKNOWN) + `CarrierStatusMapperInterface`. Webhook (GHTK → Ghtk) và Tracking API fallback + cron reconciliation đều build `TrackingUpdate` và đi qua MỘT processor — không duplicate business logic.
+
+2. **Persistence: bảng `secomm_carrier_tracking_state`** (ShippingCore; UNIQUE(carrier_code, tracking_number)): normalized_status, carrier_status_code, carrier_status_message, carrier_status_updated_at, last_synced_at, source, shipment_entity_id. **Justification (§11):** native Track/sales không có status column; persistent extension attribute trên sales entity vẫn cần table riêng; reconciliation cron cần query `normalized_status NOT IN (terminal) AND last_synced stale` — không thể query trên text description. Display giữ native: processor cập nhật `Track.description` + shipment comment (admin Comments History) — không custom UI. (Precedent: Ahamove status table.)
+
+3. **Ordering/idempotency:** duplicate update (same normalized + carrier code + occurredAt) → no-op. **Sticky-terminal:** DELIVERED/RETURNED/CANCELLED không bao giờ downgrade (out-of-order webhook an toàn). Timestamp-priority khi payload có timestamp. DELIVERY_FAILED → IN_TRANSIT được PHÉP (GHTK reattempt giao — không dùng rank-block). UNKNOWN không fail integration (raw giữ lại + warning).
+
+4. **Webhook primary:** `ghtk/webhook/index` POST, CSRF-exempt (precedent Ahamove), **luôn HTTP 200 nhanh** (không để GHTK retry vô hạn); controller mỏng (Receive→Validate→Parse→Dispatch); auth pragmatic: `webhook_secret` config so khớp query param (GHTK không có HMAC documented — Q-EXT; bật optional); không log secret/PII.
+
+5. **Tracking API = reconciliation/fallback:** `GhtkApiClient::getOrderStatus(labelId)` + `TrackingRefreshService` (cùng processor) + cron nhẹ **default OFF** (config opt-in) chỉ refresh shipment non-terminal + stale. Không aggressive polling.
+
+6. **Mandatory — carrier status ≠ Magento order state:** processor KHÔNG cancel/refund/creditmemo/recreate order. Chỉ: tracking state + Track.description + comment + domain events (`secomm_shipping_tracking_updated`, `secomm_shipment_carrier_{delivered,returned,delivery_failed}`) cho module downstream xử lý. (§6/§8.)
+
+## Alternatives considered
+
+- **Extension attributes trên Track/Order** — rejected cho state: vẫn cần table riêng để persist + không query được cho cron; phức tạp hơn một table thẳng.
+- **Rank-based transition blocking toàn bộ** — rejected: sai semantics GHTK (gặp lỗi → GHTK giao lại → IN_TRANSIT hợp lệ sau DELIVERY_FAILED); sticky-terminal + timestamp là đủ an toàn.
+- **Webhook tự update order status** — rejected: hai state machine khác nhau (mandatory rule §6); downstream module consume events nếu business yêu cầu.
+- **Polling làm primary** — rejected: webhook primary theo requirement; polling chỉ reconciliation stale non-terminal.
+- **Custom tracking dashboard** — rejected scope: native track grid + comments đủ cho core UX.
+
+## Consequences
+
+- (+) Reusable: GHN/Ahamove sau này chỉ cần mapper + webhook parser/API — pipeline dùng chung.
+- (+) An toàn vận đơn: idempotent + sticky-terminal + luôn-200 + raw status giữ lại cho reconciliation/audit.
+- (+) Native UX: không UI mới; Track.description + Comments History hiển thị trạng thái.
+- (−) Thêm bảng trong ShippingCore + schema change (Tier 2, db_schema + whitelist).
+- (−) Webhook auth là secret-in-URL (pragmatic — GHTK limitation); cần QC setup GHTK dashboard + secret; security review note.
+- (−) Cron off mặc định → merchant opt-in (document trong README/config comment).
+- Q-EXT mở: exact webhook payload fields + status codes + Tracking API path — mapper/parser defensive; QC sandbox verify gate go-live.
+
+## Affected components
+
+- `CMP-SHIPPINGCORE` — `Secomm_ShippingCore` (NEW `Api\Tracking\*`, `Model\Tracking\{TrackingUpdate, ShipmentTrackingProcessor, model/resource/collection CarrierTrackingState}`, `etc/db_schema.xml` + whitelist, di preferences, tests)
+- `CMP-GHTK` — `Secomm_Ghtk` (NEW `Model\Tracking\{GhtkStatusMapper, TrackingRefreshService}`, `Controller\Webhook\Index`, `Cron\RefreshTracking`, `etc/{crontab,frontend/routes}.xml`; `GhtkApiClient::getOrderStatus()`; config `webhook_secret`/`tracking_refresh_enabled`/`tracking_refresh_threshold_hours`; i18n; tests)

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99b42f61c5f8a6ddffa999433aa92262",
+    "content-hash": "157bf01353dfb78c3bc689a0ae234e8a",
     "packages": [
         {
             "name": "2tvenom/cborencode",
@@ -28676,6 +28676,41 @@
             "time": "2026-07-24T13:54:39+00:00"
         },
         {
+            "name": "hyva-themes/hyva-ui",
+            "version": "2.8.0",
+            "dist": {
+                "type": "zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/hyva-ui/2.8.0.0/920a33d5a4a3357b95227b64ac02ebd8d053d6e5.zip",
+                "reference": "920a33d5a4a3357b95227b64ac02ebd8d053d6e5",
+                "mirrors": [
+                    {
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "suggest": {
+                "hyva-themes/magento2-default-theme": "*"
+            },
+            "type": "magento2-theme",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
+            "license": [
+                "See LICENSE.md or https://hyva.io/license"
+            ],
+            "authors": [
+                {
+                    "name": "Hyvä Themes B.V.",
+                    "email": "info@hyva.io"
+                }
+            ],
+            "description": "Hyvä UI Components",
+            "support": {
+                "source": "https://gitlab.hyva.io/hyva-themes/ui/hyva-ui/-/tree/2.8.0",
+                "issues": "https://gitlab.hyva.io/hyva-themes/ui/hyva-ui/-/issues"
+            },
+            "time": "2026-06-30T12:28:06+02:00"
+        },
+        {
             "name": "laminas/laminas-diactoros",
             "version": "3.8.0",
             "source": {
@@ -32006,5 +32041,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.2.0"
 }

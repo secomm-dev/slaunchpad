@@ -1,0 +1,40 @@
+---
+id: DEC-FEATHEHJQ4-003
+legacy_ids: [DEC-012]
+title: Early-callback retry strategy (callback before order transaction available)
+status: proposed
+created: 2026-07-21
+last_verified: 2026-07-21
+verified_against_commit:
+supersedes: []
+superseded_by:
+work_items: [FEAT-HEHJQ4]
+---
+
+# Decision Record: Early-callback retry strategy
+
+## Context
+
+A VNPAY IPN may arrive before the Magento order/transaction row is committed (race), or the order may not yet exist. Current code returns `RspCode '01'` and forgets → a valid payment's IPN can be lost → order stuck pending. Retry/idempotency + payment category.
+
+## Decision (open — SA)
+
+Either (a) respond with a VNPAY-retry-eligible code so VNPAY retries within its retry window, or (b) queue/store-and-replay locally with **bounded** retries + backoff. Distinguish "order not found" (terminal) from "not yet available" (retry). No valid-payment IPN silently lost.
+
+## Alternatives
+
+- Status quo (return '01', forget — rejected: lost IPN).
+- Unbounded local retry (rejected: resource risk).
+
+## Consequences
+
+Prevents stuck-pending orders; choice affects infra (queue) and response-code semantics.
+
+## Affected components
+
+`Ipn.php` (not-found/early branch); possibly a queue/replay worker.
+
+## Related records
+
+- Feature: FEAT-HEHJQ4 (AC-003)
+- DECISIONS.md index: DEC-FEATHEHJQ4-003

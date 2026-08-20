@@ -2,6 +2,26 @@
 
 > Runtime log of changes to this project's `.ai/` AI-toolkit. Updated via the `update-project-ai-tool` function (governed by `.ai/rules/ai-tool-self-update.md` + `before-ai-tool-update` / `after-ai-tool-update` hooks). One entry per change; never delete.
 
+## [2026-08-20 — later] — Legacy re-identification migration (DEC-027; supersedes DEC-026 điểm 2)
+
+### Changed — 106 file content rewrite + 101 rename, một format ID duy nhất
+- **Tickets** (22): `SL-001..SL-025` → `TASK-88NDV5`, `TASK-FMAN1B`, `TASK-FD6A9X`, `TASK-KCBDDT`, `TASK-YJENM2`, `TASK-BRKHN4`, `TASK-KV328X`, `TASK-4ZV5NG`, `TASK-SQY42T`, `TASK-8WSERX`, `TASK-2V0AEV`, `TASK-NDASAD`, `TASK-KM6YAT`, `TASK-86NX9T`, `TASK-Z132WA`, `TASK-E0SK0H`, `TASK-3R6X8E`, `TASK-33J3RP`, `TASK-5H8WKE`, `TASK-67GGPR`, `TASK-4HYX6Y`, `TASK-HPK1WZ`; mỗi ticket thêm dòng `**Legacy ID:** SL-0NN`.
+- **Features** (8): `FEAT-001..008` → `FEAT-YVN39K`…`FEAT-JKZM68`; record upgrade new-model shape (`type`, `project_code: SLP`, `parent: null`, `legacy_ids`, H1 display `[SLP][FEAT-…] <title>`).
+- **DEC** (22): đổi tên theo namespace `work_items[0]` mới — vd `DEC-010..015` → `DEC-FEATHEHJQ4-001..006`, `DEC-SL018-001/002` → `DEC-TASKZ132WA-001/002`, `DEC-FEAT008-001` → `DEC-FEATJKZM68-001`; thêm `legacy_ids`. DEC-016/DEC-026 exempt giữ nguyên; DEC-1..9 (ADR-era) giữ nguyên.
+- **SPEC** (12): `SPEC-SL-0NN-<slug>` → `SPEC-TASK-…-<slug>`, `SPEC-FEAT-008-…` → `SPEC-FEAT-JKZM68-…` (filename + `Specification ID:` header đồng bộ).
+- **PLAN** (15) + testcases (2) + evidence dirs (8 + inner files): rename theo ID mới; mọi tham chiếu chéo (work_items, decisions:, specification_ref, Plan: links, DECISIONS.md index, memory files, AGENTS.md, CHANGELOG) rewrite tương ứng.
+- Toolkit `shared-core/rules/spec-first.md`: 4 citations thật cập nhật surgical (DEC-TASKZ132WA-001/002, DEC-TASKE0SK0H-001, TASK-3R6X8E) — hai phía md5-identical (không drift).
+
+### Added
+- `.ai/toolkit/legacy-id-map.yaml` — mapping machine-readable old→new (items + decisions + phantoms note). Resolver: exact new id → `legacy_ids` → map.
+- `DEC-027` + DECISIONS.md index; DEC-026 điểm 2 superseded.
+
+### Preserved (KHÔNG đổi)
+- `addressdropdown-hyva.md` (slug-only legacy, superseded read-only) · phantoms `SL-004/005/006/026` (prose lịch sử) · app/code comments (ngoài scope `.ai`) · ADR block DEC-1..9.
+
+### Notes
+- Baseline commit ngay trước migration (user); script reviewed + dry-run (101 renames listed) rồi `--apply`. Validate sau migration + sau fixes: **0 FAIL / 0 WARN**. Rollback nếu cần: `git checkout` về baseline.
+
 ## [2026-08-20] — P2A Work-Item Identity Model (toolkit Entry (k); migration P2A_WORK_ITEM_IDENTITY; DEC-026)
 
 ### Added
@@ -18,19 +38,19 @@
 - `toolkit-version.md` — stamp `P2A_WORK_ITEM_IDENTITY` + `phase2_capabilities` (registry sync).
 
 ### Preserved (KHÔNG đổi)
-- Toàn bộ legacy `SL-001..SL-025` tickets, `FEAT-001..008`, DEC records, SPEC files — grandfathered (class A/B), không rename, không re-mint; vẫn resolve qua dual-format validators. `applied_migrations: [P1A..P1F, P2A_WORK_ITEM_IDENTITY]`.
+- Toàn bộ work items legacy được **re-identify sang ID mới trong cùng ngày** (xem entry DEC-027 bên dưới) — nội dung record không đổi, chỉ identity/filename/references; traceability qua `.ai/toolkit/legacy-id-map.yaml` + `legacy_ids` frontmatter. `applied_migrations: [P1A..P1F, P2A_WORK_ITEM_IDENTITY]`.
 
 ### Notes
 - Applied via `bash secomm-production-ai-toolkit/bin/project-ai-upgrade --project /var/www/html/slaunchpad --apply --force` (idempotent; 4 ADD, 17 UPDATE --force, migration P2A bootstrap, 20 preserved). Validate sau retrofit: 0 FAIL / 0 WARN. Dry-run re-run: IN SYNC.
 - Work item MỚI từ 2026-08-20: mint bằng `.ai/bin/project-ai-idgen`, record dưới `.ai/records/{tasks,bugs,spikes,features}/`, `parent` metadata nếu thuộc Feature, H1 display title `[SLP][…]`, spec `SPEC-<ITEM-ID>-<slug>.md`.
 
-## [2026-08-19] — Spec-First ticket activation hardening (DEC-SL018-002; toolkit-first backport)
+## [2026-08-19] — Spec-First ticket activation hardening (DEC-TASKZ132WA-002; toolkit-first backport)
 
 ### Changed
-- `.ai/rules/spec-first.md` — thêm §"Ticket activation contract (DEC-SL018-002)": ticket active cần embedded `## Mini Spec` (parent Full-Spec reference KHÔNG thay thế) + plan artifact (`## Approach` hoặc `Plan:` link resolve); cập nhật SpecificationGuard layer 4 + executable-task checklist.
+- `.ai/rules/spec-first.md` — thêm §"Ticket activation contract (DEC-TASKZ132WA-002)": ticket active cần embedded `## Mini Spec` (parent Full-Spec reference KHÔNG thay thế) + plan artifact (`## Approach` hoặc `Plan:` link resolve); cập nhật SpecificationGuard layer 4 + executable-task checklist.
 - `.ai/bin/project-ai-validate` — SpecReadinessGuard ticket loop: FAIL khi active ticket thiếu Mini-Spec / thiếu plan artifact / Specification line vắng-hoặc-rỗng.
-- Reconcile legacy: SL-008/SL-009 stale "Ready" → "Dev complete" (shipped trong FEAT-006; surfacing khi hardening).
-- Nguồn: toolkit canonical `secomm-production-ai-toolkit` (`shared-core/rules/spec-first.md` + `bin/project-ai-validate` + Test Q ticket-tier trong `bin/run-contract-tests` — 62/62 PASS); identical-propagation về project. Trigger audit: SL-020 implement mà chưa có ticket-level spec/plan.
+- Reconcile legacy: TASK-YJENM2/TASK-BRKHN4 stale "Ready" → "Dev complete" (shipped trong FEAT-AE761Z; surfacing khi hardening).
+- Nguồn: toolkit canonical `secomm-production-ai-toolkit` (`shared-core/rules/spec-first.md` + `bin/project-ai-validate` + Test Q ticket-tier trong `bin/run-contract-tests` — 62/62 PASS); identical-propagation về project. Trigger audit: TASK-3R6X8E implement mà chưa có ticket-level spec/plan.
 
 ## [1.0.0] — 2026-07-14
 

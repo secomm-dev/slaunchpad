@@ -1,0 +1,70 @@
+---
+id: DEC-TASKKM6YAT-001
+legacy_ids: [DEC-SL016-001]
+title: 'GHTK order submission rides the Magento NATIVE shipping-label flow (AbstractCarrierOnline::requestToShipment) — synchronous, label-triggered; supersedes DEC-TASKKV328X-001 outbound outbox; COD via CodAmountResolver (prepaid=0, COD=collectible); partial+COD fail-fast'
+status: accepted
+owners: [sa, tl]
+decision_type: architecture
+approval_date: 2026-08-17
+created: 2026-08-17
+last_verified: 2026-08-17
+verified_against_commit:
+supersedes: [DEC-TASKKV328X-001]
+superseded_by:
+work_items: [TASK-KM6YAT]
+---
+
+# Decision Record: GHTK order submit qua Magento native shipping-label flow
+
+<!-- CANONICAL DECISION STORE. ACCEPTED 2026-08-17 — approved by user acting as SA/TL (chat "approve", Level 2; kèm TASK-KM6YAT plan approval → Phase C cleared). -->
+<!-- Index pointer: `.ai/project-context/memory/DECISIONS.md` -->
+<!-- Audit 2026-08-17 against Magento 2.4.8-p5 vendor code (module-shipping LabelGenerator/Labels/AbstractCarrierOnline/Shipment Save controller) — xem plan TASK-KM6YAT Part 1. -->
+
+## Context
+
+TASK-KV328X (order sync) parked 2026-07-30 với DEC-TASKKV328X-001 (accepted): async outbox + cron consumer + webhook-first inbound. Yêu cầu mới (2026-08-17, SA/TL): tận dụng **Magento native shipment + shipping-label lifecycle**, không tạo parallel Online/Offline framework — normal shipment KHÔNG gọi GHTK; chỉ khi merchant check **Create Shipping Label** mới submit order lên GHTK.
+
+Audit vendor 2.4.8-p5 xác nhận native flow đã giải quyết phần lớn DEC-TASKKV328X-001's concerns:
+- `Shipment\Save` controller: `register()` → `LabelGenerator::create()` (**API call TRƯỚC khi shipment save**) → fail → `LocalizedException` → shipment KHÔNG được save → **không bao giờ có "false success"** (native, free).
+- `Shipping\Labels::requestToShipment()`: precondition tự động — thiếu store_information name/phone hay origin → throw rõ ràng.
+- `LabelGenerator`: persist **native** — `sales_shipment_track` (number/carrier/title) + `shipment.shipping_label` (PDF blob); yêu cầu response có cả `tracking_number` + `label_content` (PDF bytes; `\Zend_Pdf` có sẵn qua `magento/zend-pdf`).
+- Retry semantics: fail → merchant tạo lại shipment + label (idempotency bằng deterministic partner ORDER_ID, không cần outbox).
+
+Tier-2 (shipping + order/shipment lifecycle + external API — AGENTS §11/§12) → Level-2, SA/TL.
+
+## Decision (proposed)
+
+1. **`Secomm\Ghtk\Model\Carrier\Ghtk` chuyển `AbstractCarrier` → `AbstractCarrierOnline`**; override `requestToShipment()` (aggregate packages — GHTK = single-parcel concept, weight = Σ package weights, fallback product weights) + `isShippingLabelsAvailable()` = true + lean `getContainerTypes()`. KHÔNG tạo custom Online/Offline concept — reuse 100% native lifecycle (checkbox, package popup, error semantics, track + label persistence).
+2. **Trigger duy nhất = Create Shipping Label.** Normal shipment (không label) → zero GHTK API call. KHÔNG observer `sales_order_shipment_save_after` (anti-pattern Ahamove). Rate path (`collectRates`) giữ nguyên, độc lập hoàn toàn.
+3. **Origin qua TASK-NDASAD chain:** `ShippingContextFactory::fromShipment()` (thêm vào Secomm_ShippingCore) → `GhtkOriginProvider` → `PickupAddressResolver` — cùng abstraction như rate (DEC-TASKNDASAD-001 §2, AC-10). Shipper contact (pick_name/pick_tel) lấy từ native `Shipment\Request` (admin user + store_information — đã được native validate bắt buộc).
+4. **COD tách khỏi mapper:** `CodAmountResolverInterface::resolve(Order, Shipment): float` — default impl: payment method ∉ config COD list (default `cashondelivery`) → **0** (prepaid); COD → **base_total_due** (tự nhiên xử lý deposit/partial payment/gift card — không hard-code grand_total). Mapper chỉ map resolved amount → `pick_money`.
+5. **Partial shipment + COD → fail-fast** `LocalizedException` (không có safe allocation rule — KHÔNG build allocation engine; document limitation; explicit amount = future).
+6. **is_freeship = 1 mặc định** (Magento là source of truth cho shipping amount đã charge ở checkout — carrier không thu thêm phí ship tại cửa; resolves DEC-TASKKV328X-002 B3 cho release này). Không double-charge shipping fee.
+7. **partner ORDER_ID = `ghtk-{order_increment_id}-{seq}`** (seq = số shipment GHTK đã submit trên order + 1 — deterministic vì shipment entity chưa persist lúc label request; resolves B8/B14). POST **không auto-retry** (double-submit risk; single attempt + clear error). `ORDER_ID_EXIST` → error rõ ràng + hướng dẫn check GHTK dashboard (reconcile fetch = follow-up khi verify được API).
+8. **Declared value** default = subtotal của các item trong shipment (B4 default; config sau nếu cần). **Multi-package** admin UI → 1 GHTK order (B7). **COD snapshot** lưu vào shipment comment (label_id + tracking + pick_money — audit trail, zero schema).
+
+## Supersedes
+
+**DEC-TASKKV328X-001** (accepted 2026-07-30): phần **outbound outbox/cron** bị thay bằng native label flow (sync trong label request, native "fail → no shipment" semantics thay cho outbox retry). Giữ lại từ DEC-TASKKV328X-001: deterministic partner ORDER_ID + idempotency mindset + masked logging. **Webhook inbound (status sync)** vẫn deferred như cũ (release sau, không đổi). DEC-TASKKV328X-002: B1 default (COD=total_due; COD payment vẫn BA backlog), B2 giữ (prepaid→0), **B3 resolved** (is_freeship=1), B6 fail-fast, B7 aggregate, **B8/B14 resolved** (trigger=label, partner id format), B4 default subtotal. B9 (cancel) vẫn out-of-phase.
+
+## Alternatives considered
+
+- **Giữ DEC-TASKKV328X-001 outbox** — rejected: yêu cầu mới ưu tiên native lifecycle; native flow đã cho "no false success" + native persistence + natural retry (merchant re-create); outbox + bảng riêng = parallel framework không cần thiết cho release này.
+- **Observer `shipment_save_after` push tự động** (pattern Ahamove) — rejected: mọi shipment đều bị push dù merchant không muốn; mất quyền Magento-only shipment; explicitly banned.
+- **Custom shipment type Online/Offline riêng** — rejected: Magento đã có khái niệm này ngầm (isShippingLabelsAvailable + label flow); duplicate = parallel framework.
+- **GHTK label PDF fetch từ GHTK endpoint** — deferred (Q-EXT chưa verify endpoint): generate label PDF minimal bằng `\Zend_Pdf` (tracking + addresses) — đủ để native flow persist + in; swap sang GHTK PDF sau khi verify.
+
+## Consequences
+
+- (+) Zero custom lifecycle: checkbox/popup/track/label PDF/error UX đều native Magento; QC flow chuẩn; admin UX quen thuộc.
+- (+) COD resolver tách bạch — sẵn cho deposit/gift card/partial payment; không double-charge shipping.
+- (+) Origin dùng đúng chain TASK-NDASAD — rate và label-submit cùng origin abstraction (AC-10 TASK-NDASAD thực hiện trọn vẹn).
+- (−) Sync API call trong request admin label (chấp nhận: cùng nature với UPS/DHL native; request timeout config sẵn 5s).
+- (−) Không auto-retry POST — merchant retry thủ công; ORDER_ID_EXIST cần reconcile thủ công (document; follow-up).
+- (−) Q-EXT vẫn mở: order API field contract chưa verify sandbox — mapper defensive + flag QC verify trước go-live.
+- Carrier constructor phình (parent AbstractCarrierOnline 16 deps) — chuẩn Magento online carriers.
+
+## Affected components
+
+- `CMP-GHTK` — `Secomm_Ghtk` (Carrier→AbstractCarrierOnline; NEW `Model/OrderSubmit/{OrderSubmitService,OrderRequestMapper,OrderResponseMapper,CodAmountResolverInterface,DefaultCodAmountResolver,LabelPdfGenerator}`; `GhtkApiClient::submitOrder()`; `ShipmentWeightCalculator` +method shipment-side; system.xml +cod_method_codes; tests)
+- `CMP-SHIPPINGCORE` — `Secomm_ShippingCore` (`ShippingContextFactory::fromShipment()`)

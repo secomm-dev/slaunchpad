@@ -74,14 +74,15 @@
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7 || ^1.0",
         "dg/bypass-finals": "^1.4",
         "friendsofphp/php-cs-fixer": "^3.22",
+        "hyva-themes/hyva-ui": "^2.8",
+        "magento/magento-allure-phpunit": "^3.0.2",
         "magento/magento-coding-standard": "*",
         "magento/magento2-functional-testing-framework": "^5.0",
         "pdepend/pdepend": "3.x-dev",
         "phpmd/phpmd": "3.x-dev",
         "phpstan/phpstan": "^1.9",
         "phpunit/phpunit": "^10.5",
-        "symfony/finder": "^6.4",
-        "magento/magento-allure-phpunit": "^3.0.2"
+        "symfony/finder": "^6.4"
     },
     "conflict": {
         "gene/bluefoot": "*"
@@ -101,7 +102,7 @@
     "repositories": {
         "private-packagist": {
             "type": "composer",
-            "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/"
+            "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/"
         },
         "0": {
             "type": "composer",

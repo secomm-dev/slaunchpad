@@ -25,4 +25,4 @@ This directory holds the **canonical work-item records** for this project. Each 
 
 ## Proof of concept
 
-`features/FEAT-001.md` consolidates legacy **SL-001** (ticket + spec + plan + testcase) and reconciles the Hyva-only(plan) ↔ dual-theme(spec, DEC-9) drift. The SL-001 legacy files are marked legacy and point back here.
+`features/FEAT-YVN39K.md` consolidates legacy **TASK-88NDV5** (ticket + spec + plan + testcase) and reconciles the Hyva-only(plan) ↔ dual-theme(spec, DEC-9) drift. The TASK-88NDV5 legacy files are marked legacy and point back here.

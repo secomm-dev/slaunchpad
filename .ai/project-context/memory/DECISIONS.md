@@ -88,7 +88,7 @@
 - **Status**: Accepted — approved via `/approve` by user acting as SA/TL decision authority (Level 2)
 - **Decided option**: Strategy B (full Hyvä-native — Alpine.js + Magewire + `.phtml` + Tailwind v4)
 - **Deciders**: user (chat) acting as SA/TL authority — formal SA/TL name [TBD]
-- **Context**: Ticket [SL-001](../../tickets/SL-001-apply-hyva-theme-addressdropdown.md) yêu cầu apply Hyvä cho `Secomm_AddressDropdown`. Module hiện là Luma/Knockout/RequireJS thuần → không render trên storefront Hyvä. OSC (checkout thật) là Knockout-based chạy qua compat `hyva-themes/magento2-luma-checkout`. Có 2 strategy:
+- **Context**: Ticket [TASK-88NDV5](../../tickets/TASK-88NDV5-apply-hyva-theme-addressdropdown.md) yêu cầu apply Hyvä cho `Secomm_AddressDropdown`. Module hiện là Luma/Knockout/RequireJS thuần → không render trên storefront Hyvä. OSC (checkout thật) là Knockout-based chạy qua compat `hyva-themes/magento2-luma-checkout`. Có 2 strategy:
   - (A) Storefront rewrite sang Hyvä + giữ Knockout trong checkout-region qua compat layer, chỉ sửa OSC component target.
   - (B) **Full Hyvä-native** (Alpine.js + Magewire + `.phtml` + Tailwind v4) cho **mọi address surface incl. OSC**.
 - **Decision**: Chọn **Strategy B** — render hierarchical VN address dropdown Hyvä-native trên cả customer address form, cart estimation, và Mageplaza OSC (shipping + billing). Backend (`Api/`/`Model`/`Setup`/import/admin) giữ nguyên; tái dùng GraphQL sẵn có (`GetListCity`/`GetListSubCity`) + core Magento GraphQL (Country/Region).
@@ -98,25 +98,25 @@
   - (−) Effort cao hơn (estimate ~32–56h vs ~16–24h cho A); chạm OSC (Tier 2) nhiều hơn → rủi ro checkout/payment regression.
   - (−) Phải giải OSC address seam + submit mechanism (Open Questions Q2/Q3 trong spec).
   - Follow-up: đánh giá undeprecate + cache GraphQL resolver (Q1); QC end-to-end checkout + payment bắt buộc.
-- **Related**: [SL-001](../../tickets/SL-001-apply-hyva-theme-addressdropdown.md) · [spec addressdropdown-hyva](../../specs/addressdropdown-hyva.md) · `project-context/10_CHECKOUT_PAYMENT_SHIPPING_ORDER_FLOW.md` · AGENTS.md §7.2, §12 (high-risk)
+- **Related**: [TASK-88NDV5](../../tickets/TASK-88NDV5-apply-hyva-theme-addressdropdown.md) · [spec addressdropdown-hyva](../../specs/addressdropdown-hyva.md) · `project-context/10_CHECKOUT_PAYMENT_SHIPPING_ORDER_FLOW.md` · AGENTS.md §7.2, §12 (high-risk)
 
 ## DEC-8 — Reusability boundary: Secomm_AddressDropdown (module) vs Launchpad (project) — refine DEC-7
 
 - **Date**: 2026-07-16 (Accepted 2026-07-16)
 - **Status**: Accepted — approved via `/approve` by user acting as SA/TL decision authority (Level 2)
-- **Decided option**: module owns generic surfaces only (no OSC/Ahamave coupling); OSC integration → Launchpad package (SL-002)
+- **Decided option**: module owns generic surfaces only (no OSC/Ahamave coupling); OSC integration → Launchpad package (TASK-FMAN1B)
 - **Deciders**: user (chat) acting as SA/TL authority — formal SA/TL name [TBD]
 - **Context**: `Secomm_AddressDropdown` là module **tái dụng (reusable)**. DEC-7 (Strategy B) ban đầu gộp cả OSC integration vào module — vi phạm nguyên tắc tách biệt: module tái dụng không được coupling với `Mageplaza OSC` (third-party, choice theo project) hay `Secomm_Ahamave` (project-specific shipping). Thực tế `view/frontend/requirejs-config.js` đang reference `Secomm_Ahamave/...` = **project-leak** vào module tái dụng.
 - **Decision**:
   - **Module (`Secomm_AddressDropdown`)** chỉ sở hữu **generic Magento-native surfaces**: customer address form, cart shipping estimation, default/Luma checkout. Module có thể hỗ trợ Hyvä (template Tailwind/Alpine/Magewire của chính nó) vì Hyvä là theme, không phải third-party.
-  - **OSC customization** (wiring address dropdown vào Mageplaza OSC) phải nằm trong **package Launchpad** (project layer: `app/design/frontend/Secomm/launchpad/` + code project-owned) → **ticket riêng SL-002**.
+  - **OSC customization** (wiring address dropdown vào Mageplaza OSC) phải nằm trong **package Launchpad** (project layer: `app/design/frontend/Secomm/launchpad/` + code project-owned) → **ticket riêng TASK-FMAN1B**.
   - Module **không reference** `Mageplaza_Osc` hay `Secomm_Ahamave`. Remove dead ref Ahamave hiện có.
 - **Rationale**: Giữ module tái dụng portable (deploy cho client khác không có OSC/Ahamove vẫn chạy surface generic); tách concern reusable vs project-specific; OSC là decision của project này (BR-004), không phải dependency của module.
 - **Consequences**:
-  - (+) Module sạch, tái dụng được; OSC risk (Tier 2 checkout/payment) cô lập trong SL-002/Launchpad.
-  - (−) Work split thành 2 ticket: SL-001 (module) + SL-002 (Launchpad OSC); SL-002 phụ thuộc SL-001 (module phải expose Hyvä component/dữ liệu để Launchpad wire vào OSC).
-  - Refines DEC-7: phần "render dropdown trên OSC" trong DEC-7 không do module làm — chuyển sang SL-002 (Launchpad). DEC-7 (Strategy B — Hyvä-native) vẫn valid cho cả 2 ticket.
-- **Related**: refines [DEC-7](#dec-7) · [SL-001](../../tickets/SL-001-apply-hyva-theme-addressdropdown.md) · [SL-002](../../tickets/SL-002-launchpad-osc-address-integration.md) · [spec addressdropdown-hyva](../../specs/addressdropdown-hyva.md)
+  - (+) Module sạch, tái dụng được; OSC risk (Tier 2 checkout/payment) cô lập trong TASK-FMAN1B/Launchpad.
+  - (−) Work split thành 2 ticket: TASK-88NDV5 (module) + TASK-FMAN1B (Launchpad OSC); TASK-FMAN1B phụ thuộc TASK-88NDV5 (module phải expose Hyvä component/dữ liệu để Launchpad wire vào OSC).
+  - Refines DEC-7: phần "render dropdown trên OSC" trong DEC-7 không do module làm — chuyển sang TASK-FMAN1B (Launchpad). DEC-7 (Strategy B — Hyvä-native) vẫn valid cho cả 2 ticket.
+- **Related**: refines [DEC-7](#dec-7) · [TASK-88NDV5](../../tickets/TASK-88NDV5-apply-hyva-theme-addressdropdown.md) · [TASK-FMAN1B](../../tickets/TASK-FMAN1B-launchpad-osc-address-integration.md) · [spec addressdropdown-hyva](../../specs/addressdropdown-hyva.md)
 
 ## DEC-9 — Dual-theme support (Luma + Hyva) cho reusable module — refines DEC-7
 
@@ -124,7 +124,7 @@
 - **Status**: Accepted — user-directed (approved plan)
 - **Decided option**: module theme-agnostic (both Luma native + Hyva native); theme switch qua `hyva_` layout handle
 - **Deciders**: user (chat) acting as SA/TL authority — formal SA/TL name [TBD]
-- **Context**: DEC-7 (Strategy B) hướng tới Hyvä-native; SL-001 implement rewrite customer form **Hyva-only** + xóa Luma JS (`address-dropdown.js`, cart mixin) → **Luma bị hỏng**. Nhưng `Secomm_AddressDropdown` là module **reusable generic** (DEC-8) → phải hỗ trợ BOTH Luma (native jQuery/Knockout) VÀ Hyva (native Alpine) để ship cho client project trên mỗi stack.
+- **Context**: DEC-7 (Strategy B) hướng tới Hyvä-native; TASK-88NDV5 implement rewrite customer form **Hyva-only** + xóa Luma JS (`address-dropdown.js`, cart mixin) → **Luma bị hỏng**. Nhưng `Secomm_AddressDropdown` là module **reusable generic** (DEC-8) → phải hỗ trợ BOTH Luma (native jQuery/Knockout) VÀ Hyva (native Alpine) để ship cho client project trên mỗi stack.
 - **Decision**:
   - Module **theme-agnostic** — hỗ trợ cả Luma + Hyva trên toàn bộ storefront (customer form + cart + default checkout).
   - Templates nằm trong **module** (portable). Customer form theme switch qua **`hyva_` layout handle** (Hyva auto-add qua `Hyva\Theme\Observer\AddLayoutHandles`): `customer_address_form.xml` (Luma, `setTemplate → edit.phtml`) + `hyva_customer_address_form.xml` (Hyva, `setTemplate → hyva/address/edit.phtml`), cả hai `ifconfig="address/general/enable"`.
@@ -136,7 +136,7 @@
   - (−) Luma path **không test được** trên project Hyva-only này → QC cần Luma theme/client riêng.
   - Refines DEC-7: "Hyva-native" → "dual Luma + Hyva". DEC-8 (boundary generic/OSC) vẫn valid.
   - Follow-up: default-checkout Luma JS VN-hardcoding (`shipping-address-dropdown.js:160-170`) → align i18n (riêng).
-- **Related**: refines [DEC-7](#dec-7) · [DEC-8](#dec-8) · [SL-001](../../tickets/SL-001-apply-hyva-theme-addressdropdown.md) · [spec addressdropdown-hyva](../../specs/addressdropdown-hyva.md) · plan `v-i-secomm-addressdropdown-y-l-merry-parrot.md`
+- **Related**: refines [DEC-7](#dec-7) · [DEC-8](#dec-8) · [TASK-88NDV5](../../tickets/TASK-88NDV5-apply-hyva-theme-addressdropdown.md) · [spec addressdropdown-hyva](../../specs/addressdropdown-hyva.md) · plan `v-i-secomm-addressdropdown-y-l-merry-parrot.md`
 
 <!--
 Template cho entry kế tiếp — copy từ đây:
@@ -156,27 +156,28 @@ Template cho entry kế tiếp — copy từ đây:
 
 Decision records mới được lưu canonical tại `.ai/records/decisions/DEC-XXX.md` (full body). Các dòng dưới là **index pointers** (Navigator `adr_ref` vẫn resolve qua file này).
 
-- [DEC-010](../../records/decisions/DEC-010.md) — VNPAY IPN signature verification scheme (proposed; work_items: FEAT-004)
-- [DEC-011](../../records/decisions/DEC-011.md) — VNPAY status → Magento order state mapping (proposed; work_items: FEAT-004)
-- [DEC-012](../../records/decisions/DEC-012.md) — Early-callback retry strategy (proposed; work_items: FEAT-004)
-- [DEC-013](../../records/decisions/DEC-013.md) — Idempotency + concurrency lock (proposed; work_items: FEAT-004)
-- [DEC-014](../../records/decisions/DEC-014.md) — Audit-trail storage (proposed; work_items: FEAT-004)
-- [DEC-015](../../records/decisions/DEC-015.md) — VNPAY payload contract versioning (proposed; work_items: FEAT-004)
+- [DEC-FEATHEHJQ4-001](../../records/decisions/DEC-FEATHEHJQ4-001.md) — VNPAY IPN signature verification scheme (proposed; work_items: FEAT-HEHJQ4)
+- [DEC-FEATHEHJQ4-002](../../records/decisions/DEC-FEATHEHJQ4-002.md) — VNPAY status → Magento order state mapping (proposed; work_items: FEAT-HEHJQ4)
+- [DEC-FEATHEHJQ4-003](../../records/decisions/DEC-FEATHEHJQ4-003.md) — Early-callback retry strategy (proposed; work_items: FEAT-HEHJQ4)
+- [DEC-FEATHEHJQ4-004](../../records/decisions/DEC-FEATHEHJQ4-004.md) — Idempotency + concurrency lock (proposed; work_items: FEAT-HEHJQ4)
+- [DEC-FEATHEHJQ4-005](../../records/decisions/DEC-FEATHEHJQ4-005.md) — Audit-trail storage (proposed; work_items: FEAT-HEHJQ4)
+- [DEC-FEATHEHJQ4-006](../../records/decisions/DEC-FEATHEHJQ4-006.md) — VNPAY payload contract versioning (proposed; work_items: FEAT-HEHJQ4)
 - [DEC-016](../../records/decisions/DEC-016.md) — Toolkit Phase-1 retrofit sync — scope + force-sync rationale (accepted; work_items: none — decision_type: process)
-- [DEC-017](../../records/decisions/DEC-017.md) — Generic VN address capability (data + cart estimate cascade) lives in Secomm_VietNamAddress (accepted; work_items: FEAT-005)
-- [DEC-018](../../records/decisions/DEC-018.md) — Per-shipping-method VN customization lives in Launchpad (project, optional per carrier; 3rd-party + Secomm mix) (accepted; work_items: FEAT-005)
-- [DEC-019](../../records/decisions/DEC-019.md) — Generic module uses Magento-default labels only; VN labels → VietNamAddress; per-carrier code mappings → Launchpad (accepted; work_items: FEAT-005)
-- [DEC-020](../../records/decisions/DEC-020.md) — Canonical mapping key (country_id, region_id, ward_id) + best-effort fallback; ward = city level (accepted; work_items: SL-008, FEAT-006)
-- [DEC-021](../../records/decisions/DEC-021.md) — Destination vs pickup resolver split + pickup validity (accepted; work_items: SL-009, SL-010, FEAT-006)
-- [DEC-022](../../records/decisions/DEC-022.md) — Shipment weight contract + rate composition (accepted; work_items: SL-009, SL-010, FEAT-006)
-- [DEC-023](../../records/decisions/DEC-023.md) — Idempotent async order sync architecture (accepted, parked w/ SL-010; work_items: SL-010, FEAT-006)
-- [DEC-024](../../records/decisions/DEC-024.md) — Order sync business rules bundle (proposed, parked; work_items: SL-010, FEAT-006)
-- [DEC-025](../../records/decisions/DEC-025.md) — Admin address dropdown architecture: global data-driven multi-level mechanism + country adapter; VN 2-level (ward=native city); sub_city generic 3rd level (accepted; work_items: FEAT-007, FEAT-005, FEAT-001, SL-011, SL-012, SL-013, SL-014)
-- [DEC-SL015-001](../../records/decisions/DEC-SL015-001.md) — ShippingCore origin contract: carrier consumes normalized runtime Origin via OriginProviderInterface; default = Magento Shipping Origin; GHTK legacy pick_* BC override (accepted; work_items: SL-015)
-- [DEC-SL016-001](../../records/decisions/DEC-SL016-001.md) — GHTK order submit rides Magento native shipping-label flow (AbstractCarrierOnline::requestToShipment, label-triggered, sync, no outbox); COD via CodAmountResolver (prepaid=0, COD=total_due); partial+COD fail-fast; supersedes DEC-023 outbound (accepted; work_items: SL-016)
-- [DEC-SL017-001](../../records/decisions/DEC-SL017-001.md) — Carrier tracking: shared pipeline in ShippingCore (TrackingUpdate → processor → normalized status + secomm_carrier_tracking_state); webhook primary + API reconciliation; sticky-terminal ordering; carrier status never mutates Magento order state (accepted; work_items: SL-017)
-- [DEC-SL018-001](../../records/decisions/DEC-SL018-001.md) — NO SPEC → NO IMPLEMENTATION: two-level spec gate (embedded Mini-Spec small tasks / Full Spec features), enforced at rules+gates+state+entry-points+validator (soft default, SPEC_GATE_HARD); removes the "or ticket with AC" escape (accepted; work_items: SL-018)
-- [DEC-SL019-001](../../records/decisions/DEC-SL019-001.md) — Spec naming canonical: SPEC-<OWNER-ID>-<slug>.md (Specification ID = SPEC-<OWNER-ID>, slug never identity); Mini-Spec identity = Ticket ID (MINI-{NNN} deprecated); one canonical rule in spec-first.md §Spec Naming propagated via generation+upgrade; legacy slug-only grandfathered (accepted; work_items: SL-019)
-- [DEC-FEAT008-001](../../records/decisions/DEC-FEAT008-001.md) — Promotion Max Discount: cap engine qua custom quote total collector sort 310 (post-SalesRule, pre-tax); per-rule breakdown native làm nguồn contribution; column maximum_discount_amount trên salesrule + ext attr RuleInterface Phase 1; LRM redistribution theo contribution (base/display độc lập); Secomm_Promotion base tối giản (accepted; work_items: FEAT-008)
-- [DEC-SL018-002](../../records/decisions/DEC-SL018-002.md) — Spec-First hardening: active ticket phải có embedded Mini-Spec (parent Full-Spec ref không thay thế behavioral contract của slice) + plan artifact (## Approach hoặc Plan: link); hard-enforce bởi --check-specs; extends DEC-SL018-001 (accepted; process/tooling, trigger SL-020)
-- [DEC-026](../../records/decisions/DEC-026.md) — Work-Item Identity Model (P2A): ID collision-safe TASK-XXXXXX… mint bằng project-ai-idgen (không max+1) + Project Code SLP tại .ai/toolkit/project.yaml + parent metadata + display titles [SLP][…]; legacy SL-001..025/FEAT-001..008 grandfathered không rename (accepted; tooling, work_items: none — áp cho mọi work item tương lai)
+- [DEC-FEATJSZQV3-001](../../records/decisions/DEC-FEATJSZQV3-001.md) — Generic VN address capability (data + cart estimate cascade) lives in Secomm_VietNamAddress (accepted; work_items: FEAT-JSZQV3)
+- [DEC-FEATJSZQV3-002](../../records/decisions/DEC-FEATJSZQV3-002.md) — Per-shipping-method VN customization lives in Launchpad (project, optional per carrier; 3rd-party + Secomm mix) (accepted; work_items: FEAT-JSZQV3)
+- [DEC-FEATJSZQV3-003](../../records/decisions/DEC-FEATJSZQV3-003.md) — Generic module uses Magento-default labels only; VN labels → VietNamAddress; per-carrier code mappings → Launchpad (accepted; work_items: FEAT-JSZQV3)
+- [DEC-TASKYJENM2-001](../../records/decisions/DEC-TASKYJENM2-001.md) — Canonical mapping key (country_id, region_id, ward_id) + best-effort fallback; ward = city level (accepted; work_items: TASK-YJENM2, FEAT-AE761Z)
+- [DEC-TASKBRKHN4-001](../../records/decisions/DEC-TASKBRKHN4-001.md) — Destination vs pickup resolver split + pickup validity (accepted; work_items: TASK-BRKHN4, TASK-KV328X, FEAT-AE761Z)
+- [DEC-TASKBRKHN4-002](../../records/decisions/DEC-TASKBRKHN4-002.md) — Shipment weight contract + rate composition (accepted; work_items: TASK-BRKHN4, TASK-KV328X, FEAT-AE761Z)
+- [DEC-TASKKV328X-001](../../records/decisions/DEC-TASKKV328X-001.md) — Idempotent async order sync architecture (accepted, parked w/ TASK-KV328X; work_items: TASK-KV328X, FEAT-AE761Z)
+- [DEC-TASKKV328X-002](../../records/decisions/DEC-TASKKV328X-002.md) — Order sync business rules bundle (proposed, parked; work_items: TASK-KV328X, FEAT-AE761Z)
+- [DEC-FEATE2HM1J-001](../../records/decisions/DEC-FEATE2HM1J-001.md) — Admin address dropdown architecture: global data-driven multi-level mechanism + country adapter; VN 2-level (ward=native city); sub_city generic 3rd level (accepted; work_items: FEAT-E2HM1J, FEAT-JSZQV3, FEAT-YVN39K, TASK-4ZV5NG, TASK-SQY42T, TASK-8WSERX, TASK-2V0AEV)
+- [DEC-TASKNDASAD-001](../../records/decisions/DEC-TASKNDASAD-001.md) — ShippingCore origin contract: carrier consumes normalized runtime Origin via OriginProviderInterface; default = Magento Shipping Origin; GHTK legacy pick_* BC override (accepted; work_items: TASK-NDASAD)
+- [DEC-TASKKM6YAT-001](../../records/decisions/DEC-TASKKM6YAT-001.md) — GHTK order submit rides Magento native shipping-label flow (AbstractCarrierOnline::requestToShipment, label-triggered, sync, no outbox); COD via CodAmountResolver (prepaid=0, COD=total_due); partial+COD fail-fast; supersedes DEC-TASKKV328X-001 outbound (accepted; work_items: TASK-KM6YAT)
+- [DEC-TASK86NX9T-001](../../records/decisions/DEC-TASK86NX9T-001.md) — Carrier tracking: shared pipeline in ShippingCore (TrackingUpdate → processor → normalized status + secomm_carrier_tracking_state); webhook primary + API reconciliation; sticky-terminal ordering; carrier status never mutates Magento order state (accepted; work_items: TASK-86NX9T)
+- [DEC-TASKZ132WA-001](../../records/decisions/DEC-TASKZ132WA-001.md) — NO SPEC → NO IMPLEMENTATION: two-level spec gate (embedded Mini-Spec small tasks / Full Spec features), enforced at rules+gates+state+entry-points+validator (soft default, SPEC_GATE_HARD); removes the "or ticket with AC" escape (accepted; work_items: TASK-Z132WA)
+- [DEC-TASKE0SK0H-001](../../records/decisions/DEC-TASKE0SK0H-001.md) — Spec naming canonical: SPEC-<OWNER-ID>-<slug>.md (Specification ID = SPEC-<OWNER-ID>, slug never identity); Mini-Spec identity = Ticket ID (MINI-{NNN} deprecated); one canonical rule in spec-first.md §Spec Naming propagated via generation+upgrade; legacy slug-only grandfathered (accepted; work_items: TASK-E0SK0H)
+- [DEC-FEATJKZM68-001](../../records/decisions/DEC-FEATJKZM68-001.md) — Promotion Max Discount: cap engine qua custom quote total collector sort 310 (post-SalesRule, pre-tax); per-rule breakdown native làm nguồn contribution; column maximum_discount_amount trên salesrule + ext attr RuleInterface Phase 1; LRM redistribution theo contribution (base/display độc lập); Secomm_Promotion base tối giản (accepted; work_items: FEAT-JKZM68)
+- [DEC-TASKZ132WA-002](../../records/decisions/DEC-TASKZ132WA-002.md) — Spec-First hardening: active ticket phải có embedded Mini-Spec (parent Full-Spec ref không thay thế behavioral contract của slice) + plan artifact (## Approach hoặc Plan: link); hard-enforce bởi --check-specs; extends DEC-TASKZ132WA-001 (accepted; process/tooling, trigger TASK-3R6X8E)
+- [DEC-026](../../records/decisions/DEC-026.md) — Work-Item Identity Model (P2A): ID collision-safe TASK-XXXXXX… mint bằng project-ai-idgen (không max+1) + Project Code SLP tại .ai/toolkit/project.yaml + parent metadata + display titles [SLP][…]; điểm grandfather (điểm 2) superseded bởi DEC-027 (accepted; tooling, work_items: none — áp cho mọi work item tương lai)
+- [DEC-027](../../records/decisions/DEC-027.md) — Re-identification toàn bộ work items legacy: SL-001..025 → TASK-88NDV5…TASK-HPK1WZ, FEAT-001..008 → FEAT-YVN39K…FEAT-JKZM68; DEC/SPEC/PLAN rename theo; mapping .ai/toolkit/legacy-id-map.yaml + legacy_ids; supersedes DEC-026 điểm 2 (accepted; tooling, work_items: none)

@@ -9,20 +9,20 @@
 ## What has been built
 
 - **Secomm Launchpad** — Magento 2.4.8-p5 + Hyvä 3.x storefront (vi_VN primary), fresh init (single commit `1afdfc8`).
-- **CMP-ADDR** — Vietnam hierarchical address capture (dual-theme Luma+Hyva); customer form + cart estimation done, resolver hardening deferred (AC-011/Q1). → FEAT-001 (done).
-- **CMP-STOREFRONT** — admin-configurable storefront announcement toggle (Yes/No → render block). → FEAT-003 (done); FEAT-002 (broader proposal, proposed).
+- **CMP-ADDR** — Vietnam hierarchical address capture (dual-theme Luma+Hyva); customer form + cart estimation done, resolver hardening deferred (AC-011/Q1). → FEAT-YVN39K (done).
+- **CMP-STOREFRONT** — admin-configurable storefront announcement toggle (Yes/No → render block). → FEAT-YESRCX (done); FEAT-KQ6WC4 (broader proposal, proposed).
 - **CMP-CHECKOUT / CMP-THEME / CMP-PAYMENT-MOLLIE** — Mageplaza OSC, Hyvä child themes, Mollie (active) installed; no delivery work records yet.
 - **Project AI Toolkit** — Phase 1a (canonical records) + 1b (per-work-item mode + decision assessment) + 1c (durable project state) + 1d (runtime/durable split) artifacts present; 1e/1f semantic satisfied via AGENTS §8.5/§8.6/§9. **Phase-1 contract synced 2026-07-23** (CHANGELOG 1.3.0): migration markers P1A–P1F stamped, validator + registry + record templates current @ toolkit 2026-07-22, 5 drifted skills + 2 runtime guides synced.
 
 ## Known & decided (durable)
 
 - DEC-7 Strategy B (Hyvä-native) · DEC-8 module/Launchpad boundary · DEC-9 dual-theme (Luma+Hyva) — address module.
-- DEC-010..015 — VNPAY IPN hardening decisions (status `proposed`; SA/TL to accept): signature, status mapping, retry, idempotency, audit storage, payload versioning.
+- DEC-FEATHEHJQ4-001..015 — VNPAY IPN hardening decisions (status `proposed`; SA/TL to accept): signature, status mapping, retry, idempotency, audit storage, payload versioning.
 - Tier-2 escalation required for payment/checkout/security/schema/contract (AGENTS §11/§12).
 
 ## Active risks / known limitations (summary — full list in `project-context/06`)
 
-- **CMP-VNPAY `suspect`** — IPN hardening pending (FEAT-004 `proposed`); timing-unsafe signature, status-based dedup (double-invoice race), no payment-transaction record, no audit trail. Do NOT activate VNPAY for production before FEAT-004 lands.
+- **CMP-VNPAY `suspect`** — IPN hardening pending (FEAT-HEHJQ4 `proposed`); timing-unsafe signature, status-based dedup (double-invoice race), no payment-transaction record, no audit trail. Do NOT activate VNPAY for production before FEAT-HEHJQ4 lands.
 - **Search engine not configured** — Magento 2.4.8 requires OpenSearch (local env missing).
 - **Production infrastructure undefined** — no Redis/Varnish/OpenSearch/CI committed; `env.php` is local-dev only.
 - **AC-011/Q1 deferred** — address resolver `@deprecated` + `@cache(false)` → potential N+1.
@@ -35,8 +35,8 @@
 ## Current focus / phase
 
 - **Phase 1a–1d artifacts done**; **1e/1f** semantic-only (satisfied in AGENTS §8.5/§8.6/§9 + `rules/no-duplicate-knowledge.md` — no separate artifact). Migration markers P1A–P1F stamped 2026-07-23 (CHANGELOG 1.3.0).
-- **FEAT-004** (VNPAY) gated at TL/SA plan approval (DEC-010..015 `proposed`).
-- **FEAT-004** (VNPAY) gated at TL/SA plan approval (DEC-010..015 `proposed`).
+- **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..015 `proposed`).
+- **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..015 `proposed`).
 
 <!--
 DURABLE snapshot. Update via update-project-state when a record → Done.

@@ -1,7 +1,7 @@
 # Rule: Spec-First — NO SPEC → NO IMPLEMENTATION
 
 > **Ngôn ngữ:** Vietnamese (rule). Copy vào `.ai/rules/spec-first.md`.
-> Canonical invariant (DEC-SL018-001): **Every code change starts from an explicit behavioral specification. A small task may use an embedded Mini-Spec; a larger or higher-risk feature requires a Full Spec. NO VALID SPECIFICATION = NO IMPLEMENTATION.**
+> Canonical invariant (DEC-TASKZ132WA-001): **Every code change starts from an explicit behavioral specification. A small task may use an embedded Mini-Spec; a larger or higher-risk feature requires a Full Spec. NO VALID SPECIFICATION = NO IMPLEMENTATION.**
 > Không weaken cho speed, quick fixes, bug fixes, direct commands, hay agent delegation.
 
 ## Rule
@@ -34,14 +34,14 @@ reusable feature · feature nhiều ticket · cross-module · architecture chang
 
 **Full Spec đứng TRƯỚC ticket decomposition** — mọi ticket con reference cùng canonical spec (một spec cho cả feature; không duplicate business rules ra nhiều spec).
 
-## Ticket activation contract (DEC-SL018-002)
+## Ticket activation contract (DEC-TASKZ132WA-002)
 
 Một ticket chỉ được activate (`Ready|Planned|In Progress|Active`) khi thoả **CẢ HAI**:
 
 1. **Embedded `## Mini Spec` đủ 5 sections** ngay trong ticket — **kể cả khi ticket là slice của feature có Full Spec**. Dòng `Specification:` tham chiếu Full Spec vẫn bắt buộc (trace + canonical) nhưng **KHÔNG thay thế** Mini-Spec: Full Spec là behavioral contract của FEATURE; Mini-Spec là behavioral contract của SLICE (Goal / Expected Behavior / Constraints / Out of Scope / AC riêng của ticket). Ticket có reference mà không có Mini-Spec ⇒ **chưa executable**.
 2. **Plan artifact**: Mode A/B → dòng `Plan:` trỏ file `.ai/plans/*.md` **tồn tại** (file phải có `| Specification |` row); Mode C → section `## Approach` ngay trong ticket. Approach viết inline trong dòng status **KHÔNG tính** — nó không phải artifact reviewable được.
 
-**Gap gốc (SL-020, 2026-08-19):** ticket active reference parent Full Spec → gate pass dù bản thân ticket không có behavioral contract riêng; approach nằm trong status line → không artifact nào bị check. Gate đo "sự tồn tại tham chiếu" thay vì "nội dung hợp lệ của slice".
+**Gap gốc (TASK-3R6X8E, 2026-08-19):** ticket active reference parent Full Spec → gate pass dù bản thân ticket không có behavioral contract riêng; approach nằm trong status line → không artifact nào bị check. Gate đo "sự tồn tại tham chiếu" thay vì "nội dung hợp lệ của slice".
 
 Machine gate: `bin/project-ai-validate --check-specs` hard-fail ticket active vi phạm một trong hai (thiếu Mini-Spec / thiếu header / thiếu plan artifact / thiếu Specification reference).
 
@@ -65,7 +65,7 @@ Required: Full Spec reference, or Embedded Mini-Spec (with Expected Behavior + A
 Create/complete the specification before planning or implementation.
 ```
 
-4. **Machine validator (SpecReadinessGuard):** `bin/project-ai-validate --check-specs` — scan canonical records (`specification_level` / `spec_status` / `specification_ref` frontmatter) + legacy tickets + plans. Record ở trạng thái executable (ready/planned/in_progress/active…) thiếu spec hợp lệ ⇒ **FAIL**; trạng thái non-active ⇒ WARN (legacy — enforce khi activate, xem "Legacy tickets"); plan KHÔNG có dòng `| Specification | … |` ⇒ FAIL; **ticket active thiếu embedded Mini-Spec hoặc plan artifact (`## Approach` / `Plan:` link resolve) ⇒ FAIL** (DEC-SL018-002). Được gọi trực tiếp để implement? Agent vẫn phải check spec (rule này) — validator không thay thế prompt-side check.
+4. **Machine validator (SpecReadinessGuard):** `bin/project-ai-validate --check-specs` — scan canonical records (`specification_level` / `spec_status` / `specification_ref` frontmatter) + legacy tickets + plans. Record ở trạng thái executable (ready/planned/in_progress/active…) thiếu spec hợp lệ ⇒ **FAIL**; trạng thái non-active ⇒ WARN (legacy — enforce khi activate, xem "Legacy tickets"); plan KHÔNG có dòng `| Specification | … |` ⇒ FAIL; **ticket active thiếu embedded Mini-Spec hoặc plan artifact (`## Approach` / `Plan:` link resolve) ⇒ FAIL** (DEC-TASKZ132WA-002). Được gọi trực tiếp để implement? Agent vẫn phải check spec (rule này) — validator không thay thế prompt-side check.
 
 ## Executable task — definition
 
@@ -73,7 +73,7 @@ Create/complete the specification before planning or implementation.
 [ ] Requirement/ticket exists
 [ ] Specification level determined (MINI/FULL)
 [ ] Valid Full Spec OR embedded Mini-Spec exists
-[ ] Ticket active: embedded Mini-Spec + Specification reference + plan artifact (## Approach hoặc Plan: link) — DEC-SL018-002
+[ ] Ticket active: embedded Mini-Spec + Specification reference + plan artifact (## Approach hoặc Plan: link) — DEC-TASKZ132WA-002
 [ ] Acceptance Criteria exists
 [ ] Out of Scope / constraints sufficiently clear
 [ ] Plan references specification (dòng "Specification:" trong plan)
@@ -99,7 +99,7 @@ Small task → Mini-Spec embedded (KHÔNG file riêng). Feature → MỘT shared
 
 Definition of Done không chỉ check plan completion — mỗi ticket phải xác nhận: spec/mini-spec nào được implement · AC nào pass · constraints/invariants nào được verify (post-task checklist + testcase skill).
 
-## Spec Naming (canonical — DEC-SL019-001)
+## Spec Naming (canonical — DEC-TASKE0SK0H-001)
 
 Spec **identity đến từ Feature/Ticket owner**; slug chỉ là suffix dễ đọc — KHÔNG phải identity.
 
@@ -122,4 +122,4 @@ Spec **identity đến từ Feature/Ticket owner**; slug chỉ là suffix dễ �
 - Gate: `core/quality-gates.md` (Gate 1/3) · `core/delivery-governance.md` · `core/definition-of-ready.md`
 - State: `shared-core/workflows/WORKFLOW_STATE_MODEL.md`
 - Validator: `bin/project-ai-validate --check-specs`
-- Decision: DEC-SL018-001
+- Decision: DEC-TASKZ132WA-001

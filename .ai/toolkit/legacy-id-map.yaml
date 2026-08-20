@@ -1,0 +1,62 @@
+# Legacy ID map — P2A re-identification migration (DEC-027, 2026-08-20)
+# Resolver: exact new id -> legacy_ids frontmatter -> this map.
+schema_version: 1
+migrated: 2026-08-20
+decision: DEC-027
+items:
+  FEAT-001: {new_id: FEAT-YVN39K, type: feature}
+  FEAT-002: {new_id: FEAT-KQ6WC4, type: feature}
+  FEAT-003: {new_id: FEAT-YESRCX, type: feature}
+  FEAT-004: {new_id: FEAT-HEHJQ4, type: feature}
+  FEAT-005: {new_id: FEAT-JSZQV3, type: feature}
+  FEAT-006: {new_id: FEAT-AE761Z, type: feature}
+  FEAT-007: {new_id: FEAT-E2HM1J, type: feature}
+  FEAT-008: {new_id: FEAT-JKZM68, type: feature}
+  SL-001: {new_id: TASK-88NDV5, type: task}
+  SL-002: {new_id: TASK-FMAN1B, type: task}
+  SL-003: {new_id: TASK-FD6A9X, type: task}
+  SL-007: {new_id: TASK-KCBDDT, type: task}
+  SL-008: {new_id: TASK-YJENM2, type: task}
+  SL-009: {new_id: TASK-BRKHN4, type: task}
+  SL-010: {new_id: TASK-KV328X, type: task}
+  SL-011: {new_id: TASK-4ZV5NG, type: task}
+  SL-012: {new_id: TASK-SQY42T, type: task}
+  SL-013: {new_id: TASK-8WSERX, type: task}
+  SL-014: {new_id: TASK-2V0AEV, type: task}
+  SL-015: {new_id: TASK-NDASAD, type: task}
+  SL-016: {new_id: TASK-KM6YAT, type: task}
+  SL-017: {new_id: TASK-86NX9T, type: task}
+  SL-018: {new_id: TASK-Z132WA, type: task}
+  SL-019: {new_id: TASK-E0SK0H, type: task}
+  SL-020: {new_id: TASK-3R6X8E, type: task}
+  SL-021: {new_id: TASK-33J3RP, type: task}
+  SL-022: {new_id: TASK-5H8WKE, type: task}
+  SL-023: {new_id: TASK-67GGPR, type: task}
+  SL-024: {new_id: TASK-4HYX6Y, type: task}
+  SL-025: {new_id: TASK-HPK1WZ, type: task}
+decisions:
+  DEC-010: {new_id: DEC-FEATHEHJQ4-001}
+  DEC-011: {new_id: DEC-FEATHEHJQ4-002}
+  DEC-012: {new_id: DEC-FEATHEHJQ4-003}
+  DEC-013: {new_id: DEC-FEATHEHJQ4-004}
+  DEC-014: {new_id: DEC-FEATHEHJQ4-005}
+  DEC-015: {new_id: DEC-FEATHEHJQ4-006}
+  DEC-017: {new_id: DEC-FEATJSZQV3-001}
+  DEC-018: {new_id: DEC-FEATJSZQV3-002}
+  DEC-019: {new_id: DEC-FEATJSZQV3-003}
+  DEC-020: {new_id: DEC-TASKYJENM2-001}
+  DEC-021: {new_id: DEC-TASKBRKHN4-001}
+  DEC-022: {new_id: DEC-TASKBRKHN4-002}
+  DEC-023: {new_id: DEC-TASKKV328X-001}
+  DEC-024: {new_id: DEC-TASKKV328X-002}
+  DEC-025: {new_id: DEC-FEATE2HM1J-001}
+  DEC-FEAT008-001: {new_id: DEC-FEATJKZM68-001}
+  DEC-SL015-001: {new_id: DEC-TASKNDASAD-001}
+  DEC-SL016-001: {new_id: DEC-TASKKM6YAT-001}
+  DEC-SL017-001: {new_id: DEC-TASK86NX9T-001}
+  DEC-SL018-001: {new_id: DEC-TASKZ132WA-001}
+  DEC-SL018-002: {new_id: DEC-TASKZ132WA-002}
+  DEC-SL019-001: {new_id: DEC-TASKE0SK0H-001}
+# phantoms — referenced in prose, no artifact ever existed; left as historical references:
+#   SL-004, SL-005, SL-006 (folded into FEAT-006), SL-026 (future ticket mention)
+# app/code comments referencing SL-xxx intentionally NOT rewritten (out of .ai scope).

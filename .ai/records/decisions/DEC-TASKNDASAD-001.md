@@ -1,0 +1,73 @@
+---
+id: DEC-TASKNDASAD-001
+legacy_ids: [DEC-SL015-001]
+title: 'Secomm_ShippingCore origin contract — carrier consumes normalized runtime Origin via OriginProviderInterface; default = Magento Shipping Origin; GHTK legacy pick_* config wins as BC override; carrier keeps DEC-TASKBRKHN4-001 validity gate'
+status: accepted
+owners: [sa, tl]
+decision_type: architecture
+approval_date: 2026-08-17
+created: 2026-08-17
+last_verified: 2026-08-17
+verified_against_commit:
+supersedes: []
+superseded_by:
+work_items: [TASK-NDASAD]
+---
+
+# Decision Record: Shipping Core origin contract (shared carrier contract)
+
+<!-- CANONICAL DECISION STORE. ACCEPTED 2026-08-17 — approved by user acting as SA/TL (chat "approve", Level 2; kèm TASK-NDASAD plan approval → Phase C cleared). Naming per-work-item (Entry h): DEC-TASKNDASAD-001. -->
+<!-- Index pointer: `.ai/project-context/memory/DECISIONS.md` -->
+<!-- Full analysis + task plan: `.ai/plans/TASK-NDASAD-implementation-plan.md` (Part 1). -->
+
+## Context
+
+`Secomm_Ghtk` (TASK-YJENM2/009, rate-only; TASK-KV328X parked) tự resolve pickup origin từ `carriers/ghtk/pick_*` trong carrier (`PickupAddressResolver`) và map origin → payload ngay trong API client (`buildFeeUrl`). Magento Shipping Origin chuẩn không được GHTK dùng; Ahamove (legacy) lại đọc `shipping/origin/*` kiểu riêng trong Helper. Không có seam nào để module ngoài (future `Secomm_ShippingFulfillment`: MSI source-based origin, multi-store routing, Pancake/OMS) thay đổi origin mà không sửa carrier — vi phạm yêu cầu extension point. Merchant phải duplicate origin vào config carrier.
+
+Lộ trình đã biết: TASK-KV328X (order sync) khi resume sẽ build order payload và plan hiện tại reuse `PickupAddressResolver` — nếu không có abstraction chung, rate và order sync có thể lệch origin source.
+
+Tier-2 (shipping carrier logic + shared architecture contract + checkout-critical rate path — AGENTS §9/§11/§12) → Level-2 architecture decision, SA/TL.
+
+## Decision (proposed — chờ approve)
+
+1. **Module `Secomm_ShippingCore`** (mới, generic, không business logic carrier, không depend ngược carrier): 
+   - `ShippingContextInterface` — immutable scalar DTO (storeId, websiteId, carrierCode, quoteId, sourceCode — nullable). Không nhồi Magento mutable model.
+   - `OriginInterface` — immutable runtime shipping origin: `sourceCode, countryId, regionId, province, district (NULLABLE — Launchpad VN model không require), ward, street, postcode, telephone, contactName` + **generic carrier metadata** (`getMetadata('ghtk.pick_address_id')` — dotted key `{carrierCode}.{key}`). KHÔNG hard-code field GHTK/GHN vào common DTO.
+   - `OriginProviderInterface::resolve(ShippingContextInterface): OriginInterface` — **không trả null, không quyết validity**; carrier tự đánh giá usable (giữ DEC-TASKBRKHN4-001 strict gate trong carrier — ISP).
+   - Default: `ShippingOriginProvider` đọc Magento Shipping Origin (`shipping/origin/*`, SCOPE_STORE theo context) — regionId giữ nguyên + province = region default name + ward = native city; telephone/contactName/district = null (shipping origin không có — enrichment là việc module khác).
+
+2. **Carrier consume, không sở hữu origin source.** `Secomm_Ghtk` (và GHN/Ahamove refactor sau) nhận origin qua provider chain; request mapper nhận `OriginInterface`-derived data, KHÔNG tự đọc `shipping/origin/*` hay config pickup trong request builder/API client. API client chỉ HTTP/auth/timeout/retry (transport). Rate và order sync (TASK-KV328X resume) dùng **cùng** `OriginProviderInterface` + `ShippingContext` — không lệch origin nếu context không đổi.
+
+3. **BC chain GHTK:** `GhtkOriginProvider` (trong Ghtk, decorator): 
+   - legacy `carriers/ghtk/pick_*` có **bất kỳ field nào set** → legacy Origin (metadata `ghtk.pick_address_id` khi có) — merchant hiện tại không đổi behavior; 
+   - **tất cả trống** → delegate inner `OriginProviderInterface` (default = Magento Shipping Origin). 
+   - Half-filled legacy KHÔNG fallback im lặng (strict DEC-TASKBRKHN4-001 — tránh ship từ kho sai).
+   - Mapper ưu tiên metadata `ghtk.pick_address_id`; không có → normalized address.
+
+4. **Extension point:** module khác thay default provider qua **DI preference trên `OriginProviderInterface`** (replace) hoặc **plugin trên provider** (decorate) — không sửa carrier, không observer mutate payload. `Secomm_ShippingFulfillment` (ticket kế tiếp) chỉ cần preference này + MSI source → Origin (kèm carrier metadata per source).
+
+5. **Lean — deliberately KHÔNG tạo trong ticket này:** core request-mapper interface (chỉ 1 carrier; payload shape carrier-specific — giữ mapper carrier-local concrete), capability interfaces (GHTK rate-only; tạo `ShipmentCreationInterface`/`TrackingInterface`... khi TASK-KV328X resume hoặc có carrier thứ 2), common result DTO (reuse Magento `Rate\Result`/`Method`), ward id trên Origin (không surface nào persist ward id; carrier bridge (regionId, wardName) theo DEC-TASKYJENM2-001 path B).
+
+## Alternatives considered
+
+- **God interface `ShippingInterface` (collectRates + createShipment + track + resolveOrigin + map...)** — rejected: violates ISP; ép carrier implement capability API không support.
+- **Origin provider trả `?Origin` (null = invalid)** — rejected: validity là carrier policy (GHTK cần province+ward hoặc pick_address_id; carrier khác khác requirement) — provider là nguồn dữ liệu, carrier là gate.
+- **Giữ pickup config-only (không làm gì)** — rejected: khóa đường cho fulfillment/multi-store; merchant duplicate origin mãi.
+- **Đưa GHTK name normalization vào core provider** — rejected: mapping GHTK names là carrier data; core sẽ depend logic carrier. Core trả regionId + names thô; carrier normalize (reuse TASK-YJENM2 machinery).
+- **Config migration pick_* → metadata architecture ngay** — rejected: breaking không cần thiết; legacy override giữ BC (đề xuất long-term deprecate khi Fulfillment land).
+
+## Consequences
+
+- (+) Carrier không biết nearest store / MSI / Pancake / OMS — chỉ consume `OriginInterface` (invariant giữ).
+- (+) Mọi Secomm carrier tương lai tuân cùng contract; feature dùng chung integrate một chỗ.
+- (+) Merchant không còn phải duplicate Shipping Origin vào GHTK config (mặc định); override per-carrier vẫn possible.
+- (+) Rate + order sync (tương lai) cùng origin abstraction.
+- (−) Thêm module `Secomm_ShippingCore` (nhỏ) + 1 lớp provider trong Ghtk — cost chấp nhận được vì Ghtk vừa build (refactor rẻ).
+- (−) Behavior change có chủ đích: legacy pick_* trống + Shipping Origin hợp lệ → GHTK active (trước đây inactive). QC phải cover (TASK-NDASAD AC-11/QC).
+- (−) `PickupAddressResolver::resolve()` đổi signature (internal-only consumers — đã audit 2026-08-17: carrier + TestConnection + tests).
+- Deployment note: Ghtk giờ require ShippingCore (module enable order / setup:upgrade).
+
+## Affected components
+
+- `CMP-SHIPPINGCORE` — `Secomm_ShippingCore` (NEW: `Api/*Interface`, `Model/Origin`, `Model/ShippingContext`, `Model/ShippingContextFactory`, `Model/OriginProvider/ShippingOriginProvider`)
+- `CMP-GHTK` — `Secomm_Ghtk` (`Model/Origin/GhtkOriginProvider` NEW; `Model/Address/PickupAddressResolver`, `Model/GhtkApiClient`, `Model/Carrier/Ghtk`, `Controller/Adminhtml/Ghtk/TestConnection` refactor; `Model/Fee/FeeRequestMapper` NEW; `etc/module.xml` +ShippingCore; system.xml labels)
