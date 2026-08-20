@@ -10,14 +10,14 @@ schema_version: 1
 upstream:
   repository_url: https://github.com/hyva-themes/hyva-ai-tools
   branch: main
-  commit: 5f094b6e57e6faab9967e2b031cac9c1cd6c9f93
-  retrieval_date: "2026-07-28"
+  commit: a28a3333bcfae05dcba07e88f38a5ff9579903c7
+  retrieval_date: "2026-08-20"
   license: OSL-3.0
   attribution: "Copyright © 2026-present Hyvä Themes. Each source file licensed OSL-3.0."
 canonical_root: skills-source/dev-skills/magento
 local_mode: deterministic-generated-copy  # NOT symlink — see compatibility-matrix.yaml
-imported_skill_count: 12
-imported_file_count: 42
+imported_skill_count: 13
+imported_file_count: 43
 files:
   - { path: hyva-alpine-component/SKILL.md, sha256: 05c58bae5228dc48417589222d1605d7d4e042785c4ebcb67490b2f79a330c44 }
   - { path: hyva-child-theme/SKILL.md, sha256: e8821ee1b58b089fbb76590671eb0c06b6af8b23360b7bfc3e461867bc23a290 }
@@ -56,8 +56,9 @@ files:
   - { path: hyva-playwright-test/references/selector-patterns.md, sha256: b7a2491a564aeb14db75c30626d63cfbaa8cfa96a84ff5de17270025a87ada7a }
   - { path: hyva-render-media-image/SKILL.md, sha256: 55c130bd99e2072eccdcc96e322a5a54d880dbccdce6ad92b0d84d90a9f83518 }
   - { path: hyva-render-media-image/references/rendering-images.md, sha256: 092e917803701fde91208da60c22b25e83ea407f94cc5a5c59c08cd9a3c7475c }
+  - { path: hyva-tailwind-include-exclude/SKILL.md, sha256: 77e3444e9ef84245f8431088556b98bd046379b9d16d2e2c83b094023c84b947 }
   - { path: hyva-theme-list/SKILL.md, sha256: aeba40a0e8efa179a91409c2e16912f46c751b1432cefe6f83c590acb13fe3be }
   - { path: hyva-theme-list/scripts/list_hyva_themes.sh, sha256: 94e81964b0bfaf25975406d55454180adcff2f1daaff94ffaa7c9b8f7d444221 }
   - { path: hyva-ui-component/SKILL.md, sha256: 8bb0a4c61905c546f134232aa57e726e4c78f32ec8ce91122f0c5edb3fee597e }
-  - { path: hyva-ui-component/references/components.md, sha256: fe24afbec5883b552b886bab6333cb1f63d63dd95af017c4513534f0fc0b9af4 }
+  - { path: hyva-ui-component/references/components.md, sha256: 2360595c934e545687cb01c17ee4c8f943a631f6acbd048fc1121507e806bbec }
   - { path: hyva-ui-component/scripts/refresh_catalog.sh, sha256: a6f4689e0e8a2ef2ab153fbe6c0bc048c8d95645cd3890171da2f55bd667c3d7 }

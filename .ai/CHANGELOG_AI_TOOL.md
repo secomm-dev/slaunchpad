@@ -2,6 +2,19 @@
 
 > Runtime log of changes to this project's `.ai/` AI-toolkit. Updated via the `update-project-ai-tool` function (governed by `.ai/rules/ai-tool-self-update.md` + `before-ai-tool-update` / `after-ai-tool-update` hooks). One entry per change; never delete.
 
+## [2026-08-20 — latest] — Hyva skills verify + upstream re-pin a28a333 (trigger: project adopts hyva-themes/hyva-ui 2.8.0)
+
+### Verify kết quả (Hyva UI)
+- `hyva-ui-component` đã có sẵn (skill Hyva-UI duy nhất của upstream) — profile `hyva-ui` đã chọn, flag `hyva_ui: true` detect đúng từ composer; dependencies đủ. **Không cần thêm skill Hyva UI nào.**
+- Fix: catalog `references/components.md` stale (thiếu `embed`, `map` ở 2.8.0) → refresh bằng `scripts/refresh_catalog.sh` chính thức của skill (project + toolkit hai phía đồng bộ md5).
+
+### Changed
+- **ADD skill mới** `.claude/skills/dev/hyva-tailwind-include-exclude/` (upstream mới kể từ pin cũ; Tailwind include/exclude trong `hyva.config.json` — liên quan trực tiếp loại incident 2026-07-29 Tailwind v4 scan parent theme). Giờ có **10 hyva dev-skills**.
+- `.ai/integrations/hyva/{version-lock,upstream-manifest,dependency-map}.yaml` — re-pin `5b094b6` → `a28a3333…` (42/42 file cũ byte-verify không đổi; 43 files, 13 skills); retrofit-report cập nhật qua engine.
+
+### Notes
+- Applied qua `bin/project-ai-upgrade --capability hyva --apply --force` (toolkit-first: manifest/profiles/dependency-map/upstream-manifest sửa ở toolkit trước). Validate `--check-hyva` VALID cả hai mode; contract tests 98/98. Hyva UI chưa được dùng trong theme (mới require package) — khi bắt đầu apply components, dùng skill `hyva-ui-component` (catalog đã khớp 2.8.0).
+
 ## [2026-08-20 — later] — Legacy re-identification migration (DEC-027; supersedes DEC-026 điểm 2)
 
 ### Changed — 106 file content rewrite + 101 rename, một format ID duy nhất

@@ -24,6 +24,7 @@ dependencies:
   hyva-playwright-test: []
   hyva-render-media-image: []
   hyva-theme-list: []
+  hyva-tailwind-include-exclude: [hyva-theme-list, hyva-compile-tailwind-css]
   hyva-ui-component: [hyva-exec-shell-cmd, hyva-theme-list, hyva-child-theme, hyva-compile-tailwind-css]
 # Example closed sets (what actually gets installed for a profile):
 #   hyva-theme-core (child-theme + alpine + render + compile + theme-list)

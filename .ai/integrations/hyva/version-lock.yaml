@@ -6,7 +6,7 @@
 # execution. Bumping requires the explicit update workflow (update-policy.md).
 # ============================================================================
 schema_version: 1
-locked_commit: 5f094b6e57e6faab9967e2b031cac9c1cd6c9f93
+locked_commit: a28a3333bcfae05dcba07e88f38a5ff9579903c7
 locked_branch: main
 locked_at: "2026-07-28"
 hyva_integration_version: "1.0.0"
