@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/consumer.xsd">
+    <consumer name="ghn.sync.order"
+              queue="ghn_sync_order_queue"
+              connection="db"
+              maxMessages="100"
+              handler="Secomm\GiaoHangNhanh\Model\Queue\OrderSyncConsumer::process"/>
+    <consumer name="ghn.cancel.order"
+              queue="ghn_cancel_order_queue"
+              connection="db"
+              maxMessages="100"
+              handler="Secomm\GiaoHangNhanh\Model\Queue\OrderCancelConsumer::process"/>
+</config>

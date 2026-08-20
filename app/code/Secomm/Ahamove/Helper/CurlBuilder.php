@@ -31,7 +31,7 @@ class CurlBuilder
         'URL' => '',
         'POST' => false,
         'HTTPHEADER' => [],
-        'SSL_VERIFYPEER' => false,
+        'SSL_VERIFYPEER' => true,
         'HEADER' => false
     ];
 

@@ -153,7 +153,7 @@ class Data extends AbstractHelper
      * @return string|int|null
      * @throws NoSuchEntityException
      */
-    public function getStorePhoneNumber()
+    public function getWebsiteId()
     {
         return $this->storeManager->getStore()->getWebsiteId();
     }

@@ -59,62 +59,24 @@ abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\Ahamo
     {
         try {
             $params = $this->buildParams($ahamoveAddress);
-
-            if ($this->isDebug()) {
-                $this->loggerShipping->debug(json_encode($params, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-            }
-            $content = $this->loadFromCache($params);
-
-            // If the cache is empty or holds a previous failed result, call the API to get the shipping fee
-            if (!is_array($content) || count($content) === 0) {
-                $response = $this->api->name('Get shipping fee')
-                    ->withContentType('application/json')
-                    ->withHeader('Authorization: Bearer ' . $this->ahamoveHelper->getToken())
-                    ->to(Config::SHIPPING_FEE_WITH_MANY_SERVICES)
-                    ->withData($params)
-                    ->asJsonResponse(true)
-                    ->post();
-
-                $content = $this->api->processResponse($response);
-                if ($this->isDebug()) {
-                    $this->loggerShipping->debug('Ahamove API response after call:');
-                    $this->loggerShipping->debug(json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-                }
-                // Only cache successful results. A failed result (e.g. an auth-fail status code such as 401)
-                // must not be cached, otherwise the fee stays stuck at 0 until the cache TTL expires.
-                if (is_array($content) && count($content) > 0) {
-                    $storeId = (string)$this->getStore();
-                    $cacheKey = $this->ahamoveHelper->generateCacheKey($storeId . '_' . $this->serializer->serialize($params));
-                    $this->cache->save($this->serializer->serialize($content), $cacheKey, [], 300);
-                }
-            }
+            $content = $this->callEstimateApi($params);
 
             $shippingFee = 0;
             $servicePrice = [];
             if (is_array($content) && count($content) > 0) {
+                $serviceGroups = $this->isStandard()
+                    ? self::GROUP_STANDARD
+                    : self::GROUP_EXPRESS;
+
                 foreach ($content as $item) {
                     if (!isset($item['data']['total_price'])) {
                         $this->loggerShipping->error(json_encode($item, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
                         continue;
                     }
-                    if ($this->isStandard()) {
-                        foreach (self::GROUP_STANDARD as $service) {
-                            if ("$this->cityID-$service" == $item['service_id']) {
-                                $shippingFee = $item['data']['total_price'];
-                                $servicePrice[] = [
-                                    $service => $item['data']['total_price']
-                                ];
-                            }
-                        }
-                    }
-                    if ($this->isExpress()) {
-                        foreach (self::GROUP_EXPRESS as $service) {
-                            if ("$this->cityID-$service" == $item['service_id']) {
-                                $shippingFee = $item['data']['total_price'];
-                                $servicePrice[] = [
-                                    $service => $item['data']['total_price']
-                                ];
-                            }
+                    foreach ($serviceGroups as $service) {
+                        if ("$this->cityID-$service" == $item['service_id']) {
+                            $shippingFee = $item['data']['total_price'];
+                            $servicePrice[] = [$service => $item['data']['total_price']];
                         }
                     }
                 }
@@ -125,6 +87,44 @@ abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\Ahamo
             $this->_logger->error($exception->getMessage());
             return 0;
         }
+    }
+
+    /**
+     * Call Ahamove estimate API with caching.
+     * Only caches successful responses to avoid caching auth-fail results.
+     *
+     * @param array $params
+     * @return array
+     */
+    protected function callEstimateApi(array $params): array
+    {
+        if ($this->isDebug()) {
+            $this->loggerShipping->debug(json_encode($params, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        }
+        $content = $this->loadFromCache($params);
+
+        if (!is_array($content) || count($content) === 0) {
+            $response = $this->api->name('Get shipping fee')
+                ->withContentType('application/json')
+                ->withHeader('Authorization: Bearer ' . $this->ahamoveHelper->getToken())
+                ->to(Config::SHIPPING_FEE_WITH_MANY_SERVICES)
+                ->withData($params)
+                ->asJsonResponse(true)
+                ->post();
+
+            $content = $this->api->processResponse($response);
+            if ($this->isDebug()) {
+                $this->loggerShipping->debug('Ahamove API response after call:');
+                $this->loggerShipping->debug(json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            }
+            if (is_array($content) && count($content) > 0) {
+                $storeId = (string)$this->getStore();
+                $cacheKey = $this->ahamoveHelper->generateCacheKey($storeId . '_' . $this->serializer->serialize($params));
+                $this->cache->save($this->serializer->serialize($content), $cacheKey, [], 300);
+            }
+        }
+
+        return is_array($content) ? $content : [];
     }
 
     /**
@@ -249,9 +249,9 @@ abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\Ahamo
                 if ($this->isExpress()) {
                     $ahamoveService = self::GROUP_EXPRESS[$service];
                 }
-                $this->packageItem->setServiceLength($maximumHeight)
+                $this->packageItem->setServiceLength($maximumLength)
                     ->setServiceWidth($maximumWidth)
-                    ->setServiceHeight($maximumLength)
+                    ->setServiceHeight($maximumHeight)
                     ->setServiceId($ahamoveService)
                     ->setCityId($this->cityID)
                     ->addItem($item);
@@ -709,15 +709,15 @@ abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\Ahamo
             [
                 'address' => $ahamoveAddress->buildAddress(),
                 'short_address' => '',
-                'name' => '',
-                'mobile' => '',
+                'name' => $ahamoveAddress->getNameFrom(),
+                'mobile' => $ahamoveAddress->getPhoneFrom(),
                 'remarks' => ''
             ],
             [
                 'address' => $ahamoveAddress->buildAddress('to'),
                 'short_address' => '',
-                'name' => '',
-                'mobile' => ''
+                'name' => $ahamoveAddress->getNameTo(),
+                'mobile' => $ahamoveAddress->getPhoneTo()
             ]
         ];
         $this->cityID = $this->getCityId();
@@ -740,123 +740,4 @@ abstract class AhamoveShippingMethod extends \Secomm\Ahamove\Model\Carrier\Ahamo
         ];
     }
 
-    /**
-     * @param $service
-     * @param $package
-     * @return float|int
-     */
-    public function estimateShippingFeeByService($service, $package)
-    {
-        try {
-            $order = $this->orderRepository->get($package['order_id']);
-            $shippingAddress = $order->getShippingAddress();
-            $shippingFee = 0;
-            $ahamoveAddressFactory = $this->ahamoveAddressFactory->create();
-            $street = $shippingAddress->getStreet();
-            $ahamoveAddressFactory->setCityTo((string)$shippingAddress->getCity())
-                ->setRegionCodeTo((string)$shippingAddress->getRegion())
-                ->setStreetTo((string)is_array($street) ? implode("\n", $street) : ($street ?? ''))
-                ->setPostCodeTo((string)$shippingAddress->getPostcode())
-                ->setNameTo('')
-                ->setRemark('')
-                ->setPhoneTo('');
-            $ahamoveAddressFactory->setCityFrom($this->ahamoveHelper->getCity())
-                ->setRegionCodeFrom((string)$this->ahamoveHelper->getShippingRegion())
-                ->setStreetFrom((string)$this->ahamoveHelper->getShippingStreet())
-                ->setPostCodeFrom((string)$this->ahamoveHelper->getShippingPostcode())
-                ->setNameFrom('')
-                ->setPhoneFrom('');
-            $params = $this->buildParams($ahamoveAddressFactory);
-            if ($this->isDebug()) {
-                $this->loggerShipping->debug(json_encode($params, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-            }
-            $content = $this->loadFromCache($params);
-
-            // If the cache is empty or holds a previous failed result, call the API to get the shipping fee
-            if (!is_array($content) || count($content) === 0) {
-                $response = $this->api->name('Get shipping fee')
-                    ->withContentType('application/json')
-                    ->withHeader('Authorization: Bearer ' . $this->ahamoveHelper->getToken())
-                    ->to(Config::SHIPPING_FEE_WITH_MANY_SERVICES)
-                    ->withData($params)
-                    ->asJsonResponse(true)
-                    ->post();
-
-                $content = $this->api->processResponse($response);
-                // Only cache successful results. A failed result (e.g. an auth-fail status code such as 401)
-                // must not be cached, otherwise the fee stays stuck at 0 until the cache TTL expires.
-                if (is_array($content) && count($content) > 0) {
-                    $storeId = (string)$this->getStore();
-                    $cacheKey = $this->ahamoveHelper->generateCacheKey($storeId . '_' . $this->serializer->serialize($params));
-                    $this->cache->save($this->serializer->serialize($content), $cacheKey, [], 300);
-                }
-            }
-            $maximumHeight = $this->getSizeByService($service, 'height');
-            $maximumWidth = $this->getSizeByService($service, 'width');
-            $maximumLength = $this->getSizeByService($service, 'length');
-            if ($this->isStandard()) {
-                $service = self::GROUP_STANDARD[$service];
-            } else {
-                $service = self::GROUP_EXPRESS[$service];
-            }
-            if (is_array($content) && count($content) > 0) {
-                foreach ($content as $item) {
-                    if (!isset($item['data']['total_price'])) {
-                        $this->loggerShipping->error(json_encode($item, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-                    } else {
-                        if ("$this->cityID-$service" == $item['service_id']) {
-                            $shippingFee = $item['data']['total_price'];
-                        }
-                    }
-                }
-            }
-
-            if ($shippingFee == 0) {
-                return 0;
-            } else {
-                $serviceSize = $maximumHeight * $maximumWidth * $maximumLength;
-                $items = $package['items'];
-                $quoteVirtual = $this->quote->create();
-
-                foreach ($items as $orderItemId => $qty) {
-                    $product = $order->getItemById($orderItemId)->getProduct();
-                    $quoteVirtual->addProduct($product, $qty);
-                    $productHeight = $product->getHeight();
-                    $productWidth = $product->getWidth();
-                    $productLength = $product->getLength();
-                    if ($productHeight > $maximumHeight || $productWidth > $maximumWidth || $productLength > $maximumLength) {
-                        return 0;
-                    }
-                }
-                $numberPackages = $this->calculatePackages($quoteVirtual->getAllItems(), $serviceSize);
-            }
-            return $shippingFee * $numberPackages;
-        } catch (\Exception $exception) {
-            $this->_logger->error($exception->getMessage());
-            return 0;
-        }
-    }
-
-    public function createShipment($package)
-    {
-        $service = $package->getService();
-        if ($this->isStandard()) {
-            $service = self::GROUP_STANDARD[$service];
-        } else {
-            $service = self::GROUP_EXPRESS[$service];
-        }
-        $cityServiceId = $this->getCityId() . '-' . strtoupper($service);
-        $package->setService($cityServiceId);
-        $result = $this->createShipment->execute($package);
-        if ($result) {
-            $package->setShippingAmount($result['order']['total_price']);
-            $package->setTrackNumber($result['order']['tracking_code']);
-            $package->setServiceOrderId($result['order']['_id']);
-            $package->setStatus($result['order']['status']);
-            $package->setStatusLabel($result['order']['status_label']);
-        } else {
-            return $package;
-        }
-        return $package;
-    }
 }

@@ -1,0 +1,21 @@
+{
+    "name": "secomm/module-ghn-address-mapper",
+    "description": "GHN Address Mapping module - maps Magento addresses to GHN location IDs",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.1",
+        "magento/framework": ">=103.0.0",
+        "secomm/module-base": "*",
+        "secomm/module-address-dropdown": "*",
+        "secomm/module-giaohangnhanh": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Secomm\\GhnAddressMapper\\": ""
+        }
+    }
+}

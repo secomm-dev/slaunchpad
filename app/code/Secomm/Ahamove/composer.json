@@ -1,11 +1,10 @@
 {
-    "name": "cose-mart/module-ahamove",
-    "version": "1.0.0",
-    "description": "N/A",
+    "name": "secomm/module-ahamove",
+    "version": "1.1.0",
+    "description": "Ahamove API v3 shipping integration for Magento 2",
     "type": "magento2-module",
     "require": {
-        "magento/framework": "*",
-        "cose-mart/module-base": "1.0.*"
+        "magento/framework": "*"
     },
     "license": [
         "Proprietary"

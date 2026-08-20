@@ -11,6 +11,7 @@ use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Secomm\Ahamove\Helper\Data as HelperDataAhamove;
+use Secomm\Ahamove\Helper\Connection;
 use Secomm\Ahamove\Logger\Logger;
 use Secomm\Ahamove\Model\Config;
 use Secomm\Ahamove\Model\Config\Source\ApiRequest\Status;
@@ -21,6 +22,7 @@ class RefreshToken implements ObserverInterface
         protected WriterInterface   $configWriter,
         protected HelperDataAhamove $helperDataAhamove,
         protected Logger            $logger,
+        protected Connection       $connection,
     ) {
     }
 
@@ -34,7 +36,7 @@ class RefreshToken implements ObserverInterface
     {
         $response = null;
         $data = $observer->getData('data');
-        $storeId = $observer->getData('store_id');
+        $storeId = $data ? $data->getStoreId() : null;
         try {
             $response = $this->reloadToken($storeId);
             if (isset($response['status']) && $response['status'] == Status::STATUS_CODE_SUCCESS) {
@@ -63,7 +65,7 @@ class RefreshToken implements ObserverInterface
     }
 
     /**
-     * Call API to get Ahamove token
+     * Call API to get Ahamove token via Connection helper (uses POST)
      *
      * @param mixed $storeId
      * @return array
@@ -71,33 +73,12 @@ class RefreshToken implements ObserverInterface
      */
     public function reloadToken($storeId = null): array
     {
-        $params = [
-            'api_key' => $this->helperDataAhamove->getAPIKey($storeId),
-            'mobile' => $this->helperDataAhamove->getMobilePhoneValue($storeId)
-        ];
-        $url = $this->helperDataAhamove->getUrlAhamove($storeId) . Config::GET_REFRESH_TOKEN;
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => json_encode($params, JSON_UNESCAPED_UNICODE),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-        ]);
-        $response = curl_exec($curl);
-        if (curl_errno($curl)) {
-            throw new \Exception('Curl error: ' . curl_error($curl));
+        $response = $this->connection->reloadToken();
+
+        if (is_array($response)) {
+            return ['status' => 200, 'content' => $response];
         }
 
-        $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-        curl_close($curl);
-
-        return ['status' => $statusCode, 'content' => json_decode($response, true)];
+        return ['status' => 0, 'content' => []];
     }
 }

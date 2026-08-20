@@ -16,7 +16,6 @@ use Secomm\Ahamove\Helper\Data as AhamoveHelper;
 use Secomm\Ahamove\Logger\Logger;
 use Secomm\Ahamove\Model\Carrier\ShippingMethod\Express;
 use Secomm\Ahamove\Model\Carrier\ShippingMethod\Standard;
-use Secomm\Ahamove\Model\Command\CreateShipment;
 use Secomm\Ahamove\Model\PackageFactory;
 
 class OrderShipmentSaveAfter implements ObserverInterface
@@ -97,8 +96,13 @@ class OrderShipmentSaveAfter implements ObserverInterface
                 $trackingCode = $result['order']['tracking_code'];
                 $sharedLink = $result['shared_link'] ?? '';
 
+                // Normalize carrier code to base carrier code (e.g. ahamove_standard or ahamove_express)
+                $carrierCode = str_contains($shippingMethod, Express::AHAMOVE_EXPRESS_CARRIER_CODE)
+                    ? Express::AHAMOVE_EXPRESS_CARRIER_CODE
+                    : Standard::AHAMOVE_STANDARD_CARRIER_CODE;
+
                 $track = $this->trackFactory->create();
-                $track->setCarrierCode($shippingMethod);
+                $track->setCarrierCode($carrierCode);
                 $track->setTitle($order->getShippingDescription() ?: 'Ahamove Delivery');
                 $track->setTrackNumber($trackingCode);
                 $track->setDescription($sharedLink);

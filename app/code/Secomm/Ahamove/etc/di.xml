@@ -53,4 +53,11 @@
         <plugin name="add_push_ahamove_order_button_plugin"
                 type="Secomm\Ahamove\Plugin\Adminhtml\AddPushAhamoveOrderButtonPlugin"/>
     </type>
+
+    <!-- SL-017: Inject AhamoveStatusMapper vào WebhookTrackingBridge -->
+    <type name="Secomm\Ahamove\Model\Tracking\WebhookTrackingBridge">
+        <arguments>
+            <argument name="statusMapper" xsi:type="object">Secomm\Ahamove\Model\Tracking\AhamoveStatusMapper</argument>
+        </arguments>
+    </type>
 </config>

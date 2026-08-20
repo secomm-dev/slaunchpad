@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <ghn_address_mapper>
+            <general>
+                <enabled>1</enabled>
+                <cache_lifetime>86400</cache_lifetime>
+            </general>
+            <import>
+                <update_existing>0</update_existing>
+                <skip_duplicate>1</skip_duplicate>
+            </import>
+        </ghn_address_mapper>
+    </default>
+</config>
