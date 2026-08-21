@@ -34,6 +34,6 @@ var config = {
         "mageplaza/core/bootstrap": ["jquery"],
         mpIonRangeSlider: ["jquery"],
         mpDevbridgeAutocomplete: ["jquery"],
-        touchPunch: ['jquery', 'jquery-ui-modules/core', 'jquery-ui-modules/mouse', 'jquery-ui-modules/widget']
+        touchPunch: ['jquery', 'jquery-ui-modules/widget', 'jquery-ui-modules/mouse']
     }
 };

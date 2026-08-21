@@ -88,37 +88,7 @@ class RebuildStats extends Command
     /**
      * @inheritDoc
      */
-    protected function configure()
-    {
-        $this->setName('mageplaza:extrafee:rebuild-stats')
-            ->setDescription('Rebuild extra fee statistics from existing orders, invoices, and credit memos')
-            ->addOption(
-                self::OPTION_BATCH_SIZE,
-                'b',
-                InputOption::VALUE_OPTIONAL,
-                'Batch size for processing orders (default: 1000)',
-                self::BATCH_SIZE
-            )
-            ->addOption(
-                self::OPTION_RULE_ID,
-                'r',
-                InputOption::VALUE_OPTIONAL,
-                'Rebuild stats for specific rule ID only'
-            )
-            ->addOption(
-                self::OPTION_DRY_RUN,
-                'd',
-                InputOption::VALUE_NONE,
-                'Dry run mode - show what would be done without making changes'
-            );
-
-        parent::configure();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $this->state->setAreaCode(Area::AREA_ADMINHTML);
@@ -131,7 +101,7 @@ class RebuildStats extends Command
         $isDryRun     = $input->getOption(self::OPTION_DRY_RUN);
 
         $connection = $this->resourceConnection->getConnection();
-        $statsTable = $connection->getTableName('mageplaza_extrafee_stats');
+        $statsTable = $this->resourceConnection->getTableName('mageplaza_extrafee_stats');
 
         $output->writeln('<info>Starting Extra Fee Stats Rebuild...</info>');
         if ($isDryRun) {
@@ -346,5 +316,35 @@ class RebuildStats extends Command
         }
 
         return $revenue;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function configure()
+    {
+        $this->setName('mageplaza:extrafee:rebuild-stats')
+            ->setDescription('Rebuild extra fee statistics from existing orders, invoices, and credit memos')
+            ->addOption(
+                self::OPTION_BATCH_SIZE,
+                'b',
+                InputOption::VALUE_OPTIONAL,
+                'Batch size for processing orders (default: 1000)',
+                self::BATCH_SIZE
+            )
+            ->addOption(
+                self::OPTION_RULE_ID,
+                'r',
+                InputOption::VALUE_OPTIONAL,
+                'Rebuild stats for specific rule ID only'
+            )
+            ->addOption(
+                self::OPTION_DRY_RUN,
+                'd',
+                InputOption::VALUE_NONE,
+                'Dry run mode - show what would be done without making changes'
+            );
+
+        parent::configure();
     }
 }

@@ -53,6 +53,10 @@ class Authentication implements ArrayInterface
                 'value' => 'crammd5',
                 'label' => __('CRAM-MD5')
             ],
+            [
+                'value' => 'oauth2',
+                'label' => __('OAUTH2 (Office365)')
+            ],
         ];
 
         return $options;

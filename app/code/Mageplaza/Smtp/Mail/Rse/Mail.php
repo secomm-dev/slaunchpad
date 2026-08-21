@@ -113,6 +113,11 @@ class Mail
             unset($options['force_sent']);
         }
 
+        if (isset($options['authentication']) && !isset($options['auth'])) {
+            $options['auth'] = $options['authentication'];
+        }
+        unset($options['authentication']);
+
         if (count($options)) {
             $this->_smtpOptions[$storeId] = $options;
         }
@@ -257,6 +262,21 @@ class Mail
     }
 
     /**
+     * Get SMTP options for a store (includes temporary test options)
+     *
+     * @param $storeId
+     * @return array|null
+     */
+    public function getSmtpOptions($storeId)
+    {
+        if (isset($this->_smtpOptions[$storeId])) {
+            return $this->_smtpOptions[$storeId];
+        }
+
+        return null;
+    }
+
+    /**
      * @param $storeId
      *
      * @return bool|mixed
@@ -291,9 +311,9 @@ class Mail
         // - true  → adds ssl:// prefix (implicit SSL, for port 465 only)
         // - false → plain connection, but EsmtpTransport auto-negotiates STARTTLS if available
         // - null  → auto-detect based on port (465 → true, others → false)
-        
+
         $tls = false; // default: plain connection with auto STARTTLS negotiation
-        
+
         if ($protocol === 'ssl' || $port === 465) {
             // Implicit SSL: requires ssl:// prefix from start (Symfony adds it when $tls=true)
             $tls = true;

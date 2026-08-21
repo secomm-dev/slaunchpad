@@ -244,3 +244,30 @@ Recipient,Recipient
 Cc,Cc
 Bcc,Bcc
 Port automatically set to 587 for TLS protocol,Port automatically set to 587 for TLS protocol
+Client ID,Client ID
+Client Secret,Client Secret
+Failed to get OAuth2 access token for Microsoft Graph API.,Failed to get OAuth2 access token for Microsoft Graph API.
+Failed to get OAuth2 access token: %1,Failed to get OAuth2 access token: %1
+Microsoft Graph API email send failed (HTTP %1): %2,Microsoft Graph API email send failed (HTTP %1): %2
+No sender email address found.,No sender email address found.
+OAUTH2 (Office365),OAUTH2 (Office365)
+OAuth token request failed (HTTP %1): %2,OAuth token request failed (HTTP %1): %2
+OAuth token response missing access_token.,OAuth token response missing access_token.
+OAuth2,OAuth2
+OAuth2 is selected but the following are missing: %1,OAuth2 is selected but the following are missing: %1
+Office365 now requires OAuth2. Host/port will auto-force OAuth2 in the Authentication field.,Office365 now requires OAuth2. Host/port will auto-force OAuth2 in the Authentication field.
+Port automatically set to 587 for TLS protocol.,Port automatically set to 587 for TLS protocol.
+Scope,Scope
+Tenant ID,Tenant ID
+OAuth2 is only available when Host is set to smtp.office365.com,OAuth2 is only available when Host is set to smtp.office365.com
+Tenant ID (Directory ID),Tenant ID (Directory ID)
+"From Azure AD App Registration > Overview.","From Azure AD App Registration > Overview."
+Client ID (Application ID),Client ID (Application ID)
+Azure AD App Registration client/application ID.,Azure AD App Registration client/application ID.
+Store the client secret from Azure AD.,Store the client secret from Azure AD.
+"Create API key <a href=""https://app.avada.io/integration"" target=""_blank"">here</a>.","Create API key <a href=""https://app.avada.io/integration"" target=""_blank"">here</a>."
+Load,Load
+Product not found,Product not found
+Requested store is not found,Requested store is not found
+not found,not found
+resolve failed,resolve failed
