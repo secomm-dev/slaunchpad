@@ -46,7 +46,7 @@ class Config
     const SHIPPING_FEE = '/v1/orders/estimates';
     const SHIPPING_FEE_WITH_MANY_SERVICES = '/v3/orders/estimates';
     const URL_AHAMOVE_CREATE_ORDER = '/v3/orders';
-    const URL_AHAMOVE_CITY_DETAILS = '/v3/services';
+    const URL_AHAMOVE_CITY_DETAILS = '/v1/order/city_detail';
     const GET_REFRESH_TOKEN = '/v3/accounts/token';
     const URL_AHAMOVE_SHARED_LINK = '/v1/order/shared_link';
 

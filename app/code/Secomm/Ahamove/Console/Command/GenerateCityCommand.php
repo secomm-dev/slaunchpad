@@ -2,6 +2,7 @@
 
 namespace Secomm\Ahamove\Console\Command;
 
+use Magento\Framework\Console\Cli;
 use Secomm\Ahamove\Helper\Connection;
 use Secomm\Ahamove\Model\Config;
 use Secomm\Ahamove\Model\Config\Source\ApiRequest\Status;
@@ -45,9 +46,9 @@ class GenerateCityCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      *
-     * @return void
+     * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $response = $this->connection->getDataFromApi(Config::URL_AHAMOVE_CITY, "Sync data City from Ahamove");
         if ($response->status == Status::STATUS_CODE_SUCCESS) {
@@ -61,8 +62,8 @@ class GenerateCityCommand extends Command
                             'city_id' => $item['_id'],
                             'country_id' => $item['country_id'],
                             'name' => $item['name'],
-                            'name_vi_vn' => $item['name_vi_vn'],
-                            'level' => $item['level']
+                            'name_vi_vn' => $item['name'],
+                            'level' => $item['level'] ?? 1
                         ],
                         ['col' => 'city_id', 'val' => $item['_id']]
                     );
@@ -100,8 +101,10 @@ class GenerateCityCommand extends Command
             }
 
             $output->writeln('<info>Generate data successfully.</info>');
+            return Cli::RETURN_SUCCESS;
         } else {
             $output->writeln('<error>Generating data was interrupted. Please try again!</error>');
+            return Cli::RETURN_FAILURE;
         }
     }
 }
