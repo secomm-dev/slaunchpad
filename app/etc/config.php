@@ -450,6 +450,7 @@ return [
         'Secomm_ShippingCore' => 1,
         'Secomm_GiaoHangNhanh' => 1,
         'Secomm_GhnAddressMapper' => 1,
+        'Secomm_MageplazaExtraFeeFix' => 1,
         'Secomm_MoMo' => 1,
         'Secomm_Ghtk' => 1,
         'Secomm_VietNamAddress' => 1,
