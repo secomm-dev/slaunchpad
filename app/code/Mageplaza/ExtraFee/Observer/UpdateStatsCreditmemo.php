@@ -20,9 +20,9 @@
  */
 namespace Mageplaza\ExtraFee\Observer;
 
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Sales\Model\Order\Creditmemo;
 
 /**
@@ -47,7 +47,7 @@ class UpdateStatsCreditmemo implements ObserverInterface
             return;
         }
         $connection = $this->resourceConnection->getConnection();
-        $table      = $connection->getTableName('mageplaza_extrafee_stats');
+        $table      = $this->resourceConnection->getTableName('mageplaza_extrafee_stats');
 
         try {
             $ruleTotals = [];

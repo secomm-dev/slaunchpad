@@ -28,6 +28,7 @@ use Magento\Email\Model\Template\SenderResolver;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Store\Model\Store;
@@ -74,6 +75,11 @@ class Test extends Action
     protected $senderResolver;
 
     /**
+     * @var EncryptorInterface
+     */
+    protected $encryptor;
+
+    /**
      * Test constructor.
      *
      * @param Context $context
@@ -82,6 +88,7 @@ class Test extends Action
      * @param Mail $mailResource
      * @param TransportBuilder $transportBuilder
      * @param SenderResolver $senderResolver
+     * @param EncryptorInterface $encryptor
      */
     public function __construct(
         Context $context,
@@ -89,13 +96,15 @@ class Test extends Action
         SmtpData $smtpDataHelper,
         Mail $mailResource,
         TransportBuilder $transportBuilder,
-        SenderResolver $senderResolver
+        SenderResolver $senderResolver,
+        EncryptorInterface $encryptor
     ) {
         $this->logger            = $logger;
         $this->smtpDataHelper    = $smtpDataHelper;
         $this->mailResource      = $mailResource;
         $this->_transportBuilder = $transportBuilder;
         $this->senderResolver    = $senderResolver;
+        $this->encryptor         = $encryptor;
 
         parent::__construct($context);
     }
@@ -111,13 +120,14 @@ class Test extends Action
         $params = $this->getRequest()->getParams();
         if ($params && $params['to']) {
             $storeId = $params['store'] ?? Store::DEFAULT_STORE_ID;
-            $config = [
-                'type'       => 'smtp',
-                'host'       => $params['host'],
-                'auth'       => $params['authentication'],
-                'username'   => $params['username'],
-                'ignore_log' => true,
-                'force_sent' => true
+            $config  = [
+                'type'           => 'smtp',
+                'host'           => $params['host'],
+                'auth'           => $params['authentication'],
+                'authentication' => $params['authentication'],
+                'username'       => $params['username'],
+                'ignore_log'     => true,
+                'force_sent'     => true
             ];
 
             if ($params['protocol']) {
@@ -133,6 +143,39 @@ class Test extends Action
             }
             if ($params['returnpath']) {
                 $config['return_path'] = $params['returnpath'];
+            }
+
+            // Add OAuth2 parameters for Microsoft Graph API authentication
+            if (isset($params['authentication']) && $params['authentication'] === 'oauth2') {
+                if (!empty($params['oauth_tenant_id'])) {
+                    $config['oauth_tenant_id'] = $params['oauth_tenant_id'];
+                } else {
+                    $config['oauth_tenant_id'] = $this->smtpDataHelper->getSmtpConfig('oauth_tenant_id', $storeId);
+                }
+
+                if (!empty($params['oauth_client_id'])) {
+                    $config['oauth_client_id'] = $params['oauth_client_id'];
+                } else {
+                    $config['oauth_client_id'] = $this->smtpDataHelper->getSmtpConfig('oauth_client_id', $storeId);
+                }
+
+                if (!empty($params['oauth_client_secret']) && $params['oauth_client_secret'] !== '******') {
+                    $config['oauth_client_secret'] = trim($params['oauth_client_secret']);
+                } else {
+                    $encryptedSecret = $this->smtpDataHelper->getSmtpConfig('oauth_client_secret', $storeId);
+                    if ($encryptedSecret) {
+                        $config['oauth_client_secret'] = trim($this->encryptor->decrypt($encryptedSecret));
+                    }
+                }
+
+                if (!empty($params['oauth_scope'])) {
+                    $config['oauth_scope'] = $params['oauth_scope'];
+                } else {
+                    $config['oauth_scope'] = $this->smtpDataHelper->getSmtpConfig(
+                        'oauth_scope',
+                        $storeId
+                    ) ?: 'https://graph.microsoft.com/.default';
+                }
             }
 
             $this->mailResource->setSmtpOptions($storeId, $config);

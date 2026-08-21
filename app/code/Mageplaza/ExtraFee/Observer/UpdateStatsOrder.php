@@ -74,7 +74,7 @@ class UpdateStatsOrder implements ObserverInterface
         }
 
         $connection = $this->resourceConnection->getConnection();
-        $statsTable = $connection->getTableName('mageplaza_extrafee_stats');
+        $statsTable = $this->resourceConnection->getTableName('mageplaza_extrafee_stats');
 
         try {
             $extraFee = json_decode($extraFeeJson, true);
