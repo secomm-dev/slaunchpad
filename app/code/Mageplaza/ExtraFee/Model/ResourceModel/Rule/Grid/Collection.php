@@ -135,8 +135,7 @@ class Collection extends SearchResult
     public function addFieldToFilter($field, $condition = null)
     {
         if ($field === 'order_count' || $field === 'revenue') {
-            $connection = $this->resourceConnection->getConnection();
-            $statsTable = $connection->getTableName('mageplaza_extrafee_stats');
+            $statsTable = $this->resourceConnection->getTableName('mageplaza_extrafee_stats');
             // left join stats
             $this->getSelect()->joinLeft(
                 ['stats' => $statsTable],
@@ -170,8 +169,7 @@ class Collection extends SearchResult
     public function setOrder($field, $direction = self::SORT_ORDER_DESC)
     {
         if ($field === 'order_count' || $field === 'revenue') {
-            $connection = $this->resourceConnection->getConnection();
-            $statsTable = $connection->getTableName('mageplaza_extrafee_stats');
+            $statsTable = $this->resourceConnection->getTableName('mageplaza_extrafee_stats');
             $this->getSelect()->joinLeft(
                 ['stats' => $statsTable],
                 'main_table.rule_id = stats.rule_id',

@@ -45,8 +45,10 @@
                 <div class="section-config">
                     <div class="entry-edit-head admin__collapsible-block">
                         <span id="smtp_provider_<?= /** @noEscape */ $id ?>-link" class="entry-edit-head-link"></span>
-                        <a id="smtp_provider_<?= /** @noEscape */ $id ?>-head" href="#smtp_provider_<?= /** @noEscape */ /** @noEscape */ $id ?>-link"
-                           onclick="Fieldset.toggleCollapse('smtp_provider_<?= /** @noEscape */ $id ?>'); return false;"><?= /** @noEscape */ $provider['label'] ?></a>
+                        <a id="smtp_provider_<?= /** @noEscape */ $id ?>-head" href="#smtp_provider_<?= /** @noEscape */ $id ?>-link"
+                           onclick="Fieldset.toggleCollapse(
+                               'smtp_provider_<?= /** @noEscape */ $id ?>'
+                               ); return false;"><?= /** @noEscape */ $provider['label'] ?></a>
                     </div>
                     <input id="smtp_provider_<?= /** @noEscape */ $id ?>-state" type="hidden">
                     <fieldset class="config admin__collapsible-block" id="smtp_provider_<?= /** @noEscape */ $id ?>">
@@ -58,7 +60,7 @@
                             <colgroup class=""></colgroup>
                             <tbody>
                             <?php foreach ($provider['info'] as $infoId => $info): ?>
-                                <?php $note = isset($provider['note']) ? $provider['note'] : [] ?>
+                                <?php $note = $provider['note'] ?? [] ?>
                                 <?php if (is_array($info)): ?>
                                     <tr id="row_smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>">
                                         <td colspan="4">
@@ -68,10 +70,11 @@
                                                           class="entry-edit-head-link"></span>
                                                     <a id="smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>-head"
                                                        href="#smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>-link"
-                                                       onclick="Fieldset.toggleCollapse('smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>'); return false;"><?= /** @noEscape */ $info['label'] ?></a>
+                                                       onclick="Fieldset.toggleCollapse(
+                                                           'smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>'
+                                                           ); return false;"><?= /** @noEscape */ $info['label'] ?></a>
                                                 </div>
-                                                <input id="smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>-state" type="hidden"
-                                                       value="1">
+                                                <input id="smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>-state" type="hidden" value="1">
                                                 <fieldset class="config admin__collapsible-block"
                                                           id="smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>">
                                                     <legend><?= /** @noEscape */ $info['label'] ?></legend>
@@ -86,11 +89,12 @@
                                                             <tr id="row_smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>_<?= /** @noEscape */ $key ?>">
                                                                 <td class="label">
                                                                     <label for="smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>_<?= /** @noEscape */ $key ?>">
-                                                                        <span><?=  $block->escapeHtml($block->getLabel($key)) ?></span>
+                                                                        <span><?= $block->escapeHtml($block->getLabel($key)) ?></span>
                                                                     </label>
                                                                 </td>
                                                                 <td class="value">
-                                                                    <span class="control-value special"><?=  $block->escapeHtml($block->getLabel($infoItem)) ?></span>
+                                                                    <span
+                                                                        class="control-value special"><?= $block->escapeHtml($block->getLabel($infoItem)) ?></span>
                                                                     <?php if (isset($note[$key])): ?>
                                                                         <p class="note"><?= /** @noEscape */ $note[$key] ?></p>
                                                                     <?php endif; ?>
@@ -140,11 +144,12 @@
                                     <tr id="row_smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>">
                                         <td class="label">
                                             <label for="smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>">
-                                                <span><?=  $block->escapeHtml($block->getLabel($infoId)) ?></span>
+                                                <span><?= $block->escapeHtml($block->getLabel($infoId)) ?></span>
                                             </label>
                                         </td>
                                         <td class="value">
-                                            <span class="control-value special"><?=  $block->escapeHtml($block->getLabel($info)) ?></span>
+                                            <span
+                                                class="control-value special"><?= $block->escapeHtml($block->getLabel($info)) ?></span>
                                             <?php if (isset($note[$infoId])): ?>
                                                 <p class="note"><?= /** @noEscape */ $note[$infoId] ?></p>
                                             <?php endif; ?>
@@ -155,7 +160,8 @@
                             <?php endforeach; ?>
                             <?php if (!isset($provider['add_button'])): ?>
                                 <?php if (isset($note['global'])): ?>
-                                    <tr id="row_smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */ $infoId ?>_note">
+                                    <tr id="row_smtp_provider_<?= /** @noEscape */ $id ?>_<?= /** @noEscape */
+                                    $infoId ?>_note">
                                         <td class="label"></td>
                                         <td class="value">
                                             <p class="note"><?= /** @noEscape */ $note['global'] ?></p>
@@ -195,18 +201,111 @@
 </div>
 <script type="text/javascript">
     require(['jquery'], function ($) {
-        var modalEl = $('#smtp-block-autofill'),
-            hostEl = $('#smtp_configuration_option_host'),
-            portEl = $('#smtp_configuration_option_port'),
-            protocolEl = $('#smtp_configuration_option_protocol');
+        var modalEl      = $('#smtp-block-autofill'),
+            hostEl       = $('#smtp_configuration_option_host'),
+            portEl       = $('#smtp_configuration_option_port'),
+            protocolEl   = $('#smtp_configuration_option_protocol'),
+            authEl       = $('#smtp_configuration_option_authentication'),
+            authName     = authEl.attr('name'),
+            authHiddenId = authEl.attr('id') + '_force',
+            oauthFields  = [
+                '#row_smtp_configuration_option_oauth_tenant_id',
+                '#row_smtp_configuration_option_oauth_client_id',
+                '#row_smtp_configuration_option_oauth_client_secret',
+                '#row_smtp_configuration_option_oauth_help'
+            ],
+            basicFields  = [
+                '#row_smtp_configuration_option_username',
+                '#row_smtp_configuration_option_password'
+            ];
+
+        function setHiddenAuth (force) {
+            var hidden = $('#' + authHiddenId);
+            if (force) {
+                if (!hidden.length) {
+                    hidden = $('<input/>', {type: 'hidden', id: authHiddenId, name: authName});
+                    authEl.after(hidden);
+                }
+                hidden.val('oauth2');
+            } else {
+                hidden.remove();
+            }
+        }
+
+        function toggleOauth (forceOauth) {
+            if (forceOauth) {
+                authEl.val('oauth2').prop('disabled', true).trigger('change');
+                setHiddenAuth(true);
+                // Force show OAuth fields and enable all inputs (override depends logic)
+                oauthFields.forEach(function (id) {
+                    var $row = $(id);
+                    $row.removeAttr('style').css('display', 'table-row').show();
+                    // Find all inputs/selects/textareas and force enable them
+                    $row.find('input, select, textarea').each(function () {
+                        $(this).removeAttr('style').removeAttr('disabled').show();
+                    });
+                });
+                // Hide basic auth fields
+                basicFields.forEach(function (id) {
+                    $(id).hide();
+                });
+            } else {
+                authEl.prop('disabled', false).trigger('change');
+                setHiddenAuth(false);
+                // Hide OAuth fields when not Office365
+                oauthFields.forEach(function (id) {
+                    $(id).hide();
+                });
+                // Show basic auth fields
+                basicFields.forEach(function (id) {
+                    $(id).show();
+                });
+            }
+        }
+
+        function isOffice365Host (host) {
+            return (host || '').toLowerCase().trim() === 'smtp.office365.com';
+        }
+
+        function disableOAuth2Option (disable) {
+            var oauth2Option = authEl.find('option[value="oauth2"]');
+            if (oauth2Option.length) {
+                if (disable) {
+                    oauth2Option.prop('disabled', true);
+                    if (authEl.val() === 'oauth2') {
+                        authEl.val('smtp').trigger('change');
+                    }
+                } else {
+                    oauth2Option.prop('disabled', false);
+                }
+            }
+        }
+
+        function syncState () {
+            var isOffice365 = isOffice365Host(hostEl.val());
+            toggleOauth(isOffice365);
+            disableOAuth2Option(!isOffice365);
+        }
+
+        hostEl.on('change keyup', syncState);
 
         $('.button-actions-apply-autofill').on('click', function () {
-            hostEl.val($(this).data('host'));
-            portEl.val($(this).data('port'));
-            protocolEl.val($(this).data('protocol'));
-
+            var hostVal     = $(this).data('host'),
+                portVal     = $(this).data('port'),
+                protocolVal = $(this).data('protocol');
+            hostEl.val(hostVal);
+            portEl.val(portVal);
+            protocolEl.val(protocolVal);
+            syncState();
             modalEl.modal('closeModal');
         });
+
+        // Initial hide of OAuth fields on page load, syncState will show if needed
+        oauthFields.forEach(function (id) {
+            $(id).hide();
+        });
+
+        syncState();
     });
 </script>
 <style type="text/css">

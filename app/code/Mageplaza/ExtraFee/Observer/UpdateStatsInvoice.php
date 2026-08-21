@@ -41,7 +41,7 @@ class UpdateStatsInvoice implements ObserverInterface
     public function __construct(ResourceConnection $resourceConnection, Helper $helper)
     {
         $this->resourceConnection = $resourceConnection;
-        $this->helper = $helper;
+        $this->helper             = $helper;
     }
 
     public function execute(Observer $observer)
@@ -57,7 +57,7 @@ class UpdateStatsInvoice implements ObserverInterface
         }
 
         $connection = $this->resourceConnection->getConnection();
-        $table = $connection->getTableName('mageplaza_extrafee_stats');
+        $table      = $this->resourceConnection->getTableName('mageplaza_extrafee_stats');
 
         try {
             // sum revenue contributions per rule from this invoice
@@ -73,18 +73,18 @@ class UpdateStatsInvoice implements ObserverInterface
                         continue;
                     }
                     $parts = array_filter(preg_split('/\D+/', $total['code']));
-                    $rid = (int) reset($parts);
+                    $rid   = (int) reset($parts);
                     if ($rid) {
-                        $amount = (float) $total['base_value'] * (float) $item->getQty();
+                        $amount           = (float) $total['base_value'] * (float) $item->getQty();
                         $ruleTotals[$rid] = ($ruleTotals[$rid] ?? 0) + $amount;
                     }
                 }
             }
             foreach ($ruleTotals as $ruleId => $amount) {
                 $connection->insertOnDuplicate($table, [
-                    'rule_id' => (int) $ruleId,
+                    'rule_id'     => (int) $ruleId,
                     'order_count' => 0,
-                    'revenue' => $amount,
+                    'revenue'     => $amount,
                 ], ['revenue' => new \Zend_Db_Expr('revenue + ' . $connection->quote($amount))]);
             }
         } catch (\Throwable $e) {
