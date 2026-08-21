@@ -67,6 +67,8 @@ use Magento\Framework\UrlInterface;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Newsletter\Model\Subscriber;
 use Magento\Newsletter\Model\SubscriberFactory;
+use Magento\Framework\App\CacheInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Address;
 use Magento\Quote\Model\Quote\Item;
@@ -325,6 +327,9 @@ class EmailMarketing extends Data
      * @param Context $context
      * @param ObjectManagerInterface $objectManager
      * @param StoreManagerInterface $storeManager
+     * @param Curl $curl
+     * @param CacheInterface $cache
+     * @param Json $json
      * @param UrlInterface $frontendUrl
      * @param Escaper $escaper
      * @param CatalogConfiguration $catalogConfiguration
@@ -363,6 +368,9 @@ class EmailMarketing extends Data
         Context $context,
         ObjectManagerInterface $objectManager,
         StoreManagerInterface $storeManager,
+        Curl $curl,
+        CacheInterface $cache,
+        Json $json,
         UrlInterface $frontendUrl,
         Escaper $escaper,
         CatalogConfiguration $catalogConfiguration,
@@ -431,7 +439,7 @@ class EmailMarketing extends Data
         $this->grouped                    = $grouped;
         $this->bundle                     = $bundle;
 
-        parent::__construct($context, $objectManager, $storeManager);
+        parent::__construct($context, $objectManager, $storeManager, $curl, $cache, $json);
     }
 
     /**

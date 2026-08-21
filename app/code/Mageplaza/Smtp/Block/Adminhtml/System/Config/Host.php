@@ -88,6 +88,22 @@ class Host extends Field
                 return __('Transport Layer Security (TLS)');
             case 'ssl':
                 return __('Secure Sockets Layer (SSL)');
+            case 'authentication':
+                return __('Authentication');
+            case 'oauth2':
+                return __('OAuth2');
+            case 'username':
+                return __('Username');
+            case 'password':
+                return __('Password');
+            case 'tenant_id':
+                return __('Tenant ID');
+            case 'client_id':
+                return __('Client ID');
+            case 'client_secret':
+                return __('Client Secret');
+            case 'scope':
+                return __('Scope');
             case '':
                 return __('None');
             default:
@@ -299,9 +315,13 @@ class Host extends Field
             'office365'   => [
                 'label' => __('Office365'),
                 'info'  => [
-                    'host'     => 'smtp.office365.com',
-                    'port'     => '587',
-                    'protocol' => ''
+                    'host'           => 'smtp.office365.com',
+                    'port'           => '587',
+                    'protocol'       => 'tls',
+                    'authentication' => 'oauth2'
+                ],
+                'note'  => [
+                    'global' => __('Office365 now requires OAuth2. Host/port will auto-force OAuth2 in the Authentication field.')
                 ]
             ],
             'orange'      => [

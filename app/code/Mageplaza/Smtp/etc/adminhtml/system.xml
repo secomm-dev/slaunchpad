@@ -75,9 +75,10 @@
                     <source_model>Mageplaza\Smtp\Model\Config\Source\Protocol</source_model>
                     <comment>We recommend use security connections: SSL or TLS. Secure Socket Layer (SSL), Transport Layer Security (TLS) protocols.</comment>
                 </field>
-                <field id="authentication" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="authentication" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Authentication</label>
                     <source_model>Mageplaza\Smtp\Model\Config\Source\Authentication</source_model>
+                    <comment>OAuth2 is only available when Host is set to smtp.office365.com</comment>
                     <validate>required-entry</validate>
                 </field>
                 <field id="username" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -92,6 +93,29 @@
                     <label>Return-Path Email</label>
                     <comment>Leave empty to ignore it.</comment>
                     <validate>validate-email</validate>
+                </field>
+                <!-- New OAuth2 fields for Office365 -->
+                <field id="oauth_tenant_id" translate="label comment" type="text" sortOrder="71" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Tenant ID (Directory ID)</label>
+                    <comment>From Azure AD App Registration &gt; Overview.</comment>
+                    <depends>
+                        <field id="smtp/configuration_option/authentication">oauth2</field>
+                    </depends>
+                </field>
+                <field id="oauth_client_id" translate="label comment" type="text" sortOrder="72" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Client ID (Application ID)</label>
+                    <comment>Azure AD App Registration client/application ID.</comment>
+                    <depends>
+                        <field id="smtp/configuration_option/authentication">oauth2</field>
+                    </depends>
+                </field>
+                <field id="oauth_client_secret" translate="label comment" type="obscure" sortOrder="73" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Client Secret</label>
+                    <comment>Store the client secret from Azure AD.</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="smtp/configuration_option/authentication">oauth2</field>
+                    </depends>
                 </field>
                 <group id="test_email" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Send Test Email</label>

@@ -45,7 +45,7 @@ class ProcessFeed
     ) {
         $this->helper = $helper;
     }
-
+    
     public function execute()
     {
         if ($this->helper->isModuleOutputEnabled('Magento_AdminNotification')) {

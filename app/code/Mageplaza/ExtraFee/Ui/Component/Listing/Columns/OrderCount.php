@@ -87,7 +87,7 @@ class OrderCount extends Column
     {
         $ruleId = (int) $item['rule_id'];
         $connection = $this->resourceConnection->getConnection();
-        $statsTable = $connection->getTableName('mageplaza_extrafee_stats');
+        $statsTable = $this->resourceConnection->getTableName('mageplaza_extrafee_stats');
 
         // Read order_count from stats table
         $select = $connection->select()
