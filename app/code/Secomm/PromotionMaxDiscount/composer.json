@@ -1,0 +1,22 @@
+{
+    "name": "secomm/module-promotion-max-discount",
+    "description": "Per-rule Maximum Discount Cap for percent-of-price Cart Price Rules (e.g. \"20% off, up to 50,000 VND\") — Launchpad Core, backend-first, theme-agnostic.",
+    "type": "magento2-module",
+    "license": "GPL-3.0",
+    "minimum-stability": "dev",
+    "require": {
+        "magento/framework": "*",
+        "magento/module-sales-rule": "*",
+        "magento/module-quote": "*",
+        "magento/module-sales": "*",
+        "secomm/module-promotion": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Secomm\\PromotionMaxDiscount\\": ""
+        }
+    }
+}

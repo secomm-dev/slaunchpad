@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+    @author Secomm Team
+    @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+    See COPYING.txt for license details.
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!--
+        Declarative merge into core `salesrule` table — DEC-FEAT008-001 §3 / SPEC-FEAT-008 §6.
+        Additive only: this declaration contributes exactly one column; core columns are untouched.
+        Semantic: NULL/0 = unlimited (native behavior); >0 = cap base-currency product
+        discount of a `by_percent` rule (same unit as by_percent base — discount_amount).
+        Default omitted on purpose: nullable decimal defaults to NULL (core convention,
+        cf. salesrule.discount_qty).
+    -->
+    <table name="salesrule" resource="default" engine="innodb" comment="Salesrule">
+        <column xsi:type="decimal" name="maximum_discount_amount" scale="4" precision="12" unsigned="true"
+                nullable="true" comment="Maximum Discount Amount (base currency); NULL/0 = unlimited; by_percent only"/>
+    </table>
+</schema>

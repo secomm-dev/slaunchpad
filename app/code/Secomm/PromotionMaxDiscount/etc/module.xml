@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <!-- FEAT-008 / DEC-FEAT008-001: Maximum Discount Cap for by_percent Sales Rules.
+         Magento SalesRule stays the execution engine — this module only caps + redistributes. -->
+    <module name="Secomm_PromotionMaxDiscount">
+        <sequence>
+            <module name="Secomm_Promotion"/>
+            <module name="Magento_SalesRule"/>
+            <module name="Magento_Quote"/>
+            <module name="Magento_Sales"/>
+        </sequence>
+    </module>
+</config>

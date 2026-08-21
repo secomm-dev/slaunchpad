@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Api/etc/extension_attributes.xsd">
+    <!-- SL-021 / SPEC-FEAT-008 §6 (D2, DEC-FEAT008-001 §3): expose the by_percent cap
+         on the service contract so REST/BAAS saves cannot silently drop the field.
+         NULL/0 = unlimited (native); >0 = cap in base currency. -->
+    <extension_attributes for="Magento\SalesRule\Api\Data\RuleInterface">
+        <attribute code="maximum_discount_amount" type="float"/>
+    </extension_attributes>
+</config>

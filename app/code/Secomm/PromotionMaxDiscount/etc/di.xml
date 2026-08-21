@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- SL-021 / SPEC-FEAT-008 §6 — read path: every RuleRepository read (getById,
+         getList items, save response) converts Model\Rule through ToDataModel; copy the
+         raw salesrule.maximum_discount_amount column onto the RuleInterface extension
+         attribute there — one hook covers all read paths. -->
+    <type name="Magento\SalesRule\Model\Converter\ToDataModel">
+        <plugin name="secommPromotionMaxDiscountToDataModelConverter"
+                type="Secomm\PromotionMaxDiscount\Plugin\Rule\ToDataModelConverterPlugin"/>
+    </type>
+    <!-- SL-021 / SPEC-FEAT-008 §6 — write path: ToModel::toModel() builds the persistable
+         model via interface reflection, which nests extension attributes under a
+         non-column key; the cap value would be dropped. Copy it onto the model flat
+         before the repository saves. Null/absent attribute is skipped, so a save that
+         omits the field keeps the stored value (no silent reset). -->
+    <type name="Magento\SalesRule\Model\Converter\ToModel">
+        <plugin name="secommPromotionMaxDiscountToModelConverter"
+                type="Secomm\PromotionMaxDiscount\Plugin\Rule\ToModelConverterPlugin"/>
+    </type>
+</config>

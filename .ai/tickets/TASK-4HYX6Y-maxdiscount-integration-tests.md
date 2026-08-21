@@ -8,7 +8,7 @@
 **Mode:** A (Tier-2: order/invoice/creditmemo lifecycle verification — L3 System validation theo AGENTS §8.6)
 **Placement:** `app/code/Secomm/PromotionMaxDiscount/Test/Integration/`
 **Risk tier:** Tier 2 (order lifecycle)
-**Author:** AI draft · **Date:** 2026-08-19 · **Status:** Proposed
+**Author:** AI draft · **Date:** 2026-08-19 · **Status:** Dev complete *(2026-08-21: TL chốt Option 2 engine-level trong chat → execute Task 2–8 một session. **24 tests / 121 assertions GREEN, repeat ×3 identical, residue mỗi run = 0.** Groups A (3) · B (3 + 1 skipped-gap) · C (4) · D (6 — idempotent ×3, two-precision VND/USD, coupon, group switch) · E (7/7 lifecycle kịch bản incl. đổi-rule-sau-place-order numbers không đổi). 2 bug fixture fix + 1 test-design fix trong session. **Coverage gaps disclosed (AC-6): configurable/bundle composite (MSI fixture infra — escalate TL), tax matrix (QC env), real FX rates (synthetic parity thay thế).** Chờ TL review Tier-2. Evidence: [TASK-4HYX6Y-evidence](../runtime/evidence/TASK-4HYX6Y/TASK-4HYX6Y-evidence.md))*
 **Specification:** SPEC-FEAT-JKZM68 (FULL, VALID) — [spec §15 AC, §16 Test strategy, §12 Lifecycle](../specs/SPEC-FEAT-JKZM68-promotion-max-discount.md)
 
 ## Description
@@ -27,12 +27,12 @@ Integration tests (Magento TestFramework, DB test thật) theo matrix tối thi�
 
 ## Acceptance Criteria
 
-- [ ] **AC-1:** Toàn bộ case A–E pass (`vendor/bin/phpunit` integration suite) — không flaky (repeat run 3×).
-- [ ] **AC-2:** Mỗi case assert invariant `Σ final eligible == min(Σ native, cap)` trên base + display (spec AC-006) trừ case no-op assert identity với native.
-- [ ] **AC-3:** Lifecycle E assert đầy đủ 7 kịch bản invoice/refund với invariants allocation (spec AC-013) — kể cả multi partial invoices lẻ tiền (LRM remainder xuyên chuỗi).
-- [ ] **AC-4:** Repeat collectTotals × 3 identical (float compare theo currency precision — không naive `==` trên float nhị phân).
-- [ ] **AC-5:** Test đổi rule sau place order (disable + sửa cap) → invoice/creditmemo numbers KHÔNG đổi (chứng minh downstream không re-run rule).
-- [ ] **AC-6:** Evidence: test output + summary lưu `.ai/evidence/` theo evidence-policy; coverage gap (nếu case không fixture được) đánh dấu rõ, KHÔNG bỏ im lặng.
+- [x] **AC-1:** *(24/121 GREEN; ×3 identical; residue 0 — 1 test skipped = gap-flag composite theo AC-6)* Toàn bộ case A–E pass (`vendor/bin/phpunit` integration suite) — không flaky (repeat run 3×).
+- [x] **AC-2:** *(assertAmountEquals theo precision xuyên suốt; no-op assert identity native)* Mỗi case assert invariant `Σ final eligible == min(Σ native, cap)` trên base + display (spec AC-006) trừ case no-op assert identity với native.
+- [x] **AC-3:** *(7/7 kịch bản: full/partial/multi-partial invoice, full CM, refund-by-item, partial-qty 300k×¼, rule-change-after-place)* Lifecycle E assert đầy đủ 7 kịch bản invoice/refund với invariants allocation (spec AC-013) — kể cả multi partial invoices lẻ tiền (LRM remainder xuyên chuỗi).
+- [x] **AC-4:** *(×3 identical + two-precision chain test — tolerance ½ unit theo precision, không naive float ==)* Repeat collectTotals × 3 identical (float compare theo currency precision — không naive `==` trên float nhị phân).
+- [x] **AC-5:** *(disable rule + cap→9M bằng SQL sau place order → Σ invoices vẫn == order discount)* Test đổi rule sau place order (disable + sửa cap) → invoice/creditmemo numbers KHÔNG đổi (chứng minh downstream không re-run rule).
+- [x] **AC-6:** *(evidence đầy đủ; 4 gaps liệt kê rõ trong evidence — composite/tax/FX/login-full, không bỏ im lặng)* Evidence: test output + summary lưu `.ai/evidence/` theo evidence-policy; coverage gap (nếu case không fixture được) đánh dấu rõ, KHÔNG bỏ im lặng.
 
 ## Out of Scope
 

@@ -8,7 +8,7 @@
 **Mode:** B (QC theo testcase skill; chạm checkout OSC → checklist Tier-2)
 **Placement:** QC env sandbox + `.ai/testcases/` + `project-context/` updates
 **Risk tier:** Tier 2 (checkout OSC e2e theo project rule: end-to-end checkout QC + payment test)
-**Author:** AI draft · **Date:** 2026-08-19 · **Status:** Proposed
+**Author:** AI draft · **Date:** 2026-08-19 · **Status:** In progress *(2026-08-21: TL quyết định **bỏ qua e2e Mollie** — phần (b) giảm còn OSC totals QC + place order offline (checkmo), không đụng payment Mollie; không cần Mollie sandbox creds. Dev-side (a)-testcase + (c)-docs bắt đầu)*
 **Specification:** SPEC-FEAT-JKZM68 (FULL, VALID) — [spec §15 AC, §16 Test strategy QC, §14 Compatibility](../specs/SPEC-FEAT-JKZM68-promotion-max-discount.md)
 
 ## Description
@@ -19,7 +19,7 @@
 - Storefront totals hiển thị: cart + checkout OSC hiển thị discount đã cap; breakdown per-rule qua totals API/GraphQL khớp cap (address extension attributes đã cap).
 - Edge merchant: cap > giá trị giảm (no-op) · cap nhỏ bất thường (1 VND) · rule auto + coupon song song · đổi cap giữa 2 phiên checkout (recompute).
 
-**(b) OSC e2e Tier-2 checklist** (project rule AGENTS §7.1 — mọi checkout flow change): capped coupon qua Mageplaza OSC → place order Mollie test mode + xác nhận payment amount khớp totals đã cap; repeat collectTotals của OSC (reload trang nhiều lần) không drift totals.
+**(b) OSC e2e Tier-2 checklist** (project rule AGENTS §7.1 — mọi checkout flow change): capped coupon qua Mageplaza OSC → totals đúng cap xuyên suốt + **place order offline (checkmo)**; repeat collectTotals của OSC (reload trang nhiều lần) không drift totals. *(2026-08-21 TL: **BỎ QUA Mollie** — không bước payment Mollie test mode, không cần sandbox creds)*
 
 **(c) Docs update** (AGENTS §14):
 
@@ -31,10 +31,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-1:** Testcase suite QC sinh từ spec AC (testcase skill) được TL duyệt; kết quả chạy pass 100% hoặc bug ticket mở tương ứng.
-- [ ] **AC-2:** OSC e2e: capped coupon → totals đúng cap xuyên suốt (cart → checkout → payment → order); payment amount Mollie sandbox == grand total đã cap; không drift sau reload lặp lại.
+- [ ] **AC-1:** *(15 TC sinh 2026-08-21 — [testcases](../testcases/TASK-HPK1WZ-testcases.md); **chờ TL duyệt** rồi chạy QC env)* Testcase suite QC sinh từ spec AC (testcase skill) được TL duyệt; kết quả chạy pass 100% hoặc bug ticket mở tương ứng.
+- [ ] **AC-2:** *(scope điều chỉnh TL 2026-08-21 — bỏ Mollie)* OSC e2e: capped coupon → totals đúng cap xuyên suốt (cart → checkout → place order offline); không drift sau reload lặp lại.
 - [ ] **AC-3:** Regression OSC: cart không có capped rule → hành vi như trước (so sánh baseline trước merge).
-- [ ] **AC-4:** Docs: 4 project-context files update đúng rule §14; estimation-tracking ghi thực tế; evidence QC lưu `.ai/evidence/`.
+- [x] **AC-4 (dev-side):** *(02_BR-P01 + 04 + 09 + 06 updated 2026-08-21; estimation-tracking + runtime milestone update sau QC chạy — xem [evidence](../runtime/evidence/TASK-HPK1WZ/TASK-HPK1WZ-evidence.md))* Docs: 4 project-context files update đúng rule §14; estimation-tracking ghi thực tế; evidence QC lưu `.ai/evidence/`.
 - [ ] **AC-5:** Pre-review checklist AGENTS §8.3 pass + TL code review Tier-2 ký cho cả feature (TASK-3R6X8E..024); Release checklist (deploy skill) sẵn sàng.
 
 ## Out of Scope

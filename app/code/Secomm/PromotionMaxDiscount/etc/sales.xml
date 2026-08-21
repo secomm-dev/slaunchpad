@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Sales:etc/sales.xsd">
+    <!-- TASK-5H8WKE / SPEC-FEAT-JKZM68 §5 (DEC-FEATJKZM68-001 §1): cap collector runs
+         right after the native SalesRule discount collector (300) and before
+         shipping (350) / tax_shipping (375) / shipping_discount (400) / tax (450) /
+         grand_total (550), so every later consumer sees capped amounts. The collector
+         adds no total row of its own — the cap lives inside the native "discount"
+         total (fetch() is deliberately absent). -->
+    <section name="quote">
+        <group name="totals">
+            <item name="max_discount_cap"
+                  instance="Secomm\PromotionMaxDiscount\Model\Quote\Address\Total\MaxDiscountCap"
+                  sort_order="310"/>
+        </group>
+    </section>
+</config>

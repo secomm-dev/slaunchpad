@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- TASK-67GGPR / DEC-FEATJKZM68-001 §7 — inject the Maximum Discount Amount field
+         into the cart price rule Actions tab metadata. After-plugin adds exactly one
+         key (spliced right after discount_amount); sales_rule_form.xml stays untouched. -->
+    <type name="Magento\SalesRule\Model\Rule\Metadata\ValueProvider">
+        <plugin name="secommPromotionMaxDiscountValueProvider"
+                type="Secomm\PromotionMaxDiscount\Plugin\Adminhtml\Rule\Metadata\ViewProviderPlugin"/>
+    </type>
+    <!-- TASK-67GGPR AC-2 — a cleared visible input submits '' which must reach the
+         nullable DECIMAL column as NULL ("unlimited"), not '' / 0. Absent key (field
+         disabled) is deliberately ignored so the stored cap survives action changes. -->
+    <type name="Magento\SalesRule\Model\Rule">
+        <plugin name="secommPromotionMaxDiscountLoadPostNormalizer"
+                type="Secomm\PromotionMaxDiscount\Plugin\Adminhtml\Rule\LoadPostNormalizerPlugin"/>
+    </type>
+</config>

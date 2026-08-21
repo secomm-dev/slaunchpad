@@ -1,0 +1,7 @@
+{
+    "salesrule": {
+        "column": {
+            "maximum_discount_amount": true
+        }
+    }
+}

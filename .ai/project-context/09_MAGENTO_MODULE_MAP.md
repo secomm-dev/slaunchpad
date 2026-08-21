@@ -34,6 +34,8 @@ composer show --installed | grep -i hyva
 | Secomm_Base | Secomm | `app/code/Secomm/Base` | Admin menu shell ("Secomm" → "CORE") + "Secomm Extensions" system config tab; helper + plugins | L | Yes | Low-risk shell module |
 | Secomm_AddressDropdown | Secomm | `app/code/Secomm/AddressDropdown` | Converts address text fields to AJAX hierarchical dropdowns (country/state/city/sub-city); admin CRUD + import/export; GraphQL schema | M | Yes | Custom GraphQL surface; VN address cascade. Validate end-to-end on every change |
 | Secomm_VietNamAddress | Secomm | `app/code/Secomm/VietNamAddress` | Vietnam address data set (VN_Address.csv, VN_Address_2Level.csv) for AddressDropdown | L | Yes | Data-only module |
+| Secomm_Promotion | Secomm | `app/code/Secomm/Promotion` | Promotion group anchor (registration only) | L | Yes | No runtime behavior |
+| Secomm_PromotionMaxDiscount | Secomm | `app/code/Secomm/PromotionMaxDiscount` | Max discount cap engine: collector 310 + LRM + salesrule column + admin field | H | Yes (backend-only, theme-agnostic) | Checkout-critical pricing (Tier-2); collector runs before Mollie fee/Mageplaza ExtraFee/tax/grand total |
 | Vnpayment_VNPAY | Vnpayment | `app/code/Vnpayment/VNPAY` | VNPAY payment gateway — Pay/Info/IPN controllers, payment.xml/config.xml (default inactive) | H | TBD | HIGH-RISK: payment/IPN/signature. SA review required (Tier 2). Default `active=0` |
 
 ## Mageplaza Commerce Suite (source-committed under `app/code/Mageplaza/`)

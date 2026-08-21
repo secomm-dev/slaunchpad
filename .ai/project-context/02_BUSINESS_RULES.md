@@ -63,11 +63,9 @@ Mageplaza One Step Checkout replaces the default Magento checkout. Address field
 
 ## Discount / Promotion Rules
 
-<!-- TODO: Fill discount/promotion rules from blueprint S4 — none confirmed; [TBD] -->
-
 | ID | Description | Affected Areas | Test Approach | Confidence |
 |----|-------------|----------------|---------------|------------|
-| BR-00X | [TBD — no discount/promotion rules confirmed in blueprint] | — | — | [TBD] |
+| BR-P01 | Per-rule **Maximum Discount Amount** cho Cart Price Rule `by_percent` (module `Secomm_PromotionMaxDiscount`, collector 310): `NULL`/`0` = unlimited (native); `>0` = cap base-currency **product** discount của rule — Σ contribution vượt cap → scale-down theo contribution + LRM redistribute (2 chuỗi base/display độc lập, currency precision, tie-break item_id ASC). Shipping discount/free shipping **ngoài cap**; `simple_action ≠ by_percent` runtime no-op; eligibility/stacking native không viết lại. Admin: field cuối Actions tab, chỉ enable khi Apply = by_percent. | cart totals, checkout OSC totals, order/invoice/CM allocation (pure, không re-run rule), REST `V1/carts/totals` + GraphQL breakdown | TASK-4HYX6Y integration suite (24 tests) + TASK-HPK1WZ QC matrix | confirmed (FEAT-JKZM68) |
 
 ## Tax Rules
 

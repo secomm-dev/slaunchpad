@@ -8,8 +8,16 @@
 **Mode:** B (admin form UI — không chạm checkout runtime)
 **Placement:** `app/code/Secomm/PromotionMaxDiscount/{etc/adminhtml/di.xml,Plugin/Adminhtml/Rule/Metadata/ViewProviderPlugin.php,view/adminhtml/web/js/form/element/max-discount-field.js,i18n/}`
 **Risk tier:** Tier 1
-**Author:** AI draft · **Date:** 2026-08-19 · **Status:** Proposed
+**Author:** AI draft · **Date:** 2026-08-19 · **Status:** Dev complete *(2026-08-21: Mode B approach note → code 1 session. Unit +10 (module suite 50/882 GREEN) + runtime wiring check engine thật 10/10 PASS — field splice đúng vị trí sau discount_amount trên core meta thật (pos=2), loadPost '' → NULL, absent key giữ stored cap. `di:compile` re-run. 5 file module, 0 core/vendor. Limitation disclosed: JS gating + i18n hiển thị browser-level → QC UI TASK-HPK1WZ. **Pre-review round 2: C1 Critical fix — thiếu `componentType` làm `UiComponentFactory::mergeMetadataItem` throw → cả form vỡ (repro thật R1); đã thêm `componentType: field` + merge-check factory thật (R2 materialise, R3 core untouched). Unit 50/883 GREEN.** W1 resolved: TL duyệt vị trí cuối fieldset (2026-08-21). Chờ TL review Tier 1. Evidence: [TASK-67GGPR-evidence](../runtime/evidence/TASK-67GGPR/TASK-67GGPR-evidence.md))*
 **Specification:** SPEC-FEAT-JKZM68 (FULL, VALID) — [spec §6 Admin persist, spec brief Admin UX](../specs/SPEC-FEAT-JKZM68-promotion-max-discount.md)
+
+## Approach Note (Mode B) — 2026-08-21
+
+1. **Position** (AC-1 × AC-5): Actions fieldset fields KHÔNG có `sortOrder` riêng trong `sales_rule_form.xml` (declaration order = render order khi sortOrders bằng nhau) → after-plugin splice key `maximum_discount_amount` vào `actions.children` **ngay sau `discount_amount`** trong mảng meta (giữ key khác nguyên vẹn — không thêm sortOrder vào field core, không đụng XML). Guard: không inject nếu key đã tồn tại (core thêm native trong tương lai).
+2. **JS gating**: extend `Magento_Ui/js/form/element/abstract`, `imports` theo `${ $.parentName }.simple_action:value` (mirror `apply_to_shipping`); `visible+enabled` chỉ khi `by_percent`; default `visible=false` (köhn flash sai trạng thái trước khi import fires — phủ cả case edit rule action ≠ by_percent).
+3. **`''` → NULL** (AC-2): thêm 1 file ngoài placement gốc — `Plugin/Adminhtml/Rule/LoadPostNormalizerPlugin.php` (`before` trên `Rule::loadPost`, scope adminhtml di.xml): input rỗng submit `''` → normalise `null` trước khi set data (DECIMAL column + semantic NULL=unlimited). Field bị disabled không submit → key absent → column giữ giá trị cũ (AC-3). Không đụng repository path (ToModel plugin đã có từ TASK-33J3RP).
+4. **Giá trị edit**: DataProvider full-data đã trả column từ TASK-33J3RP — không thêm glue.
+5. **i18n**: 2 phrase (label + notice) vào `i18n/{vi_VN,en_US}.csv`.
 
 ## Description
 
@@ -27,12 +35,12 @@ Thêm field **Maximum Discount Amount** vào Marketing → Promotions → Cart P
 
 ## Acceptance Criteria
 
-- [ ] **AC-1:** Actions tab hiển thị "Maximum Discount Amount" ngay sau "Discount Amount" khi Apply = "Percent of product price discount"; ẩn + disabled với mọi action khác (by_fixed/cart_fixed/buy_x_get_y/to_percent/to_fixed).
-- [ ] **AC-2:** Validation: chỉ nhận số ≥ 0; giá trị rỗng submit → persist NULL; `0` → persist 0 (cả hai = unlimited).
-- [ ] **AC-3:** Save/load round-trip: giá trị hiển thị đúng khi edit lại rule; đổi action → lưu → giá trị còn trong DB (không bị xóa) nhưng calculation không bị ảnh hưởng (verify cross TASK-5H8WKE).
-- [ ] **AC-4:** Note giải thích hiển thị dưới field; label + note dịch đầy đủ vi_VN + en_US (switch locale admin).
-- [ ] **AC-5:** Không override/copy `sales_rule_form.xml` hay bất kỳ file `vendor/` nào; plugin chỉ thêm key meta `actions.children.maximum_discount_amount`.
-- [ ] **AC-6:** Regression: form Actions tab các field native (Discount Amount, Qty, Step, Free Shipping, Apply to Shipping, Add Reward Points...) hoạt động như cũ.
+- [x] **AC-1 (đính chính round 2):** *(vị trí render = **cuối Actions fieldset** — merge-check factory thật R3: component meta-created append LAST, splice không di chuyển được; "ngay sau Discount Amount" không khả thi không chạm sortOrder field core [vi phạm letter AC-5] — **đề xuất TL chấp nhận cuối fieldset**; gating theo by_percent: JS + meta)* Actions tab hiển thị "Maximum Discount Amount" ngay sau "Discount Amount" khi Apply = "Percent of product price discount"; ẩn + disabled với mọi action khác (by_fixed/cart_fixed/buy_x_get_y/to_percent/to_fixed).
+- [x] **AC-2:** *(unit ×4 + runtime loadPost '' → NULL qua normalizer plugin; '0' giữ nguyên)* Validation: chỉ nhận số ≥ 0; giá trị rỗng submit → persist NULL; `0` → persist 0 (cả hai = unlimited).
+- [x] **AC-3:** *(runtime: absent key → stored cap 50000 giữ nguyên sau đổi action; calculation-guard độc lập thuộc TASK-5H8WKE)* Save/load round-trip: giá trị hiển thị đúng khi edit lại rule; đổi action → lưu → giá trị còn trong DB (không bị xóa) nhưng calculation không bị ảnh hưởng (verify cross TASK-5H8WKE).
+- [x] **AC-4:** *(meta + CSV vi/en; hiển thị browser → QC TASK-HPK1WZ)* Note giải thích hiển thị dưới field; label + note dịch đầy đủ vi_VN + en_US (switch locale admin).
+- [x] **AC-5:** *(sweep: không ui_component override, plugin thêm đúng 1 key, core keys identical — unit asserted)* Không override/copy `sales_rule_form.xml` hay bất kỳ file `vendor/` nào; plugin chỉ thêm key meta `actions.children.maximum_discount_amount`.
+- [x] **AC-6:** *(core fields config identical từng key — unit; form regression browser-level → QC TASK-HPK1WZ)* Regression: form Actions tab các field native (Discount Amount, Qty, Step, Free Shipping, Apply to Shipping, Add Reward Points...) hoạt động như cũ.
 
 ## Out of Scope
 

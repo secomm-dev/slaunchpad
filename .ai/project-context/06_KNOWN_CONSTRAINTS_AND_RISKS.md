@@ -65,6 +65,8 @@ AI should check this file before planning any work to avoid known problem areas.
 | File cache + file sessions | Acceptable for local dev only | Configure Redis (cache + sessions) + Varnish (FPC) in production |
 | Mageplaza modules (source-committed) | Version drift / update path | Manage versions manually; do not modify in place |
 | Hyvä private Packagist (auth.json) | Token validity gates repo access | Keep Packagist token valid; document for deployment |
+| 3rd-party quote-total collectors (sort 300–450) vs `Secomm_PromotionMaxDiscount` cap collector (310) | Extension mới mutate discount sau collector 300 (chưa qua 310) hoặc chạy giữa 300–310 sẽ thấy số chưa cap | Re-check wiring khi install extension chạm quote totals (spec §14 FEAT-JKZM68): verify thứ tự qua CollectorFactory |
+| Composite (configurable/bundle) children-calculated breakdown | TASK-4HYX6Y gap: breakdown ở parent item nhưng amounts phân xuống children — chưa verify engine-level (MSI composite fixture) | Nếu merchant dùng configurable/bundle với capped rule: kiểm tra order-item copy kỹ; mở điều tra fixture nếu cần |
 
 ## Performance Constraints
 
