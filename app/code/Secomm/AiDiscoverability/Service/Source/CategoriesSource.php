@@ -41,7 +41,7 @@ class CategoriesSource
      * Emit canonical entries for the store's selected categories.
      *
      * @param StoreInterface $store store view scope
-     * @return array<int, array{label: string, url: string}>
+     * @return array<int, array{label: string, url: string, description?: string}>
      */
     public function getEntries(StoreInterface $store): array
     {
@@ -83,13 +83,45 @@ class CategoriesSource
                 continue;
             }
 
-            $entries[] = [
+            $entry = [
                 'label' => (string) ($category->getName() !== '' ? $category->getName() : (string) $categoryId),
                 'url' => $url,
             ];
+
+            // Optional description: existing category meta data only, never generated.
+            $description = $this->getMetaDescription($category);
+            if ($description !== '') {
+                $entry['description'] = $description;
+            }
+
+            $entries[] = $entry;
         }
 
         return $entries;
+    }
+
+    /**
+     * Existing category meta description, '' when unset (never generated).
+     *
+     * CategoryInterface exposes EAV attributes via the concrete model's magic
+     * getter or custom attributes; both paths are read defensively.
+     *
+     * @param CategoryInterface $category candidate category
+     * @return string raw meta description
+     */
+    private function getMetaDescription(CategoryInterface $category): string
+    {
+        if (method_exists($category, 'getMetaDescription')) {
+            return trim((string) $category->getMetaDescription());
+        }
+
+        foreach ($category->getCustomAttributes() as $attribute) {
+            if ($attribute->getAttributeCode() === 'meta_description') {
+                return trim((string) $attribute->getValue());
+            }
+        }
+
+        return '';
     }
 
     /**

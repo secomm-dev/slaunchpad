@@ -40,7 +40,7 @@ class CmsPagesSource
      * Emit canonical entries for the store's selected CMS pages.
      *
      * @param StoreInterface $store store view scope
-     * @return array<int, array{label: string, url: string}>
+     * @return array<int, array{label: string, url: string, description?: string}>
      */
     public function getEntries(StoreInterface $store): array
     {
@@ -71,10 +71,18 @@ class CmsPagesSource
                 continue;
             }
 
-            $entries[] = [
+            $entry = [
                 'label' => (string) ($page->getTitle() !== '' ? $page->getTitle() : $identifier),
                 'url' => $this->canonicalPolicy->getUrlForPath($identifier, $store),
             ];
+
+            // Optional description: existing CMS meta data only, never generated.
+            $description = trim((string) $page->getMetaDescription());
+            if ($description !== '') {
+                $entry['description'] = $description;
+            }
+
+            $entries[] = $entry;
         }
 
         return $entries;

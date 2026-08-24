@@ -2,6 +2,23 @@
 
 All notable changes to `Secomm_AiDiscoverability` are documented here.
 
+## [1.1.0] - 2026-08-24
+
+LC-30.1 llms.txt v2 conformance + store metadata. Spec delta: `SPEC-TASK-0X552E` §12.
+
+### Changed
+- Link entries now use the llms.txt v2 Markdown hyperlink form `- [Label](url)` with an
+  optional `: Description` suffix (was `- [Label]: url`).
+- H1 site title resolved via public fallback chain: `general/site_title` →
+  `general/store_information/name` → internal store view name (last resort only).
+- Added `Currency:` metadata line (after `Locale:`), read from store-scoped
+  `currency/options/default` for determinism (not the visitor-switchable currency).
+
+### Added
+- `Site / Brand Title` admin field (store-view scoped) with bilingual `en_US`/`vi_VN` labels.
+- Optional entry descriptions sourced only from existing CMS page / category
+  `meta_description` (sanitized, 200-char bound; never generated; absent → no suffix).
+
 ## [1.0.0] - 2026-08-24
 
 Initial LC-30 AI Discoverability (AIEO) baseline. Spec: `SPEC-TASK-0X552E` (v2).

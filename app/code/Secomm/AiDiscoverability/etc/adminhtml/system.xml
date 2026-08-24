@@ -16,9 +16,13 @@
                     <comment>When disabled, /llms.txt returns 404 and the describedby link tag is removed.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="site_title" translate="label comment" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Site / Brand Title</label>
+                    <comment>Public title used as the llms.txt H1. Falls back to the store information name, then to the internal store view name.</comment>
+                </field>
                 <field id="brand_summary" translate="label comment" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Brand / Site Summary</label>
-                    <comment>One concise line describing the brand and site for AI agents. Falls back to the store name. Avoid entities whose canonical URL is managed by conditional Mirasvit canonical rewrite rules.</comment>
+                    <comment>One concise line describing the brand and site for AI agents. Falls back to the Site / Brand Title; the internal store view name is never used. Avoid entities whose canonical URL is managed by conditional Mirasvit canonical rewrite rules.</comment>
                 </field>
                 <field id="priority_paths" translate="label comment" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Priority Paths</label>
