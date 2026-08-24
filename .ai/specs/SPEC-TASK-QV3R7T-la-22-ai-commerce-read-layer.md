@@ -2,7 +2,7 @@
 
 Specification ID: SPEC-TASK-QV3R7T
 
-> **External ref**: LA-22 · **Mode**: A (spec-first) · **Status**: DRAFT v2 (TL review pass 2 — đã hiệu chỉnh 3 blockers: UCP/MCP maturity 2026, quyết định publication raw `/graphql`, canonical URL contract từ url_rewrites). **Không có production code.** Audit + architecture decision only.
+> **External ref**: LA-22 · **Mode**: A (spec-first) · **Status**: **APPROVED FOR IMPLEMENTATION PLANNING** (TL review pass 3, 2026-08-24 — kiến trúc v2 được chấp nhận; **TL DECISION: SELECT OPTION C NOW** — read-only constrained Agent Commerce facade, xem §7b). Implementation plan: `.ai/plans/TASK-QV3R7T-implementation-plan.md`. **Chưa có production code.**
 > **Scope guard**: Layer-2 anonymous READ-ONLY commerce discovery. OUT: MCP/UCP implementation, cart/checkout/payment mutation, customer data, agent autonomous purchase, thay đổi LC-30.
 
 ---
@@ -170,17 +170,41 @@ Phân biệt bắt buộc: **"Magento GraphQL là internal data source tốt nh�
 
 ## 7. Recommended architecture (v2)
 
-**Kiến trúc 2 lớp, tách bạch:**
+## 7b. TL ARCHITECTURE DECISION (pass 3, 2026-08-24) — SELECT OPTION C NOW
+
+Quyết định của TL: public surface = **Option C (read-only constrained facade owned by Secomm)**, NGAY BÂY GIỜ (không đợi B thử nghiệm).
+
+Rationale của TL (ghi nguyên tắc):
+1. Raw `/graphql` đã chứa anonymous mutation/auth/third-party surfaces; quảng bá nó tăng discovery + automated traffic chống toàn bộ schema.
+2. WAF mutation blocking là best-effort, KHÔNG phải hard application security boundary.
+3. Public agent contract chỉ được expose các read operation được duyệt tường minh.
+4. Facade là **SECURITY BOUNDARY**, không phải commerce engine thay thế — business/search/pricing/inventory logic **PHẢI delegate cho Magento** (không viết lại business logic lần 2).
+5. UCP catalog + MCP adapters tương lai dùng facade này mà không đổi Magento data path.
+
+Kiến trúc cuối (chấp thuận):
+
+```
+AI Agent → Secomm Agent Commerce Read Surface (module mới Secomm_AiCommerce)
+        → bounded query/input validation (allowlist, caps)
+        → Magento existing catalog/search/pricing/inventory/store capabilities
+        → public sanitized response (field allowlist)
+
+Future: AI Agent → UCP Catalog / MCP adapter → cùng bounded read service → Magento
+```
+
+Ràng buộc sở hữu module: **KHÔNG** đặt Layer-2 vào `Secomm_AiDiscoverability` (LC-30 = Layer-1 discovery). Module mới bounded: `Secomm_AiCommerce` (hoặc tên project-consistent tương đương — plan chốt). Raw `/graphql` vẫn là surface internal/native của Magento. **HARD RULE giữ nguyên: KHÔNG thêm `/graphql` vào `/llms.txt` như API chính thức.** (Decision matrix §6 giữ nguyên làm bằng chứng; verdict C đổi từ LATER → NOW theo TL; B từ "NOW có điều kiện" → fallback không dùng.)
+
+Minh họa tách bạch đã chốt ở v2 (giữ):
 
 ```
 Magento GraphQL / services (INTERNAL COMMERCE READ SOURCE — không đổi, không code mới)
         ↓  safe bounded read contract (field allowlist, url_rewrites canonical, pageSize caps)
-TODAY:  approved machine interface = Option B (curated GraphQL + enforced guardrails)
+TODAY:  approved machine interface = Option C facade (TL decision §7b; Option B chỉ còn là fallback không dùng)
         ↓  khi trigger xảy ra (§14.3)
 FUTURE: UCP catalog adapter (/.well-known/ucp) và/hoặc MCP bindings — adapter mỏng, KHÔNG đổi data path
 ```
 
-Quyết định NOW: **Option B có điều kiện** — internal source = core GraphQL; public surface = curated GraphQL contract CHỈ được công bố sau khi guardrails §12 demonstrably in place. **HARD RULE**: LA-22 implementation KHÔNG được quảng bá raw `/graphql` trong `/llms.txt` cho tới khi (1) rate limiting trên `/graphql` hoạt động ở nginx/WAF/Cloudflare, (2) depth/complexity config bật và verify, (3) mutation-blocking heuristic (best-effort) hoặc facade C được duyệt, (4) `mpSmtpBestsellers` xử lý xong. Nếu B không đạt sau 1 chu kỳ đánh giá → chuyển C (facade) làm public surface, vẫn giữ GraphQL làm internal source.
+Quyết định NOW (superseded by §7b): ~~Option B có điều kiện~~ → **Option C facade được TL chọn trực tiếp** (v1/v2 của section này giữ làm lịch sử quyết định). **HARD RULE vẫn nguyên**: LA-22 implementation KHÔNG được quảng bá raw `/graphql` trong `/llms.txt` cho tới khi (1) rate limiting trên `/graphql` hoạt động ở nginx/WAF/Cloudflare, (2) depth/complexity config bật và verify, (3) mutation-blocking heuristic (best-effort) hoặc facade C được duyệt, (4) `mpSmtpBestsellers` xử lý xong. Guardrails §12 vẫn áp cho `/graphql` như internal surface (defense-in-depth), dù public surface giờ là facade C.
 
 Component:
 - **Agent Contract document** (versioned): canned queries, field allowlist (§8), pagination cap (`pageSize ≤ 100`, `currentPage ≤ 50`, ≤ 5 filters, depth ≤ 5), `Store` header usage + **runtime discovery store codes** (không hardcode), canonical URL rule = `storeConfig.base_url + url_rewrites[entry khớp url_key+url_suffix]` (§3.5b), KHÔNG dùng `base_url+url_key` concatenation làm canonical.
