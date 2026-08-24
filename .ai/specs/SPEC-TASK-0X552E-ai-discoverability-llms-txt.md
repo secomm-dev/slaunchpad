@@ -1,5 +1,7 @@
 # [SLP][TASK-0X552E] LC-30 — AI Discoverability / AIEO Baseline (`/llms.txt`)
 
+Specification ID: SPEC-TASK-0X552E
+
 > **External ref**: LC-30 · **Mode**: A (spec-first, architecture touch — frontend route + SEO integration)
 > **Status**: DRAFT — chờ TL review. **Không có production code trong task này.**
 > **Scope guard**: curated discovery, KHÔNG phải sitemap thứ hai; không llms-full.txt, không MCP/UCP/ACP, không chatbot, không commerce API, không embeddings, không AI-generated content, không Schema.org engine, không Cloudflare.
