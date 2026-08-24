@@ -43,11 +43,47 @@ Currency: EUR
 - [Privacy and Cookie Policy](https://webhook.thanhaloha.io.vn/privacy-policy-cookie-restriction-mode)
 ```
 
+## Second pass (acceptance fix) — public-safe summary fallback (2026-08-24, same branch)
+
+Acceptance review rejected `> Default Store View` (internal store-view name) as summary.
+Change: summary fallback is now `brand_summary` → effective public Site / Brand Title →
+**blockquote omitted**; `$store->getName()` is never emitted as the summary (H1 last resort
+unchanged). Admin comment, i18n (en/vi), README and spec §12.2 updated accordingly.
+
+| Check | Result |
+|---|---|
+| Unit tests | 40 tests, 80 assertions, 0 failures |
+| PHPCS (php) | 0 errors / 0 warnings |
+| `php -l` changed files | clean |
+| `setup:di:compile` | success |
+| `git diff --check` | clean |
+
+Runtime after fix (`site_title` = `Secomm Launchpad`, `brand_summary` empty):
+
+```
+# Secomm Launchpad
+> Secomm Launchpad
+
+Locale: vi_VN
+Currency: EUR
+...
+```
+
+- `> Default Store View` absent (grep count 0) ✓
+- H1 / Markdown links / Currency unchanged ✓
+- HEAD 200, POST 404, If-None-Match 304 ✓
+
+New tests (`Test/Unit/Service/LlmsTxtGeneratorTest.php`): configured summary wins; empty
+summary → public title; no public identity → blockquote omitted and internal name never
+appears as summary; Currency/format assertions unchanged in FormatterTest.
+
+---
+
 Notes (honest limitations, per task instruction not to fake multi-store evidence):
 - Single store view exists in this environment; per-store-view title/currency overrides were
   NOT exercised at runtime, only via unit tests (`ConfigTest`).
-- H1 proves the configured `site_title`; the `>` summary still falls back to the internal
-  store view name because `brand_summary` is unconfigured — out of scope for LC-30.1.
+- H1 and summary both prove the configured `site_title` (summary fallback = public title;
+  fixed in the second pass above).
 - `Currency: EUR` reflects the store-scoped `currency/options/default` of this install.
 - No CMS page / category on this install carries a `meta_description`, so the optional
   `: Description` suffix is covered by unit tests only at runtime granularity.

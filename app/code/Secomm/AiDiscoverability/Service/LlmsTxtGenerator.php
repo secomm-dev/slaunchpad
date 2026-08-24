@@ -103,9 +103,13 @@ class LlmsTxtGenerator
             ]);
         }
 
+        // Summary fallback: configured brand_summary, else the effective public
+        // site title. The internal store-view name is never emitted as the
+        // AI-facing summary (SPEC-TASK-0X552E §12.3); when no safe public text
+        // exists the blockquote is omitted entirely.
         $summary = $this->config->getBrandSummary($storeId);
         if ($summary === '') {
-            $summary = (string) $store->getName();
+            $summary = $this->config->getSiteTitle($storeId);
         }
 
         $locale = (string) $this->scopeConfig->getValue(

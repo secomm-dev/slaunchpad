@@ -30,7 +30,7 @@ all values store-view scoped:
 |---|---|---|---|
 | Enabled | `general/enabled` | `0` | 404 when off |
 | Site / Brand Title | `general/site_title` | — | H1 title; falls back to store information name, then store view name |
-| Brand Summary | `general/brand_summary` | — | one-line `>` summary; falls back to store name |
+| Brand Summary | `general/brand_summary` | — | one-line `>` summary; falls back to Site / Brand Title, never the internal store view name |
 | Priority Paths | `general/priority_paths` | — | one internal path per line (e.g. `sales/guest/form`) |
 | CMS Pages | `general/cms_pages` | — | multiselect, max 20 rendered |
 | Categories | `general/categories` | — | multiselect, max 20 rendered |

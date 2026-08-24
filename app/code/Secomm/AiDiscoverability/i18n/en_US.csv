@@ -5,7 +5,7 @@
 "Site / Brand Title","Site / Brand Title"
 "Public title used as the llms.txt H1. Falls back to the store information name, then to the internal store view name.","Public title used as the llms.txt H1. Falls back to the store information name, then to the internal store view name."
 "Brand / Site Summary","Brand / Site Summary"
-"One concise line describing the brand and site for AI agents. Falls back to the store name. Avoid entities whose canonical URL is managed by conditional Mirasvit canonical rewrite rules.","One concise line describing the brand and site for AI agents. Falls back to the store name. Avoid entities whose canonical URL is managed by conditional Mirasvit canonical rewrite rules."
+"One concise line describing the brand and site for AI agents. Falls back to the Site / Brand Title; the internal store view name is never used. Avoid entities whose canonical URL is managed by conditional Mirasvit canonical rewrite rules.","One concise line describing the brand and site for AI agents. Falls back to the Site / Brand Title; the internal store view name is never used. Avoid entities whose canonical URL is managed by conditional Mirasvit canonical rewrite rules."
 "Priority Paths","Priority Paths"
 "Internal paths only, one per line (e.g. ""about-us""). External URLs, query strings and private routes (cart/checkout/account/...) are rejected.","Internal paths only, one per line (e.g. ""about-us""). External URLs, query strings and private routes (cart/checkout/account/...) are rejected."
 "Curated URLs","Curated URLs"

@@ -343,7 +343,10 @@ Fallback chain (nhỏ nhất → lớn nhất, không tạo DB table):
    khai, store-scoped, có sẵn)
 3. `$store->getName()` (last resort — nhãn nội bộ, chỉ khi không có gì tốt hơn)
 
-Brand / Site Summary vẫn là trường mô tả riêng (không đổi).
+Brand / Site Summary (acceptance 2026-08-24, second pass): fallback ĐỔI cho chuẩn public-safe —
+1. `general/brand_summary` nếu có; 2. nếu rỗng dùng đúng effective Site / Brand Title (chain
+12.2); 3. nếu không có public title → **omit blockquote entirely**. `$store->getName()` KHÔNG
+BAO GIỜ được emit làm summary (chỉ được dùng làm last-resort H1). Không generate prose.
 
 ### 12.3 Optional entry descriptions
 
