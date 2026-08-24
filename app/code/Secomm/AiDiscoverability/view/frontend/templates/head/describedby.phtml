@@ -1,0 +1,12 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Secomm\AiDiscoverability\ViewModel\DescribedBy $viewModel
+ */
+$viewModel = $block->getViewModel();
+?>
+<?php if ($viewModel->isEnabled()): ?>
+<link rel="describedby" href="<?= $escaper->escapeUrl($viewModel->getUrl()) ?>">
+<?php endif; ?>

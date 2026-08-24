@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <default>
+        <seocomm_ai_discoverability>
+            <general>
+                <enabled>0</enabled>
+                <brand_summary/>
+                <priority_paths/>
+            </general>
+            <urls>
+                <cms_pages/>
+                <categories/>
+                <include_sitemap_refs>1</include_sitemap_refs>
+            </urls>
+            <cache>
+                <lifetime>86400</lifetime>
+                <max_urls>100</max_urls>
+            </cache>
+        </seocomm_ai_discoverability>
+    </default>
+</config>
