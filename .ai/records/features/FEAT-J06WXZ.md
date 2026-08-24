@@ -8,21 +8,28 @@ external_refs: {}
 legacy_ids: []
 mode: A
 specification_level: FULL
-spec_status: DRAFT
+spec_status: VALID
 specification_ref: ../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md
 risk: medium
-status: proposed
+status: in_progress
 created: 2026-08-24
 updated: 2026-08-24
 ticket_ref:
+  - TASK-S6QPEY
+  - TASK-P0BP58
+  - TASK-JN2SH6
+  - TASK-ZQ9ZE1
+  - TASK-BE8X4X
+  - TASK-TMRZT1
+  - TASK-XY9RZF
 decisions:
   - DEC-FEATJ06WXZ-001
 decision_assessment: material
 decision_refs: [DEC-FEATJ06WXZ-001]
 decision_approval_summary:
   total: 1
-  pending_approval: [DEC-FEATJ06WXZ-001]
-  approved: []
+  pending_approval: []
+  approved: [DEC-FEATJ06WXZ-001]
   rejected: []
   superseded: []
   last_synced: 2026-08-24
@@ -53,7 +60,7 @@ Capability này phải dùng chung cho toàn bộ product theme dựa trên Hyv�
 
 Canonical Full Spec: [SPEC-FEAT-J06WXZ](../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md).
 
-Specification hiện ở trạng thái **DRAFT**. Feature chưa executable cho đến khi Full Spec được review, các open decision được đóng, `spec_status` chuyển thành `VALID`, và implementation plan được TL phê duyệt.
+Specification hiện ở trạng thái **VALID**, được phê duyệt ngày 2026-08-24. Feature chưa được implement và vẫn cần solution design/component matrix cùng implementation plan được TL phê duyệt trước khi chuyển sang development.
 
 ## Requirements
 
@@ -73,9 +80,13 @@ Specification hiện ở trạng thái **DRAFT**. Feature chưa executable cho �
 ## Approach & Decisions
 
 - User-confirmed scope: dynamic content, manual product/category selection và Hyvä-only.
-- Architecture proposal cần SA/TL duyệt: [DEC-FEATJ06WXZ-001](../decisions/DEC-FEATJ06WXZ-001.md).
+- Architecture decision đã được phê duyệt ngày 2026-08-24: [DEC-FEATJ06WXZ-001](../decisions/DEC-FEATJ06WXZ-001.md).
 - Không cài `Hyva_Widgets` hoặc `Hyva_CmsTailwindJit` làm runtime dependency trong baseline proposal.
 - Component eligibility matrix và schema chi tiết được hoàn thiện trước khi task decomposition.
+- Research: [RESEARCH_NOTES](../../project-context/memory/RESEARCH_NOTES.md) — entry 2026-08-24.
+- Component matrix: [FEAT-J06WXZ component eligibility](../../specs/FEAT-J06WXZ-component-eligibility-matrix.md).
+- Solution Design: [FEAT-J06WXZ solution design](../../specs/FEAT-J06WXZ-solution-design.md).
+- Implementation Plan: [FEAT-J06WXZ implementation plan](../../plans/FEAT-J06WXZ-implementation-plan.md) — approved by TL Tuấn Lê on 2026-08-24.
 
 ## Implementation Notes
 
@@ -96,7 +107,7 @@ Status: chưa thực hiện. Test strategy canonical nằm trong Full Spec §9.
 
 - Full Spec: [SPEC-FEAT-J06WXZ](../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md)
 - Architecture decision: [DEC-FEATJ06WXZ-001](../decisions/DEC-FEATJ06WXZ-001.md)
+- Tasks: TASK-S6QPEY, TASK-P0BP58, TASK-JN2SH6, TASK-ZQ9ZE1, TASK-BE8X4X, TASK-TMRZT1, TASK-XY9RZF
 - Hyvä UI local source: `vendor/hyva-themes/hyva-ui/`
 - Magento Widget local source: `vendor/magento/module-widget/`
 - Toolkit workflow: `.ai/workflow/workflow-profile.md`, `.ai/rules/spec-first.md`
-

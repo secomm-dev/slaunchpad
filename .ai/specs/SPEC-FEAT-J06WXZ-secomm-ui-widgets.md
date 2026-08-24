@@ -7,8 +7,8 @@
 | Specification ID | SPEC-FEAT-J06WXZ |
 | Feature ID | FEAT-J06WXZ |
 | Specification Level | FULL |
-| Author | Codex (draft for SA/TL review) |
-| Status | Draft |
+| Author | Tuấn Lê |
+| Status | Approved |
 | Date | 2026-08-24 |
 | Related Ticket(s) | To be created after spec approval |
 | Workflow Mode | A |
@@ -177,7 +177,7 @@ Safe template resolver
 Module default template → active Hyvä theme override
 ```
 
-Canonical architecture decision: `DEC-FEATJ06WXZ-001` — proposed, chờ SA/TL approval.
+Canonical architecture decision: `DEC-FEATJ06WXZ-001` — accepted, phê duyệt ngày 2026-08-24.
 
 ### 5.2 Implementation Notes
 
@@ -332,6 +332,4 @@ Chưa commit estimate trước khi component matrix và dynamic-form proof chố
 
 | Role | Name | Date | Status |
 |------|------|------|--------|
-| SA/TL | | | Pending |
-| PM/Product | User confirmed scope decisions | 2026-08-24 | Scope inputs confirmed; full spec approval pending |
-
+| DEV | Tuấn Lê | 2026-08-24 | Approved |

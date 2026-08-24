@@ -1,10 +1,10 @@
 ---
 id: DEC-FEATJ06WXZ-001
 title: Secomm UI Widgets architecture boundary, registry contract and upstream ownership
-status: proposed
+status: accepted
 owners: [sa, tl]
 decision_type: architecture
-approval_date:
+approval_date: 2026-08-24
 created: 2026-08-24
 last_verified: 2026-08-24
 verified_against_commit:
@@ -23,7 +23,7 @@ User đã xác nhận business/scope inputs: dynamic content, manual product/cat
 
 ## Decision
 
-Đề xuất SA/TL phê duyệt kiến trúc sau:
+Đã phê duyệt kiến trúc sau ngày 2026-08-24:
 
 1. Tạo shared module `Secomm_UiWidget` sở hữu Magento widget integration, component registry, field schema, validation/normalization, data providers và default templates.
 2. Chỉ expose một Magento widget type `Secomm UI`; component select lấy từ explicit registry/allowlist, không scan filesystem/vendor tại runtime.
@@ -64,5 +64,4 @@ User đã xác nhận business/scope inputs: dynamic content, manual product/cat
 
 - Feature: [FEAT-J06WXZ](../features/FEAT-J06WXZ.md)
 - Full Spec: [SPEC-FEAT-J06WXZ](../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md)
-- DECISIONS.md index: pending pointer in `.ai/project-context/memory/DECISIONS.md`
-
+- DECISIONS.md index: `.ai/project-context/memory/DECISIONS.md`

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Secomm\UiWidget\Api\ComponentRegistryInterface"
+                type="Secomm\UiWidget\Model\Component\Registry"/>
+    <preference for="Secomm\UiWidget\Api\TemplateResolverInterface"
+                type="Secomm\UiWidget\Model\Component\TemplateResolver"/>
+    <type name="Secomm\UiWidget\Model\Component\Registry">
+        <arguments>
+            <argument name="definitions" xsi:type="array"/>
+        </arguments>
+    </type>
+</config>
