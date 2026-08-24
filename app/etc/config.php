@@ -445,6 +445,7 @@ return [
         'PayPal_BraintreeReward' => 1,
         'Secomm_AddressDropdown' => 1,
         'Secomm_ShippingCore' => 1,
+        'Secomm_AiDiscoverability' => 1,
         'Secomm_Base' => 1,
         'Secomm_DisableFileUpload' => 1,
         'Secomm_GiaoHangNhanh' => 1,

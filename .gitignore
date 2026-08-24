@@ -132,3 +132,6 @@ atlassian*
 # AI Toolkit (Claude Code) — local/personal settings only (skills + shared settings stay committed)
 .claude/settings.local.json
 .claude/*.local.json
+
+pub/media/secomm/lookbook/*
+.codegraph/
