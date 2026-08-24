@@ -16,7 +16,10 @@ class Config
     public const ACL_PREVIEW = 'Secomm_AiDiscoverability::preview';
 
     private const XML_PATH_ENABLED = self::SECTION_PATH . '/general/enabled';
+    private const XML_PATH_SITE_TITLE = self::SECTION_PATH . '/general/site_title';
     private const XML_PATH_BRAND_SUMMARY = self::SECTION_PATH . '/general/brand_summary';
+    private const XML_PATH_STORE_INFO_NAME = 'general/store_information/name';
+    private const XML_PATH_CURRENCY_DEFAULT = 'currency/options/default';
     private const XML_PATH_PRIORITY_PATHS = self::SECTION_PATH . '/general/priority_paths';
     private const XML_PATH_CMS_PAGES = self::SECTION_PATH . '/urls/cms_pages';
     private const XML_PATH_CATEGORIES = self::SECTION_PATH . '/urls/categories';
@@ -40,6 +43,54 @@ class Config
     public function isEnabled(?int $storeId = null): bool
     {
         return $this->scopeConfig->isSetFlag(self::XML_PATH_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * Public site/brand title for the llms.txt H1 of a store view.
+     *
+     * Falls back to the merchant's public store information name before any
+     * internal store-view label (SPEC-TASK-0X552E §12.2). The internal
+     * `$store->getName()` last resort is applied by the generator.
+     *
+     * @param int|null $storeId store view scope
+     * @return string site title ('' when neither source is configured)
+     */
+    public function getSiteTitle(?int $storeId = null): string
+    {
+        $title = trim((string) $this->scopeConfig->getValue(
+            self::XML_PATH_SITE_TITLE,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
+
+        if ($title !== '') {
+            return $title;
+        }
+
+        return trim((string) $this->scopeConfig->getValue(
+            self::XML_PATH_STORE_INFO_NAME,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
+    }
+
+    /**
+     * Effective default currency code of a store view.
+     *
+     * Read from store-scoped config (deterministic per store — deliberately
+     * not the visitor-switchable current currency, to keep the endpoint
+     * byte-deterministic; SPEC-TASK-0X552E §12.4).
+     *
+     * @param int|null $storeId store view scope
+     * @return string ISO currency code ('' when unconfigured)
+     */
+    public function getCurrencyCode(?int $storeId = null): string
+    {
+        return trim((string) $this->scopeConfig->getValue(
+            self::XML_PATH_CURRENCY_DEFAULT,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
     }
 
     /**

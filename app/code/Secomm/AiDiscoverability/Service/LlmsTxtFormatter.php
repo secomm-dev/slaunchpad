@@ -4,12 +4,16 @@ declare(strict_types=1);
 namespace Secomm\AiDiscoverability\Service;
 
 /**
- * Deterministic llms.txt plain-Markdown output (SPEC-TASK-0X552E §5).
+ * Deterministic llms.txt plain-Markdown output (SPEC-TASK-0X552E §5, §12).
  * Section order fixed; entries passed in already ordered/deduped/bounded.
+ *
+ * Link entries use the llms.txt v2 Markdown hyperlink form
+ * `- [Label](url)` with an optional `: Description` suffix.
  */
 class LlmsTxtFormatter
 {
     private const SUMMARY_MAX_LENGTH = 500;
+    private const DESCRIPTION_MAX_LENGTH = 200;
 
     /**
      * Format the llms.txt document body.
@@ -18,12 +22,18 @@ class LlmsTxtFormatter
      * @param string $summary brand summary block
      * @param string $locale locale code
      * @param array $sections ordered section-key => entries
+     * @param string $currency ISO currency code ('' to omit the line)
      * @return string UTF-8, LF newlines, no BOM
      */
-    public function format(string $siteName, string $summary, string $locale, array $sections): string
-    {
+    public function format(
+        string $siteName,
+        string $summary,
+        string $locale,
+        array $sections,
+        string $currency = ''
+    ): string {
         $lines = [];
-        $lines[] = '# ' . $this->sanitizeText($siteName, false);
+        $lines[] = '# ' . $this->sanitizeText($siteName);
 
         $summary = $this->sanitizeText($summary);
         if ($summary !== '') {
@@ -31,9 +41,14 @@ class LlmsTxtFormatter
         }
 
         $locale = trim($locale);
-        if ($locale !== '') {
+        if ($locale !== '' || $currency !== '') {
             $lines[] = '';
-            $lines[] = 'Locale: ' . $this->sanitizeText($locale, false);
+            if ($locale !== '') {
+                $lines[] = 'Locale: ' . $this->sanitizeText($locale);
+            }
+            if ($currency !== '') {
+                $lines[] = 'Currency: ' . $this->sanitizeText($currency);
+            }
         }
 
         foreach ($sections as $heading => $entries) {
@@ -41,9 +56,9 @@ class LlmsTxtFormatter
                 continue;
             }
             $lines[] = '';
-            $lines[] = '## ' . $this->sanitizeText($heading, false);
+            $lines[] = '## ' . $this->sanitizeText($heading);
             foreach ($entries as $entry) {
-                $lines[] = '- [' . $this->sanitizeText($entry['label']) . ']: ' . $entry['url'];
+                $lines[] = $this->formatEntry($entry);
             }
         }
 
@@ -51,21 +66,39 @@ class LlmsTxtFormatter
     }
 
     /**
+     * Format one link entry as a Markdown hyperlink with optional description.
+     *
+     * @param array $entry link entry (label, url, optional description)
+     * @return string formatted entry line
+     */
+    private function formatEntry(array $entry): string
+    {
+        $line = '- [' . $this->sanitizeText((string) ($entry['label'] ?? '')) . '](' . $entry['url'] . ')';
+
+        $description = $this->sanitizeText((string) ($entry['description'] ?? ''), self::DESCRIPTION_MAX_LENGTH);
+        if ($description !== '') {
+            $line .= ': ' . $description;
+        }
+
+        return $line;
+    }
+
+    /**
      * Sanitize merchant-entered text to a single safe line.
      *
+     * Strips HTML, control characters and square-bracket Markdown breaks.
+     *
      * @param string $text raw input text
-     * @param bool $escapeBrackets whether to escape square brackets
+     * @param int|null $maxLength character bound (null = summary default)
      * @return string sanitized single-line text
      */
-    private function sanitizeText(string $text, bool $escapeBrackets = true): string
+    private function sanitizeText(string $text, ?int $maxLength = null): string
     {
+        $text = strip_tags($text);
         $text = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $text) ?? '';
         $text = trim(preg_replace('/\s+/u', ' ', $text) ?? '');
-        $text = mb_substr($text, 0, self::SUMMARY_MAX_LENGTH);
-
-        if ($escapeBrackets) {
-            $text = str_replace(['[', ']'], ['\\[', '\\]'], $text);
-        }
+        $text = mb_substr($text, 0, $maxLength ?? self::SUMMARY_MAX_LENGTH);
+        $text = str_replace(['[', ']'], ['\\[', '\\]'], $text);
 
         return $text;
     }

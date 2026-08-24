@@ -114,6 +114,14 @@ class LlmsTxtGenerator
             $storeId
         );
 
-        return $this->formatter->format((string) $store->getName(), $summary, $locale, $bounded);
+        $title = $this->config->getSiteTitle($storeId);
+        if ($title === '') {
+            // Last resort only: internal store-view label (may be non-public).
+            $title = (string) $store->getName();
+        }
+
+        $currency = $this->config->getCurrencyCode($storeId);
+
+        return $this->formatter->format($title, $summary, $locale, $bounded, $currency);
     }
 }

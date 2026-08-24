@@ -9,7 +9,8 @@ Spec: `.ai/specs/SPEC-TASK-0X552E-ai-discoverability-llms-txt.md` (LC-30).
 ## What it does
 
 - `GET /llms.txt` → `200 text/plain; charset=UTF-8` with a deterministic, curated document
-  (`# Site`, `> summary`, `Locale:`, `## Priority Pages / Collections / Pages / Sitemap`).
+  (`# Site`, `> summary`, `Locale:`, `Currency:`, `## Sections`, Markdown links
+  `- [Label](url)` with optional `: Description` from existing `meta_description` only).
 - `HEAD /llms.txt` → same headers, empty body. `If-None-Match` → `304`.
 - Feature disabled for the store view → explicit `404` (GET and HEAD).
 - Non-GET/HEAD requests never reach generation (standard Magento routing).
@@ -28,6 +29,7 @@ all values store-view scoped:
 | Field | Path | Default | Notes |
 |---|---|---|---|
 | Enabled | `general/enabled` | `0` | 404 when off |
+| Site / Brand Title | `general/site_title` | — | H1 title; falls back to store information name, then store view name |
 | Brand Summary | `general/brand_summary` | — | one-line `>` summary; falls back to store name |
 | Priority Paths | `general/priority_paths` | — | one internal path per line (e.g. `sales/guest/form`) |
 | CMS Pages | `general/cms_pages` | — | multiselect, max 20 rendered |
@@ -96,7 +98,9 @@ among non-redirect `url_rewrite` rows for the category in the store, the row wit
 
 ## Tests
 
-21 unit tests / 48 assertions covering formatter determinism & sanitization, eligibility,
+37 unit tests / 76 assertions covering the llms.txt v2 Markdown link format (exact bytes,
+optional description, sanitization/bounds), config title fallback chain + deterministic
+currency read, formatter determinism & sanitization, eligibility,
 collector bound/dedupe/sort, SEO policy (JSON + legacy serialize + wildcard + trailing slash),
 canonical policy (oldest-rewrite, query strip, home URL):
 

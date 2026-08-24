@@ -312,3 +312,70 @@ app/code/Secomm/AiDiscoverability/
 ## 11. Escalation
 
 - Spec chờ **TL review** (Level 2 — architecture decision: bounded canonical policy + soft Mirasvit dependency). Không chạm high-risk area §12.
+
+## 12. Follow-up LC-30.1 — llms.txt v2 conformance + store metadata (2026-08-24)
+
+> Bounded delta lên LC-30 đã tích hợp (`22997372`). Không redesign. Scope guard §0 giữ nguyên.
+
+### 12.1 Markdown link format (MUST FIX)
+
+Entry đổi từ `- [Label]: URL` (dạng cũ không phải Markdown) sang dạng Markdown chuẩn của llms.txt v2:
+
+```
+- [Label](https://example.com/path)
+- [Label](https://example.com/path): Optional description
+```
+
+Lý do: `[Label]: URL` không phải cú pháp Markdown hyperlink hợp lệ; các parser Markdown/AI
+agent chuẩn mong đợi `[text](url)`. Determinism, sanitization URL, eligibility, section order
+giữ nguyên không đổi.
+
+### 12.2 Site / Brand Title (store-view scoped)
+
+Vấn đề: H1 hiện lấy `$store->getName()` → lộ nhãn nội bộ kiểu `# Default Store View`, không
+phải brand identity hướng tới AI.
+
+Giải pháp: config mới `seocomm_ai_discoverability/general/site_title` (store-view scoped).
+Fallback chain (nhỏ nhất → lớn nhất, không tạo DB table):
+
+1. `seocomm_ai_discoverability/general/site_title` (LC-30 config)
+2. `general/store_information/name` (Store Information của Magento — merchant identity công
+   khai, store-scoped, có sẵn)
+3. `$store->getName()` (last resort — nhãn nội bộ, chỉ khi không có gì tốt hơn)
+
+Brand / Site Summary vẫn là trường mô tả riêng (không đổi).
+
+### 12.3 Optional entry descriptions
+
+Entry có thể mang `description` (optional; thiếu metadata KHÔNG loại URL):
+- CMS: dùng `meta_description` của page nếu có
+- Category: dùng `meta_description` của category nếu có
+- Priority URLs / Sitemap: không description (không phát minh logic crawl/resolve)
+
+Ràng buộc: một dòng; bound ≤ 200 ký tự; strip HTML tag; strip control chars; KHÔNG thực thi
+CMS directives (text thuần, không render); không thêm dependency nội dung/session. Không xây
+metadata subsystem, không UI chỉnh description từng entry.
+
+Lý do: mô tả sẵn có tăng khả năng hiểu của agent mà không mở rộng Agentic Commerce scope.
+
+### 12.4 Currency metadata
+
+Thêm `Currency: <code>` ngay sau `Locale:`. Nguồn: `currency/options/default` theo store scope
+(deterministic theo config — không dùng current-currency theo visitor/session vì sẽ phá
+byte-determinism của endpoint). Lý do: tiền tệ là ecommerce context native, rẻ, store-aware.
+
+### 12.5 Không đổi
+
+Canonical policy, Mirasvit soft integration, noindex, sitemap reuse, cache/invalidation,
+root router, GET/HEAD contract, rel="describedby", robots.txt — giữ nguyên (chỉ đổi khi có
+regression test chứng minh conflict trực tiếp).
+
+### 12.6 Test matrix mở rộng
+
+- Formatter: byte-exact `- [Label](URL)`, `: Description` optional, không colon khi thiếu
+  description, sanitization description (HTML/control), determinism, dòng Currency
+- Title: configured wins; fallback store_information/name; last-resort store name; isolation
+  theo store (unit)
+- Currency: store-scoped value, khác nhau theo storeId (unit)
+- CMS/Category description: có metadata → emit; rỗng → không colon; không ảnh hưởng eligibility
+- Regression: canonical/noindex/max-urls/cache/GET-HEAD/describedby không đổi

@@ -2,6 +2,8 @@
 "General","Chung"
 "Enable /llms.txt","Bật /llms.txt"
 "When disabled, /llms.txt returns 404 and the describedby link tag is removed.","Khi tắt, /llms.txt sẽ trả về 404 và thẻ link describedby bị gỡ bỏ."
+"Site / Brand Title","Tiêu đề trang / thương hiệu"
+"Public title used as the llms.txt H1. Falls back to the store information name, then to the internal store view name.","Tiêu đề công khai dùng làm H1 của llms.txt. Nếu bỏ trống sẽ dùng tên thông tin cửa hàng, sau đó là tên store view nội bộ."
 "Brand / Site Summary","Mô tả thương hiệu / trang"
 "One concise line describing the brand and site for AI agents. Falls back to the store name. Avoid entities whose canonical URL is managed by conditional Mirasvit canonical rewrite rules.","Một dòng ngắn gọn mô tả thương hiệu và trang web dành cho các AI agent. Nếu bỏ trống sẽ dùng tên cửa hàng. Tránh các thực thể có URL canonical được quản lý bởi quy tắc canonical rewrite có điều kiện của Mirasvit."
 "Priority Paths","Đường dẫn ưu tiên"
