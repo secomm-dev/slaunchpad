@@ -20,7 +20,7 @@ use Secomm\AiDiscoverability\Service\LlmsTxtProvider;
 class Index implements HttpGetActionInterface
 {
     private const CONTENT_TYPE = 'text/plain; charset=UTF-8';
-    private const CACHE_CONTROL_MAX_AGE = 3600;
+    private const CACHE_CONTROL_NO_STORE = 'no-store, no-cache, must-revalidate';
 
     /**
      * @param Config $config module config reader
@@ -43,6 +43,12 @@ class Index implements HttpGetActionInterface
     /**
      * Serve the llms.txt plain-text body for the current store view.
      *
+     * HTTP cache semantics derive from the same effective store-scoped cache
+     * lifetime used by the provider: lifetime > 0 advertises
+     * `public, max-age=<lifetime>` with ETag/conditional support; lifetime 0
+     * (merchant disabled caching) advertises no-store and skips ETag/304 so no
+     * intermediary may serve a stale body.
+     *
      * @return ResultInterface raw text result (404 result when disabled)
      */
     public function execute(): ResultInterface
@@ -54,10 +60,16 @@ class Index implements HttpGetActionInterface
         }
 
         $body = $this->provider->get($storeId);
+        $lifetime = $this->config->getCacheLifetime($storeId);
 
         $result = $this->rawResult();
         $result->setHeader('Content-Type', self::CONTENT_TYPE);
-        $this->setCommonHeaders($result, $body);
+
+        if ($lifetime > 0) {
+            $this->setCacheableHeaders($result, $body, $lifetime);
+        } else {
+            $result->setHeader('Cache-Control', self::CACHE_CONTROL_NO_STORE);
+        }
 
         if ($this->request->getMethod() !== 'HEAD') {
             $result->setContents($body);
@@ -73,12 +85,13 @@ class Index implements HttpGetActionInterface
      *
      * @param Raw $result raw result to decorate
      * @param string $body generated llms.txt body
+     * @param int $lifetime effective store-scoped cache lifetime in seconds
      * @return void
      */
-    private function setCommonHeaders(Raw $result, string $body): void
+    private function setCacheableHeaders(Raw $result, string $body, int $lifetime): void
     {
         $etag = '"' . sha1($body) . '"';
-        $result->setHeader('Cache-Control', 'public, max-age=' . self::CACHE_CONTROL_MAX_AGE);
+        $result->setHeader('Cache-Control', 'public, max-age=' . $lifetime);
         $result->setHeader('ETag', $etag);
 
         if (trim((string) $this->request->getHeader('If-None-Match')) === $etag) {

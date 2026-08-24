@@ -5,6 +5,7 @@ namespace Secomm\AiDiscoverability\Controller;
 
 use Magento\Framework\App\ActionFactory;
 use Magento\Framework\App\ActionInterface;
+use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Route\ConfigInterface;
 use Magento\Framework\App\Router\ActionList;
@@ -31,7 +32,11 @@ class Router implements RouterInterface
     }
 
     /**
-     * Match a root-path /llms.txt request to the llms index action.
+     * Match a root-path GET/HEAD /llms.txt request to the llms index action.
+     *
+     * Non-GET/HEAD methods are deliberately not matched: they fall through to
+     * Magento's no-route handling and yield a deterministic 404. llms.txt is a
+     * read-only discovery resource — no other verb has meaning here.
      *
      * @param RequestInterface $request incoming request
      * @return ActionInterface|null matched action or null
@@ -39,6 +44,12 @@ class Router implements RouterInterface
     public function match(RequestInterface $request): ?ActionInterface
     {
         if (trim($request->getPathInfo(), '/') !== self::LLMS_TXT) {
+            return null;
+        }
+
+        if ($request instanceof HttpRequest
+            && !in_array($request->getMethod(), ['GET', 'HEAD'], true)
+        ) {
             return null;
         }
 

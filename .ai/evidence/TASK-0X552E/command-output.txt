@@ -15,7 +15,7 @@ $ docker exec slaunchpad-phpfpm-1 vendor/bin/phpunit -c dev/tests/unit/phpunit.x
     app/code/Secomm/AiDiscoverability/Test/Unit
 
 OK, but there were issues!
-Tests: 21, Assertions: 48, PHPUnit Warnings: 1.
+Tests: 29, Assertions: 66, PHPUnit Warnings: 1.
 (The single warning is the repo-wide Allure PHPUnit extension bootstrap — pre-existing,
 unrelated to the module.)
 
