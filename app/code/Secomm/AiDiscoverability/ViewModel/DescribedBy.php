@@ -13,25 +13,13 @@ use Secomm\AiDiscoverability\Model\Config;
 class DescribedBy implements ArgumentInterface
 {
     /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
-     * @var Config
-     */
-    private $config;
-
-    /**
      * @param StoreManagerInterface $storeManager current store resolver
      * @param Config $config module config reader
      */
     public function __construct(
-        StoreManagerInterface $storeManager,
-        Config $config
+        private readonly StoreManagerInterface $storeManager,
+        private readonly Config $config
     ) {
-        $this->storeManager = $storeManager;
-        $this->config = $config;
     }
 
     /**

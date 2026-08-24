@@ -14,21 +14,15 @@ class Categories implements OptionSourceInterface
     private const ROOT_CATEGORY_ID = 1;
 
     /**
-     * @var CategoryCollectionFactory
-     */
-    private $collectionFactory;
-
-    /**
      * @var array|null
      */
-    private $options;
+    private ?array $options = null;
 
     /**
      * @param CategoryCollectionFactory $collectionFactory category collection factory
      */
-    public function __construct(CategoryCollectionFactory $collectionFactory)
+    public function __construct(private readonly CategoryCollectionFactory $collectionFactory)
     {
-        $this->collectionFactory = $collectionFactory;
     }
 
     /**

@@ -15,16 +15,10 @@ use Secomm\AiDiscoverability\Model\InvalidateCache;
 class CmsInvalidation implements ObserverInterface
 {
     /**
-     * @var InvalidateCache
-     */
-    private $invalidateCache;
-
-    /**
      * @param InvalidateCache $invalidateCache targeted invalidation helper
      */
-    public function __construct(InvalidateCache $invalidateCache)
+    public function __construct(private readonly InvalidateCache $invalidateCache)
     {
-        $this->invalidateCache = $invalidateCache;
     }
 
     /**

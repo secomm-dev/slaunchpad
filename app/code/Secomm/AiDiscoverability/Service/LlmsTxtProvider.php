@@ -17,30 +17,15 @@ class LlmsTxtProvider
     public const CACHE_ID_PREFIX = 'seocomm_llms_txt_store_';
 
     /**
-     * @var CacheInterface
-     */
-    private $cache;
-
-    /**
-     * @var LlmsTxtGenerator
-     */
-    private $generator;
-
-    /**
-     * @var Config
-     */
-    private $config;
-
-    /**
      * @param CacheInterface $cache application cache backend
      * @param LlmsTxtGenerator $generator llms.txt body generator
      * @param Config $config module configuration accessor
      */
-    public function __construct(CacheInterface $cache, LlmsTxtGenerator $generator, Config $config)
-    {
-        $this->cache = $cache;
-        $this->generator = $generator;
-        $this->config = $config;
+    public function __construct(
+        private readonly CacheInterface $cache,
+        private readonly LlmsTxtGenerator $generator,
+        private readonly Config $config
+    ) {
     }
 
     /**

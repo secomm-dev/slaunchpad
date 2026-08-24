@@ -37,41 +37,17 @@ class SeoPolicy
     private const TRAILING_SLASH_APPEND = 2;
 
     /**
-     * @var ScopeConfigInterface
-     */
-    private $scopeConfig;
-
-    /**
-     * @var Manager
-     */
-    private $moduleManager;
-
-    /**
-     * @var JsonSerializer
-     */
-    private $jsonSerializer;
-
-    /**
-     * @var PhpSerialize
-     */
-    private $phpSerializer;
-
-    /**
      * @param ScopeConfigInterface $scopeConfig scoped config reader
      * @param Manager $moduleManager module enablement checker
      * @param JsonSerializer $jsonSerializer decodes JSON noindex rule rows
      * @param PhpSerialize $phpSerializer decodes legacy serialize() rule rows
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
-        Manager $moduleManager,
-        JsonSerializer $jsonSerializer,
-        PhpSerialize $phpSerializer
+        private readonly ScopeConfigInterface $scopeConfig,
+        private readonly Manager $moduleManager,
+        private readonly JsonSerializer $jsonSerializer,
+        private readonly PhpSerialize $phpSerializer
     ) {
-        $this->scopeConfig = $scopeConfig;
-        $this->moduleManager = $moduleManager;
-        $this->jsonSerializer = $jsonSerializer;
-        $this->phpSerializer = $phpSerializer;
     }
 
     /**

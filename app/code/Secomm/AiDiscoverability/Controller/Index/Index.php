@@ -23,36 +23,6 @@ class Index implements HttpGetActionInterface
     private const CACHE_CONTROL_MAX_AGE = 3600;
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var LlmsTxtProvider
-     */
-    private $provider;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
-     * @var ResultFactory
-     */
-    private $resultFactory;
-
-    /**
-     * @var HttpResponse
-     */
-    private $response;
-
-    /**
-     * @var HttpRequest
-     */
-    private $request;
-
-    /**
      * @param Config $config module config reader
      * @param LlmsTxtProvider $provider cached llms.txt body provider
      * @param StoreManagerInterface $storeManager current store resolver
@@ -61,19 +31,13 @@ class Index implements HttpGetActionInterface
      * @param HttpRequest $request HTTP request (method, If-None-Match)
      */
     public function __construct(
-        Config $config,
-        LlmsTxtProvider $provider,
-        StoreManagerInterface $storeManager,
-        ResultFactory $resultFactory,
-        HttpResponse $response,
-        HttpRequest $request
+        private readonly Config $config,
+        private readonly LlmsTxtProvider $provider,
+        private readonly StoreManagerInterface $storeManager,
+        private readonly ResultFactory $resultFactory,
+        private readonly HttpResponse $response,
+        private readonly HttpRequest $request
     ) {
-        $this->config = $config;
-        $this->provider = $provider;
-        $this->storeManager = $storeManager;
-        $this->resultFactory = $resultFactory;
-        $this->response = $response;
-        $this->request = $request;
     }
 
     /**

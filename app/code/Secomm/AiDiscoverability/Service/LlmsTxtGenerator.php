@@ -29,56 +29,6 @@ class LlmsTxtGenerator
     private const SECTION_SITEMAP = 'Sitemap';
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
-     * @var PriorityUrlsSource
-     */
-    private $priorityUrlsSource;
-
-    /**
-     * @var CmsPagesSource
-     */
-    private $cmsPagesSource;
-
-    /**
-     * @var CategoriesSource
-     */
-    private $categoriesSource;
-
-    /**
-     * @var SitemapRefsSource
-     */
-    private $sitemapRefsSource;
-
-    /**
-     * @var UrlCollector
-     */
-    private $collector;
-
-    /**
-     * @var LlmsTxtFormatter
-     */
-    private $formatter;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var ScopeConfigInterface
-     */
-    private $scopeConfig;
-
-    /**
      * @param Config $config module configuration accessor
      * @param StoreManagerInterface $storeManager store registry
      * @param ScopeConfigInterface $scopeConfig scoped config reader
@@ -91,27 +41,17 @@ class LlmsTxtGenerator
      * @param LoggerInterface $logger PSR logger
      */
     public function __construct(
-        Config $config,
-        StoreManagerInterface $storeManager,
-        ScopeConfigInterface $scopeConfig,
-        PriorityUrlsSource $priorityUrlsSource,
-        CmsPagesSource $cmsPagesSource,
-        CategoriesSource $categoriesSource,
-        SitemapRefsSource $sitemapRefsSource,
-        UrlCollector $collector,
-        LlmsTxtFormatter $formatter,
-        LoggerInterface $logger
+        private readonly Config $config,
+        private readonly StoreManagerInterface $storeManager,
+        private readonly ScopeConfigInterface $scopeConfig,
+        private readonly PriorityUrlsSource $priorityUrlsSource,
+        private readonly CmsPagesSource $cmsPagesSource,
+        private readonly CategoriesSource $categoriesSource,
+        private readonly SitemapRefsSource $sitemapRefsSource,
+        private readonly UrlCollector $collector,
+        private readonly LlmsTxtFormatter $formatter,
+        private readonly LoggerInterface $logger
     ) {
-        $this->config = $config;
-        $this->storeManager = $storeManager;
-        $this->priorityUrlsSource = $priorityUrlsSource;
-        $this->cmsPagesSource = $cmsPagesSource;
-        $this->categoriesSource = $categoriesSource;
-        $this->sitemapRefsSource = $sitemapRefsSource;
-        $this->collector = $collector;
-        $this->formatter = $formatter;
-        $this->logger = $logger;
-        $this->scopeConfig = $scopeConfig;
     }
 
     /**

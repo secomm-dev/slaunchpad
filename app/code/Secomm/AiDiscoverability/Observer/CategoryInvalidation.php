@@ -16,23 +16,13 @@ use Secomm\AiDiscoverability\Model\InvalidateCache;
 class CategoryInvalidation implements ObserverInterface
 {
     /**
-     * @var InvalidateCache
-     */
-    private $invalidateCache;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
      * @param InvalidateCache $invalidateCache targeted invalidation helper
      * @param StoreManagerInterface $storeManager store registry
      */
-    public function __construct(InvalidateCache $invalidateCache, StoreManagerInterface $storeManager)
-    {
-        $this->invalidateCache = $invalidateCache;
-        $this->storeManager = $storeManager;
+    public function __construct(
+        private readonly InvalidateCache $invalidateCache,
+        private readonly StoreManagerInterface $storeManager
+    ) {
     }
 
     /**

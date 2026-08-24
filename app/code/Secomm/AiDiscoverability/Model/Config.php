@@ -25,16 +25,10 @@ class Config
     private const XML_PATH_MAX_URLS = self::SECTION_PATH . '/cache/max_urls';
 
     /**
-     * @var ScopeConfigInterface
-     */
-    private $scopeConfig;
-
-    /**
      * @param ScopeConfigInterface $scopeConfig scoped config reader
      */
-    public function __construct(ScopeConfigInterface $scopeConfig)
+    public function __construct(private readonly ScopeConfigInterface $scopeConfig)
     {
-        $this->scopeConfig = $scopeConfig;
     }
 
     /**

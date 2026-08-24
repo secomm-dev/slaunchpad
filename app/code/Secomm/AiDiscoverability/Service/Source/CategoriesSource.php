@@ -22,31 +22,6 @@ class CategoriesSource
     public const MAX_ENTRIES = 20;
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var CategoryRepositoryInterface
-     */
-    private $categoryRepository;
-
-    /**
-     * @var CanonicalPolicy
-     */
-    private $canonicalPolicy;
-
-    /**
-     * @var SeoPolicy
-     */
-    private $seoPolicy;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * @param Config $config module configuration accessor
      * @param CategoryRepositoryInterface $categoryRepository category repository
      * @param CanonicalPolicy $canonicalPolicy canonical URL policy
@@ -54,17 +29,12 @@ class CategoriesSource
      * @param LoggerInterface $logger PSR logger
      */
     public function __construct(
-        Config $config,
-        CategoryRepositoryInterface $categoryRepository,
-        CanonicalPolicy $canonicalPolicy,
-        SeoPolicy $seoPolicy,
-        LoggerInterface $logger
+        private readonly Config $config,
+        private readonly CategoryRepositoryInterface $categoryRepository,
+        private readonly CanonicalPolicy $canonicalPolicy,
+        private readonly SeoPolicy $seoPolicy,
+        private readonly LoggerInterface $logger
     ) {
-        $this->config = $config;
-        $this->categoryRepository = $categoryRepository;
-        $this->canonicalPolicy = $canonicalPolicy;
-        $this->seoPolicy = $seoPolicy;
-        $this->logger = $logger;
     }
 
     /**

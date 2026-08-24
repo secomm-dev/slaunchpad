@@ -23,28 +23,16 @@ class Index extends Action implements HttpGetActionInterface
     public const ADMIN_RESOURCE = Config::ACL_PREVIEW;
 
     /**
-     * @var LlmsTxtProvider
-     */
-    private $provider;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
      * @param Context $context backend action context
      * @param LlmsTxtProvider $provider llms.txt body provider (fresh seam)
      * @param StoreManagerInterface $storeManager default store view resolver
      */
     public function __construct(
         Context $context,
-        LlmsTxtProvider $provider,
-        StoreManagerInterface $storeManager
+        private readonly LlmsTxtProvider $provider,
+        private readonly StoreManagerInterface $storeManager
     ) {
         parent::__construct($context);
-        $this->provider = $provider;
-        $this->storeManager = $storeManager;
     }
 
     /**

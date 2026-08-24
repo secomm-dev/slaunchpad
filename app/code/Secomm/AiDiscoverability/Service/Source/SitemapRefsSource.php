@@ -14,16 +14,10 @@ use Magento\Store\Api\Data\StoreInterface;
 class SitemapRefsSource
 {
     /**
-     * @var SitemapCollectionFactory
-     */
-    private $collectionFactory;
-
-    /**
      * @param SitemapCollectionFactory $collectionFactory sitemap collection factory
      */
-    public function __construct(SitemapCollectionFactory $collectionFactory)
+    public function __construct(private readonly SitemapCollectionFactory $collectionFactory)
     {
-        $this->collectionFactory = $collectionFactory;
     }
 
     /**

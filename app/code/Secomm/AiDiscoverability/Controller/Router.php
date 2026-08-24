@@ -19,33 +19,15 @@ class Router implements RouterInterface
     private const LLMS_TXT = 'llms.txt';
 
     /**
-     * @var ActionFactory
-     */
-    private $actionFactory;
-
-    /**
-     * @var ActionList
-     */
-    private $actionList;
-
-    /**
-     * @var ConfigInterface
-     */
-    private $routeConfig;
-
-    /**
      * @param ActionFactory $actionFactory action factory
      * @param ActionList $actionList router action list
      * @param ConfigInterface $routeConfig route config
      */
     public function __construct(
-        ActionFactory $actionFactory,
-        ActionList $actionList,
-        ConfigInterface $routeConfig
+        private readonly ActionFactory $actionFactory,
+        private readonly ActionList $actionList,
+        private readonly ConfigInterface $routeConfig
     ) {
-        $this->actionFactory = $actionFactory;
-        $this->actionList = $actionList;
-        $this->routeConfig = $routeConfig;
     }
 
     /**

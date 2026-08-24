@@ -13,23 +13,13 @@ use Secomm\AiDiscoverability\Service\LlmsTxtProvider;
 class InvalidateCache
 {
     /**
-     * @var CacheInterface
-     */
-    private $cache;
-
-    /**
-     * @var LlmsTxtProvider
-     */
-    private $provider;
-
-    /**
      * @param CacheInterface $cache application cache backend
      * @param LlmsTxtProvider $provider cache id/tag authority
      */
-    public function __construct(CacheInterface $cache, LlmsTxtProvider $provider)
-    {
-        $this->cache = $cache;
-        $this->provider = $provider;
+    public function __construct(
+        private readonly CacheInterface $cache,
+        private readonly LlmsTxtProvider $provider
+    ) {
     }
 
     /**

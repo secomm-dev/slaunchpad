@@ -12,21 +12,15 @@ use Magento\Framework\Data\OptionSourceInterface;
 class CmsPages implements OptionSourceInterface
 {
     /**
-     * @var PageCollectionFactory
-     */
-    private $collectionFactory;
-
-    /**
      * @var array|null
      */
-    private $options;
+    private ?array $options = null;
 
     /**
      * @param PageCollectionFactory $collectionFactory CMS page collection factory
      */
-    public function __construct(PageCollectionFactory $collectionFactory)
+    public function __construct(private readonly PageCollectionFactory $collectionFactory)
     {
-        $this->collectionFactory = $collectionFactory;
     }
 
     /**

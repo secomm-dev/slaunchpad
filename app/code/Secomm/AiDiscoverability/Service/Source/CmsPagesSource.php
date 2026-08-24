@@ -21,31 +21,6 @@ class CmsPagesSource
     public const MAX_ENTRIES = 20;
 
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var PageRepositoryInterface
-     */
-    private $pageRepository;
-
-    /**
-     * @var CanonicalPolicy
-     */
-    private $canonicalPolicy;
-
-    /**
-     * @var SeoPolicy
-     */
-    private $seoPolicy;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * @param Config $config module configuration accessor
      * @param PageRepositoryInterface $pageRepository CMS page repository
      * @param CanonicalPolicy $canonicalPolicy canonical URL policy
@@ -53,17 +28,12 @@ class CmsPagesSource
      * @param LoggerInterface $logger PSR logger
      */
     public function __construct(
-        Config $config,
-        PageRepositoryInterface $pageRepository,
-        CanonicalPolicy $canonicalPolicy,
-        SeoPolicy $seoPolicy,
-        LoggerInterface $logger
+        private readonly Config $config,
+        private readonly PageRepositoryInterface $pageRepository,
+        private readonly CanonicalPolicy $canonicalPolicy,
+        private readonly SeoPolicy $seoPolicy,
+        private readonly LoggerInterface $logger
     ) {
-        $this->config = $config;
-        $this->pageRepository = $pageRepository;
-        $this->canonicalPolicy = $canonicalPolicy;
-        $this->seoPolicy = $seoPolicy;
-        $this->logger = $logger;
     }
 
     /**

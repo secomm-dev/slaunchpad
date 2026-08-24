@@ -16,41 +16,17 @@ use Secomm\AiDiscoverability\Service\SeoPolicy;
 class PriorityUrlsSource
 {
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var CanonicalPolicy
-     */
-    private $canonicalPolicy;
-
-    /**
-     * @var EligibilityChecker
-     */
-    private $eligibility;
-
-    /**
-     * @var SeoPolicy
-     */
-    private $seoPolicy;
-
-    /**
      * @param Config $config module configuration accessor
      * @param CanonicalPolicy $canonicalPolicy canonical URL policy
      * @param EligibilityChecker $eligibility route eligibility checker
      * @param SeoPolicy $seoPolicy noindex policy adapter
      */
     public function __construct(
-        Config $config,
-        CanonicalPolicy $canonicalPolicy,
-        EligibilityChecker $eligibility,
-        SeoPolicy $seoPolicy
+        private readonly Config $config,
+        private readonly CanonicalPolicy $canonicalPolicy,
+        private readonly EligibilityChecker $eligibility,
+        private readonly SeoPolicy $seoPolicy
     ) {
-        $this->config = $config;
-        $this->canonicalPolicy = $canonicalPolicy;
-        $this->eligibility = $eligibility;
-        $this->seoPolicy = $seoPolicy;
     }
 
     /**

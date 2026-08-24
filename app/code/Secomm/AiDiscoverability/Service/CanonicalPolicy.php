@@ -24,23 +24,13 @@ use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
 class CanonicalPolicy
 {
     /**
-     * @var UrlFinderInterface
-     */
-    private $urlFinder;
-
-    /**
-     * @var SeoPolicy
-     */
-    private $seoPolicy;
-
-    /**
      * @param UrlFinderInterface $urlFinder url rewrite finder
      * @param SeoPolicy $seoPolicy trailing-slash policy adapter
      */
-    public function __construct(UrlFinderInterface $urlFinder, SeoPolicy $seoPolicy)
-    {
-        $this->urlFinder = $urlFinder;
-        $this->seoPolicy = $seoPolicy;
+    public function __construct(
+        private readonly UrlFinderInterface $urlFinder,
+        private readonly SeoPolicy $seoPolicy
+    ) {
     }
 
     /**
