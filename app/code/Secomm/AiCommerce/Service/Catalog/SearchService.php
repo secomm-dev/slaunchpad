@@ -66,7 +66,10 @@ class SearchService
             /** @var FulltextCollection $collection */
             $collection = $this->collectionFactory->create();
             $collection->setStoreId($storeId);
-            $collection->addAttributeToSelect(['name', 'small_image', 'short_description']);
+            $collection->addAttributeToSelect(
+                ['name', 'small_image', 'short_description', 'price', 'special_price',
+                 'special_from_date', 'special_to_date', 'price_type']
+            );
             $collection->setVisibility([Visibility::VISIBILITY_IN_SEARCH, Visibility::VISIBILITY_BOTH]);
 
             if ($criteria['q'] !== null) {

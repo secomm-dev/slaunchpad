@@ -4,11 +4,12 @@ declare(strict_types=1);
 namespace Secomm\AiCommerce\Service\Response;
 
 use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
 use Magento\Catalog\Model\Product\Image\UrlBuilder as ImageUrlBuilder;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\ConfigurableProduct\Api\Data\OptionInterface;
 use Magento\ConfigurableProduct\Api\OptionRepositoryInterface;
+use Magento\Eav\Api\AttributeRepositoryInterface;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Store\Api\Data\StoreInterface;
 use Secomm\AiCommerce\Service\Pricing\PublicPrice;
 use Secomm\AiCommerce\Service\Url\PublicUrlResolver;
@@ -26,7 +27,8 @@ class ProductDto
      * @param PublicUrlResolver $urlResolver store-scoped public/canonical URLs
      * @param ImageUrlBuilder $imageUrlBuilder product image url builder
      * @param OptionRepositoryInterface $optionRepository configurable options API
-     * @param ProductAttributeRepositoryInterface $attributeRepository eav attribute registry
+     * @param AttributeRepositoryInterface $attributeRepository eav attribute registry
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder search criteria builder
      * @param CategoryCollectionFactory $categoryCollectionFactory category collection factory
      */
     public function __construct(
@@ -34,7 +36,8 @@ class ProductDto
         private readonly PublicUrlResolver $urlResolver,
         private readonly ImageUrlBuilder $imageUrlBuilder,
         private readonly OptionRepositoryInterface $optionRepository,
-        private readonly ProductAttributeRepositoryInterface $attributeRepository,
+        private readonly AttributeRepositoryInterface $attributeRepository,
+        private readonly SearchCriteriaBuilder $searchCriteriaBuilder,
         private readonly CategoryCollectionFactory $categoryCollectionFactory
     ) {
     }
@@ -182,13 +185,9 @@ class ProductDto
                 continue;
             }
 
-            $attributeCode = '';
+            $attributeCode = $this->attributeCodeById((int) $option->getAttributeId());
 
-            try {
-                $attributeCode = (string) $this->attributeRepository->getById(
-                    (string) $option->getAttributeId()
-                )->getAttributeCode();
-            } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+            if ($attributeCode === '') {
                 continue;
             }
 
@@ -203,5 +202,26 @@ class ProductDto
         }
 
         return $result;
+    }
+
+    /**
+     * Resolve an Eav attribute id to its code (repositories expose no getById).
+     *
+     * @param int $attributeId catalog_product attribute id
+     * @return string attribute code or '' when unresolvable
+     */
+    private function attributeCodeById(int $attributeId): string
+    {
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('attribute_id', $attributeId, 'eq')
+            ->create();
+
+        $items = $this->attributeRepository->getList('catalog_product', $searchCriteria)->getItems();
+
+        foreach ($items as $attribute) {
+            return (string) $attribute->getAttributeCode();
+        }
+
+        return '';
     }
 }
