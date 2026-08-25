@@ -99,4 +99,51 @@ class ResponseCacheTest extends TestCase
         $this->cache->expects($this->never())->method('save');
         $this->responseCache->save(['items' => []], 1, 'search', [], 0);
     }
+
+    public function testProductRouteKeySeparatesStoresAndSkus(): void
+    {
+        $keys = [];
+
+        $this->cache->method('load')->willReturnCallback(
+            function (string $key) use (&$keys) {
+                $keys[] = $key;
+
+                return null;
+            }
+        );
+
+        // Same SKU, two stores: distinct keys (store is in the identity).
+        $this->responseCache->load(1, 'product', ['sku' => 'ABC']);
+        $this->responseCache->load(3, 'product', ['sku' => 'ABC']);
+        // Same store, different SKU: distinct keys.
+        $this->responseCache->load(1, 'product', ['sku' => 'XYZ']);
+        // Same store + SKU again: identical key (stable warm hits).
+
+        $this->assertNotSame($keys[0], $keys[1]);
+        $this->assertNotSame($keys[0], $keys[2]);
+        $this->assertSame($keys[0], $this->loadKey(1, 'product', ['sku' => 'ABC']));
+    }
+
+    /**
+     * Compute the key one more load would use.
+     *
+     * @param int $storeId store view id
+     * @param string $route route name
+     * @param array $params normalized params
+     * @return string cache key
+     */
+    private function loadKey(int $storeId, string $route, array $params): string
+    {
+        $key = '';
+        $this->cache->method('load')->willReturnCallback(
+            function (string $k) use (&$key) {
+                $key = $k;
+
+                return null;
+            }
+        );
+        $this->responseCache->load($storeId, $route, $params);
+
+        return $key;
+    }
 }

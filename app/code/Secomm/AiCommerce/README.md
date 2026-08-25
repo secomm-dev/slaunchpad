@@ -41,9 +41,16 @@ identity — no `Vary` header is needed because the store is part of the URL.
 ## Cache
 
 `Cache-Control: public, max-age` + `ETag`/304; internal per-store+query cache
-key with tags `secomm_aic`, `secomm_aic_store_<id>`. Product/category/config
-observers invalidate the whole module tag (a product change can make a
-previously absent product enter search results — correctness first).
+key with tags `secomm_aic`, `secomm_aic_store_<id>` for ALL four read endpoints
+including `/ai/products/{sku}` (route `product`, normalized SKU in the key;
+SPEC-TASK-AIC-PDC1). Product/category/config observers invalidate the whole
+module tag (a product change can make a previously absent product enter search
+results — correctness first). MSI stock/salability changes never fire
+`catalog_product_save_*`; the `clean_cache_by_tags` observer (product cache-tag
+identities — the same signal core `module-inventory-cache` uses to drop FPC)
+covers them. NOTE: invalidation calls `CacheInterface::clean([tag])` — the
+runtime `App\Cache\Proxy` contract — not the Zend-style `clean($mode, $tags)`,
+which silently no-ops.
 
 ## Known limitations
 

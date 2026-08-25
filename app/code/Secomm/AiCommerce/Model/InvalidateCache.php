@@ -14,6 +14,13 @@ use Secomm\AiCommerce\Model\Cache\ResponseCache;
  * whole module tag — not only entries that contained the product. Store
  * tags exist for scope-restricted cases where the change provably affects
  * one store only.
+ *
+ * CacheInterface is the App\Cache\Proxy at runtime, whose clean($tags)
+ * contract (deprecated but active) reinterprets Zend-style
+ * clean($mode, $tags) by swallowing the mode string as a tag — tag
+ * invalidation silently became a no-op. clean() is therefore called with
+ * the plain tags array (SPEC-TASK-AIC-PDC1 §3.4, runtime-proven via
+ * redis MONITOR).
  */
 class InvalidateCache
 {
@@ -34,10 +41,7 @@ class InvalidateCache
      */
     public function cleanAll(): void
     {
-        $this->cache->clean(
-            \Zend_Cache::CLEANING_MODE_MATCHING_TAG,
-            [ResponseCache::CACHE_TAG]
-        );
+        $this->cache->clean([ResponseCache::CACHE_TAG]);
     }
 
     /**
@@ -48,9 +52,6 @@ class InvalidateCache
      */
     public function cleanStore(int $storeId): void
     {
-        $this->cache->clean(
-            \Zend_Cache::CLEANING_MODE_MATCHING_TAG,
-            [$this->responseCache->storeTag($storeId)]
-        );
+        $this->cache->clean([$this->responseCache->storeTag($storeId)]);
     }
 }

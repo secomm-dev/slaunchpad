@@ -9,6 +9,10 @@
         <observer name="seocomm_aic_product_delete"
                   instance="Secomm\AiCommerce\Observer\ProductInvalidation"/>
     </event>
+    <event name="clean_cache_by_tags">
+        <observer name="seocomm_aic_stock_change"
+                  instance="Secomm\AiCommerce\Observer\StockInvalidation"/>
+    </event>
     <event name="catalog_category_save_commit_after">
         <observer name="seocomm_aic_category_save"
                   instance="Secomm\AiCommerce\Observer\CategoryInvalidation"/>
