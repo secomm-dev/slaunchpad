@@ -14,6 +14,7 @@ use Secomm\AiCommerce\Service\Inventory\Availability;
 use Secomm\AiCommerce\Service\Response\ProductDto;
 use Secomm\AiCommerce\Service\Response\SearchResultDto;
 use Secomm\AiCommerce\Service\SearchUnavailableException;
+use Secomm\AiCommerce\Service\Url\PublicUrlResolver;
 
 /**
  * Delegating search service over the storefront Fulltext collection.
@@ -39,13 +40,15 @@ class SearchService
      * @param Availability $availability batch salability
      * @param ProductDto $productDto product DTO builder
      * @param SearchResultDto $searchResultDto search result envelope builder
+     * @param PublicUrlResolver $urlResolver batch public/canonical URL resolver
      */
     public function __construct(
         private readonly ProductCollectionFactory $collectionFactory,
         private readonly SearchQueryParser $queryParser,
         private readonly Availability $availability,
         private readonly ProductDto $productDto,
-        private readonly SearchResultDto $searchResultDto
+        private readonly SearchResultDto $searchResultDto,
+        private readonly PublicUrlResolver $urlResolver
     ) {
     }
 
@@ -111,13 +114,21 @@ class SearchService
             $products
         ));
 
+        // ONE bounded url_rewrite SELECT for the whole result page (P1.2).
+        $urls = $this->urlResolver->resolveMany(
+            'product',
+            array_map(static fn (ProductInterface $product): int => (int) $product->getId(), $products),
+            $store
+        );
+
         $items = [];
 
         foreach ($products as $product) {
             $items[] = $this->productDto->toSummaryArray(
                 $product,
                 $store,
-                $statuses[(string) $product->getSku()] ?? 'out_of_stock'
+                $statuses[(string) $product->getSku()] ?? 'out_of_stock',
+                $urls[(int) $product->getId()] ?? ['public_url' => null, 'canonical_url' => null]
             );
         }
 

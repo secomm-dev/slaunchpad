@@ -54,7 +54,17 @@ class CategoryTreeService
 
         $nodes = $this->loadNodes($storeId, $rootPath, $rootId);
 
-        return $this->buildChildren($store, $nodes, $rootId, $rootPath, $this->config->getCategoryDepth($storeId));
+        // ONE bounded url_rewrite SELECT for the whole tree (P1.2) — nodes
+        // consume the prefetched map, never a per-node UrlFinder call.
+        $urlMap = $this->urlResolver->resolveMany('category', array_keys($nodes), $store);
+
+        return $this->buildChildren(
+            $nodes,
+            $urlMap,
+            $rootId,
+            $rootPath,
+            $this->config->getCategoryDepth($storeId)
+        );
     }
 
     /**
@@ -92,16 +102,16 @@ class CategoryTreeService
     /**
      * Assemble the tree in memory from parent links, bounded by depth.
      *
-     * @param StoreInterface $store resolved store view
      * @param array $nodes raw nodes
+     * @param array $urlMap entity id => resolved urls (batch prefetched)
      * @param int $rootId store root category id
      * @param string $rootPath entity path of the store root
      * @param int $maxDepth maximum depth below the root
      * @return array node DTOs
      */
     private function buildChildren(
-        StoreInterface $store,
         array $nodes,
+        array $urlMap,
         int $rootId,
         string $rootPath,
         int $maxDepth
@@ -114,15 +124,15 @@ class CategoryTreeService
 
         $rootDepth = count(explode('/', $rootPath));
 
-        return $this->buildLevel($store, $nodes, $byParent, $rootId, $rootDepth, $rootDepth, $maxDepth);
+        return $this->buildLevel($nodes, $byParent, $urlMap, $rootId, $rootDepth, $rootDepth, $maxDepth);
     }
 
     /**
      * Recursively build the children of one parent, depth-bounded.
      *
-     * @param StoreInterface $store resolved store view
      * @param array $nodes raw nodes
      * @param array $byParent parent id => child id list
+     * @param array $urlMap entity id => resolved urls (batch prefetched)
      * @param int $parentId parent category id
      * @param int $depth absolute depth of the parent
      * @param int $rootDepth absolute depth of the store root
@@ -130,9 +140,9 @@ class CategoryTreeService
      * @return array node DTOs
      */
     private function buildLevel(
-        StoreInterface $store,
         array $nodes,
         array $byParent,
+        array $urlMap,
         int $parentId,
         int $depth,
         int $rootDepth,
@@ -149,8 +159,8 @@ class CategoryTreeService
             $result[] = $this->categoryDto->toArray(
                 $node['id'],
                 $node['name'],
-                $this->urlResolver->getCategoryUrls($node['id'], $store),
-                $this->buildLevel($store, $nodes, $byParent, $childId, $depth + 1, $rootDepth, $maxDepth)
+                $urlMap[$node['id']] ?? ['public_url' => null, 'canonical_url' => null],
+                $this->buildLevel($nodes, $byParent, $urlMap, $childId, $depth + 1, $rootDepth, $maxDepth)
             );
         }
 

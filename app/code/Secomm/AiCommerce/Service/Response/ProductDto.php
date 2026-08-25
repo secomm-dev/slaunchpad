@@ -90,17 +90,20 @@ class ProductDto
     }
 
     /**
-     * Summary subset for search result items.
+     * Summary subset for search result items (urls prefetched by the caller).
      *
      * @param ProductInterface $product product entity
      * @param StoreInterface $store store view scope
      * @param string $availabilityStatus in_stock|out_of_stock
+     * @param array $urls batch-resolved urls (public_url, canonical_url)
      * @return mixed[] DTO array
      */
-    public function toSummaryArray(ProductInterface $product, StoreInterface $store, string $availabilityStatus): array
-    {
-        $urls = $this->urlResolver->getProductUrls($product, $store);
-
+    public function toSummaryArray(
+        ProductInterface $product,
+        StoreInterface $store,
+        string $availabilityStatus,
+        array $urls
+    ): array {
         return [
             'sku' => (string) $product->getSku(),
             'name' => (string) $product->getName(),

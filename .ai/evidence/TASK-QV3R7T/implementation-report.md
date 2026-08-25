@@ -5,6 +5,52 @@
 - Date: 2026-08-24 (rev 2: TL acceptance corrections)
 - Runtime: local docker stack, base URL `https://webhook.thanhaloha.io.vn/` (curl -k)
 
+## 0a. Independent Review P1.2 Closure (rev 3 — batch URL rewrite loading)
+
+**Old behavior:** every list item resolved its URLs individually —
+`ProductDto::toSummaryArray` and `CategoryTreeService::buildLevel` each called
+`PublicUrlResolver::getProductUrls/getCategoryUrls` → `UrlFinderInterface::findAllByData`
+per entity → **N url_rewrite SELECTs for N results** (search page of 6 ⇒ 6 queries;
+category tree of N ⇒ N queries).
+
+**New behavior:** `PublicUrlResolver::resolveMany(entityType, ids, store)` — ONE bounded
+SELECT per entity type/store via `ResourceConnection`:
+`SELECT url_rewrite_id, entity_id, request_path, target_path, redirect_type, store_id
+ FROM url_rewrite WHERE entity_type=? AND entity_id IN (...) AND store_id=? AND redirect_type=0`
+(explicit column list, never `SELECT *`; core `DbStorage::prepareSelect` would fetch all
+columns, hence the direct query). Rows grouped in memory; the **lowest url_rewrite_id**
+per entity wins — the identical "oldest rewrite wins" rule as the single path, which now
+delegates to `resolveMany([id])` so batch and single cannot drift. No new persistent
+cache layer; results remain store-scoped/deterministic/session-free and flow through the
+existing response cache unchanged.
+- Search: `SearchService` collects result product ids, batch-loads urls once, passes the
+  map to `ProductDto::toSummaryArray` (DTO no longer resolves urls itself).
+- Categories: `CategoryTreeService` batch-loads the tree's category ids once after the
+  single tree SELECT; nodes consume the prefetched map (no resolver call in the loop).
+- Detail endpoint keeps its single bounded lookup (same shared code path).
+
+**Query-count evidence** (`dev:query-log:enable`, cold caches, 2026-08-25):
+
+| Endpoint | url_rewrite SELECTs total | Facade-owned | Framework-owned |
+|---|---|---|---|
+| `/ai/catalog/search?q=strap` (N=6 products) | **3** | **1** (explicit-column batch IN(6 ids)) | 2 — routing lookup `request_path IN ('ai/catalog/search'...)` + UrlRewrite router `url_rewrite JOIN relation` |
+| `/ai/categories` (N=33 categories) | **3** | **1** (explicit-column batch IN(33 ids)) | same 2 framework queries |
+
+Facade count is **constant (1)** regardless of N — no longer proportional to result size.
+
+**Response parity proof** (contract unchanged): search q=strap still returns 6 items with
+identical public_url/canonical_url/price/availability per SKU (e.g. 24-WG086
+`sprite-yoga-strap-8-foot.html`, 170000 EUR, in_stock); category tree output identical
+(`3 Gear / gear.html` + children); detail endpoint urls/price unchanged; ETag→304 verified;
+security negatives re-verified (POST 405, `?store=NOPE` → 400 invalid_store, X-Store ignored).
+
+**Tests:** new `PublicUrlResolverTest` covers batch product/category resolution, multiple
+entities in one query, missing rewrite → nulls, deterministic oldest-row selection among
+multiple non-redirect rows, redirect rows excluded by the query predicate, store scoping,
+empty-id no-query, and batch == single resolver parity. Suite: **50 tests / 81 assertions OK**;
+PHPCS 0/0; php -l clean; `setup:di:compile` success; XML valid; `project-ai-validate` VALID;
+`git diff --check` clean; `app/etc/config.php` still untouched relative to the spec branch.
+
 ## 0. TL review corrections (rev 2)
 
 - **app/etc/config.php**: the branch no longer changes it —
