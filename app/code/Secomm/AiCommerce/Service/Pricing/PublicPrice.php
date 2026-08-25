@@ -50,23 +50,27 @@ class PublicPrice
         $defaultCurrency = (string) $store->getDefaultCurrencyCode();
         $previousCurrency = $this->pinDefaultCurrency($store, $defaultCurrency);
 
-        /** @var PriceInfoInterface $priceInfo */
-        $priceInfo = $product->getPriceInfo();
-        $finalPrice = $priceInfo->getPrice(FinalPrice::PRICE_CODE);
+        try {
+            /** @var PriceInfoInterface $priceInfo */
+            $priceInfo = $product->getPriceInfo();
+            $finalPrice = $priceInfo->getPrice(FinalPrice::PRICE_CODE);
 
-        $final = $this->finalValue($finalPrice);
-        $regular = (float) $priceInfo->getPrice(RegularPrice::PRICE_CODE)->getValue();
+            $final = $this->finalValue($finalPrice);
+            $regular = (float) $priceInfo->getPrice(RegularPrice::PRICE_CODE)->getValue();
 
-        $this->restoreCurrency($store, $previousCurrency);
-
-        return [
-            'value' => (float) $final,
-            'currency' => $defaultCurrency,
-            'regular_value' => $regular > self::EQUALS_EPSILON
-                && abs($regular - $final) > self::EQUALS_EPSILON
-                ? $regular
-                : null,
-        ];
+            return [
+                'value' => (float) $final,
+                'currency' => $defaultCurrency,
+                'regular_value' => $regular > self::EQUALS_EPSILON
+                    && abs($regular - $final) > self::EQUALS_EPSILON
+                    ? $regular
+                    : null,
+            ];
+        } finally {
+            // Guaranteed on both success and exception paths (P1.1): the
+            // pinned default currency is never left on the Store object.
+            $this->restoreCurrency($store, $previousCurrency);
+        }
     }
 
     /**

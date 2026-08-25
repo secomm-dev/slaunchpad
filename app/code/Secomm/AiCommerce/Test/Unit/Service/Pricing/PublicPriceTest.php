@@ -76,6 +76,31 @@ class PublicPriceTest extends TestCase
         $this->assertSame(['USD', 'EUR'], $calls);
     }
 
+    public function testCurrencyIsRestoredWhenPriceResolutionThrows(): void
+    {
+        $calls = [];
+        $store = $this->createMock(Store::class);
+        $store->method('getDefaultCurrencyCode')->willReturn('USD');
+        $store->method('getCurrentCurrencyCode')->willReturn('EUR');
+        $store->method('setCurrentCurrencyCode')
+            ->willReturnCallback(static function (string $code) use (&$calls): void {
+                $calls[] = $code;
+            });
+
+        $product = $this->createMock(Product::class);
+        $product->method('getPriceInfo')->willThrowException(new \RuntimeException('engine down'));
+
+        try {
+            $this->publicPrice->resolve($store, $product);
+            $this->fail('Expected exception to propagate');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('engine down', $exception->getMessage());
+        }
+
+        // finally ran: pin + restore both executed, original exception intact.
+        $this->assertSame(['USD', 'EUR'], $calls);
+    }
+
     public function testBundleUsesMinimalPriceSemantics(): void
     {
         $store = $this->storeWithDefaultCurrency('USD', 'EUR');

@@ -5,6 +5,33 @@
 - Date: 2026-08-24 (rev 2: TL acceptance corrections)
 - Runtime: local docker stack, base URL `https://webhook.thanhaloha.io.vn/` (curl -k)
 
+## 0b. Independent Review P1.1 Closure (rev 4 — guaranteed currency restore in PublicPrice)
+
+**Old failure mode:** `PublicPrice::resolve()` pinned the store default currency
+(`pinDefaultCurrency()`) and only restored it (`restoreCurrency()`) at the end of
+the happy path. If price resolution threw (e.g. `getPriceInfo()` failure), the
+restore was skipped and the shared `Store` object was left with the facade's
+pinned currency — a request-global mutation leak.
+
+**Fix:** resolution wrapped in `try { ... } finally { restoreCurrency(...); }` —
+the pinned default currency is restored on BOTH the success and exception
+paths. Exceptions are never swallowed and never converted into fallback
+prices; pricing semantics, currency policy and the DTO contract are unchanged.
+
+**Tests** (`PublicPriceTest`):
+- Success path — `testCurrencyIsPinnedAndRestored`: `setCurrentCurrencyCode`
+  calls captured via `willReturnCallback`; asserts exactly `['USD', 'EUR']`
+  (pin to default, restore previous).
+- Exception path — `testCurrencyIsRestoredWhenPriceResolutionThrows`: product
+  mock's `getPriceInfo()` throws `RuntimeException('engine down')`; test
+  asserts the SAME exception propagates (message matched) AND the calls are
+  still exactly `['USD', 'EUR']` — the `finally` restore ran.
+
+**Final counts:** targeted PublicPrice 6 tests / 10 assertions; full
+`Secomm_AiCommerce` unit suite **51 tests / 83 assertions, 0 failures**
+(sole runner warning is the environment-level Allure bootstrap, pre-existing).
+PHPCS Magento2: 0 errors / 0 warnings. `setup:di:compile`: success.
+
 ## 0a. Independent Review P1.2 Closure (rev 3 — batch URL rewrite loading)
 
 **Old behavior:** every list item resolved its URLs individually —
