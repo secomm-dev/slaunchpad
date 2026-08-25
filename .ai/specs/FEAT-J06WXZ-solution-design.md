@@ -118,12 +118,14 @@ Supported baseline field types:
 - product chooser, category chooser
 - collection/repeater với nested allowed field types
 
+`trusted-rich-text` tuân `DEC-FEATJ06WXZ-002`: Admin dùng native Magento WYSIWYG; storefront dùng CMS block filter. Đây là explicit trusted-admin boundary, không phải generic sanitizer. Chỉ template field opt-in được phép render filtered output không escape; embed giữ contract riêng.
+
 Dynamic form proposed flow:
 
 1. `widget.xml` khai báo common shell: component selector, schema version và custom options block.
-2. Component selector change gọi Admin endpoint/helper block để render field schema, hoặc refresh widget options theo signed backend URL.
-3. Client JS chỉ quản lý UI/reorder; server definition vẫn là source of truth.
-4. Save path normalize và encode payload theo version.
+2. `ComponentOptions` helper block nhúng schema của enabled registry definitions vào Magento `x-magento-init`; không cần custom Admin endpoint.
+3. Client JS chỉ quản lý UI/media/reorder và ghi một hidden `parameters[payload]`; server definition vẫn là source of truth.
+4. Save path được plugin validate cho cả CMS directive và standalone widget instance; storefront decode/normalize lại và fail closed.
 
 Vertical slice phải quyết định mechanism cuối cùng dựa trên round-trip thực tế của Magento Widget popup, PageBuilder và TinyMCE. Không dùng generic dynamic field library mới.
 
@@ -132,8 +134,8 @@ Vertical slice phải quyết định mechanism cuối cùng dựa trên round-t
 Baseline: widget parameters, không DB table.
 
 - Scalar/common parameters có thể lưu top-level.
-- Component-specific data lưu trong versioned payload encoded bằng Magento-safe mechanism.
-- Codec phải deterministic, có maximum byte size, maximum nesting depth và maximum item count.
+- Component-specific data lưu bằng canonical JSON envelope format version `1`, sau đó Base64URL để an toàn trong Magento directive.
+- Codec deterministic với giới hạn 16 KiB encoded, depth 6 và tối đa 50 rows cho mỗi collection.
 - Decode failure không throw ra storefront; fail closed + safe diagnostic.
 - Không unserialize PHP object; chỉ structured scalar/array data.
 - Legacy codec/normalizer giữ support cho schema version đã release.
@@ -220,10 +222,13 @@ Resolved by approved spec/DEC:
 - Secomm-owned runtime templates.
 - No JIT/Hyva Widgets runtime dependency baseline.
 
-Must be resolved within planned proof gates, without changing approved behaviour:
+Resolved in TASK-P0BP58:
 
-- Admin dynamic renderer mechanism.
-- Versioned payload encoding/limits.
+- Admin renderer: native `widget.xml` helper block + server-embedded registry schema + `x-magento-init`; no custom endpoint.
+- Persistence: canonical JSON/Base64URL format v1; 16 KiB/depth 6/50 collection rows.
+
+Must still be resolved within planned proof gates, without changing approved behaviour:
+
 - Rich HTML sanitizer path.
 - Concrete cache lifetime per contextual component.
 - Second Hyvä theme for compatibility gate.

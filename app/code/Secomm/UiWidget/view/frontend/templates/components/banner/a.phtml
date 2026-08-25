@@ -1,0 +1,100 @@
+<?php
+/**
+ * Adapted from Hyvä UI banner/A-default 2.8.0.
+ * Local modifications: registry payload, safe palette enums, responsive media,
+ * no demo fallback, semantic heading and instance-safe IDs.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$instanceId = $block->getInstanceId();
+$titleId = $instanceId . '-title';
+$useCard = (bool)($data['use_card'] ?? false);
+$useGradient = (bool)($data['use_gradient'] ?? false);
+$linkAppearance = (string)($data['link_appearance'] ?? 'primary');
+
+$contentClasses = [
+    'start' => 'self-start justify-self-start',
+    'center' => 'self-center justify-self-center',
+    'end' => 'self-end justify-self-end',
+];
+$textClasses = ['left' => 'text-left', 'center' => 'text-center', 'right' => 'text-right'];
+$backgroundClasses = ['dark' => 'bg-slate-900', 'light' => 'bg-white', 'brand' => 'bg-primary'];
+$textToneClasses = ['light' => 'text-white', 'dark' => 'text-slate-950', 'brand' => 'text-primary'];
+$linkClasses = [
+    'primary' => 'btn btn-primary inline-flex',
+    'secondary' => 'btn btn-secondary inline-flex',
+    'button' => 'btn inline-flex',
+    'link' => 'font-medium underline hover:no-underline',
+];
+
+$contentClass = $contentClasses[$data['content_alignment'] ?? 'center'];
+$textClass = $textClasses[$data['text_alignment'] ?? 'center'];
+$backgroundClass = $backgroundClasses[$data['background_tone'] ?? 'dark'];
+$textToneClass = $textToneClasses[$data['text_tone'] ?? 'light'];
+$gradientStyle = $useGradient
+    ? 'background-image: linear-gradient(' . (int)($data['gradient_angle'] ?? 5)
+        . 'deg, transparent, rgb(0 0 0 / 65%));'
+    : '';
+?>
+<section id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+         class="relative grid min-h-80 overflow-hidden <?= $escaper->escapeHtmlAttr($backgroundClass) ?>"
+         aria-labelledby="<?= $escaper->escapeHtmlAttr($titleId) ?>"
+         data-secomm-ui-component="banner_a">
+    <picture class="col-start-1 row-start-1 h-full">
+        <?php if (!empty($data['desktop_image'])): ?>
+            <source srcset="<?= $escaper->escapeUrl((string)$data['desktop_image']) ?>"
+                    media="(min-width: 1024px)">
+        <?php endif; ?>
+        <img src="<?= $escaper->escapeUrl((string)$data['mobile_image']) ?>"
+             alt="<?= $escaper->escapeHtmlAttr((string)$data['image_alt']) ?>"
+             width="1280"
+             height="640"
+             loading="<?= $escaper->escapeHtmlAttr((string)($data['loading'] ?? 'lazy')) ?>"
+             class="h-full min-h-80 w-full object-cover">
+    </picture>
+
+    <?php if ($useGradient): ?>
+        <div class="pointer-events-none absolute inset-0 col-start-1 row-start-1"
+             style="<?= $escaper->escapeHtmlAttr($gradientStyle) ?>"
+             aria-hidden="true"></div>
+    <?php endif; ?>
+
+    <div class="relative z-10 col-start-1 row-start-1 m-6 max-w-3xl p-6 md:m-12 md:p-10
+                <?= $escaper->escapeHtmlAttr($contentClass) ?>
+                <?= $escaper->escapeHtmlAttr($textClass) ?>
+                <?= $escaper->escapeHtmlAttr(
+                    $useCard ? 'rounded-lg bg-white/90 text-slate-950 shadow-lg' : $textToneClass
+                ) ?>">
+        <h2 id="<?= $escaper->escapeHtmlAttr($titleId) ?>"
+            class="text-3xl font-bold text-balance lg:text-6xl">
+            <?= $escaper->escapeHtml((string)$data['title']) ?>
+        </h2>
+        <?php if (!empty($data['subtitle'])): ?>
+            <p class="mt-3 text-lg font-medium lg:text-2xl">
+                <?= $escaper->escapeHtml((string)$data['subtitle']) ?>
+            </p>
+        <?php endif; ?>
+        <?php if (!empty($data['cta_url']) && $linkAppearance !== 'overlay'): ?>
+            <a href="<?= $escaper->escapeUrl((string)$data['cta_url']) ?>"
+               class="mt-6 <?= $escaper->escapeHtmlAttr($linkClasses[$linkAppearance] ?? $linkClasses['primary']) ?>"
+                <?php if (!empty($data['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                <?= $escaper->escapeHtml((string)$data['cta_label']) ?>
+            </a>
+        <?php endif; ?>
+    </div>
+
+    <?php if (!empty($data['cta_url']) && $linkAppearance === 'overlay'): ?>
+        <a href="<?= $escaper->escapeUrl((string)$data['cta_url']) ?>"
+           class="absolute inset-0 z-20 outline-offset-4 focus-visible:outline-2 focus-visible:outline-primary"
+            <?php if (!empty($data['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+            <span class="sr-only"><?= $escaper->escapeHtml((string)$data['cta_label']) ?></span>
+        </a>
+    <?php endif; ?>
+</section>

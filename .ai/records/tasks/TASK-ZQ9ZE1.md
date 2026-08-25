@@ -9,13 +9,13 @@ specification_level: MINI
 spec_status: VALID
 specification_ref: Embedded Mini-Spec; canonical parent ../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md
 risk: medium
-status: proposed
+status: in_progress
 created: 2026-08-24
-updated: 2026-08-24
+updated: 2026-08-25
 external_refs: {}
 legacy_ids: []
 ticket_ref:
-decisions: [DEC-FEATJ06WXZ-001]
+decisions: [DEC-FEATJ06WXZ-001, DEC-FEATJ06WXZ-002]
 decision_assessment:
 components: []
 source_areas: [app/code/Secomm/UiWidget/view/frontend/templates/components/]
@@ -61,11 +61,18 @@ Plan: [FEAT-J06WXZ implementation plan](../../plans/FEAT-J06WXZ-implementation-p
 
 ## Implementation Notes
 
-Not implemented.
+Implementation started on 2026-08-25 after TL approval of TASK-JN2SH6.
+
+Slice 1 approved on 2026-08-25: establish the trusted rich-text contract and deliver `generic_content_a` as its first B1 consumer. Rich HTML is limited to explicit `trusted-rich-text` fields, authored with Magento WYSIWYG and rendered through the CMS block filter.
 
 ## Verification
 
 - [ ] AC-001..005 — evidence: `.ai/runtime/evidence/TASK-ZQ9ZE1/`
+- [x] Slice 1 unit suite: 25 tests, 55 assertions on PHP 8.4 DDEV (`--no-extensions`).
+- [x] Slice 1 static checks: PHP syntax, JavaScript syntax, XML syntax and `git diff --check` pass.
+- [ ] Browser verification of Magento WYSIWYG lifecycle and `generic_content_a` storefront output remains before B1 task completion.
+- [ ] Project spec validator is currently unavailable because `.ai/bin/project-ai-validate` has a pre-existing unmatched quote near line 831; no validator file was changed in this slice.
+- [x] Independent sub-agent review findings addressed: overflow now clears the persisted payload and shows a blocking server-validation path; editor IDs are root-scoped and teardown removes the correct TinyMCE event registration.
 
 ## Related records
 

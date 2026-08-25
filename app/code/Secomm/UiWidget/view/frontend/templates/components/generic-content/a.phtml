@@ -1,0 +1,36 @@
+<?php
+/**
+ * Adapted from Hyvä UI generic-content/A-text 2.8.0.
+ * Local modifications: registry payload, allowlisted layout variants and explicit
+ * Magento CMS trusted-rich-text rendering.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$instanceId = $block->getInstanceId();
+$headingId = $instanceId . '-heading';
+$alignmentClasses = ['left' => 'text-left', 'center' => 'text-center', 'right' => 'text-right'];
+$widthClasses = ['narrow' => 'max-w-2xl', 'medium' => 'max-w-4xl', 'wide' => 'max-w-7xl'];
+$alignmentClass = $alignmentClasses[$data['alignment'] ?? 'left'];
+$widthClass = $widthClasses[$data['width'] ?? 'medium'];
+?>
+<section id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+         class="mx-auto w-full px-4 py-8 md:px-6 md:py-12 <?= $escaper->escapeHtmlAttr($widthClass) ?>
+                <?= $escaper->escapeHtmlAttr($alignmentClass) ?>"
+         data-secomm-ui-component="generic_content_a"
+         <?php if (!empty($data['heading'])): ?>aria-labelledby="<?= $escaper->escapeHtmlAttr($headingId) ?>"<?php endif; ?>>
+    <?php if (!empty($data['heading'])): ?>
+        <h2 id="<?= $escaper->escapeHtmlAttr($headingId) ?>" class="mb-5 text-3xl font-semibold text-balance">
+            <?= $escaper->escapeHtml((string)$data['heading']) ?>
+        </h2>
+    <?php endif; ?>
+    <div class="prose max-w-none">
+        <?= /* @noEscape trusted-rich-text filtered by Magento CMS */ $block->renderTrustedHtml((string)$data['content']) ?>
+    </div>
+</section>

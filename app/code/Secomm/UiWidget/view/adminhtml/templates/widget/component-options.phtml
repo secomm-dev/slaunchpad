@@ -1,0 +1,38 @@
+<?php
+/**
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Adminhtml\Widget\ComponentOptions $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
+<input type="hidden"
+       id="<?= $escaper->escapeHtmlAttr((string)$block->getData('payload_element_id')) ?>"
+       name="<?= $escaper->escapeHtmlAttr((string)$block->getData('payload_element_name')) ?>"
+       value="<?= $escaper->escapeHtmlAttr((string)$block->getData('payload_element_value')) ?>"
+       class="widget-option"/>
+<div id="<?= $escaper->escapeHtmlAttr((string)$block->getData('payload_element_id')) ?>-options"
+     class="secomm-ui-component-options"
+     data-role="secomm-ui-component-options"
+    data-payload-id="<?= $escaper->escapeHtmlAttr((string)$block->getData('payload_element_id')) ?>">
+    <div data-role="fields"></div>
+    <div data-role="payload-error"
+         class="message message-error error"
+         role="alert"
+         aria-live="polite"
+         hidden></div>
+</div>
+<script type="text/x-magento-init">
+{
+    <?= /* @noEscape */ json_encode('#' . (string)$block->getData('payload_element_id') . '-options') ?>: {
+        "Secomm_UiWidget/js/component-options": {
+            "schemas": <?= /* @noEscape */ $block->getSchemasJson() ?>,
+            "mediaBrowserUrl": <?= /* @noEscape */ json_encode($block->getMediaBrowserUrl()) ?>,
+            "wysiwygConfig": <?= /* @noEscape */ $block->getWysiwygConfigJson() ?>,
+            "limits": {"maxEncodedBytes": 16384, "maxItems": 50}
+        }
+    }
+}
+</script>

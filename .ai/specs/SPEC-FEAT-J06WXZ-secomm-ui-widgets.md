@@ -312,7 +312,7 @@ UX rules:
 - [ ] OQ-003 — Chốt dynamic Admin form mechanism sau proof-of-concept: Magento helper block/AJAX schema renderer hay static `widget.xml` dependencies cho component đơn giản. Owner: SA/TL.
 - [ ] OQ-004 — Chốt cache lifetime/identity policy cho từng product/category component. Owner: TL.
 - [ ] OQ-005 — Xác định product themes Hyvä tối thiểu dùng trong compatibility gate. Owner: Product/TL.
-- [ ] OQ-006 — Xác định WYSIWYG policy: field nào cho phép trusted rich HTML và sanitizer contract tương ứng. Owner: SA/Security/TL.
+- [x] OQ-006 — Resolved bởi `DEC-FEATJ06WXZ-002`: chỉ field `trusted-rich-text` opt-in dùng native Magento WYSIWYG và CMS block filter; không custom sanitizer baseline. Approved: Tuấn Lê, 2026-08-25.
 
 ## 12. Estimation
 

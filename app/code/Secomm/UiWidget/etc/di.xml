@@ -10,9 +10,24 @@
                 type="Secomm\UiWidget\Model\Component\Registry"/>
     <preference for="Secomm\UiWidget\Api\TemplateResolverInterface"
                 type="Secomm\UiWidget\Model\Component\TemplateResolver"/>
+    <preference for="Secomm\UiWidget\Api\ParameterCodecInterface"
+                type="Secomm\UiWidget\Model\Parameter\Codec"/>
+    <preference for="Secomm\UiWidget\Api\SchemaValidatorInterface"
+                type="Secomm\UiWidget\Model\Component\SchemaValidator"/>
     <type name="Secomm\UiWidget\Model\Component\Registry">
         <arguments>
-            <argument name="definitions" xsi:type="array"/>
+            <argument name="definitions" xsi:type="array">
+                <item name="banner_a" xsi:type="object">Secomm\UiWidget\Model\Component\BannerADefinition</item>
+                <item name="generic_content_a" xsi:type="object">Secomm\UiWidget\Model\Component\GenericContentADefinition</item>
+            </argument>
         </arguments>
+    </type>
+    <type name="Magento\Widget\Model\Widget">
+        <plugin name="secomm_ui_widget_validate_directive_parameters"
+                type="Secomm\UiWidget\Plugin\ValidateWidgetParameters"/>
+    </type>
+    <type name="Magento\Widget\Model\Widget\Instance">
+        <plugin name="secomm_ui_widget_validate_instance_parameters"
+                type="Secomm\UiWidget\Plugin\ValidateWidgetInstanceParameters"/>
     </type>
 </config>

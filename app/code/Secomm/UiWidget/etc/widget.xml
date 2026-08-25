@@ -28,6 +28,15 @@
                        sort_order="20">
                 <value>1</value>
             </parameter>
+            <parameter name="payload"
+                       xsi:type="block"
+                       visible="true"
+                       required="true"
+                       sort_order="30">
+                <label translate="true">Component Options</label>
+                <description translate="true">Configure the fields provided by the selected component.</description>
+                <block class="Secomm\UiWidget\Block\Adminhtml\Widget\ComponentOptions"/>
+            </parameter>
         </parameters>
     </widget>
 </widgets>

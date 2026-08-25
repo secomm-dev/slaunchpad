@@ -9,7 +9,7 @@ specification_level: MINI
 spec_status: VALID
 specification_ref: Embedded Mini-Spec; canonical parent ../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md
 risk: medium
-status: in_progress
+status: done
 created: 2026-08-24
 updated: 2026-08-24
 external_refs: {}
@@ -61,7 +61,7 @@ Plan: [FEAT-J06WXZ implementation plan](../../plans/FEAT-J06WXZ-implementation-p
 
 ## Implementation Notes
 
-Implementation completed on 2026-08-24; awaiting TL code approval.
+Implementation completed and approved by TL on 2026-08-24.
 
 - Added the `Secomm_UiWidget` module and enabled it in `app/etc/config.php`.
 - Declared one native Magento widget type labelled `Secomm UI` with `component` and hidden `schema_version` parameters.
@@ -69,6 +69,7 @@ Implementation completed on 2026-08-24; awaiting TL code approval.
 - Added an Admin source model, bilingual translations, README/CHANGELOG and focused unit tests.
 - No Hyvä UI template was copied and no dynamic Admin form or catalog provider was implemented in this task.
 - Runtime validation passed on DDEV PHP 8.4. Existing PHP 8.4 deprecation warnings were emitted by unrelated legacy modules; none originated from `Secomm_UiWidget`.
+- TL code approval recorded on 2026-08-24.
 
 ## Verification
 
