@@ -33,7 +33,7 @@ all values store-view scoped:
 | Brand Summary | `general/brand_summary` | — | one-line `>` summary; falls back to Site / Brand Title, never the internal store view name |
 | Priority Paths | `general/priority_paths` | — | one internal path per line (e.g. `sales/guest/form`) |
 | CMS Pages | `urls/cms_pages` | — | multiselect, max 20 rendered |
-| Categories | `urls/categories` | — | multiselect, max 20 rendered |
+| Categories | `urls/categories` | — | multiselect, max 20 rendered; scoped to the edited store view's category tree (website/default scope: that scope's trees with disambiguated breadcrumb labels) |
 | Include Sitemap References | `urls/include_sitemap_refs` | `1` | link existing sitemap files |
 | Cache Lifetime | `cache/lifetime` | `86400` | seconds |
 | Max URLs | `cache/max_urls` | `100` | global bound across all sections |

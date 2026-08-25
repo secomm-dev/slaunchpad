@@ -2,6 +2,23 @@
 
 All notable changes to `Secomm_AiDiscoverability` are documented here.
 
+## [1.2.1] - 2026-08-25
+
+Store-scoped category selector fix. Spec: `SPEC-TASK-S7MFCT`.
+
+### Fixed
+- Admin category multiselect now scopes to the configuration section's scope
+  (core `website`/`store` request-param mechanism): store-view scope shows only
+  that store group's root tree; the tree root itself (e.g. "Default Category")
+  and the global root are never selectable; inactive categories stay excluded.
+- Website scope: one distinct group root → that tree; multiple distinct roots →
+  labeled union of that website's trees only (no foreign websites, no silent
+  tree pick). Default scope: labeled union of all trees.
+- Duplicate category names disambiguated with breadcrumb labels
+  (`Women > Accessories`), store-group name prefix when several trees are mixed;
+  fallback `[ID: n]` for unnamed categories. Labels built from the same single
+  collection (`path` + id→name map) — no N+1.
+
 ## [1.2.0] - 2026-08-25
 
 AI Discovery → Commerce endpoint integration. Spec: `SPEC-TASK-7FBHHC`.
