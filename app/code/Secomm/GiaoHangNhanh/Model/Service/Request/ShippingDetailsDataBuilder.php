@@ -65,7 +65,7 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
         // Resolve origin via Secomm_ShippingCore
         $context = $this->shippingContextFactory->fromRateRequest($rateRequest, Config::GHN_CODE);
         $origin = $this->originProvider->resolve($context);
-        $locationFrom = $this->resolveGhnLocation((int)$origin->getRegionId(), $origin->getWard());
+        $locationFrom = $this->resolveGhnLocation((int)$origin->getRegionId(), (string) $origin->getWard());
         $fromDistrictId = $locationFrom['toDistrictId'];
         $fromWardCode = $locationFrom['toWardCode'];
 
