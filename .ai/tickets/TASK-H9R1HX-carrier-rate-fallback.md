@@ -1,7 +1,8 @@
 # TASK-H9R1HX — Add carrier-internal rate fallback when GHN/Ahamove API fails
 
 - **ID**: `TASK-H9R1HX`
-- **Parent**: `TASK-3F6QWZ` (SLP-12)
+- **Parent**: `TASK-3F6QWZ`
+- **External Ref**: `SLP-12`
 - **Priority**: P2 (Medium)
 - **Estimate**: ~16–24h
 - **Mode**: A (Tier-3: shipping)
