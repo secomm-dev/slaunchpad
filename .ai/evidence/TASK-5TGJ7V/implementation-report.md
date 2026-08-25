@@ -90,7 +90,51 @@ form_key + secret-key URLs; dedicated temporary admin user, removed after):
 UAT cleanup: temporary admin user + ACL change reverted, test config rows
 deleted, caches flushed.
 
-## 5. Validation
+## 5. Runtime investigation — vi_vn /llms.txt missing `## Collections`
+
+Reported: vi_vn (`/llms.txt?___store=vi_vn`) showed NO `## Collections` although
+the round-2 UAT evidence claimed categories 4,3 produced it.
+
+| Stage | Evidence |
+|---|---|
+| Store identity | vi_vn = store_id 3, website_id 1, group_id 1, root_category_id 2 |
+| Saved config (scope) | `core_config_data`: `stores/seocomm_ai_discoverability/urls/categories` → `stores/3 = '4,3'` (saved via the REAL admin form POST at store scope); `default/0 = '37,38'` (user's own earlier default-scope save) |
+| Effective ScopeConfig for store 3 | `'4,3'` (store scope wins over inherited default) — scope NOT wrong |
+| Admin POST contract | form action `…/section/seocomm_ai_discoverability/store/vi_vn/`, field `groups[urls][fields][categories][value]=4,3`; reload shows hidden input `value="4,3"` and component `value: [4,3]` (chips) — bridge/save correct |
+| Generator read | selected ids `[4,3]` → repository get(id, 3) → active ✓ → in tree (path `1/2/…`) ✓ → resolved 2, eligible 2, **emitted 0** |
+| Why emitted 0 | `CanonicalPolicy::getCategoryUrl` requires a non-redirect `url_rewrite` row for the entity in THAT store: store 1 had 48 category rows; **stores 2 and 3 had ZERO** (store views created after category data, rewrites never generated for them) → `getCategoryUrl` returned null → entries skipped |
+| Cache | `getFresh` bypasses cache and still omitted Collections → NOT stale cache. (A cached body did also persist until flush, but the primary cause was the missing data.) |
+| Classification | **D — category eligibility / URL data**. NOT A (scope), NOT B (UI save), NOT C (generator read), NOT E (cache) |
+
+### Fix (data-only, no module code defect)
+
+Regenerated the missing rewrites natively
+(`CategoryUrlRewriteGenerator::generate()` + `UrlPersistInterface::replace()`,
+store 3):
+
+```
+url_rewrite: 3|3|gear.html, 4|3|gear/fitness-equipment.html
+```
+
+HTTP proof (store cookie `store=vi_vn`, after cache flush):
+
+```
+## Collections
+- [Fitness Equipment](https://webhook.thanhaloha.io.vn/gear/fitness-equipment.html)
+- [Gear](https://webhook.thanhaloha.io.vn/gear.html)
+```
+
+Regression coverage for the exact root cause:
+`Test/Unit/Service/Source/CategoriesSourceTest.php` — a selected category
+with no store rewrite (canonical null) is omitted, never emitted with a
+fabricated URL; with a canonical rewrite it is emitted. No selector redesign,
+no AiCommerce change, no config contract change, no production code change.
+
+Investigation cleanup: temporary admin user removed; john.smith role
+parent_id verified 0; container /tmp scripts removed; caches flushed.
+Config rows `stores/3='4,3'` and `default/0='37,38'` kept (real saved config).
+
+## 6. Validation
 
 | Check | Result |
 |---|---|
