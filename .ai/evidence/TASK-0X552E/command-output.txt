@@ -1,0 +1,33 @@
+# LC-30 — Command Output Excerpts (TASK-0X552E), 2026-08-24
+
+## PHPCS Magento2 (module scope) — final run
+
+$ docker exec slaunchpad-phpfpm-1 vendor/bin/phpcs --standard=Magento2 \
+    --extensions=php,phtml --report=summary app/code/Secomm/AiDiscoverability
+
+Output contains zero violation rows (no "FILE" section, no "A TOTAL OF ... WERE FOUND").
+Remaining output lines are PHPCS's own deprecation notices about CSS sniff support.
+=> 0 errors, 0 warnings.
+
+## Unit tests — final run
+
+$ docker exec slaunchpad-phpfpm-1 vendor/bin/phpunit -c dev/tests/unit/phpunit.xml \
+    app/code/Secomm/AiDiscoverability/Test/Unit
+
+OK, but there were issues!
+Tests: 29, Assertions: 66, PHPUnit Warnings: 1.
+(The single warning is the repo-wide Allure PHPUnit extension bootstrap — pre-existing,
+unrelated to the module.)
+
+## DI compile
+
+$ docker exec slaunchpad-phpfpm-1 bin/magento setup:di:compile -q
+=> exit 0 (run after every constructor change; final run clean)
+
+## Runtime endpoint checks (host curl)
+
+GET  /llms.txt (enabled)   -> 200, text/plain; charset=UTF-8, ETag f79d236e...
+HEAD /llms.txt             -> 200, content-length 0
+GET  + If-None-Match match -> 304
+POST /llms.txt             -> 302 (never reaches generation)
+GET  /llms.txt (disabled)  -> 404 (verified earlier in session; re-enabled -> 200)
