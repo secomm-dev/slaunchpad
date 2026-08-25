@@ -1,7 +1,9 @@
-# TASK-AIC-PDC1 implementation plan
+# TASK-AIC-PDC1 — Implementation Plan: product-detail response cache + ETag
 
-Specification ID: SPEC-TASK-AIC-PDC1
-Spec: `.ai/specs/SPEC-TASK-AIC-PDC1-ai-commerce-product-detail-cache.md`
+| Specification | SPEC-TASK-AIC-PDC1 (`.ai/specs/SPEC-TASK-AIC-PDC1-ai-commerce-product-detail-cache.md`) |
+|---|---|
+| Branch | `task/ai-commerce-product-detail-cache` (base `bd6e34e6`) |
+| Type | MINI — controller/observer change, no config/DI surface change |
 
 1. `Controller/Products/View.php` — inject `ResponseCache`; lookup route `product`
    params `['sku' => trim]` after isEnabled check; warm hit returns cached; miss →
