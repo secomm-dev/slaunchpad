@@ -17,6 +17,8 @@ use Magento\Shipping\Model\ShipmentNotifier;
 use Secomm\Ahamove\Command\CreateShipment;
 use Secomm\Ahamove\Helper\Data as AhamoveHelper;
 use Secomm\Ahamove\Logger\Logger;
+use Secomm\Ahamove\Model\Carrier\ShippingMethod\Express;
+use Secomm\Ahamove\Model\Carrier\ShippingMethod\Standard;
 use Secomm\Ahamove\Model\PackageFactory;
 
 class PushAhamove extends Action
@@ -72,7 +74,12 @@ class PushAhamove extends Action
 
             if (is_array($result) && isset($result['order']['tracking_code'])) {
                 $trackingCode = $result['order']['tracking_code'];
-                $sharedLink = $result['order']['shared_link'] ?? '';
+                $sharedLink = $result['shared_link'] ?? $result['order']['shared_link'] ?? '';
+
+                // Normalize carrier code to base carrier code (e.g. ahamove_standard or ahamove_express)
+                $carrierCode = str_contains($shippingMethod, Express::AHAMOVE_EXPRESS_CARRIER_CODE)
+                    ? Express::AHAMOVE_EXPRESS_CARRIER_CODE
+                    : Standard::AHAMOVE_STANDARD_CARRIER_CODE;
 
                 // If order already has shipment(s), add track to existing shipment
                 $shipments = $order->getShipmentsCollection();
@@ -87,7 +94,7 @@ class PushAhamove extends Action
                         }
                         if (!$hasTracking) {
                             $track = $this->trackFactory->create();
-                            $track->setCarrierCode($shippingMethod);
+                            $track->setCarrierCode($carrierCode);
                             $track->setTitle($order->getShippingDescription() ?: 'Ahamove Delivery');
                             $track->setTrackNumber($trackingCode);
                             $track->setDescription($sharedLink);
@@ -106,7 +113,7 @@ class PushAhamove extends Action
                         }
                         $tracks = [
                             [
-                                'carrier_code' => $shippingMethod,
+                                'carrier_code' => $carrierCode,
                                 'number' => $trackingCode,
                                 'title' => $order->getShippingDescription() ?: 'Ahamove Delivery',
                                 'description' => $sharedLink,
