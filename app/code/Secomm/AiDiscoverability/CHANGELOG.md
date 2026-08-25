@@ -2,6 +2,26 @@
 
 All notable changes to `Secomm_AiDiscoverability` are documented here.
 
+## [1.2.0] - 2026-08-25
+
+AI Discovery → Commerce endpoint integration. Spec: `SPEC-TASK-7FBHHC`.
+
+### Added
+- `## Machine-readable Commerce` llms.txt section advertising the `Secomm_AiCommerce`
+  read-only surface (`/ai/store`, `/ai/catalog/search`, `/ai/categories`,
+  `/ai/products/{sku}` route template) — rendered only when AiCommerce is present
+  AND enabled for the store view. Soft seam (`ModuleList` + config flag): no
+  AiCommerce class reference, no endpoint execution, no catalog load.
+- `admin_system_config_changed_section_seocomm_ai_commerce` observer dropping the
+  llms.txt cache when AiCommerce config changes.
+- `EligibilityChecker::isEligibleCmsIdentifier()` — system utility CMS pages
+  (`enable-cookies`, `no-route`) are never emitted even if selected by an admin.
+- Plain-entry formatter form `- Label: url` for route templates (`{sku}` placeholder).
+
+### Fixed
+- README configuration table paths corrected to the runtime values:
+  `urls/cms_pages`, `urls/categories`, `urls/include_sitemap_refs`.
+
 ## [1.1.0] - 2026-08-24
 
 LC-30.1 llms.txt v2 conformance + store metadata. Spec delta: `SPEC-TASK-0X552E` §12.

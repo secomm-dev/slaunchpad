@@ -58,5 +58,7 @@ previously absent product enter search results — correctness first).
 
 ## LC-30 relationship
 
-`Secomm_AiDiscoverability` is NOT modified; /llms.txt integration happens in
-a follow-up ticket after runtime acceptance of this module.
+`/llms.txt` integration is delivered on the Secomm_AiDiscoverability side
+(SPEC-TASK-7FBHHC): when this module is enabled for a store view, llms.txt
+advertises the read-only `/ai/*` surface in a `## Machine-readable Commerce`
+section. No AiCommerce behavior depends on it.

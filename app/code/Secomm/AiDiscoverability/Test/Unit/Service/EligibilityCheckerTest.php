@@ -45,4 +45,18 @@ class EligibilityCheckerTest extends TestCase
         $this->assertFalse($this->checker->isEligiblePath('https://example.com/about'));
         $this->assertFalse($this->checker->isEligiblePath('/women?color=red'));
     }
+
+    public function testRejectsSystemCmsIdentifiers(): void
+    {
+        $this->assertFalse($this->checker->isEligibleCmsIdentifier('enable-cookies'));
+        $this->assertFalse($this->checker->isEligibleCmsIdentifier('no-route'));
+        $this->assertFalse($this->checker->isEligibleCmsIdentifier(' Enable-Cookies '));
+    }
+
+    public function testAllowsMerchantCmsIdentifiers(): void
+    {
+        $this->assertTrue($this->checker->isEligibleCmsIdentifier('about-us'));
+        $this->assertTrue($this->checker->isEligibleCmsIdentifier('size-guide'));
+        $this->assertTrue($this->checker->isEligibleCmsIdentifier('no-route-help'));
+    }
 }

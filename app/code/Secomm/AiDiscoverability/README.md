@@ -32,16 +32,19 @@ all values store-view scoped:
 | Site / Brand Title | `general/site_title` | — | H1 title; falls back to store information name, then store view name |
 | Brand Summary | `general/brand_summary` | — | one-line `>` summary; falls back to Site / Brand Title, never the internal store view name |
 | Priority Paths | `general/priority_paths` | — | one internal path per line (e.g. `sales/guest/form`) |
-| CMS Pages | `general/cms_pages` | — | multiselect, max 20 rendered |
-| Categories | `general/categories` | — | multiselect, max 20 rendered |
-| Include Sitemap References | `general/include_sitemap_refs` | `1` | link existing sitemap files |
+| CMS Pages | `urls/cms_pages` | — | multiselect, max 20 rendered |
+| Categories | `urls/categories` | — | multiselect, max 20 rendered |
+| Include Sitemap References | `urls/include_sitemap_refs` | `1` | link existing sitemap files |
 | Cache Lifetime | `cache/lifetime` | `86400` | seconds |
 | Max URLs | `cache/max_urls` | `100` | global bound across all sections |
 
 ## Generation behavior
 
 1. **Sources** (fixed section order): Priority Pages (home + configured paths) → Collections
-   (configured categories) → Pages (configured CMS pages) → Sitemap references.
+   (configured categories) → Pages (configured CMS pages) → Sitemap references →
+   Machine-readable Commerce (only when `Secomm_AiCommerce` is present AND its
+   `seocomm_ai_commerce/general/enabled` flag is set for the store view; discovery
+   metadata only — no endpoint execution, no catalog load; SPEC-TASK-7FBHHC).
 2. **Eligibility filter** (`EligibilityChecker`): rejects admin/api/rest/graphql, checkout,
    cart, customer, account, wishlist, search, review, oauth, `llms*`, `robots.txt`, and any
    URL carrying a query string or fragment.

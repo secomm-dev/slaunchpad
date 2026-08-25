@@ -68,11 +68,18 @@ class LlmsTxtFormatter
     /**
      * Format one link entry as a Markdown hyperlink with optional description.
      *
-     * @param array $entry link entry (label, url, optional description)
+     * Entries flagged `plain` (route templates carrying a placeholder, never a
+     * resolvable URL) render as `- Label: url` instead of a hyperlink.
+     *
+     * @param array $entry link entry (label, url, optional description, optional plain)
      * @return string formatted entry line
      */
     private function formatEntry(array $entry): string
     {
+        if (!empty($entry['plain'])) {
+            return '- ' . $this->sanitizeText((string) ($entry['label'] ?? '')) . ': ' . $entry['url'];
+        }
+
         $line = '- [' . $this->sanitizeText((string) ($entry['label'] ?? '')) . '](' . $entry['url'] . ')';
 
         $description = $this->sanitizeText((string) ($entry['description'] ?? ''), self::DESCRIPTION_MAX_LENGTH);

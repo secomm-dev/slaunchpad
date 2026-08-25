@@ -34,6 +34,17 @@ class EligibilityChecker
     ];
 
     /**
+     * Magento utility/system CMS identifiers that must never be emitted, even
+     * if mistakenly selected by an admin (SPEC-TASK-7FBHHC §2.2). Exact match
+     * only — deliberately NOT a pattern list, so legitimate merchant CMS pages
+     * with other identifiers are unaffected.
+     */
+    private const BLOCKED_CMS_IDENTIFIERS = [
+        'enable-cookies',
+        'no-route',
+    ];
+
+    /**
      * Whether a candidate internal path is eligible (internal, bare, unblocked).
      *
      * @param string $path candidate internal path
@@ -59,5 +70,18 @@ class EligibilityChecker
         }
 
         return true;
+    }
+
+    /**
+     * Whether a CMS page identifier is eligible for emission.
+     *
+     * @param string $identifier CMS page identifier
+     * @return bool true when the page may be emitted
+     */
+    public function isEligibleCmsIdentifier(string $identifier): bool
+    {
+        $identifier = trim(strtolower($identifier));
+
+        return !in_array($identifier, self::BLOCKED_CMS_IDENTIFIERS, true);
     }
 }

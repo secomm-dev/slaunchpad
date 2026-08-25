@@ -11,6 +11,7 @@ use Psr\Log\LoggerInterface;
 use Secomm\AiDiscoverability\Model\Config;
 use Secomm\AiDiscoverability\Service\Source\CategoriesSource;
 use Secomm\AiDiscoverability\Service\Source\CmsPagesSource;
+use Secomm\AiDiscoverability\Service\Source\CommerceEndpointsSource;
 use Secomm\AiDiscoverability\Service\Source\PriorityUrlsSource;
 use Secomm\AiDiscoverability\Service\Source\SitemapRefsSource;
 
@@ -27,6 +28,7 @@ class LlmsTxtGenerator
     private const SECTION_COLLECTIONS = 'Collections';
     private const SECTION_PAGES = 'Pages';
     private const SECTION_SITEMAP = 'Sitemap';
+    private const SECTION_COMMERCE = 'Machine-readable Commerce';
 
     /**
      * @param Config $config module configuration accessor
@@ -36,6 +38,7 @@ class LlmsTxtGenerator
      * @param CmsPagesSource $cmsPagesSource CMS pages source
      * @param CategoriesSource $categoriesSource categories source
      * @param SitemapRefsSource $sitemapRefsSource sitemap references source
+     * @param CommerceEndpointsSource $commerceEndpointsSource commerce discovery source (soft seam)
      * @param UrlCollector $collector URL dedup/bound collector
      * @param LlmsTxtFormatter $formatter llms.txt formatter
      * @param LoggerInterface $logger PSR logger
@@ -48,6 +51,7 @@ class LlmsTxtGenerator
         private readonly CmsPagesSource $cmsPagesSource,
         private readonly CategoriesSource $categoriesSource,
         private readonly SitemapRefsSource $sitemapRefsSource,
+        private readonly CommerceEndpointsSource $commerceEndpointsSource,
         private readonly UrlCollector $collector,
         private readonly LlmsTxtFormatter $formatter,
         private readonly LoggerInterface $logger
@@ -73,6 +77,9 @@ class LlmsTxtGenerator
             self::SECTION_SITEMAP => $this->config->isIncludeSitemapRefs($storeId)
                 ? $this->sitemapRefsSource->getEntries($store)
                 : [],
+            // Soft seam: empty when Secomm_AiCommerce is absent or disabled
+            // (SPEC-TASK-7FBHHC §2.1) — no endpoint execution, no catalog load.
+            self::SECTION_COMMERCE => $this->commerceEndpointsSource->getEntries($store),
         ];
 
         // Cross-section dedup + global bound, section order preserved.
