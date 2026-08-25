@@ -80,7 +80,7 @@ class LlmsTxtFormatterTest extends TestCase
             ],
         ];
 
-        $expectedTail = str_repeat('a', 200 - strlen('Bold statement tab '));
+        $expectedTail = str_repeat('a', 240 - strlen('Bold statement tab '));
         $line = '- [L](https://shop.test/x): Bold statement tab ' . $expectedTail;
 
         $this->assertStringContainsString(
@@ -132,5 +132,57 @@ class LlmsTxtFormatterTest extends TestCase
         $body = $this->formatter->format('Thời trang', 'Thời trang Việt Nam', 'vi_VN', [], 'VND');
 
         $this->assertSame("# Thời trang\n> Thời trang Việt Nam\n\nLocale: vi_VN\nCurrency: VND\n", $body);
+    }
+
+    /**
+     * SPEC-TASK-QYZMF1 §3.2: prose sections render sanitized, one line each.
+     */
+    public function testProseSectionRendersSanitizedLines(): void
+    {
+        $sections = ['Agent Guidance' => [['prose' => ['Line <b>one</b>', "line\ttwo"]]]];
+
+        $this->assertSame(
+            "# S\n\nLocale: vi_VN\n\n## Agent Guidance\nLine one\nline two\n",
+            $this->formatter->format('S', '', 'vi_VN', $sections)
+        );
+    }
+
+    /**
+     * SPEC-TASK-QYZMF1 §3.4: commerce endpoints render as GET + Purpose
+     * subsections, never as fabricated Markdown links.
+     */
+    public function testCommerceDetailEntriesRenderAsGetAndPurpose(): void
+    {
+        $sections = [
+            'Machine-readable Commerce' => [
+                ['detail' => [
+                    'label' => 'Store Information',
+                    'url' => 'https://example.com/ai/store?store=default',
+                    'purpose' => 'Store metadata, locale, currency and supported public catalog context.',
+                ]],
+                ['detail' => [
+                    'label' => 'Product Detail',
+                    'url' => 'https://example.com/ai/products/{sku}?store=default',
+                    'purpose' => 'Retrieve public product information for a known SKU.',
+                    'plain' => true,
+                ]],
+            ],
+        ];
+
+        $body = $this->formatter->format('S', '', 'vi_VN', $sections);
+
+        $this->assertSame(
+            "# S\n\nLocale: vi_VN\n"
+            . "\n## Machine-readable Commerce\n"
+            . "\n### Store Information\n"
+            . "GET https://example.com/ai/store?store=default\n"
+            . "Purpose: Store metadata, locale, currency and supported public catalog context.\n"
+            . "\n### Product Detail\n"
+            . "GET https://example.com/ai/products/{sku}?store=default\n"
+            . "Purpose: Retrieve public product information for a known SKU.\n",
+            $body
+        );
+        // Route templates are never clickable Markdown links.
+        $this->assertStringNotContainsString('[Product Detail](', $body);
     }
 }

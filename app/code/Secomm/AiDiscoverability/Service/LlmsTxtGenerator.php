@@ -20,15 +20,55 @@ use Secomm\AiDiscoverability\Service\Source\SitemapRefsSource;
  * (SPEC-TASK-0X552E §4.2): same store + same effective config + same source
  * state => same generated body bytes.
  *
- * Section order is fixed: Priority Pages, Collections, Pages, Sitemap.
+ * Section order is fixed (SPEC-TASK-QYZMF1 §3.1): Store Summary, Agent
+ * Guidance, Priority Pages, Featured Collections, Key Pages,
+ * Machine-readable Commerce, Commerce Limitations, Sitemap.
  */
 class LlmsTxtGenerator
 {
+    private const SECTION_STORE_SUMMARY = 'Store Summary';
+    private const SECTION_AGENT_GUIDANCE = 'Agent Guidance';
     private const SECTION_PRIORITY = 'Priority Pages';
-    private const SECTION_COLLECTIONS = 'Collections';
-    private const SECTION_PAGES = 'Pages';
-    private const SECTION_SITEMAP = 'Sitemap';
+    private const SECTION_COLLECTIONS = 'Featured Collections';
+    private const SECTION_PAGES = 'Key Pages';
     private const SECTION_COMMERCE = 'Machine-readable Commerce';
+    private const SECTION_COMMERCE_LIMITS = 'Commerce Limitations';
+    private const SECTION_SITEMAP = 'Sitemap';
+
+    /**
+     * Deterministic agent guidance describing the ACTUAL module capability:
+     * a read-only machine-readable catalog surface — nothing transactional,
+     * no numeric rate limits (edge configuration may differ).
+     */
+    private const AGENT_GUIDANCE_LINES = [
+        'This site provides public machine-readable commerce endpoints for catalog discovery.',
+        'Use the machine-readable endpoints below when structured catalog data is '
+        . 'sufficient instead of scraping storefront HTML.',
+        'The current machine-readable interface is read-only.',
+        'Do not use these endpoints for:',
+        '- cart creation',
+        '- checkout',
+        '- customer accounts',
+        '- orders',
+        '- addresses',
+        '- payments',
+        'Respect HTTP rate limits and cache responses where appropriate.',
+    ];
+
+    /**
+     * Deterministic statement of what the commerce interface verifiably does
+     * NOT expose (it is read-only catalog data only).
+     */
+    private const COMMERCE_LIMITATION_LINES = [
+        'The current interface does NOT expose:',
+        '- cart creation',
+        '- checkout',
+        '- payment',
+        '- customer account data',
+        '- order data',
+        '- address data',
+        'Transactional operations must use the storefront.',
+    ];
 
     /**
      * @param Config $config module configuration accessor
@@ -38,7 +78,7 @@ class LlmsTxtGenerator
      * @param CmsPagesSource $cmsPagesSource CMS pages source
      * @param CategoriesSource $categoriesSource categories source
      * @param SitemapRefsSource $sitemapRefsSource sitemap references source
-     * @param CommerceEndpointsSource $commerceEndpointsSource commerce discovery source (soft seam)
+     * @param CommerceEndpointsSource $commerce commerce discovery source (soft seam)
      * @param UrlCollector $collector URL dedup/bound collector
      * @param LlmsTxtFormatter $formatter llms.txt formatter
      * @param LoggerInterface $logger PSR logger
@@ -74,12 +114,15 @@ class LlmsTxtGenerator
             self::SECTION_PRIORITY => $this->priorityUrlsSource->getEntries($store),
             self::SECTION_COLLECTIONS => $this->collector->sortByLabel($this->categoriesSource->getEntries($store)),
             self::SECTION_PAGES => $this->collector->sortByLabel($this->cmsPagesSource->getEntries($store)),
+            // Soft seam: empty when Secomm_AiCommerce is absent or disabled
+            // (SPEC-TASK-7FBHHC §2.1) — no endpoint execution, no catalog load.
+            self::SECTION_COMMERCE => array_map(
+                static fn (array $entry): array => ['detail' => $entry],
+                $this->commerceEndpointsSource->getEntries($store)
+            ),
             self::SECTION_SITEMAP => $this->config->isIncludeSitemapRefs($storeId)
                 ? $this->sitemapRefsSource->getEntries($store)
                 : [],
-            // Soft seam: empty when Secomm_AiCommerce is absent or disabled
-            // (SPEC-TASK-7FBHHC §2.1) — no endpoint execution, no catalog load.
-            self::SECTION_COMMERCE => $this->commerceEndpointsSource->getEntries($store),
         ];
 
         // Cross-section dedup + global bound, section order preserved.
@@ -92,10 +135,12 @@ class LlmsTxtGenerator
                 if ($total >= $maxUrls) {
                     break 2;
                 }
-                if (isset($seen[$entry['url']])) {
+                // Commerce entries carry their URL inside the detail payload.
+                $url = (string) ($entry['detail']['url'] ?? $entry['url'] ?? '');
+                if ($url === '' || isset($seen[$url])) {
                     continue;
                 }
-                $seen[$entry['url']] = true;
+                $seen[$url] = true;
                 $bounded[$heading][] = $entry;
                 $total++;
             }
@@ -114,10 +159,8 @@ class LlmsTxtGenerator
         // site title. The internal store-view name is never emitted as the
         // AI-facing summary (SPEC-TASK-0X552E §12.3); when no safe public text
         // exists the blockquote is omitted entirely.
-        $summary = $this->config->getBrandSummary($storeId);
-        if ($summary === '') {
-            $summary = $this->config->getSiteTitle($storeId);
-        }
+        $brandSummary = $this->config->getBrandSummary($storeId);
+        $summary = $brandSummary !== '' ? $brandSummary : $this->config->getSiteTitle($storeId);
 
         $locale = (string) $this->scopeConfig->getValue(
             'general/locale/code',
@@ -133,6 +176,31 @@ class LlmsTxtGenerator
 
         $currency = $this->config->getCurrencyCode($storeId);
 
-        return $this->formatter->format($title, $summary, $locale, $bounded, $currency);
+        // Prose sections (SPEC-TASK-QYZMF1 §3.2) — carry no URLs of their own
+        // and are excluded from the global URL bound. Store Summary renders
+        // only from configured brand summary text (never generated). The
+        // commerce-dependent sections render ONLY when the machine-readable
+        // surface is actually available, so a store without it never implies
+        // /ai/* exists.
+        $commerceAvailable = !empty($bounded[self::SECTION_COMMERCE]);
+
+        $ordered = [];
+
+        if ($brandSummary !== '') {
+            $ordered[self::SECTION_STORE_SUMMARY] = [['prose' => [$brandSummary]]];
+        }
+        if ($commerceAvailable) {
+            $ordered[self::SECTION_AGENT_GUIDANCE] = [['prose' => self::AGENT_GUIDANCE_LINES]];
+        }
+        $ordered[self::SECTION_PRIORITY] = $bounded[self::SECTION_PRIORITY] ?? [];
+        $ordered[self::SECTION_COLLECTIONS] = $bounded[self::SECTION_COLLECTIONS] ?? [];
+        $ordered[self::SECTION_PAGES] = $bounded[self::SECTION_PAGES] ?? [];
+        $ordered[self::SECTION_COMMERCE] = $bounded[self::SECTION_COMMERCE] ?? [];
+        if ($commerceAvailable) {
+            $ordered[self::SECTION_COMMERCE_LIMITS] = [['prose' => self::COMMERCE_LIMITATION_LINES]];
+        }
+        $ordered[self::SECTION_SITEMAP] = $bounded[self::SECTION_SITEMAP] ?? [];
+
+        return $this->formatter->format($title, $summary, $locale, $ordered, $currency);
     }
 }

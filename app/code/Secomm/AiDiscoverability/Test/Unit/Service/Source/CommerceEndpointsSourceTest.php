@@ -50,12 +50,25 @@ class CommerceEndpointsSourceTest extends TestCase
 
         $this->assertSame(
             [
-                ['label' => 'Store Information', 'url' => 'https://example.com/ai/store?store=vietnam'],
-                ['label' => 'Product Search', 'url' => 'https://example.com/ai/catalog/search?store=vietnam'],
-                ['label' => 'Categories', 'url' => 'https://example.com/ai/categories?store=vietnam'],
+                [
+                    'label' => 'Store Information',
+                    'url' => 'https://example.com/ai/store?store=vietnam',
+                    'purpose' => 'Store metadata, locale, currency and supported public catalog context.',
+                ],
+                [
+                    'label' => 'Product Search',
+                    'url' => 'https://example.com/ai/catalog/search?store=vietnam',
+                    'purpose' => 'Search public products using the bounded AI Commerce catalog facade.',
+                ],
+                [
+                    'label' => 'Categories',
+                    'url' => 'https://example.com/ai/categories?store=vietnam',
+                    'purpose' => 'Browse public category data for this store view.',
+                ],
                 [
                     'label' => 'Product Detail',
                     'url' => 'https://example.com/ai/products/{sku}?store=vietnam',
+                    'purpose' => 'Retrieve public product information for a known SKU.',
                     'plain' => true,
                 ],
             ],

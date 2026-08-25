@@ -2,6 +2,27 @@
 
 All notable changes to `Secomm_AiDiscoverability` are documented here.
 
+## [1.4.0] - 2026-08-25
+
+llms.txt V1.1 — richer business context + agent guidance. Spec: `SPEC-TASK-QYZMF1`.
+
+### Added
+- `## Store Summary` section from the configured Brand / Site Summary (omitted when
+  blank — never fabricated).
+- `## Agent Guidance` + `## Commerce Limitations` deterministic module-generated
+  sections (rendered only when the machine-readable commerce surface is available for
+  the store view; no numeric rate limits; no capability beyond the read-only surface).
+- Purpose lines for the machine-readable commerce endpoints, rendered as
+  `### <endpoint>` + `GET <url>` + `Purpose: …` blocks; the `{sku}` route template
+  stays plain text (never a Markdown link).
+
+### Changed
+- Section names: `Collections` → `Featured Collections`, `Pages` → `Key Pages`,
+  sitemap entry label → `XML Sitemap`.
+- Category descriptions: deterministic precedence `meta_description` → sanitized
+  plain-text `description` attribute (HTML stripped, 240-char bound) → omitted.
+- Link description bound raised 200 → 240 characters.
+
 ## [1.3.0] - 2026-08-25
 
 Hierarchical category tree selector (Product Edit Categories UX). Spec: `SPEC-TASK-5TGJ7V`.

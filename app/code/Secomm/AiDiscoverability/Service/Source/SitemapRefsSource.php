@@ -43,7 +43,7 @@ class SitemapRefsSource
             $path = trim((string) $sitemap->getSitemapPath(), '/');
             $url = $baseUrl . '/' . ($path !== '' ? $path . '/' : '') . $filename;
 
-            $entries[] = ['label' => 'Sitemap', 'url' => $url];
+            $entries[] = ['label' => 'XML Sitemap', 'url' => $url];
         }
 
         return $entries;

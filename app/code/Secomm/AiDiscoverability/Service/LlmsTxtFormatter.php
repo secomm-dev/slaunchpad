@@ -13,7 +13,7 @@ namespace Secomm\AiDiscoverability\Service;
 class LlmsTxtFormatter
 {
     private const SUMMARY_MAX_LENGTH = 500;
-    private const DESCRIPTION_MAX_LENGTH = 200;
+    private const DESCRIPTION_MAX_LENGTH = 240;
 
     /**
      * Format the llms.txt document body.
@@ -58,7 +58,7 @@ class LlmsTxtFormatter
             $lines[] = '';
             $lines[] = '## ' . $this->sanitizeText($heading);
             foreach ($entries as $entry) {
-                $lines[] = $this->formatEntry($entry);
+                array_push($lines, ...$this->formatEntry($entry));
             }
         }
 
@@ -66,18 +66,43 @@ class LlmsTxtFormatter
     }
 
     /**
-     * Format one link entry as a Markdown hyperlink with optional description.
+     * Format one entry: a Markdown link, a prose block, or a commerce detail block.
      *
-     * Entries flagged `plain` (route templates carrying a placeholder, never a
-     * resolvable URL) render as `- Label: url` instead of a hyperlink.
+     * Entry shapes:
+     * - link:  {label, url, description?, plain?} — `plain` entries (route
+     *   templates carrying a placeholder, never a resolvable URL) render as
+     *   `- Label: url` instead of a hyperlink.
+     * - prose: {prose: string[]} — module-generated guidance lines (SPEC-TASK-QYZMF1 §3.2).
+     * - detail:{detail: {label, url, purpose, plain?}} — commerce endpoint
+     *   subsection: `### Label` / `GET url` / `Purpose: text` (SPEC-TASK-QYZMF1 §3.4).
      *
-     * @param array $entry link entry (label, url, optional description, optional plain)
-     * @return string formatted entry line
+     * @param array $entry entry (see shapes above)
+     * @return string[] formatted lines of the entry
      */
-    private function formatEntry(array $entry): string
+    private function formatEntry(array $entry): array
     {
+        if (isset($entry['prose'])) {
+            return array_map(
+                fn (string $line): string => $this->sanitizeText($line),
+                (array) $entry['prose']
+            );
+        }
+
+        if (isset($entry['detail'])) {
+            $detail = (array) $entry['detail'];
+            $lines = ['', '### ' . $this->sanitizeText((string) ($detail['label'] ?? ''))];
+            $lines[] = 'GET ' . $detail['url'];
+
+            $purpose = $this->sanitizeText((string) ($detail['purpose'] ?? ''));
+            if ($purpose !== '') {
+                $lines[] = 'Purpose: ' . $purpose;
+            }
+
+            return $lines;
+        }
+
         if (!empty($entry['plain'])) {
-            return '- ' . $this->sanitizeText((string) ($entry['label'] ?? '')) . ': ' . $entry['url'];
+            return ['- ' . $this->sanitizeText((string) ($entry['label'] ?? '')) . ': ' . $entry['url']];
         }
 
         $line = '- [' . $this->sanitizeText((string) ($entry['label'] ?? '')) . '](' . $entry['url'] . ')';
@@ -87,7 +112,7 @@ class LlmsTxtFormatter
             $line .= ': ' . $description;
         }
 
-        return $line;
+        return [$line];
     }
 
     /**

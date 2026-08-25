@@ -68,13 +68,54 @@ class CategoriesSourceTest extends TestCase
         $this->seoPolicy->method('isNoindexed')->willReturn(false);
     }
 
-    private function categoryMock(int $id, string $path): Category
-    {
-        $category = $this->createMock(Category::class);
+    /**
+     * Category mock carrying EAV magic getters needed by the source.
+     *
+     * @param int $id entity id
+     * @param string $path category path
+     * @param string $metaDescription meta_description value
+     * @param string $description description value
+     * @return Category&\PHPUnit\Framework\MockObject\MockObject
+     */
+    private function categoryMock(
+        int $id,
+        string $path,
+        string $metaDescription = '',
+        string $description = ''
+    ): Category {
+        return $this->buildCategoryMock($id, $path, $metaDescription, $description);
+    }
+
+    /**
+     * Builds the underlying partial mock (declared getters via onlyMethods,
+     * EAV magic getters via addMethods).
+     *
+     * @param int $id entity id
+     * @param string $path category path
+     * @param string $metaDescription meta_description value
+     * @param string $description description value
+     * @return Category&\PHPUnit\Framework\MockObject\MockObject
+     */
+    private function buildCategoryMock(
+        int $id,
+        string $path,
+        string $metaDescription,
+        string $description
+    ): Category {
+        // Declared methods go through onlyMethods(); EAV magic getters (not
+        // declared on the model) through addMethods().
+        $category = $this->getMockBuilder(Category::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getId', 'getCustomAttributes', 'getIsActive', 'getName', 'getPath', 'getParentId'])
+            ->addMethods(['getMetaDescription', 'getDescription'])
+            ->getMock();
+        $category->method('getId')->willReturn($id);
         $category->method('getIsActive')->willReturn(true);
         $category->method('getName')->willReturn('Category ' . $id);
         $category->method('getPath')->willReturn($path);
         $category->method('getCustomAttributes')->willReturn([]);
+        $category->method('getMetaDescription')->willReturn($metaDescription);
+        $category->method('getDescription')->willReturn($description);
 
         return $category;
     }
@@ -82,10 +123,7 @@ class CategoriesSourceTest extends TestCase
     private function rootCategory(): Category
     {
         // Root (id 2, path "1/2") resolved by getRootCategoryPath().
-        $root = $this->createMock(Category::class);
-        $root->method('getPath')->willReturn('1/2');
-
-        return $root;
+        return $this->categoryMock(2, '1/2');
     }
 
     public function testCategoryWithoutStoreUrlRewriteIsOmittedNotFabricated(): void
@@ -125,6 +163,56 @@ class CategoriesSourceTest extends TestCase
             ],
             $entries
         );
+    }
+
+    public function testMetaDescriptionPreferredOverDescriptionAttribute(): void
+    {
+        $this->config->method('getCategoryIds')->willReturn([5]);
+        $this->categoryRepository->method('get')->willReturnCallback(
+            fn (int $id): Category => $id === 2
+                ? $this->rootCategory()
+                : $this->categoryMock($id, '1/2/' . $id, 'Meta wins', '<p>Body text</p>')
+        );
+        $this->canonicalPolicy->method('getCategoryUrl')->willReturn('https://example.com/training');
+
+        $entries = $this->source()->getEntries($this->store);
+
+        $this->assertSame('Meta wins', $entries[0]['description']);
+    }
+
+    public function testDescriptionAttributeFallbackStrippedAndBounded(): void
+    {
+        $this->config->method('getCategoryIds')->willReturn([5]);
+        $longHtml = '<p>' . str_repeat('word ', 100) . '</p><script>alert(1)</script>';
+        $this->categoryRepository->method('get')->willReturnCallback(
+            fn (int $id): Category => $id === 2
+                ? $this->rootCategory()
+                : $this->categoryMock($id, '1/2/' . $id, '', $longHtml)
+        );
+        $this->canonicalPolicy->method('getCategoryUrl')->willReturn('https://example.com/training');
+
+        $entries = $this->source()->getEntries($this->store);
+
+        $description = $entries[0]['description'];
+        $this->assertSame(240, mb_strlen($description));
+        $this->assertStringNotContainsString('<', $description);
+        $this->assertStringNotContainsString('alert', $description);
+        $this->assertStringStartsWith('word word', $description);
+    }
+
+    public function testNoUsableDescriptionEmitsLinkOnly(): void
+    {
+        $this->config->method('getCategoryIds')->willReturn([5]);
+        $this->categoryRepository->method('get')->willReturnCallback(
+            fn (int $id): Category => $id === 2
+                ? $this->rootCategory()
+                : $this->categoryMock($id, '1/2/' . $id, '', "<img src=x>\n   ")
+        );
+        $this->canonicalPolicy->method('getCategoryUrl')->willReturn('https://example.com/training');
+
+        $entries = $this->source()->getEntries($this->store);
+
+        $this->assertArrayNotHasKey('description', $entries[0]);
     }
 
     private function source(): CategoriesSource

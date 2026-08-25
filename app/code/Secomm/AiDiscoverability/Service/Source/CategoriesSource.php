@@ -20,6 +20,7 @@ use Secomm\AiDiscoverability\Service\SeoPolicy;
 class CategoriesSource
 {
     public const MAX_ENTRIES = 20;
+    public const DESCRIPTION_FALLBACK_MAX_LENGTH = 240;
 
     /**
      * @param Config $config module configuration accessor
@@ -88,8 +89,13 @@ class CategoriesSource
                 'url' => $url,
             ];
 
-            // Optional description: existing category meta data only, never generated.
+            // Optional description, deterministic precedence (SPEC-TASK-QYZMF1
+            // §3.3): meta_description, else the category description attribute
+            // sanitized to safe bounded plain text; never generated, never raw HTML.
             $description = $this->getMetaDescription($category);
+            if ($description === '') {
+                $description = $this->getSanitizedDescription($category);
+            }
             if ($description !== '') {
                 $entry['description'] = $description;
             }
@@ -117,6 +123,53 @@ class CategoriesSource
 
         foreach ($category->getCustomAttributes() as $attribute) {
             if ($attribute->getAttributeCode() === 'meta_description') {
+                return trim((string) $attribute->getValue());
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Category description attribute as safe bounded plain text ('' when unusable).
+     *
+     * Same store-scoped attribute load as the rest of the entry (no extra
+     * query); HTML stripped, whitespace collapsed, bounded to 240 characters.
+     *
+     * @param CategoryInterface $category candidate category
+     * @return string sanitized description
+     */
+    private function getSanitizedDescription(CategoryInterface $category): string
+    {
+        $raw = $this->readAttributeValue($category, 'description');
+
+        $text = strip_tags($raw);
+        $text = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $text) ?? '';
+        $text = trim((string) preg_replace('/\s+/u', ' ', $text));
+
+        return mb_substr($text, 0, self::DESCRIPTION_FALLBACK_MAX_LENGTH);
+    }
+
+    /**
+     * Read an EAV attribute value from the category, '' when unset.
+     *
+     * Both read paths are defensive: the concrete model's getter when it
+     * exists, else the custom-attributes payload (values loaded store-scoped
+     * by the repository call above).
+     *
+     * @param CategoryInterface $category candidate category
+     * @param string $attributeCode EAV attribute code
+     * @return string raw attribute value
+     */
+    private function readAttributeValue(CategoryInterface $category, string $attributeCode): string
+    {
+        $getter = 'get' . str_replace('_', '', ucwords($attributeCode, '_'));
+        if (method_exists($category, $getter)) {
+            return trim((string) $category->$getter());
+        }
+
+        foreach ($category->getCustomAttributes() as $attribute) {
+            if ($attribute->getAttributeCode() === $attributeCode) {
                 return trim((string) $attribute->getValue());
             }
         }

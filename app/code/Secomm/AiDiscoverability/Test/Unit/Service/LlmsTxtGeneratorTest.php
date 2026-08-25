@@ -88,26 +88,27 @@ class LlmsTxtGeneratorTest extends TestCase
         );
     }
 
-    public function testConfiguredBrandSummaryWins(): void
+    public function testConfiguredBrandSummaryWinsAndStoreSummarySectionRenders(): void
     {
         $this->config->method('getBrandSummary')->willReturn('Official OLV fashion store in Vietnam.');
         $this->config->method('getSiteTitle')->willReturn('OLV');
 
         $this->assertSame(
-            "# OLV\n> Official OLV fashion store in Vietnam.\n\nLocale: vi_VN\nCurrency: VND\n",
+            "# OLV\n> Official OLV fashion store in Vietnam.\n\nLocale: vi_VN\nCurrency: VND\n"
+            . "\n## Store Summary\nOfficial OLV fashion store in Vietnam.\n",
             $this->generator->generate(1)
         );
     }
 
-    public function testEmptySummaryFallsBackToPublicSiteTitle(): void
+    public function testEmptySummaryFallsBackToPublicSiteTitleAndOmitsStoreSummary(): void
     {
         $this->config->method('getBrandSummary')->willReturn('');
         $this->config->method('getSiteTitle')->willReturn('OLV');
 
-        $this->assertSame(
-            "# OLV\n> OLV\n\nLocale: vi_VN\nCurrency: VND\n",
-            $this->generator->generate(1)
-        );
+        $body = $this->generator->generate(1);
+
+        $this->assertSame("# OLV\n> OLV\n\nLocale: vi_VN\nCurrency: VND\n", $body);
+        $this->assertStringNotContainsString('## Store Summary', $body);
     }
 
     public function testInternalStoreNameIsNeverEmittedAsSummary(): void
@@ -126,7 +127,7 @@ class LlmsTxtGeneratorTest extends TestCase
         $this->assertStringNotContainsString('> Default Store View', $body);
     }
 
-    public function testCommerceSectionAppendedWhenAiCommerceAdvertised(): void
+    public function testCommerceSectionsRenderWithGuidanceAndLimitationsWhenAdvertised(): void
     {
         $this->config->method('getBrandSummary')->willReturn('');
         $this->config->method('getSiteTitle')->willReturn('OLV');
@@ -134,10 +135,17 @@ class LlmsTxtGeneratorTest extends TestCase
         // Fresh source mock: the setUp stub would otherwise match first.
         $commerceSource = $this->createMock(CommerceEndpointsSource::class);
         $commerceSource->method('getEntries')->willReturn([
-            ['label' => 'Store Information', 'url' => 'https://example.com/ai/store?store=default'],
-            ['label' => 'Product Search', 'url' => 'https://example.com/ai/catalog/search?store=default'],
-            ['label' => 'Categories', 'url' => 'https://example.com/ai/categories?store=default'],
-            ['label' => 'Product Detail', 'url' => 'https://example.com/ai/products/{sku}?store=default', 'plain' => true],
+            [
+                'label' => 'Store Information',
+                'url' => 'https://example.com/ai/store?store=default',
+                'purpose' => 'Store metadata, locale, currency and supported public catalog context.',
+            ],
+            [
+                'label' => 'Product Detail',
+                'url' => 'https://example.com/ai/products/{sku}?store=default',
+                'purpose' => 'Retrieve public product information for a known SKU.',
+                'plain' => true,
+            ],
         ]);
 
         $generator = new LlmsTxtGenerator(
@@ -156,18 +164,28 @@ class LlmsTxtGeneratorTest extends TestCase
 
         $body = $generator->generate(1);
 
-        $this->assertSame(
-            "# OLV\n> OLV\n\nLocale: vi_VN\nCurrency: VND\n"
-            . "\n## Machine-readable Commerce\n"
-            . "- [Store Information](https://example.com/ai/store?store=default)\n"
-            . "- [Product Search](https://example.com/ai/catalog/search?store=default)\n"
-            . "- [Categories](https://example.com/ai/categories?store=default)\n"
-            . "- Product Detail: https://example.com/ai/products/{sku}?store=default\n",
+        $this->assertStringContainsString('## Agent Guidance', $body);
+        $this->assertStringContainsString(
+            'This site provides public machine-readable commerce endpoints for catalog discovery.',
             $body
         );
+        $this->assertStringContainsString('## Machine-readable Commerce', $body);
+        $this->assertStringContainsString('### Store Information', $body);
+        $this->assertStringContainsString(
+            'GET https://example.com/ai/store?store=default',
+            $body
+        );
+        $this->assertStringContainsString(
+            'Purpose: Retrieve public product information for a known SKU.',
+            $body
+        );
+        $this->assertStringContainsString('## Commerce Limitations', $body);
+        $this->assertStringContainsString('Transactional operations must use the storefront.', $body);
+        // Deterministic byte output.
+        $this->assertSame($body, $generator->generate(1));
     }
 
-    public function testCommerceSectionAbsentWhenSourceEmpty(): void
+    public function testCommerceSectionsAbsentWhenSourceEmpty(): void
     {
         $this->config->method('getBrandSummary')->willReturn('');
         $this->config->method('getSiteTitle')->willReturn('OLV');
@@ -175,5 +193,46 @@ class LlmsTxtGeneratorTest extends TestCase
         $body = $this->generator->generate(1);
 
         $this->assertStringNotContainsString('Machine-readable Commerce', $body);
+        $this->assertStringNotContainsString('Agent Guidance', $body);
+        $this->assertStringNotContainsString('Commerce Limitations', $body);
+        $this->assertStringNotContainsString('/ai/', $body);
+    }
+
+    /**
+     * SPEC-TASK-QYZMF1 §5 AC-4: no unsupported capability may ever be claimed —
+     * UCP/WebMCP/MCP/checkout mutations do not exist in this runtime.
+     */
+    public function testNoUnsupportedCapabilityClaims(): void
+    {
+        $this->config->method('getBrandSummary')->willReturn('B');
+        $this->config->method('getSiteTitle')->willReturn('OLV');
+
+        $commerceSource = $this->createMock(CommerceEndpointsSource::class);
+        $commerceSource->method('getEntries')->willReturn([
+            ['label' => 'Store Information', 'url' => 'https://example.com/ai/store?store=default', 'purpose' => 'p'],
+        ]);
+        $generator = new LlmsTxtGenerator(
+            $this->config,
+            $this->storeManager,
+            $this->scopeConfig,
+            $this->createStub(PriorityUrlsSource::class),
+            $this->createStub(CmsPagesSource::class),
+            $this->createStub(CategoriesSource::class),
+            $this->createStub(SitemapRefsSource::class),
+            $commerceSource,
+            new UrlCollector(),
+            new LlmsTxtFormatter(),
+            $this->createStub(LoggerInterface::class)
+        );
+
+        $body = $generator->generate(1);
+
+        foreach ([
+            'UCP', 'ucp', '.well-known', 'MCP', 'WebMCP', 'tools/list',
+            'create_cart', 'create_checkout', 'update_checkout', 'complete_checkout',
+            'Shop Pay', 'agent-driven payment', 'order tracking',
+        ] as $forbidden) {
+            $this->assertStringNotContainsString($forbidden, $body, "forbidden claim: {$forbidden}");
+        }
     }
 }

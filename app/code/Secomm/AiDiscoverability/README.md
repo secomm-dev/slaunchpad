@@ -9,8 +9,11 @@ Spec: `.ai/specs/SPEC-TASK-0X552E-ai-discoverability-llms-txt.md` (LC-30).
 ## What it does
 
 - `GET /llms.txt` → `200 text/plain; charset=UTF-8` with a deterministic, curated document
-  (`# Site`, `> summary`, `Locale:`, `Currency:`, `## Sections`, Markdown links
-  `- [Label](url)` with optional `: Description` from existing `meta_description` only).
+  (`# Site`, `> summary`, `Locale:`, `Currency:`, V1.1 sections — Store Summary, Agent
+  Guidance, Priority Pages, Featured Collections, Key Pages, Machine-readable Commerce
+  (GET + Purpose), Commerce Limitations, Sitemap — Markdown links `- [Label](url)` with
+  optional `: Description`). Category descriptions: `meta_description` → sanitized
+  plain-text `description` (240-char bound) → omitted; never AI-generated, never raw HTML.
 - `HEAD /llms.txt` → same headers, empty body. `If-None-Match` → `304`.
 - Feature disabled for the store view → explicit `404` (GET and HEAD).
 - Non-GET/HEAD requests never reach generation (standard Magento routing).
@@ -40,11 +43,17 @@ all values store-view scoped:
 
 ## Generation behavior
 
-1. **Sources** (fixed section order): Priority Pages (home + configured paths) → Collections
-   (configured categories) → Pages (configured CMS pages) → Sitemap references →
-   Machine-readable Commerce (only when `Secomm_AiCommerce` is present AND its
-   `seocomm_ai_commerce/general/enabled` flag is set for the store view; discovery
-   metadata only — no endpoint execution, no catalog load; SPEC-TASK-7FBHHC).
+1. **Sources** (fixed V1.1 section order, SPEC-TASK-QYZMF1): Store Summary (configured
+   `brand_summary` only, omitted when blank) → Agent Guidance (module-generated,
+   read-only statement — only when the commerce surface is available) → Priority Pages
+   (home + configured paths) → Featured Collections (configured categories) → Key Pages
+   (configured CMS pages) → Machine-readable Commerce with GET + Purpose blocks (only
+   when `Secomm_AiCommerce` is present AND its `seocomm_ai_commerce/general/enabled`
+   flag is set for the store view; discovery metadata only — no endpoint execution, no
+   catalog load; SPEC-TASK-7FBHHC) → Commerce Limitations (same availability condition) →
+   Sitemap references. Stores without the commerce surface get no commerce/guidance
+   sections at all — nothing implies `/ai/*` exists. No unsupported capability
+   (UCP/MCP/checkout mutations) is ever claimed.
 2. **Eligibility filter** (`EligibilityChecker`): rejects admin/api/rest/graphql, checkout,
    cart, customer, account, wishlist, search, review, oauth, `llms*`, `robots.txt`, and any
    URL carrying a query string or fragment.

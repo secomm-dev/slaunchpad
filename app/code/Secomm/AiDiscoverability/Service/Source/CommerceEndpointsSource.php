@@ -38,8 +38,12 @@ class CommerceEndpointsSource
     /**
      * Advertise the bounded read-only commerce endpoints of the store view.
      *
+     * Each entry carries a concise factual purpose line (SPEC-TASK-QYZMF1 §3.4)
+     * describing what the endpoint actually exposes — no capability beyond the
+     * implemented read-only surface is ever stated.
+     *
      * @param StoreInterface $store store view scope
-     * @return array<int, array{label: string, url: string, plain?: bool}>
+     * @return array<int, array{label: string, url: string, purpose: string, plain?: bool}>
      */
     public function getEntries(StoreInterface $store): array
     {
@@ -51,13 +55,26 @@ class CommerceEndpointsSource
         $suffix = '?store=' . rawurlencode((string) $store->getCode());
 
         return [
-            ['label' => 'Store Information', 'url' => $base . '/ai/store' . $suffix],
-            ['label' => 'Product Search', 'url' => $base . '/ai/catalog/search' . $suffix],
-            ['label' => 'Categories', 'url' => $base . '/ai/categories' . $suffix],
+            [
+                'label' => 'Store Information',
+                'url' => $base . '/ai/store' . $suffix,
+                'purpose' => 'Store metadata, locale, currency and supported public catalog context.',
+            ],
+            [
+                'label' => 'Product Search',
+                'url' => $base . '/ai/catalog/search' . $suffix,
+                'purpose' => 'Search public products using the bounded AI Commerce catalog facade.',
+            ],
+            [
+                'label' => 'Categories',
+                'url' => $base . '/ai/categories' . $suffix,
+                'purpose' => 'Browse public category data for this store view.',
+            ],
             // Route template, not a resolvable URL — emitted as plain text.
             [
                 'label' => 'Product Detail',
                 'url' => $base . '/ai/products/' . self::SKU_PLACEHOLDER . $suffix,
+                'purpose' => 'Retrieve public product information for a known SKU.',
                 'plain' => true,
             ],
         ];
