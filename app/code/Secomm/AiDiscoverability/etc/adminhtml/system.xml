@@ -36,10 +36,10 @@
                     <source_model>Secomm\AiDiscoverability\Model\Config\Source\CmsPages</source_model>
                     <comment>Only active pages visible in the selected scope are emitted (max 20).</comment>
                 </field>
-                <field id="categories" translate="label" type="multiselect" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="categories" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Categories / Collections</label>
-                    <source_model>Secomm\AiDiscoverability\Model\Config\Source\Categories</source_model>
-                    <comment>Only active categories of the store's tree are emitted (max 20).</comment>
+                    <frontend_model>Secomm\AiDiscoverability\Block\Adminhtml\System\Config\CategoryTree</frontend_model>
+                    <comment>Hierarchical selector of the scope's category tree; only active categories are selectable (max 20 emitted). Saved as category IDs.</comment>
                 </field>
                 <field id="include_sitemap_refs" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Include Sitemap References</label>
