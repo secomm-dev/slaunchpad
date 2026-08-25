@@ -10,6 +10,7 @@ use Magento\Store\Api\Data\StoreInterface;
 use Psr\Log\LoggerInterface;
 use Secomm\AiDiscoverability\Model\Config;
 use Secomm\AiDiscoverability\Service\CanonicalPolicy;
+use Secomm\AiDiscoverability\Service\EligibilityChecker;
 use Secomm\AiDiscoverability\Service\SeoPolicy;
 
 /**
@@ -25,6 +26,7 @@ class CmsPagesSource
      * @param PageRepositoryInterface $pageRepository CMS page repository
      * @param CanonicalPolicy $canonicalPolicy canonical URL policy
      * @param SeoPolicy $seoPolicy noindex policy adapter
+     * @param EligibilityChecker $eligibilityChecker system-CMS-identifier hardening
      * @param LoggerInterface $logger PSR logger
      */
     public function __construct(
@@ -32,6 +34,7 @@ class CmsPagesSource
         private readonly PageRepositoryInterface $pageRepository,
         private readonly CanonicalPolicy $canonicalPolicy,
         private readonly SeoPolicy $seoPolicy,
+        private readonly EligibilityChecker $eligibilityChecker,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -65,6 +68,11 @@ class CmsPagesSource
             $identifier = (string) $page->getIdentifier();
 
             if ($identifier === '') {
+                continue;
+            }
+            if (!$this->eligibilityChecker->isEligibleCmsIdentifier($identifier)) {
+                // System utility page (enable-cookies / no-route) — never
+                // emitted, even when explicitly selected (SPEC-TASK-7FBHHC §2.2).
                 continue;
             }
             if ($this->seoPolicy->isNoindexed('/' . $identifier, $storeId)) {

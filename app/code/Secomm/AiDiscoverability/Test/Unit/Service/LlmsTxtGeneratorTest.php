@@ -14,6 +14,7 @@ use Secomm\AiDiscoverability\Service\LlmsTxtFormatter;
 use Secomm\AiDiscoverability\Service\LlmsTxtGenerator;
 use Secomm\AiDiscoverability\Service\Source\CategoriesSource;
 use Secomm\AiDiscoverability\Service\Source\CmsPagesSource;
+use Secomm\AiDiscoverability\Service\Source\CommerceEndpointsSource;
 use Secomm\AiDiscoverability\Service\Source\PriorityUrlsSource;
 use Secomm\AiDiscoverability\Service\Source\SitemapRefsSource;
 use Secomm\AiDiscoverability\Service\UrlCollector;
@@ -49,12 +50,18 @@ class LlmsTxtGeneratorTest extends TestCase
      */
     private $generator;
 
+    /**
+     * @var CommerceEndpointsSource&MockObject
+     */
+    private $commerceSource;
+
     protected function setUp(): void
     {
         $this->config = $this->createMock(Config::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
         $this->scopeConfig = $this->createMock(ScopeConfigInterface::class);
         $this->store = $this->createMock(StoreInterface::class);
+        $this->commerceSource = $this->createMock(CommerceEndpointsSource::class);
 
         $this->store->method('getId')->willReturn(1);
         $this->store->method('getName')->willReturn('Default Store View');
@@ -64,6 +71,7 @@ class LlmsTxtGeneratorTest extends TestCase
         $this->config->method('isIncludeSitemapRefs')->willReturn(false);
         $this->scopeConfig->method('getValue')->willReturn('vi_VN');
         $this->config->method('getCurrencyCode')->willReturn('VND');
+        $this->commerceSource->method('getEntries')->willReturn([]);
 
         $this->generator = new LlmsTxtGenerator(
             $this->config,
@@ -73,6 +81,7 @@ class LlmsTxtGeneratorTest extends TestCase
             $this->createStub(CmsPagesSource::class),
             $this->createStub(CategoriesSource::class),
             $this->createStub(SitemapRefsSource::class),
+            $this->commerceSource,
             new UrlCollector(),
             new LlmsTxtFormatter(),
             $this->createStub(LoggerInterface::class)
@@ -115,5 +124,56 @@ class LlmsTxtGeneratorTest extends TestCase
             $body
         );
         $this->assertStringNotContainsString('> Default Store View', $body);
+    }
+
+    public function testCommerceSectionAppendedWhenAiCommerceAdvertised(): void
+    {
+        $this->config->method('getBrandSummary')->willReturn('');
+        $this->config->method('getSiteTitle')->willReturn('OLV');
+
+        // Fresh source mock: the setUp stub would otherwise match first.
+        $commerceSource = $this->createMock(CommerceEndpointsSource::class);
+        $commerceSource->method('getEntries')->willReturn([
+            ['label' => 'Store Information', 'url' => 'https://example.com/ai/store?store=default'],
+            ['label' => 'Product Search', 'url' => 'https://example.com/ai/catalog/search?store=default'],
+            ['label' => 'Categories', 'url' => 'https://example.com/ai/categories?store=default'],
+            ['label' => 'Product Detail', 'url' => 'https://example.com/ai/products/{sku}?store=default', 'plain' => true],
+        ]);
+
+        $generator = new LlmsTxtGenerator(
+            $this->config,
+            $this->storeManager,
+            $this->scopeConfig,
+            $this->createStub(PriorityUrlsSource::class),
+            $this->createStub(CmsPagesSource::class),
+            $this->createStub(CategoriesSource::class),
+            $this->createStub(SitemapRefsSource::class),
+            $commerceSource,
+            new UrlCollector(),
+            new LlmsTxtFormatter(),
+            $this->createStub(LoggerInterface::class)
+        );
+
+        $body = $generator->generate(1);
+
+        $this->assertSame(
+            "# OLV\n> OLV\n\nLocale: vi_VN\nCurrency: VND\n"
+            . "\n## Machine-readable Commerce\n"
+            . "- [Store Information](https://example.com/ai/store?store=default)\n"
+            . "- [Product Search](https://example.com/ai/catalog/search?store=default)\n"
+            . "- [Categories](https://example.com/ai/categories?store=default)\n"
+            . "- Product Detail: https://example.com/ai/products/{sku}?store=default\n",
+            $body
+        );
+    }
+
+    public function testCommerceSectionAbsentWhenSourceEmpty(): void
+    {
+        $this->config->method('getBrandSummary')->willReturn('');
+        $this->config->method('getSiteTitle')->willReturn('OLV');
+
+        $body = $this->generator->generate(1);
+
+        $this->assertStringNotContainsString('Machine-readable Commerce', $body);
     }
 }
