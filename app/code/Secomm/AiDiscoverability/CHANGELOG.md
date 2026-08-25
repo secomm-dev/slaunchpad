@@ -2,6 +2,28 @@
 
 All notable changes to `Secomm_AiDiscoverability` are documented here.
 
+## [1.3.0] - 2026-08-25
+
+Hierarchical category tree selector (Product Edit Categories UX). Spec: `SPEC-TASK-5TGJ7V`.
+
+### Changed
+- The Categories / Collections config field now uses the exact Product Edit
+  Categories interaction: core `Magento_Ui/js/form/element/ui-select` (template
+  `ui/grid/filters/elements/ui-select`) — selected categories as removable
+  chips, dropdown with searchable checkbox hierarchy, expand/collapse, Done
+  close action. Instantiated standalone via core `Magento_Ui/js/core/app`.
+  Duplicate names are disambiguated by hierarchy context.
+- Config value remains comma-separated category entity IDs — existing saved
+  values load as selected chips; llms.txt generation unchanged.
+- Scope rules preserved: store view → that group's tree; website → own trees
+  (distinct roots shown as labeled groups); default → labeled union. Root
+  categories are never selectable; inactive categories never appear; foreign
+  trees are excluded by the stored-path filter (SPEC-TASK-QQMVY4 invariant).
+
+### Removed
+- `Model\Config\Source\Categories` flat multiselect source model (replaced by
+  `Model\Config\CategoryTreeProvider` + `Block\Adminhtml\System\Config\CategoryTree`).
+
 ## [1.2.1] - 2026-08-25
 
 Store-scoped category selector fix. Spec: `SPEC-TASK-S7MFCT`.
