@@ -16,7 +16,8 @@ use PHPUnit\Framework\TestCase;
 use Secomm\AiDiscoverability\Model\Config\CategoryTreeProvider;
 
 /**
- * SPEC-TASK-5TGJ7V: jstree category tree scoped to the config section scope.
+ * SPEC-TASK-5TGJ7V correction: ui-select options (Product Edit Categories
+ * shape: nested {value, label, optgroup}) scoped to the config section scope.
  */
 class CategoryTreeProviderTest extends TestCase
 {
@@ -46,11 +47,6 @@ class CategoryTreeProviderTest extends TestCase
     private array $storeIds = [];
 
     /**
-     * @var array simulated root id => stored path map
-     */
-    private array $rootPaths = [];
-
-    /**
      * @var string|null simulated `store` request param
      */
     private ?string $storeParam = null;
@@ -64,7 +60,6 @@ class CategoryTreeProviderTest extends TestCase
     {
         $this->filters = [];
         $this->storeIds = [];
-        $this->rootPaths = [];
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
         $this->request = $this->createMock(RequestInterface::class);
         $this->request->method('getParam')->willReturnCallback(fn ($key) => match ($key) {
@@ -84,7 +79,6 @@ class CategoryTreeProviderTest extends TestCase
      */
     private function providerWithItems(array $items, array $rootPaths): CategoryTreeProvider
     {
-        $this->rootPaths = $rootPaths;
         $collection = $this->createMock(Collection::class);
         $collection->method('setStoreId')->willReturnCallback(function (int $storeId) use ($collection) {
             $this->storeIds[] = $storeId;
@@ -92,10 +86,12 @@ class CategoryTreeProviderTest extends TestCase
         });
         $collection->method('addAttributeToSelect')->willReturnSelf();
         $collection->method('addAttributeToSort')->willReturnSelf();
-        $collection->method('addAttributeToFilter')->willReturnCallback(function ($attribute, $condition = null) use ($collection) {
-            $this->filters[] = [$attribute, $condition];
-            return $collection;
-        });
+        $collection->method('addAttributeToFilter')->willReturnCallback(
+            function ($attribute, $condition = null) use ($collection) {
+                $this->filters[] = [$attribute, $condition];
+                return $collection;
+            }
+        );
         $collection->method('getItems')->willReturn(array_map(
             fn (array $item): Category => $this->categoryMock(
                 $item['id'],
@@ -156,15 +152,15 @@ class CategoryTreeProviderTest extends TestCase
     }
 
     /**
-     * @return array<int, string> node id => label path (flattened)
+     * @return array<int, string> option value => label path (flattened)
      */
-    private function flatten(array $nodes, string $prefix = ''): array
+    private function flatten(array $options, string $prefix = ''): array
     {
         $flat = [];
-        foreach ($nodes as $node) {
-            $label = $prefix === '' ? $node['text'] : $prefix . ' > ' . $node['text'];
-            $flat[$node['id']] = $label;
-            foreach ($this->flatten($node['children'] ?? [], $label) as $id => $path) {
+        foreach ($options as $option) {
+            $label = $prefix === '' ? $option['label'] : $prefix . ' > ' . $option['label'];
+            $flat[$option['value']] = $label;
+            foreach ($this->flatten($option['optgroup'] ?? [], $label) as $id => $path) {
                 $flat[$id] = $path;
             }
         }
@@ -172,35 +168,37 @@ class CategoryTreeProviderTest extends TestCase
         return $flat;
     }
 
-    public function testStoreScopeTreeHierarchyAndRootNotSelectable(): void
+    public function testStoreScopeNestedOptionsAndRootNotSelectable(): void
     {
         $this->storeScope();
 
-        $tree = $this->providerWithItems([
+        $options = $this->providerWithItems([
             ['id' => 2, 'name' => 'Default Category', 'path' => '1/2', 'parent_id' => 1],
             ['id' => 20, 'name' => 'Women', 'path' => '1/2/20', 'parent_id' => 2],
             ['id' => 45, 'name' => 'Accessories', 'path' => '1/2/20/45', 'parent_id' => 20],
             ['id' => 12, 'name' => 'Bedroom', 'path' => '1/2/12', 'parent_id' => 2],
-        ], [2 => '1/2'])->getTree();
+        ], [2 => '1/2'])->getOptions();
 
-        // Store-scoped collection; tree filter uses the root's STORED path.
+        // Store-scoped collection; LIKE prefixes use the root's STORED path.
         $this->assertSame([3], $this->storeIds);
         $this->assertStringContainsString("'1/2'", var_export($this->filters, true));
 
-        // Top level = root's children (root itself never a node).
-        $flat = $this->flatten($tree);
+        // Nested optgroup hierarchy; root/global root never an option.
+        $flat = $this->flatten($options);
         $this->assertArrayNotHasKey(2, $flat);
         $this->assertArrayNotHasKey(1, $flat);
         $this->assertSame('Women', $flat[20]);
         $this->assertSame('Women > Accessories', $flat[45]);
         $this->assertSame('Bedroom', $flat[12]);
+        // Child option nested under its parent via optgroup.
+        $this->assertSame(45, $options[0]['optgroup'][0]['value']);
     }
 
     public function testStoreScopePathFiltersUseStoredRootPath(): void
     {
         $this->storeScope();
 
-        $this->providerWithItems([], [2 => '1/2'])->getTree();
+        $this->providerWithItems([], [2 => '1/2'])->getOptions();
 
         $filters = var_export($this->filters, true);
         $this->assertStringContainsString("'path'", $filters);
@@ -213,7 +211,7 @@ class CategoryTreeProviderTest extends TestCase
     {
         $this->storeScope();
 
-        $this->providerWithItems([], [2 => '1/2'])->getTree();
+        $this->providerWithItems([], [2 => '1/2'])->getOptions();
 
         $isActive = array_values(array_filter(
             $this->filters,
@@ -230,12 +228,12 @@ class CategoryTreeProviderTest extends TestCase
         $website->method('getGroups')->willReturn([$this->groupMock(2, 'Main Store'), $this->groupMock(2, 'Outlet')]);
         $this->storeManager->method('getWebsite')->with('base')->willReturn($website);
 
-        $tree = $this->providerWithItems([
+        $options = $this->providerWithItems([
             ['id' => 2, 'name' => 'Default Category', 'path' => '1/2', 'parent_id' => 1],
             ['id' => 20, 'name' => 'Women', 'path' => '1/2/20', 'parent_id' => 2],
-        ], [2 => '1/2'])->getTree();
+        ], [2 => '1/2'])->getOptions();
 
-        $flat = $this->flatten($tree);
+        $flat = $this->flatten($options);
         $this->assertArrayNotHasKey('group_2', $flat);
         $this->assertSame('Women', $flat[20]);
     }
@@ -250,15 +248,15 @@ class CategoryTreeProviderTest extends TestCase
         ]);
         $this->storeManager->method('getWebsite')->with('base')->willReturn($website);
 
-        $tree = $this->providerWithItems([
+        $options = $this->providerWithItems([
             ['id' => 2, 'name' => 'Root A', 'path' => '1/2', 'parent_id' => 1],
             ['id' => 20, 'name' => 'Women', 'path' => '1/2/20', 'parent_id' => 2],
             ['id' => 45, 'name' => 'Accessories', 'path' => '1/2/20/45', 'parent_id' => 20],
             ['id' => 9, 'name' => 'Root B', 'path' => '1/9', 'parent_id' => 1],
             ['id' => 90, 'name' => 'Living', 'path' => '1/9/90', 'parent_id' => 9],
-        ], [2 => '1/2', 9 => '1/9'])->getTree();
+        ], [2 => '1/2', 9 => '1/9'])->getOptions();
 
-        $flat = $this->flatten($tree);
+        $flat = $this->flatten($options);
         // Group headers wrap each tree; roots and foreign ids never appear.
         $this->assertSame('Fashion Store > Women > Accessories', $flat[45]);
         $this->assertSame('Home Store > Living', $flat[90]);
@@ -276,34 +274,33 @@ class CategoryTreeProviderTest extends TestCase
             $this->groupMock(9, 'Home Store'),
         ]);
 
-        $tree = $this->providerWithItems([
+        $options = $this->providerWithItems([
             ['id' => 2, 'name' => 'Root A', 'path' => '1/2', 'parent_id' => 1],
             ['id' => 20, 'name' => 'Women', 'path' => '1/2/20', 'parent_id' => 2],
             ['id' => 9, 'name' => 'Root B', 'path' => '1/9', 'parent_id' => 1],
             ['id' => 90, 'name' => 'Living', 'path' => '1/9/90', 'parent_id' => 9],
-        ], [2 => '1/2', 9 => '1/9'])->getTree();
+        ], [2 => '1/2', 9 => '1/9'])->getOptions();
 
-        $flat = $this->flatten($tree);
+        $flat = $this->flatten($options);
         $this->assertSame('Fashion Store > Women', $flat[20]);
         $this->assertSame('Home Store > Living', $flat[90]);
     }
 
-    public function testNestedSelectedIdsRoundTripInNodeIds(): void
+    public function testNestedSelectedIdsRoundTripInOptionValues(): void
     {
         $this->storeScope();
 
-        // Saved config "20,45" must map onto existing node ids (the core JS
-        // checks those ids against the tree; comma-joined on write).
-        $tree = $this->providerWithItems([
+        // Saved config "20,45" must map onto existing option values; the
+        // component checks those values and re-renders them as chips.
+        $options = $this->providerWithItems([
             ['id' => 2, 'name' => 'Default Category', 'path' => '1/2', 'parent_id' => 1],
             ['id' => 20, 'name' => 'Women', 'path' => '1/2/20', 'parent_id' => 2],
             ['id' => 45, 'name' => 'Accessories', 'path' => '1/2/20/45', 'parent_id' => 20],
-        ], [2 => '1/2'])->getTree();
+        ], [2 => '1/2'])->getOptions();
 
-        $flat = $this->flatten($tree);
-        foreach (explode(',', '20,45') as $savedId) {
-            $this->assertArrayHasKey((int) $savedId, $flat);
+        $flat = $this->flatten($options);
+        foreach ([20, 45] as $savedId) {
+            $this->assertArrayHasKey($savedId, $flat);
         }
-        $this->assertSame([20, 45], [20, 45]);
     }
 }

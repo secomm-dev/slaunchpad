@@ -10,38 +10,44 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Secomm\AiDiscoverability\Model\Config\CategoryTreeProvider;
 
 /**
- * Hierarchical category selector for the AI Discoverability config section
- * (SPEC-TASK-5TGJ7V).
+ * Product-Edit-style category selector for the AI Discoverability config
+ * section (SPEC-TASK-5TGJ7V correction).
  *
- * Renders the field's native hidden input (so config save/load and Use Default /
- * Use Website inheritance keep working untouched) plus a jstree checkbox tree
- * driven by the CORE component Magento_Catalog/js/category-checkbox-tree
- * (requirejs alias `categoryCheckboxTree`) — the same tree widget the core
- * promo-rule category chooser renders via
- * Magento\Catalog\Block\Adminhtml\Category\Checkboxes\Tree. The core JS writes
- * checked ids (sorted, comma-joined) into window[jsFormObject].updateElement,
- * so the block exposes the hidden input under that tiny bridge object.
+ * Renders the field's native hidden input (config save/load and Use Default /
+ * Use Website inheritance stay untouched) plus the CORE UI component the
+ * Product Edit Categories field uses:
+ * Magento_Ui/js/form/element/ui-select with the
+ * ui/grid/filters/elements/ui-select template — chips for selected values,
+ * dropdown with checkbox category tree, search input, Done close action
+ * (core defaults: selectType 'tree', showCheckbox, closeBtn 'Done').
+ * Instantiated standalone via the core Magento_Ui/js/core/app bootstrap, the
+ * same mechanism core .phtml files use to place UI components outside forms.
+ *
+ * The only glue is the value bridge: the component's value observable is
+ * subscribed to and written (numeric ids only, comma-joined) into the hidden
+ * input so the native config form POST is identical to before. No custom JS
+ * component, template, or CSS.
  */
 class CategoryTree extends Field
 {
     /**
-     * Core jstree widget writes selections into window[jsFormObject].updateElement.
+     * Standalone UI component scope name.
      */
-    private const JS_FORM_OBJECT = 'seocommAiCategoriesForm';
+    private const SCOPE_NAME = 'seocommCategorySelect';
 
     /**
-     * @var CategoryTreeProvider scoped category tree provider
+     * @var CategoryTreeProvider scoped category options provider
      */
     private readonly CategoryTreeProvider $treeProvider;
 
     /**
-     * @var Json JSON encoder for the tree init config
+     * @var Json JSON encoder
      */
     private readonly Json $jsonSerializer;
 
     /**
      * @param Context $context backend context
-     * @param CategoryTreeProvider $treeProvider scoped category tree provider
+     * @param CategoryTreeProvider $treeProvider scoped category options provider
      * @param Json $jsonSerializer JSON encoder
      * @param array $data block data
      */
@@ -57,17 +63,29 @@ class CategoryTree extends Field
     }
 
     /**
-     * Hidden input (native config element) + core jstree checkbox tree.
+     * Hidden input (native config element) + core ui-select category selector.
      *
      * @param AbstractElement $element config form element
      * @return string
      */
     protected function _getElementHtml(AbstractElement $element): string
     {
-        // Native hidden input under the element's real name → config save/load
-        // and scope inheritance behave exactly like any core config field.
         $inputId = $element->getHtmlId();
         $value = $element->getValue() !== null ? (string) $element->getValue() : '';
+        $selectedIds = array_values(array_filter(array_map('trim', explode(',', $value)), 'is_numeric'));
+
+        $componentConfig = [
+            'component' => 'Magento_Ui/js/form/element/ui-select',
+            'template' => 'ui/grid/filters/elements/ui-select',
+            // Product Edit Categories field config (Categories.php:279-292).
+            'filterOptions' => true,
+            'chipsEnabled' => true,
+            'disableLabel' => true,
+            'levelsVisibility' => '1',
+            'options' => $this->treeProvider->getOptions(),
+            'value' => array_map('intval', $selectedIds),
+        ];
+
         $html = sprintf(
             '<input type="hidden" id="%s" name="%s" value="%s" />',
             $this->escapeHtml($inputId),
@@ -75,35 +93,22 @@ class CategoryTree extends Field
             $this->escapeHtml($value)
         );
 
-        $divId = $inputId . '_jstree';
-        $initConfig = [
-            'dataUrl' => '',
-            'divId' => $divId,
-            'rootVisible' => false,
-            'useAjax' => false,
-            'currentNodeId' => 0,
-            'jsFormObject' => self::JS_FORM_OBJECT,
-            'name' => '',
-            'checked' => '',
-            'allowDrop' => false,
-            'allowdDrop' => false,
-            'rootId' => 0,
-            'expanded' => true,
-            'categoryId' => 0,
-            'treeJson' => $this->treeProvider->getTree(),
-        ];
-        $initJson = $this->jsonSerializer->serialize($initConfig);
-
-        $html .= '<div class="seocomm-category-tree">'
-            . '<div id="' . $this->escapeHtml($divId) . '" class="tree"></div></div>'
-            . '<script>'
-            . 'window.' . self::JS_FORM_OBJECT . ' = {updateElement: document.getElementById('
-            . $this->jsonSerializer->serialize($inputId)
-            . ')};'
-            . '</script>'
+        $html .= '<div class="seocomm-category-select" data-bind="scope: \'' . self::SCOPE_NAME . '\'">'
+            . '<!-- ko template: getTemplate() --><!-- /ko --></div>'
             . '<script type="text/x-magento-init">'
-            . '{"*": {"categoryCheckboxTree": ' . $initJson . '}}'
-            . '</script>';
+            . json_encode(
+                ['*' => ['Magento_Ui/js/core/app' => ['components' => [self::SCOPE_NAME => $componentConfig]]]],
+                JSON_UNESCAPED_SLASHES
+            )
+            . '</script>'
+            . '<script>require([\'uiRegistry\'], function (registry) {'
+            . 'registry.get(\'' . self::SCOPE_NAME . '\', function (component) {'
+            . 'var input = document.getElementById(' . $this->jsonSerializer->serialize($inputId) . ');'
+            . 'component.value.subscribe(function (value) {'
+            . 'input.value = Array.isArray(value)'
+            . ' ? value.filter(function (id) { return /^\\d+$/.test(String(id)); }).join(\',\')'
+            . ' : String(value);'
+            . '});});});</script>';
 
         return $html;
     }

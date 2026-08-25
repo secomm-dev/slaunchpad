@@ -10,22 +10,21 @@ use Magento\Store\Api\Data\GroupInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
- * jstree node tree of curatable categories for the admin config selector
- * (SPEC-TASK-5TGJ7V).
+ * Nested ui-select options of curatable categories for the admin config
+ * selector (SPEC-TASK-5TGJ7V correction).
  *
- * Reuses the core patterns proven in
- * \Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Categories:
- * - scope resolution follows \Magento\Config\Block\System\Config\Form
- *   (website/store request params of the config section URL);
- * - tree filtering follows the core Flat invariant proven in
- *   SPEC-TASK-QQMVY4: the LIKE prefix is the root's STORED path ("1/<rootId>"),
- *   never the bare id;
- * - the tree is folded from ONE collection via parent references, sorted by
- *   position (core retrieveCategoriesTree fold).
+ * Produces the exact option structure the core Product Edit Categories field
+ * consumes (\Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Categories::
+ * retrieveCategoriesTree(): nested {value, label, optgraph[]} folded from ONE
+ * collection via parent references). Rendered by the core component
+ * Magento_Ui/js/form/element/ui-select (chips + search + checkbox tree + Done).
  *
- * The tree root(s) themselves are never nodes (Product-Edit "rootVisible:
- * false" semantics) → not selectable by construction. Foreign trees are absent
- * because of the path filter.
+ * Scope resolution follows \Magento\Config\Block\System\Config\Form
+ * (website/store request params); tree filtering follows the core Flat
+ * invariant proven in SPEC-TASK-QQMVY4 (LIKE prefix = the root's STORED path
+ * "1/<rootId>", never the bare id). The tree root itself is NOT an option
+ * (Product-Edit root context, non-selectable by construction); only its
+ * descendants are. Foreign trees are absent because of the path filter.
  */
 class CategoryTreeProvider
 {
@@ -44,16 +43,17 @@ class CategoryTreeProvider
     }
 
     /**
-     * jstree nodes for the effective scope's category tree(s).
+     * Ui-select options for the effective scope's category tree(s).
      *
-     * Single tree: top-level nodes are the root's children. Multiple trees
-     * (website with distinct roots / default scope): each tree is wrapped in a
-     * non-selectable label header node ("group_<rootId>" — never a numeric
-     * category id, so it can never enter the saved value).
+     * Single tree: top-level options are the root's children (the root itself
+     * is never an option → never selectable/savable). Multiple trees (website
+     * with distinct roots / default scope): each tree is wrapped under a
+     * non-category label header option ("group_<rootId>" — a non-numeric
+     * value, filtered out before save and ignored by the generator).
      *
-     * @return array<int, array> jstree nodes: id, text, state{opened}, children[]
+     * @return array<int, array> nested {value, label, optgraph?} options
      */
-    public function getTree(): array
+    public function getOptions(): array
     {
         $scope = $this->resolveScope();
         $rootPaths = $this->rootPaths($scope['root_ids']);
@@ -62,16 +62,18 @@ class CategoryTreeProvider
             return [];
         }
 
-        $collection = $this->scopedCollection((int) $scope['store_id'], $rootPaths, array_keys($rootPaths));
-        [$nodes, $parents] = $this->categoryNodes($collection);
+        [$nodes, $parents] = $this->categoryOptions(
+            $this->scopedCollection((int) $scope['store_id'], $rootPaths)
+        );
 
         if (count($rootPaths) < 2) {
-            // Single tree: the root's children are the top level (root itself
-            // is not a node, mirroring Product Edit's rootVisible: false).
-            // Degenerate fallback (root inactive/absent): orphaned top nodes.
+            // Single tree: the root's children are the top level (the root is
+            // structural context only — Product Edit shows it, we omit it so
+            // it can never be curated). Degenerate fallback (root inactive/
+            // absent): orphaned top nodes.
             $rootId = (int) array_key_first($rootPaths);
             if (isset($nodes[$rootId])) {
-                return $nodes[$rootId]['children'] ?? [];
+                return $nodes[$rootId]['optgroup'] ?? [];
             }
 
             return array_values(array_filter(
@@ -87,10 +89,9 @@ class CategoryTreeProvider
                 continue;
             }
             $trees[] = [
-                'id' => 'group_' . $rootId,
-                'text' => (string) ($scope['root_labels'][$rootId] ?? $rootId),
-                'state' => ['opened' => true],
-                'children' => $nodes[$rootId]['children'] ?? [],
+                'value' => 'group_' . $rootId,
+                'label' => (string) ($scope['root_labels'][$rootId] ?? $rootId),
+                'optgroup' => $nodes[$rootId]['optgroup'] ?? [],
             ];
         }
 
@@ -98,14 +99,14 @@ class CategoryTreeProvider
     }
 
     /**
-     * Fold ONE scoped collection into id => jstree node with children linked by
-     * parent references (core retrieveCategoriesTree fold; children ordered by
-     * position via the collection sort).
+     * Fold ONE scoped collection into id => ui-select option with children
+     * linked by parent references (core retrieveCategoriesTree fold; children
+     * ordered by position via the collection sort).
      *
      * @param CategoryCollection $collection scoped active categories incl. roots
-     * @return array{0: array<int, array>, 1: array<int, int>} [id => node, id => parent id]
+     * @return array{0: array<int, array>, 1: array<int, int>} [id => option, id => parent id]
      */
-    private function categoryNodes(CategoryCollection $collection): array
+    private function categoryOptions(CategoryCollection $collection): array
     {
         $nodes = [];
         $parents = [];
@@ -113,10 +114,8 @@ class CategoryTreeProvider
         foreach ($collection->getItems() as $category) {
             $id = (int) $category->getId();
             $nodes[$id] = [
-                'id' => $id,
-                'text' => (string) ($category->getName() !== null ? $category->getName() : ''),
-                'state' => ['opened' => false],
-                'children' => [],
+                'value' => $id,
+                'label' => (string) ($category->getName() !== null ? $category->getName() : (string) $id),
             ];
             $parents[$id] = (int) $category->getParentId();
         }
@@ -128,7 +127,7 @@ class CategoryTreeProvider
             if ($id === $parentId || !isset($nodes[$id]) || !isset($nodes[$parentId])) {
                 continue;
             }
-            $nodes[$parentId]['children'][] = &$nodes[$id];
+            $nodes[$parentId]['optgroup'][] = &$nodes[$id];
         }
 
         return [$nodes, $parents];
@@ -136,29 +135,24 @@ class CategoryTreeProvider
 
     /**
      * The single scoped collection: active categories of the root tree(s) with
-     * the roots loaded (fold needs them as parents) but they are never offered
-     * as selectable nodes — getTree() only unwraps their children.
+     * the roots loaded (fold needs them as parents) but never emitted as
+     * options — getOptions() only unwraps their children.
      *
      * @param int $storeId store id (0 = admin default)
      * @param array $rootPaths root id => stored path
-     * @param int[] $rootIds resolved tree roots
      * @return CategoryCollection
      */
-    private function scopedCollection(int $storeId, array $rootPaths, array $rootIds): CategoryCollection
+    private function scopedCollection(int $storeId, array $rootPaths): CategoryCollection
     {
         $collection = $this->collectionFactory->create();
         $collection->setStoreId($storeId);
         $collection->addAttributeToSelect(['name', 'is_active', 'position', 'parent_id']);
         $collection->addAttributeToFilter('is_active', 1);
-        $collection->addAttributeToFilter(
-            'entity_id',
-            ['nin' => array_merge([self::GLOBAL_ROOT_ID], array_diff($rootIds, array_keys($rootPaths)))]
-        );
+        $collection->addAttributeToFilter('entity_id', ['nin' => [self::GLOBAL_ROOT_ID]]);
 
         // Core Flat pattern (SPEC-TASK-QQMVY4): LIKE prefix = the root's own
         // STORED path ("1/<rootId>"), never the bare id. The root itself is
-        // matched (equality) so the fold has its parent node; it is never
-        // emitted as a selectable node.
+        // matched (equality) so the fold has its parent option.
         $conditions = [];
         foreach ($rootPaths as $rootPath) {
             $conditions[] = ['attribute' => 'path', 'like' => $rootPath];
@@ -212,10 +206,9 @@ class CategoryTreeProvider
     }
 
     /**
-     * Stored paths of the tree roots (SPEC-TASK-QQMVY4 invariant). ONE bounded
-     * id-list collection (roots are few); no per-root loads. Roots themselves
-     * are included via `LIKE "<rootPath>"` (no trailing `/%`) so the fold has
-     * its parent nodes — they are never emitted as selectable nodes.
+     * Stored paths of the tree roots (SPEC-TASK-QQMVY4 invariant).
+     *
+     * ONE bounded id-list collection (roots are few); no per-root loads.
      *
      * @param int[] $rootIds resolved tree roots
      * @return array<int, string> root id => stored path (e.g. 2 => "1/2")

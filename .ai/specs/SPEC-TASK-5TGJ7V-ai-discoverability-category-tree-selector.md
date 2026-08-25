@@ -2,6 +2,16 @@ Specification ID: SPEC-TASK-5TGJ7V
 
 # SPEC-TASK-5TGJ7V — Hierarchical Magento-native Category Tree Selector (AI Discoverability)
 
+> **Correction (2026-08-25)**: the first implementation rendered a standalone
+> jstree folder widget — NOT the requested UX. The corrected UX is the exact
+> Product Edit Categories interaction: `Magento_Ui/js/form/element/ui-select`
+> (chips in the input, dropdown arrow opens a searchable checkbox tree, Done
+> closes). §3 is rewritten accordingly; the jstree widget (old §2.3) is
+> REJECTED for this field. No "New Category" support (selector only picks
+> existing categories).
+
+
+
 - Classification: MINI (Mode C) — bounded admin-UI replacement, no data-contract change
 - Module: `Secomm_AiDiscoverability`
 - Field: Stores → Configuration → Secomm → AI Discoverability → Curated URLs → Categories / Collections
@@ -43,54 +53,66 @@ category entity IDs — llms.txt generation and stored config stay 100% compatib
    `frontend_model`. The core-native equivalent for non-UI-form admin pages is the
    jstree checkbox tree (item 3) — reused directly, unchanged.
 
-## 3. Approach (smallest correct, core-preferred)
+## 3. Approach (corrected: Product-Edit ui-select pattern)
 
-- `system.xml` field: `type="hidden"` + `frontend_model`
-  `Secomm\AiDiscoverability\Block\Adminhtml\System\Config\CategoryTree` extending
-  `Magento\Config\Block\System\Config\Form\Field`. `_getElementHtml()` renders:
-  1. the element's own hidden input (native name/value → native config save/load,
-     Use Default/Use Website inheritance untouched);
-  2. a tree `<div>` + `text/x-magento-init` invoking core
-     `categoryCheckboxTree` with `treeJson` built server-side.
-- New `Model\Config\CategoryTreeProvider`: resolves scope (store/website/default
-  per core request-param semantics), resolves root stored paths via ONE bounded
-  `entity_id IN` collection (SPEC-TASK-QQMVY4 core-proven invariant: LIKE prefix =
-  root's stored path `1/<rootId>`, never bare id), then ONE category collection
-  (`setStoreId`, `name/is_active`, `is_active=1`, roots+global-root excluded,
-  `path LIKE <rootPath>/%` per root) folded into jstree nodes (core
-  `retrieveCategoriesTree` fold pattern; children ordered by position).
-- Root category NEVER a node (Product-Edit `rootVisible:false` semantics) →
-  not selectable by construction. Foreign trees absent by the path filter.
-  Multi-tree scopes (website with distinct roots / default) render each tree under
-  a non-selectable label header node (`group_<rootId>`, never a numeric id).
-- A tiny inline object `window.seocommAiCategoriesForm = {updateElement: <input>}`
-  satisfies the core JS `jsFormObject.updateElement` contract — core JS unchanged.
-- No new JS dependency; no ObjectManager; no direct SQL; no N+1; no hardcoded ids.
+Reuse the CORE component chain Product Edit uses, verbatim:
+
+- Component: `Magento_Ui/js/form/element/ui-select` with template
+  `ui/grid/filters/elements/ui-select` (core defaults: `selectType: 'tree'`,
+  `showCheckbox: true`, `closeBtn: true` + label "Done", `filterOptions: true`
+  search, `chipsEnabled: true` chips — ui-select.js defaults lines 137–168;
+  chips markup, search input, checkbox rows and nested `optgroup` recursion in
+  ui-select.html lines 63–198 + ui-select-optgroup.html).
+- Instantiation: standalone UI component via the core
+  `Magento_Ui/js/core/app` bootstrap in `text/x-magento-init` (the same
+  mechanism core .phtml templates use outside UI forms), bound to a scope div.
+- Option data: `Model\Config\CategoryTreeProvider::getOptions()` — nested
+  `{value, label, optgroup[]}` exactly as core
+  `Categories::retrieveCategoriesTree()` produces for Product Edit
+  (Categories.php:429–473); scope resolution + root stored-path filtering per
+  SPEC-TASK-QQMVY4. The tree root is NOT an option (Product Edit shows it as
+  context; here it must never be curatable → omitted server-side, so it can
+  never be selected or saved). Multi-tree scopes wrap each tree in a
+  `group_<rootId>` label header (non-numeric value, filtered from the saved
+  value client-side and ignored by the generator).
+- Value bridge: the field's native hidden input keeps the config
+  name/value (save/load + Use Default/Use Website inheritance untouched); a
+  subscribe on the component's `value` observable writes the numeric ids
+  comma-joined into that input (uiRegistry glue, ~10 lines, no custom
+  component/template/CSS).
+- No "New Category" button (out of scope by request).
+
+`system.xml`: field `type="text"` + `frontend_model`
+`Secomm\AiDiscoverability\Block\Adminhtml\System\Config\CategoryTree` (extends
+core `Magento\Config\Block\System\Config\Form\Field`). No OM, no direct SQL,
+no N+1, no hardcoded ids, no third-party JS.
 
 ## 4. Data contract
 
 `seocomm_ai_discoverability/urls/categories` value: comma-separated category
-entity IDs (unchanged). Existing saved values load as checked nodes
-(`initialSelection` from the hidden input value). Save persists IDs in the same
-format via native config form POST. llms.txt generator untouched.
+entity IDs (unchanged). Existing saved values load as selected chips
+(component `value` from the hidden input). Save persists IDs in the same
+format via the native config form POST. llms.txt generator untouched.
 
 ## 5. Acceptance criteria
 
-1. Store scope: only that store group's tree; root not selectable; inactive
+1. Closed state: normal form field with removable chips + dropdown arrow.
+2. Open state: dropdown with search input, checkbox hierarchy, expand/collapse,
+   Done close action — all core ui-select behaviors.
+3. Store scope: only that store group's tree; root not selectable; inactive
    categories absent; descendants selectable.
-2. Website scope: own group trees only; distinct roots shown as labeled groups;
+4. Website scope: own group trees only; distinct roots shown as labeled groups;
    foreign-website categories absent.
-3. Default scope: union of all configured trees with group labels; no fake store.
-4. Use Default / Use Website inheritance unchanged (native element + save flow).
-5. Previously saved IDs appear checked after reload; save/reload round-trips.
-6. Selected categories appear in /llms.txt Collections (regression only).
-7. Runtime proof against real Magento data (tree JSON, root absence, foreign
-   absence, save/reload, llms.txt output).
-8. Guards: no OM, no direct SQL, no N+1, no new JS deps, no AiCommerce changes.
+5. Default scope: union of all configured trees with group labels; no fake store.
+6. Use Default / Use Website inheritance unchanged (native element + save flow).
+7. Previously saved IDs render as chips after reload; save/reload round-trips.
+8. Selected categories appear in /llms.txt Collections (regression only).
+9. Runtime UAT against the real admin runtime (render, save POST, reload,
+   llms.txt output).
+10. Guards: no OM, no direct SQL, no N+1, no new JS deps, no AiCommerce changes.
 
 ## 6. Out of scope
 
-New category creation (Product-Edit "New Category" modal), AJAX lazy loading
-(full tree rendered from treeJson; core JS supports but not needed at this
-catalog size), jstree search (core checkbox tree has none; ui-select-only
-feature), any llms.txt contract change.
+New category creation (Product-Edit "New Category" modal — explicitly not
+wanted), AJAX lazy loading (full option tree rendered inline), any llms.txt
+contract change.
