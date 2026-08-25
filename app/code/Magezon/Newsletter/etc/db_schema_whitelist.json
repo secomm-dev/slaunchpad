@@ -1,8 +1,0 @@
-{
-    "newsletter_subscriber": {
-        "column": {
-            "subscriber_firstname": true,
-            "subscriber_lastname": true
-        }
-    }
-}
