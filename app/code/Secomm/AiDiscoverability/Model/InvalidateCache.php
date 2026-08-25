@@ -25,13 +25,16 @@ class InvalidateCache
     /**
      * Invalidate a single store's cached llms.txt.
      *
+     * Runtime CacheInterface is App\Cache\Proxy whose contract is clean(array $tags)
+     * (MATCHING_ANY_TAG semantics; single tag ≡ matching) — a Zend-style mode string
+     * would be swallowed as a tag and silently no-op.
+     *
      * @param int $storeId store view id
      * @return void
      */
     public function cleanStore(int $storeId): void
     {
         $this->cache->clean(
-            \Zend_Cache::CLEANING_MODE_MATCHING_TAG,
             [$this->provider->storeTag($storeId)]
         );
     }
@@ -52,12 +55,13 @@ class InvalidateCache
     /**
      * Invalidate every store (only for scope-unspecific changes).
      *
+     * Proxy contract: plain tags array only — see cleanStore().
+     *
      * @return void
      */
     public function cleanAll(): void
     {
         $this->cache->clean(
-            \Zend_Cache::CLEANING_MODE_MATCHING_TAG,
             [LlmsTxtProvider::CACHE_TAG]
         );
     }

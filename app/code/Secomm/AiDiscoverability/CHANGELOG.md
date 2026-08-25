@@ -2,6 +2,18 @@
 
 All notable changes to `Secomm_AiDiscoverability` are documented here.
 
+## [1.4.1] - 2026-08-25
+
+Fix: llms.txt tag invalidation was a runtime no-op. Spec: `SPEC-BUG-AIDL-CINV1`.
+
+### Fixed
+- `Model/InvalidateCache` passed Zend-style arguments to
+  `CacheInterface::clean(CLEANING_MODE_MATCHING_TAG, [tags])`; the runtime
+  `App\Cache\Proxy` contract is `clean(array $tags)` — the mode string was swallowed as a
+  tag and every invalidation (config ×3, CMS page, category, sitemap observers) silently
+  no-opped, bounded only by the ~3600s TTL. Now calls `clean([tag])` with the plain tags
+  array. Discovered and proven during TASK-AIC-PDC1 (redis MONITOR).
+
 ## [1.4.0] - 2026-08-25
 
 llms.txt V1.1 — richer business context + agent guidance. Spec: `SPEC-TASK-QYZMF1`.
