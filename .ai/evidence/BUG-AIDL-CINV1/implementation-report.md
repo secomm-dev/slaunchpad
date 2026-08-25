@@ -65,3 +65,31 @@ Tags derive from the module's own `LlmsTxtProvider` constants (not copied from A
 | project-ai-validate --check-specs | VALID (0 FAIL, 0 WARN) |
 | git diff --check | clean |
 | app/etc/config.php | not committed (working-tree env drift only) |
+
+## 7. Post-implementation review (2026-08-25)
+
+- magento-spec MCP used: **YES** — `get_team_standards` + `get_review_gate` + references:
+  `infrastructure/cache-management.md` (§2 Proxy contract, §10, §11), `core/event-observer-patterns.md` (§8),
+  `ops/unit-testing.md` (§9–10), checklist §12 severity table + §13.
+- Diff reviewed: `9bd6cae9...HEAD` (6 files) — scope limited to contract fix + regression test +
+  spec/plan/evidence/changelog; **no unrelated change**; no Magento core file touched.
+- Cache contract vs core evidence: `Magento\Framework\App\CacheInterface::clean($tags = [])`
+  and `App\Cache\Proxy::clean($tags = [])` (framework/App/Cache/Proxy.php:101) accept ONE array.
+  Implementation passes `clean([tag])` for both `cleanAll()` (`seocomm_llms`) and
+  `cleanStore()` (`seocomm_llms_store_<id>` via `LlmsTxtProvider::storeTag()`); provider saves
+  with `[CACHE_TAG, storeTag]` (LlmsTxtProvider.php:50) so either clean matches (MATCHING_ANY_TAG).
+  No `CLEANING_MODE` call remains in module code (only changelog prose + the regression assertion).
+- Observer coverage: 6 observers (AiDiscoverability/SEO/AiCommerce config, CMS page save/delete,
+  category save/delete, sitemap) — all route through `InvalidateCache`; `LlmsTxtProvider` itself
+  never calls `clean()`; no invalidation path bypasses the service. No new observer needed.
+- Test quality: pins exactly-one-array-argument (assertCount(1)), correct global tag, real
+  provider storeTag value, cleanStores dedupe/intval; negative assertion proves Zend mode cannot
+  regress silently. Mocks alone cannot catch the concrete-Proxy defect — compensated by the
+  end-to-end runtime proof (§5: real event dispatch → real observer → real Proxy → redis entry
+  removed → regenerated), per checklist §13.
+- Findings: **P0/BLOCKER: 0 · P1/RECOMMENDATION: 0 · P2/INFORMATIONAL: 2**
+  (P2-1: the two cleanAll assertions partially overlap — acceptable; P2-2: leftover `zc:ti:*`
+  tag-index sets after clean are normal Zend redis-backend behavior, not a defect).
+- Fixes made from review: none required.
+- Checklist sections reviewed: 0, 1, 6, 9, 12, 13.
+- **Final verdict: PASS**
