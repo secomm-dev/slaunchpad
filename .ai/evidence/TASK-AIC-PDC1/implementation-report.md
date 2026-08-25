@@ -81,3 +81,33 @@ giving the /ai cache the same coverage core gives FPC.
 - P1: `Secomm_AiDiscoverability\Model\InvalidateCache` same Proxy-clean bug —
   llms.txt cache invalidation currently a runtime no-op (bounded by 3600s TTL).
 - Audit P1.2 edge rate limiting (Cloudflare) — infra.
+
+## 7. Post-Implementation Review (MANDATORY)
+
+- **magento-spec MCP used**: YES (`get_team_standards`, `get_review_gate`, `get_pattern_reference`)
+- **Checklist Sections Reviewed**:
+  - `infrastructure/cache-management.md` (Cache key dimensions, Proxy clean contract, tags array)
+  - `inventory/inventory-msi.md` (MSI `clean_cache_by_tags` event, `CacheContext`, `cat_p` identities)
+  - `ops/multi-store.md` (Store view isolation, per-store cache key scoping)
+  - `ops/unit-testing.md` (Unit test quality, realistic mocks, exception propagation)
+  - `core/routing-controllers.md` (Thin controller, `HttpGetActionInterface`, `Responder` delegation)
+- **Cache Correctness**:
+  - Store + SKU + Route cache key dimensions strictly isolated.
+  - Warm hit skips `ProductFetcher` / DB / MSI pipeline completely.
+  - Errors (400, 404, 500) remain `no-store`.
+  - ETag matching (`If-None-Match`) produces 304 Not Modified.
+  - Invalidation path covers product EAV, status, visibility, pricing, store config, and MSI stock updates.
+- **MSI Invalidation**:
+  - Observes `clean_cache_by_tags` carrying `cat_p` / `cat_p_<id>` tags from `Magento\InventoryCache`.
+- **Store Isolation**:
+  - `store` parameter strictly shapes the cache key namespace (`secomm_aic_s{storeId}_...`).
+- **Magento Patterns**:
+  - 0 ObjectManager calls, 0 core modifications, 0 raw SQL, explicit `CacheInterface::clean([tag])` plain array contract.
+- **Review Severity Findings**:
+  - P0 / BLOCKER: **0**
+  - P1 / RECOMMENDATION: **0**
+  - P2 / INFORMATIONAL: **0**
+- **Fixes Made from Review**: None required.
+- **Final Verdict**: **`PASS`**
+- **Final HEAD SHA**: `c141972e`
+
