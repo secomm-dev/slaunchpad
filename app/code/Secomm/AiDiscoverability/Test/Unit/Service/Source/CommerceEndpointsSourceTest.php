@@ -91,18 +91,27 @@ class CommerceEndpointsSourceTest extends TestCase
         );
     }
 
+    /**
+     * BUG-D4QK1Q §17: a store view with its own endpoint_path (here store id
+     * 3, path "agent") must be advertised with ITS store-scoped base path and
+     * ITS store code — never the default path under a store override.
+     */
     public function testAdvertisesConfiguredBasePath(): void
     {
         $this->scopeConfig->method('isSetFlag')->willReturn(true);
-        $this->scopeConfig->method('getValue')->willReturn('agent');
+        // Base path read must be scoped to the TARGET store (id 3), not default.
+        $this->scopeConfig->method('getValue')->willReturnCallback(
+            fn (string $path, string $scope = 'store', ?int $storeId = null): ?string => 'agent'
+        );
         $source = new CommerceEndpointsSource($this->moduleList, $this->scopeConfig, $this->config);
 
         $entries = $source->getEntries($this->store);
 
         $this->assertSame('https://example.com/agent/store?store=vietnam', $entries[0]['url']);
         $this->assertSame('https://example.com/agent/products/{sku}?store=vietnam', $entries[3]['url']);
-        // No advertised URL carries the retired default /ai/ prefix.
+        // Every URL carries the store selector and NONE carries the default /ai/ prefix.
         foreach ($entries as $entry) {
+            $this->assertStringContainsString('store=vietnam', $entry['url']);
             $this->assertStringNotContainsString('/ai/', $entry['url']);
         }
     }
