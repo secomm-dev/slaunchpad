@@ -10,7 +10,7 @@ specification_level: MINI
 spec_status: VALID
 specification_ref: null
 risk: high
-status: fix_delivered_pending_qa
+status: qa_code_verified_delivery_blocked
 created: '2026-08-26'
 updated: '2026-08-26'
 decisions: []
@@ -88,6 +88,14 @@ supersedes: []
    `llms.txt?store=<code` MUST advertise the exact configured base path for that specific Store View.
 5. **No Static Route Compromises**:
    Do NOT use hardcoded redirects, 301/302 rewrites, generated `routes.xml`, or fake aliases. Fix the custom router implementation natively in PHP.
+
+## QA Re-Verification (Independent QA — 2026-08-26)
+
+**VERDICT: CODE PASS — DELIVERY BLOCKED** (see `.ai/evidence/BUG-D4QK1Q/qa_reverification.md`).
+
+All acceptance criteria reproduced and PASS at `aa8701d1`: original matrix, all four endpoint families, target-store-scoped enabled state, llms.txt store-correct URLs, cache isolation, config invalidation, cross-store isolation, no store iteration. Automated suites re-run: 108/108 + 74/74.
+
+NOT CLOSED: canonical branch policy (`.ai/AGENTS.md` §3) names `development` as the active branch; the fix is merged/pushed only to `dev/development/thanhle` (which is also the only branch containing the reviewed baseline 10c6cbc3 — origin/development a853e7a6 lacks the AI modules). Requires TL decision: PR toward `development`, or explicit acceptance of the dev branch as the AI-module integration line. On resolution, the bug may be closed on the strength of the re-verification artifact.
 
 ## Fix Evidence (Implementation AI — 2026-08-26)
 
