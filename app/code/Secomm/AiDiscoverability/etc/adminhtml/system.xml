@@ -46,6 +46,43 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
+            <group id="titles" translate="label" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Section Titles</label>
+                <field id="store_summary" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Store Summary Heading</label>
+                    <comment>Heading of the brand summary section. Empty restores the default.</comment>
+                </field>
+                <field id="agent_guidance" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Agent Guidance Heading</label>
+                </field>
+                <field id="priority_pages" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Priority Pages Heading</label>
+                </field>
+                <field id="featured_collections" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Featured Collections Heading</label>
+                </field>
+                <field id="key_pages" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Key Pages Heading</label>
+                </field>
+                <field id="machine_commerce" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Machine-readable Commerce Heading</label>
+                </field>
+                <field id="store_information" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Store Information Endpoint Heading</label>
+                </field>
+                <field id="product_search" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Product Search Endpoint Heading</label>
+                </field>
+                <field id="product_categories" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Categories Endpoint Heading</label>
+                </field>
+                <field id="product_detail" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Product Detail Endpoint Heading</label>
+                </field>
+                <field id="commerce_limitations" translate="label" type="text" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Commerce Limitations Heading</label>
+                </field>
+            </group>
             <group id="cache" translate="label" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="1">
                 <label>Cache</label>
                 <field id="lifetime" translate="label" type="text" sortOrder="10" showInDefault="1" showInStore="1" canRestore="1">

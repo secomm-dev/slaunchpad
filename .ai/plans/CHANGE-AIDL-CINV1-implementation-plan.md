@@ -1,6 +1,6 @@
-# BUG-AIDL-CINV1 — Implementation Plan: llms.txt invalidation clean() contract fix
+# CHANGE-AIDL-CINV1 (renamed from BUG-AIDL-CINV1) — Implementation Plan: llms.txt invalidation clean() contract fix
 
-| Specification | SPEC-BUG-AIDL-CINV1 (`.ai/specs/SPEC-BUG-AIDL-CINV1-llms-cache-clean-contract.md`) |
+| Specification | SPEC-CHANGE-AIDL-CINV1 (`.ai/specs/SPEC-CHANGE-AIDL-CINV1-llms-cache-clean-contract.md`) |
 |---|---|
 | Branch | `fix/ai-discoverability-cache-invalidation` (base `9bd6cae9`) |
 | Type | MINI — one model method-signature correction + regression test |

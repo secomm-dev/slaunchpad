@@ -1,7 +1,7 @@
-# BUG-AIDL-CINV1 — AiDiscoverability invalidation clean() contract fix (evidence)
+# CHANGE-AIDL-CINV1 — AiDiscoverability invalidation clean() contract fix (evidence)
 
-- Spec: `.ai/specs/SPEC-BUG-AIDL-CINV1-llms-cache-clean-contract.md` (MINI, Mode C)
-- Plan: `.ai/plans/BUG-AIDL-CINV1-implementation-plan.md`
+- Spec: `.ai/specs/SPEC-CHANGE-AIDL-CINV1-llms-cache-clean-contract.md` (MINI, Mode C)
+- Plan: `.ai/plans/CHANGE-AIDL-CINV1-implementation-plan.md`
 - Branch: `fix/ai-discoverability-cache-invalidation` (base `9bd6cae9`)
 - Date: 2026-08-25 · Discovered in: TASK-AIC-PDC1 §3.3 (P1 follow-up)
 
@@ -93,3 +93,13 @@ Tags derive from the module's own `LlmsTxtProvider` constants (not copied from A
 - Fixes made from review: none required.
 - Checklist sections reviewed: 0, 1, 6, 9, 12, 13.
 - **Final verdict: PASS**
+
+---
+
+## Provenance rename (2026-08-26)
+
+Artifact renamed BUG-AIDL-CINV1 → CHANGE-AIDL-CINV1 by the BUG-provenance
+audit: this fix originated inside the implementation flow (self-formalized
+SPEC-BUG), not from an independent Reviewer/QA. Content, review evidence and
+history unchanged. The post-implementation review that PASSED it was an
+independent magento-spec review-gate run — recorded above as-is.

@@ -28,6 +28,25 @@ class Config
     private const XML_PATH_MAX_URLS = self::SECTION_PATH . '/cache/max_urls';
 
     /**
+     * Configurable llms.txt section titles: config key => shipped default.
+     * Defaults preserve the exact pre-configuration output (backwards
+     * compatibility); an empty configured value falls back to the default.
+     */
+    public const SECTION_TITLES = [
+        'store_summary' => 'Store Summary',
+        'agent_guidance' => 'Agent Guidance',
+        'priority_pages' => 'Priority Pages',
+        'featured_collections' => 'Featured Collections',
+        'key_pages' => 'Key Pages',
+        'machine_commerce' => 'Machine-readable Commerce',
+        'store_information' => 'Store Information',
+        'product_search' => 'Product Search',
+        'product_categories' => 'Categories',
+        'product_detail' => 'Product Detail',
+        'commerce_limitations' => 'Commerce Limitations',
+    ];
+
+    /**
      * @param ScopeConfigInterface $scopeConfig scoped config reader
      */
     public function __construct(private readonly ScopeConfigInterface $scopeConfig)
@@ -195,6 +214,29 @@ class Config
         );
 
         return $max > 0 ? $max : 100;
+    }
+
+    /**
+     * Effective llms.txt section title for a store view.
+     *
+     * Store-view scoped; an empty configured value deliberately falls back to
+     * the shipped default so the document structure never degrades.
+     *
+     * @param string $key one of the SECTION_TITLES keys
+     * @param int|null $storeId store view scope
+     * @return string effective section title
+     */
+    public function getSectionTitle(string $key, ?int $storeId = null): string
+    {
+        $default = self::SECTION_TITLES[$key] ?? '';
+
+        $title = trim((string) $this->scopeConfig->getValue(
+            self::SECTION_PATH . '/titles/' . $key,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
+
+        return $title !== '' ? $title : $default;
     }
 
     /**

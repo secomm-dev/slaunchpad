@@ -1,4 +1,4 @@
-# SPEC-BUG-AIDL-CINV1 — AiDiscoverability llms.txt cache invalidation no-op (MINI, Mode C)
+# SPEC-CHANGE-AIDL-CINV1 (renamed from SPEC-BUG-AIDL-CINV1) — AiDiscoverability llms.txt cache invalidation no-op (MINI, Mode C)
 
 Date: 2026-08-25 · Module: `Secomm_AiDiscoverability` · Ref: TASK-AIC-PDC1 §3.3 follow-up (P1)
 
@@ -38,3 +38,12 @@ NO new observers, no scope change. Only the `clean()` signature is broken.
 ## 4. Out of scope
 
 Any behavior change beyond the `clean()` contract correction; new observers; AiCommerce.
+
+> **Provenance (renamed 2026-08-26, BUG-artifact audit):** this defect was
+> discovered during TASK-AIC-PDC1 implementation and formalized by the
+> implementation AI itself — it was NOT an independent Reviewer/QA finding.
+> Per the BUG-provenance rule in `.ai/AGENTS.md` it is reclassified from
+> SPEC-BUG-* to SPEC-CHANGE-* (implementation-iteration artifact). The defect,
+> fix, evidence and history are unchanged; only the artifact class changed.
+> Old names (kept alive by git history): `SPEC-BUG-AIDL-CINV1-…`,
+> `BUG-AIDL-CINV1-implementation-plan.md`, `.ai/evidence/BUG-AIDL-CINV1/`.

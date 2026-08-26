@@ -4,7 +4,8 @@
     <default>
         <seocomm_ai_commerce>
             <general>
-                <enabled>0</enabled>
+                <enabled>1</enabled>
+                <endpoint_path>ai</endpoint_path>
                 <max_page_size>50</max_page_size>
                 <filter_allowlist>color,size</filter_allowlist>
                 <category_depth>5</category_depth>

@@ -3,13 +3,18 @@ declare(strict_types=1);
 
 namespace Secomm\AiDiscoverability\Service;
 
-use Magento\Framework\App\CacheInterface;
+use Secomm\AiDiscoverability\Model\Cache\Type;
 use Secomm\AiDiscoverability\Model\Config;
 
 /**
  * Cache boundary of the public /llms.txt endpoint: store-scoped cache ID,
  * stable custom tag, lazy regeneration on miss/expiry — no cron, no broad
  * flushes (SPEC-TASK-0X552E §4.4).
+ *
+ * Caching runs through the module-owned cache type
+ * `secomm_ai_discoverability` (Model/Cache/Type): entries automatically carry
+ * the type tag, `cache:clean secomm_ai_discoverability` removes exactly these
+ * entries, and a disabled cache type disables llms.txt caching outright.
  */
 class LlmsTxtProvider
 {
@@ -17,12 +22,12 @@ class LlmsTxtProvider
     public const CACHE_ID_PREFIX = 'seocomm_llms_txt_store_';
 
     /**
-     * @param CacheInterface $cache application cache backend
+     * @param Type $cache module cache type frontend (TagScope over the type's pool frontend)
      * @param LlmsTxtGenerator $generator llms.txt body generator
      * @param Config $config module configuration accessor
      */
     public function __construct(
-        private readonly CacheInterface $cache,
+        private readonly Type $cache,
         private readonly LlmsTxtGenerator $generator,
         private readonly Config $config
     ) {
