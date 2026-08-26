@@ -82,10 +82,10 @@ Tham khảo spec SPEC-FEAT-ZKD4VA §3 (AC-001..AC-023).
 
 ## Definition of Done
 
-- [ ] Code complete + matches spec
-- [ ] AI pre-review pass
+- [x] Code complete + matches spec
+- [x] AI pre-review pass
 - [ ] **TL review approved** (Tier 2)
-- [ ] Hyvä build OK (`npm run build`)
-- [ ] QC verified: OSC checkout e2e + custom VietQR page + My Orders button + Submit/Cancel + email (vi/en)
-- [ ] Evidence `.ai/evidence/TASK-N35E28/`
-- [ ] project-context updated (`CURRENT_STATE.md`, `NEXT_TASK.md`)
+- [x] Hyvä build OK (`npm run build`)
+- [x] QC verified: OSC checkout e2e + custom VietQR page + My Orders button + Submit/Cancel + email (vi/en)
+- [x] Evidence `.ai/evidence/TASK-N35E28/`
+- [x] project-context updated (`CURRENT_STATE.md`, `NEXT_TASK.md`)
