@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <!-- VietQR Submenu under Secomm Root Menu -->
+        <add id="Secomm_VietQr::vietqr"
+             title="VietQR"
+             module="Secomm_VietQr"
+             translate="title"
+             sortOrder="60"
+             parent="MenuSecomm_Base::menu"
+             resource="Secomm_VietQr::vietqr"/>
+
+        <!-- Configuration Link -->
+        <add id="Secomm_VietQr::config"
+             title="Configuration"
+             module="Secomm_VietQr"
+             translate="title"
+             sortOrder="10"
+             parent="Secomm_VietQr::vietqr"
+             action="adminhtml/system_config/edit/section/payment"
+             resource="Secomm_VietQr::config"/>
+    </menu>
+</config>

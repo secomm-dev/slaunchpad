@@ -1,0 +1,13 @@
+<?php
+/** @var \Secomm\VietQr\Block\Order\VietQrButton $block */
+/** @var \Magento\Sales\Block\Order\Info\Buttons $parentBlock */
+$parentBlock = $block->getParentBlock();
+$order = $parentBlock ? $parentBlock->getOrder() : null;
+?>
+<?php if ($order && $block->canShowButton($order)): ?>
+    <a href="<?= $block->escapeUrl($block->getPaymentViewUrl($order)) ?>"
+       class="btn btn-secondary"
+       title="<?= $block->escapeHtmlAttr(__('Pay with VietQR')) ?>">
+        <?= $block->escapeHtml(__('Pay with VietQR')) ?>
+    </a>
+<?php endif; ?>
