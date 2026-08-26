@@ -1,0 +1,3 @@
+ticket_id,description,mode,estimated_hours,actual_hours,variance,notes,date_completed
+BUG-8K1TBB,Fix untranslated product review strings (vi_VN) — ext SLP-106,C,2,1,-1,CSV-only dictionary fix; 23/23 phrases verified via CLI; browser QC blocked by pre-existing var/cache perms (www-data vs secomm/root),2026-08-26
+BUG-49DHE5,Missing translations on review page pager + form context — ext SLP-06,C,1,0.5,-0.5,10 pager/review phrases to theme CSVs; dictionary 10/10 + live PDP verified all reported strings,2026-08-26
