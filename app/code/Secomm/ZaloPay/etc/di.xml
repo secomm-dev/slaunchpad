@@ -90,6 +90,7 @@
             <argument name="commands" xsi:type="array">
                 <item name="initialize" xsi:type="string">Secomm\ZaloPay\Gateway\Command\InitializeCommand</item>
                 <item name="get_pay_url" xsi:type="string">Secomm\ZaloPay\Gateway\Command\GetPayUrlCommand</item>
+                <item name="query_transaction" xsi:type="string">Secomm\ZaloPay\Gateway\Command\QueryTransactionCommand</item>
                 <item name="capture" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
                 <item name="ipn" xsi:type="string">Secomm\ZaloPay\Gateway\Command\IpnCommand</item>
                 <item name="complete" xsi:type="string">Secomm\ZaloPay\Gateway\Command\CompleteCommand</item>
@@ -106,6 +107,37 @@
             <argument name="validator" xsi:type="object">Secomm\ZaloPay\Gateway\Validator\GetPayUrlValidator</argument>
         </arguments>
         <plugin name="generateMac" type="Secomm\ZaloPay\Plugin\Gateway\Command\PayUrlGenerateMac" sortOrder="10"/>
+    </type>
+
+    <!-- v2/query transaction status (payment-first return verification) -->
+    <type name="Secomm\ZaloPay\Gateway\Command\QueryTransactionCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">ZaloPayQueryDataBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">ZaloPayQueryTransferFactory</argument>
+            <argument name="client" xsi:type="object">ZaloPayLaminasHttpClient</argument>
+            <argument name="validator" xsi:type="object">Secomm\ZaloPay\Gateway\Validator\QueryTransactionValidator</argument>
+        </arguments>
+        <plugin name="generateMac" type="Secomm\ZaloPay\Plugin\Gateway\Command\QueryGenerateMac" sortOrder="10"/>
+    </type>
+    <virtualType name="ZaloPayQueryDataBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="query_transaction" xsi:type="string">Secomm\ZaloPay\Gateway\Request\QueryTransactionDataBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayQueryTransferFactory" type="Secomm\ZaloPay\Gateway\Http\TransferFactory">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+            <argument name="urlPath" xsi:type="const">
+                Secomm\ZaloPay\Gateway\Request\AbstractDataBuilder::QUERY_URL_PATH
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\ZaloPay\Gateway\Request\QueryTransactionDataBuilder">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
     </type>
     <virtualType name="ZaloPayPayUrlDataBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
         <arguments>
@@ -125,6 +157,8 @@
     <type name="Secomm\ZaloPay\Controller\Payment\Start">
         <arguments>
             <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
+            <argument name="attemptManagement" xsi:type="object">Secomm\ZaloPay\Model\PaymentAttemptManagement</argument>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
         </arguments>
     </type>
     <type name="Secomm\ZaloPay\Controller\Payment\ReturnAction">
@@ -139,6 +173,27 @@
             <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
         </arguments>
     </type>
+
+    <!-- Payment-first services -->
+    <type name="Secomm\ZaloPay\Model\PaymentAttemptManagement">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
+            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\ZaloPay\Service\ReturnProcessor">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\ZaloPay\Model\ZaloPayConfigProvider">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </type>
+    <preference for="Secomm\ZaloPay\Api\PaymentAttemptRepositoryInterface"
+                type="Secomm\ZaloPay\Model\PaymentAttemptRepository"/>
 
     <!-- CompleteCommand uses ReturnValidator for GET params callback -->
     <type name="Secomm\ZaloPay\Gateway\Command\CompleteCommand">
@@ -268,16 +323,6 @@
     <!-- Plugin for TotalMinMax to handle ZaloPay currency conversion -->
     <type name="Magento\Payment\Model\Checks\TotalMinMax">
         <plugin name="zalopay_total_min_max" type="Secomm\ZaloPay\Plugin\Model\Checks\TotalMinMaxPlugin" sortOrder="10" disabled="false"/>
-    </type>
-
-    <!-- Plugin for CreditmemoService refund -->
-    <type name="Magento\Sales\Model\Service\CreditmemoService">
-        <plugin name="zalopay_creditmemo_refund" type="Secomm\ZaloPay\Plugin\Model\Service\CreditmemoServicePlugin" sortOrder="10" disabled="false"/>
-    </type>
-
-    <!-- Plugin for SuccessValidator to handle ZaloPay grace period -->
-    <type name="Magento\Checkout\Model\Session\SuccessValidator">
-        <plugin name="zalopay_success_validator" type="Secomm\ZaloPay\Plugin\Model\Checkout\Session\SuccessValidatorPlugin" sortOrder="10" disabled="false"/>
     </type>
 
     <!-- Plugin for Creditmemo to add PROCESSING state -->

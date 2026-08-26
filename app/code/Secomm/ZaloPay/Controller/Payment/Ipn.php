@@ -13,6 +13,7 @@ namespace Secomm\ZaloPay\Controller\Payment;
 
 use Secomm\ZaloPay\Gateway\Helper\TransactionReader;
 use Secomm\ZaloPay\Logger\Logger;
+use Secomm\ZaloPay\Service\IpnProcessor;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Action\Action;
@@ -47,6 +48,7 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
      * @param SerializerJson $serializer
      * @param CommandPoolInterface $commandPool
      * @param Logger $logger
+     * @param IpnProcessor $ipnProcessor
      */
     public function __construct(
         Context $context,
@@ -56,7 +58,8 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
         private readonly SearchCriteriaBuilder $searchCriteriaBuilder,
         private readonly SerializerJson $serializer,
         private readonly CommandPoolInterface $commandPool,
-        private readonly Logger $logger
+        private readonly Logger $logger,
+        private readonly IpnProcessor $ipnProcessor
     ) {
         parent::__construct($context);
     }
@@ -97,6 +100,24 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
             }
 
             $this->logger->info('ZaloPay IPN Parsed Response: ' . json_encode($response));
+
+            // Payment-first: attempt-first lookup. An IPN arriving BEFORE the
+            // Return action (order not yet placed) is a valid lifecycle state —
+            // the processor marks the attempt PAID and answers 200, not 404.
+            // null = payload references no payment attempt -> legacy flow below.
+            $paymentFirstResult = $this->ipnProcessor->process($response);
+            if ($paymentFirstResult !== null) {
+                if ($paymentFirstResult['http_code'] !== 200) {
+                    $resultJson->setHttpResponseCode($paymentFirstResult['http_code']);
+                }
+
+                return $resultJson->setData(
+                    [
+                        'errors' => $paymentFirstResult['errors'],
+                        'messages' => __($paymentFirstResult['messages'])
+                    ]
+                );
+            }
 
             $orderIncrementId = TransactionReader::readOrderId($response);
             $order            = $this->loadOrderByIncrementId($orderIncrementId);
