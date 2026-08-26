@@ -18,6 +18,7 @@
 @source "../../../../../../../../vendor/hyva-themes/magento2-smile-elasticsuite/src";
 @source "../../../../../../../code/Snowdog/Menu";
 @source "../../../../../../../../vendor/hyva-themes/magento2-default-theme";
+@source "../../../../../../../code/Secomm/VietQr";
 
 @import "../../../../../../../code/Mageplaza/SocialLogin/view/frontend/tailwind/tailwind-source.css";
 @import "../../../../../../../code/Mageplaza/SocialLoginPro/view/frontend/tailwind/tailwind-source.css";

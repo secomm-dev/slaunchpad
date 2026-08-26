@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="sales.order.history">
+            <block class="Secomm\VietQr\Block\Order\VietQrButton"
+                   name="vietqr.order.button"
+                   template="Secomm_VietQr::order/vietqr-button.phtml"/>
+        </referenceBlock>
+        <referenceContainer name="order-list-extra-action-buttons">
+            <block class="Secomm\VietQr\Block\Order\VietQrButton"
+                   name="order-list-vietqr-action-button" as="vietqr"
+                   template="Secomm_VietQr::order/vietqr-button.phtml"/>
+        </referenceContainer>
+    </body>
+</page>
