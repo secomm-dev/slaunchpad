@@ -10,22 +10,34 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Router\ActionList;
 use Magento\Framework\App\RouterInterface;
 use Secomm\AiCommerce\Model\Config;
+use Secomm\AiCommerce\Model\StoreContext\PathGuard;
+use Secomm\AiCommerce\Model\StoreContext\Resolver;
+use Secomm\AiCommerce\Service\InvalidStoreException;
 
 /**
  * Matches the configurable /<base-path>/* public read surface BEFORE the
- * standard router.
+ * standard router, with strict store-scoped admission (BUG-D4QK1Q):
  *
- * The base path is resolved from configuration (seocomm_ai_commerce/general/
- * endpoint_path, store-view scoped, default "ai") — never hardcoded. This
- * router is the single routing authority: the module declares NO standard
- * frontName route, so changing the base path cannot leave the old /ai/* URLs
- * live behind the standard router.
+ *     target store resolution (data only, no global mutation)
+ *         ↓
+ *     store-scoped enabled + endpoint-path config
+ *         ↓
+ *     strict base-path validation
+ *         ↓
+ *     controller routing
+ *
+ * The TARGET store is resolved first, from the same single V1 mechanism the
+ * controllers use (`store` query parameter, absent → installation default,
+ * via StoreContext\Resolver::resolveAsData()). All config checks then use
+ * that explicit store id — never ambient/default-scope config — so a Store
+ * View override (e.g. endpoint_path "agent") both routes its own path and
+ * rejects the default path. The base path is part of the store's public API
+ * contract: wrong path + valid ?store is a 404, never admitted.
  *
  * Only the four approved routes exist; nothing else under the base path is
- * matched (falls through to Magento no-route → deterministic 404). GET/HEAD
- * match their actions; every other verb is routed to the 405 envelope so no
- * mutation can ever execute commerce logic here. Query strings beyond the
- * fixed bound are rejected with the 400 envelope.
+ * matched (no-route → deterministic 404). GET/HEAD match their actions; every
+ * other verb is routed to the 405 envelope. Query strings beyond the fixed
+ * bound are rejected with the 400 envelope.
  */
 class Router implements RouterInterface
 {
@@ -35,32 +47,55 @@ class Router implements RouterInterface
     /**
      * @param ActionFactory $actionFactory action factory
      * @param ActionList $actionList router action list
-     * @param Config $config module config reader (endpoint base path)
+     * @param Config $config module config reader (store-scoped)
+     * @param Resolver $storeResolver shared store-context resolution contract
+     * @param PathGuard $pathGuard strict base-path/store boundary matcher
      */
     public function __construct(
         private readonly ActionFactory $actionFactory,
         private readonly ActionList $actionList,
-        private readonly Config $config
+        private readonly Config $config,
+        private readonly Resolver $storeResolver,
+        private readonly PathGuard $pathGuard
     ) {
     }
 
     /**
-     * Match a /<base-path>/* request to its fixed action.
+     * Match a /<base-path>/* request for its resolved target store.
      *
      * @param RequestInterface $request incoming request
      * @return ActionInterface|null matched action or null (no-route)
      */
     public function match(RequestInterface $request): ?ActionInterface
     {
-        $path = trim($request->getPathInfo(), '/');
+        $pathInfo = (string) $request->getPathInfo();
 
-        if ($path === '') {
+        // Target store FIRST — as data, no current-store mutation.
+        try {
+            $store = $this->storeResolver->resolveAsData(
+                $request instanceof HttpRequest ? $request->getParam(Resolver::PARAM_STORE) : null
+            );
+        } catch (InvalidStoreException $exception) {
+            // Invalid store code: fall back to the installation default for
+            // path admission only, so a default-path request still reaches
+            // the controller and keeps the documented 400 invalid_store
+            // envelope; any other path is a 404.
+            try {
+                $store = $this->storeResolver->resolveAsData(null);
+            } catch (InvalidStoreException $unresolvable) {
+                return null;
+            }
+        }
+
+        $storeId = (int) $store->getId();
+
+        // Store-scoped enabled check on the TARGET store (BUG-D4QK1Q §10).
+        if (!$this->config->isEnabled($storeId)) {
             return null;
         }
 
-        $basePath = $this->config->getEndpointPath();
-
-        if ($path !== $basePath && !str_starts_with($path, $basePath . '/')) {
+        // Strict store-scoped base-path admission (BUG-D4QK1Q §9).
+        if (!$this->pathGuard->matches($pathInfo, $storeId)) {
             return null;
         }
 
@@ -74,7 +109,7 @@ class Router implements RouterInterface
             return $this->actionFactory->create(MethodNotAllowed::class);
         }
 
-        $tail = trim(substr($path, strlen($basePath)), '/');
+        $tail = trim(substr(trim($pathInfo, '/'), strlen($this->config->getEndpointPath($storeId))), '/');
 
         switch ($tail) {
             case 'store':
