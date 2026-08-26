@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/*
+ * Secomm Launchpad (BUG-SDZPCD / ext ticket SLP-109):
+ * Declares the extra fee block as a dedicated child of product.info so it renders
+ * full-width below the price row (see Magento_Catalog product-info.phtml override).
+ * Theme layout files MERGE with the module's hyva_default.xml — they do not replace it.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="product.info">
+            <block class="Mageplaza\ExtraFee\Block\Product\View" name="product.info.extrafee"
+                   template="Mageplaza_ExtraFee::hyva/product/view/extra-fee.phtml"/>
+        </referenceBlock>
+    </body>
+</page>

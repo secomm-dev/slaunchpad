@@ -21,3 +21,11 @@
         grid-area: 1/1;
     }
 }
+
+/* BUG-NTQ0H2 (SLP-118): Snowdog_Menu's tailwind-source.css (Tailwind v3 style) @applies
+   hover:snowdog-menu-text-hover, which v4 cannot resolve for a plain @layer class.
+   Registering it as a utility unblocks `npm run build`. Keep the color in sync with
+   app/code/Snowdog/Menu/view/frontend/tailwind/tailwind-source.css */
+@utility snowdog-menu-text-hover {
+    @apply text-blue-700;
+}
