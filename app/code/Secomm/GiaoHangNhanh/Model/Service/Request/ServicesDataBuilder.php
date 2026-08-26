@@ -23,7 +23,7 @@ class ServicesDataBuilder extends AbstractDataBuilder
             $fromDistrict = (int) $this->config->getValue('district');
             $toDistrict = 0;
             if (isset($buildSubject['rate_request'])) {
-                $location = $this->resolveGhnLocation((int)$buildSubject['rate_request']->getData("dest_region_id"), $buildSubject['rate_request']->getData("dest_city"));
+                $location = $this->resolveGhnLocation((int)$buildSubject['rate_request']->getData("dest_region_id"), (string) $buildSubject['rate_request']->getData("dest_city"));
                 $toDistrict = $location['toDistrictId'];
             }
         }

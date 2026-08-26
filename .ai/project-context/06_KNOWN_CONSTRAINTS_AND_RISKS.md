@@ -23,6 +23,7 @@ AI should check this file before planning any work to avoid known problem areas.
 
 | Constraint | Impact | Workaround |
 |------------|--------|------------|
+| Carrier Rate Fallback (GHN / Ahamove) — Known Limitation, accepted DoD TASK-3F6QWZ (SLP-12) | Khi API GHN / Ahamove timeout/lỗi, module chỉ catch exception và trả về `false` (ẩn phương thức ship đó đi). Graceful hide được chấp nhận là đủ DoD ở cấp system-level. Chưa có cơ chế auto-fallback nội bộ sang bảng giá cố định / TableRate của riêng carrier — theo dõi bằng follow-up ticket | Cần bật sẵn Magento Flat Rate hoặc Mageplaza Table Rate trên Checkout làm phương thức dự phòng ở cấp Store để khách không bị chặn mua hàng khi 3rd-party API sập |
 | File cache + file sessions in committed env.php | Local-dev only; unviable for production throughput/FPC | Production MUST configure Redis (cache + sessions) + Varnish (FPC). Do NOT commit prod env.php. |
 | Search engine not configured in code | Magento 2.4.8 requires OpenSearch/Elasticsearch; search/catalog indexing broken in prod without it | Production MUST configure OpenSearch (ES8 + OpenSearch client libs already in vendor, just inactive) |
 | Mageplaza modules committed as source (not composer) | Version drift / update path to manage; risk of accidental in-place edits | Treat as third-party — extend via plugin/preference only; track versions manually |
