@@ -2,9 +2,32 @@
 
 All notable changes to `Secomm_AiDiscoverability` are documented here.
 
+## [1.5.0] - 2026-08-26
+
+Dedicated cache type + configurable section titles + configurable AI endpoint base path. Spec: `SPEC-TASK-HL3WQD`.
+
+### Added
+- Module-owned cache type `secomm_ai_discoverability` (`etc/cache.xml` +
+  `Model/Cache/Type`, core TagScope pattern): visible in `cache:status`,
+  cleanable via `cache:clean secomm_ai_discoverability`; disabling the type
+  disables llms.txt caching. Caching/invalidation now run through the type
+  (`LlmsTxtProvider`, `Model/InvalidateCache` — Zend-style TagScope clean
+  contract, distinct from the Proxy contract fixed in 1.4.1).
+- Admin-configurable llms.txt section titles (Secomm → AI Discoverability →
+  Section Titles, store-view scoped): all `##` headings plus the `###`
+  commerce endpoint headings. Defaults reproduce the previous output
+  byte-identically; empty values fall back to defaults.
+- llms.txt now advertises the configured AiCommerce endpoint base path
+  (default `ai`) instead of a hardcoded `/ai/` prefix.
+
+### Changed
+- `SPEC-BUG-AIDL-CINV1` family renamed to `SPEC-CHANGE-AIDL-CINV1` /
+  `CHANGE-AIDL-CINV1` by the BUG-provenance audit (implementation-originated
+  artifact; rule encoded in `.ai/AGENTS.md` §8.7). History preserved.
+
 ## [1.4.1] - 2026-08-25
 
-Fix: llms.txt tag invalidation was a runtime no-op. Spec: `SPEC-BUG-AIDL-CINV1`.
+Fix: llms.txt tag invalidation was a runtime no-op. Spec: `SPEC-CHANGE-AIDL-CINV1` (renamed from SPEC-BUG-AIDL-CINV1 by the BUG-provenance audit — implementation-originated artifact, not an independent QA finding).
 
 ### Fixed
 - `Model/InvalidateCache` passed Zend-style arguments to

@@ -16,11 +16,24 @@
                 <field id="enabled" translate="label comment" type="select"
                        sortOrder="10" showInDefault="1" showInWebsite="1"
                        showInStore="1" canRestore="1">
-                    <label>Enable AI Read Endpoints (/ai/...)</label>
-                    <comment>When disabled, all /ai/* endpoints return 404.
+                    <label>Enable AI Read Endpoints</label>
+                    <comment>When disabled, all AI read endpoints return 404.
                         Read-only GET/HEAD endpoints for AI agents; no cart,
                         checkout, customer or order data.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="endpoint_path" translate="label comment" type="text"
+                       sortOrder="15" showInDefault="1" showInWebsite="1"
+                       showInStore="1" canRestore="1">
+                    <backend_model>Secomm\AiCommerce\Model\Config\Backend\EndpointPath</backend_model>
+                    <label>AI Read Endpoint Path</label>
+                    <comment>URL base path of the AI read endpoints
+                        (default "ai" → /ai/store, /ai/catalog/search,
+                        /ai/categories, /ai/products/&lt;sku&gt;). Surrounding
+                        slashes are stripped on save; invalid values (query
+                        strings, fragments, protocol URLs, traversal,
+                        spaces) fall back to "ai". Also advertised in
+                        /llms.txt.</comment>
                 </field>
                 <field id="max_page_size" translate="label comment" type="text"
                        sortOrder="20" showInDefault="1" showInWebsite="1"

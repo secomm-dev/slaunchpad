@@ -38,6 +38,7 @@ all values store-view scoped:
 | CMS Pages | `urls/cms_pages` | — | multiselect, max 20 rendered |
 | Categories | `urls/categories` | — | hierarchical checkbox tree (core jstree widget), saved as category IDs, max 20 rendered; scoped to the edited store view's category tree (website/default scope: that scope's trees, distinct roots as labeled groups) |
 | Include Sitemap References | `urls/include_sitemap_refs` | `1` | link existing sitemap files |
+| Section Titles (11 fields) | `titles/*` | shipped defaults | every `##` heading plus the `###` commerce endpoint headings; empty value falls back to the default |
 | Cache Lifetime | `cache/lifetime` | `86400` | seconds |
 | Max URLs | `cache/max_urls` | `100` | global bound across all sections |
 
@@ -85,6 +86,9 @@ among non-redirect `url_rewrite` rows for the category in the store, the row wit
 
 ## Cache & invalidation
 
+- Dedicated Magento cache type `secomm_ai_discoverability`
+  (`System → Cache Management`; `bin/magento cache:status` / `cache:clean
+  secomm_ai_discoverability`). Disabling the type disables llms.txt caching.
 - Cache ID `seocomm_llms_txt_store_{storeId}`, tags `seocomm_llms` + `seocomm_llms_store_{id}`,
   lazy regeneration on request, configurable lifetime. No cron.
 - Targeted invalidation observers:

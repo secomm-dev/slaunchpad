@@ -16,12 +16,12 @@ use Magento\Framework\Escaper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Quote\Model\Quote as QuoteModel;
+use Magento\Quote\Model\Quote\Item as QuoteItem;
 use Magento\Sales\Model\Order\Item;
 use Magento\Sales\Model\Order\Payment;
-use Magento\Store\Model\StoreManagerInterface;
 use Secomm\ZaloPay\Helper\Data;
 
 class ItemDetailsDataBuilder extends AbstractDataBuilder implements BuilderInterface
@@ -47,6 +47,11 @@ class ItemDetailsDataBuilder extends AbstractDataBuilder implements BuilderInter
     const ITEM_QTY = 'itemquantity';
 
     /**
+     * Build subject key carrying the QUOTE in the payment-first flow.
+     */
+    const QUOTE = 'quote';
+
+    /**
      * ItemDetailsDataBuilder constructor.
      * @param Rate $helperRate
      * @param Escaper $escaper
@@ -62,6 +67,11 @@ class ItemDetailsDataBuilder extends AbstractDataBuilder implements BuilderInter
     }
 
     /**
+     * Two item sources:
+     *  - legacy order-first: the sales order of the payment Data Object;
+     *  - payment-first: the QUOTE passed in the build subject (line items
+     *    priced in the quote display currency, qty via getQty()).
+     *
      * @param array $buildSubject
      * @return array
      * @throws LocalizedException
@@ -72,17 +82,34 @@ class ItemDetailsDataBuilder extends AbstractDataBuilder implements BuilderInter
         $paymentDO = SubjectReader::readPayment($buildSubject);
         /** @var Payment $payment */
         $payment = $paymentDO->getPayment();
-        $order = $payment->getOrder();
+        $quote = $buildSubject[self::QUOTE] ?? null;
         $itemsData = [];
 
-        /** @var Item $item */
-        foreach ($order->getAllVisibleItems() as $item) {
-            $itemsData[] = [
-                self::ITEM_ID => $this->escaper->escapeHtml($item->getSku()),
-                self::ITEM_NAME => $this->escaper->escapeHtml($this->data->removeSpecialChars($item->getName())),
-                self::ITEM_PRICE => (float)$this->helperRate->getVndAmount($order, $item->getPrice()),
-                self::ITEM_QTY => $item->getQtyOrdered()
-            ];
+        if ($quote instanceof QuoteModel) {
+            $currency = (string)$quote->getQuoteCurrencyCode();
+            /** @var QuoteItem $item */
+            foreach ($quote->getAllVisibleItems() as $item) {
+                $itemsData[] = [
+                    self::ITEM_ID => $this->escaper->escapeHtml($item->getSku()),
+                    self::ITEM_NAME => $this->escaper->escapeHtml($this->data->removeSpecialChars($item->getName())),
+                    self::ITEM_PRICE => (float)$this->helperRate->getVndAmountByCurrency(
+                        $currency,
+                        (float)$item->getPrice()
+                    ),
+                    self::ITEM_QTY => (float)$item->getQty()
+                ];
+            }
+        } else {
+            $order = $payment->getOrder();
+            /** @var Item $item */
+            foreach ($order->getAllVisibleItems() as $item) {
+                $itemsData[] = [
+                    self::ITEM_ID => $this->escaper->escapeHtml($item->getSku()),
+                    self::ITEM_NAME => $this->escaper->escapeHtml($this->data->removeSpecialChars($item->getName())),
+                    self::ITEM_PRICE => (float)$this->helperRate->getVndAmount($order, $item->getPrice()),
+                    self::ITEM_QTY => $item->getQtyOrdered()
+                ];
+            }
         }
 
         return [

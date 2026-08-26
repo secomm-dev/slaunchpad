@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.2.0 (2026-08-26)
+
+Configurable AI read endpoint base path. Spec: `SPEC-TASK-HL3WQD`.
+
+### Added
+- `seocomm_ai_commerce/general/endpoint_path` (store-view scoped, default `ai`):
+  the URL base path of the read endpoints. Canonicalized at save time
+  (`Model/Config/Backend/EndpointPath` delegating to
+  `Model\Config::normalizeEndpointPath()` — the single normalization authority);
+  invalid values (empty, bare `/`, query, fragment, protocol URLs, traversal,
+  spaces, other characters) fall back to `ai`, so routing never breaks.
+
+### Changed
+- `Controller/Router` resolves the base path from config and is now the single
+  routing authority: the standard frontName route (`etc/frontend/routes.xml`)
+  is removed, so changing the path fully retires the old `/ai/*` URLs instead
+  of leaving them live behind the standard router. Default-scope
+  `general/enabled` default is now `1`; deployments with a saved value
+  (including this one) are unaffected.
+- llms.txt (`Secomm_AiDiscoverability`) advertises the effective configured
+  URLs.
+
 ## 1.1.0 (2026-08-25)
 
 Product-detail response cache + working tag invalidation. Spec: `SPEC-TASK-AIC-PDC1`

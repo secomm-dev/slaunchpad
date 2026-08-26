@@ -79,4 +79,30 @@ class ResolverTest extends TestCase
 
         $this->assertSame($this->store, $this->resolver->resolve(''));
     }
+
+    /**
+     * BUG-D4QK1Q: router-phase resolution must be pure data — it must never
+     * mutate the current store during router matching.
+     */
+    public function testResolveAsDataDoesNotMutateCurrentStore(): void
+    {
+        $this->storeRepository->method('getActiveStoreByCode')->with('vi_vn')->willReturn($this->store);
+        $this->storeManager->expects($this->never())->method('setCurrentStore');
+
+        $this->assertSame($this->store, $this->resolver->resolveAsData('vi_vn'));
+    }
+
+    public function testResolveAsDataResolvesDefaultWithoutMutation(): void
+    {
+        $this->storeManager->method('getDefaultStoreView')->willReturn($this->store);
+        $this->storeManager->expects($this->never())->method('setCurrentStore');
+
+        $this->assertSame($this->store, $this->resolver->resolveAsData(null));
+    }
+
+    public function testResolveAsDataKeepsInvalidCodeContract(): void
+    {
+        $this->expectException(InvalidParameterException::class);
+        $this->resolver->resolveAsData('not a code!');
+    }
 }

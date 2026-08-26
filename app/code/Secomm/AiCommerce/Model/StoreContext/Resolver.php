@@ -36,13 +36,35 @@ class Resolver
     }
 
     /**
-     * Resolve the store view for the current request.
+     * Resolve the store view for the current request and make it current.
+     *
+     * Controller-phase contract (unchanged): the resolved store becomes the
+     * current store so delegating Magento services evaluate in its scope.
      *
      * @param string|null $storeCode raw `store` query parameter value
      * @return StoreInterface resolved active store view
      * @throws InvalidStoreException when the code is not an active frontend store
      */
     public function resolve(?string $storeCode): StoreInterface
+    {
+        return $this->emulate($this->resolveAsData($storeCode));
+    }
+
+    /**
+     * Resolve the target store view as DATA — no global store mutation.
+     *
+     * Router-phase contract (BUG-D4QK1Q): the custom router resolves the
+     * request's TARGET store from the same single V1 mechanism (`store` query
+     * parameter, absent → installation default) WITHOUT touching the current
+     * store, then runs store-scoped enabled/endpoint-path checks against the
+     * resolved store id. Router and controllers therefore share one
+     * resolution contract and cannot diverge.
+     *
+     * @param string|null $storeCode raw `store` query parameter value
+     * @return StoreInterface resolved active store view
+     * @throws InvalidStoreException when the code is not an active frontend store
+     */
+    public function resolveAsData(?string $storeCode): StoreInterface
     {
         $storeCode = trim((string) $storeCode);
 
@@ -59,7 +81,7 @@ class Resolver
                 throw new InvalidStoreException(__('Invalid store code.'));
             }
 
-            return $this->emulate($store);
+            return $store;
         }
 
         if (!preg_match('/^[a-z0-9_]{1,32}$/i', $storeCode)) {
@@ -67,12 +89,10 @@ class Resolver
         }
 
         try {
-            $store = $this->storeRepository->getActiveStoreByCode($storeCode);
+            return $this->storeRepository->getActiveStoreByCode($storeCode);
         } catch (NoSuchEntityException $e) {
             throw new InvalidStoreException(__('Invalid store code.'));
         }
-
-        return $this->emulate($store);
     }
 
     /**

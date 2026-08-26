@@ -7,6 +7,7 @@ use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Store\Api\StoreRepositoryInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -52,6 +53,11 @@ class IndexTest extends TestCase
     private $storeManager;
 
     /**
+     * @var StoreRepositoryInterface|MockObject
+     */
+    private $storeRepository;
+
+    /**
      * @var array<string, string>
      */
     private $headers = [];
@@ -68,6 +74,7 @@ class IndexTest extends TestCase
         $store->method('getId')->willReturn('1');
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
         $this->storeManager->method('getStore')->willReturn($store);
+        $this->storeRepository = $this->createMock(StoreRepositoryInterface::class);
 
         $this->response = $this->createMock(HttpResponse::class);
         $this->request = $this->createMock(HttpRequest::class);
@@ -145,9 +152,45 @@ class IndexTest extends TestCase
             $this->config,
             $this->provider,
             $this->storeManager,
+            $this->storeRepository,
             $resultFactory,
             $this->response,
             $this->request
         );
+    }
+    public function testStoreParamResolvesTargetStoreView(): void
+    {
+        $this->config->method('getCacheLifetime')->willReturn(86400);
+
+        $viVn = $this->createMock(Store::class);
+        $viVn->method('getId')->willReturn('3');
+        $this->storeRepository->method('getActiveStoreByCode')->with('vi_vn')->willReturn($viVn);
+        $this->request->method('getParam')->with('store')->willReturn('vi_vn');
+        $this->provider
+            ->expects($this->once())
+            ->method('get')
+            ->with(3)
+            ->willReturn(self::BODY);
+        $this->config->method('isEnabled')->with(3)->willReturn(true);
+
+        $result = $this->controller('GET')->execute();
+
+        $this->assertInstanceOf(Raw::class, $result);
+    }
+
+    public function testUnknownStoreParamFallsBackToCurrentStore(): void
+    {
+        $this->config->method('getCacheLifetime')->willReturn(86400);
+
+        $this->storeRepository->method('getActiveStoreByCode')
+            ->willThrowException(new \Magento\Framework\Exception\NoSuchEntityException());
+        $this->request->method('getParam')->with('store')->willReturn('ghost');
+        $this->provider
+            ->expects($this->once())
+            ->method('get')
+            ->with(1)
+            ->willReturn(self::BODY);
+
+        $this->controller('GET')->execute();
     }
 }

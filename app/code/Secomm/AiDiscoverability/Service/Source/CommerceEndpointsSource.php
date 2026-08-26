@@ -7,6 +7,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Module\ModuleListInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\ScopeInterface;
+use Secomm\AiDiscoverability\Model\Config;
 
 /**
  * Machine-readable Commerce discovery entries for the Secomm_AiCommerce
@@ -14,24 +15,33 @@ use Magento\Store\Model\ScopeInterface;
  *
  * Discovery metadata ONLY: no AiCommerce endpoint is executed and no catalog
  * data is loaded while generating these entries — the section is derived from
- * module presence + one config flag. The seam is deliberately soft: no
- * AiCommerce class is referenced (ModuleList + config path), so DI compilation
- * and generation keep working when Secomm_AiCommerce is absent or disabled,
- * in which case this source yields no entries.
+ * module presence + config flags. The seam is deliberately soft: no
+ * AiCommerce class is referenced (ModuleList + config paths), so DI
+ * compilation and generation keep working when Secomm_AiCommerce is absent or
+ * disabled, in which case this source yields no entries.
+ *
+ * Advertised URLs use the AiCommerce base path configured at
+ * seocomm_ai_commerce/general/endpoint_path (canonicalized at save time by
+ * AiCommerce's backend model; default "ai"). llms.txt therefore advertises
+ * the effective endpoint URLs, never a hardcoded /ai/ prefix.
  */
 class CommerceEndpointsSource
 {
     private const AICOMMERCE_MODULE = 'Secomm_AiCommerce';
     private const AICOMMERCE_ENABLED_PATH = 'seocomm_ai_commerce/general/enabled';
+    private const AICOMMERCE_ENDPOINT_PATH = 'seocomm_ai_commerce/general/endpoint_path';
+    private const DEFAULT_ENDPOINT_PATH = 'ai';
     private const SKU_PLACEHOLDER = '{sku}';
 
     /**
      * @param ModuleListInterface $moduleList module registry (soft presence check)
      * @param ScopeConfigInterface $scopeConfig scoped config reader
+     * @param Config $config module configuration accessor (section titles)
      */
     public function __construct(
         private readonly ModuleListInterface $moduleList,
-        private readonly ScopeConfigInterface $scopeConfig
+        private readonly ScopeConfigInterface $scopeConfig,
+        private readonly Config $config
     ) {
     }
 
@@ -47,37 +57,62 @@ class CommerceEndpointsSource
      */
     public function getEntries(StoreInterface $store): array
     {
-        if (!$this->isAiCommerceAvailable((int) $store->getId())) {
+        $storeId = (int) $store->getId();
+
+        if (!$this->isAiCommerceAvailable($storeId)) {
             return [];
         }
 
         $base = rtrim((string) $store->getBaseUrl(), '/');
+        $basePath = $this->getBasePath($storeId);
         $suffix = '?store=' . rawurlencode((string) $store->getCode());
 
         return [
             [
-                'label' => 'Store Information',
-                'url' => $base . '/ai/store' . $suffix,
+                'label' => $this->config->getSectionTitle('store_information', $storeId),
+                'url' => $base . '/' . $basePath . '/store' . $suffix,
                 'purpose' => 'Store metadata, locale, currency and supported public catalog context.',
             ],
             [
-                'label' => 'Product Search',
-                'url' => $base . '/ai/catalog/search' . $suffix,
+                'label' => $this->config->getSectionTitle('product_search', $storeId),
+                'url' => $base . '/' . $basePath . '/catalog/search' . $suffix,
                 'purpose' => 'Search public products using the bounded AI Commerce catalog facade.',
             ],
             [
-                'label' => 'Categories',
-                'url' => $base . '/ai/categories' . $suffix,
+                'label' => $this->config->getSectionTitle('product_categories', $storeId),
+                'url' => $base . '/' . $basePath . '/categories' . $suffix,
                 'purpose' => 'Browse public category data for this store view.',
             ],
             // Route template, not a resolvable URL — emitted as plain text.
             [
-                'label' => 'Product Detail',
-                'url' => $base . '/ai/products/' . self::SKU_PLACEHOLDER . $suffix,
+                'label' => $this->config->getSectionTitle('product_detail', $storeId),
+                'url' => $base . '/' . $basePath . '/products/' . self::SKU_PLACEHOLDER . $suffix,
                 'purpose' => 'Retrieve public product information for a known SKU.',
                 'plain' => true,
             ],
         ];
+    }
+
+    /**
+     * Effective AiCommerce base path for the store view.
+     *
+     * The stored value is canonicalized by AiCommerce's config backend model
+     * (leading/trailing slashes stripped, validated); this join-side guard
+     * only trims slashes and falls back to the shipped default — it never
+     * re-implements validation.
+     *
+     * @param int $storeId store view scope
+     * @return string base path without surrounding slashes
+     */
+    private function getBasePath(int $storeId): string
+    {
+        $path = trim((string) $this->scopeConfig->getValue(
+            self::AICOMMERCE_ENDPOINT_PATH,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ), '/');
+
+        return $path !== '' ? $path : self::DEFAULT_ENDPOINT_PATH;
     }
 
     /**
