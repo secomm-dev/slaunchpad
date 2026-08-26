@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "157bf01353dfb78c3bc689a0ae234e8a",
+    "content-hash": "a1159ecdea0aed89ababa22f0b507c1f",
     "packages": [
         {
             "name": "2tvenom/cborencode",
@@ -2705,11 +2705,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-bundle/1.0.23.0/7c214879e06f3e135cdd25b166b546c8759b52e9.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-bundle/1.0.23.0/7c214879e06f3e135cdd25b166b546c8759b52e9.zip",
                 "reference": "7c214879e06f3e135cdd25b166b546c8759b52e9",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -2734,7 +2734,7 @@
                     "Hyva\\KotiSampleDataBundle\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -2750,11 +2750,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-catalog/1.0.23.0/5d5f97f11b172a103c8115ccabf1a9695eb4ebfd.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-catalog/1.0.23.0/5d5f97f11b172a103c8115ccabf1a9695eb4ebfd.zip",
                 "reference": "5d5f97f11b172a103c8115ccabf1a9695eb4ebfd",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -2776,7 +2776,7 @@
                     "Hyva\\KotiSampleDataCatalog\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -2792,11 +2792,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-catalog-rule/1.0.23.0/cb58fa41c349af468aa33737da0f826597c3b0b5.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-catalog-rule/1.0.23.0/cb58fa41c349af468aa33737da0f826597c3b0b5.zip",
                 "reference": "cb58fa41c349af468aa33737da0f826597c3b0b5",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -2821,7 +2821,7 @@
                     "Hyva\\KotiSampleDataCatalogRule\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -2837,11 +2837,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-configurable/1.0.23.0/a6deb691adca85779a8fb825487a439037a6ffad.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-configurable/1.0.23.0/a6deb691adca85779a8fb825487a439037a6ffad.zip",
                 "reference": "a6deb691adca85779a8fb825487a439037a6ffad",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -2864,7 +2864,7 @@
                     "Hyva\\KotiSampleDataConfigurable\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -2880,11 +2880,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-customer/1.0.23.0/4026971c3eccb2f65db0dd14e568bf1ef04ab4b3.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-customer/1.0.23.0/4026971c3eccb2f65db0dd14e568bf1ef04ab4b3.zip",
                 "reference": "4026971c3eccb2f65db0dd14e568bf1ef04ab4b3",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -2905,7 +2905,7 @@
                     "Hyva\\KotiSampleDataCustomer\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -2921,11 +2921,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-downloadable/1.0.23.0/4fb077d4a8f141923c8ebeaa6d604a414aec731e.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-downloadable/1.0.23.0/4fb077d4a8f141923c8ebeaa6d604a414aec731e.zip",
                 "reference": "4fb077d4a8f141923c8ebeaa6d604a414aec731e",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -2948,7 +2948,7 @@
                     "Hyva\\KotiSampleDataDownloadable\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -2964,11 +2964,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-grouped-product/1.0.23.0/234de23361c74e51b0696a7dd573fb15f4b1812c.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-grouped-product/1.0.23.0/234de23361c74e51b0696a7dd573fb15f4b1812c.zip",
                 "reference": "234de23361c74e51b0696a7dd573fb15f4b1812c",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -2991,7 +2991,7 @@
                     "Hyva\\KotiSampleDataGroupedProduct\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3007,11 +3007,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-media/1.0.23.0/86c548aa88f07e242414165f2466094001fcbbc6.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-media/1.0.23.0/86c548aa88f07e242414165f2466094001fcbbc6.zip",
                 "reference": "86c548aa88f07e242414165f2466094001fcbbc6",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3028,7 +3028,7 @@
                     ]
                 ]
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3044,11 +3044,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-msrp/1.0.23.0/b67895ea0f070bc551d199f1ce1093a17b9d7311.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-msrp/1.0.23.0/b67895ea0f070bc551d199f1ce1093a17b9d7311.zip",
                 "reference": "b67895ea0f070bc551d199f1ce1093a17b9d7311",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3069,7 +3069,7 @@
                     "Hyva\\KotiSampleDataMsrp\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3085,11 +3085,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-offline-shipping/1.0.23.0/71c4723244b70cb152b50ac8c72e2e74492b4125.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-offline-shipping/1.0.23.0/71c4723244b70cb152b50ac8c72e2e74492b4125.zip",
                 "reference": "71c4723244b70cb152b50ac8c72e2e74492b4125",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3111,7 +3111,7 @@
                     "Hyva\\KotiSampleDataOfflineShipping\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3127,11 +3127,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-product-links/1.0.23.0/f22ef3817268e929c249cce6fe45d4d145a0873d.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-product-links/1.0.23.0/f22ef3817268e929c249cce6fe45d4d145a0873d.zip",
                 "reference": "f22ef3817268e929c249cce6fe45d4d145a0873d",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3156,7 +3156,7 @@
                     "Hyva\\KotiSampleDataProductLinks\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3172,11 +3172,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-review/1.0.23.0/9c5939ac47e422378509e56ced492f027d978468.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-review/1.0.23.0/9c5939ac47e422378509e56ced492f027d978468.zip",
                 "reference": "9c5939ac47e422378509e56ced492f027d978468",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3201,7 +3201,7 @@
                     "Hyva\\KotiSampleDataReview\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3217,11 +3217,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-sales/1.0.23.0/86bbbf869500555207ba7e38aaef59a59e94673c.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-sales/1.0.23.0/86bbbf869500555207ba7e38aaef59a59e94673c.zip",
                 "reference": "86bbbf869500555207ba7e38aaef59a59e94673c",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3249,7 +3249,7 @@
                     "Hyva\\KotiSampleDataSales\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3265,11 +3265,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-sales-rule/1.0.23.0/4f03017dcc815f90364eff96f4552764b90faa86.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-sales-rule/1.0.23.0/4f03017dcc815f90364eff96f4552764b90faa86.zip",
                 "reference": "4f03017dcc815f90364eff96f4552764b90faa86",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3290,7 +3290,7 @@
                     "Hyva\\KotiSampleDataSalesRule\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3306,11 +3306,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-swatches/1.0.23.0/36ca194c07be5ae6bb14824d03b8a5ca195ffaee.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-swatches/1.0.23.0/36ca194c07be5ae6bb14824d03b8a5ca195ffaee.zip",
                 "reference": "36ca194c07be5ae6bb14824d03b8a5ca195ffaee",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3331,7 +3331,7 @@
                     "Hyva\\KotiSampleDataSwatches\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3347,11 +3347,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-tax/1.0.23.0/8f34bad73274241d59e55cddf4eb38f06665e45a.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-tax/1.0.23.0/8f34bad73274241d59e55cddf4eb38f06665e45a.zip",
                 "reference": "8f34bad73274241d59e55cddf4eb38f06665e45a",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3372,7 +3372,7 @@
                     "Hyva\\KotiSampleDataTax\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3388,11 +3388,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-theme/1.0.23.0/1190c0438b64ba618a6ea8f7eb271d59cc9f397e.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-theme/1.0.23.0/1190c0438b64ba618a6ea8f7eb271d59cc9f397e.zip",
                 "reference": "1190c0438b64ba618a6ea8f7eb271d59cc9f397e",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3413,7 +3413,7 @@
                     "Hyva\\KotiSampleDataTheme\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3429,11 +3429,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-widget/1.0.23.0/6bdf535094f9ffe6e743b4e574d3b43efe591cb8.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-widget/1.0.23.0/6bdf535094f9ffe6e743b4e574d3b43efe591cb8.zip",
                 "reference": "6bdf535094f9ffe6e743b4e574d3b43efe591cb8",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3456,7 +3456,7 @@
                     "Hyva\\KotiSampleDataWidget\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3472,11 +3472,11 @@
             "version": "1.0.23",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/koti-sample-data-wishlist/1.0.23.0/141699d71cc050ced5fdc6809a8c7ef066518111.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/koti-sample-data-wishlist/1.0.23.0/141699d71cc050ced5fdc6809a8c7ef066518111.zip",
                 "reference": "141699d71cc050ced5fdc6809a8c7ef066518111",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3504,7 +3504,7 @@
                     "Hyva\\KotiSampleDataWishlist\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3520,11 +3520,11 @@
             "version": "2.0.5",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-base-layout-reset/2.0.5.0/f39cf05a0e69c4ece318703c567a91d585ad89f7.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-base-layout-reset/2.0.5.0/f39cf05a0e69c4ece318703c567a91d585ad89f7.zip",
                 "reference": "f39cf05a0e69c4ece318703c567a91d585ad89f7",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3550,7 +3550,7 @@
                     ]
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3572,11 +3572,11 @@
             "version": "1.1.4",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-compat-module-fallback/1.1.4.0/a0bf18f998ccf45c53d15c39446a495aa68b4c4a.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-compat-module-fallback/1.1.4.0/a0bf18f998ccf45c53d15c39446a495aa68b4c4a.zip",
                 "reference": "a0bf18f998ccf45c53d15c39446a495aa68b4c4a",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3594,7 +3594,7 @@
                     "Hyva\\CompatModuleFallback\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3616,11 +3616,11 @@
             "version": "1.5.2",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-default-theme/1.5.2.0/c9af094ae5efffae92504e0d8e60e993f379c399.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-default-theme/1.5.2.0/c9af094ae5efffae92504e0d8e60e993f379c399.zip",
                 "reference": "c9af094ae5efffae92504e0d8e60e993f379c399",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3651,7 +3651,7 @@
                     "registration.php"
                 ]
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "archive": {
                 "exclude": [
                     ".gitlab"
@@ -3679,11 +3679,11 @@
             "version": "1.0.6",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-email-module/1.0.6.0/aa5dc55e5e66cadf578bdb339a5d76b2a5a94097.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-email-module/1.0.6.0/aa5dc55e5e66cadf578bdb339a5d76b2a5a94097.zip",
                 "reference": "aa5dc55e5e66cadf578bdb339a5d76b2a5a94097",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3701,7 +3701,7 @@
                     "Hyva\\Email\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3808,11 +3808,11 @@
             "version": "1.1.7",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-luma-checkout/1.1.7.0/4a77fd88723415e64fbec10e2d40dc650a2e15d0.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-luma-checkout/1.1.7.0/4a77fd88723415e64fbec10e2d40dc650a2e15d0.zip",
                 "reference": "4a77fd88723415e64fbec10e2d40dc650a2e15d0",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3831,7 +3831,7 @@
                     "Hyva\\LumaCheckout\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3853,11 +3853,11 @@
             "version": "1.1.0",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-mollie-theme-bundle/1.1.0.0/cee7ff401bae129b543dbe454b9869dfb580863e.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-mollie-theme-bundle/1.1.0.0/cee7ff401bae129b543dbe454b9869dfb580863e.zip",
                 "reference": "cee7ff401bae129b543dbe454b9869dfb580863e",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3876,7 +3876,7 @@
                     ]
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3898,11 +3898,11 @@
             "version": "1.0.1",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-order-cancellation-webapi/1.0.1.0/e3b2e4d74bc2501c926ce5b8f9ac126f523bd07e.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-order-cancellation-webapi/1.0.1.0/e3b2e4d74bc2501c926ce5b8f9ac126f523bd07e.zip",
                 "reference": "e3b2e4d74bc2501c926ce5b8f9ac126f523bd07e",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3927,7 +3927,7 @@
                     ]
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -3949,11 +3949,11 @@
             "version": "1.2.8",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-smile-elasticsuite/1.2.8.0/5f2371efb5880d62fb0b1cce886034dfed786800.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-smile-elasticsuite/1.2.8.0/5f2371efb5880d62fb0b1cce886034dfed786800.zip",
                 "reference": "5f2371efb5880d62fb0b1cce886034dfed786800",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -3971,7 +3971,7 @@
                     "Hyva\\SmileElasticsuite\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "see LICENSE.md"
             ],
@@ -3997,11 +3997,11 @@
             "version": "1.0.4",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-theme-fallback/1.0.4.0/6673002d68b23c850b84808ca93b7c9ac7141c49.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-theme-fallback/1.0.4.0/6673002d68b23c850b84808ca93b7c9ac7141c49.zip",
                 "reference": "6673002d68b23c850b84808ca93b7c9ac7141c49",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -4018,7 +4018,7 @@
                     "Hyva\\ThemeFallback\\": "src/"
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -4040,11 +4040,11 @@
             "version": "1.5.2",
             "dist": {
                 "type": "zip",
-                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/hyva-themes/magento2-theme-module/1.5.2.0/6f602cce4248cc626be0f50076188200e3e5d7d5.zip",
+                "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/hyva-themes/magento2-theme-module/1.5.2.0/6f602cce4248cc626be0f50076188200e3e5d7d5.zip",
                 "reference": "6f602cce4248cc626be0f50076188200e3e5d7d5",
                 "mirrors": [
                     {
-                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/dists/%package%/%version%/r%reference%.%type%",
+                        "url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/dists/%package%/%version%/r%reference%.%type%",
                         "preferred": true
                     }
                 ]
@@ -4079,7 +4079,7 @@
                     ]
                 }
             },
-            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-bc6wyouwub/downloads/",
+            "notification-url": "https://hyva-themes.repo.packagist.com/secomm-vn-1olcmqry0s/downloads/",
             "license": [
                 "OSL-3.0"
             ],
@@ -32039,7 +32039,7 @@
     },
     "prefer-stable": true,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "platform": {},
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
 }
