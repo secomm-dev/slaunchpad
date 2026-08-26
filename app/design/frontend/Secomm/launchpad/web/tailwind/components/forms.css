@@ -60,7 +60,7 @@
 
         /* Reserve space for single line form validation messages */
         &.field-reserved {
-            --reserved-space: --spacing(7);
+            --reserved-space: --spacing(0);
             margin-block-end: var(--reserved-space);
 
             ul {
