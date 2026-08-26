@@ -88,7 +88,7 @@ class RefreshCityToken extends Action implements HttpPostActionInterface
                                 'country_id' => $item['country_id'],
                                 'name' => $item['name'],
                                 'name_vi_vn' => $item['name'],
-//                                'level' => $item['level']
+                                'level' => $item['level'] ?? 1
                             ],
                             ['col' => 'city_id', 'val' => $item['_id']]
                         );

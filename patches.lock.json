@@ -1,5 +1,5 @@
 {
-    "_hash": "801afdcd9291017315dc51fbd1eb9743d8e629f5d74add5cfa7352f4b21647c6",
+    "_hash": "6aacb1eff57a08840b8c5fc761f7fcf7b0e48dda3c46c6b1297cd169a205fe09",
     "patches": {
         "magento/module-async-config": [
             {
@@ -107,6 +107,16 @@
                 "extra": {
                     "provenance": "root"
                 }
+            },
+            {
+                "package": "magento/framework",
+                "description": "Make ACL resource title attribute optional",
+                "url": "patches/magento-framework-acl-title-optional.patch",
+                "sha256": "414554b50b21b5cf76ac46db99828a1ee1d92bda6db4724d93cf83a6c3a6cb23",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
             }
         ],
         "magento/module-customer": [
@@ -115,6 +125,16 @@
                 "description": "APSB26-73: Security Patch for Customer Config",
                 "url": "patches/composer/APSB26-73/APSB26-73-magento-module-customer.patch",
                 "sha256": "b7029e936f981a9849332bb60a1cba13ca606a6d9deeeb5f72d2ca07f05d9385",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "magento/module-customer",
+                "description": "APSB26-92: Security release 248p5-2026-08-001 CE",
+                "url": "patches/composer/APSB26-92-248p5-2026-08-001-CE/module-customer.patch",
+                "sha256": "5075a0bb3e9faddd2ca6911e97a1a613d456df97248503c8d92db0dc95413b4f",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
@@ -143,6 +163,16 @@
                 "extra": {
                     "provenance": "root"
                 }
+            },
+            {
+                "package": "magento/magento2-base",
+                "description": "APSB26-92: Security release 248p5-2026-08-001 CE",
+                "url": "patches/composer/APSB26-92-248p5-2026-08-001-CE/magento2-base.patch",
+                "sha256": "6bd5460310609a666cec213b315c7fa30effacf5c5a5e15c538bf532f8e3c67c",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
             }
         ],
         "magento/module-page-cache": [
@@ -151,6 +181,30 @@
                 "description": "AC-15223: Use vary cookie in FPC save identifier for store switch",
                 "url": "patches/composer/AC-15223_2.4.8.patch",
                 "sha256": "5cc7095c7948dbd3feaadb4fe02c6ae293b411f41044d2ea976143998d8729fc",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-cms": [
+            {
+                "package": "magento/module-cms",
+                "description": "APSB26-92: Security release 248p5-2026-08-001 CE",
+                "url": "patches/composer/APSB26-92-248p5-2026-08-001-CE/module-cms.patch",
+                "sha256": "1294f7d72145f8e89a959f5e6874340e7277accd0e28632abc509573edfbf132",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "magento/module-review": [
+            {
+                "package": "magento/module-review",
+                "description": "APSB26-92: Security release 248p5-2026-08-001 CE",
+                "url": "patches/composer/APSB26-92-248p5-2026-08-001-CE/module-review.patch",
+                "sha256": "4cf9d57e1c4a1f6f53eff4e3b86cb16acb9c84167c1b009a9c7be7c2ed7dc671",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
