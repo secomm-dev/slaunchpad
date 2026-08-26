@@ -322,14 +322,6 @@ Use the **minimum** model invocations, tool calls, file reads, searches, and val
 - **Subagents only when justified** (independent workstream / specialist expertise / independent risk review / substantial parallel value / partitionable large task) — never for small or overlapping work.
 - **Budget check.** If execution runs past expected turns/searches without new evidence, stop and report rather than loop.
 
-### 8.7 BUG Artifact Provenance (SPEC-BUG-* discipline)
-
-A formal `SPEC-BUG-*` record certifies that an **independent** Reviewer/QA found a defect in finished, delivered work. The implementation AI must never mint one against its own unfinished implementation:
-
-- **No self-QA BUGs.** Implementation iteration findings (defects found, fixed and re-verified inside the same implementation run) are recorded as `SPEC-CHANGE-*` / `CHANGE-*` (or an implementation note / a section of the parent task spec) — never `SPEC-BUG-*`, and never with a self-declared PASS closure.
-- **Independent origin only.** `SPEC-BUG-*` originates from a Reviewer/QA/TL who did not author the implementation, with their own evidence.
-- **Provenance audits may reclassify.** When an audit shows a `SPEC-BUG-*` was implementation-authored, rename it via `git mv` to the `SPEC-CHANGE-*`/`CHANGE-*` class, add a short provenance note, and update references (spec, plan, evidence, CHANGELOG) — history preserved, no content rewrite. Mapping table goes in the audit receipt.
-
 ---
 
 ## 9. Workflow Mode
