@@ -21,6 +21,7 @@ use Secomm\ZaloPay\Api\Data\PaymentAttemptInterface;
 use Secomm\ZaloPay\Api\PaymentAttemptRepositoryInterface;
 use Secomm\ZaloPay\Gateway\Helper\Rate;
 use Secomm\ZaloPay\Gateway\Helper\TransactionReader;
+use Secomm\ZaloPay\Model\QuoteContractFingerprint;
 
 /**
  * Payment-first initiation (ZALOPAY-PAYMENT-FIRST Phase 1).
@@ -54,6 +55,7 @@ class PaymentAttemptManagement
      * @param PaymentDataObjectFactory $paymentDataObjectFactory
      * @param Rate $rate
      * @param AppTransIdBuilder $appTransIdBuilder
+     * @param QuoteContractFingerprint $fingerprint
      * @param MethodInterface $method
      * @param ConfigInterface $config
      * @param ResourceConnection $resourceConnection
@@ -67,6 +69,7 @@ class PaymentAttemptManagement
         private readonly PaymentDataObjectFactory          $paymentDataObjectFactory,
         private readonly Rate                              $rate,
         private readonly AppTransIdBuilder                 $appTransIdBuilder,
+        private readonly QuoteContractFingerprint          $fingerprint,
         private readonly MethodInterface                   $method,
         private readonly ConfigInterface                   $config,
         private readonly ResourceConnection                $resourceConnection,
@@ -177,13 +180,21 @@ class PaymentAttemptManagement
 
             $existing = $this->repository->getActiveByQuoteId($quoteId);
             if ($existing !== null) {
-                if ($existing->isReusable() && (int)$existing->getAmount() === $amount) {
+                // Reuse ONLY when the whole contract is unchanged: a qty or
+                // address edit landing on the same total must not reuse a
+                // pay URL minted for a different contract (BLOCKER 1).
+                if ($existing->isReusable() && (int)$existing->getAmount() === $amount
+                    && $this->fingerprint->matches(
+                        $existing->getContractHash(),
+                        $this->fingerprint->calculate($quote, $amount)
+                    )
+                ) {
                     $connection->commit();
 
-                    return $existing; // Same amount, still valid: reuse, no new provider transaction.
+                    return $existing; // Same contract, still valid: reuse, no new provider transaction.
                 }
-                // Amount changed or the in-flight attempt never became ACTIVE:
-                // explicit transition, then a fresh attempt below.
+                // Contract changed or the in-flight attempt never became
+                // ACTIVE: explicit transition, then a fresh attempt below.
                 $existing->markStale();
                 $this->repository->save($existing);
             }
@@ -198,6 +209,8 @@ class PaymentAttemptManagement
             $attempt->setReservedOrderId((string)$quote->getReservedOrderId());
             $attempt->setAmount($amount);
             $attempt->setCurrency(PaymentAttemptInterface::CURRENCY_VND);
+            // Lock the payment contract this provider transaction pays for.
+            $attempt->setContractHash($this->fingerprint->calculate($quote, $amount));
             $attempt->setStoreId((int)$quote->getStoreId());
             $attempt->setPaymentStatus(PaymentAttemptInterface::STATUS_INITIATED);
             $attempt->setRetryCount(count($this->repository->getListByQuoteId($quoteId)));

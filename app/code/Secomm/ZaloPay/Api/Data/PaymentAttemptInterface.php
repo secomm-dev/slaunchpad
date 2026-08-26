@@ -29,6 +29,7 @@ interface PaymentAttemptInterface
     public const PAYMENT_STATUS = 'payment_status';
     public const AMOUNT = 'amount';
     public const CURRENCY = 'currency';
+    public const CONTRACT_HASH = 'contract_hash';
     public const ORDER_ID = 'order_id';
     public const LAST_ERROR = 'last_error';
     public const RETRY_COUNT = 'retry_count';
@@ -163,6 +164,22 @@ interface PaymentAttemptInterface
      * @return void
      */
     public function setCurrency(string $currency): void;
+
+    /**
+     * Fingerprint of the quote payment contract this attempt was created
+     * against (sha-256, see \Secomm\ZaloPay\Model\QuoteContractFingerprint).
+     * The order may only be auto-created while the CURRENT quote still
+     * matches it.
+     *
+     * @return string|null
+     */
+    public function getContractHash(): ?string;
+
+    /**
+     * @param string|null $contractHash
+     * @return void
+     */
+    public function setContractHash(?string $contractHash): void;
 
     /**
      * @return int|null

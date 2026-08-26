@@ -13,8 +13,10 @@ use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Payment\Gateway\Command\ResultInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Magento\Sales\Api\Data\OrderInterface;
 use Secomm\ZaloPay\Api\Data\PaymentAttemptInterface;
 use Secomm\ZaloPay\Api\PaymentAttemptRepositoryInterface;
+use Secomm\ZaloPay\Exception\ContractMismatchException;
 use Secomm\ZaloPay\Gateway\Validator\AbstractResponseValidator;
 use Secomm\ZaloPay\Helper\Data as ZaloPayHelper;
 use Secomm\ZaloPay\Logger\Logger;
@@ -25,8 +27,10 @@ use Secomm\ZaloPay\Service\ReturnProcessor;
 /**
  * ZALOPAY-PAYMENT-FIRST Phase 1 return-redirect contract: the browser
  * redirect is NOT payment proof — the authoritative v2/query decides.
- * Includes the explicit ACTIVE -> PAID transition before finalization and
- * the amount lock against the persisted snapshot.
+ * Includes the explicit ACTIVE -> PAID transition before finalization,
+ * the amount lock against the persisted snapshot, and (review BLOCKER 2)
+ * the FINALIZED duplicate return routed through the finalizer instead of
+ * a short-circuit that would lose the success-session rebuild.
  */
 class ReturnProcessorTest extends TestCase
 {
@@ -91,8 +95,9 @@ class ReturnProcessorTest extends TestCase
         $this->stubSave();
         $this->stubQuery(['return_code' => 1, 'amount' => 100000, 'zp_trans_id' => '240801000001']);
         $this->orderFinalizer->expects($this->once())
-            ->method('finalize')
-            ->with($attempt, '240801000001');
+            ->method('finalizeOrRecover')
+            ->with($attempt, '240801000001')
+            ->willReturn($this->createMock(OrderInterface::class));
 
         $result = $this->processor->process($this->returnParams(['status' => 1]));
 
@@ -113,26 +118,59 @@ class ReturnProcessorTest extends TestCase
         $this->repository->method('getByAppTransId')->willReturn($attempt);
         $this->repository->expects($this->never())->method('save');
         $this->stubQuery(['return_code' => 1, 'amount' => 100000, 'zp_trans_id' => '240801000001']);
-        $this->orderFinalizer->expects($this->once())->method('finalize')->with($attempt, '240801000001');
+        $this->orderFinalizer->expects($this->once())
+            ->method('finalizeOrRecover')
+            ->with($attempt, '240801000001')
+            ->willReturn($this->createMock(OrderInterface::class));
 
         $result = $this->processor->process($this->returnParams(['status' => 1]));
         $this->assertSame('checkout/onepage/success', $result);
     }
 
     /**
-     * Duplicate return on a FINALIZED attempt: same resulting state, no
-     * provider call, no finalizer call.
+     * BLOCKER 2: duplicate return on a FINALIZED attempt must NOT be
+     * short-circuited — the finalizer owns the success-session rebuild
+     * (finalizeOrRecover recovers the bound order and re-populates
+     * LastQuoteId/LastOrderId for a lost/new checkout session).
      *
      * @return void
      */
-    public function testDuplicateReturnOnFinalizedAttemptShortCircuitsToSuccess(): void
+    public function testDuplicateReturnOnFinalizedAttemptRecoversSuccessSession(): void
     {
         $attempt = $this->newActiveAttempt()->markPaid()->markFinalized(77);
         $this->repository->method('getByAppTransId')->willReturn($attempt);
-        $this->commandPool->expects($this->never())->method('get');
-        $this->orderFinalizer->expects($this->never())->method('finalize');
+        $this->repository->expects($this->never())->method('save');
+        $this->stubQuery(['return_code' => 1, 'amount' => 100000, 'zp_trans_id' => '240801000001']);
+        $this->orderFinalizer->expects($this->once())
+            ->method('finalizeOrRecover')
+            ->with($attempt, '240801000001')
+            ->willReturn($this->createMock(OrderInterface::class));
 
         $this->assertSame('checkout/onepage/success', $this->processor->process($this->returnParams(['status' => 1])));
+    }
+
+    /**
+     * BLOCKER 1 surface: the finalizer refuses the contract (quote mutated
+     * after payment) — the customer gets a safe message, the attempt state
+     * is the finalizer's concern, never a success redirect.
+     *
+     * @return void
+     */
+    public function testContractMismatchSurfacesCustomerSafeError(): void
+    {
+        $attempt = $this->newActiveAttempt();
+        $this->repository->method('getByAppTransId')->willReturn($attempt);
+        $this->stubSave();
+        $this->stubQuery(['return_code' => 1, 'amount' => 100000, 'zp_trans_id' => '240801000001']);
+        $this->orderFinalizer->method('finalizeOrRecover')
+            ->willThrowException(new ContractMismatchException(__('quote contract fingerprint mismatch')));
+
+        try {
+            $this->processor->process($this->returnParams(['status' => 1]));
+            $this->fail('Expected LocalizedException for contract mismatch.');
+        } catch (LocalizedException $e) {
+            $this->assertStringContainsString('could not match your payment', $e->getMessage());
+        }
     }
 
     /**
@@ -189,7 +227,7 @@ class ReturnProcessorTest extends TestCase
         $this->repository->method('getByAppTransId')->willReturn($attempt);
         $this->stubSave();
         $this->stubQuery(['return_code' => 1, 'amount' => 50000, 'zp_trans_id' => '240801000001']);
-        $this->orderFinalizer->expects($this->never())->method('finalize');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
 
         try {
             $this->processor->process($this->returnParams(['status' => 1]));
@@ -213,7 +251,7 @@ class ReturnProcessorTest extends TestCase
         $this->repository->method('getByAppTransId')->willReturn($attempt);
         $this->repository->expects($this->never())->method('save');
         $this->stubQuery(['return_code' => 3, 'amount' => 100000, 'zp_trans_id' => '']);
-        $this->orderFinalizer->expects($this->never())->method('finalize');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
 
         try {
             $this->processor->process($this->returnParams(['status' => 1]));

@@ -21,6 +21,7 @@ components:
 source_areas:
   - app/code/Secomm/ZaloPay/Model/PaymentAttempt.php
   - app/code/Secomm/ZaloPay/Model/PaymentAttemptManagement.php
+  - app/code/Secomm/ZaloPay/Model/QuoteContractFingerprint.php
   - app/code/Secomm/ZaloPay/Service/ReturnProcessor.php
   - app/code/Secomm/ZaloPay/Service/IpnProcessor.php
   - app/code/Secomm/ZaloPay/Service/OrderFinalizer.php
@@ -208,3 +209,125 @@ RefundCron, creditmemo state plugin — untouched.
 - OSC native payment-first renderer (remove fallback dependency).
 - Admin grid / CLI for attempts (`secomm_zalopay_payment_attempt`).
 - Parallel-Start tightening (per-quote single-flight token) if ops requires.
+
+## 11. TL review fixes (commit 1bd469b2 → NOT APPROVED, 2026-08-26)
+
+The TL review of Phase 1 commit `1bd469b2` raised two lifecycle blockers.
+Both fixed below; the historical audit and §1–10 above are untouched
+records of the original delivery.
+
+### 11.1 BLOCKER 1 — paid snapshot vs CURRENT quote (fixed)
+
+**Root cause:** the return flow verified `provider amount == attempt
+snapshot` but `placeOrder($attempt->getQuoteId())` then ran against the
+CURRENT mutable quote (T0 500000 → snapshot → cart edited to 700000 →
+customer pays 500000 → order placed at 700000).
+
+**Fix — payment contract fingerprint** (`Model/QuoteContractFingerprint.php`):
+- At Start, inside the quote-locked TX section (after `reserveOrderId`),
+  the contract state is normalized and hashed (sha-256) into
+  `payment_attempt.contract_hash` (varchar 64, nullable — legacy rows stay
+  null and never compare equal).
+- Inputs: quote_id, reserved_order_id, store_id, quote currency,
+  grand_total, base_grand_total, provider VND amount, per-item
+  `sku|product_id|qty` over ALL items incl. children (child SKUs carry
+  configurable/bundle selections; sorted so cart order is irrelevant),
+  shipping method, coupon code, applied rule ids, sha-256 of normalized
+  shipping + billing address fields.
+- **No sensitive data persisted:** addresses are hashed (the fingerprint
+  needs equality, not content), no MAC keys, no secret material — the
+  hash is a comparison checksum, not a signature.
+- Before automatic finalization, `OrderFinalizer` reloads the CURRENT
+  quote and validates: quote exists + payment method is `zalopay` +
+  `collectTotals()` + FX-rate amount == attempt amount + fingerprint
+  `hash_equals` against the persisted hash. Mismatch ⇒
+  `ContractMismatchException` ⇒ TX rolled back, attempt **stays PAID**
+  (`order_id` NULL, money is real, never FAILED), reason persisted to
+  `last_error` AFTER the rollback (so it survives), critical log,
+  customer-safe message in ReturnProcessor → reconciliation/manual/refund
+  path (Phase 2 cron / admin).
+- Reuse gate tightened: an ACTIVE attempt is reused only when amount AND
+  fingerprint both match; otherwise it is STALE-marked and a fresh attempt
+  with a fresh hash is minted.
+- Inactive/absent quote (safe recovery): order is recovered by
+  `reserved_order_id` ONLY when bound to this attempt (increment id +
+  quote id + payment method `zalopay`); otherwise the same mismatch path
+  keeps the attempt PAID for reconciliation.
+- Environment note: this project's PHP 8.3.20 runtime does NOT define
+  `JSON_SORT_KEYS` (verified `defined()` false in the container) — key
+  ordering is done by recursive `ksort` instead of the json flag.
+
+### 11.2 BLOCKER 2 — duplicate FINALIZED return lost success session (fixed)
+
+**Root cause:** ReturnProcessor short-circuited FINALIZED attempts with an
+early `return 'checkout/onepage/success'`, bypassing OrderFinalizer — the
+single owner of LastQuoteId / LastSuccessQuoteId / LastOrderId /
+LastRealOrderId / LastOrderStatus. A duplicate return with a new/lost
+checkout session landed on the success page with an EMPTY session.
+
+**Fix:** the short-circuit is removed. `OrderFinalizer::finalizeOrRecover()`
+(legacy `finalize()` kept as alias) is the ONLY code that writes the
+success session: FINALIZED attempts load the bound order, validate the
+binding (order exists, increment/quote/payment match), rebuild the
+session keys idempotently, and return success. Broken binding (order
+missing / wrong order) ⇒ `ContractMismatchException` ⇒ customer-safe
+error, never a hollow success page. ReturnProcessor just delegates.
+
+### 11.3 Transaction atomicity — re-checked with source evidence
+
+Question: if `captureOrder()` throws, can `{attempt FINALIZED, order
+persistence, MSI reservation}` be partially committed? **No — verified:**
+
+- `vendor/magento/framework/DB/Adapter/Pdo/Mysql.php` (begin/commit/
+  rollBack, ~lines 371–435): real `BEGIN` only at
+  `$_transactionLevel === 0`, real `COMMIT` only at level 1. **No
+  savepoints** — nested begin/commit are counters. A nested `rollBack`
+  only poisons the unit (`_isRolledBack`); any later outer `commit()`
+  throws `ERROR_ROLLBACK_INCOMPLETE`, so the outermost catch's rollBack
+  performs the real `ROLLBACK`. Nested Magento transactions are FLATTENED
+  into one atomic unit, not independent scopes.
+- The `placeOrder` chain opens NO transaction of its own
+  (`module-quote` uses `QuoteIdMutex` advisory locks, not `beginTransaction`).
+- MSI reservations run via
+  `AppendReservationsAfterOrderPlacementPlugin` on
+  `OrderManagementInterface::place` (module-inventory-sales di.xml),
+  synchronously on the same connection ⇒ inside OrderFinalizer's TX.
+- ZaloPay `capture` is `Magento\Payment\Gateway\Command\NullCommand`
+  (module di.xml) — local state only, no HTTP inside the TX.
+
+**Decision:** OrderFinalizer's single TX already gives the required
+all-or-nothing guarantee; the intermediate `PAID → ORDER_CREATED →
+FINALIZED` redesign is unnecessary and was NOT introduced. Capture stays
+inside the TX (a capture exception rolls back the order too — attempt
+returns to PAID-for-reconciliation, no orphan order).
+
+### 11.4 Review test matrix (all required cases covered)
+
+`Test/Unit/Model/QuoteContractFingerprintTest.php` (10): stable
+fingerprint; qty change (same total); item swap (same total); shipping
+method change (same total); address change; coupon change; item order
+irrelevance; amount change; virtual quote stability; null-hash rejection.
+
+`Test/Unit/Service/OrderFinalizerTest.php` (13, rewritten): B1 — same
+quote ⇒ place+bind+capture; total changed ⇒ no order (stays PAID +
+last_error); fingerprint mismatch (qty/items/shipping-method at same
+total) ⇒ no order; payment method changed ⇒ no order; inactive quote
+without matching order ⇒ safe recovery state; inactive/absent quote with
+matching bound order ⇒ idempotent recovery; FINALIZED duplicate returns
+existing order without placing. B2 — FINALIZED duplicate with existing
+session; FINALIZED with empty session rebuilt (all 5 keys); FINALIZED
+without bound order refused; FINALIZED bound to wrong order refused.
+Plus non-payable refusal and capture-failure rollback (expects real
+`rollBack`, no session writes).
+
+`PaymentAttemptManagementTest`: + same-amount-changed-contract not reused
+(fresh fingerprint persisted); creation asserts the hash lock.
+`ReturnProcessorTest` (11): + FINALIZED duplicate routes through
+`finalizeOrRecover` (session rebuild owned by finalizer); + contract
+mismatch surfaces the customer-safe message.
+
+**Suite totals after review fixes: 61 tests, 196 assertions, 61/61 PASS**
+(§7's 40/40 remains the Phase 1 historical count). PHPCS Magento2:
+0 errors (warnings pre-existing, untouched files). `setup:di:compile`:
+success. Integration: still environment-blocked, unchanged evidence in §7
+— NOT claimed as PASS.

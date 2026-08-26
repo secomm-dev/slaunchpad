@@ -182,6 +182,12 @@
             <argument name="config" xsi:type="object">ZaloPayConfig</argument>
         </arguments>
     </type>
+    <type name="Secomm\ZaloPay\Service\OrderFinalizer">
+        <arguments>
+            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+        </arguments>
+    </type>
     <type name="Secomm\ZaloPay\Service\ReturnProcessor">
         <arguments>
             <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>

@@ -33,6 +33,7 @@
             "payment_status": true,
             "amount": true,
             "currency": true,
+            "contract_hash": true,
             "order_id": true,
             "last_error": true,
             "retry_count": true,

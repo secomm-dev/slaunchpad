@@ -232,6 +232,23 @@ class PaymentAttempt extends AbstractModel implements PaymentAttemptInterface
     /**
      * @inheritDoc
      */
+    public function getContractHash(): ?string
+    {
+        $value = $this->getData(self::CONTRACT_HASH);
+        return $value === null || $value === '' ? null : (string)$value;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setContractHash(?string $contractHash): void
+    {
+        $this->setData(self::CONTRACT_HASH, $contractHash);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getOrderId(): ?int
     {
         $orderId = $this->getData(self::ORDER_ID);

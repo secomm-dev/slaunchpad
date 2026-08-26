@@ -12,6 +12,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Secomm\ZaloPay\Api\Data\PaymentAttemptInterface;
 use Secomm\ZaloPay\Api\PaymentAttemptRepositoryInterface;
+use Secomm\ZaloPay\Exception\ContractMismatchException;
 use Secomm\ZaloPay\Gateway\Validator\AbstractResponseValidator;
 use Secomm\ZaloPay\Helper\Data as ZaloPayHelper;
 use Secomm\ZaloPay\Logger\Logger;
@@ -21,15 +22,16 @@ use Secomm\ZaloPay\Logger\Logger;
  *
  * The browser redirect is NOT payment proof. Verification order:
  *  1. attempt lookup by apptransid (no order assumptions);
- *  2. duplicate return on FINALIZED -> success, no state change;
- *  3. best-effort key2 checksum on the redirect params (when present);
- *  4. provider status != paid -> explicit FAILED transition (or notice when
+ *  2. best-effort key2 checksum on the redirect params (when present);
+ *  3. provider status != paid -> explicit FAILED transition (or notice when
  *     still processing);
- *  5. authoritative v2/query server-side verification;
- *  6. amount lock: provider-confirmed amount vs the PERSISTED attempt
+ *  4. authoritative v2/query server-side verification;
+ *  5. amount lock: provider-confirmed amount vs the PERSISTED attempt
  *     snapshot — never re-converted through FX. Mismatch = PAID + explicit
  *     error for reconciliation, never auto-placed;
- *  7. idempotent order placement + capture via OrderFinalizer.
+ *  6. idempotent order placement + capture via OrderFinalizer, INCLUDING
+ *     duplicate returns on FINALIZED (the finalizer rebuilds the success
+ *     session — never short-circuit here).
  */
 class ReturnProcessor
 {
@@ -81,11 +83,9 @@ class ReturnProcessor
             throw new LocalizedException(__('ZaloPay payment session not found. Please contact support.'));
         }
 
-        // Duplicate return after a finalized attempt: same resulting state.
-        if ($attempt->getPaymentStatus() === PaymentAttemptInterface::STATUS_FINALIZED) {
-            return 'checkout/onepage/success';
-        }
-
+        // NOTE: a FINALIZED attempt is NOT short-circuited here — the
+        // duplicate return still needs the success session rebuilt by the
+        // finalizer (its single-owner responsibility).
         $status = (int)($params['status'] ?? 0);
 
         // Best-effort tamper check: the hosted page signs its redirect params
@@ -139,7 +139,17 @@ class ReturnProcessor
             $attempt->markPaid($zpTransId !== '' ? $zpTransId : null);
             $this->repository->save($attempt);
         }
-        $this->orderFinalizer->finalize($attempt, $zpTransId);
+
+        try {
+            $this->orderFinalizer->finalizeOrRecover($attempt, $zpTransId);
+        } catch (ContractMismatchException $e) {
+            // Provider money is real but the quote/order contract cannot be
+            // verified — the finalizer already recorded the reason and kept
+            // the money-real state. Surface a customer-safe message.
+            throw new LocalizedException(
+                __('We could not match your payment to your current cart. Please contact support with reference %1.', $appTransId)
+            );
+        }
 
         return 'checkout/onepage/success';
     }

@@ -61,6 +61,8 @@
         <column xsi:type="int" name="amount" padding="10" unsigned="true" nullable="false"
                 comment="Snapshot amount in VND (locked at initiation)"/>
         <column xsi:type="varchar" name="currency" nullable="false" length="3" default="VND" comment="Currency"/>
+        <column xsi:type="varchar" name="contract_hash" nullable="true" length="64"
+                comment="Quote payment-contract fingerprint (sha-256) locked at initiation"/>
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true"
                 comment="Sales order entity id after finalize"/>
         <column xsi:type="text" name="last_error" nullable="true" comment="Last error message"/>

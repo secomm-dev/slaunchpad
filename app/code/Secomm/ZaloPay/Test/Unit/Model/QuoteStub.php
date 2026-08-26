@@ -11,9 +11,9 @@ namespace Secomm\ZaloPay\Test\Unit\Model;
 use Magento\Quote\Model\Quote;
 
 /**
- * Declares the quote accessors PaymentAttemptManagement reads through
- * AbstractModel's magic __call so PHPUnit can configure them on a mock
- * (magic methods cannot be configured directly).
+ * Quote stand-in for PHPUnit: the data getters used by the payment-first
+ * flow are magic __call methods on Quote and cannot be configured on a
+ * mock — declaring them as real methods here makes them configurable.
  */
 class QuoteStub extends Quote
 {
@@ -22,7 +22,7 @@ class QuoteStub extends Quote
      */
     public function getIsActive(): bool
     {
-        return (bool)$this->getData('is_active');
+        return parent::getIsActive();
     }
 
     /**
@@ -30,7 +30,7 @@ class QuoteStub extends Quote
      */
     public function getItemsCount(): int
     {
-        return (int)$this->getData('items_count');
+        return parent::getItemsCount();
     }
 
     /**
@@ -38,7 +38,15 @@ class QuoteStub extends Quote
      */
     public function getGrandTotal(): float
     {
-        return (float)$this->getData('grand_total');
+        return parent::getGrandTotal();
+    }
+
+    /**
+     * @return float
+     */
+    public function getBaseGrandTotal(): float
+    {
+        return parent::getBaseGrandTotal();
     }
 
     /**
@@ -46,7 +54,7 @@ class QuoteStub extends Quote
      */
     public function getQuoteCurrencyCode(): string
     {
-        return (string)$this->getData('quote_currency_code');
+        return parent::getQuoteCurrencyCode();
     }
 
     /**
@@ -54,7 +62,7 @@ class QuoteStub extends Quote
      */
     public function getStoreId(): int
     {
-        return (int)$this->getData('store_id');
+        return parent::getStoreId();
     }
 
     /**
@@ -62,6 +70,22 @@ class QuoteStub extends Quote
      */
     public function getReservedOrderId(): string
     {
-        return (string)$this->getData('reserved_order_id');
+        return parent::getReservedOrderId();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCouponCode(): ?string
+    {
+        return parent::getCouponCode();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAppliedRuleIds(): ?string
+    {
+        return parent::getAppliedRuleIds();
     }
 }

@@ -26,6 +26,7 @@ use Secomm\ZaloPay\Api\Data\PaymentAttemptInterface;
 use Secomm\ZaloPay\Api\PaymentAttemptRepositoryInterface;
 use Secomm\ZaloPay\Gateway\Helper\Rate;
 use Secomm\ZaloPay\Model\AppTransIdBuilder;
+use Secomm\ZaloPay\Model\QuoteContractFingerprint;
 use Secomm\ZaloPay\Model\PaymentAttempt;
 use Secomm\ZaloPay\Model\PaymentAttemptFactory;
 use Secomm\ZaloPay\Model\PaymentAttemptManagement;
@@ -77,6 +78,11 @@ class PaymentAttemptManagementTest extends TestCase
     private $appTransIdBuilder;
 
     /**
+     * @var QuoteContractFingerprint|MockObject
+     */
+    private $fingerprint;
+
+    /**
      * @var ConfigInterface|MockObject
      */
     private $config;
@@ -111,6 +117,9 @@ class PaymentAttemptManagementTest extends TestCase
         $this->rate = $this->createMock(Rate::class);
         $this->appTransIdBuilder = $this->createMock(AppTransIdBuilder::class);
         $this->appTransIdBuilder->method('build')->willReturn('260826_1000_000000123');
+        $this->fingerprint = $this->createMock(QuoteContractFingerprint::class);
+        $this->fingerprint->method('calculate')->willReturn('CONTRACT_HASH');
+        $this->fingerprint->method('matches')->willReturn(true);
         $this->config = $this->createMock(ConfigInterface::class);
         $this->config->method('getValue')->willReturnCallback(
             fn ($field) => $field === 'attempt_ttl' ? 15 : null
@@ -138,6 +147,7 @@ class PaymentAttemptManagementTest extends TestCase
             $paymentDataObjectFactory,
             $this->rate,
             $this->appTransIdBuilder,
+            $this->fingerprint,
             $method,
             $this->config,
             $this->resourceConnection,
@@ -172,6 +182,8 @@ class PaymentAttemptManagementTest extends TestCase
         $this->assertSame(100000, $attempt->getAmount());
         $this->assertSame(PaymentAttemptInterface::CURRENCY_VND, $attempt->getCurrency());
         $this->assertSame('000000123', $attempt->getReservedOrderId());
+        // BLOCKER 1: the payment contract fingerprint is locked at creation.
+        $this->assertSame('CONTRACT_HASH', $attempt->getContractHash());
         $this->assertSame(42, $attempt->getQuoteId());
         // Case 3: no order placement dependency exists in the flow at all —
         // the only command touched is the provider transaction creation.
@@ -198,6 +210,40 @@ class PaymentAttemptManagementTest extends TestCase
 
         $this->assertSame($existing, $attempt);
         $this->commandPool->expects($this->never())->method('get');
+    }
+
+    /**
+     * BLOCKER 1 tightening: same amount but a different contract (qty/items/
+     * address edited) -> the ACTIVE attempt is stale-marked and a NEW attempt
+     * with a fresh fingerprint is minted; the old pay URL is never reused.
+     *
+     * @return void
+     */
+    public function testSameAmountWithChangedContractIsNotReused(): void
+    {
+        $existing = $this->newAttempt();
+        $existing->markActive('https://pay.zalopay.vn/order/abc');
+        $existing->setAmount(100000);
+
+        $quote = $this->newPayableQuote(100.0, 'VND');
+        $this->rate->method('getVndAmountByCurrency')->willReturn(100000.0);
+        $this->repository->method('getActiveByQuoteId')->willReturn($existing);
+        $this->repository->method('getListByQuoteId')->willReturn([$existing]);
+        $this->stubSave();
+        $this->stubGetPayUrlCommand('https://pay.zalopay.vn/order/new');
+        // Fresh mock with matches()=false: a second registration on the setUp
+        // mock would not win — PHPUnit uses the first matching stub.
+        $this->fingerprint = $this->createMock(QuoteContractFingerprint::class);
+        $this->fingerprint->method('calculate')->willReturn('CONTRACT_HASH_V2');
+        $this->fingerprint->method('matches')->willReturn(false); // contract changed
+        $this->rebuildManagement();
+
+        $attempt = $this->management->initiate($quote);
+
+        $this->assertNotSame($existing, $attempt);
+        $this->assertSame(PaymentAttemptInterface::STATUS_STALE, $existing->getPaymentStatus());
+        $this->assertSame(PaymentAttemptInterface::STATUS_ACTIVE, $attempt->getPaymentStatus());
+        $this->assertSame('CONTRACT_HASH_V2', $attempt->getContractHash());
     }
 
     /**
@@ -317,6 +363,7 @@ class PaymentAttemptManagementTest extends TestCase
             $this->createMock(PaymentDataObjectFactory::class),
             $this->rate,
             $this->appTransIdBuilder,
+            $this->fingerprint,
             $method,
             $this->config,
             $this->resourceConnection,
@@ -385,7 +432,14 @@ class PaymentAttemptManagementTest extends TestCase
         $quote->method('getQuoteCurrencyCode')->willReturn($currency);
         $quote->method('getStoreId')->willReturn(1);
         $quote->method('collectTotals')->willReturnSelf();
-        $quote->method('getReservedOrderId')->willReturnOnConsecutiveCalls('', '000000123', '000000123');
+        $reservedCalls = 0;
+        $quote->method('getReservedOrderId')->willReturnCallback(
+            // First call = the "is it empty?" check; every later call (attempt
+        // field, app_trans_id build, fingerprint) sees the reserved id.
+            function () use (&$reservedCalls) {
+                return ++$reservedCalls === 1 ? '' : '000000123';
+            }
+        );
         $quote->method('reserveOrderId')->willReturnSelf();
 
         return $quote;
@@ -401,6 +455,7 @@ class PaymentAttemptManagementTest extends TestCase
         $attempt->setReservedOrderId('000000123');
         $attempt->setAmount(100000);
         $attempt->setCurrency(PaymentAttemptInterface::CURRENCY_VND);
+        $attempt->setContractHash('CONTRACT_HASH');
         $attempt->setStoreId(1);
         $attempt->setPaymentStatus(PaymentAttemptInterface::STATUS_INITIATED);
         $attempt->setExpiresAt('2099-01-01 00:00:00');
@@ -426,7 +481,7 @@ class PaymentAttemptManagementTest extends TestCase
      * An injected resource keeps _init() away from the (unit-test absent)
      * ObjectManager while providing the entity id field name.
      *
-     * @return \Secomm\ZaloPay\Model\ResourceModel\PaymentAttempt|\PHPUnit\Framework\MockObject\MockObject
+     * @return \Secomm\ZaloPay\Model\ResourceModel\PaymentAttemptResource|\PHPUnit\Framework\MockObject\MockObject
      */
     private function newResourceStub()
     {
