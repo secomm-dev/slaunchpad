@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -13,7 +18,8 @@ use Secomm\VietQr\Model\Config;
 
 /**
  * Generates a VietQR code after an order is placed with the VietQR payment
- * method and stores it in the payment additional information.
+ * method and stores it in payment additional information
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-008, AC-009, AC-010).
  *
  * The observer is idempotent — it skips the API call if a QR code already
  * exists. Failures are logged but never thrown (the order is already saved).

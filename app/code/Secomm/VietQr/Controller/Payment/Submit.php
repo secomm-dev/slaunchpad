@@ -1,4 +1,10 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
 declare(strict_types=1);
 
 namespace Secomm\VietQr\Controller\Payment;
@@ -18,7 +24,8 @@ use Secomm\VietQr\Model\Config;
 use Secomm\VietQr\Model\RateLimiter;
 
 /**
- * Handles VietQR payment confirmation form submission from the payment view page.
+ * Handles VietQR payment confirmation form submission from the payment view page
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-013, AC-014).
  *
  * Validates the form key, rate-limits requests, verifies order ownership,
  * marks the order as "customer confirmed", and transitions the status.

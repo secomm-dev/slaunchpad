@@ -1,4 +1,10 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
 declare(strict_types=1);
 
 namespace Secomm\VietQr\Block\Order;
@@ -7,7 +13,8 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Secomm\VietQr\Model\Config;
 
 /**
- * Renders the "View VietQR Payment" button on the customer order view page.
+ * Renders the "View VietQR Payment" button on the customer order view page
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-016, AC-017).
  *
  * The button is shown only for orders placed with the VietQR payment method
  * that are still in the pending payment status.
