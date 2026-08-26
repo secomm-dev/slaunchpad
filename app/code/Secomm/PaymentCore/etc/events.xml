@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- FEAT-CSWYEJ — snapshot the lifecycle record AFTER the order row is saved
+         (entity_id assigned). Runtime-verified 2026-08-25: sales_order_place_after
+         fires inside Order::place() BEFORE save() — entity_id is still NULL there
+         and the assign was silently skipped for every order. checkout_submit_all_after
+         (QuoteManagement::submit) carries the saved order for both guest and
+         customer checkouts, including Mageplaza OSC. AssignManagedPayment never
+         throws (safe for checkout). -->
+    <event name="checkout_submit_all_after">
+        <observer name="secomm_paymentcore_assign_managed_payment"
+                  instance="Secomm\PaymentCore\Observer\AssignManagedPaymentObserver"/>
+    </event>
+</config>

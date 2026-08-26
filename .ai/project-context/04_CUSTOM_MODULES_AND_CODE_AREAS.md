@@ -80,3 +80,7 @@ Areas developers work on frequently:
 - Address-related changes (Secomm_AddressDropdown + VietNamAddress) — must validate the VN hierarchical dropdown (country→state→city→sub-city) end-to-end.
 - `app/etc/env.php` — do NOT commit production env.php / Redis / OpenSearch credentials; local-dev config only in repo.
 - Database schema changes — Tier 2 escalation.
+
+<!-- FEAT-CSWYEJ appended 2026-08-25 — pending human review/commit per §14 -->
+
+| Secomm_PaymentCore | `app/code/Secomm/PaymentCore` | Pending-payment lifecycle core: expiry snapshot table `secomm_paymentcore_payment`, Continue Payment (My Account), expiry cron (3-layer race guard: lock + state + adapter querydr verify), provider-neutral adapter contract. VNPAY adapter lives in `Vnpayment_VNPAY` (DEC D1). **Order-lifecycle critical — Tier-2 review mọi change** (FEAT-CSWYEJ) | high | [TBD] |

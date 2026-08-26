@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+    @author Secomm Team
+    @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+    See COPYING.txt for license details.
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!--
+        FEAT-CSWYEJ / TASK-NJ77PG — SPEC-FEAT-CSWYEJ §4.5, DEC D2.
+        One table owned exclusively by this module (Tier-2 DB review covered by the
+        VALID spec + DEC-FEATCSWYEJ-001); no core table is touched. Declarative
+        schema only — no InstallData/UpgradeSchema patches.
+
+        secomm_paymentcore_payment — one active record per order (UNIQUE order_id).
+          * expires_at is a SNAPSHOT taken at place-order time; config changes made
+            later never touch existing rows (AC-002).
+          * status: active | completed | canceled | error (error = force-closed
+            long-stuck record; the ORDER is never cancelled in that case — D3b).
+          * retry_count counts UNKNOWN provider-verify skips for ops visibility.
+    -->
+    <table name="secomm_paymentcore_payment" resource="default" engine="innodb"
+           comment="Secomm PaymentCore: pending-payment lifecycle record (expiry snapshot + cron state)">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="sales_order.entity_id (no FK; indexed unique)"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="false" default="0" comment="Order store id (scope context of the snapshot)"/>
+        <column xsi:type="varchar" name="method_code" nullable="false" length="32" comment="payment method code (e.g. vnpay)"/>
+        <column xsi:type="timestamp" name="expires_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false" comment="Snapshot expiry; later config changes never touch this"/>
+        <column xsi:type="varchar" name="status" nullable="false" default="active" length="16" comment="active|completed|canceled|error"/>
+        <column xsi:type="smallint" name="retry_count" unsigned="true" nullable="false" default="0" comment="UNKNOWN provider-verify skips so far"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true" comment="Updated At"/>
+        <column xsi:type="timestamp" name="resolved_at" nullable="true" on_update="false" comment="When the record left active status; NULL while active"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_PAYMENTCORE_PAYMENT_ORDER_ID">
+            <column name="order_id"/>
+        </constraint>
+        <index referenceId="SECOMM_PAYMENTCORE_PAYMENT_STATUS_EXPIRES" indexType="btree">
+            <column name="status"/>
+            <column name="expires_at"/>
+        </index>
+    </table>
+</schema>

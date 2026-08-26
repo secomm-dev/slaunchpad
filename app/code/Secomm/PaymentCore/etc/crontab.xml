@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <!-- FEAT-CSWYEJ — every 5 minutes, own group so it can never block the
+         default group (spec §4.1). XSD requires schedule BEFORE config_path;
+         batch size is read at runtime by ExpirePayments, not by the scheduler. -->
+    <group id="secomm_paymentcore">
+        <job name="secomm_paymentcore_expire_payments" instance="Secomm\PaymentCore\Model\Lifecycle\ExpirePayments" method="execute">
+            <schedule>*/5 * * * *</schedule>
+        </job>
+    </group>
+</config>

@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!--
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="secomm_paymentcore" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+            <label>Payment Core</label>
+            <tab>secomm</tab>
+            <resource>Secomm_PaymentCore::config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>General</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable Payment Core</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="managed_methods" translate="label" type="multiselect" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Managed Payment Methods</label>
+                    <source_model>Magento\Payment\Model\Config\Source\Allmethods</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment>Only orders placed with these methods get a Payment Core record (expiry + auto-cancel + Continue Payment).</comment>
+                </field>
+                <field id="default_expiry_minutes" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Default Payment Expiry (minutes)</label>
+                    <frontend_class>validate-number</frontend_class>
+                </field>
+                <field id="expiry_overrides" translate="label" type="textarea" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Expiry Override per Method (minutes)</label>
+                    <comment>One per line, format: method_code:minutes — e.g. "vnpay:30". Overrides default expiry for that method. Invalid lines are ignored (logged).</comment>
+                </field>
+                <field id="continue_disabled" translate="label" type="multiselect" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Disable Continue Payment for</label>
+    <!-- FEAT-CSWYEJ TASK-NJ77PG — managed methods source may be tightened to managed-only at runtime; Allmethods is the static-safe choice -->
+                    <source_model>Magento\Payment\Model\Config\Source\Allmethods</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment>Methods where the Continue Payment button stays hidden although the order is still payable.</comment>
+                </field>
+            </group>
+            <group id="cron" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Expiry Cron</label>
+                <field id="batch_size" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Batch Size</label>
+                    <frontend_class>validate-number</frontend_class>
+                </field>
+                <field id="force_close_days" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Force Close Records after (days)</label>
+                    <frontend_class>validate-number</frontend_class>
+                    <comment>Records stuck active longer than this are marked error (never cancel the order) — ops pickup.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

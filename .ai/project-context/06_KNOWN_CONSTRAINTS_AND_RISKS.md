@@ -77,3 +77,9 @@ AI should check this file before planning any work to avoid known problem areas.
 | Session backend | Production sessions require Redis | NOT configured (file sessions in committed env.php) | [TBD — confirm prod infra] |
 | AbandonedCart cron | Runs every minute — monitor throughput | Configured | Watch cron throughput under load in production |
 | Performance targets | [TBD — confirm targets with stakeholder] | [TBD] | [TBD] |
+
+<!-- FEAT-CSWYEJ appended 2026-08-25 — pending human review/commit per §14 -->
+
+| Payment Core expiry cron vs payment race | querydr UNKNOWN kéo dài (endpoint sai/mạng) → order không bị cancel nhưng record dồn | Force-close 7 ngày đánh dấu error (không cancel order); log + retry_count theo dõi | 
+| VNPAY querydr transDate ~24h window | Đơn cũ hơn 24h không query được → UNKNOWN | initiated_at fallback order created_at; force-close window 7 ngày |
+| `paymentvnpay/order/info` không enforce ownership (order của khách khác lấy được URL payment nếu biết order_id) | Pre-existing trong extension; DEC-FEATCSWYEJ-002: extension pristine không sửa | Không dùng endpoint này cho surface mới; Continue Payment controller có guard ownership riêng; nâng cấp extension hoặc SA approve fix riêng khi cần |

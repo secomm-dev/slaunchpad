@@ -1,0 +1,23 @@
+{
+    "secomm_paymentcore_payment": {
+        "column": {
+            "entity_id": true,
+            "order_id": true,
+            "store_id": true,
+            "method_code": true,
+            "expires_at": true,
+            "status": true,
+            "retry_count": true,
+            "created_at": true,
+            "updated_at":  true,
+            "resolved_at": true
+        },
+        "index": {
+            "SECOMM_PAYMENTCORE_PAYMENT_STATUS_EXPIRES": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_PAYMENTCORE_PAYMENT_ORDER_ID": true
+        }
+    }
+}
