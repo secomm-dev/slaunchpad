@@ -1,0 +1,92 @@
+<?php
+/** @var \Magento\Sales\Block\Order\Email\Items $parentBlock */
+/** @var \Magento\Sales\Model\Order $order */
+$order = $parentBlock->getOrder();
+$payment = $order->getPayment();
+if (!$payment || $payment->getMethod() !== 'secomm_vietqr') {
+    return;
+}
+$info = $payment->getAdditionalInformation() ?: [];
+$bankCode = $info['vietqr_bank_code'] ?? '';
+$bankAccount = $info['vietqr_bank_account'] ?? '';
+$amount = (int)round((float)($info['vietqr_amount'] ?? $order->getGrandTotal()));
+$content = $info['vietqr_content'] ?? '';
+$accountName = $info['vietqr_account_name'] ?? '';
+
+$params = [];
+if ($amount > 0) {
+    $params['amount'] = $amount;
+}
+if (!empty($content)) {
+    $params['addInfo'] = $content;
+}
+if (!empty($accountName)) {
+    $params['accountName'] = $accountName;
+}
+$qrImageUrl = ($bankCode && $bankAccount)
+    ? 'https://img.vietqr.io/image/' . urlencode($bankCode) . '-' . urlencode($bankAccount) . '-compact2.png?' . http_build_query($params)
+    : '';
+?>
+<?php if ($qrImageUrl): ?>
+<div style="text-align:center;margin:20px 0;">
+    <img src="<?= $block->escapeUrl($qrImageUrl) ?>" alt="<?= $block->escapeHtmlAttr(__('VietQR')) ?>" style="max-width:320px;width:100%;height:auto;border-radius:8px;border:1px solid #e0e0e0;"/>
+</div>
+<?php endif; ?>
+<table class="order-info" style="width:100%;margin:20px 0 0;font-size:13px;border:1px solid #e0e0e0;border-collapse:collapse;">
+    <tr>
+        <td colspan="2" style="background:#f5f5f5;padding:10px;font-weight:bold;border-bottom:1px solid #e0e0e0;">
+            <?= $block->escapeHtml(__('VietQR Payment Instructions')) ?>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;width:40%;color:#666;">
+            <?= $block->escapeHtml(__('Bank')) ?>
+        </td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;">
+            <?= $block->escapeHtml($info['vietqr_bank_code'] ?? '') ?>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;color:#666;">
+            <?= $block->escapeHtml(__('Account Number')) ?>
+        </td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;">
+            <?= $block->escapeHtml($info['vietqr_bank_account'] ?? '') ?>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;color:#666;">
+            <?= $block->escapeHtml(__('Account Holder')) ?>
+        </td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;">
+            <?= $block->escapeHtml($info['vietqr_account_name'] ?? '') ?>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;color:#666;">
+            <?= $block->escapeHtml(__('Amount')) ?>
+        </td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;font-weight:bold;">
+            <?= $block->escapeHtml(
+                $order->getOrderCurrency()->formatTxt(
+                    (float)($info['vietqr_amount'] ?? $order->getGrandTotal())
+                )
+            ) ?>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;color:#666;">
+            <?= $block->escapeHtml(__('Transfer Content')) ?>
+        </td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;">
+            <?= $block->escapeHtml($info['vietqr_content'] ?? '') ?>
+        </td>
+    </tr>
+    <?php if (!empty($info['vietqr_payment_instructions'])): ?>
+    <tr>
+        <td colspan="2" style="padding:10px;color:#666;">
+            <?= $block->escapeHtml($info['vietqr_payment_instructions']) ?>
+        </td>
+    </tr>
+    <?php endif; ?>
+</table>

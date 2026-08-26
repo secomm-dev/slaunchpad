@@ -452,6 +452,7 @@ return [
         'Secomm_Ahamove' => 1,
         'Secomm_VietNamAddress' => 1,
         'Secomm_VietNamMarket' => 1,
+        'Secomm_VietQr' => 1,
         'Secomm_ZaloPay' => 1,
         'Smile_ElasticsuiteAdminNotification' => 1,
         'Smile_ElasticsuiteCatalog' => 1,

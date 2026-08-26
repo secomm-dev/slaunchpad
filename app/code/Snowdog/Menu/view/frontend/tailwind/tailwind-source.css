@@ -13,7 +13,7 @@
 }
 
 .snowdog-menu-link {
-    @apply font-medium leading-6 hover:snowdog-menu-text-hover group-hover:snowdog-menu-text-hover;
+    @apply font-medium leading-6 hover:text-blue-700 group-hover:text-blue-700;
 }
 
 .snowdog-menu-link-topmenu-mobile {
