@@ -5,7 +5,7 @@
 **Placement:** `app/code/Secomm/PaymentCore/Model/Provider/`: `VnpayCheckoutUrl.php` (URL builder — replicate contract của extension, KHÔNG import class của nó), `VnpayAdapter.php`; đăng ký trong `etc/di.xml` của PaymentCore; config `secomm_paymentcore/vnpay/querydr_url` (system.xml group VNPAY, section Secomm > Payment Core).
 **Risk tier:** Tier 2 (payment wire protocol — SA review)
 **Author:** AI draft · **Date:** 2026-08-25 · **Status:** Dev complete — rev theo DEC-002 (extension reverted pristine; chờ TL/SA review + QC sandbox)
-**Specification:** MINI — embedded dưới đây · canonical parent: [SPEC-FEAT-CSWYEJ](../specs/SPEC-FEAT-CSWYEJ-payment-core.md) §4.4, DEC D1-rev/D6/D7 (DEC-FEATCSWYEJ-002)
+**Specification:** MINI — embedded dưới đây · canonical parent: [SPEC-FEAT-CSWYEJ](../specs/SPEC-FEAT-CSWYEJ-payment-core.md) §4.4, DEC D1-rev/D6/D7 (DEC-FEATCSWYEJ-002) · Plan: plans/TASK-KKPDNZ-implementation-plan.md
 
 ## Mini Spec
 
@@ -21,6 +21,12 @@ VNPAY implement `PaymentProviderAdapterInterface` **bên trong Payment Core** (`
   - `isPaymentCompleted`: **querydr** (`vnp_Command=querydr`, transDate từ initiated_at || order created_at; hash cùng scheme). Mapping: HTTP OK + `vnp_ResponseCode==00 && vnp_TransactionStatus==00` → `PAID`; HTTP OK + mã khác → `NOT_PAID`; **network/parse/timeout hoặc querydr_url chưa cấu hình hoặc order age > 24h (transDate quá hạn query)** → `UNKNOWN` (conservative — D3).
   - TxnRef giữ = increment id (D6 — sandbox verified: token 15' do VNPAY sinh, nhiều session cùng TxnRef OK).
 - Config mới: `secomm_paymentcore/vnpay/querydr_url` (text, default rỗng → verify UNKNOWN → cron không bao giờ cancel khi chưa cấu hình — auto-expiry off an toàn; Continue Payment KHÔNG cần nó).
+
+### Constraints / Rules
+
+- `Vnpayment_VNPAY` zero changes (pristine — DEC-002); KHÔNG import class của extension, chỉ đọc config path string.
+- Signing/URL contract replicate nguyên vẹn từ Info.php (HMAC-SHA512, TxnRef = increment id).
+- Không log hash_code/TmnCode.
 
 ### Acceptance Criteria
 

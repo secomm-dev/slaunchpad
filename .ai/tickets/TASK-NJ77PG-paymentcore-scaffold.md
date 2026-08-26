@@ -5,7 +5,7 @@
 **Placement:** `app/code/Secomm/PaymentCore/` (NEW)
 **Risk tier:** Tier 2 (DB schema — table `secomm_paymentcore_payment` mới)
 **Author:** AI draft · **Date:** 2026-08-25 · **Status:** Dev complete (static checks xanh — 34 PHP brace/paren + XML parse pass; runtime verify chờ user: enable + upgrade + compile)
-**Specification:** MINI — embedded dưới đây (ID: TASK-NJ77PG) · canonical parent: [SPEC-FEAT-CSWYEJ](../specs/SPEC-FEAT-CSWYEJ-payment-core.md) (FULL, VALID) §4.2/§4.5/§4.6 · Plan: `## Approach`
+**Specification:** MINI — embedded dưới đây (ID: TASK-NJ77PG) · canonical parent: [SPEC-FEAT-CSWYEJ](../specs/SPEC-FEAT-CSWYEJ-payment-core.md) (FULL, VALID) §4.2/§4.5/§4.6 · Plan: plans/TASK-NJ77PG-implementation-plan.md
 
 ## Mini Spec
 
