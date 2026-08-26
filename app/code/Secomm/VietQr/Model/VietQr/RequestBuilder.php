@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -8,7 +13,8 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Secomm\VietQr\Model\Config;
 
 /**
- * Builds the request payload for the VietQR API from an order and config.
+ * Builds the request payload for the VietQR API from an order and config
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-008).
  *
  * Translates order data (increment ID, grand total) and bank configuration
  * into the array structure expected by the VietQR API.

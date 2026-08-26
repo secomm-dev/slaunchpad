@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -7,7 +12,7 @@ namespace Secomm\VietQr\Model;
 use Magento\Payment\Model\Method\AbstractMethod;
 
 /**
- * VietQR payment method model.
+ * VietQR offline payment method model (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-005, AC-007).
  *
  * An offline payment method that displays a VietQR code for the customer
  * to scan and complete their bank transfer. No online capture or refund.

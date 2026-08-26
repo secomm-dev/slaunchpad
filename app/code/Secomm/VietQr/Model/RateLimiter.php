@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -8,7 +13,8 @@ use Magento\Framework\App\CacheInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 
 /**
- * IP-based rate limiter for the public VietQR payment pages.
+ * IP-based rate limiter for the public VietQR payment pages
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-020).
  *
  * Mitigates brute-force attempts against order IDs / guest protect codes
  * on the VietQR view/submit endpoints.

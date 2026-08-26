@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -10,7 +15,8 @@ use Psr\Log\LoggerInterface;
 use Secomm\VietQr\Model\Config;
 
 /**
- * HTTP client for communicating with the VietQR API.
+ * HTTP client for communicating with the VietQR API
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-008, AC-019).
  *
  * Sends a POST request to generate a QR code and returns the parsed result.
  * Supports debug logging of API requests and responses.
