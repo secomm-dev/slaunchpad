@@ -8,6 +8,7 @@ use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\Controller\ResultInterface;
 use Secomm\AiCommerce\Model\Cache\ResponseCache;
 use Secomm\AiCommerce\Model\Config;
+use Secomm\AiCommerce\Model\StoreContext\PathGuard;
 use Secomm\AiCommerce\Model\StoreContext\Resolver as StoreResolver;
 use Secomm\AiCommerce\Service\FacadeException;
 use Secomm\AiCommerce\Service\NotFoundException;
@@ -23,6 +24,7 @@ class View implements HttpGetActionInterface
 
     /**
      * @param StoreResolver $storeResolver public store context resolver
+     * @param PathGuard $pathGuard strict base-path/store boundary guard
      * @param Config $config module config reader
      * @param ResponseCache $responseCache internal response cache
      * @param StoreDto $storeDto store DTO builder
@@ -31,6 +33,7 @@ class View implements HttpGetActionInterface
      */
     public function __construct(
         private readonly StoreResolver $storeResolver,
+        private readonly PathGuard $pathGuard,
         private readonly Config $config,
         private readonly ResponseCache $responseCache,
         private readonly StoreDto $storeDto,
@@ -49,6 +52,12 @@ class View implements HttpGetActionInterface
         try {
             $store = $this->storeResolver->resolve($this->request->getParam('store'));
             $lifetime = $this->config->getCacheLifetime((int) $store->getId());
+
+            // Defense-in-depth (BUG-D4QK1Q §11): the resolved target store is
+            // only servable through ITS configured base path.
+            if (!$this->pathGuard->matches((string) $this->request->getPathInfo(), (int) $store->getId())) {
+                throw new NotFoundException(__('Resource not found.'));
+            }
 
             if (!$this->config->isEnabled((int) $store->getId())) {
                 throw new NotFoundException(__('Resource not found.'));

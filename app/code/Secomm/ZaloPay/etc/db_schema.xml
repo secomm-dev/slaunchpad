@@ -35,4 +35,68 @@
                     column="credit_memo_id" referenceTable="sales_creditmemo" referenceColumn="entity_id"
                     onDelete="CASCADE"/>
     </table>
+    <!--
+        Payment-first initiation attempts (ZALOPAY-PAYMENT-FIRST Phase 1).
+        One row per ZaloPay transaction created against a Quote (before any
+        Magento order exists). app_trans_id is unique => a provider
+        transaction can never fork into two attempts; order_id is unique
+        => two attempts can never claim the same Magento order.
+    -->
+    <table name="secomm_zalopay_payment_attempt" resource="default" engine="innodb"
+           comment="ZaloPay payment-first initiation attempts">
+        <column xsi:type="bigint" name="entity_id" unsigned="true" nullable="false" identity="true"
+                comment="Entity Id"/>
+        <column xsi:type="bigint" name="quote_id" unsigned="true" nullable="false" comment="Owning Quote Id"/>
+        <column xsi:type="varchar" name="reserved_order_id" nullable="false" length="64"
+                comment="Quote reserved order increment id"/>
+        <column xsi:type="varchar" name="app_trans_id" nullable="true" length="64"
+                comment="ZaloPay app_trans_id (our merchant reference)"/>
+        <column xsi:type="varchar" name="provider_transaction_id" nullable="true" length="64"
+                comment="ZaloPay zp_trans_id"/>
+        <column xsi:type="text" name="pay_url" nullable="true" comment="ZaloPay pay URL"/>
+        <column xsi:type="varchar" name="provider_status" nullable="true" length="32"
+                comment="Provider-side status"/>
+        <column xsi:type="varchar" name="payment_status" nullable="false" length="32" default="initiated"
+                comment="Attempt lifecycle status"/>
+        <column xsi:type="int" name="amount" padding="10" unsigned="true" nullable="false"
+                comment="Snapshot amount in VND (locked at initiation)"/>
+        <column xsi:type="varchar" name="currency" nullable="false" length="3" default="VND" comment="Currency"/>
+        <column xsi:type="varchar" name="contract_hash" nullable="true" length="64"
+                comment="Quote payment-contract fingerprint (sha-256) locked at initiation"/>
+        <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true"
+                comment="Sales order entity id after finalize"/>
+        <column xsi:type="text" name="last_error" nullable="true" comment="Last error message"/>
+        <column xsi:type="smallint" name="retry_count" padding="5" unsigned="true" nullable="false" default="0"
+                comment="Number of prior attempts for the same quote"/>
+        <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" default="0"
+                comment="Store Id"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true"/>
+        <column xsi:type="timestamp" name="expires_at" nullable="true" on_update="false"
+                comment="Attempt expiry (TTL)"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_ZALOPAY_PAYMENT_ATTEMPT_APP_TRANS_ID">
+            <column name="app_trans_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_ZALOPAY_PAYMENT_ATTEMPT_ORDER_ID">
+            <column name="order_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="SECOMM_ZALOPAY_PAYMENT_ATTEMPT_QUOTE_ID_QUOTE_ENTITY_ID"
+                    table="secomm_zalopay_payment_attempt" column="quote_id" referenceTable="quote"
+                    referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="SECOMM_ZALOPAY_PAYMENT_ATTEMPT_ORDER_ID_SALES_ORDER_ENTITY_ID"
+                    table="secomm_zalopay_payment_attempt" column="order_id" referenceTable="sales_order"
+                    referenceColumn="entity_id" onDelete="SET NULL"/>
+        <index referenceId="SECOMM_ZALOPAY_PAYMENT_ATTEMPT_QUOTE_ID" indexType="btree">
+            <column name="quote_id"/>
+        </index>
+        <index referenceId="SECOMM_ZALOPAY_PAYMENT_ATTEMPT_RESERVED_ORDER_ID" indexType="btree">
+            <column name="reserved_order_id"/>
+        </index>
+        <index referenceId="SECOMM_ZALOPAY_PAYMENT_ATTEMPT_PAYMENT_STATUS" indexType="btree">
+            <column name="payment_status"/>
+        </index>
+    </table>
 </schema>

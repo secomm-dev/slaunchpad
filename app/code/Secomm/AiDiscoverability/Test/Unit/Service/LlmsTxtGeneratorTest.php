@@ -68,6 +68,9 @@ class LlmsTxtGeneratorTest extends TestCase
         $this->storeManager->method('getStore')->with(1)->willReturn($this->store);
 
         $this->config->method('getMaxUrls')->willReturn(100);
+        $this->config->method('getSectionTitle')->willReturnCallback(
+            static fn (string $key, ?int $storeId = null): string => Config::SECTION_TITLES[$key]
+        );
         $this->config->method('isIncludeSitemapRefs')->willReturn(false);
         $this->scopeConfig->method('getValue')->willReturn('vi_VN');
         $this->config->method('getCurrencyCode')->willReturn('VND');

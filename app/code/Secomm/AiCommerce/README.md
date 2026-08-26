@@ -18,6 +18,14 @@ Plan: `.ai/plans/TASK-QV3R7T-implementation-plan.md`
 | `/ai/products/{sku}` | public product detail (fixed DTO allowlist) |
 | `/ai/categories` | active store category tree (one collection load) |
 
+Base path: configurable per store view — `Secomm → AI Commerce Read Layer →
+General → AI Read Endpoint Path` (`seocomm_ai_commerce/general/endpoint_path`,
+default `ai`; surrounding slashes stripped on save, invalid values fall back
+to `ai`). The table above shows the default paths; changing the path fully
+retires the old URLs (the module declares no standard frontName route — the
+custom router is the single routing authority). `llms.txt` advertises the
+effective configured URLs.
+
 Store selection: `?store=<store_code>` ONLY (no headers, no cookies).
 Missing → documented default store; invalid/inactive → 400 `invalid_store`.
 Responses make the store context explicit via `/ai/store` and `store` URL
@@ -36,7 +44,7 @@ identity — no `Vary` header is needed because the store is part of the URL.
   never emitted (MSI `IsProductSalableInterface`/`AreProductsSalableInterface`)
 - deterministic error envelope `{error:{code,message}}`; no stack traces,
   paths, class names or engine details
-- per-store `enabled` flag (default 0 — 404 when disabled)
+- per-store `enabled` flag (config default 1 since 1.2.0; 404 when disabled)
 
 ## Cache
 

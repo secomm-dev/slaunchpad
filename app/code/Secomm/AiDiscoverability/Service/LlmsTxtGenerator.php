@@ -26,13 +26,6 @@ use Secomm\AiDiscoverability\Service\Source\SitemapRefsSource;
  */
 class LlmsTxtGenerator
 {
-    private const SECTION_STORE_SUMMARY = 'Store Summary';
-    private const SECTION_AGENT_GUIDANCE = 'Agent Guidance';
-    private const SECTION_PRIORITY = 'Priority Pages';
-    private const SECTION_COLLECTIONS = 'Featured Collections';
-    private const SECTION_PAGES = 'Key Pages';
-    private const SECTION_COMMERCE = 'Machine-readable Commerce';
-    private const SECTION_COMMERCE_LIMITS = 'Commerce Limitations';
     private const SECTION_SITEMAP = 'Sitemap';
 
     /**
@@ -110,13 +103,20 @@ class LlmsTxtGenerator
         $store = $this->storeManager->getStore($storeId);
         $maxUrls = $this->config->getMaxUrls($storeId);
 
+        // Configurable section titles (store-view scoped, defaults preserve
+        // the historical output — SPEC-TASK-0X552E §4.3 titles group).
+        $titlePriority = $this->config->getSectionTitle('priority_pages', $storeId);
+        $titleCollections = $this->config->getSectionTitle('featured_collections', $storeId);
+        $titlePages = $this->config->getSectionTitle('key_pages', $storeId);
+        $titleCommerce = $this->config->getSectionTitle('machine_commerce', $storeId);
+
         $sections = [
-            self::SECTION_PRIORITY => $this->priorityUrlsSource->getEntries($store),
-            self::SECTION_COLLECTIONS => $this->collector->sortByLabel($this->categoriesSource->getEntries($store)),
-            self::SECTION_PAGES => $this->collector->sortByLabel($this->cmsPagesSource->getEntries($store)),
+            $titlePriority => $this->priorityUrlsSource->getEntries($store),
+            $titleCollections => $this->collector->sortByLabel($this->categoriesSource->getEntries($store)),
+            $titlePages => $this->collector->sortByLabel($this->cmsPagesSource->getEntries($store)),
             // Soft seam: empty when Secomm_AiCommerce is absent or disabled
             // (SPEC-TASK-7FBHHC §2.1) — no endpoint execution, no catalog load.
-            self::SECTION_COMMERCE => array_map(
+            $titleCommerce => array_map(
                 static fn (array $entry): array => ['detail' => $entry],
                 $this->commerceEndpointsSource->getEntries($store)
             ),
@@ -181,23 +181,27 @@ class LlmsTxtGenerator
         // only from configured brand summary text (never generated). The
         // commerce-dependent sections render ONLY when the machine-readable
         // surface is actually available, so a store without it never implies
-        // /ai/* exists.
-        $commerceAvailable = !empty($bounded[self::SECTION_COMMERCE]);
+        // /ai/* (or the configured base path) exists.
+        $commerceAvailable = !empty($bounded[$titleCommerce]);
 
         $ordered = [];
 
         if ($brandSummary !== '') {
-            $ordered[self::SECTION_STORE_SUMMARY] = [['prose' => [$brandSummary]]];
+            $ordered[$this->config->getSectionTitle('store_summary', $storeId)] = [['prose' => [$brandSummary]]];
         }
         if ($commerceAvailable) {
-            $ordered[self::SECTION_AGENT_GUIDANCE] = [['prose' => self::AGENT_GUIDANCE_LINES]];
+            $ordered[$this->config->getSectionTitle('agent_guidance', $storeId)] = [
+                ['prose' => self::AGENT_GUIDANCE_LINES],
+            ];
         }
-        $ordered[self::SECTION_PRIORITY] = $bounded[self::SECTION_PRIORITY] ?? [];
-        $ordered[self::SECTION_COLLECTIONS] = $bounded[self::SECTION_COLLECTIONS] ?? [];
-        $ordered[self::SECTION_PAGES] = $bounded[self::SECTION_PAGES] ?? [];
-        $ordered[self::SECTION_COMMERCE] = $bounded[self::SECTION_COMMERCE] ?? [];
+        $ordered[$titlePriority] = $bounded[$titlePriority] ?? [];
+        $ordered[$titleCollections] = $bounded[$titleCollections] ?? [];
+        $ordered[$titlePages] = $bounded[$titlePages] ?? [];
+        $ordered[$titleCommerce] = $bounded[$titleCommerce] ?? [];
         if ($commerceAvailable) {
-            $ordered[self::SECTION_COMMERCE_LIMITS] = [['prose' => self::COMMERCE_LIMITATION_LINES]];
+            $ordered[$this->config->getSectionTitle('commerce_limitations', $storeId)] = [
+                ['prose' => self::COMMERCE_LIMITATION_LINES],
+            ];
         }
         $ordered[self::SECTION_SITEMAP] = $bounded[self::SECTION_SITEMAP] ?? [];
 

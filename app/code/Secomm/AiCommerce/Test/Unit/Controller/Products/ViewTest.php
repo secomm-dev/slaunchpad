@@ -48,6 +48,11 @@ class ViewTest extends TestCase
     private $responder;
 
     /**
+     * @var \Secomm\AiCommerce\Model\StoreContext\PathGuard&MockObject
+     */
+    private $pathGuard;
+
+    /**
      * @var HttpRequest&MockObject
      */
     private $request;
@@ -60,6 +65,8 @@ class ViewTest extends TestCase
     protected function setUp(): void
     {
         $this->storeResolver = $this->createMock(StoreResolver::class);
+        $this->pathGuard = $this->createMock(\Secomm\AiCommerce\Model\StoreContext\PathGuard::class);
+        $this->pathGuard->method('matches')->willReturn(true);
         $this->config = $this->createMock(Config::class);
         $this->responseCache = $this->createMock(ResponseCache::class);
         $this->productFetcher = $this->createMock(ProductFetcher::class);
@@ -162,10 +169,33 @@ class ViewTest extends TestCase
         $this->controller()->execute();
     }
 
+    /**
+     * BUG-D4QK1Q §11: defense-in-depth — a store resolved through a request
+     * path that disagrees with ITS configured base path is a 404, before any
+     * cache IO or catalog pipeline.
+     */
+    public function testInconsistentBasePathIs404BeforeCacheIo(): void
+    {
+        $this->pathGuard = $this->createMock(\Secomm\AiCommerce\Model\StoreContext\PathGuard::class);
+        $this->pathGuard->method('matches')->willReturn(false);
+        $this->request->method('getParam')->willReturnMap([
+            ['store', null, 'vi_vn'],
+            ['sku', '', 'ABC'],
+        ]);
+        $this->responseCache->expects($this->never())->method('load');
+        $this->productFetcher->expects($this->never())->method('fetch');
+        $this->responder->expects($this->once())->method('error')
+            ->with(new NotFoundException(__('Resource not found.')))
+            ->willReturn($this->resultMock());
+
+        $this->controller()->execute();
+    }
+
     private function controller(): View
     {
         return new View(
             $this->storeResolver,
+            $this->pathGuard,
             $this->config,
             $this->responseCache,
             $this->productFetcher,

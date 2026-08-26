@@ -9,6 +9,8 @@ use Magento\Framework\App\Response\Http as HttpResponse;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Api\StoreRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Secomm\AiDiscoverability\Model\Config;
 use Secomm\AiDiscoverability\Service\LlmsTxtProvider;
@@ -16,24 +18,33 @@ use Secomm\AiDiscoverability\Service\LlmsTxtProvider;
 /**
  * Serves GET/HEAD /llms.txt. Session-less, read-only, cache-friendly.
  * Disabled feature yields an explicit 404 (SPEC-TASK-0X552E §6).
+ *
+ * Store selection (BUG-D4QK1Q §13/§14): the same `?store=<code>` selector
+ * the AI read endpoints use resolves the TARGET store view BEFORE any
+ * generation/config lookup, so a store with its own `endpoint_path` (e.g.
+ * "agent") gets discovery output advertising ITS effective URLs. Absent or
+ * unrecognized selector keeps the current-store (default) behavior.
  */
 class Index implements HttpGetActionInterface
 {
     private const CONTENT_TYPE = 'text/plain; charset=UTF-8';
     private const CACHE_CONTROL_NO_STORE = 'no-store, no-cache, must-revalidate';
+    private const PARAM_STORE = 'store';
 
     /**
      * @param Config $config module config reader
      * @param LlmsTxtProvider $provider cached llms.txt body provider
      * @param StoreManagerInterface $storeManager current store resolver
+     * @param StoreRepositoryInterface $storeRepository store registry (query-param resolution)
      * @param ResultFactory $resultFactory raw result factory
      * @param HttpResponse $response HTTP response (status header for 304/404)
-     * @param HttpRequest $request HTTP request (method, If-None-Match)
+     * @param HttpRequest $request HTTP request (method, store param, If-None-Match)
      */
     public function __construct(
         private readonly Config $config,
         private readonly LlmsTxtProvider $provider,
         private readonly StoreManagerInterface $storeManager,
+        private readonly StoreRepositoryInterface $storeRepository,
         private readonly ResultFactory $resultFactory,
         private readonly HttpResponse $response,
         private readonly HttpRequest $request
@@ -41,7 +52,28 @@ class Index implements HttpGetActionInterface
     }
 
     /**
-     * Serve the llms.txt plain-text body for the current store view.
+     * Resolve the TARGET store view id for this request.
+     *
+     * @return int resolved target store view id (current store when the
+     *              selector is absent or not an active store code)
+     */
+    private function resolveTargetStoreId(): int
+    {
+        $storeCode = trim((string) $this->request->getParam(self::PARAM_STORE));
+
+        if ($storeCode !== '') {
+            try {
+                return (int) $this->storeRepository->getActiveStoreByCode($storeCode)->getId();
+            } catch (NoSuchEntityException $exception) {
+                // Unknown/inactive selector: fall through to current store.
+            }
+        }
+
+        return (int) $this->storeManager->getStore()->getId();
+    }
+
+    /**
+     * Serve the llms.txt plain-text body for the resolved target store view.
      *
      * HTTP cache semantics derive from the same effective store-scoped cache
      * lifetime used by the provider: lifetime > 0 advertises
@@ -53,7 +85,7 @@ class Index implements HttpGetActionInterface
      */
     public function execute(): ResultInterface
     {
-        $storeId = (int) $this->storeManager->getStore()->getId();
+        $storeId = $this->resolveTargetStoreId();
 
         if (!$this->config->isEnabled($storeId)) {
             return $this->notFound();
