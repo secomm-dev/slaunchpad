@@ -147,7 +147,11 @@ class ReturnProcessor
             // verified — the finalizer already recorded the reason and kept
             // the money-real state. Surface a customer-safe message.
             throw new LocalizedException(
-                __('We could not match your payment to your current cart. Please contact support with reference %1.', $appTransId)
+                __(
+                    'We could not match your payment to your current cart. '
+                    . 'Please contact support with reference %1.',
+                    $appTransId
+                )
             );
         }
 
@@ -155,6 +159,8 @@ class ReturnProcessor
     }
 
     /**
+     * Run the authoritative v2/query for the attempt.
+     *
      * @param string $appTransId
      * @return array
      * @throws LocalizedException
@@ -195,8 +201,7 @@ class ReturnProcessor
         int $paidAmount,
         string $appTransId,
         string $zpTransId
-    ): void
-    {
+    ): void {
         $this->logger->critical(
             'ZaloPay amount mismatch: refusing automatic order placement.',
             [

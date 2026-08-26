@@ -17,6 +17,10 @@ use Magento\Quote\Model\Quote;
  */
 class QuoteStub extends Quote
 {
+    // phpcs:disable Generic.CodeAnalysis.UselessOverridingMethod -- the
+    // pass-through overrides below are the point of this stub: turning
+    // magic __call getters into real methods so PHPUnit can configure them.
+
     /**
      * @return bool
      */

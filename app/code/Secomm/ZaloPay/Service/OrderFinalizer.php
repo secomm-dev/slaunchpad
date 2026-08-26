@@ -103,8 +103,10 @@ class OrderFinalizer
      * @throws ContractMismatchException No automatic finalization possible — manual reconciliation.
      * @throws LocalizedException
      */
-    public function finalizeOrRecover(PaymentAttemptInterface $attempt, string $providerTransactionId = ''): OrderInterface
-    {
+    public function finalizeOrRecover(
+        PaymentAttemptInterface $attempt,
+        string $providerTransactionId = ''
+    ): OrderInterface {
         $appTransId = (string)$attempt->getAppTransId();
         $connection = $this->resourceConnection->getConnection();
         $connection->beginTransaction();
@@ -205,7 +207,11 @@ class OrderFinalizer
                 return $this->orderRepository->get((int)$orderId);
             } catch (NoSuchEntityException $e) {
                 // Race: the quote was validated ACTIVE but submitted between
-                // the check and placeOrder — fall through to recovery below.
+                // the check and placeOrder — recover by reserved id below.
+                $this->logger->debug(
+                    'ZaloPay finalizer: quote submitted concurrently, recovering by reserved order id.',
+                    ['app_trans_id' => $attempt->getAppTransId()]
+                );
             }
         }
 
@@ -310,6 +316,8 @@ class OrderFinalizer
     }
 
     /**
+     * Whether the order is provably THIS attempt's order.
+     *
      * Identity of the bound order: reserved increment id, originating quote
      * and ZaloPay payment method must all match the attempt.
      *
@@ -331,6 +339,8 @@ class OrderFinalizer
     }
 
     /**
+     * Load the CURRENT quote behind the attempt (null when absent).
+     *
      * @param PaymentAttemptInterface $attempt
      * @return Quote|null
      */
@@ -438,6 +448,8 @@ class OrderFinalizer
     }
 
     /**
+     * Find the order by reserved increment id (null when none exists).
+     *
      * @param string $incrementId
      * @return OrderInterface|null
      */

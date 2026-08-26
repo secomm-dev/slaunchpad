@@ -327,7 +327,15 @@ Plus non-payable refusal and capture-failure rollback (expects real
 mismatch surfaces the customer-safe message.
 
 **Suite totals after review fixes: 61 tests, 196 assertions, 61/61 PASS**
-(§7's 40/40 remains the Phase 1 historical count). PHPCS Magento2:
-0 errors (warnings pre-existing, untouched files). `setup:di:compile`:
-success. Integration: still environment-blocked, unchanged evidence in §7
-— NOT claimed as PASS.
+(§7's 40/40 remains the Phase 1 historical count). PHPCS Magento2
+(review gate §9 — warnings on custom code must be handled): a docblock
+pass brought EVERY payment-first file (Service/, Model/PaymentAttempt*,
+Model/QuoteContractFingerprint, Api/, Exception/, Controller/Payment/,
+AppTransIdBuilder, ResourceModel/PaymentAttemptResource, Test/Unit/) to
+**0 errors and 0 warnings**. The remaining 222 warnings in the module are
+all in pre-existing legacy scaffold (Gateway/, Helper/, Plugin/,
+Logger/, Model/Config*, Api/Data/RefundInterface, Test/Integration/) —
+recorded here as known module debt per the gate's "record in project
+status" rule; touching them is outside this review's scope.
+`setup:di:compile`: success (re-run after the PHPCS pass). Integration:
+still environment-blocked, unchanged evidence in §7 — NOT claimed as PASS.

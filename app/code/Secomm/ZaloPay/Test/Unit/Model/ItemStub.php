@@ -16,6 +16,10 @@ use Magento\Quote\Model\Quote\Item;
  */
 class ItemStub extends Item
 {
+    // phpcs:disable Generic.CodeAnalysis.UselessOverridingMethod -- the
+    // pass-through override is the point of this stub: turning the magic
+    // __call getter into a real method so PHPUnit can configure it.
+
     /**
      * @return int
      */

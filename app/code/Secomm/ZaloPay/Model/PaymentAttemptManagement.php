@@ -78,8 +78,9 @@ class PaymentAttemptManagement
     }
 
     /**
-     * Whether the quote can enter the payment-first flow right now: active,
-     * non-empty, with ZaloPay selected as its payment method.
+     * Whether the quote can enter the payment-first flow right now.
+     *
+     * Active, non-empty, with ZaloPay selected as its payment method.
      *
      * @param Quote $quote
      * @return bool
@@ -230,6 +231,8 @@ class PaymentAttemptManagement
     }
 
     /**
+     * Expiry timestamp for a fresh attempt (now + configured TTL minutes).
+     *
      * @return string
      */
     private function getExpiryTime(): string

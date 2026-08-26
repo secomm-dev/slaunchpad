@@ -76,6 +76,8 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
     }
 
     /**
+     * Start the ZaloPay payment (payment-first or legacy path).
+     *
      * @return ResponseInterface|ResultInterface|void
      */
     public function execute()
@@ -171,10 +173,10 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
 
     /**
      * Create exception in case CSRF validation failed.
+     *
      * Return null if default exception will suffice.
      *
      * @param RequestInterface $request
-     *
      * @return InvalidRequestException|null
      */
     public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
@@ -184,10 +186,10 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
 
     /**
      * Perform custom request validation.
+     *
      * Return null if default validation is needed.
      *
      * @param RequestInterface $request
-     *
      * @return boolean|null
      */
     public function validateForCsrf(RequestInterface $request): ?bool

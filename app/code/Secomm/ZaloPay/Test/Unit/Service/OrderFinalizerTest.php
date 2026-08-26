@@ -559,8 +559,12 @@ class OrderFinalizerTest extends TestCase
      * @param OrderPayment|MockObject|null $payment
      * @return Order|MockObject
      */
-    private function newOrder(int $entityId, string $state, string $incrementId = '000000123', ?OrderPayment $payment = null): Order
-    {
+    private function newOrder(
+        int $entityId,
+        string $state,
+        string $incrementId = '000000123',
+        ?OrderPayment $payment = null
+    ): Order {
         $order = $this->createMock(Order::class);
         $order->method('getEntityId')->willReturn($entityId);
         $order->method('getIncrementId')->willReturn($incrementId);

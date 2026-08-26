@@ -65,7 +65,9 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
     }
 
     /**
-     * The message sent from Payment Service Provider (PSP) to Payment Service Consumer (PSC)
+     * Handle the ZaloPay server-to-server IPN callback.
+     *
+     * The message sent from Payment Service Provider (PSP) to Payment Service Consumer (PSC).
      * An example of this is closing the browser while Zalo pay is not redirected to payment success/failure
      *
      * @return ResponseInterface|Json|ResultInterface
@@ -76,7 +78,10 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
             return;
         }
         $rawContent = (string)$this->getRequest()->getContent();
-        $this->logger->info('ZaloPay IPN Hit. Content: ' . $rawContent . ' Params: ' . json_encode($this->getRequest()->getParams()));
+        $this->logger->info(
+            'ZaloPay IPN Hit. Content: ' . $rawContent
+            . ' Params: ' . json_encode($this->getRequest()->getParams())
+        );
         /** @var Json $resultJson */
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         $data       = [
@@ -192,10 +197,10 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
 
     /**
      * Create exception in case CSRF validation failed.
+     *
      * Return null if default exception will suffice.
      *
      * @param RequestInterface $request
-     *
      * @return InvalidRequestException|null
      */
     public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
@@ -205,10 +210,10 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
 
     /**
      * Perform custom request validation.
+     *
      * Return null if default validation is needed.
      *
      * @param RequestInterface $request
-     *
      * @return boolean|null
      */
     public function validateForCsrf(RequestInterface $request): ?bool

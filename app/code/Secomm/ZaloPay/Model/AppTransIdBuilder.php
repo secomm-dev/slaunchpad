@@ -32,6 +32,8 @@ class AppTransIdBuilder
     }
 
     /**
+     * Build the ZaloPay app_trans_id for a quote's reserved order id.
+     *
      * @param string $reservedOrderId
      * @return string
      */

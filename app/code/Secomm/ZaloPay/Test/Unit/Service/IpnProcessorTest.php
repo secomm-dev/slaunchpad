@@ -145,7 +145,10 @@ class IpnProcessorTest extends TestCase
         $this->assertSame(200, $result['http_code']);
         $this->assertFalse($result['errors']);
         $this->assertSame(PaymentAttemptInterface::STATUS_PAID, $this->saved->getPaymentStatus());
-        $this->assertStringContainsString('IPN amount mismatch: paid 50000, snapshot 100000', (string)$this->saved->getLastError());
+        $this->assertStringContainsString(
+            'IPN amount mismatch: paid 50000, snapshot 100000',
+            (string)$this->saved->getLastError()
+        );
         $this->assertNull($this->saved->getOrderId());
     }
 

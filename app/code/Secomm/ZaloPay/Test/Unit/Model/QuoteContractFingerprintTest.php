@@ -75,7 +75,10 @@ class QuoteContractFingerprintTest extends TestCase
         $calculator = new QuoteContractFingerprint();
 
         $flat = $calculator->calculate($this->newQuote(item: null, shippingMethod: 'flatrate_flatrate'), 100000);
-        $free = $calculator->calculate($this->newQuote(item: null, shippingMethod: 'freeshipping_freeshipping'), 100000);
+        $free = $calculator->calculate(
+            $this->newQuote(item: null, shippingMethod: 'freeshipping_freeshipping'),
+            100000
+        );
 
         $this->assertNotSame($flat, $free);
     }

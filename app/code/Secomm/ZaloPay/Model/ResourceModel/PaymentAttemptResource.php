@@ -30,8 +30,10 @@ class PaymentAttemptResource extends AbstractDb
     }
 
     /**
-     * Fetch the raw attempt row with SELECT ... FOR UPDATE. The caller must
-     * hold an open DB transaction; the row lock is released on commit/rollback.
+     * Fetch the raw attempt row with SELECT ... FOR UPDATE.
+     *
+     * The caller must hold an open DB transaction; the row lock is released
+     * on commit/rollback.
      *
      * @param string $appTransId
      * @return array|null

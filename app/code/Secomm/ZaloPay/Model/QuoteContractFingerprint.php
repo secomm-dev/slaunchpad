@@ -82,7 +82,10 @@ class QuoteContractFingerprint
     }
 
     /**
-     * Whether two fingerprints match (null-safe constant-time compare).
+     * Whether two fingerprints match.
+     *
+     * Null-safe constant-time compare (legacy rows without a hash never
+     * compare equal).
      *
      * @param string|null $persisted
      * @param string $current
@@ -96,8 +99,10 @@ class QuoteContractFingerprint
     }
 
     /**
-     * Item signatures: ALL items (children included — the child SKU carries
-     * the configurable/bundle selection), sorted so cart display order is
+     * Build the per-item signatures for the contract.
+     *
+     * ALL items (children included — the child SKU carries the
+     * configurable/bundle selection), sorted so cart display order is
      * irrelevant.
      *
      * @param Quote $quote
@@ -119,6 +124,8 @@ class QuoteContractFingerprint
     }
 
     /**
+     * Hash one address (null when the address is absent).
+     *
      * @param \Magento\Quote\Api\Data\AddressInterface|null $address
      * @return string|null sha-256 of the normalized address, null when absent.
      */
@@ -139,8 +146,7 @@ class QuoteContractFingerprint
     }
 
     /**
-     * Recursively sort array keys so encoding order never depends on how the
-     * contract array was built.
+     * Recursively sort array keys so encoding order never depends on build order.
      *
      * @param mixed $value
      * @return mixed
@@ -169,6 +175,8 @@ class QuoteContractFingerprint
     }
 
     /**
+     * Normalize a scalar contract value (trim + lowercase).
+     *
      * @param string $value
      * @return string
      */

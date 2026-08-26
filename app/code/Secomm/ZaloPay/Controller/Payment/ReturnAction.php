@@ -63,6 +63,8 @@ class ReturnAction extends AppAction
     }
 
     /**
+     * Dispatch the ZaloPay browser return redirect.
+     *
      * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
      */
     public function execute()
@@ -79,6 +81,8 @@ class ReturnAction extends AppAction
     }
 
     /**
+     * Handle the payment-first return (apptransid present).
+     *
      * @param string $appTransId
      * @param array $params
      * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|void
@@ -161,6 +165,5 @@ class ReturnAction extends AppAction
             'params' => $this->getRequest()->getParams(),
         ]);
         $this->_redirect('checkout/onepage/failure');
-        return;
     }
 }
