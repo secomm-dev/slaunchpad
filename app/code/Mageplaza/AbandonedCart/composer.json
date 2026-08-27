@@ -1,11 +1,11 @@
 {
-  "name": "mageplaza/module-abandoned-cart-email",
+  "name": "mageplaza/module-abandoned-cart-email-mkp",
   "description": "Magento 2 Abandoned Cart Email extension",
   "require": {
     "mageplaza/module-core": "^1.5.13"
   },
   "type": "magento2-module",
-  "version": "4.6.7",
+  "version": "4.6.9",
   "license": "proprietary",
   "authors": [
     {

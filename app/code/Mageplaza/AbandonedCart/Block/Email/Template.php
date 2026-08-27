@@ -103,7 +103,9 @@ class Template extends AbstractTemplate
      *
      * @param Context $context
      * @param ProductRepositoryInterface $productRepository
+     *
      * @pramm StockItemRepository $stockItemRepository
+     *
      * @param PriceCurrency $priceCurrency
      * @param ModuleHelper $helperData
      * @param QuoteFactory $quoteFactory
@@ -113,27 +115,27 @@ class Template extends AbstractTemplate
      * @param array $data
      */
     public function __construct(
-        Context                    $context,
+        Context $context,
         ProductRepositoryInterface $productRepository,
-        StockItemRepository        $stockItemRepository,
-        PriceCurrency              $priceCurrency,
-        ModuleHelper               $helperData,
-        QuoteFactory               $quoteFactory,
-        AbstractProduct            $abstractProduct,
-        UrlInterface               $frontUrlModel,
-        EncryptorInterface         $encryptor,
-        array                      $data = []
+        StockItemRepository $stockItemRepository,
+        PriceCurrency $priceCurrency,
+        ModuleHelper $helperData,
+        QuoteFactory $quoteFactory,
+        AbstractProduct $abstractProduct,
+        UrlInterface $frontUrlModel,
+        EncryptorInterface $encryptor,
+        array $data = []
     ) {
-        $this->_productRepository   = $productRepository;
-        $this->stockItemRepository  = $stockItemRepository;
-        $this->imageHelper          = $context->getImageHelper();
-        $this->priceCurrency        = $priceCurrency;
-        $this->helperData           = $helperData;
-        $this->taxHelper            = $context->getTaxData();
-        $this->quoteFactory         = $quoteFactory;
-        $this->abstractProduct      = $abstractProduct;
-        $this->frontUrlModel        = $frontUrlModel;
-        $this->encryptor            = $encryptor;
+        $this->_productRepository  = $productRepository;
+        $this->stockItemRepository = $stockItemRepository;
+        $this->imageHelper         = $context->getImageHelper();
+        $this->priceCurrency       = $priceCurrency;
+        $this->helperData          = $helperData;
+        $this->taxHelper           = $context->getTaxData();
+        $this->quoteFactory        = $quoteFactory;
+        $this->abstractProduct     = $abstractProduct;
+        $this->frontUrlModel       = $frontUrlModel;
+        $this->encryptor           = $encryptor;
 
         parent::__construct($context, $data);
     }
@@ -177,7 +179,7 @@ class Template extends AbstractTemplate
     {
         $subtotal = 0;
         if ($quote = $this->getQuote()) {
-            $address = $quote->isVirtual() ? $quote->getBillingAddress() : $quote->getShippingAddress();
+            $address  = $quote->isVirtual() ? $quote->getBillingAddress() : $quote->getShippingAddress();
             $subtotal = $inclTax ? $address->getSubtotalInclTax() : $address->getSubtotal();
         }
 
@@ -203,14 +205,14 @@ class Template extends AbstractTemplate
         try {
             /** @var Product $product */
             $product = $this->_productRepository->getById($productId);
-            if($product->getImage())
-            {
+            if ($product->getImage()) {
                 /** @var Store $store */
-                $store = $this->_storeManager->getStore();
+                $store    = $this->_storeManager->getStore();
                 $imageUrl = $store->getBaseUrl(UrlInterface::URL_TYPE_MEDIA) . 'catalog/product' . $product->getImage();
-            }else {
+            } else {
                 $imageUrl = $this->imageHelper->getDefaultPlaceholderUrl('small_image');
             }
+
             return str_replace('\\', '/', $imageUrl);
         } catch (NoSuchEntityException $e) {
             return null;
@@ -228,7 +230,7 @@ class Template extends AbstractTemplate
     public function getProductPrice($item, $inclTax = false)
     {
         $productPrice = $inclTax ? $item->getRowTotalInclTax() : $item->getRowTotal();
-        $quote = $this->getQuote();
+        $quote        = $this->getQuote();
 
         return $this->priceCurrency->format(
             $productPrice,
@@ -303,7 +305,7 @@ class Template extends AbstractTemplate
 
             /** @var Item $quoteItem */
             foreach ($quote->getAllVisibleItems() as $quoteItem) {
-                switch ((int)$relatedProduct) {
+                switch ((int) $relatedProduct) {
                     case RelatedProductOptions::RELATED_PRODUCTS:
                         if ($this->getIsExcludeOutOfStock()) {
                             $dataProduct = [];
@@ -381,14 +383,14 @@ class Template extends AbstractTemplate
     public function getImage($product)
     {
         try {
-            if($product->getImage())
-            {
+            if ($product->getImage()) {
                 /** @var Store $store */
-                $store = $this->_storeManager->getStore();
+                $store    = $this->_storeManager->getStore();
                 $imageUrl = $store->getBaseUrl(UrlInterface::URL_TYPE_MEDIA) . 'catalog/product' . $product->getImage();
-            }else {
+            } else {
                 $imageUrl = $this->imageHelper->getDefaultPlaceholderUrl('small_image');
             }
+
             return str_replace('\\', '/', $imageUrl);
         } catch (Exception $e) {
             return null;
@@ -407,8 +409,9 @@ class Template extends AbstractTemplate
                 'website_id' => $this->_storeManager->getStore($this->getStoreId())->getWebsiteId()
             ]
         );
-        return $url.'?email='.($this->getQuote()
-                ? $this->encryptor->encrypt((string)$this->getQuote()->getCustomerEmail()) : "");
+
+        return $url . '?email=' . ($this->getQuote()
+                ? $this->encryptor->encrypt((string) $this->getQuote()->getCustomerEmail()) : "");
     }
 
     /**
@@ -417,5 +420,13 @@ class Template extends AbstractTemplate
     public function isEnableUnsubscribeLink()
     {
         return $this->helperData->isEnableUnsubscribeLink($this->getStoreId());
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHyvaTheme()
+    {
+        return $this->helperData->isHyvaTheme();
     }
 }
