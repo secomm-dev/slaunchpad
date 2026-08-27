@@ -46,7 +46,7 @@
            comment="ZaloPay payment-first initiation attempts">
         <column xsi:type="bigint" name="entity_id" unsigned="true" nullable="false" identity="true"
                 comment="Entity Id"/>
-        <column xsi:type="bigint" name="quote_id" unsigned="true" nullable="false" comment="Owning Quote Id"/>
+        <column xsi:type="int" name="quote_id" padding="10" unsigned="true" nullable="false" comment="Owning Quote Id"/>
         <column xsi:type="varchar" name="reserved_order_id" nullable="false" length="64"
                 comment="Quote reserved order increment id"/>
         <column xsi:type="varchar" name="app_trans_id" nullable="true" length="64"
