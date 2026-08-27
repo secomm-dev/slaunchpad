@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="secomm" translate="label" sortOrder="5000" class="secomm-tab secomm-tab-container">
+            <label>Secomm Extensions</label>
+        </tab>
+
+        <!-- FEAT-31X6N2 / TASK-0TTQRX + DEC-FEAT31X6N2-002: Meta section REMOVED —
+             Magefan FacebookPixel(+Extra) owns all Meta tracking (browser + CAPI).
+             This module owns TikTok (server Events API + browser via GTM dataLayer).
+             GA4/GTM needs no credentials here — browser events ride the Magefan GTM
+             container (D1). -->
+        <section id="secomm_tracking" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Commerce Tracking</label>
+            <tab>secomm</tab>
+            <resource>Secomm_Tracking::config</resource>
+
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Commerce Tracking</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Master switch for the Launchpad tracking event layer (browser dataLayer pipeline + server outbox). Default: No.</comment>
+                </field>
+                <field id="debug_log" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Debug Log</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Write masked delivery/debug entries to var/log/secomm_tracking.log and the delivery table for QC reconcile. Default: No.</comment>
+                </field>
+            </group>
+
+            <group id="tiktok" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>TikTok — Pixel &amp; Events API</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable TikTok</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Server-side Events API events (CompletePayment/refund) + browser pixel events via GTM container. Default: No.</comment>
+                </field>
+                <field id="pixel_id" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Pixel ID</label>
+                    <comment>TikTok Pixel ID (TikTok Business Center → Events → Web events).</comment>
+                </field>
+                <field id="access_token" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Events API Access Token</label>
+                    <comment>TikTok long-term Events API token (Business Center → Events → Manage assets → API). Stored encrypted — never commit.</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="test_mode" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Test Mode (Debug)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Send with the debug flag so events land in TikTok Event Debug instead of live. Default: No.</comment>
+                </field>
+            </group>
+
+            <group id="refund" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Refund Events</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Refund Events</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Send a TikTok custom refund event per creditmemo. Default: No.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

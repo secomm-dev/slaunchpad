@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <!--
+        FEAT-31X6N2 / TASK-E0NG8Z — sibling to Magefan's mfgtm.data.layer block on
+        head.additional. Renders nothing when tracking is off or the page has no
+        mapped commerce event (block short-circuits, cacheable, FPC-safe).
+    -->
+    <body>
+        <referenceBlock name="head.additional">
+            <block class="Secomm\Tracking\Block\LaunchpadEvent"
+                   name="secomm.tracking.launchpad_event"
+                   after="mfgtm.data.layer"
+                   template=""/>
+        </referenceBlock>
+    </body>
+</page>
