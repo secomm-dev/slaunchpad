@@ -44,7 +44,7 @@
     -->
     <table name="secomm_zalopay_payment_attempt" resource="default" engine="innodb"
            comment="ZaloPay payment-first initiation attempts">
-        <column xsi:type="bigint" name="entity_id" unsigned="true" nullable="false" identity="true"
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="Entity Id"/>
         <column xsi:type="int" name="quote_id" padding="10" unsigned="true" nullable="false" comment="Owning Quote Id"/>
         <column xsi:type="varchar" name="reserved_order_id" nullable="false" length="64"
