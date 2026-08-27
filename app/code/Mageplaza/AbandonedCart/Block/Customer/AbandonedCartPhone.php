@@ -94,4 +94,12 @@ class AbandonedCartPhone extends Template
             && $this->smsHelper->getConfigGeneral('enabled', $storeId)
         );
     }
+
+    /**
+     * @return bool
+     */
+    public function isHyvaTheme()
+    {
+        return $this->smsHelper->isHyvaTheme();
+    }
 }

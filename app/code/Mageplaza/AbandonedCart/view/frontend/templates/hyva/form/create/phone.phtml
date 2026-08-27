@@ -19,18 +19,19 @@
  * @license     https://www.mageplaza.com/LICENSE.txt
  */
 
+use Magento\Framework\Escaper;
 use Mageplaza\AbandonedCart\Block\Customer\AbandonedCartPhone;
-use Mageplaza\AbandonedCart\Helper\Data;
 
 /** @var AbandonedCartPhone $block */
+/** @var Escaper $escaper */
 
 $isAbandonedCartNumber = $block->isEnableAbandonedCartNumber();
 $abandonedCartNumber   = $block->getCustomerAbandonedCartPhone();
-$isEnableHyvaTheme     = $this->helper(Data::class)->isEnabledHyvaTheme();
+$isEnableHyvaTheme     = $block->isHyvaTheme();
 ?>
 
 <?php if ($isAbandonedCartNumber && $isEnableHyvaTheme): ?>
-    <div class="py-8" >
+    <div class="py-8">
         <legend class="legend customer-attributes">
             <span><?= $block->escapeHtml(__('Additional Information')) ?></span>
         </legend>
@@ -46,7 +47,8 @@ $isEnableHyvaTheme     = $this->helper(Data::class)->isEnabledHyvaTheme();
                        title="<?= $block->escapeHtmlAttr(__('Abandonment Cart Phone Number')) ?>"
                        class="input-text"
                        data-validate='{"mp-validate-phone-number": true}'
-                       value="<?= /* @noEscape */  $abandonedCartNumber ?>"
+                       value="<?= /* @noEscape */
+                       $abandonedCartNumber ?>"
                        @input.debounce="onChange"
                 />
                 <div id="mp_abandoned_cart_phone_error"></div>
@@ -56,8 +58,9 @@ $isEnableHyvaTheme     = $this->helper(Data::class)->isEnabledHyvaTheme();
     </div>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            var phoneNumber = document.querySelector("#mp_abandoned_cart_phone");
+            var phoneNumber     = document.querySelector("#mp_abandoned_cart_phone");
             let initCountryCode = '';
+
             function initData () {
                 fetch('https://get.geojs.io/v1/ip/geo.js')
                 .then((response) => response.text())
@@ -69,9 +72,9 @@ $isEnableHyvaTheme     = $this->helper(Data::class)->isEnabledHyvaTheme();
             }
 
             function initField (initCountryCode) {
-                const iti  = intlTelInput(phoneNumber, {
+                const iti = intlTelInput(phoneNumber, {
                     initialCountry: initCountryCode,
-                    countrySearch: false,
+                    countrySearch: false
                 });
 
                 phoneNumber.addEventListener('countrychange', (e) => {
@@ -80,34 +83,33 @@ $isEnableHyvaTheme     = $this->helper(Data::class)->isEnabledHyvaTheme();
 
                 });
 
-                var createCusBtn= document.querySelector('.form-create-account .action.submit');
-                if(createCusBtn) {
+                var createCusBtn = document.querySelector('.form-create-account .action.submit');
+                if (createCusBtn) {
                     createCusBtn.addEventListener('click', function (event) {
                         phoneNumber.value = iti.getNumber();
                     });
                 }
 
 
-                var editCusBtn= document.querySelector('.form-edit-account .action.save');
-                if(editCusBtn) {
+                var editCusBtn = document.querySelector('.form-edit-account .action.save');
+                if (editCusBtn) {
                     editCusBtn.addEventListener('click', function (event) {
                         phoneNumber.value = iti.getNumber();
                     });
                 }
 
             }
+
             hyva.formValidation.addRule('mp-validate-phone-number', (value, options) => {
                 const phoneNumber = value.trim().replace(' ', '');
-                var filter = /^[0-9+]+$/;
+                var filter        = /^[0-9+]+$/;
                 if (phoneNumber && !phoneNumber.toString().match(filter)) {
                     return '<?= $escaper->escapeJs(__('Not a valid Phone Number')) ?>';
                 }
                 return true;
             });
 
-
             initData();
-
         });
     </script>
 <?php endif; ?>

@@ -32,7 +32,7 @@
                 <item name="abandonedcart/index/checkoutreport" xsi:type="string" translate="true">Checkout Abandonment Report</item>
                 <item name="abandonedcart/index/productreport" xsi:type="string" translate="true">Abandoned Product Report</item>
                 <item name="abandonedcart/index/shoppingbehavior" xsi:type="string" translate="true">Shopping Behavior Analysis</item>
-                <item name="abandonedcart/index/cartboard" xsi:type="string" translate="true">Card Board</item>
+                <item name="abandonedcart/index/cartboard" xsi:type="string" translate="true">Cart Board</item>
                 <item name="abandonedcart/index/report" xsi:type="string" translate="true">Report</item>
             </argument>
         </arguments>

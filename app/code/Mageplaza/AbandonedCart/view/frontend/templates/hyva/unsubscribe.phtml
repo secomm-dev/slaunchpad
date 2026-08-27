@@ -20,12 +20,11 @@
  */
 
 use Mageplaza\AbandonedCart\Block\Email\Template;
-use Mageplaza\AbandonedCart\Helper\Data;
 
 /** @var Template $block */
 
 $baseUrl           = $block->getBaseUrl();
-$isEnableHyvaTheme = $this->helper(Data::class)->isEnabledHyvaTheme();
+$isEnableHyvaTheme = $block->isHyvaTheme();
 ?>
 <?php if ($isEnableHyvaTheme) : ?>
     <p><?= $block->escapeHtml(__('You have successfully unsubscribed from our email list, and now you will be redirected to our homepage in 5 seconds.')) ?></p>
