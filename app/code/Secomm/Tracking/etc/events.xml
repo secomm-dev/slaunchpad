@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- FEAT-31X6N2 / TASK-8FZ8YX / DEC D3 — server purchase fires on the state
+         TRANSITION into processing|payment_review... actually only into a paid
+         state (see PurchaseFire), not on order placement: Mollie webhook and
+         VNPAY IPN confirmations arrive on their own saves and must fire exactly
+         once. Transition detection via origData state comparison on save_after. -->
+    <event name="sales_order_save_after">
+        <observer name="secommTrackingPurchaseFire" instance="Secomm\Tracking\Observer\PurchaseFire"/>
+    </event>
+    <event name="sales_order_creditmemo_save_after">
+        <observer name="secommTrackingRefundFire" instance="Secomm\Tracking\Observer\RefundFire"/>
+    </event>
+</config>

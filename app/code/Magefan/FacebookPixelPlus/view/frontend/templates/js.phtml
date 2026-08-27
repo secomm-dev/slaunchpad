@@ -1,0 +1,52 @@
+<?php
+/**
+ * Copyright © Magefan (support@magefan.com). All rights reserved.
+ * Please visit Magefan.com for license details (https://magefan.com/end-user-license-agreement).
+ */
+/**
+ * @var $block \Magefan\FacebookPixel\Block\Pixel
+ * @var $mfSecureRenderer \Magefan\Community\Api\SecureHtmlRendererInterface
+ * @var $mfHyvaThemeDetection \Magefan\Community\Api\HyvaThemeDetectionInterface
+ */
+
+?>
+<?php if (!$mfHyvaThemeDetection->execute()) { ?>
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "mfFbPixelData": {}
+        }
+    }
+</script>
+<?php } else { ?>
+    <?php $script = "
+    function mfHyvaFbPixelData(event) {
+        var data;
+        var sections = event.detail.data;
+        for (var j in sections) {
+            data = sections[j];
+            if (!data.mf_fb_pixel_data) continue;
+            for (var i = 0; i < data.mf_fb_pixel_data.length; i++) {
+                let eventName = Object.keys(data.mf_fb_pixel_data[i])[0];
+                let content = data.mf_fb_pixel_data[i][eventName];
+                if (!window.fbq) continue;
+                fbq('track', eventName, content, 
+                {'eventID': eventName + '.' + Math.floor(Math.random() * 1000000) + '.' + Date.now(), 
+                'event_source_url': window.location.href, 'referrer_url': document.referrer });
+            }
+            Reflect.deleteProperty(event.detail.data[j], 'mf_fb_pixel_data');
+            var mcs = localStorage.getItem('mage-cache-storage');
+            if (mcs) {
+                mcs = JSON.parse(mcs);
+                if (mcs && mcs[j] && mcs[j].mf_fb_pixel_data) {
+                    Reflect.deleteProperty(mcs[j], 'mf_fb_pixel_data');
+                    localStorage.setItem('mage-cache-storage', JSON.stringify(mcs));
+                }
+            }
+        }
+    }
+    window.addEventListener('private-content-loaded', mfHyvaFbPixelData);
+"; ?>
+    <?= /* @noEscape */ $mfSecureRenderer->renderTag('script', [], $script, false) ?>
+<?php } ?>
+

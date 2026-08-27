@@ -1,0 +1,27 @@
+<?php
+/**
+ * Copyright © Magefan (support@magefan.com). All rights reserved.
+ * Please visit Magefan.com for license details (https://magefan.com/end-user-license-agreement).
+ */
+/**
+ * @var $block \Magefan\FacebookPixelPlus\Block\CustomerDataForAdvancedMatching
+ * @var $mfSecureRenderer \Magefan\Community\Api\SecureHtmlRendererInterface
+ */
+
+if ($data = $block->getCustomerData()) { ?>
+    <?php
+        $script = "
+            var storageKey = 'mage-cache-storage';
+            var data = localStorage.getItem(storageKey);
+            var json = data ? JSON.parse(data) : {};
+    
+            json['customer'] = json['customer'] || {};
+            json['customer']['mf_fb_pixel_customer_data'] = json['customer']['mf_fb_pixel_customer_data'] || {};
+    
+            Object.assign(json['customer']['mf_fb_pixel_customer_data'], " . json_encode($data) .");
+    
+            localStorage.setItem(storageKey, JSON.stringify(json));
+       ";
+    ?>
+    <?= /* @noEscape */ $mfSecureRenderer->renderTag('script', [], $script, false) ?>
+<?php } ?>
