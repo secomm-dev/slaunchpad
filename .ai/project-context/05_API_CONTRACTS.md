@@ -186,12 +186,3 @@ No external API. Internal cron-driven recovery flow (`mageplaza_abandonedcart_cr
 | **Rate limit** | n/a |
 | **Error handling** | [TBD] |
 | **Notes** | Cron runs every minute — monitor throughput in production. |
-
-
-
-## TikTok Events API (Secomm_Tracking)
-
-- **Endpoint:** `POST https://business-api.tiktok.com/open_api/v1.3/event/boost/` (adapter: `Secomm\Tracking\Model\Vendor\TikTokEventsAdapter`)
-- **Auth:** header `Access-Token` (encrypted `secomm_tracking/tiktok/access_token`)
-- **Payload要点:** `event_source=web`, `event_source_id={pixel}`, `data[].event` (CompletePayment cho purchase; Refund custom), `event_id` shared browser/server, `user.{email,phone,external_id}` SHA-256 hex, `properties.{currency,value,order_id,contents}`; `is_debug_event` khi Test Mode.
-- **Response:** `code=0` OK; `code 401xx` auth/pixel errors fail-fast (no retry); others retry.

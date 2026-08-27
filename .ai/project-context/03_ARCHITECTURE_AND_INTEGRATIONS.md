@@ -68,7 +68,3 @@ Monolithic Magento 2.4.8-p5 storefront with a Hyvä 3.x frontend (Tailwind CSS v
 - **Checkout → Shipping (TableRate)**: internal carrier calculation using dimensional attributes (L/W/H, factor 5000) from product data.
 - **Order/Event → SMTP**: outbound transactional email relay for order/customer notifications.
 - **Checkout → AddressDropdown**: AJAX hierarchical dropdown fetches VN address data (Secomm_VietNamAddress CSV) country→state→city→sub-city.
-
-<!-- FEAT-CSWYEJ appended 2026-08-25 — pending human review/commit per §14 -->
-
-| VNPAY querydr | payment | outbound | HTTP POST (vnp_Command=querydr) | high | TmnCode + hash secret | Secomm_PaymentCore expiry cron verifies provider state before cancelling expired pending orders; UNKNOWN → skip/retry (never cancel when uncertain). |
