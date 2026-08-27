@@ -5,7 +5,7 @@
 **Placement:** `app/code/Secomm/PaymentCore/Model/Lifecycle/AssignManagedPayment.php` + `etc/events.xml`
 **Risk tier:** Tier 1 (ghi record mới khi place order; không mutate order)
 **Author:** AI draft · **Date:** 2026-08-25 · **Status:** Dev complete (unit tests trong TASK-M20PT6; e2e QC pending)
-**Specification:** MINI — embedded dưới đây · canonical parent: [SPEC-FEAT-CSWYEJ](../specs/SPEC-FEAT-CSWYEJ-payment-core.md) §4.1/AC-001/AC-002/AC-003/AC-014 · Plan: plans/TASK-JSQN6P-implementation-plan.md
+**Specification:** MINI — embedded dưới đây · canonical parent: [SPEC-FEAT-CSWYEJ](../specs/SPEC-FEAT-CSWYEJ-payment-core.md) §4.1/AC-001/AC-002/AC-003/AC-014
 
 ## Mini Spec
 
@@ -20,13 +20,6 @@ Order place bằng managed method → payment record tạo với `expires_at` sn
 - Expiry resolution: per-method override (textarea `method_code:minutes`, validate + ignore line sai format có log warn) > default_expiry_minutes.
 - Core disabled / method unmanaged → no-op hoàn toàn (AC-003/AC-014).
 - Exception trong observer **không được** chặn place order — catch + log error (record thiếu = cron không cancel, an toàn hướng conservative).
-
-### Constraints / Rules
-
-- Event `checkout_submit_all_after` (post-save — `sales_order_place_after` fires trước save, entity_id NULL).
-- Observer/Service không bao giờ throw (checkout không được chặn vì Payment Core).
-- Expiry snapshot: override > default 15'; invalid override line ignore + log warn.
-- DateTime API: `gmtDate`/`gmtTimestamp`.
 
 ### Acceptance Criteria
 
