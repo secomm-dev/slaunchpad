@@ -1,4 +1,10 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
 declare(strict_types=1);
 
 namespace Secomm\VietQr\Controller\Payment;
@@ -14,7 +20,8 @@ use Secomm\VietQr\Block\PaymentInfo;
 use Secomm\VietQr\Model\RateLimiter;
 
 /**
- * Displays the VietQR payment page for a given order.
+ * Displays the VietQR payment page for a given order
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-011, AC-023).
  *
  * Validates the order ID, applies rate limiting, verifies ownership,
  * and renders the payment view with the QR code and bank details.

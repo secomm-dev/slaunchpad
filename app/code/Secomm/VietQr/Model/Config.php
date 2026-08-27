@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -8,7 +13,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 
 /**
- * Provides access to the VietQR payment method's system configuration values.
+ * Provides access to the VietQR payment method's system configuration values
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-001..AC-004).
  *
  * Reads from the `payment/secomm_vietqr/*` config paths at the store scope.
  */

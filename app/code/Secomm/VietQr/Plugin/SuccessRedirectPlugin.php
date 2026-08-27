@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -12,7 +17,8 @@ use Magento\Framework\UrlInterface;
 
 /**
  * Redirects the checkout success page to the VietQR payment view
- * when the order was placed with the VietQR payment method.
+ * when the order was placed with the VietQR payment method
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-011, AC-012).
  *
  * Replaces the broken checkout_onepage_controller_success_action
  * observer (that event does not carry a 'response' key, so

@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -10,7 +15,9 @@ use Magento\Payment\Helper\Data as PaymentHelper;
 
 /**
  * Exposes VietQR payment instructions to the checkout JS config
- * (window.checkoutConfig.payment.instructions.secomm_vietqr).
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-005).
+ *
+ * Populates window.checkoutConfig.payment.instructions.secomm_vietqr.
  */
 class InstructionsConfigProvider implements ConfigProviderInterface
 {

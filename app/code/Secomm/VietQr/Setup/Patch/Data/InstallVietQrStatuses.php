@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -9,7 +14,8 @@ use Magento\Framework\Setup\Patch\PatchVersionInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 
 /**
- * Installs the two VietQR-owned order statuses on state `new`:
+ * Installs the two VietQR-owned order statuses on state `new`
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-007, AC-015):
  * - vietqr_pending: order placed, customer has not confirmed the transfer yet
  * - vietqr_awaiting_payment_confirm: customer confirmed the bank transfer
  * Custom statuses (not `pending`/`pending_payment`) so merchants can filter

@@ -1,4 +1,9 @@
 <?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
 
 declare(strict_types=1);
 
@@ -8,7 +13,8 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Secomm\VietQr\Api\QrGeneratorInterface;
 
 /**
- * Generates VietQR codes by delegating to the API client.
+ * Generates VietQR codes by delegating to the API client
+ * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-008, AC-010).
  *
  * Builds the request payload from the order and forwards it to the VietQR API.
  */
