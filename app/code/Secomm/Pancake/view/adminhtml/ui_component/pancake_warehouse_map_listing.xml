@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">pancake_warehouse_map_listing.pancake_warehouse_map_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="add">
+                <url path="*/*/new"/>
+                <class>primary</class>
+                <label translate="true">Add Mapping</label>
+            </button>
+        </buttons>
+        <spinner>pancake_warehouse_map_columns</spinner>
+        <deps>
+            <dep>pancake_warehouse_map_listing.pancake_warehouse_map_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="pancake_warehouse_map_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">entity_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Secomm_Pancake::warehouse_map</aclResource>
+        <dataProvider class="Secomm\Pancake\Model\WarehouseMap\ListingDataProvider"
+                      name="pancake_warehouse_map_listing_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <columns name="pancake_warehouse_map_columns">
+        <column name="entity_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+            </settings>
+        </column>
+        <column name="magento_source_code">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">MSI Source</label>
+            </settings>
+        </column>
+        <column name="external_warehouse_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Pancake Warehouse ID</label>
+            </settings>
+        </column>
+        <column name="external_warehouse_label">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Warehouse Label</label>
+            </settings>
+        </column>
+        <column name="is_active" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Active</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Secomm\Pancake\Ui\Component\Listing\Column\Actions">
+            <settings>
+                <indexField>entity_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

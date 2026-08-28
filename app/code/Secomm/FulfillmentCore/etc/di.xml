@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Secomm\FulfillmentCore\Model\Export\ExporterPool">
+        <arguments>
+            <!-- Adapters append items: <item name="pancake" xsi:type="object">Vendor\Module\Model\X</item> -->
+            <argument name="exporters" xsi:type="array"/>
+        </arguments>
+    </type>
+    <type name="Secomm\FulfillmentCore\Model\Inbound\MapperPool">
+        <arguments>
+            <argument name="mappers" xsi:type="array"/>
+        </arguments>
+    </type>
+    <preference for="Secomm\FulfillmentCore\Api\WarehouseMapResolverInterface"
+                type="Secomm\FulfillmentCore\Model\Warehouse\WarehouseMapResolver"/>
+    <preference for="Secomm\FulfillmentCore\Api\OrderFulfillmentSourceResolverInterface"
+                type="Secomm\FulfillmentCore\Model\Warehouse\OrderFulfillmentSourceResolver"/>
+    <preference for="Secomm\FulfillmentCore\Api\WarehouseMapRepositoryInterface"
+                type="Secomm\FulfillmentCore\Model\Warehouse\WarehouseMapRepository"/>
+</config>
