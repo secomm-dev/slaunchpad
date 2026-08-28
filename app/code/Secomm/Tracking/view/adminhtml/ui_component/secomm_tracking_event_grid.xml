@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui/etc/ui_configuration.xsd">
+    <!-- FEAT-31X6N2 / TASK-WY5JRN — read-only outbox grid: pending/sent/failed/skipped
+         per (event_id, vendor). Payload column intentionally NOT rendered (PII-safe). -->
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">secomm_tracking_event_grid.secomm_tracking_event_grid_data_source</item>
+        </item>
+        <item name="buttons" xsi:type="array">
+            <item name="refresh" xsi:type="array">
+                <item name="name" xsi:type="string">refresh</item>
+                <item name="label" xsi:type="string" translate="true">Refresh</item>
+                <item name="class" xsi:type="string">primary</item>
+                <item name="url" xsi:type="string">*/*/*</item>
+            </item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>secomm_tracking_event_columns</spinner>
+        <deps>
+            <dep>secomm_tracking_event_grid.secomm_tracking_event_grid_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="secomm_tracking_event_grid_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">entity_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Secomm_Tracking::outbox</aclResource>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider" name="secomm_tracking_event_grid_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="secomm_tracking_event_columns">
+        <column name="entity_id" sortOrder="10">
+            <settings>
+                <label translate="true">ID</label>
+                <filter>textRange</filter>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="created_at" sortOrder="20" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <label translate="true">Created</label>
+                <dataType>date</dataType>
+                <timezone>false</timezone>
+            </settings>
+        </column>
+        <column name="event_name" sortOrder="30">
+            <settings>
+                <label translate="true">Event</label>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="event_id" sortOrder="40">
+            <settings>
+                <label translate="true">Event ID</label>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="vendor" sortOrder="50">
+            <settings>
+                <label translate="true">Vendor</label>
+                <filter>select</filter>
+                <options class="Secomm\Tracking\Ui\Component\Listing\Column\VendorOptions"/>
+            </settings>
+        </column>
+        <column name="status" sortOrder="60">
+            <settings>
+                <label translate="true">Status</label>
+                <filter>select</filter>
+                <options class="Secomm\Tracking\Ui\Component\Listing\Column\StatusOptions"/>
+            </settings>
+        </column>
+        <column name="attempts" sortOrder="70">
+            <settings>
+                <label translate="true">Attempts</label>
+                <filter>textRange</filter>
+            </settings>
+        </column>
+        <column name="next_attempt_at" sortOrder="80" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <label translate="true">Next Attempt</label>
+                <dataType>date</dataType>
+                <timezone>false</timezone>
+            </settings>
+        </column>
+    </columns>
+</listing>

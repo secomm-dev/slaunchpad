@@ -47,7 +47,7 @@ class Data extends AbstractData
 {
     const CONFIG_MODULE_PATH = 'abandonedcart';
     const CONFIG_PATH_FIELD  = 'osc/field_configuration';
-    const CONFIG_PATH_OSC  = 'osc/general/enabled';
+    const CONFIG_PATH_OSC    = 'osc/general/enabled';
 
     /**
      * @var string Url Suffix analytics
@@ -299,7 +299,7 @@ class Data extends AbstractData
             $endDate = $this->_request->getParam("endDate");
         } elseif ($filterParams = $this->_request->getParam("mpFilter")) {
             $startDate = $filterParams['startDate'];
-            $endDate = $filterParams['endDate'];
+            $endDate   = $filterParams['endDate'];
         } else {
             if ($this->_request->getActionName() === 'cartboard') {
                 $dateRange = '-' . $this->getRealtimeConfig('date_range') . ' day';
@@ -368,7 +368,7 @@ class Data extends AbstractData
     public function getPaginationFilter()
     {
         $limit = (int) ($this->_request->getParam('mpFilter')['page_size'] ?? 20);
-        $page = (int) ($this->_request->getParam('mpFilter')['current_page'] ?? 1);
+        $page  = (int) ($this->_request->getParam('mpFilter')['current_page'] ?? 1);
 
         return [$limit, $page];
     }
@@ -552,7 +552,7 @@ class Data extends AbstractData
      *
      * @return mixed
      */
-    public function getSendEmailRecoverConfig($storeId =null)
+    public function getSendEmailRecoverConfig($storeId = null)
     {
         return $this->getConfigGeneral('send_email_recover', $storeId);
     }
@@ -581,6 +581,7 @@ class Data extends AbstractData
 
         return $this->getConfigValue($code, $store);
     }
+
     /**
      * @param null $storeId
      *
@@ -613,17 +614,5 @@ class Data extends AbstractData
     public function isStopSendingEmail($storeId = null)
     {
         return $this->getConfigGeneral('stop_sending_email', $storeId);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isEnabledHyvaTheme()
-    {
-        if(str_contains($this->theme->getDesignTheme()->getCode(), "Hyva")){
-            return true;
-        }
-
-        return false;
     }
 }

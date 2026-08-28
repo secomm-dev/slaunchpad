@@ -58,7 +58,7 @@ Lists custom modules, key code areas, and risk zones.
 | Mageplaza_TableRateShipping | `app/code/Mageplaza/TableRateShipping` | Dimensional table-rate shipping carrier (`mptablerate`, default inactive, factor 5000) | medium | [TBD] |
 | Mageplaza_QuickCart | `app/code/Mageplaza/QuickCart` | Quick cart | low | [TBD] |
 | Mageplaza_Lookbook | `app/code/Mageplaza/Lookbook` | Lookbook | low | [TBD] |
-| Mageplaza_AbandonedCart | `app/code/Mageplaza/AbandonedCart` | Abandoned-cart recovery (cron every minute) | low | [TBD] |
+| Mageplaza_AbandonedCart | `app/code/Mageplaza/AbandonedCart` | Abandoned-cart recovery (v4.6.9, Hyvä compat builtin, 2 email schedules 1h+24h, vi_VN translated). Cron every minute. DB: 4 tables + 5 core columns. **Vendor source — extend via plugin/preference only** (4.6.9 upgrade includes Hyva refactor + bug fixes). | low | [TBD] |
 | Mageplaza_ThankYouPage | `app/code/Mageplaza/ThankYouPage` | Custom thank-you page | low | [TBD] |
 | Mageplaza_BackendReindex | `app/code/Mageplaza/BackendReindex` | Backend reindex helper | low | [TBD] |
 
