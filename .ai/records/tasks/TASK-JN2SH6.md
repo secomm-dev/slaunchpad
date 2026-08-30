@@ -68,7 +68,7 @@ Implementation completed and approved by TL on 2026-08-25.
 - Added required title/mobile image/alt, optional desktop image and compound CTA, loading, alignment, safe tone/appearance enums, card and bounded gradient options.
 - Ported a production template without upstream demo title/image or arbitrary CSS inputs; all CMS values are context escaped.
 - Added responsive picture semantics, accessible heading/overlay link and unique per-instance DOM IDs.
-- Added `Secomm/launchpad_fashion` presentation override using the same module-owned schema.
+- Proved `Secomm/launchpad_fashion` presentation override resolution with the same module-owned schema; the temporary fixture was removed before commit because no real theme-specific presentation is required yet.
 - Registered module and fashion override sources for the shared Tailwind v4 build.
 - Banner default/fashion sources pass an isolated Tailwind v4 production compile. The unrelated pre-existing `Snowdog_Menu` full-theme build failure is documented but explicitly outside this task scope and does not block Banner acceptance.
 - TL code approval recorded on 2026-08-25.
@@ -81,7 +81,7 @@ Implementation completed and approved by TL on 2026-08-25.
 - [x] AC-004 — Banner default/fashion Tailwind v4 production compile plus responsive/accessibility checks pass within task scope; unrelated Snowdog build failure is non-blocking.
 - [x] AC-005 — module default and `Secomm/launchpad_fashion` override render the same payload/schema.
 - [x] AC-006 — two identical directives render with two unique DOM IDs in CMS Page filter proof.
-- Evidence: `.ai/runtime/evidence/TASK-JN2SH6/validation.md`
+- Evidence: `.ai/evidence/TASK-JN2SH6/validation.md`
 
 ## Related records
 

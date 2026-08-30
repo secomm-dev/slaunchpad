@@ -1,6 +1,6 @@
 ---
-last_verified: 2026-07-21
-verified_against_commit: 1afdfc8
+last_verified: 2026-08-28
+verified_against_commit: 2b5e01c5
 status: current
 ---
 
@@ -31,11 +31,11 @@ Lists custom modules, key code areas, and risk zones.
 
 | Directory | Purpose | Risk Level |
 |-----------|---------|------------|
-| `app/code/Secomm/` | Secomm_Base, Secomm_AddressDropdown, Secomm_VietNamAddress | medium (AddressDropdown) |
+| `app/code/Secomm/` | Secomm-owned business modules plus shared Hyvä UI widget capability | medium (AddressDropdown/UiWidget) |
 | `app/code/Mageplaza/` | 16 Mageplaza modules (source-committed, not composer) | medium |
 | `app/code/Vnpayment/` | Vnpayment_VNPAY payment gateway | high |
 | `app/design/frontend/Secomm/launchpad/` | primary Hyvä child theme (web/tailwind toolchain) | medium |
-| `app/design/frontend/Secomm/launchpad_fashion/` | fashion variant (grandchild, scaffolded) | low |
+| `app/design/frontend/Secomm/launchpad_fashion/` | fashion variant scaffold; Secomm_UiWidget override path verified locally but no POC override shipped | low |
 | `app/etc/` | env.php (local dev), config.php, hyva-themes.json | high (secrets/env) |
 
 ## Custom Modules / Apps / Components
@@ -47,6 +47,7 @@ Lists custom modules, key code areas, and risk zones.
 | Secomm_VietNamAddress | `app/code/Secomm/VietNamAddress` | Vietnam address data set (VN_Address.csv, VN_Address_2Level.csv) for AddressDropdown | low | [TBD] |
 | Secomm_Promotion | `app/code/Secomm/Promotion` | Promotion group anchor module — registration only, no logic (DEC-FEATJKZM68-001 §5) | low | [TBD] |
 | Secomm_PromotionMaxDiscount | `app/code/Secomm/PromotionMaxDiscount` | Per-rule Maximum Discount Cap cho `by_percent` Cart Price Rules: quote total collector `max_discount_cap` (sort 310, sales.xml), LRM redistribution 2 chuỗi, `salesrule.maximum_discount_amount` column (declarative) + extension attribute + converter plugins, admin field cuối Actions tab (ValueProvider plugin + JS gating). **Checkout-critical pricing path — Tier-2 review mọi change** (FEAT-JKZM68) | high | [TBD] |
+| Secomm_UiWidget | `app/code/Secomm/UiWidget` | Shared Hyvä-only `Secomm UI` Magento widget with an explicit registry, versioned schemas/payloads, Admin dynamic fields and 21 approved Batch 1 components | medium | Secomm FE |
 | Vnpayment_VNPAY | `app/code/Vnpayment/VNPAY` | VNPAY payment gateway — Pay/Info/IPN controllers, payment.xml/config.xml (default inactive) | high | [TBD] |
 | Mageplaza_Core | `app/code/Mageplaza/Core` | Mageplaza shared core (feed + update) | medium | [TBD] |
 | Mageplaza_Osc / OscPro / OscUltimate | `app/code/Mageplaza/Osc` (+ OscPro, OscUltimate) | One Step Checkout family — replaces default checkout | medium | [TBD] |
@@ -67,6 +68,7 @@ Lists custom modules, key code areas, and risk zones.
 Areas developers work on frequently:
 
 - Theme customization in `app/design/frontend/Secomm/launchpad/` (Tailwind v4 `tailwind-source.css`, `.phtml` templates, Alpine.js + Magewire components)
+- Secomm UI component definitions/templates in `app/code/Secomm/UiWidget/`; product themes may override presentation only while IDs and schemas remain module-owned
 - Vietnam address dropdown logic (Secomm_AddressDropdown GraphQL surface + admin CRUD/import-export)
 - Checkout flow customization (Mageplaza OSC, ExtraFee, DeliveryTime) — extend via plugin/preference, never edit Mageplaza in place
 - Payment integration (VNPAY controllers/IPN/signature; Mollie config)

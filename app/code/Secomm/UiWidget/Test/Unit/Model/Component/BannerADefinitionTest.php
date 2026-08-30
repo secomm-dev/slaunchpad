@@ -19,6 +19,7 @@ class BannerADefinitionTest extends TestCase
         $definition = new BannerADefinition();
 
         self::assertSame('banner_a', $definition->getId());
+        self::assertSame('Hero Banner', $definition->getLabel());
         self::assertSame(1, $definition->getSchemaVersion());
         self::assertSame('Secomm_UiWidget::components/banner/a.phtml', $definition->getTemplate());
         self::assertSame('banner/A-default', $definition->getSourceComponent());
@@ -34,8 +35,11 @@ class BannerADefinitionTest extends TestCase
 
         self::assertTrue($fields['title']['required']);
         self::assertTrue($fields['mobile_image']['required']);
+        self::assertSame('media-image', $fields['mobile_image']['type']);
+        self::assertSame('media-image', $fields['desktop_image']['type']);
         self::assertTrue($fields['image_alt']['required']);
         self::assertSame(['cta_url'], $fields['cta_label']['required_with']);
+        self::assertSame('end', $fields['content_alignment']['default']);
         self::assertSame(
             ['dark', 'light', 'brand'],
             array_column($fields['background_tone']['options'], 'value')

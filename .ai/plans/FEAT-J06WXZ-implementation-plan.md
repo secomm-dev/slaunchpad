@@ -58,11 +58,15 @@ Không sửa `vendor/hyva-themes/hyva-ui` hoặc Magento core.
    - Gate: no batch expansion until accepted.
 4. **TASK-ZQ9ZE1 — Deliver Batch 1 content components** — risk: medium; depends task 3.
    - Implement B1 matrix in small reviewable commits/slices using proven contracts.
+   - Correction gate approved 2026-08-26: audit and restore Hyvä UI 2.8.0 visual parity for the five delivered components before `card_a` or any further B1 expansion.
+   - Correction order: Banner A → Banner B → Banner C → Accordion A → Generic Content A → two-theme/regression QA.
 5. **TASK-BE8X4X — Build manual catalog providers and cache contract** — risk: medium/high; depends task 1, can start after registry stable.
    - Product/category chooser, batch load, ordered output, store filters, identities.
+   - **Deferred after Batch 1 by user phase decision; remains proposed follow-up.**
 6. **TASK-TMRZT1 — Deliver Batch 2 context-backed components** — risk: high; depends tasks 4–5.
    - Implement only B2 variants whose context gates pass; defer unsafe product review/accorditabs cleanly.
-7. **TASK-XY9RZF — Validate two-theme compatibility and close documentation** — risk: medium; depends 1–6.
+   - **Deferred after Batch 1 by user phase decision; remains proposed follow-up.**
+7. **TASK-XY9RZF — Validate Batch 1 two-theme compatibility and close Phase 1 documentation** — risk: medium; depends tasks 1–4. Tasks 5–6 apply only when Batch 2 resumes.
    - Production Tailwind build, multi-instance Alpine, security/accessibility/cache regression, docs/context/QC handoff.
 
 ## 4. Regression risks
@@ -77,12 +81,14 @@ Không sửa `vendor/hyva-themes/hyva-ui` hoặc Magento core.
 | Alpine collisions with multiple widgets | medium | instance IDs/state isolation + multi-instance browser tests |
 | Component scope expands to system replacements | medium | matrix is scope gate; excluded list requires new spec/decision |
 | Upstream update overwrites local code | medium | provenance/manual import; no vendor runtime/template include |
+| Local adaptation drifts from Hyvä UI layout/style | high | preserve upstream layout/classes/behaviour; whitelist only data/security/semantic differences; screenshot and computed-layout parity gate at 390/768/1440 |
 
 ## 5. Test approach
 
 - Unit: registry merge/duplicate rejection, schema validation, codec limits/versioning, template resolver, ID reordering.
 - Magento integration: widget declaration/filter rendering, CMS directive round-trip, Admin persistence, product/category filtering/order/cache identities.
 - Frontend/QC: CMS Page/Block/PageBuilder, two same widgets, responsive/a11y, two Hyvä themes, FPC refresh.
+- Visual parity: render identical fixtures against the pinned Hyvä UI source and the Secomm template; compare element order, bounding boxes, spacing, typography, media crop, overlay and interaction states at 390px, 768px and 1440px.
 - Security: tampered component/template/payload, XSS URLs/text/rich content, oversized/deep repeater payload, unauthorized Admin endpoint.
 - Build: PHP lint/coding standard/XML validation/DI compile plus Tailwind `npm run build-prod` for affected themes.
 - No L3 checkout/payment validation required unless implementation unexpectedly touches those areas; such discovery blocks and returns to spec.

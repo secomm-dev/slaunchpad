@@ -61,7 +61,7 @@ Plan: [FEAT-J06WXZ implementation plan](../../plans/FEAT-J06WXZ-implementation-p
 
 ## Implementation Notes
 
-Not implemented.
+Not implemented. Deferred after Batch 1 by the user phase decision recorded on 2026-08-28; remains a proposed follow-up after the manual catalog provider/cache contract is reopened.
 
 ## Verification
 

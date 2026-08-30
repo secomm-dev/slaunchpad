@@ -106,6 +106,10 @@ Là maintainer, tôi muốn Hyvä UI update không âm thầm thay đổi storef
 - Schema change additive là mặc định; breaking schema cần version mới hoặc adapter migration.
 - Upstream component mới chỉ xuất hiện sau import, registry registration, test và release.
 - Theme override chỉ thay presentation; registry/schema/data validation thuộc module core.
+- Imported component phải giữ layout và visual behaviour của đúng Hyvä UI source/version đã ghi trong provenance: DOM layout hierarchy, responsive order/breakpoints, spacing, typography, overlay, animation và interaction state.
+- Local template chỉ được khác upstream ở data plumbing, validation/escaping, instance-safe ID/ARIA, loại bỏ demo fallback và semantic markup không làm đổi computed layout.
+- Presentation extension ngoài upstream phải opt-in, mặc định tắt và không được làm thay đổi base appearance.
+- Visual parity được kiểm tra với cùng fixture ở 390px, 768px và 1440px; Admin round-trip và existing schema payload phải tiếp tục hoạt động.
 
 ## 3. Scope
 
@@ -125,6 +129,8 @@ Là maintainer, tôi muốn Hyvä UI update không âm thầm thay đổi storef
 - Widget directive/schema backward compatibility.
 - Security, accessibility, caching và performance validation.
 - Documentation cho thêm component mới và sync upstream có kiểm soát.
+
+**Phase boundary (approved 2026-08-28):** Phase 1 chỉ deliver Batch 1 content/manual-collection components. Manual catalog providers và Batch 2 context-backed components vẫn thuộc Full Spec nhưng được deferred cho một delivery phase riêng.
 
 ### Out of Scope
 
@@ -302,16 +308,16 @@ UX rules:
 - [x] Compatibility target là Hyvä-only — user confirmed 2026-08-24.
 - [x] Admin cần cấu hình dynamic content — user confirmed 2026-08-24.
 - [x] Capability dùng như core trên toàn bộ product theme Hyvä — user confirmed 2026-08-24.
-- [ ] Magento widget parameter/directive encoding đáp ứng repeated item payload theo giới hạn đã chọn — cần proof trong solution design/vertical slice.
+- [x] Magento widget parameter/directive encoding đáp ứng repeated item payload theo giới hạn đã chọn — proofed với Base64URL format 1, 16 KiB, depth 6 và tối đa 50 collection rows.
 - [ ] Tất cả component nhóm data-backed được yêu cầu đều có CMS-safe context contract — cần component eligibility matrix xác nhận từng variant.
 
 ## 11. Open Questions
 
-- [ ] OQ-001 — Chốt danh sách component/variant chính xác cho Batch 1 và Batch 2 bằng component eligibility matrix. Owner: Product/TL.
-- [ ] OQ-002 — Chốt persistence/encoding và maximum item count cho repeated collections. Owner: SA/TL.
-- [ ] OQ-003 — Chốt dynamic Admin form mechanism sau proof-of-concept: Magento helper block/AJAX schema renderer hay static `widget.xml` dependencies cho component đơn giản. Owner: SA/TL.
+- [x] OQ-001 — Component eligibility matrix đã chốt; Batch 1 gồm 21 IDs, Batch 2 deferred theo phase decision.
+- [x] OQ-002 — Chốt Base64URL format 1, 16 KiB encoded, depth 6, tối đa 50 collection rows.
+- [x] OQ-003 — Chọn native Magento helper-block renderer với server-embedded registry schemas; không custom Admin endpoint.
 - [ ] OQ-004 — Chốt cache lifetime/identity policy cho từng product/category component. Owner: TL.
-- [ ] OQ-005 — Xác định product themes Hyvä tối thiểu dùng trong compatibility gate. Owner: Product/TL.
+- [x] OQ-005 — Compatibility gate dùng `Secomm/launchpad` và `Secomm/launchpad_fashion`; override path proofed bằng non-shipped local fixture.
 - [x] OQ-006 — Resolved bởi `DEC-FEATJ06WXZ-002`: chỉ field `trusted-rich-text` opt-in dùng native Magento WYSIWYG và CMS block filter; không custom sanitizer baseline. Approved: Tuấn Lê, 2026-08-25.
 
 ## 12. Estimation
@@ -327,6 +333,8 @@ Chưa commit estimate trước khi component matrix và dynamic-form proof chố
 | Manual catalog providers + data-backed batch | 4–8 d, tùy số variant | |
 | Automated tests, two-theme regression, docs/QC handoff | 3–5 d | |
 | **Total preliminary development/engineering** | **16–30 d** | |
+
+Phase 1 agreed actual allocation: **43h20m**; xem `.ai/evidence/FEAT-J06WXZ/logtime-summary.md`. Batch 2 chưa estimate lại vì deferred.
 
 ## Approval
 

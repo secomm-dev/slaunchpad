@@ -80,7 +80,7 @@ Implementation completed and approved by TL on 2026-08-24.
 - [x] AC-004 — common Magento editor directive path verified structurally; browser save/reopen fixture is explicitly carried into TASK-JN2SH6 once `banner_a` exists.
 - [x] AC-005 — invalid version, root type, required/type/URL and oversized payload paths fail closed with tests.
 - [x] AC-006 — renderer mechanism and limits documented in solution design and module README.
-- Evidence: `.ai/runtime/evidence/TASK-P0BP58/validation.md`
+- Evidence: `.ai/evidence/TASK-P0BP58/validation.md`
 
 ## Related records
 

@@ -1,0 +1,88 @@
+<?php
+/**
+ * Adapted from Hyvä UI modal/A-simple 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\ViewModel\LucideIcons;
+
+$data = (array)$block->getData('component_data');
+$instanceId = $block->getInstanceId();
+$dialogId = $instanceId . '-dialog';
+$titleId = $instanceId . '-title';
+$alpineComponent = str_replace('-', '_', $instanceId) . '_modal';
+/** @var LucideIcons $lucideIcons */
+$lucideIcons = $viewModels->require(LucideIcons::class);
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+?>
+
+<div x-data="<?= $escaper->escapeHtmlAttr($alpineComponent) ?>"
+     data-secomm-ui-component="modal_a">
+    <button type="button"
+            class="btn btn-primary"
+            aria-controls="<?= $escaper->escapeHtmlAttr($dialogId) ?>"
+            @click="toggle">
+        <?= $escaper->escapeHtml((string)$data['trigger_label']) ?>
+    </button>
+
+    <dialog id="<?= $escaper->escapeHtmlAttr($dialogId) ?>"
+            x-show="isOpen"
+            x-transition
+            x-htmldialog.noscroll="close"
+            aria-labelledby="<?= $escaper->escapeHtmlAttr($titleId) ?>"
+            class="rounded-xl p-0 shadow-xl lg:max-w-3xl">
+        <div class="p-7 flex flex-col items-center gap-4 text-center lg:flex-row lg:items-start lg:text-left lg:gap-6">
+            <?= $lucideIcons->messageCircleWarningHtml(
+                'inline-block shrink-0 text-yellow-400',
+                68,
+                68,
+                ['aria-hidden' => 'true']
+            ) ?>
+            <div>
+                <p id="<?= $escaper->escapeHtmlAttr($titleId) ?>" class="text-xl mb-2">
+                    <strong><?= $escaper->escapeHtml((string)$data['title']) ?></strong>
+                </p>
+                <div class="text-slate-600 text-pretty">
+                    <?= /* @noEscape trusted-rich-text filtered by Magento CMS */
+                    $block->renderTrustedHtml((string)$data['content']) ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-100 p-7 flex flex-col gap-4 lg:flex-row lg:justify-end">
+            <button type="button"
+                    class="btn border-slate-300 text-slate-600 flex-1 lg:flex-initial"
+                    @click="close">
+                <?= $escaper->escapeHtml((string)$data['secondary_action_label']) ?>
+            </button>
+            <button type="button"
+                    class="btn btn-primary flex-1 lg:flex-initial"
+                    @click="close">
+                <?= $escaper->escapeHtml((string)$data['primary_action_label']) ?>
+            </button>
+        </div>
+    </dialog>
+</div>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('<?= $escaper->escapeJs($alpineComponent) ?>', () => ({
+            isOpen: false,
+            toggle() {
+                this.isOpen = !this.isOpen;
+            },
+            close() {
+                this.isOpen = false;
+            }
+        }));
+    });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

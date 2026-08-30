@@ -17,7 +17,9 @@ use Secomm\UiWidget\Api\SchemaValidatorInterface;
  */
 class SchemaValidator implements SchemaValidatorInterface
 {
-    private const STRING_TYPES = ['text', 'textarea', 'trusted-rich-text', 'media', 'url'];
+    private const STRING_TYPES = [
+        'text', 'textarea', 'trusted-rich-text', 'media', 'media-image', 'url', 'video-url',
+    ];
 
     /**
      * @inheritDoc
@@ -49,7 +51,7 @@ class SchemaValidator implements SchemaValidatorInterface
                 }
                 continue;
             }
-            $value = $this->validateValue($field, $value);
+            $value = $this->validateValue($field, $value, $data);
             if ($value === null) {
                 return null;
             }
@@ -65,11 +67,11 @@ class SchemaValidator implements SchemaValidatorInterface
      * @param array $field Field definition.
      * @param mixed $value Candidate value.
      */
-    private function validateValue(array $field, mixed $value): mixed
+    private function validateValue(array $field, mixed $value, array $data): mixed
     {
         $type = $field['type'] ?? '';
         if (in_array($type, self::STRING_TYPES, true)) {
-            return $this->validateString($field, $value);
+            return $this->validateString($field, $value, $data);
         }
         if ($type === 'select') {
             return $this->validateSelect($field, $value);
@@ -93,7 +95,7 @@ class SchemaValidator implements SchemaValidatorInterface
      * @param array $field Field definition.
      * @param mixed $value Candidate value.
      */
-    private function validateString(array $field, mixed $value): ?string
+    private function validateString(array $field, mixed $value, array $data): ?string
     {
         if (!is_string($value) || strlen($value) > (int)($field['max_length'] ?? 4096)) {
             return null;
@@ -101,7 +103,10 @@ class SchemaValidator implements SchemaValidatorInterface
         if (($field['type'] ?? '') === 'url' && !$this->isSafeUrl($value)) {
             return null;
         }
-        if (($field['type'] ?? '') === 'media' && (!$this->isSafeMedia($value)
+        if (($field['type'] ?? '') === 'video-url' && !$this->isSafeVideoUrl($field, $value, $data)) {
+            return null;
+        }
+        if (in_array(($field['type'] ?? ''), ['media', 'media-image'], true) && (!$this->isSafeMedia($value)
             || preg_match('/[\x00-\x1F\x7F<>"\']/', $value))
         ) {
             return null;
@@ -183,8 +188,11 @@ class SchemaValidator implements SchemaValidatorInterface
      */
     private function validateCollection(array $field, mixed $value): ?array
     {
+        $minItems = max((int)($field['min_items'] ?? 0), 0);
         $maxItems = min((int)($field['max_items'] ?? 50), 50);
-        if (!is_array($value) || count($value) > $maxItems || !array_is_list($value)) {
+        if (!is_array($value) || count($value) < $minItems || count($value) > $maxItems
+            || !array_is_list($value)
+        ) {
             return null;
         }
         $rows = [];
@@ -272,5 +280,33 @@ class SchemaValidator implements SchemaValidatorInterface
         }
 
         return in_array(strtolower($matches[1]), ['http', 'https'], true);
+    }
+
+    /**
+     * Validate a video URL against the selected allowlisted provider.
+     *
+     * @param array $field Field definition.
+     * @param string $value Candidate URL.
+     * @param array $data Sibling component data.
+     */
+    private function isSafeVideoUrl(array $field, string $value, array $data): bool
+    {
+        $providerField = $field['provider_field'] ?? null;
+        $provider = is_string($providerField) ? ($data[$providerField] ?? null) : null;
+        if (!is_string($provider) || !in_array($provider, ['youtube', 'vimeo'], true)) {
+            return false;
+        }
+        $parts = parse_url($value);
+        if (!is_array($parts) || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['http', 'https'], true)) {
+            return false;
+        }
+        $host = strtolower((string)($parts['host'] ?? ''));
+        if ($provider === 'youtube') {
+            return in_array($host, ['youtube.com', 'www.youtube.com', 'youtu.be', 'www.youtu.be'], true)
+                && preg_match('~(youtube\.com/(watch\?[^#]*v=|live/|v/|embed/)|youtu\.be/)[A-Za-z0-9_-]+~i', $value) === 1;
+        }
+
+        return in_array($host, ['vimeo.com', 'www.vimeo.com'], true)
+            && preg_match('~vimeo\.com/(video/)?[0-9]+(?:[/?#]|$)~i', $value) === 1;
     }
 }

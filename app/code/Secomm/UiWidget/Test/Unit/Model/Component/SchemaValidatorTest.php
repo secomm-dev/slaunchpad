@@ -53,6 +53,20 @@ class SchemaValidatorTest extends TestCase
         self::assertSame($data, $this->validator->validate($definition, $data));
     }
 
+    public function testEnforcesRepeaterMinimumItems(): void
+    {
+        $definition = $this->definition([[
+            'name' => 'items', 'type' => 'collection', 'min_items' => 1, 'max_items' => 3,
+            'fields' => [['name' => 'label', 'type' => 'text', 'required' => true]],
+        ]]);
+
+        self::assertNull($this->validator->validate($definition, ['items' => []]));
+        self::assertSame(
+            ['items' => [['label' => 'First']]],
+            $this->validator->validate($definition, ['items' => [['label' => 'First']]])
+        );
+    }
+
     public function testRejectsRequiredInvalidUnsafeAndOversizedValues(): void
     {
         self::assertNull($this->validator->validate(
@@ -82,6 +96,52 @@ class SchemaValidatorTest extends TestCase
         );
         self::assertNull($this->validator->validate($definition, ['url' => '/shop']));
         self::assertNull($this->validator->validate($definition, ['label' => 'Shop']));
+    }
+
+    public function testMediaImageUsesTheExistingSafeMediaContract(): void
+    {
+        $definition = $this->definition([[
+            'name' => 'image', 'type' => 'media-image', 'required' => true, 'max_length' => 2048,
+        ]]);
+
+        self::assertSame(
+            ['image' => '/media/wysiwyg/card.jpg'],
+            $this->validator->validate($definition, ['image' => '/media/wysiwyg/card.jpg'])
+        );
+        self::assertNull($this->validator->validate($definition, ['image' => 'javascript:alert(1)']));
+    }
+
+    public function testVideoUrlMustMatchSelectedProvider(): void
+    {
+        $definition = $this->definition([
+            [
+                'name' => 'provider', 'type' => 'select',
+                'options' => [['value' => 'youtube', 'label' => 'YouTube'], ['value' => 'vimeo', 'label' => 'Vimeo']],
+            ],
+            [
+                'name' => 'video_url', 'type' => 'video-url', 'required' => true,
+                'provider_field' => 'provider',
+            ],
+        ]);
+
+        self::assertSame(
+            ['provider' => 'youtube', 'video_url' => 'https://youtu.be/DZG4XUd3kRY'],
+            $this->validator->validate($definition, [
+                'provider' => 'youtube', 'video_url' => 'https://youtu.be/DZG4XUd3kRY',
+            ])
+        );
+        self::assertSame(
+            ['provider' => 'vimeo', 'video_url' => 'https://vimeo.com/1179947837'],
+            $this->validator->validate($definition, [
+                'provider' => 'vimeo', 'video_url' => 'https://vimeo.com/1179947837',
+            ])
+        );
+        self::assertNull($this->validator->validate($definition, [
+            'provider' => 'youtube', 'video_url' => 'https://vimeo.com/1179947837',
+        ]));
+        self::assertNull($this->validator->validate($definition, [
+            'provider' => 'vimeo', 'video_url' => 'https://example.com/video/1179947837',
+        ]));
     }
 
     /**

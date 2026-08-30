@@ -78,7 +78,7 @@ Implementation completed and approved by TL on 2026-08-24.
 - [x] AC-003 — registry/definition unit tests pass.
 - [x] AC-004 — template resolver rejects unregistered path; unit test passes.
 - [x] AC-005 — 8 tests, 14 assertions pass; PHPCS Magento2 clean.
-- Evidence: `.ai/runtime/evidence/TASK-S6QPEY/validation.md`
+- Evidence: `.ai/evidence/TASK-S6QPEY/validation.md`
 
 ## Related records
 

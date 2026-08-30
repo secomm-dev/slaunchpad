@@ -1,0 +1,55 @@
+<?php
+/**
+ * Adapted from Hyvä UI testimonial/B-card 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$rating = (int)($data['rating'] ?? 0);
+?>
+<figure class="mt-24 p-6 bg-[#E2E8F0] rounded-xl lg:flex lg:gap-10"
+        data-secomm-ui-component="testimonial_b">
+    <?php if (!empty($data['avatar'])): ?>
+        <div class="flex justify-center -mt-24 lg:mt-0">
+            <div class="rounded-full overflow-hidden w-36 h-36 lg:w-56 lg:h-56">
+                <img src="<?= $escaper->escapeUrl((string)$data['avatar']) ?>"
+                     alt="<?= $escaper->escapeHtmlAttr((string)$data['avatar_alt']) ?>"
+                     width="240"
+                     height="258"
+                     loading="<?= $escaper->escapeHtmlAttr((string)($data['loading'] ?? 'lazy')) ?>"
+                     class="w-full h-full object-cover">
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <figcaption class="mt-6 text-center lg:text-left ">
+        <div class="relative">
+            <div class="text-[#CBD5E1] text-9xl font-bold absolute left-0 -top-8 lg:-ml-6" aria-hidden="true">
+                “
+            </div>
+            <blockquote class="relative text-gray-800 text-2xl font-medium max-w-4xl lg:pl- xl:text-3xl">
+                <?= /* @noEscape escaped before applying nl2br */
+                nl2br($escaper->escapeHtml((string)$data['quote'])) ?>
+            </blockquote>
+        </div>
+        <?php if ($rating > 0): ?>
+            <div class="mt-4 text-yellow-500" aria-label="<?= $escaper->escapeHtmlAttr(__('%1 out of 5 stars', $rating)) ?>">
+                <span aria-hidden="true"><?= $escaper->escapeHtml(str_repeat('★', $rating)) ?></span>
+            </div>
+        <?php endif; ?>
+        <div class="text-blue-600 text-lg leading-7 font-bold mt-4">
+            <?= $escaper->escapeHtml((string)$data['author']) ?>
+        </div>
+        <?php if (!empty($data['role'])): ?>
+            <div class="text-[#94A3B8] leading-6">
+                <?= $escaper->escapeHtml((string)$data['role']) ?>
+            </div>
+        <?php endif; ?>
+    </figcaption>
+</figure>

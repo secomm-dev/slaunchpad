@@ -19,31 +19,38 @@
 
 `CMS JIT` trong upstream không tạo runtime dependency: markup sẽ nằm trong code-owned `.phtml` và được Tailwind build scan.
 
+## Import fidelity contract
+
+- Component nội bộ phải giữ layout và visual behaviour của Hyvä UI 2.8.0 source đã ghi ở từng row.
+- Cho phép thay data source, validation/escaping, instance-safe semantics và loại bỏ demo fallback; không cho phép tự đổi spacing, positioning, responsive order, typography, overlay, animation hoặc interaction mặc định.
+- Option an toàn trong Admin phải map về đúng upstream behaviour. Extension ngoài upstream chỉ được opt-in và mặc định không ảnh hưởng base appearance.
+- Gate trước component mới: visual parity tại 390px, 768px và 1440px, cùng Admin save/reopen, Tailwind production build và accessibility state QA.
+
 ## Included — Batch 1
 
 | Internal ID proposed | Hyvä UI source | Dynamic data/schema | Extra requirement | Status |
 |---|---|---|---|---|
-| `accordion_a` | `accordion/A-basic` | panels[]: title, rich text; open mode | details CSS; repeated items | B1 |
-| `banner_a` | `banner/A-default` | title, subtitle, mobile/desktop image, CTA, alignment, colors, card/gradient | vertical slice đầu tiên | B1 |
-| `banner_b` | `banner/B-split` | title, content, image, CTA, image side, colors | static enum class map | B1 |
-| `banner_c` | `banner/C-text` | title, content, CTA, alignment/colors | no media required | B1 |
-| `card_a` | `card/A-default` | title, body, CTA, appearance | port CMS markup to template | B1 |
-| `card_b` | `card/B-media` | title, body, image, CTA, image position | media chooser | B1 |
-| `categories_a` | `categories/A-grid-images` | items[] manual: label, image, URL; slider toggle | repeated items | B1 |
-| `categories_b` | `categories/B-grid-patterns` | items[] manual: label, URL, pattern/appearance | repeated items | B1 |
-| `embed_a` | `embed/A-basic` | provider, video URL/id, title, aspect ratio, privacy options | URL/provider validation | B1 |
-| `generic_content_a` | `generic-content/A-text` | heading, rich text, alignment/width | sanitizer contract required | B1 |
-| `generic_content_b` | `generic-content/B-visual` | heading, body, media, CTA, layout | media chooser | B1 |
-| `modal_a` | `modal/A-simple` | trigger label, title, body, close label | `x-htmldialog`, unique IDs | B1 |
-| `product_highlights_c` | `product-data/C-highlights` | highlights[] manual: title, text, image | content-only mode, no product context | B1 |
-| `shortcuts_a` | `shortcuts/A-simple` | items[]: label, URL, icon/image | repeated items | B1 |
-| `slider_a` | `slider/A-basic` | slides[]: media/content/CTA; arrows/dots/eager | `x-snap-slider`, repeated items | B1 |
-| `slider_b` | `slider/B-marquee` | items[]: image/logo/link/alt; speed/direction | animation/accessibility controls | B1 |
-| `testimonial_a` | `testimonial/A-simple` | quote, author, role, avatar/rating optional | semantic quote markup | B1 |
-| `testimonial_b` | `testimonial/B-card` | quote, author, role, avatar/rating optional | semantic quote markup | B1 |
-| `usp_a` | `usp/A-icons` | items[]: icon/image, title, text, URL optional | icon/media allowlist | B1 |
-| `usp_b` | `usp/B-cards` | items[]: title, text, icon/image, CTA optional | repeated items | B1 |
-| `usp_c` | `usp/C-compact` | items[]: icon, label/text | repeated items | B1 |
+| `accordion_a` | `accordion/A-basic` | panels[]: title, rich text; open mode | details CSS; repeated items | B1 — implemented 2026-08-25 |
+| `banner_a` | `banner/A-default` | title, subtitle, mobile/desktop image, CTA, alignment, colors, card/gradient | vertical slice đầu tiên | B1 — implemented 2026-08-24 |
+| `banner_b` | `banner/B-split` | title, content, image, CTA, image side, colors | static enum class map | B1 — implemented 2026-08-25 |
+| `banner_c` | `banner/C-text` | title, content, CTA, alignment/colors | no media required | B1 — implemented 2026-08-25 |
+| `card_a` | `card/A-default` | title, body, mobile/desktop image, CTA, appearance | responsive picture; port CMS markup to template | B1 — implemented 2026-08-26 |
+| `card_b` | `card/B-media` | title, body, image, CTA, image position | media chooser | B1 — implemented 2026-08-27 |
+| `categories_a` | `categories/A-grid-images` | items[] manual: label, image, URL; slider toggle | repeated items | B1 — implemented 2026-08-27 |
+| `categories_b` | `categories/B-grid-patterns` | items[] manual: label, URL, pattern/appearance | repeated items | B1 — implemented 2026-08-27 |
+| `embed_a` | `embed/A-basic` | provider, video URL/id, title, aspect ratio, privacy options | URL/provider validation | B1 — implemented 2026-08-27 |
+| `generic_content_a` | `generic-content/A-text` | heading, rich text, alignment/width | sanitizer contract required | B1 — implemented 2026-08-25 |
+| `generic_content_b` | `generic-content/B-visual` | heading, body, media, CTA, layout | media chooser | B1 — implemented 2026-08-27 |
+| `modal_a` | `modal/A-simple` | trigger label, title, body, close labels | `x-htmldialog`, unique IDs | B1 — implemented 2026-08-27 |
+| `product_highlights_c` | `product-data/C-highlights` | highlights[] manual: title, text, image | content-only mode, no product context | B1 — implemented 2026-08-27 |
+| `shortcuts_a` | `shortcuts/A-simple` | items[]: label, URL, icon/image | repeated items | B1 — implemented 2026-08-27 |
+| `slider_a` | `slider/A-basic` | slides[]: media/content/CTA; arrows/dots/eager | `x-snap-slider`, repeated items | B1 — implemented 2026-08-27 |
+| `slider_b` | `slider/B-marquee` | items[]: image/logo/link/alt; speed/direction | animation/accessibility controls | B1 — implemented 2026-08-27 |
+| `testimonial_a` | `testimonial/A-simple` | quote, author, role, avatar/rating optional | semantic quote markup | B1 — implemented 2026-08-27 |
+| `testimonial_b` | `testimonial/B-card` | quote, author, role, avatar/rating optional | semantic quote markup | B1 — implemented 2026-08-27 |
+| `usp_a` | `usp/A-icons` | items[]: icon/image, title, text, URL optional | icon/media allowlist | B1 — implemented 2026-08-27 |
+| `usp_b` | `usp/B-cards` | items[]: title, text, icon/image, CTA optional | repeated items | B1 — implemented 2026-08-27 |
+| `usp_c` | `usp/C-compact` | items[]: icon, label/text | repeated items | B1 — implemented 2026-08-27 |
 
 ## Included conditionally — Batch 2
 

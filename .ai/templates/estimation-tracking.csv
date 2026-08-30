@@ -1,0 +1,2 @@
+ticket_id,description,mode,estimated_hours,actual_hours,variance,notes,date_completed
+FEAT-J06WXZ,Secomm UI Batch 1 delivery,A,,43.33,,"No approved Phase 1 estimate baseline was recorded before implementation; preliminary 16–30d estimate covered the wider feature including deferred Batch 2 and is not comparable. Actual 43h20m: prior 7h20m + 21 components at 1h each + 15h hardening/QA/docs; see .ai/evidence/FEAT-J06WXZ/logtime-summary.md",2026-08-28

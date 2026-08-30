@@ -18,47 +18,26 @@ class GenericContentADefinition extends Definition
     {
         parent::__construct(
             id: 'generic_content_a',
-            label: 'Generic Content A',
+            label: 'Rich Text Content',
             template: 'Secomm_UiWidget::components/generic-content/a.phtml',
             group: 'content',
             schemaVersion: 1,
             fields: [
+                ['name' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow', 'max_length' => 80],
                 ['name' => 'heading', 'type' => 'text', 'label' => 'Heading', 'max_length' => 160],
+                [
+                    'name' => 'lead', 'type' => 'textarea', 'label' => 'Lead',
+                    'max_length' => 1000,
+                ],
                 [
                     'name' => 'content', 'type' => 'trusted-rich-text', 'label' => 'Content',
                     'required' => true, 'max_length' => 12000,
                     'description' => 'Trusted CMS content. Magento CMS directives are supported.',
-                ],
-                [
-                    'name' => 'alignment', 'type' => 'select', 'label' => 'Text Alignment',
-                    'default' => 'left', 'options' => $this->options(
-                        ['left' => 'Left', 'center' => 'Center', 'right' => 'Right']
-                    ),
-                ],
-                [
-                    'name' => 'width', 'type' => 'select', 'label' => 'Content Width',
-                    'default' => 'medium', 'options' => $this->options(
-                        ['narrow' => 'Narrow', 'medium' => 'Medium', 'wide' => 'Wide']
-                    ),
                 ],
             ],
             sourceComponent: 'generic-content/A-text',
             sourceVersion: '2.8.0',
             sortOrder: 40
         );
-    }
-
-    /**
-     * @param array<string, string> $values Option map.
-     * @return array<int, array{value: string, label: string}>
-     */
-    private function options(array $values): array
-    {
-        $options = [];
-        foreach ($values as $value => $label) {
-            $options[] = ['value' => $value, 'label' => $label];
-        }
-
-        return $options;
     }
 }

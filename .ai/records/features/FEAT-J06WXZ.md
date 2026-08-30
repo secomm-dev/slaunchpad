@@ -13,7 +13,7 @@ specification_ref: ../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md
 risk: medium
 status: in_progress
 created: 2026-08-24
-updated: 2026-08-24
+updated: 2026-08-29
 ticket_ref:
   - TASK-S6QPEY
   - TASK-P0BP58
@@ -24,17 +24,18 @@ ticket_ref:
   - TASK-XY9RZF
 decisions:
   - DEC-FEATJ06WXZ-001
+  - DEC-FEATJ06WXZ-002
 decision_assessment: material
-decision_refs: [DEC-FEATJ06WXZ-001]
+decision_refs: [DEC-FEATJ06WXZ-001, DEC-FEATJ06WXZ-002]
 decision_approval_summary:
-  total: 1
+  total: 2
   pending_approval: []
-  approved: [DEC-FEATJ06WXZ-001]
+  approved: [DEC-FEATJ06WXZ-001, DEC-FEATJ06WXZ-002]
   rejected: []
   superseded: []
   last_synced: 2026-08-24
   verified_against_commit:
-components: []
+components: [CMP-SECOMM-UI]
 source_areas:
   - app/code/Secomm/UiWidget/
   - app/design/frontend/Secomm/*/Secomm_UiWidget/
@@ -44,7 +45,7 @@ changes_architecture: true
 changes_integration: false
 changes_known_limitations: false
 verified_against_commit:
-last_verified: 2026-08-24
+last_verified: 2026-08-29
 supersedes: []
 ---
 
@@ -60,7 +61,7 @@ Capability này phải dùng chung cho toàn bộ product theme dựa trên Hyv�
 
 Canonical Full Spec: [SPEC-FEAT-J06WXZ](../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md).
 
-Specification hiện ở trạng thái **VALID**, được phê duyệt ngày 2026-08-24. Feature chưa được implement và vẫn cần solution design/component matrix cùng implementation plan được TL phê duyệt trước khi chuyển sang development.
+Specification ở trạng thái **VALID**, được phê duyệt ngày 2026-08-24. Phase 1 / Batch 1 đã hoàn thành; phần manual catalog providers và Batch 2 vẫn thuộc Full Spec nhưng được deferred cho đến khi Product/TL mở lại scope.
 
 ## Requirements
 
@@ -80,33 +81,39 @@ Specification hiện ở trạng thái **VALID**, được phê duyệt ngày 20
 ## Approach & Decisions
 
 - User-confirmed scope: dynamic content, manual product/category selection và Hyvä-only.
+- Phase decision: chỉ deliver Batch 1 trong giai đoạn hiện tại; Batch 2/catalog providers được giữ làm proposed follow-up.
 - Architecture decision đã được phê duyệt ngày 2026-08-24: [DEC-FEATJ06WXZ-001](../decisions/DEC-FEATJ06WXZ-001.md).
 - Không cài `Hyva_Widgets` hoặc `Hyva_CmsTailwindJit` làm runtime dependency trong baseline proposal.
 - Component eligibility matrix và schema chi tiết được hoàn thiện trước khi task decomposition.
 - Research: [RESEARCH_NOTES](../../project-context/memory/RESEARCH_NOTES.md) — entry 2026-08-24.
 - Component matrix: [FEAT-J06WXZ component eligibility](../../specs/FEAT-J06WXZ-component-eligibility-matrix.md).
 - Solution Design: [FEAT-J06WXZ solution design](../../specs/FEAT-J06WXZ-solution-design.md).
-- Implementation Plan: [FEAT-J06WXZ implementation plan](../../plans/FEAT-J06WXZ-implementation-plan.md) — approved by TL Tuấn Lê on 2026-08-24.
+- Implementation Plan: [FEAT-J06WXZ implementation plan](../../plans/FEAT-J06WXZ-implementation-plan.md) — approved by Tuấn Lê on 2026-08-24.
 
 ## Implementation Notes
 
-Status: **proposed — chưa implement**. Chưa tạo `Secomm_UiWidget`, chưa copy Hyvä UI template và chưa thay đổi theme/runtime dependency.
+Status: **Phase 1 / Batch 1 complete; feature remains in progress for deferred Batch 2**.
+
+- `Secomm_UiWidget` đã cung cấp một widget type, explicit registry, dynamic Admin authoring, versioned payload validation và 21 component Batch 1.
+- Module-owned templates giữ Hyvä UI 2.8.0 layout/visual behaviour và hỗ trợ product-theme presentation override qua Magento inheritance.
+- Theme override contract đã được proof bằng fixture local; không ship override POC khi chưa có presentation requirement thực tế.
+- `TASK-BE8X4X` và `TASK-TMRZT1` chưa implement theo phase decision, vì vậy AC catalog/manual provider vẫn pending.
 
 ## Test Summary
 
-Status: chưa thực hiện. Test strategy canonical nằm trong Full Spec §9.
+Batch 1 pass 86 unit tests / 504 assertions after removal of the non-shipped theme fixture, plus PHP/XML/JavaScript, DI, Tailwind production build, CMS/Admin and responsive browser QA. Tracked evidence nằm trong `.ai/evidence/TASK-*/`.
 
 ## Compatibility Conclusions
 
 - **Themes:** Hyvä product themes — in scope; Luma/non-Hyvä — out of scope.
-- **Modules affected:** module mới dự kiến `Secomm_UiWidget`; `Magento_Widget`, `Magento_Cms` và catalog services là dependencies/extension points, không modify core.
+- **Modules affected:** `Secomm_UiWidget`; `Magento_Widget` và `Magento_Cms` là extension points, không modify core. `Magento_Catalog` providers vẫn deferred cùng Batch 2.
 - **API contracts:** không có public REST/GraphQL API mới trong baseline.
 - **Upgrade notes:** Hyvä UI upstream được theo dõi bằng provenance metadata và manual review/import.
 
 ## References
 
 - Full Spec: [SPEC-FEAT-J06WXZ](../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md)
-- Architecture decision: [DEC-FEATJ06WXZ-001](../decisions/DEC-FEATJ06WXZ-001.md)
+- Decisions: [DEC-FEATJ06WXZ-001](../decisions/DEC-FEATJ06WXZ-001.md), [DEC-FEATJ06WXZ-002](../decisions/DEC-FEATJ06WXZ-002.md)
 - Tasks: TASK-S6QPEY, TASK-P0BP58, TASK-JN2SH6, TASK-ZQ9ZE1, TASK-BE8X4X, TASK-TMRZT1, TASK-XY9RZF
 - Hyvä UI local source: `vendor/hyva-themes/hyva-ui/`
 - Magento Widget local source: `vendor/magento/module-widget/`

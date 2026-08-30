@@ -1,0 +1,86 @@
+<?php
+/**
+ * Adapted from Hyvä UI banner/B-split 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$instanceId = $block->getInstanceId();
+$titleId = $instanceId . '-title';
+$linkAppearance = (string)($data['link_appearance'] ?? 'primary');
+$useHiddenLink = $linkAppearance === 'overlay';
+$useReverse = ($data['image_side'] ?? 'left') === 'right';
+$textAlignments = ['left' => 'left', 'center' => 'center', 'right' => 'right'];
+$backgroundColors = ['dark' => '#1e293b', 'light' => '#fff', 'brand' => 'var(--color-primary)'];
+$textColors = ['light' => '#f8fafc', 'dark' => '#111', 'brand' => 'var(--color-primary)'];
+$linkClasses = [
+    'primary' => 'btn btn-primary inline-flex',
+    'secondary' => 'btn btn-secondary inline-flex',
+    'button' => 'btn inline-flex',
+    'link' => 'font-medium underline hover:no-underline',
+];
+$backgroundColor = $backgroundColors[$data['background_tone'] ?? 'dark'];
+$textColor = $textColors[$data['text_tone'] ?? 'light'];
+$bannerClasses = implode(' ', array_filter([
+    'relative grid grid-cols-1 md:grid-cols-2',
+    $useHiddenLink ? 'transition-[outline-offset] focus-within:outline focus-within:outline-2 '
+        . 'focus-within:outline-offset-4 focus-within:outline-primary' : '',
+]));
+$bannerStyles = "--banner-bg: {$backgroundColor}; --banner-color: {$textColor}; "
+    . 'background: var(--banner-bg); color: var(--banner-color)';
+$contentClasses = 'isolate p-6 md:p-12' . ($useReverse ? ' order-first' : '');
+$contentStyles = 'place-self: center stretch; text-align: '
+    . $textAlignments[$data['text_alignment'] ?? 'left'];
+$ctaClasses = implode(' ', array_filter([
+    $linkClasses[$linkAppearance] ?? '',
+    $useHiddenLink ? 'before:absolute before:inset-0 before:transition-opacity before:duration-500 '
+        . 'before:opacity-0 before:bg-current hover:before:opacity-10' : '',
+]));
+?>
+<section id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+         class="<?= $escaper->escapeHtmlAttr($bannerClasses) ?>"
+         style="<?= $escaper->escapeHtmlAttr($bannerStyles) ?>"
+         aria-labelledby="<?= $escaper->escapeHtmlAttr($titleId) ?>"
+         data-secomm-ui-component="banner_b">
+    <picture>
+        <?php if (!empty($data['desktop_image'])): ?>
+            <source srcset="<?= $escaper->escapeUrl((string)$data['desktop_image']) ?>"
+                    media="(min-width: 1024px)">
+        <?php endif; ?>
+        <img src="<?= $escaper->escapeUrl((string)$data['mobile_image']) ?>"
+             width="1280" height="640"
+             alt="<?= $escaper->escapeHtmlAttr((string)$data['image_alt']) ?>"
+             loading="<?= $escaper->escapeHtmlAttr((string)($data['loading'] ?? 'lazy')) ?>"
+             class="h-full w-full object-cover">
+    </picture>
+    <div class="<?= $escaper->escapeHtmlAttr($contentClasses) ?>"
+         style="<?= $escaper->escapeHtmlAttr($contentStyles) ?>">
+        <h2 id="<?= $escaper->escapeHtmlAttr($titleId) ?>"
+            class="mb-2 text-3xl font-bold text-balance lg:text-6xl">
+            <?= $escaper->escapeHtml((string)$data['title']) ?>
+        </h2>
+        <?php if (!empty($data['content'])): ?>
+            <div class="my-2 text-lg font-medium lg:text-2xl">
+                <?= /* @noEscape trusted-rich-text filtered by Magento CMS */
+                $block->renderTrustedHtml((string)$data['content']) ?>
+            </div>
+        <?php endif; ?>
+        <?php if (!empty($data['cta_url'])): ?>
+            <div<?= !$useHiddenLink ? ' class="mt-6 inline-flex flex-wrap items-center gap-4"' : '' ?>>
+                <a href="<?= $escaper->escapeUrl((string)$data['cta_url']) ?>"
+                   class="<?= $escaper->escapeHtmlAttr($ctaClasses) ?>"
+                    <?php if (!empty($data['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                    <span<?= $useHiddenLink ? ' class="sr-only"' : '' ?>>
+                        <?= $escaper->escapeHtml((string)$data['cta_label']) ?>
+                    </span>
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
+</section>

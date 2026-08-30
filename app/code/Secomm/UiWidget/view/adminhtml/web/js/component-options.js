@@ -74,7 +74,8 @@ define([
         } else {
             input = $('<input/>', {
                 id: id,
-                type: type === 'integer' || type === 'decimal' ? 'number' : 'text'
+                type: type === 'media-image' ? 'hidden'
+                    : type === 'integer' || type === 'decimal' ? 'number' : 'text'
             }).val(value === undefined || value === null ? '' : value);
             if (field.min !== undefined) {
                 input.attr('min', field.min);
@@ -86,8 +87,10 @@ define([
                 input.attr('step', 'any');
             }
         }
-        input.addClass('admin__control-' + (input.is('select') ? 'select' : input.is('textarea') ? 'textarea' : 'text'));
-        if (field.required) {
+        if (type !== 'media-image') {
+            input.addClass('admin__control-' + (input.is('select') ? 'select' : input.is('textarea') ? 'textarea' : 'text'));
+        }
+        if (field.required && type !== 'media-image') {
             input.attr('required', true).addClass('required-entry');
         }
 
@@ -107,11 +110,85 @@ define([
         return value;
     }
 
+    function getMediaBrowserUrl(config, targetId) {
+        var wysiwygConfig = config.wysiwygConfig || {};
+        var baseUrl = wysiwygConfig.files_browser_window_url || config.mediaBrowserUrl;
+        var storeId = wysiwygConfig.store_id || 0;
+
+        return baseUrl + 'target_element_id/' + encodeURIComponent(targetId)
+            + '/store/' + encodeURIComponent(storeId) + '/type/image/';
+    }
+
+    function addMediaImageControl(input, control, config) {
+        var preview = $('<div/>', {class: 'secomm-ui-media-preview'});
+        var image = $('<img/>', {
+            alt: $t('Image preview'),
+            class: 'secomm-ui-media-preview__image'
+        });
+        var status = $('<span/>', {
+            class: 'secomm-ui-media-preview__status',
+            text: $t('No image selected.')
+        });
+        var actions = $('<div/>', {class: 'secomm-ui-media-actions'});
+
+        function updatePreview() {
+            var source = String(input.val() || '').trim();
+
+            if (!source) {
+                image.attr('hidden', true).removeAttr('src');
+                status.text($t('No image selected.')).removeAttr('hidden');
+                preview.addClass('is-empty');
+                return;
+            }
+            status.attr('hidden', true);
+            image.removeAttr('hidden').attr('src', source);
+            preview.removeClass('is-empty');
+        }
+
+        image.on('error', function () {
+            image.attr('hidden', true);
+            status.text($t('Preview unavailable.')).removeAttr('hidden');
+            preview.addClass('has-error');
+        }).on('load', function () {
+            status.attr('hidden', true);
+            preview.removeClass('has-error');
+        });
+        input.on('change input', updatePreview);
+        preview.append(image, status);
+        control.append(preview);
+        $('<button/>', {type: 'button', class: 'action-default', text: $t('Select from Gallery')})
+            .on('click', function () {
+                window.MediabrowserUtility.openDialog(
+                    getMediaBrowserUrl(config, input.attr('id')),
+                    false,
+                    false,
+                    $t('Select Images'),
+                    {targetElementId: input.attr('id')}
+                );
+            }).appendTo(actions);
+        $('<button/>', {type: 'button', class: 'action-delete', text: $t('Remove Image')})
+            .on('click', function () {
+                input.val('').trigger('input').trigger('change');
+            }).appendTo(actions);
+        control.append(actions);
+        updatePreview();
+    }
+
     return function (config, element) {
         var root = $(element);
-        var payload = $('#' + root.data('payload-id'));
-        var component = root.closest('fieldset').find('[name="parameters[component]"]');
-        var schemaVersion = root.closest('fieldset').find('[name="parameters[schema_version]"]');
+
+        if (root.data('secomm-ui-initialized')) {
+            return;
+        }
+        root.data('secomm-ui-initialized', true);
+        root.closest('.admin__field-control')
+            .addClass('secomm-ui-options-control')
+            .closest('.admin__field')
+            .addClass('secomm-ui-options-field');
+        var fieldset = root.closest('fieldset');
+        var payload = fieldset.find('[name="parameters[payload]"]').first();
+        var component = fieldset.find('[name="parameters[component]"]').first();
+        var schemaVersion = fieldset.find('[name="parameters[schema_version]"]').first();
         var fieldsRoot = root.find('[data-role="fields"]');
         var payloadError = root.find('[data-role="payload-error"]');
         var state = decode(payload.val());
@@ -137,13 +214,17 @@ define([
             });
         }
 
-        function initializeTrustedEditor(input, onChange) {
+        function initializeTrustedEditor(input, field, onChange) {
             var id = input.attr('id');
+            var editorConfig = $.extend(true, {}, config.wysiwygConfig);
 
             if (!$.contains(document, input[0])) {
                 return;
             }
-            var setup = new WysiwygSetup(id, $.extend(true, {}, config.wysiwygConfig));
+            if (field.editor_height) {
+                editorConfig.height = String(field.editor_height) + 'px';
+            }
+            var setup = new WysiwygSetup(id, editorConfig);
 
             setup.eventBus.attachEventHandler(wysiwygEvents.afterChangeContent, function () {
                 var editor = setup.wysiwygInstance.get(id);
@@ -182,12 +263,17 @@ define([
                 onChange(normalizeInput(field, $(this).val()));
             });
             control.append(input);
-            if (field.type === 'media') {
+            if (field.type === 'media-image') {
+                addMediaImageControl(input, control, config);
+            } else if (field.type === 'media') {
                 $('<button/>', {type: 'button', class: 'action-default', text: $t('Select from Gallery')})
                     .on('click', function () {
-                        var separator = config.mediaBrowserUrl.indexOf('?') === -1 ? '?' : '&';
                         window.MediabrowserUtility.openDialog(
-                            config.mediaBrowserUrl + separator + 'target_element_id=' + encodeURIComponent(id)
+                            getMediaBrowserUrl(config, id),
+                            false,
+                            false,
+                            $t('Select Images'),
+                            {targetElementId: id}
                         );
                     }).appendTo(control);
             }
@@ -196,8 +282,9 @@ define([
             }
             row.attr('data-path', path).append(label, control);
             if (field.type === 'trusted-rich-text') {
+                row.addClass('secomm-ui-rich-text-field');
                 window.setTimeout(function () {
-                    initializeTrustedEditor(input, onChange);
+                    initializeTrustedEditor(input, field, onChange);
                 }, 0);
             }
             return row;

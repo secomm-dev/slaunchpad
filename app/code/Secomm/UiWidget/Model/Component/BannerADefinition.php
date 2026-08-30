@@ -21,7 +21,7 @@ class BannerADefinition extends Definition
     {
         parent::__construct(
             id: 'banner_a',
-            label: 'Banner A',
+            label: 'Hero Banner',
             template: 'Secomm_UiWidget::components/banner/a.phtml',
             group: 'content',
             schemaVersion: 1,
@@ -43,10 +43,10 @@ class BannerADefinition extends Definition
             ['name' => 'title', 'type' => 'text', 'label' => 'Title', 'required' => true, 'max_length' => 120],
             ['name' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'max_length' => 500],
             [
-                'name' => 'mobile_image', 'type' => 'media', 'label' => 'Mobile Image', 'required' => true,
+                'name' => 'mobile_image', 'type' => 'media-image', 'label' => 'Mobile Image', 'required' => true,
                 'description' => 'Used on mobile and as the desktop fallback.',
             ],
-            ['name' => 'desktop_image', 'type' => 'media', 'label' => 'Desktop Image'],
+            ['name' => 'desktop_image', 'type' => 'media-image', 'label' => 'Desktop Image'],
             [
                 'name' => 'image_alt', 'type' => 'text', 'label' => 'Image Alt Text',
                 'required' => true, 'max_length' => 160,
@@ -66,7 +66,7 @@ class BannerADefinition extends Definition
             ['name' => 'open_in_new', 'type' => 'yesno', 'label' => 'Open CTA in New Tab', 'default' => false],
             [
                 'name' => 'content_alignment', 'type' => 'select',
-                'label' => 'Content Alignment', 'default' => 'center',
+                'label' => 'Content Alignment', 'default' => 'end',
                 'options' => $this->options(['start' => 'Start', 'center' => 'Center', 'end' => 'End']),
             ],
             [

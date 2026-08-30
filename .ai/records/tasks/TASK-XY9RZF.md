@@ -9,22 +9,22 @@ specification_level: MINI
 spec_status: VALID
 specification_ref: Embedded Mini-Spec; canonical parent ../../specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md
 risk: medium
-status: proposed
+status: done
 created: 2026-08-24
-updated: 2026-08-24
+updated: 2026-08-28
 external_refs: {}
 legacy_ids: []
 ticket_ref:
 decisions: [DEC-FEATJ06WXZ-001]
 decision_assessment:
-components: []
+components: [CMP-SECOMM-UI]
 source_areas: [app/design/frontend/Secomm/, app/code/Secomm/UiWidget/, .ai/project-context/]
 changes_project_state: true
 changes_architecture: false
 changes_integration: false
 changes_known_limitations: true
-verified_against_commit:
-last_verified: 2026-08-24
+verified_against_commit: 2b5e01c5
+last_verified: 2026-08-28
 supersedes: []
 ---
 
@@ -61,11 +61,20 @@ Plan: [FEAT-J06WXZ implementation plan](../../plans/FEAT-J06WXZ-implementation-p
 
 ## Implementation Notes
 
-Not implemented.
+Completed on 2026-08-28 for the approved Batch 1 phase. Module defaults were validated with `Secomm/launchpad`; override resolution was validated on `Secomm/launchpad_fashion` with a parity-safe temporary `usp_c` fixture. The fixture was removed before commit because no real theme-specific presentation is required. The local store was restored to theme ID 5 afterward.
+
+The CMS authoring matrix is covered by the native CMS Static Block Page Builder HTML element, Insert Widget flow and homepage CMS Page composition accumulated across Batch 1 evidence. No custom Page Builder content type is introduced. Repeater ordering, payload round-trip, instance isolation, fail-closed security and accessibility behaviours are covered by the full unit/browser evidence set.
+
+Batch 2 manual catalog providers remain deferred by the user's phase decision and are not part of this closure.
 
 ## Verification
 
-- [ ] AC-001..005 — evidence: `.ai/runtime/evidence/TASK-XY9RZF/`
+- Evidence: `.ai/evidence/TASK-XY9RZF/2026-08-28-final-compatibility.md`.
+- [x] AC-001 — module defaults and `Secomm/launchpad_fashion` override resolution verified; temporary POC fixture not shipped.
+- [x] AC-002 — PHP/XML/DI/Tailwind/static deployment gates pass.
+- [x] AC-003 — CMS Block/Page composition, Page Builder HTML insertion, responsive/multi-instance/a11y/security regression pass; Magento FPC type enabled locally, production HIT/MISS remains a release-environment check.
+- [x] AC-004 — README/CHANGELOG/onboarding/upstream update guide complete.
+- [x] AC-005 — context 04/09, component index, durable state and QC evidence updated.
 
 ## Related records
 

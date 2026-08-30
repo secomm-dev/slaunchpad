@@ -4,7 +4,7 @@
 <!-- NOT the session cursor — session "now" lives in .ai/runtime/session/ (Phase 1d). -->
 <!-- Project-owned — never overwritten by toolkit sync. Updated via update-project-state when a record → Done. -->
 
-> **Owner**: TL/SA · **Last consolidated**: 2026-07-23 · **Verified against commit**: 1afdfc8
+> **Owner**: TL/SA · **Last consolidated**: 2026-08-28 · **Verified against commit**: 2b5e01c5
 
 ## What has been built
 
@@ -12,6 +12,7 @@
 - **CMP-ADDR** — Vietnam hierarchical address capture (dual-theme Luma+Hyva); customer form + cart estimation done, resolver hardening deferred (AC-011/Q1). → FEAT-YVN39K (done).
 - **CMP-STOREFRONT** — admin-configurable storefront announcement toggle (Yes/No → render block). → FEAT-YESRCX (done); FEAT-KQ6WC4 (broader proposal, proposed).
 - **CMP-CHECKOUT / CMP-THEME / CMP-PAYMENT-MOLLIE** — Mageplaza OSC, Hyvä child themes, Mollie (active) installed; no delivery work records yet.
+- **CMP-SECOMM-UI** — shared Hyvä-only Magento widget capability with dynamic Admin authoring and all 21 approved Batch 1 components. Module defaults and product-theme override resolution pass the final compatibility gate; no theme-specific POC override is shipped. → FEAT-J06WXZ / TASK-ZQ9ZE1 / TASK-XY9RZF.
 - **Project AI Toolkit** — Phase 1a (canonical records) + 1b (per-work-item mode + decision assessment) + 1c (durable project state) + 1d (runtime/durable split) artifacts present; 1e/1f semantic satisfied via AGENTS §8.5/§8.6/§9. **Phase-1 contract synced 2026-07-23** (CHANGELOG 1.3.0): migration markers P1A–P1F stamped, validator + registry + record templates current @ toolkit 2026-07-22, 5 drifted skills + 2 runtime guides synced.
 
 ## Known & decided (durable)
@@ -34,6 +35,7 @@
 
 ## Current focus / phase
 
+- **Secomm UI Phase 1 / Batch 1 complete** — Batch 2 catalog-backed providers/components remain intentionally deferred until separately requested.
 - **Phase 1a–1d artifacts done**; **1e/1f** semantic-only (satisfied in AGENTS §8.5/§8.6/§9 + `rules/no-duplicate-knowledge.md` — no separate artifact). Migration markers P1A–P1F stamped 2026-07-23 (CHANGELOG 1.3.0).
 - **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..006 `proposed`).
 - **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..006 `proposed`).
