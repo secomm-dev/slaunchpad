@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] - 2026-08-27
+
+### Fixed
+- **Order Push State Sync & Empty Shipment Bug**: Fixed `PushAhamove` controller passing empty items array to `ShipmentFactory`, preventing `We cannot create an empty shipment` error. Properly populated items array with `$item->getQtyToShip()` for all product types and ensured order state persistence (`BUG-EFWXPA` / `SLP-120`).
+- **Invalid Method Call in Plugin**: Fixed fatal call to non-existent `$order->isHolded()` in `AddPushAhamoveOrderButtonPlugin`, replaced with `$order->getState() === Order::STATE_HOLDED`.
+- **Payload Item Duplication**: Updated `CreateShipment::prepareShippingData` to iterate over `$order->getAllVisibleItems()` instead of `$order->getAllItems()` to eliminate duplicate configurable child item payloads.
+- **Phone Number Normalization**: Added `Helper/Data::sanitizePhoneNumber()` to strip invalid characters and normalize `+84`/`84` to `0` for Ahamove API payload compliance.
+
+---
+
 ## [1.0.1] - 2026-08-05
 
 ### Fixed

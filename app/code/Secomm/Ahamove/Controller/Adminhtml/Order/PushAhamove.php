@@ -62,6 +62,19 @@ class PushAhamove extends Action
                 return $resultRedirect->setPath('sales/order/');
             }
 
+            if ($order->isCanceled()
+                || $order->getState() === \Magento\Sales\Model\Order::STATE_HOLDED
+                || $order->getState() === \Magento\Sales\Model\Order::STATE_CLOSED
+            ) {
+                $this->messageManager->addErrorMessage(__('Cannot push canceled, on hold, or closed order to Ahamove.'));
+                return $resultRedirect->setPath('sales/order/view', ['order_id' => $orderId]);
+            }
+
+            if (!$order->canShip() && !$order->hasShipments()) {
+                $this->messageManager->addErrorMessage(__('This order has no shipments and cannot be shipped.'));
+                return $resultRedirect->setPath('sales/order/view', ['order_id' => $orderId]);
+            }
+
             $shippingMethod = (string)$order->getShippingMethod();
             $storeId = $order->getStoreId();
             $serviceId = $this->ahamoveHelper->resolveServiceId($shippingMethod, $storeId);
@@ -107,10 +120,12 @@ class PushAhamove extends Action
                     if ($order->canShip()) {
                         $items = [];
                         foreach ($order->getAllItems() as $item) {
-                            if ($item->getQtyToShip() > 0 && !$item->getIsVirtual() && !$item->getHasChildren()) {
-                                $items[$item->getItemId()] = $item->getQtyToShip();
+                            if ($item->getIsVirtual() || $item->getQtyToShip() <= 0) {
+                                continue;
                             }
+                            $items[$item->getItemId()] = $item->getQtyToShip();
                         }
+
                         $tracks = [
                             [
                                 'carrier_code' => $carrierCode,
@@ -122,6 +137,7 @@ class PushAhamove extends Action
                         $shipment = $this->shipmentFactory->create($order, $items, $tracks);
                         $shipment->register();
                         $this->shipmentRepository->save($shipment);
+                        $this->orderRepository->save($order);
                         $this->shipmentNotifier->notify($shipment);
                     }
                 }
@@ -135,8 +151,12 @@ class PushAhamove extends Action
                 );
             }
         } catch (\Exception $e) {
-            $this->logger->error('PushAhamove Order Controller Error: ' . $e->getMessage(), [], __METHOD__);
-            $this->messageManager->addErrorMessage(__('Error pushing to Ahamove: %1', $e->getMessage()));
+            $errorMsg = $e->getMessage();
+            if ($e->getPrevious()) {
+                $errorMsg .= ' (' . $e->getPrevious()->getMessage() . ')';
+            }
+            $this->logger->error('PushAhamove Order Controller Error: ' . $errorMsg, [], __METHOD__);
+            $this->messageManager->addErrorMessage(__('Error pushing to Ahamove: %1', $errorMsg));
         }
 
         return $resultRedirect->setPath('sales/order/view', ['order_id' => $orderId]);
