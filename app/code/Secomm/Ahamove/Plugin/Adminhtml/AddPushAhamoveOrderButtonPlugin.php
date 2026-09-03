@@ -44,6 +44,18 @@ class AddPushAhamoveOrderButtonPlugin
                 return;
             }
 
+            // Do not show button for canceled, holded, closed orders or un-shippable orders without shipment
+            if ($order->isCanceled()
+                || $order->getState() === \Magento\Sales\Model\Order::STATE_HOLDED
+                || $order->getState() === \Magento\Sales\Model\Order::STATE_CLOSED
+            ) {
+                return;
+            }
+
+            if (!$order->canShip() && !$order->hasShipments()) {
+                return;
+            }
+
             // Check if order already has an Ahamove tracking code in any of its shipments
             $hasTracking = false;
             $shipments = $order->getShipmentsCollection();

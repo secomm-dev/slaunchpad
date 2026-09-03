@@ -1,0 +1,23 @@
+{
+    "name": "secomm/module-tracking",
+    "description": "Secomm Launchpad commerce tracking — normalized event layer (GA4/GTM via Magefan dataLayer, Meta Conversions API, TikTok Events API) with deterministic event_id dedup, PII hashing, outbox delivery and debug logging.",
+    "type": "magento2-module",
+    "license": "GPL-3.0",
+    "minimum-stability": "dev",
+    "require": {
+        "magento/framework": "*",
+        "magento/module-sales": "*",
+        "magento/module-quote": "*",
+        "magento/module-catalog-search": "*",
+        "magento/module-config": "*",
+        "magento/module-cron": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Secomm\\Tracking\\": ""
+        }
+    }
+}

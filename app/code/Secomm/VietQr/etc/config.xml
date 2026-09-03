@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <secomm_vietqr>
+                <active>0</active>
+                <model>Secomm\VietQr\Model\Payment</model>
+                <order_status>vietqr_pending</order_status>
+                <title>VietQR</title>
+                <group>offline</group>
+                <sort_order>0</sort_order>
+                <debug>0</debug>
+                <allowspecific>0</allowspecific>
+                <api_endpoint>https://vietqr.vn/api/vietqr/generate</api_endpoint>
+                <request_timeout>10</request_timeout>
+                <transfer_content_template>DH{{order_increment_id}}</transfer_content_template>
+                <awaiting_confirm_status>vietqr_awaiting_payment_confirm</awaiting_confirm_status>
+            </secomm_vietqr>
+        </payment>
+    </default>
+</config>

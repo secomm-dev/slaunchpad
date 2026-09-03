@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <default>
+        <seocomm_ai_discoverability>
+            <general>
+                <enabled>0</enabled>
+                <brand_summary/>
+                <priority_paths/>
+            </general>
+            <urls>
+                <cms_pages/>
+                <categories/>
+                <include_sitemap_refs>1</include_sitemap_refs>
+            </urls>
+            <titles>
+                <store_summary>Store Summary</store_summary>
+                <agent_guidance>Agent Guidance</agent_guidance>
+                <priority_pages>Priority Pages</priority_pages>
+                <featured_collections>Featured Collections</featured_collections>
+                <key_pages>Key Pages</key_pages>
+                <machine_commerce>Machine-readable Commerce</machine_commerce>
+                <store_information>Store Information</store_information>
+                <product_search>Product Search</product_search>
+                <product_categories>Categories</product_categories>
+                <product_detail>Product Detail</product_detail>
+                <commerce_limitations>Commerce Limitations</commerce_limitations>
+            </titles>
+            <cache>
+                <lifetime>86400</lifetime>
+                <max_urls>100</max_urls>
+            </cache>
+        </seocomm_ai_discoverability>
+    </default>
+</config>

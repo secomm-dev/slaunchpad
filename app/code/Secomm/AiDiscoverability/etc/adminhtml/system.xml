@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="secomm" translate="label" sortOrder="5000">
+            <label>Secomm</label>
+        </tab>
+        <section id="seocomm_ai_discoverability" translate="label" sortOrder="900" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>AI Discoverability (llms.txt)</label>
+            <tab>secomm</tab>
+            <resource>Secomm_AiDiscoverability::config</resource>
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable /llms.txt</label>
+                    <comment>When disabled, /llms.txt returns 404 and the describedby link tag is removed.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="site_title" translate="label comment" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Site / Brand Title</label>
+                    <comment>Public title used as the llms.txt H1. Falls back to the store information name, then to the internal store view name.</comment>
+                </field>
+                <field id="brand_summary" translate="label comment" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Brand / Site Summary</label>
+                    <comment>One concise line describing the brand and site for AI agents. Falls back to the Site / Brand Title; the internal store view name is never used. Avoid entities whose canonical URL is managed by conditional Mirasvit canonical rewrite rules.</comment>
+                </field>
+                <field id="priority_paths" translate="label comment" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Priority Paths</label>
+                    <comment>Internal paths only, one per line (e.g. "about-us"). External URLs, query strings and private routes (cart/checkout/account/...) are rejected.</comment>
+                </field>
+            </group>
+            <group id="urls" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Curated URLs</label>
+                <field id="cms_pages" translate="label" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>CMS Pages</label>
+                    <source_model>Secomm\AiDiscoverability\Model\Config\Source\CmsPages</source_model>
+                    <comment>Only active pages visible in the selected scope are emitted (max 20).</comment>
+                </field>
+                <field id="categories" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Categories / Collections</label>
+                    <frontend_model>Secomm\AiDiscoverability\Block\Adminhtml\System\Config\CategoryTree</frontend_model>
+                    <comment>Hierarchical selector of the scope's category tree; only active categories are selectable (max 20 emitted). Saved as category IDs.</comment>
+                </field>
+                <field id="include_sitemap_refs" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Include Sitemap References</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="titles" translate="label" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Section Titles</label>
+                <field id="store_summary" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Store Summary Heading</label>
+                    <comment>Heading of the brand summary section. Empty restores the default.</comment>
+                </field>
+                <field id="agent_guidance" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Agent Guidance Heading</label>
+                </field>
+                <field id="priority_pages" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Priority Pages Heading</label>
+                </field>
+                <field id="featured_collections" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Featured Collections Heading</label>
+                </field>
+                <field id="key_pages" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Key Pages Heading</label>
+                </field>
+                <field id="machine_commerce" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Machine-readable Commerce Heading</label>
+                </field>
+                <field id="store_information" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Store Information Endpoint Heading</label>
+                </field>
+                <field id="product_search" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Product Search Endpoint Heading</label>
+                </field>
+                <field id="product_categories" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Categories Endpoint Heading</label>
+                </field>
+                <field id="product_detail" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Product Detail Endpoint Heading</label>
+                </field>
+                <field id="commerce_limitations" translate="label" type="text" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Commerce Limitations Heading</label>
+                </field>
+            </group>
+            <group id="cache" translate="label" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="1">
+                <label>Cache</label>
+                <field id="lifetime" translate="label" type="text" sortOrder="10" showInDefault="1" showInStore="1" canRestore="1">
+                    <label>Cache Lifetime (seconds)</label>
+                    <comment>0 = cache disabled, regenerate every request.</comment>
+                </field>
+                <field id="max_urls" translate="label" type="text" sortOrder="20" showInDefault="1" showInStore="1" canRestore="1">
+                    <label>Maximum URLs</label>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

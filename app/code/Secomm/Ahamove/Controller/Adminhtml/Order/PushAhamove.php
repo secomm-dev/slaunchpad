@@ -17,6 +17,8 @@ use Magento\Shipping\Model\ShipmentNotifier;
 use Secomm\Ahamove\Command\CreateShipment;
 use Secomm\Ahamove\Helper\Data as AhamoveHelper;
 use Secomm\Ahamove\Logger\Logger;
+use Secomm\Ahamove\Model\Carrier\ShippingMethod\Express;
+use Secomm\Ahamove\Model\Carrier\ShippingMethod\Standard;
 use Secomm\Ahamove\Model\PackageFactory;
 
 class PushAhamove extends Action
@@ -60,6 +62,19 @@ class PushAhamove extends Action
                 return $resultRedirect->setPath('sales/order/');
             }
 
+            if ($order->isCanceled()
+                || $order->getState() === \Magento\Sales\Model\Order::STATE_HOLDED
+                || $order->getState() === \Magento\Sales\Model\Order::STATE_CLOSED
+            ) {
+                $this->messageManager->addErrorMessage(__('Cannot push canceled, on hold, or closed order to Ahamove.'));
+                return $resultRedirect->setPath('sales/order/view', ['order_id' => $orderId]);
+            }
+
+            if (!$order->canShip() && !$order->hasShipments()) {
+                $this->messageManager->addErrorMessage(__('This order has no shipments and cannot be shipped.'));
+                return $resultRedirect->setPath('sales/order/view', ['order_id' => $orderId]);
+            }
+
             $shippingMethod = (string)$order->getShippingMethod();
             $storeId = $order->getStoreId();
             $serviceId = $this->ahamoveHelper->resolveServiceId($shippingMethod, $storeId);
@@ -72,7 +87,12 @@ class PushAhamove extends Action
 
             if (is_array($result) && isset($result['order']['tracking_code'])) {
                 $trackingCode = $result['order']['tracking_code'];
-                $sharedLink = $result['order']['shared_link'] ?? '';
+                $sharedLink = $result['shared_link'] ?? $result['order']['shared_link'] ?? '';
+
+                // Normalize carrier code to base carrier code (e.g. ahamove_standard or ahamove_express)
+                $carrierCode = str_contains($shippingMethod, Express::AHAMOVE_EXPRESS_CARRIER_CODE)
+                    ? Express::AHAMOVE_EXPRESS_CARRIER_CODE
+                    : Standard::AHAMOVE_STANDARD_CARRIER_CODE;
 
                 // If order already has shipment(s), add track to existing shipment
                 $shipments = $order->getShipmentsCollection();
@@ -87,7 +107,7 @@ class PushAhamove extends Action
                         }
                         if (!$hasTracking) {
                             $track = $this->trackFactory->create();
-                            $track->setCarrierCode($shippingMethod);
+                            $track->setCarrierCode($carrierCode);
                             $track->setTitle($order->getShippingDescription() ?: 'Ahamove Delivery');
                             $track->setTrackNumber($trackingCode);
                             $track->setDescription($sharedLink);
@@ -100,13 +120,15 @@ class PushAhamove extends Action
                     if ($order->canShip()) {
                         $items = [];
                         foreach ($order->getAllItems() as $item) {
-                            if ($item->getQtyToShip() > 0 && !$item->getIsVirtual() && !$item->getHasChildren()) {
-                                $items[$item->getItemId()] = $item->getQtyToShip();
+                            if ($item->getIsVirtual() || $item->getQtyToShip() <= 0) {
+                                continue;
                             }
+                            $items[$item->getItemId()] = $item->getQtyToShip();
                         }
+
                         $tracks = [
                             [
-                                'carrier_code' => $shippingMethod,
+                                'carrier_code' => $carrierCode,
                                 'number' => $trackingCode,
                                 'title' => $order->getShippingDescription() ?: 'Ahamove Delivery',
                                 'description' => $sharedLink,
@@ -115,6 +137,7 @@ class PushAhamove extends Action
                         $shipment = $this->shipmentFactory->create($order, $items, $tracks);
                         $shipment->register();
                         $this->shipmentRepository->save($shipment);
+                        $this->orderRepository->save($order);
                         $this->shipmentNotifier->notify($shipment);
                     }
                 }
@@ -128,8 +151,12 @@ class PushAhamove extends Action
                 );
             }
         } catch (\Exception $e) {
-            $this->logger->error('PushAhamove Order Controller Error: ' . $e->getMessage(), [], __METHOD__);
-            $this->messageManager->addErrorMessage(__('Error pushing to Ahamove: %1', $e->getMessage()));
+            $errorMsg = $e->getMessage();
+            if ($e->getPrevious()) {
+                $errorMsg .= ' (' . $e->getPrevious()->getMessage() . ')';
+            }
+            $this->logger->error('PushAhamove Order Controller Error: ' . $errorMsg, [], __METHOD__);
+            $this->messageManager->addErrorMessage(__('Error pushing to Ahamove: %1', $errorMsg));
         }
 
         return $resultRedirect->setPath('sales/order/view', ['order_id' => $orderId]);

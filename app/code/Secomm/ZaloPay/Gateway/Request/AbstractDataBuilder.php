@@ -37,6 +37,11 @@ abstract class AbstractDataBuilder implements BuilderInterface
     const REFUND_QUERY_URL_PATH = 'v2/query_refund';
 
     /**
+     * Transaction status query path (server-side payment verification)
+     */
+    const QUERY_URL_PATH = 'v2/query';
+
+    /**
      * Transaction Type: Refund
      */
     const REFUND = 'refund';

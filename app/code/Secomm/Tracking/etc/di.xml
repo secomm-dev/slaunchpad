@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- FEAT-31X6N2 / DEC D5 — Phase 1 consent gate. A future CMP swaps this
+         binding only; observers/blocks depend on the interface. -->
+    <preference for="Secomm\Tracking\Model\Consent\ConsentEvaluatorInterface"
+                type="Secomm\Tracking\Model\Consent\CookieRestrictionEvaluator"/>
+
+    <!-- FEAT-31X6N2 / QC utility — legacy-order purchase backfill (console). -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="secomm_tracking_backfill_purchase_command" xsi:type="object">
+                    Secomm\Tracking\Console\Command\BackfillPurchase
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- DEC-FEAT31X6N2-002 (2026-08-27): Meta vendor REMOVED — the licensed
+         Magefan FacebookPixel(+Extra) suite owns all Meta tracking (browser
+         pixel + CAPI). This module owns TikTok only. -->
+    <type name="Secomm\Tracking\Model\Delivery\EnqueueService">
+        <arguments>
+            <argument name="logger" xsi:type="object">SecommTrackingLogger</argument>
+            <argument name="adapters" xsi:type="array">
+                <item name="tiktok" xsi:type="object">Secomm\Tracking\Model\Vendor\TikTokEventsAdapter</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\Tracking\Model\Delivery\FlushService">
+        <arguments>
+            <argument name="logger" xsi:type="object">SecommTrackingLogger</argument>
+            <argument name="adapters" xsi:type="array">
+                <item name="tiktok" xsi:type="object">Secomm\Tracking\Model\Vendor\TikTokEventsAdapter</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\Tracking\Cron\OutboxFlush">
+        <arguments>
+            <argument name="logger" xsi:type="object">SecommTrackingLogger</argument>
+        </arguments>
+    </type>
+    <virtualType name="SecommTrackingLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="name" xsi:type="string">secomm_tracking</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">SecommTrackingHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="SecommTrackingHandler" type="Magento\Framework\Logger\Handler\System">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/secomm_tracking.log</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- FEAT-31X6N2 / TASK-WY5JRN — UI-component data sources for the read-only
+         delivery/outbox grids. Declared GLOBAL (not adminhtml) on purpose: the
+         CollectionFactory `collections` array argument does not merge across
+         scopes — an area-scoped declaration would REPLACE the core module-sales
+         entries and break Sales → Order. Same pattern as core module-search.
+         Framework SearchResult virtual types — no PHP grid classes needed. -->
+    <virtualType name="Secomm\Tracking\Model\ResourceModel\TrackingEvent\GridCollection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="name" xsi:type="string">secomm_tracking_event_grid_data_source</argument>
+            <argument name="primaryFieldName" xsi:type="string">entity_id</argument>
+            <argument name="requestFieldName" xsi:type="string">entity_id</argument>
+            <argument name="mainTable" xsi:type="string">secomm_tracking_event</argument>
+            <argument name="resourceModel" xsi:type="string">Secomm\Tracking\Model\ResourceModel\TrackingEvent</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Secomm\Tracking\Model\ResourceModel\DeliveryLog\GridCollection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="name" xsi:type="string">secomm_tracking_delivery_grid_data_source</argument>
+            <argument name="primaryFieldName" xsi:type="string">entity_id</argument>
+            <argument name="requestFieldName" xsi:type="string">entity_id</argument>
+            <argument name="mainTable" xsi:type="string">secomm_tracking_delivery</argument>
+            <argument name="resourceModel" xsi:type="string">Secomm\Tracking\Model\ResourceModel\DeliveryLog</argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="secomm_tracking_delivery_grid_data_source" xsi:type="string">Secomm\Tracking\Model\ResourceModel\DeliveryLog\GridCollection</item>
+                <item name="secomm_tracking_event_grid_data_source" xsi:type="string">Secomm\Tracking\Model\ResourceModel\TrackingEvent\GridCollection</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

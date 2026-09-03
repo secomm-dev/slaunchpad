@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Secomm\VietQr\Api\QrGeneratorInterface" type="Secomm\VietQr\Model\VietQr\QrGenerator"/>
+
+    <!-- Custom VietQR Logger -->
+    <type name="Secomm\VietQr\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\VietQr\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">secomm_vietqr</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Secomm\VietQr\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Inject Custom Logger into VietQR Services -->
+    <type name="Secomm\VietQr\Model\VietQr\ApiClient">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\VietQr\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\VietQr\Observer\GenerateQrAfterOrder">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\VietQr\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\VietQr\Block\PaymentInfo">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\VietQr\Logger\Logger</argument>
+            <argument name="customerSession" xsi:type="object">Magento\Customer\Model\Session\Proxy</argument>
+            <argument name="orderRepository" xsi:type="object">Magento\Sales\Api\OrderRepositoryInterface\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\VietQr\Controller\Payment\Submit">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\VietQr\Logger\Logger</argument>
+            <argument name="paymentInfoBlock" xsi:type="object">Secomm\VietQr\Block\PaymentInfo\Proxy</argument>
+            <argument name="orderRepository" xsi:type="object">Magento\Sales\Api\OrderRepositoryInterface\Proxy</argument>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Secomm\VietQr\Controller\Payment\View">
+        <arguments>
+            <argument name="paymentInfoBlock" xsi:type="object">Secomm\VietQr\Block\PaymentInfo\Proxy</argument>
+        </arguments>
+    </type>
+</config>

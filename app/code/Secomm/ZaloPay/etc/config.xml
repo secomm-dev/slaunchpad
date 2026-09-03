@@ -19,6 +19,12 @@
                 <order_status>pending_payment</order_status>
                 <title>ZaloPay</title>
                 <sandbox_flag>0</sandbox_flag>
+                <!-- Payment-first: create the ZaloPay transaction from the ACTIVE
+                     QUOTE (no order at redirect). 0 keeps the historical
+                     order-first flow for staged rollout. -->
+                <payment_first>0</payment_first>
+                <!-- Attempt TTL in minutes (ZaloPay unpaid orders expire ~15min). -->
+                <attempt_ttl>15</attempt_ttl>
                 <allowspecific>0</allowspecific>
                 <payment_action>authorize_capture</payment_action>
                 <can_initialize>1</can_initialize>

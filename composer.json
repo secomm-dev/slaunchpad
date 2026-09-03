@@ -137,19 +137,28 @@
                 "APSB26-73: Security Patch for Quote": "patches/composer/APSB26-73/APSB26-73-magento-module-quote.patch"
             },
             "magento/framework": {
-                "APSB26-73: Security Patch for Framework UI Component Data Provider Sanitizer": "patches/composer/APSB26-73/APSB26-73-magento-framework.patch"
+                "APSB26-73: Security Patch for Framework UI Component Data Provider Sanitizer": "patches/composer/APSB26-73/APSB26-73-magento-framework.patch",
+                "Make ACL resource title attribute optional": "patches/magento-framework-acl-title-optional.patch"
             },
             "magento/module-customer": {
-                "APSB26-73: Security Patch for Customer Config": "patches/composer/APSB26-73/APSB26-73-magento-module-customer.patch"
+                "APSB26-73: Security Patch for Customer Config": "patches/composer/APSB26-73/APSB26-73-magento-module-customer.patch",
+                "APSB26-92: Security release 248p5-2026-08-001 CE": "patches/composer/APSB26-92-248p5-2026-08-001-CE/module-customer.patch"
             },
             "magento/module-store": {
                 "APSB26-73: Security Patch for Store config.xml protected extensions": "patches/composer/APSB26-73/APSB26-73-magento-module-store.patch"
             },
             "magento/magento2-base": {
-                "APSB26-73: Security Patch for Nginx Config Sample": "patches/composer/APSB26-73/APSB26-73-magento-magento2-base.patch"
+                "APSB26-73: Security Patch for Nginx Config Sample": "patches/composer/APSB26-73/APSB26-73-magento-magento2-base.patch",
+                "APSB26-92: Security release 248p5-2026-08-001 CE": "patches/composer/APSB26-92-248p5-2026-08-001-CE/magento2-base.patch"
             },
             "magento/module-page-cache": {
                 "AC-15223: Use vary cookie in FPC save identifier for store switch": "patches/composer/AC-15223_2.4.8.patch"
+            },
+            "magento/module-cms": {
+              "APSB26-92: Security release 248p5-2026-08-001 CE": "patches/composer/APSB26-92-248p5-2026-08-001-CE/module-cms.patch"
+            },
+            "magento/module-review": {
+              "APSB26-92: Security release 248p5-2026-08-001 CE": "patches/composer/APSB26-92-248p5-2026-08-001-CE/module-review.patch"
             }
         }
     }

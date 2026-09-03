@@ -78,7 +78,7 @@ class OrderShipmentSaveAfter implements ObserverInterface
 
             // Prevent duplicate push if tracking already exists
             foreach ($shipment->getAllTracks() as $track) {
-                if (str_contains((string)$track->getCarrierCode(), 'ahamove') || !empty($track->getTrackNumber())) {
+                if (str_contains((string)$track->getCarrierCode(), 'ahamove') && !empty($track->getTrackNumber())) {
                     return;
                 }
             }

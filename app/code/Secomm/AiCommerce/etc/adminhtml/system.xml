@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="secomm" translate="label" sortOrder="5000">
+            <label>Secomm</label>
+        </tab>
+        <section id="seocomm_ai_commerce" translate="label" sortOrder="910"
+                 showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>AI Commerce Read Layer</label>
+            <tab>secomm</tab>
+            <resource>Secomm_AiCommerce::config</resource>
+            <group id="general" translate="label" sortOrder="10"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select"
+                       sortOrder="10" showInDefault="1" showInWebsite="1"
+                       showInStore="1" canRestore="1">
+                    <label>Enable AI Read Endpoints</label>
+                    <comment>When disabled, all AI read endpoints return 404.
+                        Read-only GET/HEAD endpoints for AI agents; no cart,
+                        checkout, customer or order data.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="endpoint_path" translate="label comment" type="text"
+                       sortOrder="15" showInDefault="1" showInWebsite="1"
+                       showInStore="1" canRestore="1">
+                    <backend_model>Secomm\AiCommerce\Model\Config\Backend\EndpointPath</backend_model>
+                    <label>AI Read Endpoint Path</label>
+                    <comment>URL base path of the AI read endpoints
+                        (default "ai" → /ai/store, /ai/catalog/search,
+                        /ai/categories, /ai/products/&lt;sku&gt;). Surrounding
+                        slashes are stripped on save; invalid values (query
+                        strings, fragments, protocol URLs, traversal,
+                        spaces) fall back to "ai". Also advertised in
+                        /llms.txt.</comment>
+                </field>
+                <field id="max_page_size" translate="label comment" type="text"
+                       sortOrder="20" showInDefault="1" showInWebsite="1"
+                       showInStore="1" canRestore="1">
+                    <label>Maximum Page Size</label>
+                    <comment>Server-side cap for the page_size parameter of
+                        /ai/catalog/search (1-50).</comment>
+                </field>
+                <field id="filter_allowlist" translate="label comment"
+                       type="textarea" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Filterable Attribute Allowlist</label>
+                    <comment>Attribute codes (comma-separated) that agents may
+                        filter by. The attribute must also be storefront
+                        filterable; everything else is rejected.</comment>
+                </field>
+                <field id="category_depth" translate="label comment" type="text"
+                       sortOrder="40" showInDefault="1" showInWebsite="1"
+                       showInStore="1" canRestore="1">
+                    <label>Category Tree Depth</label>
+                    <comment>Maximum depth of /ai/categories output below the
+                        store root (1-10).</comment>
+                </field>
+            </group>
+            <group id="cache" translate="label" sortOrder="20"
+                   showInDefault="1" showInWebsite="0" showInStore="1">
+                <label>Cache</label>
+                <field id="lifetime" translate="label comment" type="text"
+                       sortOrder="10" showInDefault="1" showInStore="1"
+                       canRestore="1">
+                    <label>Cache Lifetime (seconds)</label>
+                    <comment>0 = cache disabled, regenerate every request.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

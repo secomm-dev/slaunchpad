@@ -219,31 +219,41 @@ class CreateShipment
             ->setRemark('')
             ->setPhoneTo('');
 
+        $fromMobile = $this->ahamoveHelperData->sanitizePhoneNumber((string)$this->ahamoveHelperData->getMobilePhoneValue());
+        $toMobile = $this->ahamoveHelperData->sanitizePhoneNumber((string)$shippingAddress->getTelephone());
+
         $data = [
             [
                 'address' => $ahamoveAddressFactory->buildAddress('from'),
                 'short_address' => '',
                 'name' => '',
-                'mobile' => (string)$this->ahamoveHelperData->getMobilePhoneValue(),
+                'mobile' => $fromMobile,
                 'remarks' => ''
             ],
             [
                 'address' => $ahamoveAddressFactory->buildAddress('to'),
                 'short_address' => '',
                 'name' => (string)$shippingAddress->getFirstName() . ' ' . (string)$shippingAddress->getLastName(),
-                'mobile' => (string)$shippingAddress->getTelephone(),
+                'mobile' => $toMobile,
                 'remarks' => '',
                 'tracking_number' => $order->getIncrementId() . '_' . time()
             ]
         ];
 
-        // Items
-        foreach ($order->getAllItems() as $item) {
+        // Items (Use visible items only to prevent duplicate configurable parent/child and ignore virtual items)
+        foreach ($order->getAllVisibleItems() as $item) {
+            if ($item->getIsVirtual()) {
+                continue;
+            }
+            $qty = (int)($item->getQtyToShip() > 0 ? $item->getQtyToShip() : $item->getQtyOrdered());
+            if ($qty <= 0) {
+                continue;
+            }
             $items[] = [
-                '_id'=> $item->getSku(),
-                'num'=> (int)$item->getQtyOrdered(),
-                'name'=> $item->getName(),
-                'price'=> $this->ahamoveHelperData->convertPriceToDefaultCurrency($item->getPrice())
+                '_id'   => $item->getSku(),
+                'num'   => $qty,
+                'name'  => $item->getName(),
+                'price' => (float)$this->ahamoveHelperData->convertPriceToDefaultCurrency($item->getPrice())
             ];
         }
 
