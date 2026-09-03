@@ -3,14 +3,20 @@
         "column": {
             "city_id": true,
             "region_id": true,
-            "default_name": true
+            "default_name": true,
+            "parent_city_id": true,
+            "code": true
         },
         "index": {
-            "DIRECTORY_REGION_CITY_CITY_ID": true
+            "DIRECTORY_REGION_CITY_CITY_ID": true,
+            "DIRECTORY_REGION_CITY_REGION_ID_PARENT_CITY_ID": true,
+            "DIRECTORY_REGION_CITY_PARENT_CITY_ID": true
         },
         "constraint": {
             "PRIMARY": true,
-            "DIR_REGION_CITY_REGION_ID_DIR_COUNTRY_REGION_REGION_ID": true
+            "DIR_REGION_CITY_REGION_ID_DIR_COUNTRY_REGION_REGION_ID": true,
+            "DIR_REGION_CITY_PARENT_CITY_ID_DIR_REGION_CITY_CITY_ID": true,
+            "DIRECTORY_REGION_CITY_REGION_ID_PARENT_CITY_ID_CODE": true
         }
     },
     "directory_region_city_name": {
@@ -73,6 +79,20 @@
     "directory_country_region": {
         "column": {
             "is_default": true
+        }
+    },
+    "secomm_address_profile_location": {
+        "column": {
+            "profile_code": true,
+            "location_type": true,
+            "location_id": true,
+            "include_subtree": true
+        },
+        "index": {
+            "SECOMM_ADDRESS_PROFILE_LOCATION_LOCATION_TYPE_LOCATION_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
         }
     }
 }

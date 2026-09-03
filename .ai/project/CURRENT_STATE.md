@@ -10,6 +10,7 @@
 
 - **Secomm Launchpad** — Magento 2.4.8-p5 + Hyvä 3.x storefront (vi_VN primary), fresh init (single commit `1afdfc8`).
 - **CMP-ADDR** — Vietnam hierarchical address capture (dual-theme Luma+Hyva); customer form + cart estimation done, resolver hardening deferred (AC-011/Q1). → FEAT-YVN39K (done).
+- **CMP-ADDR profile engine (FEAT-2PZQKJ + FEAT-YA2C0W)** — Phase 1 hoàn tất + Phase 2 renderer chờ QC (TASK-3T3NSV): recursive hierarchy (`parent_city_id`/`code` + membership `secomm_address_profile_location`), Address Profile/Schema XML engine merge cross-module, GraphQL `addressLocations`/`addressSchema` (ID-canonical, cacheable — cache varies by store, verified), profiles `vn_current`/`vn_legacy` + membership seeded; Hyva schema-driven renderer `schema-edit.phtml` behind flag `address/general/renderer` (default `legacy`; dev bật `schema` 2026-08-26). TL-approved 2026-08-26: TASK-9AEAQQ/NW66H9/J49PRZ/R83FXW completed.
 - **CMP-STOREFRONT** — admin-configurable storefront announcement toggle (Yes/No → render block). → FEAT-YESRCX (done); FEAT-KQ6WC4 (broader proposal, proposed).
 - **CMP-CHECKOUT / CMP-THEME / CMP-PAYMENT-MOLLIE** — Mageplaza OSC, Hyvä child themes, Mollie (active) installed; no delivery work records yet.
 - **CMP-SECOMM-UI** — shared Hyvä-only Magento widget capability with dynamic Admin authoring and all 21 approved Batch 1 components. Module defaults and product-theme override resolution pass the final compatibility gate; no theme-specific POC override is shipped. → FEAT-J06WXZ / TASK-ZQ9ZE1 / TASK-XY9RZF.
@@ -18,6 +19,8 @@
 ## Known & decided (durable)
 
 - DEC-7 Strategy B (Hyvä-native) · DEC-8 module/Launchpad boundary · DEC-9 dual-theme (Luma+Hyva) — address module.
+- DEC-FEAT2PZQKJ-001 — recursive hierarchy + XML profiles + membership subtree-claim; ID-canonical; D2 BC-first (accepted 2026-08-25).
+- DEC-FEATYA2C0W-001 — VN_CURRENT/VN_LEGACY profiles, legacy codes `L-`, relation table 2 chiều (accepted 2026-08-25).
 - DEC-FEATHEHJQ4-001..006 — VNPAY IPN hardening decisions (status `proposed`; SA/TL to accept): signature, status mapping, retry, idempotency, audit storage, payload versioning.
 - Tier-2 escalation required for payment/checkout/security/schema/contract (AGENTS §11/§12).
 
@@ -27,6 +30,7 @@
 - **Search engine not configured** — Magento 2.4.8 requires OpenSearch (local env missing).
 - **Production infrastructure undefined** — no Redis/Varnish/OpenSearch/CI committed; `env.php` is local-dev only.
 - **AC-011/Q1 deferred** — address resolver `@deprecated` + `@cache(false)` → potential N+1.
+- **Schema-mode interim gaps (known, per user scoping 2026-08-26)** — chỉ customer form tiêu thụ profile; cart/OSC/admin vẫn surface legacy (labels cũ; OSC City trên Region là core order + i18n legacy). Owner: TASK-YQSS3M (cart) / TASK-FMAN1B (OSC) / TASK-9EX975 (admin, deferred). Empty-dataset region = form dead-end (known design, chờ QC W4 ghi nhận).
 
 ## Documentation freshness (verification metadata)
 
@@ -37,8 +41,8 @@
 
 - **Secomm UI Phase 1 / Batch 1 complete** — Batch 2 catalog-backed providers/components remain intentionally deferred until separately requested.
 - **Phase 1a–1d artifacts done**; **1e/1f** semantic-only (satisfied in AGENTS §8.5/§8.6/§9 + `rules/no-duplicate-knowledge.md` — no separate artifact). Migration markers P1A–P1F stamped 2026-07-23 (CHANGELOG 1.3.0).
-- **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..006 `proposed`).
-- **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..006 `proposed`).
+- **Address batch chờ release**: TASK-3T3NSV tại QC gate (browser + L3) → sau đó commit; kế tiếp TASK-YQSS3M (cart) → TASK-FMAN1B (OSC).
+- **FEAT-HEHJQ4** (VNPAY) gated at TL/SA plan approval (DEC-FEATHEHJQ4-001..006 `proposed`) — không đổi.
 
 <!--
 DURABLE snapshot. Update via update-project-state when a record → Done.

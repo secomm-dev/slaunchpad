@@ -67,4 +67,14 @@
         </arguments>
     </type>
 
+    <!-- DEC-FEATYA2C0W-004 (D7) / TASK-Q4B98P: register the GHN mapping table with the
+         VN scheme-swap reference guard. Table knowledge stays in this module. -->
+    <type name="Secomm\VietNamAddress\Model\Import\VnAddressSchemeImporter">
+        <arguments>
+            <argument name="directoryReferenceGuards" xsi:type="array">
+                <item name="secomm_ghn_address_mapping_location" xsi:type="object">Secomm\GhnAddressMapper\Model\Import\DirectoryReferenceGuard</item>
+            </argument>
+        </arguments>
+    </type>
+
 </config>

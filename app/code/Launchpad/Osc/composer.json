@@ -1,0 +1,23 @@
+{
+    "name": "launchpad/module-osc",
+    "description": "Launchpad project layer: Mageplaza One Step Checkout address integration (VN address cascade, schema-driven labels) — TASK-FMAN1B.",
+    "type": "magento2-module",
+    "license": "GPL-3.0",
+    "minimum-stability": "dev",
+    "require": {
+        "magento/framework": "*",
+        "magento/module-checkout": "*"
+    },
+    "suggest": {
+        "mageplaza/module-one-step-checkout": "Required at runtime: this module only activates on the OSC checkout page (soft coupling per DEC-TASKFMAN1B-001).",
+        "secomm/module-addressdropdown": "Provides the address data engine (GraphQL addressSchema/addressLocations) consumed by the cascade."
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Launchpad\\Osc\\": ""
+        }
+    }
+}

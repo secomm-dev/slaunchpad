@@ -1,14 +1,22 @@
-<!-- Non-VN remains Magento's native City input; VN persists the selected ward in the same observable. -->
-<div data-bind="visible: !isVietnam()">
+<!-- TASK-9EX975 Slice A: schema-driven. A mapped country renders its Address Profile's
+     city levels (one select per level, stop-at-leaf); an unmapped country keeps Magento's
+     native City input. The deepest selection persists in the same observable (`city`). -->
+<div data-bind="visible: !hasSchema()">
     <input class="admin__control-text" type="text"
            data-bind="event: {change: userChanges}, value: value, hasFocus: focused, valueUpdate: valueUpdate,
            attr: {name: inputName, placeholder: placeholder, 'aria-describedby': noticeId, id: uid,
            disabled: disabled, maxlength: 255}"/>
 </div>
-<div data-bind="visible: isVietnam">
-    <select class="admin__control-select"
-            data-bind="value: value, options: cityOptions, optionsValue: 'value', optionsText: 'label',
-            optionsCaption: cityCaption, hasFocus: focused,
-            attr: {name: inputName, id: uid, disabled: disabled() || isLoading(),
-            'aria-describedby': noticeId, 'aria-label': noticeId}"></select>
+<div data-bind="visible: hasSchema, foreach: cityLevels">
+    <!-- Level 0 stays visible as a disabled "select a region first" placeholder; deeper
+         levels only show once their parent selection produced options (stop-at-leaf). -->
+    <div class="secomm-source-city-level" data-bind="visible: $index() === 0 || options().length > 0">
+        <label class="secomm-source-city-label" data-bind="text: label"></label>
+        <select class="admin__control-select"
+                data-bind="value: selected, options: options, optionsValue: 'value', optionsText: 'label',
+                optionsCaption: placeholder,
+                attr: {disabled: $parent.disabled() || loading() || !options().length,
+                'aria-label': label},
+                event: {change: $component.onLevelChange.bind($component, $index())}"></select>
+    </div>
 </div>

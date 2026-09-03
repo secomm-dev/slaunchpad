@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  ~ Secomm_AddressDropdown — FEAT-2PZQKJ / TASK-NW66H9 (DEC-FEAT2PZQKJ-001 D4: XML code-shipped profiles).
+  ~ The generic module declares ONLY the `default` fallback profile with Magento-default labels
+  ~ (DEC-FEATJSZQV3-003). Country-specific profiles (e.g. vn_admin_2025 — TASK-ADT94K renamed the
+  ~ pre-DEC-003 vn_current/vn_legacy codes; those live on as importer-side legacy aliases only)
+  ~ live in country adapter modules (Secomm_VietNamAddress) and are bound to a country via store
+  ~ config `address/profiles/mapping` (countryId => profile code). Unmapped country => native Magento behavior.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Secomm_AddressDropdown:etc/address_profiles.xsd">
+    <profile code="default" label="Default Address Profile">
+        <levels>
+            <level entity_type="region" label="State/Province"
+                   placeholder="Please select a region, state or province."
+                   sort_order="10" required="true" translate="label"/>
+            <level entity_type="city" depth="1" label="City"
+                   placeholder="Please select a city."
+                   sort_order="20" required="true" translate="label"/>
+        </levels>
+    </profile>
+</config>

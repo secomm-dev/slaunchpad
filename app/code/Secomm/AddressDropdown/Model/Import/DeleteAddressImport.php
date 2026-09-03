@@ -13,7 +13,6 @@ use Psr\Log\LoggerInterface;
 use Secomm\AddressDropdown\Api\Data\CityInterface;
 use Secomm\AddressDropdown\Api\Data\RegionInterface;
 use Secomm\AddressDropdown\Api\Data\RegionInterfaceFactory;
-use Secomm\AddressDropdown\Api\Data\SubCityInterface;
 use Secomm\AddressDropdown\Model\Constant;
 use Magento\Framework\App\ResourceConnection;
 use Secomm\AddressDropdown\Helper\Data;
@@ -22,7 +21,6 @@ use Secomm\AddressDropdown\Model\ResourceModel\RegionModel\CollectionFactory as 
 use Secomm\AddressDropdown\Model\ResourceModel\CityModel\CityCollectionFactory;
 use Secomm\AddressDropdown\Command\Region\DeleteByIdCommand;
 use Secomm\AddressDropdown\Command\City\DeleteByIdCommand as CityDeleteByIdCommand;
-use Secomm\AddressDropdown\Command\SubCity\DeleteByIdCommand as SubCityDeleteByIdCommand;
 
 /**
  * Delete Address Data
@@ -55,11 +53,6 @@ class DeleteAddressImport
     private CityDeleteByIdCommand $cityDeleteByIdCommand;
 
     /**
-     * @var SubCityDeleteByIdCommand
-     */
-    private SubCityDeleteByIdCommand $subCityDeleteByIdCommand;
-
-    /**
      * @var ResourceConnection
      */
     private ResourceConnection $resourceConnection;
@@ -74,27 +67,24 @@ class DeleteAddressImport
      * @param CityCollectionFactory $cityCollectionFactory
      * @param DeleteByIdCommand $deleteByIdCommand
      * @param CityDeleteByIdCommand $cityDeleteByIdCommand
-     * @param SubCityDeleteByIdCommand $subCityDeleteByIdCommand
      * @param ResourceConnection $resourceConnection
      * @param Data $data
      * @param LoggerInterface $logger
      */
     public function __construct(
-        RegionCollectionFactory  $collectionFactory,
-        CityCollectionFactory    $cityCollectionFactory,
-        DeleteByIdCommand        $deleteByIdCommand,
-        CityDeleteByIdCommand    $cityDeleteByIdCommand,
-        SubCityDeleteByIdCommand $subCityDeleteByIdCommand,
-        ResourceConnection       $resourceConnection,
-        Data                     $data,
-        LoggerInterface          $logger
+        RegionCollectionFactory $collectionFactory,
+        CityCollectionFactory   $cityCollectionFactory,
+        DeleteByIdCommand       $deleteByIdCommand,
+        CityDeleteByIdCommand   $cityDeleteByIdCommand,
+        ResourceConnection      $resourceConnection,
+        Data                    $data,
+        LoggerInterface         $logger
     )
     {
         $this->collectionFactory = $collectionFactory;
         $this->cityCollectionFactory = $cityCollectionFactory;
         $this->deleteByIdCommand = $deleteByIdCommand;
         $this->cityDeleteByIdCommand = $cityDeleteByIdCommand;
-        $this->subCityDeleteByIdCommand = $subCityDeleteByIdCommand;
         $this->resourceConnection = $resourceConnection;
         $this->data = $data;
         $this->logger = $logger;
@@ -149,9 +139,6 @@ class DeleteAddressImport
             foreach ($collectionModel->getData() as $item) {
                 if ($field === CityInterface::REGION_ID) {
                     $this->cityDeleteByIdCommand->execute($item[CityInterface::CITY_ID]);
-                }
-                if ($field === SubCityInterface::CITY_ID) {
-                    $this->subCityDeleteByIdCommand->execute($item[SubCityInterface::SUB_CITY_ID]);
                 }
                 if ($field === RegionInterface::COUNTRY_ID) {
                     $this->deleteByIdCommand->execute($item[RegionInterface::REGION_ID]);

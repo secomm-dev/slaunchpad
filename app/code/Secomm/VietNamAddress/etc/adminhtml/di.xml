@@ -16,4 +16,20 @@
     <type name="Magento\Config\Model\Config">
         <plugin name="secomm_vietnam_config_validate_ward" type="Secomm\VietNamAddress\Plugin\Adminhtml\Config\ValidateVietNamWard" />
     </type>
+
+    <!-- TASK-9EX975 Slice A (AC-003): the remaining admin surfaces get the same
+         ward(province) validation — the quote save behind admin order create/edit, the
+         order address edit form, and the MSI (Inventory) source form. Same non-fatal
+         neutralise+log contract as the two validators above; storefront is not touched. -->
+    <type name="Magento\Quote\Api\CartRepositoryInterface">
+        <plugin name="secomm_vietnam_quote_validate_ward" type="Secomm\VietNamAddress\Plugin\Quote\ValidateVietNamWard" />
+    </type>
+
+    <type name="Magento\Sales\Api\OrderAddressRepositoryInterface">
+        <plugin name="secomm_vietnam_order_address_validate_ward" type="Secomm\VietNamAddress\Plugin\Sales\ValidateVietNamWard" />
+    </type>
+
+    <type name="Magento\InventoryApi\Api\SourceRepositoryInterface">
+        <plugin name="secomm_vietnam_source_validate_ward" type="Secomm\VietNamAddress\Plugin\Inventory\ValidateVietNamWard" />
+    </type>
 </config>

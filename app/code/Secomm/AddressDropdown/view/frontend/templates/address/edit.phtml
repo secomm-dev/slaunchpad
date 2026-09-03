@@ -22,7 +22,6 @@ $regionProvider = $block->getRegionProvider();
 <?php $_region = __('State/Province'); ?>
 <?php $_selectRegion = 'Please select a region, state or province.'; ?>
 <?php $_selectCity = 'Please select a city'; ?>
-<?php $_selectSubCity = 'Please select a sub-city'; ?>
 <?php $_displayAll = $block->getConfig('general/region/display_all'); ?>
 
 <?php $_vatidValidationClass = $viewModel->addressGetAttributeValidationClass('vat_id'); ?>
@@ -161,22 +160,6 @@ $regionProvider = $block->getRegionProvider();
 
             </div>
         </div>
-        <div  class="field sub-city required" id="sub-city-container">
-            <label class="label" for="sub-city">
-                <span><?= $escaper->escapeHtml(__('Sub-City')) ?></span>
-            </label>
-            <?php
-            $subCity = $block->getAddress()->getCustomAttribute('sub_city') ? $block->getAddress()->getCustomAttribute('sub_city')->getValue() : '';
-            ?>
-            <div class="control">
-                <select name="sub_city" id="sub-city-select"
-                        title="<?= $escaper->escapeHtmlAttr(__('Sub-City')) ?>"
-                        class="required-entry"
-                    <?= /* @noEscape */ !$_displayAll ? ' disabled="disabled"' : '' ?>>
-                    <option value=""><?= $escaper->escapeHtml(__($_selectSubCity)) ?></option>
-                </select>
-            </div>
-        </div>
         <div class="field zip required">
             <label class="label" for="zip">
                 <span><?= /* @noEscape */ $block->getAttributeData()->getFrontendLabel('postcode') ?></span>
@@ -266,11 +249,8 @@ $regionProvider = $block->getRegionProvider();
             "directoryAddressDropdownUpdater": {
                 "cityListId": "#city-select",
                 "cityInputId": "#city-input",
-                "subCityListId": "#sub-city-select",
-                "subCityInputId": "#sub-city-input",
                 "form": "#form-validate",
-                "currentCity": "<?= /* @noEscape */ $block->getAddress()->getCity(); ?>",
-                "currentSubCity": "<?= /* @noEscape */ $block->getAddress()->getCustomAttribute('sub_city') ? $block->getAddress()->getCustomAttribute('sub_city')->getValue() : ""; ?>"
+                "currentCity": "<?= /* @noEscape */ $block->getAddress()->getCity(); ?>"
             }
         }
 }

@@ -8,6 +8,7 @@
         "magento/framework": ">=103.0.0",
         "secomm/module-base": "*",
         "secomm/module-address-dropdown": "*",
+        "secomm/module-vietnam-address": "*",
         "secomm/module-giaohangnhanh": "*"
     },
     "autoload": {

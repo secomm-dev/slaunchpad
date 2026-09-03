@@ -126,6 +126,24 @@ class CityDataProvider extends DataProvider
     }
 
     /**
+     * TASK-9EX975 Slice B: when the form is opened via the grid "Add child" action, the
+     * parent is locked (readonly-context) — the admin picked it explicitly from the row.
+     *
+     * @return array
+     */
+    public function getMeta(): array
+    {
+        $meta = parent::getMeta();
+        if ($this->request->getActionName() === 'new'
+            && $this->request->getParam(CityInterface::PARENT_CITY_ID)
+        ) {
+            $meta['general']['children']['parent_city_id']['arguments']['data']['config']['disabled'] = true;
+        }
+
+        return $meta;
+    }
+
+    /**
      * Get data.
      *
      * @return array
@@ -144,9 +162,11 @@ class CityDataProvider extends DataProvider
                 return $this->loadedData;
             }
             if (($regionId = $this->request->getParam(CityInterface::REGION_ID)) && empty($this->loadedData['items'])){
+                // TASK-9EX975 Slice B: "Add child" opens the form with the parent locked in.
                 $this->loadedData['items'][] = [
                     CityInterface::CITY_ID => null,
                     CityInterface::REGION_ID => $regionId,
+                    CityInterface::PARENT_CITY_ID => $this->request->getParam(CityInterface::PARENT_CITY_ID),
                 ];
             }
         }

@@ -10,7 +10,7 @@ created: 2026-08-03
 last_verified: 2026-08-03
 verified_against_commit:
 supersedes: []
-superseded_by:
+superseded_by: DEC-FEAT2PZQKJ-001   # 2026-08-25: point 3 (sub_city fixed 3rd level) thay bằng recursive hierarchy; points 1-2 restated
 work_items: [FEAT-E2HM1J, FEAT-JSZQV3, FEAT-YVN39K, TASK-4ZV5NG, TASK-SQY42T, TASK-8WSERX, TASK-2V0AEV]
 ---
 
