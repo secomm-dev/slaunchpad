@@ -1,5 +1,5 @@
 {
-    "_hash": "6aacb1eff57a08840b8c5fc761f7fcf7b0e48dda3c46c6b1297cd169a205fe09",
+    "_hash": "d0679454788790e1bb614ab56af648a7c0c3616cbda548bf3aeb8098edc80bb8",
     "patches": {
         "magento/module-async-config": [
             {
@@ -169,6 +169,16 @@
                 "description": "APSB26-92: Security release 248p5-2026-08-001 CE",
                 "url": "patches/composer/APSB26-92-248p5-2026-08-001-CE/magento2-base.patch",
                 "sha256": "6bd5460310609a666cec213b315c7fa30effacf5c5a5e15c538bf532f8e3c67c",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "magento/magento2-base",
+                "description": "MAGENTO-40225-datepicker-fix-position (PR #40225)",
+                "url": "patches/composer/MAGENTO-40225-datepicker-fix-position.patch",
+                "sha256": "3eb443b3427b23d22b91e71f65dac93068519aee8683330752517decb5c94d65",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
