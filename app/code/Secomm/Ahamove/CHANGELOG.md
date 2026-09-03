@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.3] - 2026-09-03
+
+### Fixed
+- **Shipping Fee Currency Conversion**: `Helper/Data::convertPriceToDefaultCurrency()` now normalizes the Ahamove VND shipping fee to the **store base currency** (carrier-price contract) instead of the current store view's display currency, which caused a double conversion and a ~0 USD shipping fee on the EN store view (`BUG-YQT1FW` / `SLP-138`). Adds a `rate > 0` guard, safe fallback to the raw fee when the rate lookup fails, and error logging.
+
+---
+
 ## [1.0.2] - 2026-08-27
 
 ### Fixed

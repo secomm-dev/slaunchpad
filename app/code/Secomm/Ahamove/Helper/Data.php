@@ -228,20 +228,21 @@ class Data extends AbstractHelper
      */
     public function convertPriceToDefaultCurrency($shippingFee)
     {
+        $baseCurrencyCode = $this->getBaseCurrencyCode();
+        if ($baseCurrencyCode === 'VND' || empty($shippingFee)) {
+            return (float)$shippingFee;
+        }
+
         try {
-            $defaultCurrencyCode = $this->getDefaultCurrencyCode();
-            if ($defaultCurrencyCode != 'VND') {
-                $rate = $this->currency->getRate($defaultCurrencyCode, 'VND');
-                return $this->priceCurrency->roundPrice($shippingFee / $rate);
-            } else {
-                $baseCurrencyCode = $this->getBaseCurrencyCode();
-                $rate = $this->currency->getRate($baseCurrencyCode, 'VND');
-                return $this->priceCurrency->roundPrice($shippingFee / $rate);
+            $rate = (float)$this->currency->getRate($baseCurrencyCode, 'VND');
+            if ($rate > 0) {
+                return (float)$this->priceCurrency->roundPrice($shippingFee / $rate);
             }
         } catch (\Exception $exception) {
-            $this->_logger->error($exception->getMessage());
-            return 0;
+            $this->_logger->error('Ahamove convert currency error: ' . $exception->getMessage());
         }
+
+        return (float)$shippingFee;
     }
 
     /**

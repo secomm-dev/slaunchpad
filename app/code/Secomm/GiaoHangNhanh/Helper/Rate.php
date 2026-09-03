@@ -12,6 +12,7 @@ use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Directory\Model\ResourceModel\Currency;
 use Magento\Directory\Model\PriceCurrency;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Rate
@@ -45,7 +46,8 @@ class Rate
         Data $helperData,
         StoreManagerInterface $storeManager,
         protected Currency $currency,
-        protected PriceCurrency $priceCurrency
+        protected PriceCurrency $priceCurrency,
+        protected LoggerInterface $logger
     ) {
         $this->storeManager = $storeManager;
         $this->helperData = $helperData;
@@ -77,24 +79,29 @@ class Rate
     }
 
     /**
-     * @param $shippingFee
-     * @return float|int
+     * Convert shipping fee from VND to Store Base Currency
+     *
+     * @param float|int $shippingFee
+     * @return float
      */
-    public function convertPriceToDefaultCurrency($shippingFee)
+    public function convertPriceToDefaultCurrency($shippingFee): float
     {
+        $baseCurrencyCode = $this->getBaseCurrencyCode();
+        if ($baseCurrencyCode === self::CURRENCY_CODE || empty($shippingFee)) {
+            return (float)$shippingFee;
+        }
+
         try {
-            $defaultCurrencyCode = $this->getDefaultCurrencyCode();
-            if ($defaultCurrencyCode != 'VND') {
-                $rate = $this->currency->getRate($defaultCurrencyCode, 'VND');
-                return $this->priceCurrency->roundPrice($shippingFee / $rate);
-            } else {
-                $baseCurrencyCode = $this->getBaseCurrencyCode();
-                $rate = $this->currency->getRate($baseCurrencyCode, 'VND');
-                return $this->priceCurrency->roundPrice($shippingFee / $rate);
+            $rate = (float)$this->currency->getRate($baseCurrencyCode, self::CURRENCY_CODE);
+            if ($rate > 0) {
+                return (float)$this->priceCurrency->roundPrice($shippingFee / $rate);
             }
         } catch (\Exception $exception) {
-            return 0;
+            // The price falls back to the original price to avoid crashing checkout, but the logs are still available for diagnostics.
+            $this->logger->error('GHN convert currency error: ' . $exception->getMessage());
         }
+
+        return (float)$shippingFee;
     }
 
     /**
