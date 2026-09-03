@@ -4,14 +4,18 @@ define([
     'Magento_Checkout/js/model/quote',
     'Magento_Checkout/js/action/set-shipping-information',
     'mage/loader', // Ensure loader is included
-    'knockout'
+    'knockout',
+    'Magento_Checkout/js/model/shipping-rate-registry',
+    'Magento_Checkout/js/model/shipping-rate-service'
 ], function (
     $,
     Component,
     quote,
     setShippingInformationAction,
     loader,
-    ko
+    ko,
+    rateRegistry,
+    shippingRateService
 ) {
     'use strict';
 
@@ -101,24 +105,24 @@ define([
             $(document)
                 .off('change.secommShippingCountry', COUNTRY_SELECTOR + ', ' + COUNTRY_SELECTOR_ALT)
                 .on('change.secommShippingCountry', COUNTRY_SELECTOR + ', ' + COUNTRY_SELECTOR_ALT, function () {
-                let selectedCountryId = $(this).val();
-                let previousCountryId = self.lastCountryId;
+                    let selectedCountryId = $(this).val();
+                    let previousCountryId = self.lastCountryId;
 
-                if (previousCountryId === 'VN' && !self.isVietnamCountry(selectedCountryId)) {
-                    let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
-                    if (cityInputViewModel && cityInputViewModel.value) {
-                        cityInputViewModel.value('');
+                    if (previousCountryId === 'VN' && !self.isVietnamCountry(selectedCountryId)) {
+                        let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
+                        if (cityInputViewModel && cityInputViewModel.value) {
+                            cityInputViewModel.value('');
+                        }
+                        $(CITY_SELECTOR).val('').trigger('change');
                     }
-                    $(CITY_SELECTOR).val('').trigger('change');
-                }
 
-                if (!self.isVietnamCountry(selectedCountryId)) {
-                    self.applyNonVietnamUiState();
-                }
+                    if (!self.isVietnamCountry(selectedCountryId)) {
+                        self.applyNonVietnamUiState();
+                    }
 
-                self.lastCountryId = selectedCountryId;
-                self.cityVisible();
-            });
+                    self.lastCountryId = selectedCountryId;
+                    self.cityVisible();
+                });
         },
 
         initializeCitySubCityElements: function () {
@@ -151,8 +155,8 @@ define([
                 if (!$scope.length) {
                     return;
                 }
-                let $postcode  = $scope.find('input[name="postcode"]');
-                let $country   = $scope.find('select[name="country_id"]');
+                let $postcode = $scope.find('input[name="postcode"]');
+                let $country = $scope.find('select[name="country_id"]');
                 let $cityLabel = $scope.find('label[for="custom-city-select"]');
 
                 if ($postcode.length && $country.length) {
@@ -224,7 +228,7 @@ define([
                         if (shippingAddress && shippingAddress.city) {
                             let cachedCity = shippingAddress.city;
                             let cachedSubCity = (shippingAddress.extension_attributes
-                                    && shippingAddress.extension_attributes.sub_city)
+                                && shippingAddress.extension_attributes.sub_city)
                                 || $(CUSTOM_ATTR_SUB_CITY).val() || '';
                             let matched = customCitySelect.find('option').filter(function () {
                                 return $(this).text() === cachedCity || $(this).val() === cachedCity;
@@ -258,12 +262,23 @@ define([
                     cityInputViewModel.value(cityLabel);
                     $(CITY_SELECTOR).val(cityLabel).trigger('change');
                 }
-                let hash = window.location.hash;
-                if (hash === '#shipping') {
-                    setShippingInformationAction();
+
+                if (quote.shippingAddress()) {
+                    quote.shippingAddress().city = cityLabel;
+                }
+
+                if (defaultName !== "") {
                     $(CITY_ERROR).hide();
                     $(CUSTOM_CITY_SELECTOR).removeClass('custom-error');
+
+                    if (quote.shippingAddress()) {
+                        rateRegistry.set(quote.shippingAddress().getKey(), null);
+                        rateRegistry.set(quote.shippingAddress().getCacheKey(), null);
+                    }
+                    shippingRateService.isAddressChange = true;
+                    shippingRateService.estimateShippingMethod();
                 }
+
                 if (self.isVietnamCountry()) {
                     self.loadSubCities(defaultName, "");
                 }
@@ -274,12 +289,26 @@ define([
             let self = this;
             customSubCitySelect.on('change', function () {
                 let selectedSubCity = $(this).val();
-                    subCityElement.val(selectedSubCity).trigger('change');
-                    quote.shippingAddress().extension_attributes = { sub_city: selectedSubCity };
-                    $(CUSTOM_ATTR_SUB_CITY).val(selectedSubCity).trigger('change');
-                    setShippingInformationAction();
-                $(SUB_CITY_ERROR).hide();
-                $(CUSTOM_SUB_CITY_SELECTOR).removeClass('custom-error');
+                subCityElement.val(selectedSubCity).trigger('change');
+                if (quote.shippingAddress()) {
+                    quote.shippingAddress().extension_attributes = $.extend(
+                        quote.shippingAddress().extension_attributes || {},
+                        { sub_city: selectedSubCity }
+                    );
+                }
+                $(CUSTOM_ATTR_SUB_CITY).val(selectedSubCity).trigger('change');
+
+                if (selectedSubCity !== "") {
+                    $(SUB_CITY_ERROR).hide();
+                    $(CUSTOM_SUB_CITY_SELECTOR).removeClass('custom-error');
+
+                    if (quote.shippingAddress()) {
+                        rateRegistry.set(quote.shippingAddress().getKey(), null);
+                        rateRegistry.set(quote.shippingAddress().getCacheKey(), null);
+                    }
+                    shippingRateService.isAddressChange = true;
+                    shippingRateService.estimateShippingMethod();
+                }
             });
         },
 
@@ -349,9 +378,9 @@ define([
                 return;
             }
 
-            if ($(CUSTOM_SUB_CITY_SELECTOR).find('option').length <= 1 || $('#custom-city-select').val() == null){
+            if ($(CUSTOM_SUB_CITY_SELECTOR).find('option').length <= 1 || $('#custom-city-select').val() == null) {
                 $(SHIPPING_ADDRESS_SUB_CITY).hide();
-            }else{
+            } else {
                 $(SHIPPING_ADDRESS_SUB_CITY).show();
             }
         },
@@ -496,11 +525,11 @@ define([
             if ($(CUSTOM_CITY_SELECTOR).val() === '' && $(SHIPPING_ADDRESS_CITY).is(':visible')) {
                 $(CITY_ERROR).show();
                 $(CUSTOM_CITY_SELECTOR).addClass('custom-error');
-            }else{
+            } else {
                 $(CITY_ERROR).hide();
                 $(CUSTOM_CITY_SELECTOR).removeClass('custom-error');
             }
-            if ($(CITY_SELECTOR).val() === '' && $(CITY_DEFAULT).is(':visible')){
+            if ($(CITY_SELECTOR).val() === '' && $(CITY_DEFAULT).is(':visible')) {
                 $(CITY_DEFAULT).find(".field-error").show();
             }
         },
@@ -509,7 +538,7 @@ define([
             if ($(CUSTOM_SUB_CITY_SELECTOR).val() === '' && $(SHIPPING_ADDRESS_SUB_CITY).is(':visible')) {
                 $(SUB_CITY_ERROR).show();
                 $(CUSTOM_SUB_CITY_SELECTOR).addClass('custom-error');
-            }else{
+            } else {
                 $(SUB_CITY_ERROR).hide();
                 $(CUSTOM_SUB_CITY_SELECTOR).removeClass('custom-error');
             }
