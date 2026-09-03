@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Secomm\UiWidget\Api\ComponentRegistryInterface"
+                type="Secomm\UiWidget\Model\Component\Registry"/>
+    <preference for="Secomm\UiWidget\Api\TemplateResolverInterface"
+                type="Secomm\UiWidget\Model\Component\TemplateResolver"/>
+    <preference for="Secomm\UiWidget\Api\ParameterCodecInterface"
+                type="Secomm\UiWidget\Model\Parameter\Codec"/>
+    <preference for="Secomm\UiWidget\Api\SchemaValidatorInterface"
+                type="Secomm\UiWidget\Model\Component\SchemaValidator"/>
+    <type name="Secomm\UiWidget\Model\Component\Registry">
+        <arguments>
+            <argument name="definitions" xsi:type="array">
+                <item name="banner_a" xsi:type="object">Secomm\UiWidget\Model\Component\BannerADefinition</item>
+                <item name="banner_b" xsi:type="object">Secomm\UiWidget\Model\Component\BannerBDefinition</item>
+                <item name="banner_c" xsi:type="object">Secomm\UiWidget\Model\Component\BannerCDefinition</item>
+                <item name="accordion_a" xsi:type="object">Secomm\UiWidget\Model\Component\AccordionADefinition</item>
+                <item name="generic_content_a" xsi:type="object">Secomm\UiWidget\Model\Component\GenericContentADefinition</item>
+                <item name="card_a" xsi:type="object">Secomm\UiWidget\Model\Component\CardADefinition</item>
+                <item name="card_b" xsi:type="object">Secomm\UiWidget\Model\Component\CardBDefinition</item>
+                <item name="categories_a" xsi:type="object">Secomm\UiWidget\Model\Component\CategoriesADefinition</item>
+                <item name="categories_b" xsi:type="object">Secomm\UiWidget\Model\Component\CategoriesBDefinition</item>
+                <item name="embed_a" xsi:type="object">Secomm\UiWidget\Model\Component\EmbedADefinition</item>
+                <item name="generic_content_b" xsi:type="object">Secomm\UiWidget\Model\Component\GenericContentBDefinition</item>
+                <item name="modal_a" xsi:type="object">Secomm\UiWidget\Model\Component\ModalADefinition</item>
+                <item name="product_highlights_c" xsi:type="object">Secomm\UiWidget\Model\Component\ProductHighlightsCDefinition</item>
+                <item name="shortcuts_a" xsi:type="object">Secomm\UiWidget\Model\Component\ShortcutsADefinition</item>
+                <item name="slider_a" xsi:type="object">Secomm\UiWidget\Model\Component\SliderADefinition</item>
+                <item name="slider_b" xsi:type="object">Secomm\UiWidget\Model\Component\SliderBDefinition</item>
+                <item name="testimonial_a" xsi:type="object">Secomm\UiWidget\Model\Component\TestimonialADefinition</item>
+                <item name="testimonial_b" xsi:type="object">Secomm\UiWidget\Model\Component\TestimonialBDefinition</item>
+                <item name="usp_a" xsi:type="object">Secomm\UiWidget\Model\Component\UspADefinition</item>
+                <item name="usp_b" xsi:type="object">Secomm\UiWidget\Model\Component\UspBDefinition</item>
+                <item name="usp_c" xsi:type="object">Secomm\UiWidget\Model\Component\UspCDefinition</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Widget\Model\Widget">
+        <plugin name="secomm_ui_widget_validate_directive_parameters"
+                type="Secomm\UiWidget\Plugin\ValidateWidgetParameters"/>
+    </type>
+    <type name="Magento\Widget\Model\Widget\Instance">
+        <plugin name="secomm_ui_widget_validate_instance_parameters"
+                type="Secomm\UiWidget\Plugin\ValidateWidgetInstanceParameters"/>
+    </type>
+</config>

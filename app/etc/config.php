@@ -452,6 +452,7 @@ return [
         'Secomm_Promotion' => 1,
         'Secomm_PromotionMaxDiscount' => 1,
         'Secomm_Ahamove' => 1,
+        'Secomm_UiWidget' => 1,
         'Secomm_Tracking' => 1,
         'Secomm_VietNamAddress' => 1,
         'Secomm_VietNamMarket' => 1,
