@@ -1,0 +1,12 @@
+--- a/Plugin/SalesOrderGridPlugin.php
++++ b/Plugin/SalesOrderGridPlugin.php
+@@ -53,7 +53,8 @@
+                             $condition
+                         );
+                     }
+-                    if (!str_contains($condition, "`created_at`")) {
++                    if (!str_contains($condition, "`created_at`")
++                        || str_contains($condition, "`main_table`.`created_at`")) {
+                         continue;
+                     }
+                     $wherePart[$key] = str_replace("`created_at`", "`main_table`.`created_at`", $condition);

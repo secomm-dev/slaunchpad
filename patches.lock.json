@@ -1,5 +1,5 @@
 {
-    "_hash": "d0679454788790e1bb614ab56af648a7c0c3616cbda548bf3aeb8098edc80bb8",
+    "_hash": "788ac5ac282dcb646b7c43be8c478070750f533796a45bd92dce3ebe0041706a",
     "patches": {
         "magento/module-async-config": [
             {
@@ -215,6 +215,18 @@
                 "description": "APSB26-92: Security release 248p5-2026-08-001 CE",
                 "url": "patches/composer/APSB26-92-248p5-2026-08-001-CE/module-review.patch",
                 "sha256": "4cf9d57e1c4a1f6f53eff4e3b86cb16acb9c84167c1b009a9c7be7c2ed7dc671",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "paypal/module-braintree-core": [
+            {
+                "package": "paypal/module-braintree-core",
+                "description": "Fix double main_table prefix on created_at filter (order grid Purchase Date)",
+                "url": "patches/composer/BUNDLE-3357-unable-to-filter-order-in-admin-by-date.patch",
+                "sha256": "92c5e370fc664054a7e48245d816a6bda8a7af58c437353a16cc91c5e5a4e340",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
