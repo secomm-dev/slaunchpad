@@ -108,6 +108,40 @@
                     <label>Awaiting Confirm Status</label>
                     <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
                 </field>
+
+                <!-- Auto-Cancel (AC-024..AC-027) -->
+                <field id="autocancel_active" translate="label" type="select" sortOrder="150"
+                       showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable Auto-Cancel Cron</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Cancels unpaid VietQR orders that exceeded the payment timeout.</comment>
+                </field>
+                <field id="autocancel_frequency" translate="label" type="select" sortOrder="155"
+                       showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Cron Frequency</label>
+                    <source_model>Secomm\VietQr\Model\Source\CronFrequency</source_model>
+                    <!-- Option values are literal cron expressions; the crontab job's
+                         <config_path> points at this field's path, so the schedule is
+                         resolved from this value at runtime. Server-level: default scope only. -->
+                    <comment>The effective cancel delay is the timeout plus up to one interval. A frequency change can take up to ~1 hour to apply (already-generated schedule entries).</comment>
+                </field>
+                <field id="autocancel_timeout" translate="label" type="text" sortOrder="160"
+                       showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Payment Timeout (minutes)</label>
+                    <frontend_class>validate-greater-than-zero</frontend_class>
+                    <comment>Maximum time an order may stay in the pending VietQR status before the cron cancels it. 1440 = 24 hours.</comment>
+                    <depends>
+                        <field id="autocancel_active">1</field>
+                    </depends>
+                </field>
+                <field id="autocancel_reason" translate="label" type="text" sortOrder="170"
+                       showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Cancel Reason</label>
+                    <comment>Saved as an (admin-only) order status history comment when the cron cancels an order.</comment>
+                    <depends>
+                        <field id="autocancel_active">1</field>
+                    </depends>
+                </field>
             </group>
         </section>
     </system>

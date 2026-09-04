@@ -160,13 +160,15 @@ class Config
     }
 
     /**
+     * @param int|null $storeId
      * @return string
      */
-    public function getNewOrderStatus(): string
+    public function getNewOrderStatus(?int $storeId = null): string
     {
         return (string)$this->scopeConfig->getValue(
             self::XML_PATH_PREFIX . 'order_status',
-            ScopeInterface::SCOPE_STORE
+            ScopeInterface::SCOPE_STORE,
+            $storeId
         );
     }
 
@@ -192,5 +194,50 @@ class Config
         );
 
         return $comment !== '' ? $comment : (string)__('Customer confirmed bank transfer via VietQR page.');
+    }
+
+    /**
+     * Whether the auto-cancel cron is enabled for the given store (AC-024).
+     *
+     * @param int|null $storeId
+     * @return bool
+     */
+    public function isAutoCancelEnabled(?int $storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_PREFIX . 'autocancel_active',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * Max minutes an order may stay pending before auto-cancel (AC-024).
+     *
+     * @param int|null $storeId
+     * @return int
+     */
+    public function getAutoCancelTimeout(?int $storeId = null): int
+    {
+        return (int)$this->scopeConfig->getValue(
+            self::XML_PATH_PREFIX . 'autocancel_timeout',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ) ?: 1440;
+    }
+
+    /**
+     * Cancel reason recorded in the order status history (AC-024).
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getAutoCancelReason(?int $storeId = null): string
+    {
+        return trim((string)$this->scopeConfig->getValue(
+            self::XML_PATH_PREFIX . 'autocancel_reason',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        )) ?: (string)__('Canceled automatically because payment timeout exceeded.');
     }
 }

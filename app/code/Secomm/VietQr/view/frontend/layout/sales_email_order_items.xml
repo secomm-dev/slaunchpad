@@ -4,7 +4,12 @@
     <body>
         <referenceBlock name="order.items.additional">
             <block class="Magento\Sales\Block\Order\Email\Items" name="vietqr.email.payment.info"
-                   template="Secomm_VietQr::email/payment-info.phtml"/>
+                   template="Secomm_VietQr::email/payment-info.phtml">
+                <arguments>
+                    <argument name="vietqr_config" xsi:type="object">Secomm\VietQr\Model\Config</argument>
+                    <argument name="vietqr_timezone" xsi:type="object">Magento\Framework\Stdlib\DateTime\Timezone</argument>
+                </arguments>
+            </block>
         </referenceBlock>
     </body>
 </page>

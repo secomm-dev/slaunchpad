@@ -68,6 +68,7 @@ AI should check this file before planning any work to avoid known problem areas.
 | Hyvä private Packagist (auth.json) | Token validity gates repo access | Keep Packagist token valid; document for deployment |
 | 3rd-party quote-total collectors (sort 300–450) vs `Secomm_PromotionMaxDiscount` cap collector (310) | Extension mới mutate discount sau collector 300 (chưa qua 310) hoặc chạy giữa 300–310 sẽ thấy số chưa cap | Re-check wiring khi install extension chạm quote totals (spec §14 FEAT-JKZM68): verify thứ tự qua CollectorFactory |
 | Composite (configurable/bundle) children-calculated breakdown | TASK-4HYX6Y gap: breakdown ở parent item nhưng amounts phân xuống children — chưa verify engine-level (MSI composite fixture) | Nếu merchant dùng configurable/bundle với capped rule: kiểm tra order-item copy kỹ; mở điều tra fixture nếu cần |
+| VietQR auto-cancel cron (TASK-6X2FQH) phụ thuộc cron daemon/system crontab chạy thật — cron không chạy → order quá hạn kẹt `vietqr_pending` mãi mãi, fail silent (không path cleanup nào khác) | Abandoned orders không được hủy; grid + inventory pollution; deadline messaging hiển thị "sẽ hủy" nhưng không bao giờ xảy ra | Sau deploy: verify `cron_schedule` có row `success` cho `secomm_vietqr_cancel_pending`; prod cần system crontab chuẩn Magento; dev docker cần `make cron start` sau rebuild container |
 
 ## Performance Constraints
 
