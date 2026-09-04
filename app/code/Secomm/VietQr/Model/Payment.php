@@ -22,6 +22,7 @@ class Payment extends AbstractMethod
     public const CODE = 'secomm_vietqr';
 
     protected $_code = self::CODE;
+    protected $_infoBlockType = \Secomm\VietQr\Block\Info\VietQr::class;
     protected $_isOffline = true;
     protected $_isGateway = false;
     protected $_canAuthorize = false;

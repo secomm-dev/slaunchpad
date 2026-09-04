@@ -202,9 +202,17 @@ abstract class GHN extends AbstractCarrier implements CarrierInterface
                 $commandResult = $this->commandPool->get('calculate_rate')->execute($subject);
                 $rate = SubjectReader::readRate($commandResult->get());
                 $shippingFee = SubjectReader::readServiceFee($rate);
+
+                if ($this->isDebug()) {
+                    $this->_logger->debug('[GHN Calculate Rate API Response]: ' . json_encode($rate, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+                    $this->_logger->debug('[GHN Calculated Shipping Fee]: ' . $shippingFee);
+                }
             }
             return $this->helperRate->convertPriceToDefaultCurrency($shippingFee);
         } catch (Exception $e) {
+            if ($this->isDebug()) {
+                $this->_logger->error('[GHN Estimate Shipping Cost Error]: ' . $e->getMessage());
+            }
             return null;
         }
     }
@@ -420,5 +428,18 @@ abstract class GHN extends AbstractCarrier implements CarrierInterface
     protected function getMaxConvertedMassOrder(): int
     {
         return (int)$this->getAdvancedConfig('maximum_converted_mass_order')/1000;
+    }
+
+    /**
+     * Check if debug mode is enabled
+     *
+     * @return bool
+     */
+    public function isDebug(): bool
+    {
+        return (bool)$this->_scopeConfig->getValue(
+            'giaohangnhanh_setting/general/debug',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
     }
 }

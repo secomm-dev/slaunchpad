@@ -99,24 +99,24 @@ define([
             $(document)
                 .off('change.secommShippingCountry', COUNTRY_SELECTOR + ', ' + COUNTRY_SELECTOR_ALT)
                 .on('change.secommShippingCountry', COUNTRY_SELECTOR + ', ' + COUNTRY_SELECTOR_ALT, function () {
-                let selectedCountryId = $(this).val();
-                let previousCountryId = self.lastCountryId;
+                    let selectedCountryId = $(this).val();
+                    let previousCountryId = self.lastCountryId;
 
-                if (previousCountryId === 'VN' && !self.isVietnamCountry(selectedCountryId)) {
-                    let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
-                    if (cityInputViewModel && cityInputViewModel.value) {
-                        cityInputViewModel.value('');
+                    if (previousCountryId === 'VN' && !self.isVietnamCountry(selectedCountryId)) {
+                        let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
+                        if (cityInputViewModel && cityInputViewModel.value) {
+                            cityInputViewModel.value('');
+                        }
+                        $(CITY_SELECTOR).val('').trigger('change');
                     }
-                    $(CITY_SELECTOR).val('').trigger('change');
-                }
 
-                if (!self.isVietnamCountry(selectedCountryId)) {
-                    self.applyNonVietnamUiState();
-                }
+                    if (!self.isVietnamCountry(selectedCountryId)) {
+                        self.applyNonVietnamUiState();
+                    }
 
-                self.lastCountryId = selectedCountryId;
-                self.cityVisible();
-            });
+                    self.lastCountryId = selectedCountryId;
+                    self.cityVisible();
+                });
         },
 
         initializeCityCascadeElements: function () {

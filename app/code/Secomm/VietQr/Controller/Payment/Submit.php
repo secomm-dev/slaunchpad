@@ -92,18 +92,31 @@ class Submit implements HttpPostActionInterface
 
         try {
             $now = (new \DateTime())->format('Y-m-d H:i:s');
+            $transactionRef = trim((string)$this->request->getParam('transaction_ref', ''));
+            $customerNotes = trim((string)$this->request->getParam('customer_notes', ''));
+
             $newInfo = array_merge($additionalInfo, [
                 'vietqr_customer_confirmed' => true,
                 'vietqr_customer_confirmed_at' => $now,
-                'vietqr_transaction_ref' => $this->request->getParam('transaction_ref', ''),
-                'vietqr_customer_notes' => $this->request->getParam('customer_notes', ''),
+                'vietqr_transaction_ref' => $transactionRef,
+                'vietqr_customer_notes' => $customerNotes,
             ]);
             $payment->setAdditionalInformation($newInfo);
             $payment->save();
 
             $order->setStatus($this->config->getAwaitingConfirmStatus());
+
+            $defaultComment = $this->config->getCustomerConfirmComment();
+            $commentLines = [__($defaultComment)];
+            if ($transactionRef !== '') {
+                $commentLines[] = __('Transaction Reference: %1', $transactionRef);
+            }
+            if ($customerNotes !== '') {
+                $commentLines[] = __('Customer Notes: %1', $customerNotes);
+            }
+
             $order->addCommentToStatusHistory(
-                __('Customer confirmed bank transfer via VietQR page.'),
+                implode("\n", $commentLines),
                 false,
                 false
             );

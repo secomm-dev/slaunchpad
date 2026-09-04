@@ -8,7 +8,7 @@ define([], function () {
         getRules: function () {
             return {
                 'postcode': {
-                    'required': true
+                    'required': false
                 },
                 'country_id': {
                     'required': true
