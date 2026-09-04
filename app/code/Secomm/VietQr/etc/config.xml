@@ -15,6 +15,7 @@
                 <api_endpoint>https://vietqr.vn/api/vietqr/generate</api_endpoint>
                 <request_timeout>10</request_timeout>
                 <transfer_content_template>DH{{order_increment_id}}</transfer_content_template>
+                <customer_confirm_comment>Customer confirmed bank transfer via VietQR page.</customer_confirm_comment>
                 <awaiting_confirm_status>vietqr_awaiting_payment_confirm</awaiting_confirm_status>
             </secomm_vietqr>
         </payment>

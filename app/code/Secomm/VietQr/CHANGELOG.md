@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.3 (2026-09-03)
+
+- Added `Block/Info/VietQr` to render payment additional information (Bank, Account Number, Account Holder, Amount, Transfer Content, Customer Confirmed, Confirmed At, Transaction Reference, Customer Notes) in Admin Order View and invoices/PDFs (BUG-63CVS3 / SLP-149)
+- Updated `Model/Payment` to register `$_infoBlockType` pointing to `Block/Info/VietQr`
+- Updated `Controller/Payment/Submit` to append Transaction Reference and Customer Notes into order status history comment
+- Added system configuration `customer_confirm_comment` allowing merchants to customize the default confirmation comment in Admin
+- Added bilingual translations for all new payment info labels and configuration in `vi_VN.csv` and `en_US.csv`
+
 ## 1.0.2 (2026-08-26)
 
 - Added `vietqr_pending` ("Chờ thanh toán") as the default order status — merchants filter VietQR orders in the Admin grid; customers see "unpaid" in My Orders

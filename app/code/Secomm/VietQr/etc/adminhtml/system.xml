@@ -93,6 +93,11 @@
                        showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Payment Instructions</label>
                 </field>
+                <field id="customer_confirm_comment" translate="label comment" type="textarea" sortOrder="125"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Customer Confirmed Comment</label>
+                    <comment>Default order comment added to status history when customer confirms bank transfer on VietQR page.</comment>
+                </field>
                 <field id="order_status" translate="label" type="select" sortOrder="130"
                        showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
                     <label>New Order Status</label>

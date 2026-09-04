@@ -180,4 +180,17 @@ class Config
             ScopeInterface::SCOPE_STORE
         );
     }
+
+    /**
+     * @return string
+     */
+    public function getCustomerConfirmComment(): string
+    {
+        $comment = (string)$this->scopeConfig->getValue(
+            self::XML_PATH_PREFIX . 'customer_confirm_comment',
+            ScopeInterface::SCOPE_STORE
+        );
+
+        return $comment !== '' ? $comment : (string)__('Customer confirmed bank transfer via VietQR page.');
+    }
 }
