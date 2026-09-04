@@ -441,6 +441,7 @@ return [
         'PayPal_BraintreeGraphQl' => 1,
         'PayPal_BraintreeReward' => 1,
         'Launchpad_Osc' => 1,
+        'Secomm_AdminCalendarFix' => 1,
         'Secomm_ShippingCore' => 1,
         'Secomm_AiCommerce' => 1,
         'Secomm_AiDiscoverability' => 1,

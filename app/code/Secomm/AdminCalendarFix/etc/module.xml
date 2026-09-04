@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<!--/**
+ * Module AdminCalendarFix of Secomm package
+ * @package Secomm_AdminCalendarFix
+ * @see .ai/records/bugs/BUG-SRF024.md (SLP-147)
+ */-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+	<module name="Secomm_AdminCalendarFix">
+		<sequence>
+			<module name="Magento_Backend"/>
+		</sequence>
+	</module>
+</config>
