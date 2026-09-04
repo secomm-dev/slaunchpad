@@ -12,6 +12,7 @@ use Magento\Framework\Console\Cli;
 use Secomm\VietNamAddress\Model\Import\VnAddressSchemeImporter;
 use Secomm\VietNamAddress\Model\Import\VnImportReport;
 use Secomm\VietNamAddress\Model\Import\VnImportValidationException;
+use Secomm\VietNamAddress\Model\Import\VnReferenceSchemeImporter;
 use Secomm\VietNamAddress\Model\Scheme\VnSchemes;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,19 +21,23 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * TASK-ADT94K (DEC-FEATYA2C0W-003) — install / refresh / rebuild / swap the VN address scheme.
+ * TASK-F9XJ5G — populate a historical scheme into the reference layer only (--reference-only).
  *
- *   bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_2025 [--dry-run]   # refresh
- *   bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_2025 --rebuild    # clean re-import
- *   bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_PRE_2025 --swap   # switch scheme
+ *   bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_2025 [--dry-run]              # refresh
+ *   bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_2025 --rebuild               # clean re-import
+ *   bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_PRE_2025 --swap              # switch scheme
+ *   bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_PRE_2025 --reference-only    # reference layer only
  *
  * Scheme values are the canonical versioned identities (VnSchemes catalog). The relative
  * pre-DEC-003 values (vn_current/vn_legacy) are rejected with a pointer to the new codes —
- * CURRENT/LEGACY are status labels, never identities.
+ * CURRENT/LEGACY are status labels, never identities. --reference-only is mutually exclusive
+ * with --swap/--rebuild: it never touches the runtime directory or the active scheme.
  */
 class ImportVnAddressSchemeCommand extends Command
 {
     public function __construct(
         private readonly VnAddressSchemeImporter $importer,
+        private readonly VnReferenceSchemeImporter $referenceImporter,
         ?string $name = null
     ) {
         parent::__construct($name);
@@ -45,14 +50,15 @@ class ImportVnAddressSchemeCommand extends Command
     {
         $this->setName('secomm:vietnam-address:import');
         $this->setDescription(
-            'Import/refresh a Vietnam address dataset (vn_current | vn_legacy); '
+            'Import/refresh a Vietnam address scheme dataset (VN_ADMIN_2025 | VN_ADMIN_PRE_2025); '
+            . '--reference-only populates the historical reference layer without touching runtime, '
             . '--swap purges the other scheme first, --dry-run validates only'
         );
         $this->addOption(
             'scheme',
             null,
             InputOption::VALUE_REQUIRED,
-            'Dataset scheme: vn_current or vn_legacy'
+            'Canonical scheme code: VN_ADMIN_2025 or VN_ADMIN_PRE_2025'
         );
         $this->addOption(
             'swap',
@@ -65,6 +71,14 @@ class ImportVnAddressSchemeCommand extends Command
             null,
             InputOption::VALUE_NONE,
             'Destructive clean re-import: purge the installed VN runtime data AND this scheme\'s unit snapshot, then import from scratch (new city_ids)'
+        );
+        $this->addOption(
+            'reference-only',
+            null,
+            InputOption::VALUE_NONE,
+            'Reference-only import (e.g. historical VN_ADMIN_PRE_2025 while VN_ADMIN_2025 stays active): '
+            . 'write the unit snapshot + registry (HISTORICAL) without touching the runtime directory or the active scheme. '
+            . 'Cannot be combined with --swap or --rebuild'
         );
         $this->addOption(
             'dry-run',
@@ -92,11 +106,25 @@ class ImportVnAddressSchemeCommand extends Command
         $swap = (bool)$input->getOption('swap');
         $rebuild = (bool)$input->getOption('rebuild');
         $dryRun = (bool)$input->getOption('dry-run');
+        $referenceOnly = (bool)$input->getOption('reference-only');
+
+        if ($referenceOnly && ($swap || $rebuild)) {
+            $output->writeln(
+                '<error>--reference-only cannot be combined with --swap or --rebuild: '
+                . 'a reference import never modifies runtime data.</error>'
+            );
+
+            return Cli::RETURN_FAILURE;
+        }
 
         try {
-            $report = $dryRun
-                ? $this->importer->dryRun($scheme)
-                : $this->importer->import($scheme, $swap, $rebuild);
+            if ($referenceOnly) {
+                $report = $dryRun ? $this->referenceImporter->dryRun($scheme) : $this->referenceImporter->import($scheme);
+            } else {
+                $report = $dryRun
+                    ? $this->importer->dryRun($scheme)
+                    : $this->importer->import($scheme, $swap, $rebuild);
+            }
         } catch (VnImportValidationException $e) {
             $output->writeln('<error>' . $e->getMessage() . '</error>');
             foreach ($e->getErrors() as $error) {
@@ -118,6 +146,29 @@ class ImportVnAddressSchemeCommand extends Command
     private function printReport(VnImportReport $report, OutputInterface $output): void
     {
         $tag = $report->hasErrors() ? 'error' : 'info';
+
+        if ($report->referenceOnly) {
+            $output->writeln(sprintf(
+                '<%s>VN address scheme "%s" %s (reference-only — runtime untouched)</%s>',
+                $tag,
+                $report->scheme,
+                $report->dryRun ? 'validated (dry run)' : 'reference import complete',
+                $tag
+            ));
+            if (!$report->dryRun) {
+                $output->writeln(sprintf(
+                    '  unit snapshot: %d rows upserted | registry status: %s',
+                    $report->unitsSnapshoted,
+                    $report->registryStatus === VnSchemes::STATUS_CURRENT
+                        ? VnSchemes::STATUS_CURRENT . ' (kept — scheme is the active runtime scheme)'
+                        : $report->registryStatus
+                ));
+            }
+            $this->printIssues($report, $output);
+
+            return;
+        }
+
         $output->writeln(sprintf(
             '<%s>VN address scheme "%s" %s%s%s</%s>',
             $tag,
@@ -187,6 +238,11 @@ class ImportVnAddressSchemeCommand extends Command
             ));
         }
 
+        $this->printIssues($report, $output);
+    }
+
+    private function printIssues(VnImportReport $report, OutputInterface $output): void
+    {
         foreach ($report->warnings as $warning) {
             $output->writeln('<comment>  warning: ' . $warning . '</comment>');
         }

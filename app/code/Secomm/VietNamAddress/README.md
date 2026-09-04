@@ -9,7 +9,7 @@ Versioned Vietnam administrative datasets, historical reference and scheme mappi
 - **Unit codes**: dataset-supplied, immutable (`VNA25-…` / `VNAP25-…`); internal Secomm identity — not government codes, not carrier codes, never parsed for the scheme.
 - **Runtime = swap model (DEC-002, retained)**: `directory_country_region` + `directory_region_city` hold exactly ONE scheme at a time; `secomm_vietnam_address/general/active_scheme` says which. Manual admin flips are rejected (backend model) unless the target scheme is installed.
 - **Historical reference layer**: `secomm_vietnam_address_unit` keeps EVERY scheme ever imported (portable codes, no FKs to runtime tables) — old administrative knowledge survives runtime swaps.
-- **Mapping layer**: `secomm_vietnam_address_mapping` — directed edges between scheme unit codes (`SAME_AS|RENAMED_TO|MERGED_INTO|SPLIT_INTO`); resolution via `VnAdminAddressResolverInterface` returns `EXACT|MAPPED|AMBIGUOUS|UNMAPPED` and never auto-picks (a merge A→C + B→C is deterministic forward, AMBIGUOUS backwards with both candidates).
+- **Mapping layer**: `secomm_vietnam_address_mapping` — directed edges between scheme unit codes (`SAME_AS|RENAMED_TO|MERGED_INTO|SPLIT_INTO`); resolution via `VnAdminAddressResolverInterface` returns `EXACT|MAPPED|AMBIGUOUS|UNMAPPED` and never auto-picks (a merge A→C + B→C is deterministic forward, AMBIGUOUS backwards with both candidates). Baseline `VN_ADMIN_PRE_2025_TO_2025_mapping.csv` (10.064 edges, 2026-09-04 reviewed production set — TASK-NDSZ7V) tự import qua setup:upgrade; outcome resolver suy từ candidate cardinality của graph (1=MAPPED, >1=AMBIGUOUS, 0=UNMAPPED) — `relation_type` chỉ là metadata; 924 PRE wards không có edge resolve `UNMAPPED` (hợp lệ, không đoán).
 
 ## Datasets (`Files/`)
 
@@ -26,18 +26,21 @@ VN-01,An Giang,An Giang,VNAP25-515AFEF59D,VNAP25-B70EDA95D6,An Phú,An Phu
 - `VN_ADMIN_2025_import.csv` — 34 regions + 3.321 wards (all depth-1). Default for fresh installs.
 - `VN_ADMIN_PRE_2025_import.csv` — 63 regions + 699 districts + 10.595 wards; 19 collision groups keep the type suffix (e.g. `Yên Viên (Thị trấn)` / `Yên Viên (Xã)`).
 - Name hygiene: cleaned of administrative type prefixes; `name_en` MAY legitimately be non-ASCII (ethnolinguistic names); invisible/zero-width characters are rejected by the validator.
-- Fresh installs bootstrap entirely from `VN_ADMIN_2025_import.csv` via `ImportVnAdmin2025SchemePatch` (regions + units + membership + `address/profiles/mapping` + `active_scheme` in one transaction); `SeedVnProfileMembership` runs after it as an idempotent belt-and-braces pass. The legacy `VN_Address_2Level.csv` source and its `InstallVietNamAddressPatch` bootstrap were removed with the sub_city retirement (TASK-6MKF0V / DEC-TASK6MKF0V-001) — databases that still carry the legacy-format rows keep upgrading in place through the re-key bridges (`CurrentDatasetRekeyMatcher`, region_id/city_id preserved). The 3-level `VN_Address.csv` (sub_city dataset) was removed in the same retirement; the pre-2025 3-level structure is now sourced from `VN_ADMIN_PRE_2025_import.csv` (depth-2 city rows, no sub_city).
+- Fresh installs bootstrap entirely from `VN_ADMIN_2025_import.csv` via `ImportVnAdmin2025SchemePatch` (regions + units + membership + `address/profiles/mapping` + `active_scheme` in one transaction); `SeedVnProfileMembership` runs after it as an idempotent belt-and-braces pass. `ImportVnAdminPre2025ReferencePatch` (TASK-F9XJ5G) then populates the historical `VN_ADMIN_PRE_2025` into the reference layer (units + registry HISTORICAL) — runtime keeps `VN_ADMIN_2025`, no manual CLI needed. The legacy `VN_Address_2Level.csv` source and its `InstallVietNamAddressPatch` bootstrap were removed with the sub_city retirement (TASK-6MKF0V / DEC-TASK6MKF0V-001) — databases that still carry the legacy-format rows keep upgrading in place through the re-key bridges (`CurrentDatasetRekeyMatcher`, region_id/city_id preserved). The 3-level `VN_Address.csv` (sub_city dataset) was removed in the same retirement; the pre-2025 3-level structure is now sourced from `VN_ADMIN_PRE_2025_import.csv` (depth-2 city rows, no sub_city).
 
 ## CLI
 
 ```bash
-bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_2025 [--dry-run]   # refresh (idempotent upsert)
-bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_PRE_2025 --swap    # switch scheme
-bin/magento secomm:vietnam-address:import-mapping <file> [--dry-run]           # mapping edges (data TBD)
+bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_2025 [--dry-run]                   # refresh (idempotent upsert)
+bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_PRE_2025 --swap                    # switch scheme
+bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_PRE_2025 --reference-only [--dry-run]  # reference layer only (TASK-F9XJ5G)
+bin/magento secomm:vietnam-address:import-mapping <file> [--dry-run]           # mapping edges — baseline PRE_2025→2025 (10.064 edges) tự import qua setup:upgrade (TASK-NDSZ7V)
 bin/magento secomm:vietnam-address:validate-mapping [--file <path>]            # orphans + reverse-ambiguity report
 ```
 
 - `--dry-run` khi sẽ cần swap: report thêm `guard_violations` — danh sách external-reference guard (carrier mapping tables đăng ký qua DI, DEC-FEATYA2C0W-004 D7) còn tham chiếu runtime rows, để operator thấy bảng chặn TRƯỚC khi swap thật.
+
+- `--reference-only` (TASK-F9XJ5G): populate một scheme (vd historical `VN_ADMIN_PRE_2025`) vào **reference layer only** trong khi runtime vẫn chạy scheme khác — validate dataset (STOP_ON_ERROR) → upsert `secomm_vietnam_address_unit` → registry status `HISTORICAL`, tất cả trong MỘT transaction. KHÔNG đụng runtime directory tables, `active_scheme`, `address/profiles/mapping`, membership, guards hay caches (orchestrator `VnReferenceSchemeImporter` không có dependency nào tới chúng). Idempotent (UNIQUE(scheme_code, code) upsert); không demote CURRENT — reference-only trên chính scheme CURRENT giữ status CURRENT (chỉ refresh metadata/snapshot). Mutually exclusive với `--swap`/`--rebuild` (reject ở CLI). Trên môi trường deploy không cần chạy tay: `ImportVnAdminPre2025ReferencePatch` tự chạy cùng `setup:upgrade` (chạy sau `ImportVnAdmin2025SchemePatch`); CLI chỉ cần khi re-validate/re-populate ad-hoc.
 
 - Same scheme → refresh by code (no purge; `region_id`/`city_id` preserved via the re-key bridges on the first run).
 - Other scheme → refused without `--swap`; with `--swap`: purge all VN runtime data (FK-guarded against GHN/GHTK mapping tables), import, snapshot to the historical layer, registry transition (old → HISTORICAL), reseed membership, flip `active_scheme` + `address/profiles/mapping` — only AFTER import success — and clean caches.

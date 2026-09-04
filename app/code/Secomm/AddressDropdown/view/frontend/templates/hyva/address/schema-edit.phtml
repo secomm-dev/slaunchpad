@@ -55,7 +55,7 @@ $cityInitial = (string) $block->getAddress()->getCity();
     <?= $escaper->escapeHtml(__('Customer Address')) ?>
 </div>
 <form class="form-address-edit"
-      x-data="Object.assign(initCustomerAddressSchemaEdit(), hyva.formValidation($root))"
+      x-data="Object.assign(initCustomerAddressSchemaEdit(), hyva.formValidation($el))"
       @private-content-loaded.window="onPrivateContentLoaded($event.detail.data)"
       @submit="onSubmit"
       action="<?= $escaper->escapeUrl($block->getSaveUrl()) ?>"
@@ -215,14 +215,13 @@ $cityInitial = (string) $block->getAddress()->getCity();
                                 x-ref="region_id"
                                 x-model="selectedRegion"
                                 :required="isRegionRequired"
-                                @input.debounce="onRegionIdChange"
+                                @change="onRegionIdChange"
                         >
                             <option value="" x-text="regionPlaceholder"></option>
-                            <template x-for="regionId in Object.keys(availableRegions)">
+                            <template x-for="regionId in Object.keys(availableRegions)" :key="regionId">
                                 <option :value="regionId"
                                         :name="availableRegions[regionId] && availableRegions[regionId].name"
                                         x-text="availableRegions[regionId] && availableRegions[regionId].name"
-                                        :selected="selectedRegion === regionId"
                                 >
                                 </option>
                             </template>
@@ -373,19 +372,29 @@ $cityInitial = (string) $block->getAddress()->getCity();
             cityLevels: [],             // [{label, placeholder, required, options, selectedId, selectedName, loading, active}]
             leafIndex: -1,              // index of the select currently acting as the leaf
             cityInitial: '<?= $escaper->escapeJs($cityInitial) ?>',
+            // Monotonic request token (BUG-25XDH4): every new cascade request (schema
+            // or level options) invalidates the previous one; stale responses must
+            // never overwrite the cascade state.
+            cityRequestId: 0,
 
             async onPrivateContentLoaded(data) {
                 this.directoryData = data['directory-data'] || {};
 
                 <?php if ($block->getCountryId()): ?>
                     this.setCountry(this.$refs['country_id'], '<?= $escaper->escapeJs($block->getRegion()) ?>');
-                    await this.loadSchemaForCountry(this.$refs['country_id'].value);
+                    const schemaRequestId = await this.loadSchemaForCountry(this.$refs['country_id'].value);
 
                     // Pre-fill the cascade for an existing address (edit mode).
                     const initialRegionId = this.selectedRegion;
-                    if (initialRegionId && initialRegionId !== '0' && this.profileCode !== null) {
-                        await this.loadLevelOptions(0, initialRegionId);
-                        await this.preFillCascade();
+                    const cascadeSuperseded = schemaRequestId !== this.cityRequestId;
+                    if (!cascadeSuperseded && initialRegionId && initialRegionId !== '0' && this.profileCode !== null) {
+                        // x-model owns the selected state now (`:selected` removed, BUG-25XDH4);
+                        // re-sync the <select> once its async-populated <option>s exist.
+                        await this.reapplySelected('selectedRegion');
+                        const appliedRequestId = await this.loadLevelOptions(0, initialRegionId);
+                        if (appliedRequestId === this.cityRequestId) {
+                            await this.preFillCascade();
+                        }
                     }
                 <?php endif; ?>
             },
@@ -421,7 +430,13 @@ $cityInitial = (string) $block->getAddress()->getCity();
                 this.setCountry(event.target, initialRegion);
                 this.validateCountryDependentFields();
                 // Country change re-resolves the profile and resets the cascade.
-                await this.loadSchemaForCountry(event.target.value);
+                const schemaRequestId = await this.loadSchemaForCountry(event.target.value);
+                if (schemaRequestId !== this.cityRequestId) {
+                    // Superseded mid-flight by a newer country/region change (BUG-25XDH4)
+                    // — it owns the cascade now; do not chain stale level loads.
+                    this.onChange(event);
+                    return;
+                }
                 const regionId = this.selectedRegion && this.selectedRegion !== '0' ? this.selectedRegion : null;
                 if (this.profileCode !== null && regionId) {
                     await this.loadLevelOptions(0, regionId);
@@ -448,15 +463,25 @@ $cityInitial = (string) $block->getAddress()->getCity();
                 return Object.keys(this.availableRegions).length > 0;
             },
             onRegionIdChange(event) {
-                this.$refs.region.value = this.selectedRegion.length > 0 ?
-                    this.availableRegions[this.selectedRegion].name :
-                    ''
+                // Defensive reads (BUG-25XDH4): selectedRegion may be '0'/'' and the id
+                // may be absent from availableRegions — never assume a matching entry.
+                const regionId = String(this.selectedRegion || '');
+                const region = this.availableRegions[regionId];
+
+                this.$refs.region.value = region ? region.name : ''
                 this.onChange(event)
-                this.validateField(this.fields['region'])
-                // Region change reloads the first city level.
-                if (this.profileCode !== null && this.selectedRegion && this.selectedRegion !== '0') {
-                    this.loadLevelOptions(0, this.selectedRegion);
+                this.fields['region'] && this.validateField(this.fields['region'])
+                // Region change reloads the first city level; an emptied selection
+                // resets the cascade and invalidates any in-flight request.
+                if (this.profileCode !== null && regionId && regionId !== '0') {
+                    this.loadLevelOptions(0, regionId);
+                } else if (!regionId || regionId === '0') {
+                    // Emptied selection — invalidate in-flight level loads and clear.
+                    ++this.cityRequestId;
+                    this.cityLevels = [];
+                    this.leafIndex = -1;
                 }
+                // else: region set but country unmapped — native `city` input stays.
             },
             updateSubmitBtnText() {
                 return this.isSubmitting
@@ -498,10 +523,15 @@ $cityInitial = (string) $block->getAddress()->getCity();
                 }
             },
             async loadSchemaForCountry(countryCode) {
+                const requestId = ++this.cityRequestId;
                 const data = await this.fetchGraphQL(
                     'query{addressSchema(input:{country_id:' + JSON.stringify(String(countryCode)) + '})'
                     + '{profile_code levels{entity_type depth label placeholder sort_order required}}}'
                 );
+                if (requestId !== this.cityRequestId) {
+                    // Superseded by a newer country/region change — do not touch state (BUG-25XDH4).
+                    return requestId;
+                }
                 const schema = data && data.addressSchema ? data.addressSchema : null;
                 const levels = schema && schema.levels ? schema.levels : [];
 
@@ -511,7 +541,7 @@ $cityInitial = (string) $block->getAddress()->getCity();
 
                 if (!schema || !schema.profile_code || levels.length === 0) {
                     this.profileCode = null; // native Magento city input
-                    return;
+                    return requestId;
                 }
                 this.profileCode = schema.profile_code;
 
@@ -535,12 +565,14 @@ $cityInitial = (string) $block->getAddress()->getCity();
                     }));
                 // Only the first level is selectable before a parent is chosen.
                 this.cityLevels.forEach((level, idx) => { level.active = idx === 0; });
+                return requestId;
             },
             async loadLevelOptions(idx, parentId) {
                 if (idx >= this.cityLevels.length || !this.profileCode) {
-                    return;
+                    return null;
                 }
                 const level = this.cityLevels[idx];
+                const requestId = ++this.cityRequestId;
                 level.loading = true;
                 level.options = [];
                 level.selectedId = '';
@@ -552,18 +584,29 @@ $cityInitial = (string) $block->getAddress()->getCity();
                 const input = idx === 0
                     ? 'region_id:' + parseInt(parentId, 10)
                     : 'parent_city_id:' + parseInt(parentId, 10);
-                const data = await this.fetchGraphQL(
-                    'query{addressLocations(input:{' + input
-                    + ',profile_code:' + JSON.stringify(this.profileCode)
-                    + '}){city_id default_name name has_children depth}}'
-                );
-                const options = data && data.addressLocations ? data.addressLocations : [];
-                level.options = options;
-                level.loading = false;
-                level.active = true;
-                if (options.length === 0) {
-                    // No qualifying children — the previous selection is the leaf.
-                    this.leafIndex = idx - 1;
+                try {
+                    const data = await this.fetchGraphQL(
+                        'query{addressLocations(input:{' + input
+                        + ',profile_code:' + JSON.stringify(this.profileCode)
+                        + '}){city_id default_name name has_children depth}}'
+                    );
+                    if (requestId !== this.cityRequestId) {
+                        // Superseded by a newer region/level change — do not touch state (BUG-25XDH4).
+                        return requestId;
+                    }
+                    const options = data && data.addressLocations ? data.addressLocations : [];
+                    level.options = options;
+                    level.active = true;
+                    if (options.length === 0) {
+                        // No qualifying children — the previous selection is the leaf.
+                        this.leafIndex = idx - 1;
+                    }
+                    return requestId;
+                } finally {
+                    // Only the still-active request may clear the loading flag (BUG-25XDH4).
+                    if (requestId === this.cityRequestId) {
+                        level.loading = false;
+                    }
                 }
             },
             async onLevelChange(idx, event) {
@@ -598,6 +641,18 @@ $cityInitial = (string) $block->getAddress()->getCity();
                 if (this.cityLevels.length > 1) {
                     await this.loadLevelOptions(1, option.city_id);
                 }
+            },
+            async reapplySelected(key) {
+                // Alpine x-model does not re-apply a <select> value when its <option>s are
+                // populated asynchronously after the model was already set. Toggle through
+                // $nextTick so the saved value is re-selected once options exist (BUG-25XDH4).
+                const saved = this[key];
+                if (!saved || saved === '0') {
+                    return;
+                }
+                this[key] = '';
+                await this.$nextTick();
+                this[key] = saved;
             }
         }
     }

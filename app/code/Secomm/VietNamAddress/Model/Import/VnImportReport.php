@@ -23,6 +23,11 @@ class VnImportReport
     public bool $rebuildPerformed = false;
     public int $unitsPurged = 0;
 
+    /** TASK-F9XJ5G — reference-only import: runtime directory/config untouched. */
+    public bool $referenceOnly = false;
+    /** TASK-F9XJ5G — registry status after a reference-only import (CURRENT kept | HISTORICAL). */
+    public string $registryStatus = '';
+
     public int $regionRowsValidated = 0;
     public int $unitRowsValidated = 0;
     public int $regionsInserted = 0;
@@ -72,6 +77,8 @@ class VnImportReport
             'swap_performed' => $this->swapPerformed,
             'rebuild_performed' => $this->rebuildPerformed,
             'units_purged' => $this->unitsPurged,
+            'reference_only' => $this->referenceOnly,
+            'registry_status' => $this->registryStatus,
             'region_rows_validated' => $this->regionRowsValidated,
             'unit_rows_validated' => $this->unitRowsValidated,
             'regions_inserted' => $this->regionsInserted,
