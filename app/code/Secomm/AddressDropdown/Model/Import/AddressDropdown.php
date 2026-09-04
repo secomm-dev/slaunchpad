@@ -20,7 +20,6 @@ use Magento\ImportExport\Model\ResourceModel\Helper;
 use Magento\ImportExport\Model\ResourceModel\Import\Data;
 use Secomm\AddressDropdown\Api\Data\CityInterfaceFactory;
 use Secomm\AddressDropdown\Api\Data\RegionInterfaceFactory;
-use Secomm\AddressDropdown\Api\Data\SubCityInterfaceFactory;
 use Secomm\AddressDropdown\Model\Import\Validator\ValidatorInterface;
 
 class AddressDropdown extends AbstractEntity
@@ -33,8 +32,6 @@ class AddressDropdown extends AbstractEntity
     const REGION_NAME = 'region_name';
     const CITY_DEFAULT_NAME = 'city_default_name';
     const CITY_NAME = 'city_name';
-    const SUB_CITY_DEFAULT_NAME = 'sub_city_default_name';
-    const SUB_CITY_NAME = 'sub_city_name';
 
     /**
      * If we should check column names
@@ -58,9 +55,7 @@ class AddressDropdown extends AbstractEntity
         self::REGION_DEFAULT_NAME,
         self::REGION_NAME,
         self::CITY_DEFAULT_NAME,
-        self::CITY_NAME,
-        self::SUB_CITY_DEFAULT_NAME,
-        self::SUB_CITY_NAME
+        self::CITY_NAME
     ];
 
     /**
@@ -73,9 +68,7 @@ class AddressDropdown extends AbstractEntity
         self::REGION_DEFAULT_NAME,
         self::REGION_NAME,
         self::CITY_DEFAULT_NAME,
-        self::CITY_NAME,
-        self::SUB_CITY_DEFAULT_NAME,
-        self::SUB_CITY_NAME
+        self::CITY_NAME
     ];
 
     /**

@@ -1,0 +1,68 @@
+<?php
+/**
+ * Adapted from Hyvä UI categories/B-grid-patterns 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$items = (array)($data['items'] ?? []);
+$instanceId = $block->getInstanceId();
+$headingId = $instanceId . '-heading';
+$mobileSlider = (bool)($data['mobile_slider'] ?? true);
+$patternClasses = ['wiggle' => 'bg-wiggle', 'bank_note' => 'bg-bank-note'];
+$backgroundClasses = ['pink' => 'bg-pink-500', 'blue' => 'bg-blue-800'];
+$listClasses = $mobileSlider
+    ? 'gap-4 snap flex overflow-x-auto py-6 md:snap-none md:overflow-x-visible md:gap-4 md:grid md:grid-cols-2'
+    : 'gap-4 flex flex-wrap overflow-x-visible py-6 md:grid md:grid-cols-2';
+$itemBaseClasses = 'shadow-lg rounded-md overflow-hidden flex items-center justify-center h-72 md:h-80 md:first:h-40 '
+    . 'md:hover:shadow-2xl md:hover:scale-[1.02] transition duration-300';
+$itemLayoutClasses = $mobileSlider
+    ? 'w-[calc(100%-theme(spacing.7))] sm:w-[calc(50%-theme(spacing.5))] md:w-full '
+        . 'md:first:col-span-full shrink-0 snap-start'
+    : 'w-full sm:w-[calc(50%-theme(spacing.2))] md:w-full md:first:col-span-full';
+?>
+<?php if ($items): ?>
+    <section id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+             class="my-10"
+             aria-labelledby="<?= $escaper->escapeHtmlAttr($headingId) ?>"
+             data-secomm-ui-component="categories_b">
+        <div class="flex-wrap flex justify-between items-baseline mb-2">
+            <h2 id="<?= $escaper->escapeHtmlAttr($headingId) ?>" class="text-3xl leading-9 font-bold mr-1">
+                <?= $escaper->escapeHtml((string)$data['heading']) ?>
+            </h2>
+            <?php if (!empty($data['browse_url'])): ?>
+                <a href="<?= $escaper->escapeUrl((string)$data['browse_url']) ?>"
+                   class="block text-lg leading-7 font-semibold text-blue-700"
+                    <?php if (!empty($data['browse_open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                    <?= $escaper->escapeHtml((string)$data['browse_label']) ?>
+                </a>
+            <?php endif; ?>
+        </div>
+        <div class="<?= $escaper->escapeHtmlAttr($listClasses) ?>">
+            <?php foreach ($items as $item): ?>
+                <?php
+                $itemClasses = implode(' ', [
+                    $itemBaseClasses,
+                    $patternClasses[$item['pattern'] ?? 'bank_note'],
+                    $backgroundClasses[$item['background'] ?? 'blue'],
+                    $itemLayoutClasses,
+                ]);
+                ?>
+                <a href="<?= $escaper->escapeUrl((string)$item['url']) ?>"
+                   class="<?= $escaper->escapeHtmlAttr($itemClasses) ?>"
+                    <?php if (!empty($item['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                    <div class="drop-shadow-lg text-white text-xl leading-10 font-bold uppercase
+                                sm:text-2xl md:text-3xl lg:text-4xl">
+                        <?= $escaper->escapeHtml((string)$item['label']) ?>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </section>
+<?php endif; ?>

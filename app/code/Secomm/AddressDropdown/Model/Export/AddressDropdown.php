@@ -27,7 +27,6 @@ use Secomm\AddressDropdown\Model\RegionFactory;
 use Secomm\AddressDropdown\Model\ResourceModel\CityModel\CityCollectionFactory;
 use Secomm\AddressDropdown\Model\ResourceModel\RegionModel;
 use Secomm\AddressDropdown\Model\ResourceModel\RegionModel\CollectionFactory as RegionCollectionFactory;
-use Secomm\AddressDropdown\Model\ResourceModel\SubCityModel\SubCityCollectionFactory;
 
 /**
  * Class AddressDropdown
@@ -48,8 +47,6 @@ class AddressDropdown extends AbstractEntity
     const REGION_NAME = 'region_name';
     const CITY_DEFAULT_NAME = 'city_default_name';
     const CITY_NAME = 'city_name';
-    const SUB_CITY_DEFAULT_NAME = 'sub_city_default_name';
-    const SUB_CITY_NAME = 'sub_city_name';
 
     /**
      * Permanent entity columns
@@ -64,8 +61,6 @@ class AddressDropdown extends AbstractEntity
         self::REGION_NAME,
         self::CITY_DEFAULT_NAME,
         self::CITY_NAME,
-        self::SUB_CITY_DEFAULT_NAME,
-        self::SUB_CITY_NAME,
     ];
 
     /**
@@ -79,8 +74,6 @@ class AddressDropdown extends AbstractEntity
         self::REGION_NAME,
         self::CITY_DEFAULT_NAME,
         self::CITY_NAME,
-        self::SUB_CITY_DEFAULT_NAME,
-        self::SUB_CITY_NAME,
     ];
 
     /**
@@ -114,11 +107,6 @@ class AddressDropdown extends AbstractEntity
     private CityCollectionFactory $cityCollectionFactory;
 
     /**
-     * @var SubCityCollectionFactory
-     */
-    private SubCityCollectionFactory $subCityCollectionFactory;
-
-    /**
      * @param ScopeConfigInterface $scopeConfig
      * @param StoreManagerInterface $storeManager
      * @param Factory $collectionFactory
@@ -126,7 +114,6 @@ class AddressDropdown extends AbstractEntity
      * @param CsvFactory $csvFactory
      * @param CountryCollectionFactory $countryCollectionFactory
      * @param CityCollectionFactory $cityCollectionFactory
-     * @param SubCityCollectionFactory $subCityCollectionFactory
      * @param AttributeCollectionProvider $attributeCollectionProvider
      * @param RegionFactory $regionFactory
      * @param RegionModel $regionModel
@@ -140,7 +127,6 @@ class AddressDropdown extends AbstractEntity
         CsvFactory                       $csvFactory,
         CountryCollectionFactory         $countryCollectionFactory,
         CityCollectionFactory            $cityCollectionFactory,
-        SubCityCollectionFactory         $subCityCollectionFactory,
         AttributeCollectionProvider      $attributeCollectionProvider,
         RegionFactory                    $regionFactory,
         RegionModel                      $regionModel,
@@ -151,7 +137,6 @@ class AddressDropdown extends AbstractEntity
         $this->csvFactory = $csvFactory;
         $this->countryCollectionFactory = $countryCollectionFactory;
         $this->cityCollectionFactory = $cityCollectionFactory;
-        $this->subCityCollectionFactory = $subCityCollectionFactory;
         $this->attributeCollectionProvider = $attributeCollectionProvider;
         $this->regionFactory = $regionFactory;
         $this->regionModel = $regionModel;
@@ -207,7 +192,6 @@ class AddressDropdown extends AbstractEntity
     {
         $countryCollection = null;
         $cityCollection = null;
-        $subCityCollection = null;
         $countryCollection = $this->countryCollectionFactory->create();
 
         // City and City Name table left join
@@ -217,15 +201,6 @@ class AddressDropdown extends AbstractEntity
                 ['cn' => 'directory_region_city_name'],
                 "`main_table`.city_id = `cn`.city_id",
                 ["city_name" => "cn.name", "city_name_locale" => "cn.locale"]
-            );
-
-        // sub city and sub city Name table left join
-        $subCityCollection = $this->subCityCollectionFactory->create();
-        $subCityCollection->getSelect()
-            ->joinLeft(
-                ['scn' => 'directory_city_sub_city_name'],
-                "`main_table`.sub_city_id = `scn`.sub_city_id",
-                ["sub_city_name" => "scn.name", "sub_city_name_locale" => "scn.locale"]
             );
 
         $countryCollection->getSelect()
@@ -240,12 +215,7 @@ class AddressDropdown extends AbstractEntity
             ->joinLeft(
                 ['city' => $cityCollection->getSelect()],
                 "`r`.region_id = `city`.region_id AND `rn`.locale = `city`.city_name_locale",
-                ["city_default_name" => "city.default_name", "city_name" => "city.city_name"])
-            ->joinLeft(
-                ['sub_city' => $subCityCollection->getSelect()],
-                "`city`.city_id = `sub_city`.city_id AND `rn`.locale = `sub_city`.sub_city_name_locale",
-                ["sub_city_default_name" => "sub_city.default_name", "sub_city_name" => "sub_city.sub_city_name"]
-            );
+                ["city_default_name" => "city.default_name", "city_name" => "city.city_name"]);
 
         return $countryCollection;
     }
@@ -291,9 +261,6 @@ class AddressDropdown extends AbstractEntity
         if (is_null($item[self::CITY_NAME]) || empty($item[self::CITY_NAME])) {
             $item[self::CITY_DEFAULT_NAME] = '';
         }
-        if (is_null($item[self::SUB_CITY_NAME]) || empty($item[self::SUB_CITY_NAME])) {
-            $item[self::SUB_CITY_DEFAULT_NAME] = '';
-        }
         return [
             self::LOCALE => $item[self::LOCALE] ?? '',
             self::COLUMN_COUNTRY_ID => $item[self::COLUMN_COUNTRY_ID] ?? '',
@@ -302,8 +269,6 @@ class AddressDropdown extends AbstractEntity
             self::REGION_NAME => $item[self::REGION_NAME] ?? '',
             self::CITY_DEFAULT_NAME => $item[self::CITY_DEFAULT_NAME] ?? '',
             self::CITY_NAME => $item[self::CITY_NAME] ?? '',
-            self::SUB_CITY_DEFAULT_NAME => $item[self::SUB_CITY_DEFAULT_NAME] ?? '',
-            self::SUB_CITY_NAME => $item[self::SUB_CITY_NAME] ?? '',
         ];
     }
 

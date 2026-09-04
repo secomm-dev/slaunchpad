@@ -18,13 +18,9 @@ define([
     const COUNTRY_SELECTOR_ALT = '#checkout-step-billing [name="billingAddress.country_id"]';
     const REGION_SELECTOR = '#checkout-step-billing [name="region_id"]';
     const CUSTOM_CITY_SELECTOR = '#checkout-step-billing [name="custom_city"]';
-    const CUSTOM_SUB_CITY_SELECTOR = '#checkout-step-billing #custom-sub-city-select-billing';
     const BILLING_ADDRESS_AREA = '.checkout-billing-address';
-    const BILLING_ADDRESS_SUB_CITY = '.billing-address-sub-city';
     const BILLING_ADDRESS_CITY = '.billing-address-city';
-    const CUSTOM_ATTR_SUB_CITY = '#checkout-step-billing [name="custom_attributes[sub_city]"]';
     const CITY_ERROR = '#checkout-step-billing #custom-city-error';
-    const SUB_CITY_ERROR = '#checkout-step-billing #custom-subcity-error';
     const CITY_DEFAULT = '#checkout-step-billing [name="billingAddress.city"]';
     return Component.extend({
         getCountryId: function () {
@@ -47,12 +43,7 @@ define([
             $(CUSTOM_CITY_SELECTOR).empty().append(
                 $('<option></option>').attr('value', '').text($.mage.__('Please select a city'))
             );
-            $(CUSTOM_SUB_CITY_SELECTOR).empty().append(
-                $('<option></option>').attr('value', '').text($.mage.__('Please select a sub-city'))
-            );
-            $(CUSTOM_ATTR_SUB_CITY).val('').trigger('change');
             $(BILLING_ADDRESS_AREA).find($('div[name="billingAddress.customCity"]')).hide();
-            $('.billing-address-sub-city').hide();
             $(CITY_DEFAULT).removeClass('_error').show();
             $(CITY_DEFAULT).find(".field-error").hide();
         },
@@ -71,7 +62,7 @@ define([
                 }
                 // country changed
                 if (address.countryId) {
-                    self.initializeCitySubCityElements();
+                    self.initializeCityCascadeElements();
                 }
             });
         },
@@ -131,7 +122,7 @@ define([
                 });
         },
 
-        initializeCitySubCityElements: function () {
+        initializeCityCascadeElements: function () {
             let self = this;
             let cityElement = $(CITY_SELECTOR);
             if (!cityElement.length) {
@@ -139,7 +130,7 @@ define([
                     mutations.forEach(function () {
                         cityElement = $(CITY_SELECTOR);
                         if (cityElement.length) {
-                            self.setupCitySubCity(cityElement);
+                            self.setupCityCascade(cityElement);
                             observer.disconnect();
                         }
                     });
@@ -150,11 +141,75 @@ define([
                     subtree: true
                 });
             } else {
-                self.setupCitySubCity(cityElement);
+                self.setupCityCascade(cityElement);
             }
         },
 
+        /* TASK-FMAN1B: Address Profile schema drives the ward label/placeholder
+         * (DEC-FEAT2PZQKJ-001 — label from profile, not from structure). States:
+         * null = fetch in flight / not started, false = unmapped country or failure
+         * (i18n fallbacks then apply). */
+        _vnSchema: null,
+        _vnSchemaLoading: false,
+
+        ensureVnSchema: function () {
+            let self = this;
+            if (this._vnSchema !== null || this._vnSchemaLoading) {
+                return;
+            }
+            this._vnSchemaLoading = true;
+            $.ajax({
+                url: '/graphql',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    query: 'query{addressSchema(input:{country_id:"VN"})' +
+                        '{profile_code levels{entity_type label placeholder}}}'
+                }),
+                success: function (response) {
+                    self._vnSchemaLoading = false;
+                    let schema = response && response.data && response.data.addressSchema;
+                    if (!schema || !schema.profile_code) {
+                        self._vnSchema = false;
+                        return;
+                    }
+                    let levels = schema.levels || [];
+                    let regionLevel = levels.find(function (level) { return level.entity_type === 'region'; });
+                    let cityLevel = levels.find(function (level) { return level.entity_type === 'city'; });
+                    self._vnSchema = {
+                        profileCode: schema.profile_code,
+                        regionLabel: regionLevel && regionLevel.label || '',
+                        wardLabel: cityLevel && cityLevel.label || '',
+                        wardPlaceholder: cityLevel && cityLevel.placeholder || ''
+                    };
+                    self.applySchemaToDom();
+                },
+                error: function () {
+                    self._vnSchemaLoading = false;
+                    self._vnSchema = false;
+                }
+            });
+        },
+
+        wardLabel: function () {
+            return (this._vnSchema && this._vnSchema.wardLabel) || $.mage.__('Ward/Commune');
+        },
+
+        wardPlaceholder: function () {
+            return (this._vnSchema && this._vnSchema.wardPlaceholder) || $.mage.__('Please select a city');
+        },
+
+        /* Re-apply schema labels when the fetch resolves after the DOM was built. */
+        applySchemaToDom: function () {
+            if (!this._vnSchema || !this.isVietnamCountry()) {
+                return;
+            }
+            $('#checkout-step-billing label[for="custom-city-select"]').text(this.wardLabel());
+            $(CUSTOM_CITY_SELECTOR).find('option:first').text(this.wardPlaceholder());
+        },
+
         updatePostcodePlaceholderByDom: function (scopeSelector) {
+            let self = this;
             let interval = setInterval(function () {
                 let $scope = $(scopeSelector);
 
@@ -173,12 +228,14 @@ define([
                         if (placeholder && placeholder.indexOf('*') !== -1) {
                             $postcode.attr('placeholder', placeholder.replace('*', '').trim());
                         }
-                        $cityLabel.text('Ward/Commune');
+                        /* Schema label (i18n fallback). The literal EN string here used to
+                         * overwrite the translated label on every region change. */
+                        $cityLabel.text(self.wardLabel());
                     } else {
                         if (placeholder && placeholder.indexOf('*') === -1) {
                             $postcode.attr('placeholder', placeholder + '*');
                         }
-                        $cityLabel.text('City');
+                        $cityLabel.text($.mage.__('City'));
                     }
 
                     clearInterval(interval);
@@ -186,39 +243,35 @@ define([
             }, 200);
         },
 
-        setupCitySubCity: function (cityElement) {
+        setupCityCascade: function (cityElement) {
             let self = this;
-            if ($('#custom-city-select-billing').length === 0 && $(CUSTOM_SUB_CITY_SELECTOR).length === 0) {
-                let subCityElement = $('<input type="hidden" name="billingAddress.sub_city" />');
+            this.ensureVnSchema();
+            if ($('#custom-city-select-billing').length === 0) {
                 let cityDiv = $('<div class="field mp-clear col-mp mp-6 required select _required shipping-address-city" name="billingAddress.customCity"></div>');
-                let cityLabel = $('<label class="label" for="custom-city-select">' + $.mage.__('City') + '</label>');
+                let cityLabel = $('<label class="label" for="custom-city-select">' + this.wardLabel() + '</label>');
                 let customCitySelect = $('<select required id="custom-city-select" name="custom_city" class="field input">')
-                    .append($('<option></option>').attr('value', '').text($.mage.__('Please select a city')));
+                    .append($('<option></option>').attr('value', '').text(this.wardPlaceholder()));
 
                 cityDiv.append(cityLabel).append(customCitySelect);
 
-                let subCityDiv = $('<div class="field _required billing-address-sub-city"></div>');
-                let subCityLabel = $('<label class="label" for="custom-sub-city-select">' + $.mage.__('Sub-City') + '</label>');
-                let customSubCitySelect = $('<select required id="custom-sub-city-select-billing" name="custom_sub_city" aria-required="true" class="field input">')
-                    .append($('<option></option>').attr('value', '').text($.mage.__('Please select a sub-city')));
                 let error = $('<div id="custom-city-error" class="field-error">\n' +
                     '                <span data-bind="text: element.error">' + $.mage.__('This is a required field.') + '</span>\n' +
                     '            </div>');
-                let subCityError = $('<div id="custom-subcity-error" class="field-error">\n' +
-                    '                <span data-bind="text: element.error">' + $.mage.__('This is a required field.') + '</span>\n' +
-                    '            </div>');
 
-                subCityDiv.append(subCityLabel).append(customSubCitySelect).append(subCityError);
-
-                cityElement.closest('.field').after(cityDiv);
-                cityDiv.after(subCityDiv);
-                cityElement.after(subCityElement);
+                /* Field order per profile cascade: Country -> Province/City -> Ward — anchor
+                 * the ward select after the region field (the native city field sits next
+                 * to country, which put the ward above the region on OSC's 2-column grid). */
+                let regionField = $(REGION_SELECTOR).closest('.field');
+                if (regionField.length) {
+                    regionField.after(cityDiv);
+                } else {
+                    cityElement.closest('.field').after(cityDiv);
+                }
                 cityDiv.append(error);
 
                 // Bind events and load initial data
                 this.bindCityChange(customCitySelect);
-                this.bindSubCityChange(customSubCitySelect, subCityElement);
-                this.bindRegionChange(customCitySelect, customSubCitySelect);
+                this.bindRegionChange(customCitySelect);
                 this.cityVisible();
 
                 if (!self.isVietnamCountry()) {
@@ -235,7 +288,6 @@ define([
                             let cachedCity = billingAddress.city;
                             if (cachedCity) {
                                 customCitySelect.val(cachedCity).trigger('change');
-                                self.loadSubCities(cachedCity, "");
                             }
                         }
                     });
@@ -256,24 +308,10 @@ define([
                 }
                 $(CITY_ERROR).hide();
                 $(CUSTOM_CITY_SELECTOR).removeClass('custom-error');
-                if (self.isVietnamCountry()) {
-                    self.loadSubCities(selectedCity, "");
-                }
             });
         },
 
-        bindSubCityChange: function (customSubCitySelect, subCityElement) {
-            let self = this;
-            customSubCitySelect.on('change', function () {
-                let selectedSubCity = $(this).val();
-                subCityElement.val(selectedSubCity).trigger('change');
-                $(CUSTOM_ATTR_SUB_CITY).val(selectedSubCity).trigger('change');
-                $(SUB_CITY_ERROR).hide();
-                $(CUSTOM_SUB_CITY_SELECTOR).removeClass('custom-error');
-            });
-        },
-
-        bindRegionChange: function (customCitySelect, customSubCitySelect) {
+        bindRegionChange: function (customCitySelect) {
             let self = this;
             let regionElementInterval = setInterval(function () {
                 let regionElement = $(REGION_SELECTOR);
@@ -294,10 +332,8 @@ define([
                         }
                         let selectedRegionId = $(this).val();
                         let cityInput = $(CITY_SELECTOR);
-                        $(CUSTOM_ATTR_SUB_CITY).val("").trigger('change');
                         cityInput.val("").trigger('change');
-                        customCitySelect.empty().append($('<option></option>').attr('value', '').text($.mage.__('Please select a city')));
-                        customSubCitySelect.empty().append($('<option></option>').attr('value', '').text($.mage.__('Please select a sub-city')));
+                        customCitySelect.empty().append($('<option></option>').attr('value', '').text(self.wardPlaceholder()));
 
                         self.loadCities(selectedRegionId, function () {
                             let billingAddress = quote.billingAddress();
@@ -305,14 +341,9 @@ define([
                                 let cachedCity = billingAddress.city;
                                 if (cachedCity) {
                                     customCitySelect.val(cachedCity).trigger('change');
-                                    self.loadSubCities(cachedCity, "");
                                 }
                             }
                         });
-
-                        if (cityInput.val() === "") {
-                            $(CUSTOM_ATTR_SUB_CITY).val("").trigger('change');
-                        }
                     });
                     clearInterval(regionElementInterval);
                 }
@@ -322,7 +353,6 @@ define([
         cityVisible: function () {
             if (!this.isVietnamCountry()) {
                 $(BILLING_ADDRESS_AREA).find($('div[name="billingAddress.customCity"]')).hide();
-                $('.billing-address-sub-city').hide();
                 $(CITY_DEFAULT).removeClass('_error').show();
                 $(CITY_DEFAULT).find(".field-error").hide();
 
@@ -343,23 +373,6 @@ define([
             } else {
                 $(BILLING_ADDRESS_AREA).find($('div[name="billingAddress.customCity"]')).show();
                 $(CITY_DEFAULT).hide();
-            }
-
-            this.subCityVisible();
-        },
-
-        subCityVisible: function () {
-            if (!this.isVietnamCountry()) {
-                $('.billing-address-sub-city').hide();
-
-                return;
-            }
-
-            if ($(CUSTOM_SUB_CITY_SELECTOR).find('option').length <= 1){
-                $('.billing-address-sub-city').hide();
-            }else{
-                $('.billing-address-sub-city').show();
-
             }
         },
 
@@ -406,49 +419,19 @@ define([
             });
         },
 
-        loadSubCities: function (cityId, currentSubCity) {
-            let self = this;
-            let regionId = $(BILLING_ADDRESS_AREA).find($(REGION_SELECTOR)).val();
-            let query = `
-                query {
-                    GetListSubCity(input: { default_name: "${cityId}", region_id: "${regionId}" }) {
-                        default_name
-                        label
-                    }
-                }
-            `;
-
-            $('body').loader('show');
-
-            $.ajax({
-                url: '/graphql',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ query: query }),
-                success: function (response) {
-                    if (response.data && response.data.GetListSubCity) {
-                        self.updateSubCityDropdown(response.data.GetListSubCity, currentSubCity);
-                    } else {
-                        self.updateSubCityDropdown([])
-                    }
-                    self.subCityVisible();
-                },
-                error: function (xhr, status, error) {
-                    console.error('Request failed:', error);
-                },
-                complete: function () {
-                    $('body').loader('hide');
-                }
-            });
-        },
-
         updateCityDropdown: function (cities) {
             let self = this;
             let customCitySelect = $(CUSTOM_CITY_SELECTOR);
-            customCitySelect.empty().append($('<option></option>').attr('value', '').text($.mage.__('Please select a city')));
+            customCitySelect.empty().append($('<option></option>').attr('value', '').text(self.wardPlaceholder()));
 
+            /* Target §8: Đ/đ sorts as D/d. ICU 'vi' keeps Đ a distinct letter after D
+             * (verified 2026-08-28 via PHP intl), so normalise before comparing — same
+             * rule as the server-side REPLACE expression in LocationHierarchyProvider. */
+            let vnSortKey = function (value) {
+                return String(value || '').replace(/Đ/g, 'D').replace(/đ/g, 'd');
+            };
             cities.sort(function (a, b) {
-                return a.label.localeCompare(b.label, 'vi', { sensitivity: 'base' });
+                return vnSortKey(a.label).localeCompare(vnSortKey(b.label), 'vi', { sensitivity: 'base' });
             });
             self.updatePostcodePlaceholderByDom('#checkout-step-billing');
 
@@ -462,22 +445,6 @@ define([
                 if (currentCity) {
                     customCitySelect.val(currentCity).trigger('change');
                 }
-            }
-        },
-
-        updateSubCityDropdown: function (subCities, currentSubCity) {
-            let customSubCitySelect = $(CUSTOM_SUB_CITY_SELECTOR);
-            customSubCitySelect.empty().append($('<option></option>').attr('value', '').text($.mage.__('Please select a sub-city')));
-
-            subCities.forEach(function (subCity) {
-                customSubCitySelect.append($('<option></option>').attr('value', subCity.default_name).text(subCity.label));
-            });
-
-
-            if (currentSubCity) {
-                customSubCitySelect.val(currentSubCity).trigger('change');
-            } else {
-                customSubCitySelect.val($(CUSTOM_ATTR_SUB_CITY).val()).trigger('change');
             }
         },
         triggerValidCity: function () {
@@ -494,22 +461,11 @@ define([
             }
         },
 
-        triggerValidSubCity: function () {
-            if ($(CUSTOM_SUB_CITY_SELECTOR).val() === '' && $(BILLING_ADDRESS_SUB_CITY).is(':visible')) {
-                $(SUB_CITY_ERROR).show();
-                $(CUSTOM_SUB_CITY_SELECTOR).addClass('custom-error');
-            }else{
-                $(SUB_CITY_ERROR).hide();
-                $(CUSTOM_SUB_CITY_SELECTOR).removeClass('custom-error');
-            }
-        },
-
         billingValidate: function () {
             var self = this;
             $(document).on("click", "#checkout-step-payment .action-update", function (event) {
                 self.triggerValidCity();
-                self.triggerValidSubCity();
-                if ($(CITY_ERROR).is(':visible') || $(SUB_CITY_ERROR).is(':visible')) {
+                if ($(CITY_ERROR).is(':visible')) {
                     event.preventDefault();
                 }
             })

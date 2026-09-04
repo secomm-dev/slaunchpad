@@ -1,2 +1,2 @@
-locale,country_id,code_region,region_default_name,region_name,city_default_name,city_name,sub_city_default_name,sub_city_name
-en_US,AU,ACT,Australian Capital Territory,Australian Capital Territory,Canberra,Canberra,Belconnen,Belconnen
+locale,country_id,code_region,region_default_name,region_name,city_default_name,city_name
+en_US,AU,ACT,Australian Capital Territory,Australian Capital Territory,Canberra,Canberra

@@ -10,10 +10,6 @@
     <preference for="Secomm\AddressDropdown\Api\Data\CityInterface" type="Secomm\AddressDropdown\Model\Data\CityData"/>
     <preference for="Secomm\AddressDropdown\Api\Data\CityNameInterface"
                 type="Secomm\AddressDropdown\Model\Data\CityNameData"/>
-    <preference for="Secomm\AddressDropdown\Api\Data\SubCityInterface"
-                type="Secomm\AddressDropdown\Model\Data\SubCityData"/>
-    <preference for="Secomm\AddressDropdown\Api\Data\SubCityNameInterface"
-                type="Secomm\AddressDropdown\Model\Data\SubCityNameData"/>
     <!-- SL-001 dual-theme: customer form template selected via layout handles
          (customer_address_form.xml Luma + hyva_customer_address_form.xml Hyva).
          Block preference + Helper\Theme removed — no PHP theme detection needed. -->
@@ -22,14 +18,8 @@
     <preference for="Secomm\AddressDropdown\Api\Data\RegionInterface"
                 type="Secomm\AddressDropdown\Model\Data\Region"/>
 
-    <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
-        <plugin name="checkout_custom_shipping_fields" type="Secomm\AddressDropdown\Plugin\Checkout\LayoutProcessorPlugin" sortOrder="20" />
-    </type>
     <type name="Magento\Checkout\Block\Cart\LayoutProcessor">
         <plugin name="checkout_custom_shipping_fields" type="Secomm\AddressDropdown\Plugin\Cart\LayoutProcessorPlugin" sortOrder="20" />
-    </type>
-    <type name="Magento\Checkout\Model\ShippingInformationManagement">
-        <plugin name="save_to_quote_table" type="Secomm\AddressDropdown\Plugin\Quote\SaveToQuote" sortOrder="10" />
     </type>
 
     <!--Import Sample File-->
@@ -52,17 +42,57 @@
             </argument>
         </arguments>
     </type>
-    <type name="Magento\Customer\Api\AddressRepositoryInterface">
-        <plugin name="checkout-fields-repository-address" type="Secomm\AddressDropdown\Plugin\AddSubCityFieldToAddressEntity" />
-    </type>
+    <preference for="Secomm\AddressDropdown\Api\CityRepositoryInterface" type="Secomm\AddressDropdown\Model\CityRepository" />
     <type name="Magento\Customer\Block\Address\Renderer\DefaultRenderer">
         <plugin name="address_renderer_plugin" type="Secomm\AddressDropdown\Plugin\AddressRendererPlugin"/>
     </type>
-    <preference for="Secomm\AddressDropdown\Api\CityRepositoryInterface" type="Secomm\AddressDropdown\Model\CityRepository" />
+
+    <!-- FEAT-2PZQKJ / TASK-NW66H9: Address Profile / Schema contracts (DEC-FEAT2PZQKJ-001). -->
+    <preference for="Secomm\AddressDropdown\Api\Data\AddressProfileInterface"
+                type="Secomm\AddressDropdown\Model\Data\AddressProfileData"/>
+    <preference for="Secomm\AddressDropdown\Api\Data\SchemaLevelInterface"
+                type="Secomm\AddressDropdown\Model\Data\SchemaLevelData"/>
+    <preference for="Secomm\AddressDropdown\Api\AddressProfileResolverInterface"
+                type="Secomm\AddressDropdown\Model\AddressProfileResolver"/>
+    <preference for="Secomm\AddressDropdown\Api\AddressSchemaProviderInterface"
+                type="Secomm\AddressDropdown\Model\AddressSchemaProvider"/>
+    <preference for="Secomm\AddressDropdown\Api\LocationHierarchyProviderInterface"
+                type="Secomm\AddressDropdown\Model\LocationHierarchyProvider"/>
+
+    <!-- FEAT-2PZQKJ / TASK-ADT94K: code-identified hierarchy import slice (generic; the legacy
+         9-column ImportExport entity above stays untouched). -->
+    <preference for="Secomm\AddressDropdown\Api\HierarchyAddressImportInterface"
+                type="Secomm\AddressDropdown\Model\Import\Hierarchy\HierarchyImportService"/>
+
+    <!-- Merged reader for etc/address_profiles.xml across all modules (XSD-validated, cache-tagged). -->
+    <virtualType name="Secomm\AddressDropdown\Model\Profile\Config\Reader"
+                 type="Magento\Framework\Config\Reader\Filesystem">
+        <arguments>
+            <argument name="fileName" xsi:type="string">address_profiles.xml</argument>
+            <argument name="schemaLocator" xsi:type="object">Secomm\AddressDropdown\Model\Profile\Config\SchemaLocator</argument>
+            <argument name="converter" xsi:type="object">Secomm\AddressDropdown\Model\Profile\Config\Converter</argument>
+            <argument name="idAttributes" xsi:type="array">
+                <item name="/config/profile" xsi:type="string">code</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Secomm\AddressDropdown\Model\Profile\Config\Data"
+                 type="Magento\Framework\Config\Data">
+        <arguments>
+            <argument name="reader" xsi:type="object">Secomm\AddressDropdown\Model\Profile\Config\Reader</argument>
+            <argument name="cacheId" xsi:type="string">secomm_addressdropdown_address_profiles</argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\AddressDropdown\Model\Profile\ProfilePool">
+        <arguments>
+            <argument name="configData" xsi:type="object">Secomm\AddressDropdown\Model\Profile\Config\Data</argument>
+        </arguments>
+    </type>
     <type name="Magento\Customer\Block\Address\Grid">
         <plugin name="address_grid_plugin" type="Secomm\AddressDropdown\Plugin\AddressGridPlugin"/>
     </type>
-    <!-- Add subCity into CollectRates-->
+    <!-- TASK-6MKF0V: sub_city plumbing removed — the plugin keeps only the
+         custom_city → dest_city mapping for rate collection (profile-engine city levels). -->
     <type name="Magento\Shipping\Model\Shipping">
         <plugin name="secomm_collect_rates_address_dropdown" type="Secomm\AddressDropdown\Plugin\Model\Shipping" sortOrder="10" />
     </type>

@@ -32,21 +32,6 @@ define([
                 return cityId;
             }
         },
-
-        /**
-         * @param {String} subCityId
-         * @return {String}
-         */
-        getSubCityName: function (parent, subCityId) {
-            try {
-                let address = parent.address();
-                let cityId = address.city;
-                let regionId = address.regionId;
-                return this.cityData()[regionId].city[cityId].sub_city[subCityId].name ?? subCityId;
-            } catch (e) {
-                return subCityId;
-            }
-        },
     }
 
     return function (target) { // target == Result that Magento_Ui/.../columns returns.

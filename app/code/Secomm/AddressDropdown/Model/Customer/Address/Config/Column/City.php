@@ -8,31 +8,23 @@
 namespace Secomm\AddressDropdown\Model\Customer\Address\Config\Column;
 
 use Secomm\AddressDropdown\Helper\Address;
-use Secomm\AddressDropdown\Model\ResourceModel\SubCityModel\SubCityCollectionFactory as CollectionFactory;
 use Magento\Ui\Component\Listing\Columns\Column;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
 
 class City extends Column
 {
-    /**
-     * @var CollectionFactory
-     **/
-    protected $subCityCollection;
-
     /** @var Address  */
     protected $addressHelper;
 
     public function __construct(
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
-        CollectionFactory $subCityCollection,
         Address $addressHelper,
         array $components = [],
         array $data = []
     )   {
         parent::__construct($context, $uiComponentFactory, $components, $data);
-        $this->subCityCollection = $subCityCollection;
         $this->addressHelper = $addressHelper;
     }
 
@@ -49,11 +41,11 @@ class City extends Column
                 $address = $this->addressHelper->getAddressObjById($item['entity_id']);
                 if ($address->getData('city')) {
                     $regionId = $address->getData('region_id') ?? null;
-                    $subCityName = $this->addressHelper->getCityNameByDefaultName(
+                    $cityName = $this->addressHelper->getCityNameByDefaultName(
                         $address->getData('city'),
                         $regionId
                     );
-                    $item[$this->getData('name')] = $subCityName;
+                    $item[$this->getData('name')] = $cityName;
                 }
 
             }

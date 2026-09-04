@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Launchpad_Osc — OSC address cascade injection (TASK-FMAN1B / DEC-TASKFMAN1B-001).
+ *
+ * The OSC page inherits checkout_index_index, where Secomm_AddressDropdown injects
+ * its default-checkout cascade components. This handle merges after that update and
+ * overwrites the SAME jsLayout keys, so exactly one component instance renders per
+ * form — the OSC-tuned Launchpad_Osc copy. When OSC is disabled this handle never
+ * renders and the module contributes nothing (soft coupling, DEC-TASKFMAN1B-001).
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="checkout.root">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="checkout" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="steps" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="shipping-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="shippingAddress" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="shipping-address-fieldset" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="address_dropdown" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">
+                                                                        Launchpad_Osc/js/action/shipping-address-dropdown
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                        <item name="billing-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="payment" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="payments-list" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="address_dropdown_billing" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">
+                                                                        Launchpad_Osc/js/action/billing-address-dropdown
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>

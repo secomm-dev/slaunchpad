@@ -1,5 +1,31 @@
-define(['jquery', 'mage/translate', 'domReady!'], function ($) {
+define([
+    'jquery',
+    'mage/translate',
+    'Secomm_AddressDropdown/js/form/schema-cascade',
+    'domReady!'
+], function ($, translate, schemaCascade) {
     'use strict';
+
+    /*
+     * Admin order create/edit address cascade (billing + shipping roots).
+     *
+     * TASK-9EX975 Slice A: the cascade is now SCHEMA-DRIVEN through the shared
+     * Secomm_AddressDropdown factory — the number of city levels, their labels and
+     * placeholders come from the address country's resolved Address Profile
+     * (`addressSchema`), the options from `addressLocations`, with the storefront's
+     * stop-at-leaf semantics. There is no `country == 'VN'` gate any more: a mapped
+     * country renders its profile's levels (VN 2025 = ward, VN pre-2025 = district +
+     * ward), an unmapped country keeps Magento's native city input. The class names
+     * (secomm-vn-ward-*) are kept for layout compatibility; they now host the generic
+     * cascade levels. The deepest selection persists into the native city input.
+     *
+     * Everything ORDER-FORM-SPECIFIC stays here: Prototype RegionUpdater quirks
+     * (stale defaultValue clearing), the async hydration watcher (regionUpdater /
+     * "select from existing customer addresses" / same-as-billing set values without
+     * jQuery events), same-as-billing shipping lock (disabled fields copy billing), the
+     * order lifecycle hook (window.order.fillAddressFields) and the MutationObserver
+     * that binds address fragments replaced by AJAX.
+     */
 
     var ROOT_SELECTOR = '#order-billing_address_fields, #order-shipping_address_fields, .form-inline, #edit_form';
     var CITY_FIELD_SELECTOR = 'input[name$="[city]"], input[name="city"]';
@@ -9,12 +35,8 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
     var WARD_INPUT_CLASS = 'secomm-vn-ward-input';
     var WARD_VISIBLE_CLASS = 'secomm-vn-ward-visible';
     var BOUND_FLAG = 'secommVnBound';
-    var REQUEST_FLAG = 'secommVnWardRequestId';
+    var CASCADE_FLAG = 'secommCityCascade';
     var refreshTimer = null;
-
-    function escapeGraphQlValue(value) {
-        return JSON.stringify(String(value || ''));
-    }
 
     function getField($root, selector) {
         return $root.find(selector).first();
@@ -30,14 +52,6 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
 
     function getCityField($root) {
         return getField($root, CITY_FIELD_SELECTOR);
-    }
-
-    function getWardSelect($root) {
-        return $root.find('.' + WARD_SELECT_CLASS).first();
-    }
-
-    function isVietnam(countryValue) {
-        return String(countryValue || '').toUpperCase() === 'VN';
     }
 
     function isShippingLocked($root) {
@@ -66,193 +80,91 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
         }, 0);
     }
 
-    function ensureWardSelect($root, $cityField) {
-        var $wardSelect = getWardSelect($root);
+    /**
+     * Build (once) the cascade for an address root: a level-0 select injected after the
+     * native city input, managed by the shared schema-cascade factory.
+     */
+    function ensureCascade($root) {
+        var existing = $root.data(CASCADE_FLAG);
 
-        if ($wardSelect.length) {
-            return $wardSelect;
+        if (existing) {
+            return existing;
         }
 
-        $wardSelect = $('<select/>', {
+        var $cityField = getCityField($root);
+        var $citySelect = $('<select/>', {
             'class': 'admin__control-select ' + WARD_SELECT_CLASS,
             'data-secomm-vn-ward-select': '1'
         });
 
-        $wardSelect.insertAfter($cityField);
-        $wardSelect.on('change.secommVnWard', function () {
-            $cityField.val($(this).val() || '');
-            $cityField.trigger('change');
-        });
+        $citySelect.insertAfter($cityField);
 
-        return $wardSelect;
-    }
-
-    function setWardVisibility($cityField, $wardSelect, isVn, isLocked) {
-        if (isVn) {
-            $cityField.addClass(WARD_INPUT_CLASS).hide();
-            $wardSelect.addClass(WARD_VISIBLE_CLASS).show().prop('disabled', isLocked);
-            $wardSelect.addClass('required-entry');
-            $cityField.removeClass('required-entry');
-        } else {
-            $wardSelect.removeClass(WARD_VISIBLE_CLASS).hide().prop('disabled', true);
-            $wardSelect.removeClass('required-entry');
-            $cityField.removeClass(WARD_INPUT_CLASS).show().addClass('required-entry');
-        }
-    }
-
-    function renderWardOptions($wardSelect, wards, selectedWard) {
-        var placeholder = $.mage.__('Please select a city');
-        var hasSelected = false;
-
-        $wardSelect.empty();
-        $wardSelect.append($('<option/>', {
-            value: '',
-            text: placeholder
-        }));
-
-        wards.forEach(function (ward) {
-            var wardValue = ward.default_name || '';
-            var wardLabel = ward.label || ward.default_name || wardValue;
-
-            if (wardValue && wardValue === selectedWard) {
-                hasSelected = true;
-            }
-
-            $wardSelect.append($('<option/>', {
-                value: wardValue,
-                text: wardLabel
-            }));
-        });
-
-        if (!hasSelected) {
-            $wardSelect.val('');
-            return false;
-        }
-
-        $wardSelect.val(selectedWard);
-        return true;
-    }
-
-    function loadWards($root, $cityField, $wardSelect, regionId, selectedWard, isLocked) {
-        var requestId = (parseInt($root.data(REQUEST_FLAG), 10) || 0) + 1;
-        var query;
-
-        $root.data(REQUEST_FLAG, requestId);
-
-        if (!regionId) {
-            renderWardOptions($wardSelect, [], '');
-            $cityField.val('');
-            $wardSelect.prop('disabled', true).show();
-            $cityField.hide();
-            return $.Deferred().resolve().promise();
-        }
-
-        query = 'query { GetListCity(input: { region_id: ' + escapeGraphQlValue(regionId) + ', area: "adminhtml"}) { default_name label } }';
-        $wardSelect.prop('disabled', true);
-
-        return fetch('/graphql', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+        var cascade = schemaCascade.createCascade({
+            level0Select: $citySelect,
+            injectAfter: $citySelect,
+            selectClass: 'admin__control-select ' + WARD_SELECT_CLASS,
+            getCountryId: function () {
+                return getCountryField($root).val() || '';
             },
-            body: JSON.stringify({
-                query: query
-            })
-        })
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('Unable to load city options.');
+            getRegionId: function () {
+                return getRegionField($root).val() || '';
+            },
+            getSavedName: function () {
+                return $cityField.val() || '';
+            },
+            onLeaf: function (leafName) {
+                $cityField.val(leafName || '');
+                $cityField.trigger('change');
+            },
+            onSchemaResolved: function (hasSchema) {
+                var locked = isShippingLocked($root);
+
+                if (hasSchema) {
+                    $cityField.addClass(WARD_INPUT_CLASS).hide().removeClass('required-entry');
+                    $citySelect.addClass(WARD_VISIBLE_CLASS).show().addClass('required-entry');
+                    $citySelect.prop('disabled', locked);
+                } else {
+                    $citySelect.removeClass(WARD_VISIBLE_CLASS).hide().prop('disabled', true).removeClass('required-entry');
+                    $cityField.removeClass(WARD_INPUT_CLASS).show().addClass('required-entry');
                 }
+            },
+            locked: function () {
+                return isShippingLocked($root);
+            },
+            fallbackPlaceholder: $.mage.__('Please select a city')
+        });
 
-                return response.json();
-            })
-            .then(function (payload) {
-                var wards = (payload && payload.data && payload.data.GetListCity) ? payload.data.GetListCity : [];
-                var currentRequestId = parseInt($root.data(REQUEST_FLAG), 10) || 0;
+        $root.data(CASCADE_FLAG, cascade);
 
-                if (currentRequestId !== requestId) {
-                    return;
-                }
-
-                if (payload && payload.errors) {
-                    throw new Error('Unable to load city options.');
-                }
-
-                if (!wards.length) {
-                    renderWardOptions($wardSelect, [], '');
-                    $cityField.val('');
-                    $wardSelect.prop('disabled', true).show();
-                    $cityField.hide();
-                    return;
-                }
-
-                if (!renderWardOptions($wardSelect, wards, selectedWard, false)) {
-                    $cityField.val('');
-                }
-
-                $wardSelect.prop('disabled', isLocked).show();
-                $cityField.hide();
-
-                if ($wardSelect.val()) {
-                    $cityField.val($wardSelect.val());
-                }
-            })
-            .catch(function () {
-                if ((parseInt($root.data(REQUEST_FLAG), 10) || 0) !== requestId) {
-                    return;
-                }
-
-                renderWardOptions($wardSelect, [], '');
-                $cityField.val('');
-                $wardSelect.prop('disabled', true).show();
-                $cityField.hide();
-            });
+        return cascade;
     }
 
     function refreshRoot($root) {
         var $countryField = getCountryField($root);
         var $regionField = getRegionField($root);
         var $cityField = getCityField($root);
-        var $wardSelect;
-        var countryValue;
-        var regionValue;
-        var cityValue;
-        var shippingLocked;
 
         if (!$countryField.length || !$regionField.length || !$cityField.length) {
             return;
         }
 
-        $wardSelect = ensureWardSelect($root, $cityField);
-        countryValue = $countryField.val();
-        regionValue = $regionField.val();
-        cityValue = $cityField.val();
-        shippingLocked = isShippingLocked($root);
+        var cascade = ensureCascade($root);
 
         // The shipping fragment can be rendered before its hidden native city input is
         // refreshed after a country switch. While Same As Billing is active, Billing is
         // the authoritative source, just like Magento's country and region fields.
-        if (shippingLocked) {
-            cityValue = getBillingCityValue();
-            $cityField.val(cityValue);
+        if (isShippingLocked($root)) {
+            $cityField.val(getBillingCityValue());
         }
 
-        setWardVisibility($cityField, $wardSelect, isVietnam(countryValue), shippingLocked);
-
-        if (!isVietnam(countryValue)) {
-            $wardSelect.val('');
-            return;
-        }
-
-        loadWards($root, $cityField, $wardSelect, regionValue, cityValue, shippingLocked);
+        cascade.refresh();
     }
 
     function bindRoot($root) {
         var $countryField;
         var $regionField;
         var $cityField;
-        var $wardSelect;
+        var cascade;
 
         if ($root.data(BOUND_FLAG)) {
             return;
@@ -266,7 +178,7 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
             return;
         }
 
-        $wardSelect = ensureWardSelect($root, $cityField);
+        cascade = ensureCascade($root);
         $root.data(BOUND_FLAG, true);
 
         // Magento's Prototype RegionUpdater keeps the form's initial region_id in the
@@ -283,7 +195,7 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
             $regionField.val('');
             $root.find('input[name$="[region]"], input[name="region"]').first().val('');
             $cityField.val('');
-            $wardSelect.empty().prop('disabled', true);
+            cascade.clear();
         }, true);
 
         // The order form's region_id <select> is populated/set asynchronously by the
@@ -291,9 +203,11 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
         // customer addresses" + "Same as billing" set country/region programmatically —
         // none of those dispatch a jQuery change event. Track the last (country|region)
         // we acted on and share it between the manual handlers and the hydration watcher
-        // below so a ward load is triggered exactly once per change.
+        // below so a cascade refresh is triggered exactly once per change. The city
+        // value is deliberately NOT in the key: the cascade itself writes it (onLeaf)
+        // and keying on it would re-trigger a refresh the cascade already handled.
         var addressKey = function () {
-            return ($countryField.val() || '') + '|' + ($regionField.val() || '') + '|' + ($cityField.val() || '');
+            return ($countryField.val() || '') + '|' + ($regionField.val() || '');
         };
         var lastKey = addressKey();
 
@@ -306,7 +220,7 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
         // handlers. Listen natively as well, then wait one tick for the selected
         // province value to settle before requesting its city list.
         $regionField[0].addEventListener('change', function (event) {
-            if (event.isTrusted === false || !isVietnam($countryField.val())) {
+            if (event.isTrusted === false) {
                 return;
             }
 
@@ -317,7 +231,7 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
             // Programmatic address hydration must retain both values for pre-selection.
             // Manual changes were reset in the capture listener before RegionUpdater ran.
             if (event.originalEvent) {
-                $wardSelect.val('');
+                cascade.clear();
             }
 
             apply();
@@ -327,17 +241,10 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
         });
 
         $regionField.off('change.secommVnWard').on('change.secommVnWard', function () {
-            if (isVietnam($countryField.val())) {
-                apply();
-            }
+            apply();
             if ($root.is('#order-billing_address_fields')) {
                 refreshLockedShipping();
             }
-        });
-
-        $wardSelect.off('change.secommVnWard').on('change.secommVnWard', function () {
-            $cityField.val($(this).val() || '').trigger('change');
-            lastKey = addressKey();
         });
 
         $cityField.off('change.secommVnWard').on('change.secommVnWard', function () {
@@ -348,11 +255,11 @@ define(['jquery', 'mage/translate', 'domReady!'], function ($) {
 
         refreshRoot($root);
 
-        // Bounded hydration watcher: re-load wards when region_id/country_id change
+        // Bounded hydration watcher: re-run the cascade when region_id/country_id change
         // programmatically (regionUpdater async hydrate on a saved/edit address,
         // selectAddress, same-as-billing copy). Stops after the form has settled (~30s);
         // later manual interaction keeps working via the change handlers above. Shares
-        // lastKey so it never double-triggers a load the handlers already actioned.
+        // lastKey so it never double-triggers a refresh the handlers already actioned.
         var ticks = 0;
         var maxTicks = 120; // ~30s at 250ms
         var hydrationTimer = setInterval(function () {

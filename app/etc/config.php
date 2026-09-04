@@ -360,6 +360,7 @@ return [
         'Magento_WishlistAnalytics' => 1,
         'Magento_WishlistGraphQl' => 1,
         'Hyva_Theme' => 1,
+        'Hyva_CmsTailwindJit' => 1,
         'Hyva_CompatModuleFallback' => 1,
         'Hyva_Email' => 1,
         'Hyva_GraphqlTokens' => 1,
@@ -393,6 +394,7 @@ return [
         'Smile_ElasticsuiteCore' => 1,
         'Hyva_BaseLayoutReset' => 1,
         'Hyva_LumaCheckout' => 1,
+        'Mageplaza_Core' => 1,
         'Magefan_AdminUserGuide' => 1,
         'Magefan_Blog' => 1,
         'Magefan_BlogGraphQl' => 1,
@@ -404,18 +406,18 @@ return [
         'Magefan_GoogleTagManagerPlus' => 1,
         'Magefan_GoogleTagManagerExtra' => 1,
         'Magefan_WysiwygAdvanced' => 1,
-        'Mageplaza_Core' => 1,
-        'Mageplaza_BackendReindex' => 1,
         'Mageplaza_AbandonedCart' => 1,
+        'Mageplaza_BackendReindex' => 1,
+        'Mageplaza_SocialLogin' => 1,
         'Mageplaza_DeliveryTime' => 1,
         'Mageplaza_ExtraFee' => 1,
         'Mageplaza_Lookbook' => 1,
-        'Mageplaza_SocialLogin' => 1,
         'Mageplaza_SocialLoginPro' => 1,
         'Mageplaza_Osc' => 1,
-        'Mageplaza_Smtp' => 1,
-        'Mageplaza_OscPro' => 1,
         'Mageplaza_OscUltimate' => 1,
+        'Mageplaza_Smtp' => 1,
+        'Secomm_AddressDropdown' => 1,
+        'Mageplaza_OscPro' => 1,
         'Mageplaza_TableRateShipping' => 1,
         'Magewirephp_Magewire' => 1,
         'Mirasvit_Core' => 1,
@@ -438,14 +440,14 @@ return [
         'PayPal_BraintreeGiftWrapping' => 1,
         'PayPal_BraintreeGraphQl' => 1,
         'PayPal_BraintreeReward' => 1,
-        'Secomm_AddressDropdown' => 1,
+        'Launchpad_Osc' => 1,
         'Secomm_ShippingCore' => 1,
         'Secomm_AiCommerce' => 1,
         'Secomm_AiDiscoverability' => 1,
         'Secomm_Base' => 1,
         'Secomm_DisableFileUpload' => 1,
         'Secomm_GiaoHangNhanh' => 1,
-        'Secomm_Ghtk' => 1,
+        'Secomm_VietNamAddress' => 1,
         'Secomm_GhnAddressMapper' => 1,
         'Secomm_MageplazaExtraFeeFix' => 1,
         'Secomm_MoMo' => 1,
@@ -453,7 +455,8 @@ return [
         'Secomm_PromotionMaxDiscount' => 1,
         'Secomm_Ahamove' => 1,
         'Secomm_Tracking' => 1,
-        'Secomm_VietNamAddress' => 1,
+        'Secomm_UiWidget' => 1,
+        'Secomm_Ghtk' => 1,
         'Secomm_VietNamMarket' => 1,
         'Secomm_VietQr' => 1,
         'Secomm_ZaloPay' => 1,
@@ -471,5 +474,14 @@ return [
         'Smile_ElasticsuiteVirtualCategory' => 1,
         'Snowdog_Menu' => 1,
         'Vnpayment_VNPAY' => 1
+    ],
+    'system' => [
+        'default' => [
+            'hyva_cms_tailwind_jit' => [
+                'general' => [
+                    'compiler_version' => 'v4'
+                ]
+            ]
+        ]
     ]
 ];

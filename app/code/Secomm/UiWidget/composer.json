@@ -1,0 +1,21 @@
+{
+    "name": "secomm/module-ui-widget",
+    "description": "Secomm UI components exposed through the native Magento widget system for Hyva storefronts.",
+    "type": "magento2-module",
+    "license": "GPL-3.0",
+    "require": {
+        "php": "^8.2",
+        "magento/framework": "*",
+        "magento/module-cms": "*",
+        "magento/module-widget": "*",
+        "hyva-themes/magento2-theme-module": ">=1.5.2"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Secomm\\UiWidget\\": ""
+        }
+    }
+}

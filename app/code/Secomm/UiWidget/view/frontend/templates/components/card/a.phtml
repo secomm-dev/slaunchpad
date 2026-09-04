@@ -1,0 +1,56 @@
+<?php
+/**
+ * Adapted from Hyvä UI card/A-default 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$instanceId = $block->getInstanceId();
+$titleId = $instanceId . '-title';
+$linkClasses = [
+    'button' => 'btn inline-flex before:absolute before:inset-0',
+    'primary' => 'btn btn-primary inline-flex before:absolute before:inset-0',
+    'secondary' => 'btn btn-secondary inline-flex before:absolute before:inset-0',
+];
+$mobileImage = (string)$data['mobile_image'];
+$desktopImage = (string)($data['desktop_image'] ?? '');
+?>
+<article id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+         class="relative card card-interactive flex flex-col overflow-clip p-0"
+         aria-labelledby="<?= $escaper->escapeHtmlAttr($titleId) ?>"
+         data-secomm-ui-component="card_a">
+    <picture>
+        <?php if ($desktopImage !== ''): ?>
+            <source media="(min-width: 1024px)" srcset="<?= $escaper->escapeUrl($desktopImage) ?>">
+        <?php endif; ?>
+        <img src="<?= $escaper->escapeUrl($mobileImage) ?>"
+             alt="<?= $escaper->escapeHtmlAttr((string)$data['image_alt']) ?>"
+             width="1500"
+             height="480"
+             loading="<?= $escaper->escapeHtmlAttr((string)($data['loading'] ?? 'lazy')) ?>">
+    </picture>
+    <div class="card-content p-6 prose">
+        <p id="<?= $escaper->escapeHtmlAttr($titleId) ?>" class="text-2xl">
+            <strong><?= $escaper->escapeHtml((string)$data['title']) ?></strong>
+        </p>
+        <?php if (!empty($data['content'])): ?>
+            <?= /* @noEscape trusted-rich-text filtered by Magento CMS */
+            $block->renderTrustedHtml((string)$data['content']) ?>
+        <?php endif; ?>
+        <?php if (!empty($data['cta_url'])): ?>
+            <p class="mt-8 mb-0">
+                <a href="<?= $escaper->escapeUrl((string)$data['cta_url']) ?>"
+                   class="<?= $escaper->escapeHtmlAttr($linkClasses[$data['link_appearance'] ?? 'button']) ?>"
+                    <?php if (!empty($data['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                    <?= $escaper->escapeHtml((string)$data['cta_label']) ?>
+                </a>
+            </p>
+        <?php endif; ?>
+    </div>
+</article>

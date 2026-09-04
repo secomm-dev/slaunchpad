@@ -1,0 +1,58 @@
+{
+    "secomm_vietnam_address_scheme": {
+        "column": {
+            "scheme_code": true,
+            "label": true,
+            "profile_code": true,
+            "level_count": true,
+            "status": true,
+            "effective_from": true,
+            "effective_to": true
+        },
+        "index": {
+            "SECOMM_VN_ADDR_SCHEME_STATUS": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "secomm_vietnam_address_unit": {
+        "column": {
+            "entity_id": true,
+            "scheme_code": true,
+            "code": true,
+            "parent_code": true,
+            "region_code": true,
+            "level": true,
+            "name_vi": true,
+            "name_en": true
+        },
+        "index": {
+            "SECOMM_VN_ADDR_UNIT_SCHEME_CODE": true,
+            "SECOMM_VN_ADDR_UNIT_SCHEME_PARENT": true,
+            "SECOMM_VN_ADDR_UNIT_SCHEME_REGION": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_VN_ADDR_UNIT_SCHEME_CODE": true
+        }
+    },
+    "secomm_vietnam_address_mapping": {
+        "column": {
+            "mapping_id": true,
+            "source_scheme": true,
+            "source_code": true,
+            "target_scheme": true,
+            "target_code": true,
+            "relation_type": true
+        },
+        "index": {
+            "SECOMM_VN_ADDR_MAPPING_TARGET": true,
+            "SECOMM_VN_ADDR_MAPPING_SOURCE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_VN_ADDR_MAPPING_EDGE": true
+        }
+    }
+}

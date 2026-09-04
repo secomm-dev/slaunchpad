@@ -1,0 +1,3 @@
+﻿source_scheme,source_code,target_scheme,target_code,relation_type
+VN_ADMIN_PRE_2025,VNAP25-A,VN_ADMIN_2025,VNA25-C,MERGED_INTO
+VN_ADMIN_PRE_2025,VNAP25-B,VN_ADMIN_2025,VNA25-C,MERGED_INTO

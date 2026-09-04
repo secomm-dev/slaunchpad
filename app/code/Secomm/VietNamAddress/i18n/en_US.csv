@@ -5,7 +5,6 @@ Delete,Delete
 Are you sure you want to delete this city?,Are you sure you want to delete this District?
 Save,Save
 Are you sure you want to delete this Region?,Are you sure you want to delete this City/Province?
-Are you sure you want to delete this subcity?,Are you sure you want to delete this Commune/Ward?
 Could not find City with id: `%id`,Could not find District with id: `%id`
 Could not delete City. Original message: {message},Could not delete District. Original message: {message}
 Could not delete City.,Could not delete District.
@@ -24,12 +23,6 @@ Code already existed.,Code already existed.
 Code is required.,Code is required.
 Default Name is required.,Default Name is required.
 Could not save RegionName.,Could not save RegionName.
-Could not find SubCity with id: `%id`,Could not find Commune/Ward with id: `%id`
-Could not delete SubCity. Original message: {message},Could not delete Commune/Ward. Original message: {message}
-Could not delete SubCity.,Could not delete Commune/Ward.
-Could not save SubCity. Original message: {message},Could not save Commune/Ward. Original message: {message}
-Could not save SubCity.,Could not save Commune/Ward.
-Could not save SubCityName.,Could not save SubCityName.
 You have successfully deleted City entity,You have successfully deleted District entity
 Edit City,Edit District
 Manage Cities,Manage Cities
@@ -43,13 +36,6 @@ States/Provinces,States/Provinces
 New States/Provinces,New States/Provinces
 The Region data was saved successfully (The default name of region cannot be changed).,The City/Province data was saved successfully (The default name of City/Province cannot be changed).
 The Region data was saved successfully,The City/Province data was saved successfully
-You have successfully deleted SubCity entity,You have successfully deleted Commune/Ward entity
-Edit SubCity,Edit Commune/Ward
-SubCity,Commune/Ward
-Manage SubCitys,Manage Commune/Ward
-SubCity List,Commune/Ward List
-New SubCity,New Commune/Ward
-SubCity data was saved successfully,Commune/Ward data was saved successfully
 "City with id ""%1"" does not exist.","District with id ""%1"" does not exist."
 "Missing required column ""%column""","Missing required column ""%column"""
 "Missing required value of column ""%column""","Missing required value of column ""%column"""
@@ -69,7 +55,6 @@ Iso2 Code,Iso2 Code
 Iso3 Code,Iso3 Code
 en_US,en_US
 Code,Code
-SubCity Name,Commune/Ward Name
 * Required Fields,* Required Fields
 Contact Information,Contact Information
 Address,Address
@@ -126,3 +111,13 @@ Code Region,Code City/Province
 Region ID,City/Province ID
 Sub City Form,Commune/Ward Form
 City Id,District Id
+Province/City,Province/City
+Ward/Commune,Ward/Commune
+District/Town,District/Town
+Legacy Ward/Commune,Legacy Ward/Commune
+Please select a Province/City.,Please select a Province/City.
+Please select a Ward/Commune.,Please select a Ward/Commune.
+Please select a District/Town.,Please select a District/Town.
+"VN Admin 2025 (2-level)","VN Admin 2025 (2-level)"
+"VN Admin pre-2025 (3-level)","VN Admin pre-2025 (3-level)"
+"Cannot swap: %1","Cannot swap: %1"

@@ -11,12 +11,8 @@ var config = {
     },
     config: {
         mixins: {
-            'Magento_Checkout/js/action/set-shipping-information': {
-                'Secomm_AddressDropdown/js/action/set-shipping-information-mixin': true
-            },
-            'Magento_Checkout/js/action/set-billing-address': {
-                'Secomm_AddressDropdown/js/action/set-billing-information-mixin': true
-            },
+            /* TASK-6MKF0V: set-shipping/set-billing information mixins removed — they only
+             * injected the retired sub_city extension attribute. */
             'Magento_Checkout/js/view/cart/shipping-estimation': {
                 'Secomm_AddressDropdown/js/view/cart/shipping-estimation-mixin': true
             },

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+  ~ Secomm_AddressDropdown — FEAT-2PZQKJ / TASK-3T3NSV: default renderer mode = legacy
+  ~ (no behaviour change until a store opts into the schema-driven renderer).
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <address>
+            <general>
+                <renderer>legacy</renderer>
+            </general>
+        </address>
+    </default>
+</config>

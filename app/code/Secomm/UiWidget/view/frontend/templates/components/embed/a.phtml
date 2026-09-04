@@ -1,0 +1,106 @@
+<?php
+/**
+ * Adapted from Hyvä UI embed/A-basic 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$provider = (string)($data['provider'] ?? 'youtube');
+$inputUrl = (string)$data['video_url'];
+$title = (string)$data['title'];
+$loading = (string)($data['loading'] ?? 'auto');
+$useJsLazyLoading = $loading === 'auto';
+$autoplay = $useJsLazyLoading || !empty($data['allow_autoplay']);
+$enhancedPrivacy = (bool)($data['enhanced_privacy'] ?? true);
+$embedId = null;
+
+if ($provider === 'youtube'
+    && preg_match('~(youtube\.com/(watch\?[^#]*v=|live/|v/|embed/)|youtu\.be/)([A-Za-z0-9_-]+)~i', $inputUrl, $matches)
+) {
+    $embedId = end($matches) ?: null;
+} elseif ($provider === 'vimeo' && preg_match('~vimeo\.com/(video/)?([0-9]+)~i', $inputUrl, $matches)) {
+    $embedId = end($matches) ?: null;
+}
+
+if (!$embedId) {
+    return;
+}
+
+$query = [];
+if ($autoplay) {
+    $query['autoplay'] = '1';
+}
+if ($provider === 'vimeo' && $enhancedPrivacy) {
+    $query['dnt'] = '1';
+}
+$embedBase = $provider === 'youtube'
+    ? ($enhancedPrivacy ? 'https://www.youtube-nocookie.com/embed/' : 'https://www.youtube.com/embed/')
+    : 'https://player.vimeo.com/video/';
+$embedUrl = $embedBase . $embedId . ($query ? '?' . http_build_query($query) : '');
+$poster = (string)($data['poster'] ?? '');
+if ($poster === '' && $provider === 'youtube') {
+    $poster = sprintf('https://i.ytimg.com/vi/%s/maxresdefault.jpg', $embedId);
+}
+$aspectRatio = (string)($data['aspect_ratio'] ?? '16/9');
+$playColors = $provider === 'youtube' ? '#ff0000; --play-btn-fg:#fff' : '#1ab7ea; --play-btn-fg:#000';
+$styles = 'aspect-ratio:' . $aspectRatio . '; --play-btn-bg:' . $playColors;
+$allow = implode('; ', array_keys(array_filter([
+    'accelerometer' => true,
+    'autoplay' => $autoplay,
+    'clipboard-write' => true,
+    'encrypted-media' => true,
+    'gyroscope' => true,
+    'picture-in-picture' => true,
+    'web-share' => true,
+])));
+$actionTitle = __('Play %1', $title);
+?>
+<div id="<?= $escaper->escapeHtmlAttr($block->getInstanceId()) ?>"
+     class="group grid *:col-start-1 *:row-start-1 aspect-video rounded-lg
+            bg-[var(--play-btn-bg)] text-[var(--play-btn-fg)]"
+     style="<?= $escaper->escapeHtmlAttr($styles) ?>"
+     data-secomm-ui-component="embed_a"
+    <?php if ($useJsLazyLoading): ?>x-data="{ open: false }"<?php endif; ?>>
+    <?php if ($useJsLazyLoading): ?>
+        <a href="<?= $escaper->escapeUrl($inputUrl) ?>"
+           target="_blank"
+           rel="noopener noreferrer"
+           @click.prevent="open = true"
+           class="relative flex flex-col justify-center items-center rounded-lg bg-no-repeat bg-cover
+                  bg-center overflow-hidden p-4"
+           x-show="!open">
+            <?php if ($poster !== ''): ?>
+                <img src="<?= $escaper->escapeUrl($poster) ?>"
+                     alt=""
+                     class="absolute inset-0 h-full w-full object-cover"
+                     width="1280"
+                     height="720"
+                     loading="lazy">
+            <?php endif; ?>
+            <span class="relative rounded-full p-4 shadow-lg bg-[var(--play-btn-bg)] text-[var(--play-btn-fg)]
+                         group-hover:scale-125 transition-transform">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" aria-hidden="true">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </span>
+            <strong class="sr-only"><?= $escaper->escapeHtml($actionTitle) ?></strong>
+        </a>
+        <template x-if="open">
+    <?php endif; ?>
+            <iframe src="<?= $escaper->escapeUrl($embedUrl) ?>"
+                    title="<?= $escaper->escapeHtmlAttr($title) ?>"
+                    allow="<?= $escaper->escapeHtmlAttr($allow) ?>"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen
+                    class="max-w-full w-full h-full rounded-lg overflow-clip"
+                    loading="<?= $escaper->escapeHtmlAttr($useJsLazyLoading ? 'eager' : $loading) ?>"></iframe>
+    <?php if ($useJsLazyLoading): ?>
+        </template>
+    <?php endif; ?>
+</div>

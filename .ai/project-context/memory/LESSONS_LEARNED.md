@@ -36,7 +36,7 @@
 <!--
 Template cho entry kế tiếp — copy từ đây:
 
-## LL-0003 — {tiêu đề ngắn}
+## LL-00XX — {tiêu đề ngắn}
 - **Date**:
 - **Source**:
 - **Type**: repeat | avoid
@@ -45,3 +45,39 @@ Template cho entry kế tiếp — copy từ đây:
 - **Action / prevention**:
 - **Owner**:
 -->
+
+## LL-0003 — Unit test phải mock theo hành vi THẬT của collaborator, không theo ý muốn
+- **Date**: 2026-08-26
+- **Source**: TASK-J49PRZ pre-review (evidence `PRE-REVIEW-2026-08-26-FEAT-2PZQKJ-YA2C0W.md`, Warning 1)
+- **Type**: avoid
+- **Lesson**: `AddressLocationsGraphqlTest::testUnknownProfileBecomesNoSuchEntity` mock provider ném `NoSuchProfileException` — nhưng provider thật không bao giờ ném (profile lạ → all-nodes BC mode). Test xanh trong khi API sai contract đã ghi (bogus `profile_code` phải trả `GraphQlNoSuchEntityException`, thực tế trả toàn bộ nodes).
+- **Root cause / trigger**: mock viết theo docbloc/ý muốn thay vì hành vi thực tế của implementation; catch block trong resolver thành dead code không ai phát hiện qua test.
+- **Action / prevention**: khi unit test cho code có `catch` exception cụ thể, kiểm tra collaborator thật có thật sự ném exception đó; mock đúng hành vi thật + assert collaborator downstream never-called; ưa inject collaborator thật (vd `ProfilePool::getProfile`) khi rẻ.
+- **Owner**: Dev team
+
+## LL-0004 — Validator/test fixtures phải được pin với file data shipped thật (contract drift)
+- **Date**: 2026-08-28
+- **Source**: TASK-ADT94K bootstrap fix (34 validation errors từ empty-DB patch re-run)
+- **Type**: avoid
+- **Lesson**: `VnDatasetValidator` + unit fixtures viết theo region_code 2-digit trần (`32`, `89`) và pass 74/74 tests — nhưng CSV canonical sinh sau đó theo format `VN-XX` → patch fail 34/34 region rows ngay bước validate, không ai phát hiện vì KHÔNG có test nào đọc file shipped thật.
+- **Root cause / trigger**: contract (validator + fixtures) và artifact (CSV) được hai bước sinh riêng; synthetic dataset trong test vô tình "tự bằng chứng chính nó".
+- **Action / prevention**: mọi contract validator trên data file PHẢI có ít nhất 1 regression test đọc file shipped thật qua đúng pipeline reader→validator (đã thêm `testShippedCanonicalDatasetsPassValidation`); khi đổi format artifact, grep contract cũ trước khi giữ cả hai.
+- **Owner**: Dev team
+
+## LL-0005 — Declarative schema: muốn DROP phải GIỮ entry trong whitelist, không phải xoá
+- **Date**: 2026-09-03
+- **Source**: TASK-6MKF0V slice 2 (drop `directory_city_sub_city(+)` + cột `sub_city`; upgrade 1 không drop gì)
+- **Type**: avoid
+- **Lesson**: `db_schema_whitelist.json` không phải "danh sách sở hữu" mà là "danh sách object ĐƯỢC PHÉP DROP" — `Diff::canBeRegistered` chỉ register destructive operation (drop table/column) khi object VẪN CÓ trong whitelist. Xoá entry khỏi whitelist + xoá khỏi db_schema.xml → Magento coi object là "không của mình" → im lặng bỏ qua, không drop, không báo lỗi ("Nothing to import" trong output là của app:config:import, dễ gây hiểu nhầm là schema đã áp dụng).
+- **Root cause / trigger**: hiểu ngược semantics của whitelist; tin vào trực giác thay vì đọc `vendor/.../Declaration/Schema/Diff/Diff.php::canBeRegistered`.
+- **Action / prevention**: quy trình drop: (1) xoá khai báo khỏi `db_schema.xml`, (2) GIỮ entry trong whitelist, (3) `setup:upgrade`, (4) verify DB trực tiếp bằng mysql (SHOW TABLES / information_schema — không tin message CLI), (5) sau khi drop xong mới `setup:db-declaration:generate-whitelist` về declarations-only. Nếu upgrade không drop gì → kiểm tra whitelist trước hết.
+- **Owner**: Dev team
+
+## LL-0006 — Bóc cột khỏi importer phải strip luôn header CSV shipped (needColumnCheck fail silent)
+- **Date**: 2026-09-03
+- **Source**: TASK-6MKF0V (user bắt lỗi fresh-DB; slice 1 ghi chú sai "cột header inert — importer không đọc")
+- **Type**: avoid
+- **Lesson**: Legacy import entity chạy với `needColumnCheck = true` validate CẢ HEADER CSV — xoá cột khỏi `validColumnNames` mà vẫn giữ cột đó trong file CSV shipped làm `validateSource` throw `ERROR_CODE_INVALID_ATTRIBUTE`. Patch wrapper nuốt exception (`catch + logger.error`) nên `setup:upgrade` vẫn exit success — fresh install đi kèm DB trống region/city, không có dấu hiệu lỗi nào ngoài 1 dòng trong var/log. Chuỗi bootstrap empty-DB đã từng verify (LL-0004 lineage) bị phá vỡ bởi một thay đổi tưởng là "additive-only".
+- **Root cause / trigger**: coi header thừa là "inert" mà không test lại qua pipeline import thật; hiểu nhầm rằng Magento importer map theo vị trí (thực tế validate theo TÊN header).
+- **Action / prevention**: khi bóc cột khỏi import entity: (1) grep mọi CSV shipped feed entity đó và strip cột chết khỏi header + data, (2) verify bằng zero-write check (adapter `getColNames()` ⊆ `validColumnNames` + parse đủ rows qua importer thật), (3) patch wrapper KHÔNG được nuốt exception khi import seed data — fail phải fail loudly hoặc ít nhất đánh dấu setup failure, (4) mọi thay đổi chạm data patches cần re-verify fresh-DB bootstrap, không chỉ hành vi trên DB đang chạy.
+- **Owner**: Dev team

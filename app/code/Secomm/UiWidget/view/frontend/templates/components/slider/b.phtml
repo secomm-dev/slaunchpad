@@ -1,0 +1,89 @@
+<?php
+/**
+ * Adapted from Hyvä UI slider/B-marquee 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$items = (array)($data['items'] ?? []);
+$showTitle = (bool)($data['show_title'] ?? true);
+$duration = ['slow' => '60s', 'normal' => '40s', 'fast' => '25s'][$data['speed'] ?? 'normal'];
+$animationClasses = [
+    'left' => 'animate-[marqueeScroll_var(--duration)_linear_infinite]',
+    'right' => 'animate-[marqueeScrollReverse_var(--duration)_linear_infinite]',
+];
+$animationClass = $animationClasses[$data['direction'] ?? 'left'];
+$pauseClasses = !empty($data['pause_on_interaction'])
+    ? ' group-hover/marquee:[animation-play-state:paused] group-focus-within/marquee:[animation-play-state:paused]'
+    : '';
+$marqueeClasses = 'group/marquee flex gap-[var(--gap)] select-none overflow-hidden mask-overflow border-y border-gray-300 py-10 md:py-7';
+$marqueeGroupClasses = 'shrink-0 flex gap-[var(--gap)] items-center justify-around min-w-full '
+    . $animationClass . ' '
+    . 'motion-reduce:[animation-play-state:paused]' . $pauseClasses;
+?>
+<?php if ($items): ?>
+    <section class="relative my-20"
+             style="--size: clamp(10rem, 1rem + 40vmin, 30rem); --gap: calc(var(--size) / 14);
+                    --duration: <?= $escaper->escapeHtmlAttr($duration) ?>;"
+             aria-label="<?= $escaper->escapeHtmlAttr((string)$data['heading']) ?>"
+             data-secomm-ui-component="slider_b">
+        <?php if ($showTitle): ?>
+            <div class="mb-4 sm:flex sm:justify-between sm:items-baseline">
+                <h2 class="text-3xl leading-9 font-bold text-gray-800">
+                    <?= $escaper->escapeHtml((string)$data['heading']) ?>
+                </h2>
+                <?php if (!empty($data['browse_url'])): ?>
+                    <a href="<?= $escaper->escapeUrl((string)$data['browse_url']) ?>"
+                       class="text-blue-700 text-lg leading-7 font-semibold"
+                        <?php if (!empty($data['browse_open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                        <?= $escaper->escapeHtml((string)$data['browse_label']) ?> →
+                    </a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="<?= $escaper->escapeHtmlAttr($marqueeClasses) ?>">
+            <div class="<?= $escaper->escapeHtmlAttr($marqueeGroupClasses) ?>">
+                <?php foreach ($items as $item): ?>
+                    <?php if (!empty($item['url'])): ?>
+                        <a href="<?= $escaper->escapeUrl((string)$item['url']) ?>"
+                            <?php if (!empty($item['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                    <?php endif; ?>
+                    <img src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                         alt="<?= $escaper->escapeHtmlAttr((string)$item['image_alt']) ?>"
+                         width="<?= $escaper->escapeHtmlAttr((string)($item['width'] ?? 270)) ?>"
+                         height="<?= $escaper->escapeHtmlAttr((string)($item['height'] ?? 95)) ?>"
+                         loading="lazy">
+                    <?php if (!empty($item['url'])): ?></a><?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+
+            <div aria-hidden="true" class="<?= $escaper->escapeHtmlAttr($marqueeGroupClasses) ?>">
+                <?php foreach ($items as $item): ?>
+                    <img src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                         alt=""
+                         width="<?= $escaper->escapeHtmlAttr((string)($item['width'] ?? 270)) ?>"
+                         height="<?= $escaper->escapeHtmlAttr((string)($item['height'] ?? 95)) ?>"
+                         loading="lazy">
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <style>
+            @keyframes marqueeScroll {
+                from { translate: none; }
+                to { translate: calc(-100% - var(--gap)); }
+            }
+            @keyframes marqueeScrollReverse {
+                from { translate: calc(-100% - var(--gap)); }
+                to { translate: none; }
+            }
+        </style>
+    </section>
+<?php endif; ?>

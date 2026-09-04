@@ -15,6 +15,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\InvalidArgumentException;
+use Magento\Framework\Exception\LocalizedException;
 use Secomm\AddressDropdown\Api\Data\CityInterface;
 use Secomm\AddressDropdown\Api\Data\CityInterfaceFactory;
 use Secomm\AddressDropdown\Command\City\SaveCommand;
@@ -104,10 +105,23 @@ class Save extends Action implements HttpPostActionInterface
                         CityInterface::REGION_ID => $params[CityInterface::REGION_ID]
                     ]);
             }
+        } catch (LocalizedException $exception) {
+            // TASK-9EX975 Slice B: SaveValidator failures (self/cycle/cross-region parent,
+            // duplicate code…) rethrow LocalizedException verbatim — surface the friendly
+            // message on the form and drop the admin back where they came from (AC-B2).
+            $this->messageManager->addErrorMessage($exception->getMessage());
+            $this->dataPersistor->set('entity', $params);
+
+            if (empty($params[CityInterface::CITY_ID])) {
+                return $resultRedirect->setPath('*/*/new', [
+                    CityInterface::REGION_ID => $params[CityInterface::REGION_ID] ?? null,
+                    CityInterface::PARENT_CITY_ID => $params[CityInterface::PARENT_CITY_ID] ?? null,
+                ]);
+            }
         }
 
         return $resultRedirect->setPath('*/*/edit', [
-            CityInterface::CITY_ID => $cityId ?? $params[CityInterface::REGION_ID]
+            CityInterface::CITY_ID => $cityId ?? $params[CityInterface::CITY_ID] ?? null
         ]);
     }
 }

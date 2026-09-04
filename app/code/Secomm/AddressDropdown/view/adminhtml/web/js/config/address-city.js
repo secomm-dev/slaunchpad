@@ -2,10 +2,18 @@
  * SL-013 / FEAT-007 (DEC-019/025): generic, country-agnostic dependent dropdown driver for
  * the admin config `city` field (Store Information + Shipping Origin).
  *
- * Generic mechanism (Secomm_AddressDropdown). Wards/sub-cities are loaded via the generic
- * GraphQL resolvers GetListCity / GetListSubCity (area=adminhtml), filtered by region_id.
- * VN-specific behaviour/label/validate is owned by Secomm_VietNamAddress; this file holds
- * NO country=='VN' logic (data-driven: VN has 2 levels so sub_city stays hidden).
+ * Generic mechanism (Secomm_AddressDropdown). TASK-9EX975 Slice A: the level count,
+ * labels and placeholders come from the country's resolved Address Profile
+ * (`addressSchema`), the options per level from `addressLocations` — through the shared
+ * `schema-cascade` factory (same queries and stop-at-leaf semantics as the storefront
+ * renderer). VN-specific behaviour/label/validate is owned by Secomm_VietNamAddress; this
+ * file holds NO country logic (data-driven: unmapped countries fall back to the native
+ * `city` input).
+ *
+ * Known behavioural note vs the single-level driver: a stale stored city name that no
+ * longer matches any option keeps posting (the native input retains it) but the select
+ * mode stays on — the admin simply re-picks. The old driver switched back to the input in
+ * that case; the value contract is unchanged.
  *
  * Wired through data-mage-init on the renderer wrapper (.secomm-config-address-city).
  *
@@ -17,30 +25,13 @@
  * via event DELEGATION on the form so they survive the node replacement.
  */
 define([
-    'jquery'
-], function ($) {
+    'jquery',
+    'Secomm_AddressDropdown/js/form/schema-cascade'
+], function ($, schemaCascade) {
     'use strict';
 
     function escapeSelectorId(id) {
         return id ? '#' + id.replace(/([!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1') : '';
-    }
-
-    function escapeGraphQlValue(value) {
-        // Region/city values come from form fields; escape before interpolating into the
-        // GraphQL query string (no injection).
-        return String(value == null ? '' : value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    }
-
-    function populateOptions($select, options, placeholder) {
-        $select.empty();
-        $select.append($('<option>', {value: '', text: placeholder}));
-
-        options.forEach(function (option) {
-            $select.append($('<option>', {
-                value: option.default_name,
-                text: option.label
-            }));
-        });
     }
 
     return function (config, element) {
@@ -79,18 +70,14 @@ define([
         var regionSelector = baseId ? escapeSelectorId(baseId + '_region_id') : '[id$="_region_id"]';
 
         // These are OUR elements inside the renderer wrapper; they are never replaced, so a
-        // cached reference is safe.
+        // cached reference is safe. Deeper cascade levels are injected inside the same
+        // select span, so they inherit its visibility.
         var $cityInput = $root.find(escapeSelectorId(config.cityInputId));
         var $citySelect = $root.find(escapeSelectorId(config.citySelectId));
-        var $subCitySelect = $root.find(escapeSelectorId(config.subCitySelectId));
         var $cityInputWrap = $cityInput.closest('.secomm-config-city-input');
         var $citySelectWrap = $citySelect.closest('.secomm-config-city-select');
-        var $subCityWrap = $subCitySelect.closest('.secomm-config-subcity-select');
 
         var currentCity = config.currentCity || $cityInput.val() || '';
-        var currentSubCity = config.currentSubCity || '';
-        var cityRequest = 0;
-        var subCityRequest = 0;
 
         // Re-query helpers: the config region updater replaces the region_id node, so a cached
         // reference goes stale. Always read the current node from the form (scoped to our group).
@@ -112,188 +99,36 @@ define([
             $cityInputWrap.toggle(!useSelect);
         }
 
-        function setSubCityMode(useSelect) {
-            $subCityWrap.toggle(useSelect);
-        }
-
-        function resetSubCity() {
-            $subCitySelect.empty().append(
-                $('<option>', {value: '', text: $.mage.__('Please select a sub-city')})
-            );
-            setSubCityMode(false);
-        }
-
-        function loadSubCities(cityName, regionId, selectedSubCity) {
-            if (!cityName || !regionId) {
-                resetSubCity();
-                return;
-            }
-
-            var requestId = ++subCityRequest;
-            var query = [
-                'query {',
-                '  GetListSubCity(input: { default_name: "' + escapeGraphQlValue(cityName) +
-                    '", area: "adminhtml", region_id: "' + escapeGraphQlValue(regionId) + '" }) {',
-                '    default_name',
-                '    label',
-                '  }',
-                '}'
-            ].join('\n');
-
-            fetch('/graphql', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({query: query})
-            })
-                .then(function (response) {
-                    return response.json();
-                })
-                .then(function (data) {
-                    if (requestId !== subCityRequest) {
-                        return;
-                    }
-
-                    var subCities = (data.data && data.data.GetListSubCity) ? data.data.GetListSubCity : [];
-                    if (!subCities.length) {
-                        resetSubCity();
-                        return;
-                    }
-
-                    setSubCityMode(true);
-                    populateOptions($subCitySelect, subCities, $.mage.__('Please select a sub-city'));
-
-                    if (selectedSubCity) {
-                        $subCitySelect.val(selectedSubCity);
-                    }
-                })
-                .catch(function () {
-                    if (requestId === subCityRequest) {
-                        resetSubCity();
-                    }
-                });
-        }
-
-        function loadCities(regionId, selectedCity, selectedSubCity) {
-            if (!regionId) {
-                currentCity = '';
-                currentSubCity = '';
-                $citySelect.empty();
-                setCityMode(false);
-                resetSubCity();
-                return;
-            }
-
-            var requestId = ++cityRequest;
-            var query = [
-                'query {',
-                '  GetListCity(input: { region_id: "' + escapeGraphQlValue(regionId) + '", area: "adminhtml" }) {',
-                '    default_name',
-                '    label',
-                '  }',
-                '}'
-            ].join('\n');
-
-            fetch('/graphql', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({query: query})
-            })
-                .then(function (response) {
-                    return response.json();
-                })
-                .then(function (data) {
-                    if (requestId !== cityRequest) {
-                        return;
-                    }
-
-                    var cities = (data.data && data.data.GetListCity) ? data.data.GetListCity : [];
-                    console.warn('[Secomm/CfgCity] loadCities', { regionId: regionId, count: cities.length, data: data });
-                    if (!cities.length) {
-                        currentSubCity = '';
-                        $citySelect.empty();
-                        setCityMode(false);
-                        resetSubCity();
-                        return;
-                    }
-
-                    populateOptions($citySelect, cities, $.mage.__('Please select a city'));
-                    setCityMode(true);
-
-                    if (selectedCity && $citySelect.find('option').filter(function () {
-                        return $(this).val() === selectedCity;
-                    }).length) {
-                        $citySelect.val(selectedCity);
-                        $cityInput.val(selectedCity);
-                        loadSubCities(selectedCity, regionId, selectedSubCity);
-                        return;
-                    }
-
-                    if (selectedCity) {
-                        // Stored value not in loaded options (data changed): keep it as free
-                        // text rather than silently dropping it.
-                        setCityMode(false);
-                        $cityInput.val(selectedCity);
-                        resetSubCity();
-                        return;
-                    }
-
-                    $citySelect.val('');
-                    $cityInput.val('');
-                    resetSubCity();
-                })
-                .catch(function () {
-                    if (requestId === cityRequest) {
-                        setCityMode(false);
-                        resetSubCity();
-                    }
-                });
-        }
-
-        $citySelect.on('change', function () {
-            var selectedCity = $(this).val();
-            $cityInput.val(selectedCity);
-            currentCity = selectedCity;
-
-            if (selectedCity) {
-                currentSubCity = '';
-                loadSubCities(selectedCity, getRegionIdValue(), '');
-            } else {
-                currentSubCity = '';
-                resetSubCity();
-            }
+        var cascade = schemaCascade.createCascade({
+            level0Select: $citySelect,
+            injectAfter: $citySelect,
+            getCountryId: getCountryValue,
+            getRegionId: getRegionIdValue,
+            getSavedName: function () {
+                return currentCity;
+            },
+            onLeaf: function (leafName) {
+                $cityInput.val(leafName);
+                currentCity = leafName;
+            },
+            onSchemaResolved: setCityMode,
+            fallbackPlaceholder: $.mage.__('Please select a city')
         });
-
-        $subCitySelect.on('change', function () {
-            currentSubCity = $(this).val();
-        });
-
-        function reloadCities() {
-            loadCities(getRegionIdValue(), $cityInput.val() || currentCity, $subCitySelect.val() || currentSubCity);
-        }
 
         function clearCitySelection() {
             $cityInput.val('');
-            $citySelect.val('');
             currentCity = '';
-            currentSubCity = '';
-            resetSubCity();
+            cascade.clear();
         }
 
         // Event DELEGATION on the form (scoped to this group's ids): the config region updater
         // replaces the region_id node, so a direct bind on it would be lost. Delegated handlers
         // survive the replacement.
         $form.on('change', countrySelector, function (event) {
-            console.warn('[Secomm/CfgCity] country change handler', { baseId: baseId, value: getCountryValue() });
             if (!event.originalEvent) {
                 return; // programmatic - watcher reloads
             }
-            // User changed country: previous province + ward are invalid. Reset the (current)
+            // User changed country: previous province is invalid. Reset the (current)
             // region field and clear city; the watcher reloads once the region updater runs.
             var $r = findSiblingBySuffix('_region_id');
             if ($r.length) {
@@ -303,28 +138,17 @@ define([
         });
 
         $form.on('change', regionSelector, function (event) {
-            console.warn('[Secomm/CfgCity] region change handler', { baseId: baseId, value: getRegionIdValue() });
             if (!event.originalEvent) {
                 return; // programmatic (region updater) - watcher reloads
             }
-            // User picked a province: the old ward is invalid for it.
+            // User picked a province: the old city is invalid for it.
             clearCitySelection();
-            reloadCities();
-        });
-
-        console.warn('[Secomm/CfgCity] init', {
-            cityInputFound: $cityInput.length,
-            citySelectFound: $citySelect.length,
-            formFound: $form.length,
-            countryId: $form.find('[id$="_country_id"]').first().attr('id'),
-            regionIdEl: $form.find('[id$="_region_id"]').first().attr('id'),
-            countryVal: getCountryValue(),
-            regionVal: getRegionIdValue()
+            cascade.refresh();
         });
 
         // Hydration watcher. The config region updater fetches provinces asynchronously and
         // rebuilds the region_id node (no jQuery change event). Re-query (country, region_id)
-        // fresh each tick so the ward list follows the real, current province. Bounded; a user
+        // fresh each tick so the city list follows the real, current province. Bounded; a user
         // country/region change above clears the selection, a programmatic change preserves it.
         var watchKey = function () {
             return (getCountryValue() || '') + '|' + (getRegionIdValue() || '');
@@ -337,8 +161,7 @@ define([
 
             if (key !== lastKey) {
                 lastKey = key;
-                console.warn('[Secomm/CfgCity] watcher key changed -> reloadCities()', { key: key, country: getCountryValue(), region: getRegionIdValue() });
-                reloadCities();
+                cascade.refresh();
             }
 
             if (watchTicks >= 1200) { // ~5min at 250ms - covers editing a config form
@@ -346,6 +169,6 @@ define([
             }
         }, 250);
 
-        loadCities(getRegionIdValue(), currentCity, currentSubCity);
+        cascade.refresh();
     };
 });

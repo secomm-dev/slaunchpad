@@ -29,13 +29,6 @@ define([
                 }
             }
 
-            if (this.params.namespace == 'sub_city_listing') {
-                const cityId = this.getIdFromUrl('city_id');
-                if (cityId) {
-                    this.params.city_id = cityId;
-                }
-            }
-
             var request = this.storage().getData(this.params, options);
 
             this.trigger('reload');

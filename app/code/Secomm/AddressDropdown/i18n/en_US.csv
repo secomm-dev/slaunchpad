@@ -3,7 +3,6 @@ Delete,Delete
 "Are you sure you want to delete this city?","Are you sure you want to delete this city?"
 Save,Save
 "Are you sure you want to delete this Region?","Are you sure you want to delete this Region?"
-"Are you sure you want to delete this subcity?","Are you sure you want to delete this subcity?"
 "Could not find City with id: `%id`","Could not find City with id: `%id`"
 "Could not delete City. Original message: {message}","Could not delete City. Original message: {message}"
 "Could not delete City.","Could not delete City."
@@ -22,12 +21,6 @@ Save,Save
 "The Locale is incorrect.","The Locale is incorrect."
 "Cannot edit Default Region","Cannot edit Default Region"
 "Could not save RegionName.","Could not save RegionName."
-"Could not find SubCity with id: `%id`","Could not find SubCity with id: `%id`"
-"Could not delete SubCity. Original message: {message}","Could not delete SubCity. Original message: {message}"
-"Could not delete SubCity.","Could not delete SubCity."
-"Could not save SubCity. Original message: {message}","Could not save SubCity. Original message: {message}"
-"Could not save SubCity.","Could not save SubCity."
-"Could not save SubCityName.","Could not save SubCityName."
 "You have successfully deleted City entity","You have successfully deleted City entity"
 "Edit City","Edit City"
 "Manage Cities","Manage Cities"
@@ -35,17 +28,10 @@ Save,Save
 "New City","New City"
 "The City data was saved successfully","The City data was saved successfully"
 Countries,Countries
-"You have successfully deleted SubCity entity","You have successfully deleted SubCity entity"
 "Edit Region","Edit Region"
 States/Provinces,States/Provinces
 "New Region","New Region"
 "The Region data was saved successfully","The Region data was saved successfully"
-"Edit SubCity","Edit SubCity"
-SubCity,SubCity
-"Manage SubCitys","Manage SubCitys"
-"SubCity List","SubCity List"
-"New SubCity","New SubCity"
-"SubCity data was saved successfully","SubCity data was saved successfully"
 "The country_id cannot be empty.","The country_id cannot be empty."
 "File: Some Column Not Found","File: Some Column Not Found"
 "Duration should be greater than 0.","Duration should be greater than 0."
@@ -67,13 +53,11 @@ locale,locale
 en_US,en_US
 Code,Code
 Back,Back
-"SubCity Name","SubCity Name"
 "* Required Fields","* Required Fields"
 "Contact Information","Contact Information"
 Address,Address
 "Street Address: Line %1","Street Address: Line %1"
 "Street Address %1","Street Address %1"
-"Sub City","Sub City"
 "It's a default billing address.","It's a default billing address."
 "Use as my default billing address","Use as my default billing address"
 "It's a default shipping address.","It's a default shipping address."
@@ -82,8 +66,6 @@ Address,Address
 "Go back","Go back"
 "Select a city","Select a city"
 "No cities available","No cities available"
-"Select a sub-city","Select a sub-city"
-"No sub-cities available","No sub-cities available"
 "Select a region","Select a region"
 "Address Dropdown","Address Dropdown"
 "General Configuration","General Configuration"
@@ -123,5 +105,8 @@ Phone,Phone
 "Country Id","Country Id"
 "Code Region","Code Region"
 "Region ID","Region ID"
-"Sub City Form","Sub City Form"
 "City Id","City Id"
+"Address Profiles","Address Profiles"
+"Country to Profile Mapping","Country to Profile Mapping"
+"Schema-driven (Address Profile cascade)","Schema-driven (Address Profile cascade)"
+"Address Renderer","Address Renderer"

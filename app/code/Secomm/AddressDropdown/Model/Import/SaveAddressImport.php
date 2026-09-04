@@ -13,15 +13,11 @@ use Secomm\AddressDropdown\Api\Data\CityInterface;
 use Secomm\AddressDropdown\Api\Data\CityInterfaceFactory;
 use Secomm\AddressDropdown\Api\Data\RegionInterface;
 use Secomm\AddressDropdown\Api\Data\RegionInterfaceFactory;
-use Secomm\AddressDropdown\Api\Data\SubCityInterface;
-use Secomm\AddressDropdown\Api\Data\SubCityInterfaceFactory;
 use Secomm\AddressDropdown\Command\Region\SaveCommand as SaveCommandRegion;
 use Secomm\AddressDropdown\Command\City\SaveCommand as SaveCommandCity;
-use Secomm\AddressDropdown\Command\SubCity\SaveCommand as SaveCommandSubCity;
 use Secomm\AddressDropdown\Model\Constant;
 use Secomm\AddressDropdown\Model\ResourceModel\RegionModel\CollectionFactory;
 use Secomm\AddressDropdown\Model\ResourceModel\CityModel\CityCollectionFactory;
-use Secomm\AddressDropdown\Model\ResourceModel\SubCityModel\SubCityCollectionFactory;
 
 /**
  * Save Address Data
@@ -39,11 +35,6 @@ class SaveAddressImport
     protected CityInterfaceFactory $cityInterfaceFactory;
 
     /**
-     * @var SubCityInterfaceFactory
-     */
-    protected SubCityInterfaceFactory $subCityInterfaceFactory;
-
-    /**
      * @var SaveCommandRegion
      */
     protected SaveCommandRegion $saveCommandRegion;
@@ -52,11 +43,6 @@ class SaveAddressImport
      * @var SaveCommandCity
      */
     protected SaveCommandCity $saveCommandCity;
-
-    /**
-     * @var SaveCommandSubCity
-     */
-    protected SaveCommandSubCity $saveCommandSubCity;
 
     /**
      * @var LoggerInterface
@@ -72,11 +58,6 @@ class SaveAddressImport
      * @var CityCollectionFactory
      */
     protected CityCollectionFactory $cityCollectionFactory;
-
-    /**
-     * @var SubCityCollectionFactory
-     */
-    protected SubCityCollectionFactory $subCityCollectionFactory;
 
     /**
      * Count if created items
@@ -103,40 +84,31 @@ class SaveAddressImport
     /**
      * @param RegionInterfaceFactory $regionInterfaceFactory
      * @param CityInterfaceFactory $cityInterfaceFactory
-     * @param SubCityInterfaceFactory $subCityInterfaceFactory
      * @param SaveCommandRegion $saveCommandRegion
      * @param SaveCommandCity $saveCommandCity
-     * @param SaveCommandSubCity $saveCommandSubCity
      * @param LoggerInterface $logger
      * @param CollectionFactory $regionCollectionFactory
      * @param CityCollectionFactory $cityCollectionFactory
-     * @param SubCityCollectionFactory $subCityCollectionFactory
      * @param DeleteAddressImport $deleteAddressImport
      */
     public function __construct(
-        RegionInterfaceFactory   $regionInterfaceFactory,
-        CityInterfaceFactory     $cityInterfaceFactory,
-        SubCityInterfaceFactory  $subCityInterfaceFactory,
-        SaveCommandRegion        $saveCommandRegion,
-        SaveCommandCity          $saveCommandCity,
-        SaveCommandSubCity       $saveCommandSubCity,
-        LoggerInterface          $logger,
-        CollectionFactory        $regionCollectionFactory,
-        CityCollectionFactory    $cityCollectionFactory,
-        SubCityCollectionFactory $subCityCollectionFactory,
-        DeleteAddressImport      $deleteAddressImport
+        RegionInterfaceFactory $regionInterfaceFactory,
+        CityInterfaceFactory   $cityInterfaceFactory,
+        SaveCommandRegion      $saveCommandRegion,
+        SaveCommandCity        $saveCommandCity,
+        LoggerInterface        $logger,
+        CollectionFactory      $regionCollectionFactory,
+        CityCollectionFactory  $cityCollectionFactory,
+        DeleteAddressImport    $deleteAddressImport
     )
     {
         $this->regionInterfaceFactory = $regionInterfaceFactory;
         $this->cityInterfaceFactory = $cityInterfaceFactory;
-        $this->subCityInterfaceFactory = $subCityInterfaceFactory;
         $this->saveCommandRegion = $saveCommandRegion;
         $this->saveCommandCity = $saveCommandCity;
-        $this->saveCommandSubCity = $saveCommandSubCity;
         $this->logger = $logger;
         $this->regionCollectionFactory = $regionCollectionFactory;
         $this->cityCollectionFactory = $cityCollectionFactory;
-        $this->subCityCollectionFactory = $subCityCollectionFactory;
         $this->deleteAddressImport = $deleteAddressImport;
     }
 
@@ -202,32 +174,6 @@ class SaveAddressImport
             }
             $cityEntityModel->addData($rowData);
             $rowData[CityInterface::CITY_ID] = $this->saveCommandCity->execute($cityEntityModel);
-
-            /** @var SubCityInterface $subCityEntityModel */
-            $subCityEntityModel = $this->subCityInterfaceFactory->create();
-            $subCityCollection = $this->subCityCollectionFactory->create();
-
-            $rowData['default_name'] = $rowData[AddressDropdown::SUB_CITY_DEFAULT_NAME] ?? '';
-            if ($rowData[AddressDropdown::SUB_CITY_DEFAULT_NAME] == '') {
-                return true;
-            }
-            if ($rowData[AddressDropdown::SUB_CITY_DEFAULT_NAME] === Import::DEFAULT_EMPTY_ATTRIBUTE_VALUE_CONSTANT) {
-                $this->deleteAddressImport->deleteByFieldAndId($subCityCollection,SubCityInterface::CITY_ID, $rowData[SubCityInterface::CITY_ID]);
-                return true;
-            }
-            $dataFilterSubCity = [
-                SubCityInterface::DEFAULT_NAME => $rowData['default_name'],
-                SubCityInterface::CITY_ID => $rowData[SubCityInterface::CITY_ID]
-            ];
-            $subCityId = $this->getId($subCityCollection, $dataFilterSubCity);
-            if ($subCityId) {
-                $rowData[SubCityInterface::SUB_CITY_ID] = $subCityId;
-                $this->countItemsUpdated++;
-            } else {
-                $this->countItemsCreated++;
-            }
-            $subCityEntityModel->addData($rowData);
-            $this->saveCommandSubCity->execute($subCityEntityModel);
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
             return false;
@@ -245,7 +191,7 @@ class SaveAddressImport
     public function getId($collection, $dataFilter): bool|int
     {
         foreach ($dataFilter as $columnName => $value) {
-            if ($columnName == SubCityInterface::DEFAULT_NAME) {
+            if ($columnName == CityInterface::DEFAULT_NAME) {
                 $collection->getSelect()->where($columnName . " = CONVERT(? USING binary)", $value);
             } else {
                 $collection->addFieldToFilter($columnName, $value);

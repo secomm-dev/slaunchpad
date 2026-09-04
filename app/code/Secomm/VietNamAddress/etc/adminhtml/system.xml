@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <!-- DEC-FEATYA2C0W-003 — active Vietnam administrative scheme (versioned identity;
+             CURRENT/HISTORICAL are status labels rendered by the source model, not values). -->
+        <section id="secomm_vietnam_address" translate="label" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+            <label>Secomm Vietnam Address</label>
+            <tab>secomm</tab>
+            <resource>Secomm_VietNamAddress::config</resource>
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General</label>
+                <field id="active_scheme" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Active Administrative Scheme</label>
+                    <source_model>Secomm\VietNamAddress\Model\OptionSource\VnAdminScheme</source_model>
+                    <backend_model>Secomm\VietNamAddress\Model\Config\Backend\ActiveScheme</backend_model>
+                    <comment>Managed by `bin/magento secomm:vietnam-address:import`. Manual changes are rejected unless the target scheme data is actually installed (registry status CURRENT).</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,52 @@
+<?php
+/**
+ * Adapted from Hyvä UI testimonial/A-simple 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$rating = (int)($data['rating'] ?? 0);
+?>
+<figure class="relative flex flex-col text-center px-14 gap-8"
+        data-secomm-ui-component="testimonial_a">
+    <div class="text-blue-100 text-9xl font-bold absolute left-0 -top-8" aria-hidden="true">
+        “
+    </div>
+    <blockquote class="flex-1 text-gray-800 text-2xl leading-8 font-medium">
+        <?= /* @noEscape escaped before applying nl2br */
+        nl2br($escaper->escapeHtml((string)$data['quote'])) ?>
+    </blockquote>
+    <figcaption class="flex justify-center gap-4 items-center">
+        <?php if (!empty($data['avatar'])): ?>
+            <div class="rounded-full overflow-hidden w-28 h-28">
+                <img src="<?= $escaper->escapeUrl((string)$data['avatar']) ?>"
+                     alt="<?= $escaper->escapeHtmlAttr((string)$data['avatar_alt']) ?>"
+                     width="120"
+                     height="129"
+                     loading="<?= $escaper->escapeHtmlAttr((string)($data['loading'] ?? 'lazy')) ?>"
+                     class="w-full h-full object-cover">
+            </div>
+        <?php endif; ?>
+        <div>
+            <?php if ($rating > 0): ?>
+                <div class="mb-1 text-yellow-500" aria-label="<?= $escaper->escapeHtmlAttr(__('%1 out of 5 stars', $rating)) ?>">
+                    <span aria-hidden="true"><?= $escaper->escapeHtml(str_repeat('★', $rating)) ?></span>
+                </div>
+            <?php endif; ?>
+            <div class="text-gray-600 text-lg leading-7 font-bold">
+                <?= $escaper->escapeHtml((string)$data['author']) ?>
+            </div>
+            <?php if (!empty($data['role'])): ?>
+                <div class="text-blue-300 leading-6 mt-1">
+                    <?= $escaper->escapeHtml((string)$data['role']) ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </figcaption>
+</figure>

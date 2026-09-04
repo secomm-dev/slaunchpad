@@ -1,0 +1,44 @@
+<?php
+/**
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Adminhtml\Widget\ComponentOptions $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
+ */
+$optionsElementId = (string)$block->getData('payload_element_id') . '-options';
+$initScript = sprintf(
+    <<<'JS'
+require(['Secomm_UiWidget/js/component-options'], function (initialize) {
+    document.querySelectorAll('.secomm-ui-component-options').forEach(function (element) {
+        initialize(%s, element);
+    });
+});
+JS,
+    sprintf(
+        '{"schemas":%s,"mediaBrowserUrl":%s,"wysiwygConfig":%s,"limits":{"maxEncodedBytes":16384,"maxItems":50}}',
+        $block->getSchemasJson(),
+        json_encode($block->getMediaBrowserUrl()),
+        $block->getWysiwygConfigJson()
+    )
+);
+?>
+<input type="hidden"
+       id="<?= $escaper->escapeHtmlAttr((string)$block->getData('payload_element_id')) ?>"
+       name="<?= $escaper->escapeHtmlAttr((string)$block->getData('payload_element_name')) ?>"
+       value="<?= $escaper->escapeHtmlAttr((string)$block->getData('payload_element_value')) ?>"
+       class="widget-option"/>
+<div id="<?= $escaper->escapeHtmlAttr($optionsElementId) ?>"
+     class="secomm-ui-component-options"
+     data-role="secomm-ui-component-options"
+    data-payload-id="<?= $escaper->escapeHtmlAttr((string)$block->getData('payload_element_id')) ?>">
+    <div data-role="fields"></div>
+    <div data-role="payload-error"
+         class="message message-error error"
+         role="alert"
+         aria-live="polite"
+         hidden></div>
+</div>
+<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $initScript, false) ?>

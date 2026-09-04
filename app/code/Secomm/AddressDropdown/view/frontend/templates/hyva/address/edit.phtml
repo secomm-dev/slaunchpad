@@ -5,9 +5,10 @@
  * See COPYING.txt for license details.
  *
  * Hyvä-native rewrite (SL-001, DEC-7 Strategy B). Base on Hyva default customer
- * address form + Alpine.js cascade for VN city/sub_city via existing GraphQL
- * resolvers (GetListCity / GetListSubCity). Save path unchanged: field names
- * (city, region_id, sub_city, ...) preserved — backend persistence is theme-independent.
+ * address form + Alpine.js cascade for the VN city level via the GetListCity
+ * GraphQL resolver. Save path unchanged: field names (city, region_id, ...)
+ * preserved — backend persistence is theme-independent.
+ * (TASK-6MKF0V: sub_city retired — the cascade stops at the profile's city level.)
  */
 
 declare(strict_types=1);
@@ -35,12 +36,9 @@ $faxBlock = $block->getLayout()->createBlock(\Magento\Customer\Block\Widget\Fax:
 $streetLabel = $block->getAttributeData()->getFrontendLabel('street');
 $regionLabel = __('State/Province');
 $cityLabel = __('City');
-$subCityLabel = __('Sub-City');
 $showOptionalRegions = $block->getConfig('general/region/display_all');
 
 // Existing values for edit mode (pre-fill the VN cascade).
-$subCityAttribute = $block->getAddress()->getCustomAttribute('sub_city');
-$subCityInitial = $subCityAttribute ? (string) $subCityAttribute->getValue() : '';
 $cityInitial = (string) $block->getAddress()->getCity();
 
 ?>
@@ -245,7 +243,7 @@ $cityInitial = (string) $block->getAddress()->getCity();
                             id="city"
                             x-ref="city"
                             x-model="selectedCity"
-                            @change="onCityChange"
+                            @change="onChange"
                             title="<?= $escaper->escapeHtmlAttr($cityLabel) ?>"
                             required
                             class="form-select"
@@ -253,32 +251,6 @@ $cityInitial = (string) $block->getAddress()->getCity();
                         <option value=""><?= $escaper->escapeHtml(__('Please select a city')) ?></option>
                         <template x-for="city in cities" :key="city.default_name">
                             <option :value="city.default_name" x-text="city.label"></option>
-                        </template>
-                    </select>
-                </div>
-            </div>
-
-            <?php /* VN hierarchical dropdown — sub-city / ward (city → sub-city) */ ?>
-            <div class="field field-reserved sub_city w-full"
-                 x-cloak
-                 x-show="subCities.length > 0"
-                 :class="{ 'required': subCities.length > 0 }">
-                <label class="label" for="sub_city">
-                    <span><?= $escaper->escapeHtml($subCityLabel) ?></span>
-                </label>
-                <div class="control">
-                    <select name="sub_city"
-                            id="sub_city"
-                            x-ref="sub_city"
-                            x-model="selectedSubCity"
-                            @change="onChange"
-                            title="<?= $escaper->escapeHtmlAttr($subCityLabel) ?>"
-                            class="form-select"
-                            :required="subCities.length > 0"
-                            :disabled="isLoadingSubCities || subCities.length === 0">
-                        <option value=""><?= $escaper->escapeHtml(__('Please select a sub-city')) ?></option>
-                        <template x-for="subCity in subCities" :key="subCity.default_name">
-                            <option :value="subCity.default_name" x-text="subCity.label"></option>
                         </template>
                     </select>
                 </div>
@@ -350,13 +322,10 @@ function initCustomerAddressEdit() {
         isRegionRequired: true,
         showOptionalRegions: <?= $showOptionalRegions ? 'true' : 'false' ?>,
 
-        // VN hierarchical dropdown state (SL-001) — city + sub_city via GraphQL.
+        // VN hierarchical dropdown state (SL-001) — city via GraphQL.
         selectedCity: '<?= $escaper->escapeJs($cityInitial) ?>',
-        selectedSubCity: '<?= $escaper->escapeJs($subCityInitial) ?>',
         cities: [],
-        subCities: [],
         isLoadingCities: false,
-        isLoadingSubCities: false,
 
         async onPrivateContentLoaded(data) {
             this.directoryData = data['directory-data'] || {};
@@ -372,10 +341,6 @@ function initCustomerAddressEdit() {
                     // re-apply the value once its <option>s are populated asynchronously
                     // after init (mirrors Luma's citySelect.val(currentCity) post-build).
                     await this.reapplySelected('selectedCity');
-                    if (this.selectedCity) {
-                        await this.populateSubCities(this.selectedCity, initialRegionId);
-                        await this.reapplySelected('selectedSubCity');
-                    }
                 }
             <?php endif; ?>
         },
@@ -442,11 +407,6 @@ function initCustomerAddressEdit() {
             // Region change reloads cities (province → city).
             this.loadCities(this.selectedRegion);
         },
-        onCityChange(event) {
-            // City change reloads sub-cities (city → sub-city).
-            this.loadSubCities(this.selectedCity);
-            this.onChange(event);
-        },
         updateSubmitBtnText() {
             return this.isSubmitting
                 ? '<?= $escaper->escapeJs(__('Saving...')) ?>'
@@ -456,9 +416,7 @@ function initCustomerAddressEdit() {
         // ---- VN hierarchical dropdown helpers (SL-001) ----
         resetVnCascade() {
             this.cities = [];
-            this.subCities = [];
             this.selectedCity = '';
-            this.selectedSubCity = '';
         },
         async fetchCities(regionId) {
             const query = 'query{ GetListCity(input:{region_id:"' + regionId + '"}){ default_name label } }';
@@ -475,21 +433,6 @@ function initCustomerAddressEdit() {
                 return [];
             }
         },
-        async fetchSubCities(cityName, regionId) {
-            const query = 'query{ GetListSubCity(input:{default_name:"' + cityName + '",region_id:"' + regionId + '"}){ default_name label } }';
-            try {
-                const response = await fetch('/graphql', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: query })
-                });
-                const json = await response.json();
-                return (json.data && json.data.GetListSubCity) ? json.data.GetListSubCity : [];
-            } catch (error) {
-                console.error('AddressDropdown: failed to load sub-cities', error);
-                return [];
-            }
-        },
         async populateCities(regionId) {
             if (!regionId || regionId === '0') {
                 this.cities = [];
@@ -499,30 +442,15 @@ function initCustomerAddressEdit() {
             this.cities = await this.fetchCities(regionId);
             this.isLoadingCities = false;
         },
-        async populateSubCities(cityName, regionId) {
-            if (!cityName || !regionId || regionId === '0') {
-                this.subCities = [];
-                return;
-            }
-            this.isLoadingSubCities = true;
-            this.subCities = await this.fetchSubCities(cityName, regionId);
-            this.isLoadingSubCities = false;
-        },
         async loadCities(regionId) {
             // Fresh region selection resets downstream selections.
             this.selectedCity = '';
-            this.selectedSubCity = '';
-            this.subCities = [];
             await this.populateCities(regionId);
-        },
-        async loadSubCities(cityName) {
-            this.selectedSubCity = '';
-            await this.populateSubCities(cityName, this.selectedRegion);
         },
         async reapplySelected(key) {
             // Alpine x-model does not re-apply a <select> value when its <option>s are
             // populated asynchronously after the model was already set. Toggle through
-            // $nextTick so the saved city/sub_city is re-selected once options exist.
+            // $nextTick so the saved city is re-selected once options exist.
             const saved = this[key];
             if (!saved) {
                 return;

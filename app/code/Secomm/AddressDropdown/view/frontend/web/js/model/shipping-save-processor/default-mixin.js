@@ -30,7 +30,6 @@ define([
     return function (shippingSaveProcessor) {
         shippingSaveProcessor.saveShippingInformation = wrapper.wrapSuper(shippingSaveProcessor.saveShippingInformation, function () {
             var payload;
-            var subCity = $('[name="custom_attributes[sub_city]"]').val();
 
             if(!quote.billingAddress()) {
                 selectBillingAddressAction(quote.shippingAddress());
@@ -43,10 +42,7 @@ define([
                     shipping_address: quote.shippingAddress(),
                     billing_address: quote.billingAddress(),
                     shipping_method_code: quote.shippingMethod() ? quote.shippingMethod()?.method_code : cache[0]?.method_code,
-                    shipping_carrier_code: quote.shippingMethod() ? quote.shippingMethod()?.carrier_code : cache[0]?.carrier_code,
-                    extension_attributes: {
-                        sub_city: subCity
-                    }
+                    shipping_carrier_code: quote.shippingMethod() ? quote.shippingMethod()?.carrier_code : cache[0]?.carrier_code
                 }
             };
 

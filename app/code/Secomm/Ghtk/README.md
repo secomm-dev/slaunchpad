@@ -73,7 +73,9 @@ calculator, fee response mapper, rate composer, CSV import.
 ## Dependencies
 
 `Secomm_ShippingCore` (origin contract), `Secomm_AddressDropdown` (ward data
-tables), Magento Backend/Config/Directory/Shipping.
+tables), `Secomm_VietNamAddress` (VN scheme-swap reference guard contract —
+this module registers `secomm_ghtk_address_map` via `Model/Import/DirectoryReferenceGuard`,
+DEC-FEATYA2C0W-004), Magento Backend/Config/Directory/Shipping.
 
 ## Tracking (SL-017)
 

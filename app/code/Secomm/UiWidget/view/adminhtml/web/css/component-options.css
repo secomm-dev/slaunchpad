@@ -1,0 +1,128 @@
+.admin__fieldset > .admin__field.secomm-ui-options-field,
+.admin__fieldset > .admin__field:has(.secomm-ui-component-options) {
+    margin-left: 0;
+}
+
+.admin__field.secomm-ui-options-field > .admin__field-label,
+.admin__field:has(.secomm-ui-component-options) > .admin__field-label {
+    float: none !important;
+    margin: 0 0 12px !important;
+    text-align: left !important;
+    width: 100% !important;
+}
+
+.admin__field.secomm-ui-options-field > .admin__field-control,
+.admin__field:has(.secomm-ui-component-options) > .admin__field-control,
+.admin__field-control.secomm-ui-options-control,
+.secomm-ui-component-options .secomm-ui-repeater > .admin__field-control {
+    float: none !important;
+    margin-left: 0 !important;
+}
+
+.admin__field.secomm-ui-options-field > .admin__field-control,
+.admin__field:has(.secomm-ui-component-options) > .admin__field-control,
+.admin__field-control.secomm-ui-options-control {
+    width: 85% !important;
+}
+
+.secomm-ui-component-options .secomm-ui-repeater > .admin__field-label {
+    float: none !important;
+    margin: 0 0 8px !important;
+    text-align: left !important;
+    width: 100% !important;
+}
+
+.secomm-ui-component-options .secomm-ui-repeater > .admin__field-control {
+    width: 100% !important;
+}
+
+.secomm-ui-component-options > [data-role="fields"] > .admin__field > .admin__field-label,
+.secomm-ui-component-options > [data-role="fields"] > .admin__field > .admin__field-control {
+    float: none !important;
+    margin-left: 0 !important;
+    max-width: 100%;
+    min-width: 0;
+    text-align: left !important;
+    width: 100% !important;
+}
+
+.secomm-ui-component-options > [data-role="fields"] > .admin__field > .admin__field-label {
+    margin-bottom: 8px !important;
+}
+
+.secomm-ui-repeater [data-role="items"] > .admin__fieldset {
+    background: #f8f8f8;
+    border: 1px solid #d6d6d6;
+    box-sizing: border-box;
+    margin: 16px 0;
+    max-width: 100%;
+    min-width: 0;
+    padding: 24px;
+}
+
+.secomm-ui-component-options .secomm-ui-repeater .admin__fieldset > .admin__field {
+    margin-left: 0;
+}
+
+.secomm-ui-repeater [data-role="items"] .admin__field-label,
+.secomm-ui-repeater [data-role="items"] .admin__field-control {
+    float: none !important;
+    margin-left: 0 !important;
+    max-width: 100%;
+    min-width: 0;
+    text-align: left !important;
+    width: 100% !important;
+}
+
+.secomm-ui-repeater .secomm-ui-rich-text-field .tox-hugerte,
+.secomm-ui-repeater .secomm-ui-rich-text-field .tox-tinymce,
+.secomm-ui-repeater .secomm-ui-rich-text-field .mce-tinymce {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-height: 440px;
+    min-width: 0;
+    width: 100%;
+}
+
+.secomm-ui-repeater [data-role="items"] > .admin__fieldset > .action-default,
+.secomm-ui-repeater [data-role="items"] > .admin__fieldset > .action-delete {
+    margin: 8px 8px 0 0;
+}
+
+.secomm-ui-media-preview {
+    align-items: center;
+    background: #f8f8f8;
+    border: 1px solid #adadad;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    margin: 12px 0;
+    min-height: 140px;
+    overflow: hidden;
+    padding: 8px;
+    width: min(100%, 360px);
+}
+
+.secomm-ui-media-preview__image {
+    display: block;
+    height: auto;
+    max-height: 220px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.secomm-ui-media-preview__status {
+    color: #666;
+    padding: 24px;
+    text-align: center;
+}
+
+.secomm-ui-media-preview.has-error .secomm-ui-media-preview__status {
+    color: #e22626;
+}
+
+.secomm-ui-media-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}

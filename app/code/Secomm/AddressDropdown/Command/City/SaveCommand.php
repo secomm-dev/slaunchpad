@@ -11,10 +11,12 @@ use Exception;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\InvalidArgumentException;
+use Magento\Framework\Exception\LocalizedException;
 use Psr\Log\LoggerInterface;
 use Secomm\AddressDropdown\Api\Data\CityInterface;
 use Secomm\AddressDropdown\Api\Data\CityNameInterface;
 use Secomm\AddressDropdown\Api\Data\CityNameInterfaceFactory;
+use Secomm\AddressDropdown\Command\City\SaveValidator;
 use Secomm\AddressDropdown\Model\CityModel;
 use Secomm\AddressDropdown\Model\CityModelFactory;
 use Secomm\AddressDropdown\Model\Constant;
@@ -65,6 +67,12 @@ class SaveCommand
     private CityNameCollectionFactory $cityNameCollectionFactory;
 
     /**
+     * TASK-9EX975 Slice B: hierarchy validation (same-region parent, self/cycle,
+     * MAX_DEPTH, duplicate code) shared with the import rules.
+     */
+    private SaveValidator $saveValidator;
+
+    /**
      * @param LoggerInterface $logger
      * @param CityModelFactory $modelFactory
      * @param CityResource $resource
@@ -73,6 +81,7 @@ class SaveCommand
      * @param CityNameResource $cityNameResource
      * @param CityNameCollectionFactory $cityNameCollectionFactory
      * @param ResourceConnection $resourceConnection
+     * @param SaveValidator $saveValidator
      */
     public function __construct(
         LoggerInterface           $logger,
@@ -82,7 +91,8 @@ class SaveCommand
         CityNameInterfaceFactory  $cityNameInterfaceFactory,
         CityNameResource          $cityNameResource,
         CityNameCollectionFactory $cityNameCollectionFactory,
-        ResourceConnection        $resourceConnection
+        ResourceConnection        $resourceConnection,
+        SaveValidator             $saveValidator
     )
     {
         $this->logger = $logger;
@@ -93,6 +103,7 @@ class SaveCommand
         $this->cityNameResource = $cityNameResource;
         $this->cityNameCollectionFactory = $cityNameCollectionFactory;
         $this->resourceConnection = $resourceConnection;
+        $this->saveValidator = $saveValidator;
     }
 
     /**
@@ -102,13 +113,33 @@ class SaveCommand
      * @return int
      * @throws CouldNotSaveException
      * @throws InvalidArgumentException
+     * @throws LocalizedException validation failures rethrown verbatim (friendly message)
      */
     public function execute(CityInterface $city): int
     {
         try {
+            $warnings = $this->saveValidator->validate($city);
+            foreach ($warnings as $warning) {
+                $this->logger->warning('City save warning: ' . $warning, [
+                    'city_id' => $city->getCityId(),
+                    'region_id' => $city->getRegionId(),
+                ]);
+            }
+
             /** @var CityModel $model */
             $model = $this->modelFactory->create();
-            $model->addData($city->getData());
+            // TASK-9EX975 Slice B: the form's empty-caption options arrive as '' — normalise
+            // to NULL so the FK/composite-unique semantics stay "no parent / no code".
+            $modelData = $city->getData();
+            foreach ([CityInterface::PARENT_CITY_ID, CityInterface::CODE] as $optionalField) {
+                if (array_key_exists($optionalField, $modelData)
+                    && is_string($modelData[$optionalField])
+                    && trim($modelData[$optionalField]) === ''
+                ) {
+                    $modelData[$optionalField] = null;
+                }
+            }
+            $model->addData($modelData);
             $model->setHasDataChanges(true);
 
 
@@ -144,6 +175,9 @@ class SaveCommand
 
             // add Default Name and Locale "en_US"
             $this->addDefaultNameAndLocale((int)$model->getData(CityInterface::CITY_ID));
+        } catch (LocalizedException $exception) {
+            // Validation failures carry their friendly message to the admin — rethrow verbatim.
+            throw $exception;
         } catch (Exception $exception) {
             $this->logger->error(
                 __('Could not save City. Original message: {message}'),

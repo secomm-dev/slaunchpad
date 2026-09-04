@@ -4,16 +4,12 @@
  * See COPYING.txt for license details.
  */
 
-#sub-city-select,#city-select,.sub-city,#sub-city-container{
+#city-select{
     display: none;
 }
-div[name="shippingAddress.custom_attributes.sub_city"]{
+div[name="billingAddress.customCity"]{
     display: none;
 }
-div[name="billingAddress.customCity"],div[name="billingAddress.custom_attributes.sub_city"]{
-    display: none;
-}
-.billing-address-sub-city,
 #custom-city-error {
     display: none;
 }
