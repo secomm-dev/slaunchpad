@@ -449,7 +449,7 @@ return [
         'Secomm_GiaoHangNhanh' => 1,
         'Secomm_VietNamAddress' => 1,
         'Secomm_GhnAddressMapper' => 1,
-        'Secomm_MageplazaExtraFeeFix' => 1,
+        'Launchpad_MageplazaExtraFeeFix' => 1,
         'Secomm_MoMo' => 1,
         'Secomm_Promotion' => 1,
         'Secomm_PromotionMaxDiscount' => 1,

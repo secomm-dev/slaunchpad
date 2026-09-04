@@ -27,7 +27,7 @@ PHP 8 requires `reset()` to receive an `array`, so `reset(null)` throws
 
 | File | Purpose |
 |---|---|
-| `registration.php` | Module registration (`Secomm_MageplazaExtraFeeFix`) |
+| `registration.php` | Module registration (`Launchpad_MageplazaExtraFeeFix`) |
 | `etc/module.xml` | Module definition, `sequence` on `Mageplaza_ExtraFee` |
 | `etc/frontend/di.xml` | Plugin on `Mageplaza\ExtraFee\Controller\Product\ExtraFee` (frontend area — the route is frontend) |
 | `Plugin/Controller/Product/ExtraFeePlugin.php` | `beforeExecute()`: if `super_attribute` is missing/`null` → `setParam('super_attribute', [])`; any other value is left byte-for-byte untouched |

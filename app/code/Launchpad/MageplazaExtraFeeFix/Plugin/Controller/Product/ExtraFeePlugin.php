@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Secomm\MageplazaExtraFeeFix\Plugin\Controller\Product;
+namespace Launchpad\MageplazaExtraFeeFix\Plugin\Controller\Product;
 
 use Mageplaza\ExtraFee\Controller\Product\ExtraFee;
 
