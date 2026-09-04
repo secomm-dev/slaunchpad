@@ -150,7 +150,8 @@
             },
             "magento/magento2-base": {
                 "APSB26-73: Security Patch for Nginx Config Sample": "patches/composer/APSB26-73/APSB26-73-magento-magento2-base.patch",
-                "APSB26-92: Security release 248p5-2026-08-001 CE": "patches/composer/APSB26-92-248p5-2026-08-001-CE/magento2-base.patch"
+                "APSB26-92: Security release 248p5-2026-08-001 CE": "patches/composer/APSB26-92-248p5-2026-08-001-CE/magento2-base.patch",
+                "MAGENTO-40225-datepicker-fix-position (PR #40225)": "patches/composer/MAGENTO-40225-datepicker-fix-position.patch"
             },
             "magento/module-page-cache": {
                 "AC-15223: Use vary cookie in FPC save identifier for store switch": "patches/composer/AC-15223_2.4.8.patch"
@@ -160,6 +161,9 @@
             },
             "magento/module-review": {
               "APSB26-92: Security release 248p5-2026-08-001 CE": "patches/composer/APSB26-92-248p5-2026-08-001-CE/module-review.patch"
+            },
+            "paypal/module-braintree-core": {
+                "Fix double main_table prefix on created_at filter (order grid Purchase Date)": "patches/composer/BUNDLE-3357-unable-to-filter-order-in-admin-by-date.patch"
             }
         }
     }

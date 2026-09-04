@@ -1,0 +1,16 @@
+diff --git a/lib/web/mage/calendar.js b/lib/web/mage/calendar.js
+--- a/lib/web/mage/calendar.js
++++ b/lib/web/mage/calendar.js
+@@ -104,9 +104,9 @@
+
+         _overwriteFindPos: function () {
+             $.datepicker.constructor.prototype._findPos = function (obj) {
+-                let domPosition = obj.getBoundingClientRect();
+-
+-                return [domPosition.left, domPosition.top];
++                var isInModalSlide = $(obj).closest('.modal-slide').length > 0,
++                    position = isInModalSlide ? obj.getBoundingClientRect() : $(obj).offset();
++                return [position.left, position.top];
+             };
+         },
+

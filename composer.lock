@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b5b0a2b821c87e14fecb098a3686871e",
+    "content-hash": "a36b1cc7bb64c1bbe9384a61efdb2c9d",
     "packages": [
         {
             "name": "2tvenom/cborencode",
@@ -29607,7 +29607,7 @@
             "require": {
                 "composer/xdebug-handler": "^3.0",
                 "ext-xml": "*",
-                "pdepend/pdepend": "3.x-dev#890e776347668899812d02c0653a2431e4866f15",
+                "pdepend/pdepend": "3.x-dev",
                 "php": "^8.1",
                 "symfony/console": "^6.4|^7.0|^8.0",
                 "symfony/yaml": "^5.4.31 || ^6.0 || ^7.0 || ^8.0"
@@ -32084,7 +32084,7 @@
     },
     "prefer-stable": true,
     "prefer-lowest": false,
-    "platform": {},
-    "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
