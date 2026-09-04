@@ -1,0 +1,39 @@
+<?php
+/**
+ * Adapted from Hyvä UI product-data/C-highlights 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$highlights = (array)($data['highlights'] ?? []);
+$instanceId = $block->getInstanceId();
+?>
+<?php if ($highlights): ?>
+    <section id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+             data-secomm-ui-component="product_highlights_c">
+        <?php foreach ($highlights as $highlight): ?>
+            <?php $imageRight = ($highlight['image_position'] ?? 'left') === 'right'; ?>
+            <div class="flex flex-col <?= $imageRight ? 'md:flex-row-reverse' : 'md:flex-row' ?> md:items-start gap-4 my-6">
+                <img src="<?= $escaper->escapeUrl((string)$highlight['image']) ?>"
+                     alt="<?= $escaper->escapeHtmlAttr((string)$highlight['image_alt']) ?>"
+                     width="640"
+                     height="640"
+                     loading="<?= $escaper->escapeHtmlAttr((string)($highlight['loading'] ?? 'lazy')) ?>"
+                     class="shrink-0 m-0 aspect-square object-cover md:w-48">
+                <div class="space-y-2">
+                    <p class="mt-0 mb-2">
+                        <strong><?= $escaper->escapeHtml((string)$highlight['title']) ?></strong>
+                    </p>
+                    <?= /* @noEscape trusted-rich-text filtered by Magento CMS */
+                    $block->renderTrustedHtml((string)$highlight['content']) ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </section>
+<?php endif; ?>

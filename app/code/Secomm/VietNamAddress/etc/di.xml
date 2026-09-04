@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- DEC-FEATYA2C0W-003 — versioned scheme reference + resolution contracts. -->
+    <preference for="Secomm\VietNamAddress\Api\VnAddressUnitProviderInterface"
+                type="Secomm\VietNamAddress\Model\VnAddressUnitProvider"/>
+    <preference for="Secomm\VietNamAddress\Api\VnAdminAddressResolverInterface"
+                type="Secomm\VietNamAddress\Model\VnAdminAddressResolver"/>
+    <!-- DEC-FEATYA2C0W-004 (D5) / TASK-Q4B98P — operational ↔ canonical identity bridge. -->
+    <preference for="Secomm\VietNamAddress\Api\VnOperationalAddressResolverInterface"
+                type="Secomm\VietNamAddress\Model\VnOperationalAddressResolver"/>
+
+    <!-- DEC-FEATYA2C0W-004 (D7): external-reference guards for destructive scheme
+         operations are contributed via DI by the modules owning the referencing tables
+         (e.g. Secomm_GhnAddressMapper, Secomm_Ghtk) — never named here. -->
+    <type name="Secomm\VietNamAddress\Model\Import\VnAddressSchemeImporter">
+        <arguments>
+            <argument name="directoryReferenceGuards" xsi:type="array"/>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="secomm_vietnam_address_import_scheme_command" xsi:type="object">
+                    Secomm\VietNamAddress\Console\Command\ImportVnAddressSchemeCommand
+                </item>
+                <item name="secomm_vietnam_address_import_mapping_command" xsi:type="object">
+                    Secomm\VietNamAddress\Console\Command\ImportVnAddressMappingCommand
+                </item>
+                <item name="secomm_vietnam_address_validate_mapping_command" xsi:type="object">
+                    Secomm\VietNamAddress\Console\Command\ValidateVnAddressMappingCommand
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>

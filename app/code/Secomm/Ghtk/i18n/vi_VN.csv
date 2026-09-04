@@ -55,3 +55,4 @@
 "Tracking Webhook Secret (appended to webhook URL)","Secret webhook tracking (nối vào URL webhook)"
 "Tracking Reconciliation Cron (fallback for missed webhooks)","Cron đối soát tracking (fallback khi miss webhook)"
 "Reconciliation Staleness Threshold (hours)","Ngưỡng đối soát: cũ hơn bao nhiêu giờ (giờ)"
+"%1 row(s) in %2 (column %3) still reference the installed VN data. Clear that carrier mapping data first.","%1 dòng trong %2 (cột %3) vẫn tham chiếu dữ liệu VN đang cài. Hãy xoá dữ liệu mapping carrier đó trước."

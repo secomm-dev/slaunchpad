@@ -29,9 +29,9 @@ class CityBlockActions extends Column
     /**
      * Url paths.
      */
-    protected const VIEW_URL_PATH = 'addressdropdown/subcity/index';
     protected const EDIT_URL_PATH = 'addressdropdown/city/edit';
     protected const DELETE_URL_PATH = 'addressdropdown/city/delete';
+    protected const NEW_URL_PATH = 'addressdropdown/city/new';
 
     /**
      * @var UrlInterface
@@ -87,13 +87,19 @@ class CityBlockActions extends Column
                         CityInterface::CITY_ID => $item[CityInterface::CITY_ID],
                     ];
 
-                    $viewUrl = $this->urlBuilder->getUrl(static::VIEW_URL_PATH, $urlData);
                     $editUrl = $this->urlBuilder->getUrl(static::EDIT_URL_PATH, $urlData);
                     $deleteUrl = $this->urlBuilder->getUrl(static::DELETE_URL_PATH, $urlData);
 
+                    // TASK-9EX975 Slice B: "Add child" opens the new-city form with this
+                    // row locked in as the parent (AC-B1).
+                    $addChildUrl = $this->urlBuilder->getUrl(static::NEW_URL_PATH, [
+                        CityInterface::REGION_ID => $item[CityInterface::REGION_ID] ?? null,
+                        CityInterface::PARENT_CITY_ID => $item[CityInterface::CITY_ID],
+                    ]);
+
                     $item[$this->getData('name')] = [
-                        'view' => $this->getActionData($viewUrl, (string)__('View')),
                         'edit' => $this->getActionData($editUrl, (string)__('Edit')),
+                        'add_child' => $this->getActionData($addChildUrl, (string)__('Add child')),
                         'delete' => $this->getActionData(
                             $deleteUrl,
                             (string)__('Delete'),

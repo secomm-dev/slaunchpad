@@ -62,7 +62,13 @@ class ValidateVietNamWard
 
             $collection = $this->cityCollectionFactory->create();
             $collection->addFieldToFilter('region_id', $regionId);
-            $collection->addFieldToFilter('default_name', $ward);
+            // TASK-ADT94K: the schema renderer submits the locale-resolved name (e.g. vi_VN
+            // "Hoàn Kiếm"), the legacy renderer the ASCII default_name — match either.
+            $connection = $collection->getConnection();
+            $collection->getSelect()->where(
+                $connection->quoteInto('main_table.default_name = ?', $ward)
+                . ' OR ' . $connection->quoteInto('rname.name = ?', $ward)
+            );
             $collection->setPageSize(1)->setCurPage(1);
 
             if ($collection->getSize() === 0) {

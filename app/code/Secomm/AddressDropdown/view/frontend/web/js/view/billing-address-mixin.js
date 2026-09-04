@@ -46,8 +46,6 @@ define([
         defaults: {
             detailsTemplate: 'Secomm_AddressDropdown/billing-address/details',
         },
-        CUSTOM_SUB_CITY_SELECTOR: '#co-payment-form #custom-sub-city-select-billing',
-        BILLING_ADDRESS_SUB_CITY: '.billing-address-sub-city',
         /**
          * @return {Boolean}
          */
@@ -85,9 +83,7 @@ define([
                     this.source.trigger(this.dataScopePrefix + '.custom_attributes.data.validate');
                 }
 
-                const subCityValidate = $(this.CUSTOM_SUB_CITY_SELECTOR).val() === '' && $(this.BILLING_ADDRESS_SUB_CITY).is(':visible')
-
-                if (!this.source.get('params.invalid') && !subCityValidate) {
+                if (!this.source.get('params.invalid')) {
                     addressData = this.source.get(this.dataScopePrefix);
                     addressData.custom_attributes = this.source.get('billingAddress').custom_attributes;
 
@@ -121,19 +117,7 @@ define([
         },
 
         canUseShippingAddress: ko.computed(function () {
-            const status = !quote.isVirtual() && quote.shippingAddress() && quote.shippingAddress().canUseForBilling();
-            const subCity = $("#custom-sub-city-select").val();
-            if (status && subCity) {
-                let shippingAddress = quote.shippingAddress();
-                var extension = {
-                    sub_city: subCity,
-                };
-                shippingAddress.extension_attributes = $.extend(
-                    shippingAddress.extension_attributes,
-                    extension
-                );
-            }
-            return status;
+            return !quote.isVirtual() && quote.shippingAddress() && quote.shippingAddress().canUseForBilling();
         }),
 
         /**
@@ -145,21 +129,6 @@ define([
                 return cityData()[address.regionId].city[cityId]['name'] !== undefined ? cityData()[address.regionId].city[cityId]['name'] : cityId;
             }catch (e) {
                 return cityId;
-            }
-        },
-
-        /**
-         * @param {String} subCityId
-         * @return {String}
-         */
-        getSubCityName: function (parent, subCityId) {
-            try {
-                let address = parent.currentBillingAddress();
-                let cityId = address.city;
-                let regionId = address.regionId;
-                return cityData()[regionId].city[cityId].sub_city[subCityId].name ?? subCityId;
-            } catch (e) {
-                return subCityId;
             }
         },
     };

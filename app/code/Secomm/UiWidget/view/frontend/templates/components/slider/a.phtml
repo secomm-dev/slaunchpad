@@ -1,0 +1,102 @@
+<?php
+/**
+ * Adapted from Hyvä UI slider/A-basic 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+use Hyva\Theme\ViewModel\LucideIcons;
+
+$data = (array)$block->getData('component_data');
+$slides = (array)($data['slides'] ?? []);
+$showArrows = (string)($data['show_arrows'] ?? 'end');
+$showDots = (bool)($data['show_dots'] ?? true);
+$loadFirstEager = (bool)($data['load_first_eager'] ?? false);
+$pagerClasses = 'hidden sm:flex gap-4 justify-center items-center mt-7 absolute w-full bottom-8';
+$markerClasses = 'w-4 h-4 rounded-full shadow-md cursor-pointer ring-4 ring-transparent bg-white '
+    . 'hover:bg-blue-600 transition aria-[current=true]:ring-white aria-[current=true]:bg-blue-600';
+$navPositionClasses = [
+    'start' => 'left-4',
+    'end' => 'right-4',
+    'both' => 'inset-x-4',
+];
+/** @var LucideIcons $lucideIcons */
+$lucideIcons = $viewModels->require(LucideIcons::class);
+?>
+<?php if ($slides): ?>
+    <section class="relative my-20"
+             aria-label="<?= $escaper->escapeHtmlAttr((string)$data['label']) ?>"
+             data-secomm-ui-component="slider_a"
+             x-data
+            <?php if ($showDots): ?>
+                x-snap-slider.auto-pager
+                data-pager-class="<?= $escaper->escapeHtmlAttr($pagerClasses) ?>"
+                data-marker-class="<?= $escaper->escapeHtmlAttr($markerClasses) ?>"
+            <?php else: ?>
+                x-snap-slider
+            <?php endif; ?>>
+        <?php if ($showArrows !== 'none'): ?>
+            <nav class="z-10 flex gap-2 justify-between absolute bottom-4 sm:static
+                        <?= $escaper->escapeHtmlAttr($navPositionClasses[$showArrows]) ?>"
+                 aria-label="<?= $escaper->escapeHtmlAttr(__('%1 controls', (string)$data['label'])) ?>">
+                <button type="button"
+                        data-prev
+                        class="sm:z-10 sm:absolute sm:top-1/2 sm:-translate-y-1/2 sm:left-4
+                               shrink-0 p-2.5 rounded-full transition bg-white text-primary shadow
+                               disabled:opacity-30 hover:shadow-primary/30 focus:shadow-primary/30"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Previous Slide')) ?>">
+                    <?= /** @noEscape */ $lucideIcons->arrowLeftHtml() ?>
+                </button>
+                <button type="button"
+                        data-next
+                        class="sm:z-10 sm:absolute sm:top-1/2 sm:-translate-y-1/2 sm:right-4
+                               shrink-0 p-2.5 rounded-full transition bg-white text-primary shadow
+                               disabled:opacity-30 hover:shadow-primary/30 focus:shadow-primary/30"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Next Slide')) ?>">
+                    <?= /** @noEscape */ $lucideIcons->arrowRightHtml() ?>
+                </button>
+            </nav>
+        <?php endif; ?>
+        <div data-track class="snap relative grid grid-flow-col auto-cols-[100%] overflow-x-auto overscroll-x-contain">
+            <?php foreach ($slides as $index => $slide): ?>
+                <?php $hasCaption = !empty($slide['eyebrow']) || !empty($slide['heading']) || !empty($slide['cta_url']); ?>
+                <figure class="shrink-0 grid *:row-start-1 *:col-start-1 w-full">
+                    <img class="w-full h-[460px] md:h-[580px] lg:h-[800px] object-cover"
+                         src="<?= $escaper->escapeUrl((string)$slide['image']) ?>"
+                         alt="<?= $escaper->escapeHtmlAttr((string)$slide['image_alt']) ?>"
+                         width="1280"
+                         height="853"
+                         loading="<?= $loadFirstEager && $index === 0 ? 'eager' : 'lazy' ?>">
+                    <?php if ($hasCaption): ?>
+                        <figcaption class="relative col-start-1 row-start-1 self-end px-6 pt-12 pb-20 sm:pb-24
+                                           bg-gradient-to-t from-gray-800/50 to-transparent text-white text-center uppercase">
+                            <?php if (!empty($slide['eyebrow'])): ?>
+                                <p class="text-base sm:text-xl sm:mb-3 last:mb-0 sm:leading-7 font-semibold drop-shadow-md">
+                                    <?= $escaper->escapeHtml((string)$slide['eyebrow']) ?>
+                                </p>
+                            <?php endif; ?>
+                            <?php if (!empty($slide['heading'])): ?>
+                                <p class="text-2xl sm:text-3xl md:text-5xl sm:leading-none font-bold drop-shadow-md">
+                                    <?= $escaper->escapeHtml((string)$slide['heading']) ?>
+                                </p>
+                            <?php endif; ?>
+                            <?php if (!empty($slide['cta_url'])): ?>
+                                <a href="<?= $escaper->escapeUrl((string)$slide['cta_url']) ?>"
+                                   class="btn btn-primary mt-6"
+                                    <?php if (!empty($slide['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                                    <?= $escaper->escapeHtml((string)$slide['cta_label']) ?>
+                                </a>
+                            <?php endif; ?>
+                        </figcaption>
+                    <?php endif; ?>
+                </figure>
+            <?php endforeach; ?>
+        </div>
+    </section>
+<?php endif; ?>

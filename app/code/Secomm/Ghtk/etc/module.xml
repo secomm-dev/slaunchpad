@@ -14,6 +14,7 @@
             <module name="Magento_Shipping"/>
             <module name="Secomm_AddressDropdown"/>
             <module name="Secomm_ShippingCore"/>
+            <module name="Secomm_VietNamAddress"/>
         </sequence>
     </module>
 </config>

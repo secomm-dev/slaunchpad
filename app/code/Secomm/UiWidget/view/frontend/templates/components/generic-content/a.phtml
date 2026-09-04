@@ -1,0 +1,45 @@
+<?php
+/**
+ * Adapted from Hyvä UI generic-content/A-text 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$instanceId = $block->getInstanceId();
+$headingId = $instanceId . '-heading';
+?>
+<article id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+         class="max-w-full prose prose-slate prose-li:my-0 prose-p:my-8 prose-lead:mt-0 md:prose-h1:text-5xl"
+         data-secomm-ui-component="generic_content_a"
+         <?php if (!empty($data['heading'])): ?>aria-labelledby="<?= $escaper->escapeHtmlAttr($headingId) ?>"<?php endif; ?>>
+    <?php if (!empty($data['eyebrow']) || !empty($data['heading'])): ?>
+        <div class="mb-12 space-y-8">
+            <?php if (!empty($data['eyebrow'])): ?>
+                <span class="inline-block px-2 py-1 rounded bg-blue-100 text-blue-600 text-lg leading-7
+                             font-semibold uppercase lg:text-xl">
+                    <?= $escaper->escapeHtml((string)$data['eyebrow']) ?>
+                </span>
+            <?php endif; ?>
+            <?php if (!empty($data['heading'])): ?>
+                <h1 id="<?= $escaper->escapeHtmlAttr($headingId) ?>">
+                    <?= $escaper->escapeHtml((string)$data['heading']) ?>
+                </h1>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+    <div class="md:columns-2 md:gap-x-8">
+        <?php if (!empty($data['lead'])): ?>
+            <p class="lead text-lg font-medium">
+                <?= $escaper->escapeHtml((string)$data['lead']) ?>
+            </p>
+        <?php endif; ?>
+        <?= /* @noEscape trusted-rich-text filtered by Magento CMS */
+        $block->renderTrustedHtml((string)$data['content']) ?>
+    </div>
+</article>

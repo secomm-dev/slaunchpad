@@ -11,7 +11,7 @@ The Address Dropdown Module enhances the address input functionality in Magento 
 - Add, edit, and delete addresses with user-friendly forms and controls.
 
 ### Hierarchical Filtering of Addresses
-- Seamlessly filter addresses based on hierarchical levels such as country, state, city, and sub city.
+- Seamlessly filter addresses based on hierarchical levels such as country, state, and city (arbitrary city depth via the recursive `directory_region_city.parent_city_id` hierarchy — the legacy sub-city layer was removed in TASK-6MKF0V; see CHANGELOG).
 - Improve user experience by allowing quick and efficient address selection.
 
 ### Import/Export Addresses

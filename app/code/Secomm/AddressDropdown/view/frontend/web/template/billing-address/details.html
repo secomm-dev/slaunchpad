@@ -12,11 +12,6 @@
         <text args="currentBillingAddress().company"></text><br>
     </if>
     <text args="_.values(_.compact(currentBillingAddress().street)).join(', ')"></text><br>
-    <each args="data: currentBillingAddress().customAttributes, as: 'element'">
-        <if args="element.attribute_code === 'sub_city'">
-            <text args="$parent.getSubCityName($parent, element.value)"></text>,
-        </if>
-    </each>
     <text args="getCityName(currentBillingAddress(), currentBillingAddress().city)"></text>, <span text="currentBillingAddress().region"></span>
     <text args="currentBillingAddress().postcode"></text><br>
     <text args="getCountryName(currentBillingAddress().countryId)"></text><br>
@@ -26,7 +21,7 @@
     </if>
 
     <each args="data: currentBillingAddress().customAttributes, as: 'element'">
-        <if args="!['city', 'sub_city', 'custom_city', 'custom_sub_city'].includes(element.attribute_code)">
+        <if args="!['city', 'custom_city'].includes(element.attribute_code)">
             <text args="$parent.getCustomAttributeLabel(element)"></text>
             <br>
         </if>

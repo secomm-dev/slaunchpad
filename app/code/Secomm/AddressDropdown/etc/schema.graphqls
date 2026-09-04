@@ -1,17 +1,12 @@
 type Query {
     GetListCity(input: RegionId): [ListCityGraphqlOutput] @resolver(class: "Secomm\\AddressDropdown\\Model\\Resolver\\GetListCityGraphql") @deprecated(reason: "Get list cities") @cache(cacheable: false)
-    GetListSubCity(input: DefaultName): [ListSubCityGraphqlOutput] @resolver(class: "Secomm\\AddressDropdown\\Model\\Resolver\\GetListSubCityGraphql") @deprecated(reason: "Get list sub-cities") @cache(cacheable: false)
+    addressLocations(input: AddressLocationsInput!): [AddressLocationNode] @resolver(class: "Secomm\\AddressDropdown\\Model\\Resolver\\AddressLocationsGraphql") @doc(description: "Recursive hierarchy locations (canonical city_id identity) filtered by Address Profile membership. Provide exactly one of region_id (root cities below a region) or parent_city_id (children of a city).") @cache(cacheable: true)
+    addressSchema(input: AddressSchemaInput!): AddressSchema @resolver(class: "Secomm\\AddressDropdown\\Model\\Resolver\\AddressSchemaGraphql") @doc(description: "Address schema (levels, translated labels, required flags, ordering) for a country's active Address Profile, or an explicit profile_code. Empty levels = native Magento address fields.") @cache(cacheable: true)
 }
 
 input RegionId {
     region_id: String,
     area: String
-}
-
-input DefaultName {
-    default_name: String
-    area: String
-    region_id: String
 }
 
 type ListCityGraphqlOutput {
@@ -21,9 +16,39 @@ type ListCityGraphqlOutput {
     label: String
 }
 
-type ListSubCityGraphqlOutput {
-    sub_city_id: String
-    city_id: String
+# FEAT-2PZQKJ / TASK-J49PRZ — generic hierarchy + schema surface (ID-canonical).
+input AddressLocationsInput {
+    region_id: Int @doc(description: "Fetch root cities directly below this region")
+    parent_city_id: Int @doc(description: "Fetch children of this city")
+    profile_code: String! @doc(description: "Address profile code (dataset membership filter)")
+}
+
+input AddressSchemaInput {
+    country_id: String! @doc(description: "ISO country code; resolves the default profile when profile_code is omitted")
+    profile_code: String @doc(description: "Explicit profile code, overrides the country default")
+}
+
+type AddressLocationNode {
+    city_id: Int
     default_name: String
-    label: String
+    name: String @doc(description: "Locale-resolved name (falls back to default_name)")
+    label: String @doc(description: "Alias of name — convenience for option lists")
+    depth: Int @doc(description: "City depth counted from region (1 = directly below region)")
+    parent_city_id: Int
+    region_id: Int
+    has_children: Boolean @doc(description: "Structural children existence (not profile-filtered)")
+}
+
+type AddressSchema {
+    profile_code: String @doc(description: "Resolved profile code; null when the country is unmapped (native fallback)")
+    levels: [AddressSchemaLevel] @doc(description: "Empty when the country is unmapped => native Magento address fields")
+}
+
+type AddressSchemaLevel {
+    entity_type: String
+    depth: Int
+    label: String @doc(description: "Translated label (translation owned by the profile-declaring module)")
+    placeholder: String
+    sort_order: Int
+    required: Boolean
 }

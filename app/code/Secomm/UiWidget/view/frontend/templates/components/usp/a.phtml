@@ -1,0 +1,86 @@
+<?php
+/**
+ * Adapted from Hyvä UI usp/A-icons 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+use Hyva\Theme\ViewModel\LucideIcons;
+
+$data = (array)$block->getData('component_data');
+$items = (array)($data['items'] ?? []);
+/** @var LucideIcons $lucideIcons */
+$lucideIcons = $viewModels->require(LucideIcons::class);
+$iconMethods = [
+    'shield_check' => 'shieldCheckHtml',
+    'truck' => 'truckHtml',
+    'gift' => 'giftHtml',
+    'receipt' => 'receiptHtml',
+];
+?>
+<?php if ($items): ?>
+    <section class="p-6 leading-6 text-gray-500" data-secomm-ui-component="usp_a">
+        <div class="flex flex-col items-center gap-2">
+            <span class="uppercase bg-blue-100 rounded px-2 py-1 text-blue-600 text-lg leading-7 font-semibold md:text-xl">
+                <?= $escaper->escapeHtml((string)$data['eyebrow']) ?>
+            </span>
+            <h2 class="text-4xl leading-10 font-bold text-gray-800 md:text-5xl">
+                <?= $escaper->escapeHtml((string)$data['heading']) ?>
+            </h2>
+        </div>
+
+        <div class="mt-8 grid gap-6 md:grid-cols-2">
+            <?php foreach ($items as $item): ?>
+                <?php
+                $iconMethod = $iconMethods[$item['icon'] ?? 'shield_check'];
+                $hasUrl = !empty($item['url']);
+                $targetAttributes = !empty($item['open_in_new'])
+                    ? ' target="_blank" rel="noopener noreferrer"'
+                    : '';
+                ?>
+                <?php if ($hasUrl): ?>
+                    <a href="<?= $escaper->escapeUrl((string)$item['url']) ?>"
+                       class="flex gap-4"
+                        <?= /* @noEscape validated static target attributes */ $targetAttributes ?>>
+                <?php else: ?>
+                    <div class="flex gap-4">
+                <?php endif; ?>
+                    <div>
+                        <div class="w-16 h-16 bg-blue-200 text-blue-800 rounded-full flex justify-center items-center">
+                            <?php if (!empty($item['image'])): ?>
+                                <img src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                                     alt="<?= $escaper->escapeHtmlAttr((string)$item['image_alt']) ?>"
+                                     width="48"
+                                     height="48"
+                                     loading="lazy"
+                                     class="w-12 h-12 object-contain">
+                            <?php else: ?>
+                                <?= /* @noEscape allowlisted Lucide method and fixed arguments */
+                                $lucideIcons->{$iconMethod}('w-12 h-12', 48, 48, ['aria-hidden' => 'true']) ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg text-gray-800 font-medium leading-7 mb-2">
+                            <?= $escaper->escapeHtml((string)$item['title']) ?>
+                        </h3>
+                        <div>
+                            <?= /* @noEscape escaped before applying nl2br */
+                            nl2br($escaper->escapeHtml((string)$item['text'])) ?>
+                        </div>
+                    </div>
+                <?php if ($hasUrl): ?>
+                    </a>
+                <?php else: ?>
+                    </div>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+    </section>
+<?php endif; ?>

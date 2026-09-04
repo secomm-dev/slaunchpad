@@ -1,0 +1,52 @@
+<?php
+/**
+ * Adapted from Hyvä UI usp/C-compact 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+use Hyva\Theme\ViewModel\LucideIcons;
+
+$data = (array)$block->getData('component_data');
+$items = (array)($data['items'] ?? []);
+/** @var LucideIcons $lucideIcons */
+$lucideIcons = $viewModels->require(LucideIcons::class);
+$iconMethods = [
+    'shield_check' => 'shieldCheckHtml',
+    'truck' => 'truckHtml',
+    'gift' => 'giftHtml',
+    'receipt' => 'receiptHtml',
+];
+?>
+<?php if ($items): ?>
+    <section class="p-6 leading-6 text-gray-600" data-secomm-ui-component="usp_c">
+        <div class="grid gap-4 lg:grid-cols-3">
+            <?php foreach ($items as $item): ?>
+                <?php $iconMethod = $iconMethods[$item['icon'] ?? 'shield_check']; ?>
+                <article class="flex items-center gap-6 bg-blue-100 rounded-xl p-6 lg:px-12 lg:flex-col lg:gap-4">
+                    <div>
+                        <div class="w-16 h-16 bg-blue-600 text-white rounded-full flex justify-center items-center">
+                            <?= /* @noEscape allowlisted Lucide method and fixed arguments */
+                            $lucideIcons->{$iconMethod}('w-12 h-12', 48, 48, ['aria-hidden' => 'true']) ?>
+                        </div>
+                    </div>
+                    <div class="lg:text-center">
+                        <h2 class="text-xl text-gray-800 font-medium leading-7 mb-2">
+                            <?= $escaper->escapeHtml((string)$item['label']) ?>
+                        </h2>
+                        <div>
+                            <?= /* @noEscape escaped before applying nl2br */
+                            nl2br($escaper->escapeHtml((string)$item['text'])) ?>
+                        </div>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    </section>
+<?php endif; ?>

@@ -11,11 +11,6 @@
         <text args="address().company"></text><br>
     </if>
     <text args="_.values(_.compact(address().street)).join(', ')"></text><br>
-    <each args="data: address().customAttributes, as: 'element'">
-        <if args="element.attribute_code === 'sub_city'">
-            <text args="$parent.getSubCityName($parent, element.value)"></text>,
-        </if>
-    </each>
     <text args="getCityName(address(),address().city)"></text>, <span text="address().region"></span> <text args="address().postcode"></text><br>
     <text args="getCountryName(address().countryId)"></text><br>
     <a if="address().telephone" attr="'href': 'tel:' + address().telephone" text="address().telephone"></a><br>
@@ -23,7 +18,7 @@
         VAT: <text args="address().vatId"></text><br>
     </if>
     <each args="data: address().customAttributes, as: 'element'">
-        <if args="!['city', 'sub_city', 'custom_city', 'custom_sub_city'].includes(element.attribute_code)">
+        <if args="!['city', 'custom_city'].includes(element.attribute_code)">
             <text args="$parent.getCustomAttributeLabel(element)"></text>
             <br>
         </if>

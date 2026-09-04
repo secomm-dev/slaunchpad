@@ -16,7 +16,7 @@ use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
 
 /**
- * New action SubCity controller.
+ * New action Region controller.
  */
 class NewAction extends Action implements HttpGetActionInterface
 {
@@ -46,7 +46,7 @@ class NewAction extends Action implements HttpGetActionInterface
     }
 
     /**
-     * Create new SubCity action.
+     * Create new Region action.
      *
      * @return Page|ResultInterface
      */

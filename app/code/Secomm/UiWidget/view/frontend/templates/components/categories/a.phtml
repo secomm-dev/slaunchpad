@@ -1,0 +1,65 @@
+<?php
+/**
+ * Adapted from Hyvä UI categories/A-grid-images 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$items = (array)($data['items'] ?? []);
+$instanceId = $block->getInstanceId();
+$headingId = $instanceId . '-heading';
+$mobileSlider = (bool)($data['mobile_slider'] ?? true);
+$listClasses = $mobileSlider
+    ? 'gap-4 snap flex overflow-x-auto py-6 md:snap-none md:overflow-x-visible md:gap-4 md:grid md:grid-cols-2'
+    : 'gap-4 flex flex-wrap overflow-x-visible py-6 md:grid md:grid-cols-2';
+$itemClasses = $mobileSlider
+    ? 'group block shadow-lg rounded-md overflow-hidden relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] '
+        . 'w-[calc(100%-theme(spacing.7))] sm:w-[calc(50%-theme(spacing.5))] md:w-full '
+        . 'md:first:col-span-full shrink-0 snap-start'
+    : 'group block shadow-lg rounded-md overflow-hidden relative h-[300px] sm:h-[400px] md:h-[500px] '
+        . 'lg:h-[600px] w-full sm:w-[calc(50%-theme(spacing.2))] md:w-full md:first:col-span-full';
+?>
+<?php if ($items): ?>
+    <section id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+             class="my-10"
+             aria-labelledby="<?= $escaper->escapeHtmlAttr($headingId) ?>"
+             data-secomm-ui-component="categories_a">
+        <div class="flex-wrap flex justify-between items-baseline mb-2">
+            <h2 id="<?= $escaper->escapeHtmlAttr($headingId) ?>" class="text-3xl leading-9 font-bold mr-1">
+                <?= $escaper->escapeHtml((string)$data['heading']) ?>
+            </h2>
+            <?php if (!empty($data['browse_url'])): ?>
+                <a href="<?= $escaper->escapeUrl((string)$data['browse_url']) ?>"
+                   class="block text-lg leading-7 font-semibold text-blue-700"
+                    <?php if (!empty($data['browse_open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                    <?= $escaper->escapeHtml((string)$data['browse_label']) ?>
+                </a>
+            <?php endif; ?>
+        </div>
+        <div class="<?= $escaper->escapeHtmlAttr($listClasses) ?>">
+            <?php foreach ($items as $item): ?>
+                <a href="<?= $escaper->escapeUrl((string)$item['url']) ?>"
+                   class="<?= $escaper->escapeHtmlAttr($itemClasses) ?>"
+                    <?php if (!empty($item['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
+                    <img alt="<?= $escaper->escapeHtmlAttr((string)$item['image_alt']) ?>"
+                         class="absolute w-full h-full object-cover md:group-hover:scale-105 transition duration-300"
+                         src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                         width="1280"
+                         height="600"
+                         loading="<?= $escaper->escapeHtmlAttr((string)($item['loading'] ?? 'lazy')) ?>">
+                    <div class="absolute bottom-0 pt-9 pb-6 px-6 text-center text-xl leading-10 font-bold uppercase w-full
+                                text-white drop-shadow-lg bg-gradient-to-b from-transparent to-gray-800
+                                sm:text-2xl md:text-3xl lg:text-4xl">
+                        <?= $escaper->escapeHtml((string)$item['label']) ?>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </section>
+<?php endif; ?>

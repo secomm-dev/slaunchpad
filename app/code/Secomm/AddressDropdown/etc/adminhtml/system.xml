@@ -18,6 +18,28 @@
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <!-- FEAT-2PZQKJ / TASK-3T3NSV: per-store A/B cutover. legacy = fixed region→city
+                     templates (TASK-6MKF0V: sub_city retired); schema = generic schema-driven
+                     renderer (Address Profile cascade). Default legacy — no behaviour change
+                     until a store opts in. -->
+                <field id="renderer" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Address Renderer</label>
+                    <source_model>Secomm\AddressDropdown\Model\OptionSource\RendererMode</source_model>
+                </field>
+            </group>
+            <!-- FEAT-2PZQKJ / TASK-NW66H9 (DEC-FEAT2PZQKJ-001 D3/D4): bind a country to an Address
+                 Profile declared in etc/address_profiles.xml (any module). Serialized array,
+                 e.g. a:1:{s:2:"VN";s:13:"vn_admin_2025";}. Empty/unmapped country => native Magento
+                 address fields. Profiles themselves are code-shipped XML — NOT admin-editable.
+                 TASK-ADT94K renamed the VN profiles (vn_current/vn_legacy are importer-side legacy
+                 aliases only — an undeclared code here is logged and falls back to native). -->
+            <group id="profiles" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Address Profiles</label>
+                <field id="mapping" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Country to Profile Mapping</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment>Serialized array countryId =&gt; profile code (e.g. a:1:{s:2:"VN";s:13:"vn_admin_2025";}). Profile codes come from each module's etc/address_profiles.xml.</comment>
+                </field>
             </group>
         </section>
 

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="frame-src">
+            <values>
+                <value id="secomm_ui_youtube" type="host">https://*.youtube.com</value>
+                <value id="secomm_ui_youtube_nocookie" type="host">https://*.youtube-nocookie.com</value>
+                <value id="secomm_ui_vimeo" type="host">https://player.vimeo.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="secomm_ui_youtube_poster" type="host">https://i.ytimg.com</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

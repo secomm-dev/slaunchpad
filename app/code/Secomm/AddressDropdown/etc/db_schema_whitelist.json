@@ -3,14 +3,20 @@
         "column": {
             "city_id": true,
             "region_id": true,
-            "default_name": true
+            "default_name": true,
+            "parent_city_id": true,
+            "code": true
         },
         "index": {
-            "DIRECTORY_REGION_CITY_CITY_ID": true
+            "DIRECTORY_REGION_CITY_CITY_ID": true,
+            "DIRECTORY_REGION_CITY_REGION_ID_PARENT_CITY_ID": true,
+            "DIRECTORY_REGION_CITY_PARENT_CITY_ID": true
         },
         "constraint": {
             "PRIMARY": true,
-            "DIR_REGION_CITY_REGION_ID_DIR_COUNTRY_REGION_REGION_ID": true
+            "DIR_REGION_CITY_REGION_ID_DIR_COUNTRY_REGION_REGION_ID": true,
+            "DIR_REGION_CITY_PARENT_CITY_ID_DIR_REGION_CITY_CITY_ID": true,
+            "DIRECTORY_REGION_CITY_REGION_ID_PARENT_CITY_ID_CODE": true
         }
     },
     "directory_region_city_name": {
@@ -27,52 +33,23 @@
             "DIRECTORY_REGION_CITY_NAME_CITY_ID_DIRECTORY_REGION_CITY_CITY_ID": true
         }
     },
-    "directory_city_sub_city": {
-        "column": {
-            "sub_city_id": true,
-            "city_id": true,
-            "default_name": true
-        },
-        "index": {
-            "DIRECTORY_CITY_SUB_CITY_SUB_CITY_ID": true
-        },
-        "constraint": {
-            "PRIMARY": true,
-            "DIRECTORY_CITY_SUB_CITY_CITY_ID_DIRECTORY_REGION_CITY_CITY_ID": true
-        }
-    },
-    "directory_city_sub_city_name": {
-        "column": {
-            "sub_city_id": true,
-            "locale": true,
-            "name": true
-        },
-        "index": {
-            "DIRECTORY_CITY_SUB_CITY_NAME_SUB_CITY_ID": true
-        },
-        "constraint": {
-            "PRIMARY": true,
-            "DIR_CITY_SUB_CITY_NAME_SUB_CITY_ID_DIR_CITY_SUB_CITY_SUB_CITY_ID": true
-        }
-    },
-    "sales_order_address": {
-        "column": {
-            "sub_city": true
-        }
-    },
-    "quote_address": {
-        "column": {
-            "sub_city": true
-        }
-    },
-    "customer_address_entity": {
-        "column": {
-            "sub_city": true
-        }
-    },
     "directory_country_region": {
         "column": {
             "is_default": true
+        }
+    },
+    "secomm_address_profile_location": {
+        "column": {
+            "profile_code": true,
+            "location_type": true,
+            "location_id": true,
+            "include_subtree": true
+        },
+        "index": {
+            "SECOMM_ADDRESS_PROFILE_LOCATION_LOCATION_TYPE_LOCATION_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
         }
     }
 }

@@ -27,14 +27,6 @@ define([
             if (quote.isVirtual() || !quote.billingAddress()) {
                 isBillingAddressInitialized = addressList.some(function (addrs) {
                     if (addrs.isDefaultBilling()) {
-                        const subCity = addrs?.customAttributes?.find(item => item.attribute_code === "sub_city")?.value;
-                        var extension = {
-                            sub_city: subCity,
-                        };
-                        addrs.extension_attributes = $.extend(
-                            addrs.extension_attributes,
-                            extension
-                        );
                         selectBillingAddress(addrs);
 
                         return true;

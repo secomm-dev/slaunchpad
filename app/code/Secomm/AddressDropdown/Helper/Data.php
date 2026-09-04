@@ -14,7 +14,6 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Locale\Config;
 use Secomm\AddressDropdown\Api\Data\CityInterface;
-use Secomm\AddressDropdown\Api\Data\SubCityInterface;
 use Secomm\AddressDropdown\Model\OptionSource\SourceItemLocale;
 use Magento\Directory\Model\ResourceModel\Country\CollectionFactory as CountryCollectionFactory;
 use Secomm\AddressDropdown\Model\ResourceModel\RegionModel;
@@ -23,9 +22,6 @@ use Secomm\AddressDropdown\Model\RegionFactory;
 use Secomm\AddressDropdown\Model\ResourceModel\CityResource as CityResourceModel;
 use Secomm\AddressDropdown\Model\CityModel;
 use Secomm\AddressDropdown\Model\CityModelFactory;
-use Secomm\AddressDropdown\Model\ResourceModel\SubCityResource  as SubCityResourceModel;
-use Secomm\AddressDropdown\Model\SubCityModel;
-use Secomm\AddressDropdown\Model\SubCityModelFactory;
 use Secomm\AddressDropdown\Api\Data\RegionInterface as RegionInterfaceAddress;
 
 class Data extends AbstractHelper
@@ -41,8 +37,6 @@ class Data extends AbstractHelper
      * @param RegionFactory $regionFactory
      * @param CityResourceModel $cityResourceModel
      * @param CityModelFactory $cityModelFactory
-     * @param SubCityResourceModel $subCityResourceModel
-     * @param SubCityModelFactory $subCityModelFactory
      * @param Context $context
      */
     public function __construct(
@@ -54,8 +48,6 @@ class Data extends AbstractHelper
         protected RegionFactory          $regionFactory,
         protected CityResourceModel      $cityResourceModel,
         protected CityModelFactory       $cityModelFactory,
-        protected SubCityResourceModel   $subCityResourceModel,
-        protected SubCityModelFactory    $subCityModelFactory,
         Context $context
     )
     {
@@ -178,25 +170,6 @@ class Data extends AbstractHelper
         }
 
         return (int)$modelFactory->getData(RegionInterfaceAddress::REGION_ID);
-    }
-
-    /**
-     * Get city id by sub city id
-     *
-     * @param $subCityId
-     * @return int
-     */
-    public function getCityIdBySubCityId($subCityId): int
-    {
-        /** @var SubCityModel $modelFactory */
-        $modelFactory = $this->subCityModelFactory->create();
-        $this->subCityResourceModel->load($modelFactory, $subCityId, SubCityInterface::SUB_CITY_ID);
-
-        if ((int)$modelFactory->getId() !== (int)$subCityId) {
-            return 0;
-        }
-
-        return (int)$modelFactory->getData(SubCityInterface::CITY_ID);
     }
 
     /**

@@ -20,7 +20,7 @@ use Secomm\AddressDropdown\Command\Region\DeleteByIdCommand;
 use Secomm\AddressDropdown\Helper\Data;
 
 /**
- * Delete SubCity controller.
+ * Delete Region controller.
  */
 class Delete extends Action implements HttpPostActionInterface, HttpGetActionInterface
 {
@@ -57,7 +57,7 @@ class Delete extends Action implements HttpPostActionInterface, HttpGetActionInt
     }
 
     /**
-     * Delete SubCity action.
+     * Delete Region action.
      *
      * @return ResultInterface
      */

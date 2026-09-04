@@ -55,3 +55,4 @@
 "Tracking Webhook Secret (appended to webhook URL)","Tracking Webhook Secret (appended to webhook URL)"
 "Tracking Reconciliation Cron (fallback for missed webhooks)","Tracking Reconciliation Cron (fallback for missed webhooks)"
 "Reconciliation Staleness Threshold (hours)","Reconciliation Staleness Threshold (hours)"
+"%1 row(s) in %2 (column %3) still reference the installed VN data. Clear that carrier mapping data first.","%1 row(s) in %2 (column %3) still reference the installed VN data. Clear that carrier mapping data first."

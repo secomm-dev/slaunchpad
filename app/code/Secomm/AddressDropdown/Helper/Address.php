@@ -47,50 +47,6 @@ class Address extends AbstractHelper
     }
 
 
-    /**
-     * Sub City Name by ID City
-     *
-     * @param $defaultName
-     * @param null $cityDefaultName
-     * @param null $locale
-     * @return array|mixed
-     */
-    public function getSubCityNameByDefaultName($defaultName, $cityDefaultName = null, $locale = null): mixed
-    {
-        $adapter = $this->resource->getConnection();
-        $tableName = $this->resource->getTableName('directory_city_sub_city');
-        $tableNameCity = $this->resource->getTableName('directory_region_city');
-
-        // Map with directory_city_sub_city_name
-        $select = $adapter->select()
-            ->from(['d' => $tableName], [])  // Do not select any columns from the main table
-            ->joinLeft(
-                ['n' => $this->resource->getTableName('directory_city_sub_city_name')],
-                "n.sub_city_id = d.sub_city_id",
-                ['name']  // Select the 'name' column from the joined table
-            )
-            ->where('d.default_name = ?', $defaultName);  // Alias 'd' used for clarity
-
-        if ($cityDefaultName) {
-            $select->joinInner(
-                    ['city' => $tableNameCity],
-                    "d.city_id = city.city_id AND city.default_name LIKE '$cityDefaultName'",
-                    []
-                );
-        }
-
-        if (!$locale) {
-            $locale = $this->getLocale();
-        }
-        $select->where('n.locale = ?', $locale)->limit(1);
-
-        if ($adapter->fetchOne($select)) {
-            return $adapter->fetchOne($select);
-        } else {
-            return $defaultName;
-        }
-    }
-
     public function getCityNameByDefaultName($defaultName, $regionId = null, $locale = null): mixed
     {
         $adapter = $this->resource->getConnection();

@@ -1,6 +1,6 @@
 ---
-last_verified: 2026-07-21
-verified_against_commit: 1afdfc8
+last_verified: 2026-08-28
+verified_against_commit: 2b5e01c5
 status: current
 ---
 
@@ -36,6 +36,7 @@ composer show --installed | grep -i hyva
 | Secomm_VietNamAddress | Secomm | `app/code/Secomm/VietNamAddress` | Vietnam address data set (VN_Address.csv, VN_Address_2Level.csv) for AddressDropdown | L | Yes | Data-only module |
 | Secomm_Promotion | Secomm | `app/code/Secomm/Promotion` | Promotion group anchor (registration only) | L | Yes | No runtime behavior |
 | Secomm_PromotionMaxDiscount | Secomm | `app/code/Secomm/PromotionMaxDiscount` | Max discount cap engine: collector 310 + LRM + salesrule column + admin field | H | Yes (backend-only, theme-agnostic) | Checkout-critical pricing (Tier-2); collector runs before Mollie fee/Mageplaza ExtraFee/tax/grand total |
+| Secomm_UiWidget | Secomm | `app/code/Secomm/UiWidget` | Shared Admin-authored Hyvä UI widget registry; 21 approved Batch 1 components | M | Hyvä only | Stable component IDs/versioned payloads; module default templates with presentation-only product-theme overrides; no Luma support |
 | Vnpayment_VNPAY | Vnpayment | `app/code/Vnpayment/VNPAY` | VNPAY payment gateway — Pay/Info/IPN controllers, payment.xml/config.xml (default inactive) | H | TBD | HIGH-RISK: payment/IPN/signature. SA review required (Tier 2). Default `active=0` |
 
 ## Mageplaza Commerce Suite (source-committed under `app/code/Mageplaza/`)

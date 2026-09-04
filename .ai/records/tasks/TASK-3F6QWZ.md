@@ -13,17 +13,17 @@ specification_ref: ../../specs/SPEC-TASK-3F6QWZ-review-install-shipping-modules.
 risk: high
 status: completed
 created: 2026-08-20
-updated: 2026-08-20
+updated: 2026-08-28
 decisions:
-  - DEC-SL015-001            # ShippingCore Origin Provider
-  - DEC-SL017-001            # ShippingCore Tracking pipeline
+  - DEC-TASKNDASAD-001       # ShippingCore Origin Provider (re-identified từ DEC-SL015-001 — legacy-id-map.yaml)
+  - DEC-TASK86NX9T-001       # ShippingCore Tracking pipeline (re-identified từ DEC-SL017-001 — legacy-id-map.yaml)
   - DEC-TASK3F6QWZ-001       # Decouple GHN mapping into Secomm_GhnAddressMapper
   - DEC-TASK3F6QWZ-002       # Refactor GHN and Ahamove into ShippingCore tracking/status mapper
 decision_assessment: material
 decision_approval_summary:
   total: 4
   pending_approval: []
-  approved: [DEC-SL015-001, DEC-SL017-001, DEC-TASK3F6QWZ-001, DEC-TASK3F6QWZ-002]
+  approved: [DEC-TASKNDASAD-001, DEC-TASK86NX9T-001, DEC-TASK3F6QWZ-001, DEC-TASK3F6QWZ-002]
   rejected: []
   superseded: []
   last_synced: 2026-08-20

@@ -23,7 +23,7 @@ use Secomm\AddressDropdown\Helper\Data;
 
 
 /**
- * Save SubCity controller action.
+ * Save Region controller action.
  */
 class Save extends Action implements HttpPostActionInterface
 {
@@ -85,7 +85,7 @@ class Save extends Action implements HttpPostActionInterface
     }
 
     /**
-     * Save SubCity Action.
+     * Save Region Action.
      *
      * @return ResultInterface
      * @throws Exception

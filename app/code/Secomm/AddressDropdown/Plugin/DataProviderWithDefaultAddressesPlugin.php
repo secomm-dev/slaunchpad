@@ -39,13 +39,6 @@ class DataProviderWithDefaultAddressesPlugin
                 if (isset($entityData['default_billing_address']['city'])) {
                     $regionId = $entityData['default_billing_address']['region_id'] ?? null;
                     $cityBilling = $entityData['default_billing_address']['city'];
-                    if (isset($entityData['default_billing_address']['sub_city'])) {
-                        $subCityBilling = $entityData['default_billing_address']['sub_city'];
-                        $subCityBilling = $this->addressHelper->getSubCityNameByDefaultName($subCityBilling, $cityBilling);
-                        if ($subCityBilling) {
-                            $result[$id]['default_billing_address']['sub_city'] = $subCityBilling;
-                        }
-                    }
                     $cityBilling = $this->addressHelper->getCityNameByDefaultName($cityBilling, $regionId);
                     if ($cityBilling) {
                         $result[$id]['default_billing_address']['city'] = $cityBilling;
@@ -56,13 +49,6 @@ class DataProviderWithDefaultAddressesPlugin
                 if (isset($entityData['default_shipping_address']['city'])) {
                     $cityShipping = $entityData['default_shipping_address']['city'];
                     $regionId = $entityData['default_shipping_address']['region_id'] ?? null;
-                    if (isset($entityData['default_shipping_address']['sub_city'])) {
-                        $subCityShipping = $entityData['default_shipping_address']['sub_city'];
-                        $subCityShipping = $this->addressHelper->getSubCityNameByDefaultName($subCityShipping, $cityShipping);
-                        if ($subCityShipping) {
-                            $result[$id]['default_shipping_address']['sub_city'] = $subCityShipping;
-                        }
-                    }
                     $cityShipping = $this->addressHelper->getCityNameByDefaultName($cityShipping, $regionId);
                     if ($cityShipping) {
                         $result[$id]['default_shipping_address']['city'] = $cityShipping;
