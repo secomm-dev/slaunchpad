@@ -360,6 +360,7 @@ return [
         'Magento_WishlistAnalytics' => 1,
         'Magento_WishlistGraphQl' => 1,
         'Hyva_Theme' => 1,
+        'Hyva_CmsTailwindJit' => 1,
         'Hyva_CompatModuleFallback' => 1,
         'Hyva_Email' => 1,
         'Hyva_GraphqlTokens' => 1,
@@ -473,5 +474,14 @@ return [
         'Smile_ElasticsuiteVirtualCategory' => 1,
         'Snowdog_Menu' => 1,
         'Vnpayment_VNPAY' => 1
+    ],
+    'system' => [
+        'default' => [
+            'hyva_cms_tailwind_jit' => [
+                'general' => [
+                    'compiler_version' => 'v4'
+                ]
+            ]
+        ]
     ]
 ];
