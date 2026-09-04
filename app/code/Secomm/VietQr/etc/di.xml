@@ -50,4 +50,9 @@
             <argument name="paymentInfoBlock" xsi:type="object">Secomm\VietQr\Block\PaymentInfo\Proxy</argument>
         </arguments>
     </type>
+    <type name="Secomm\VietQr\Cron\CancelPendingOrders">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\VietQr\Logger\Logger</argument>
+        </arguments>
+    </type>
 </config>

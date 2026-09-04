@@ -17,6 +17,10 @@
                 <transfer_content_template>DH{{order_increment_id}}</transfer_content_template>
                 <customer_confirm_comment>Customer confirmed bank transfer via VietQR page.</customer_confirm_comment>
                 <awaiting_confirm_status>vietqr_awaiting_payment_confirm</awaiting_confirm_status>
+                <autocancel_active>0</autocancel_active>
+                <autocancel_frequency>*/5 * * * *</autocancel_frequency>
+                <autocancel_timeout>1440</autocancel_timeout>
+                <autocancel_reason>Canceled automatically because payment timeout exceeded.</autocancel_reason>
             </secomm_vietqr>
         </payment>
     </default>
