@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Secomm\MageplazaExtraFeeFix\Test\Unit\Plugin\Controller\Product;
+namespace Launchpad\MageplazaExtraFeeFix\Test\Unit\Plugin\Controller\Product;
 
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Mageplaza\ExtraFee\Controller\Product\ExtraFee;
 use PHPUnit\Framework\TestCase;
-use Secomm\MageplazaExtraFeeFix\Plugin\Controller\Product\ExtraFeePlugin;
+use Launchpad\MageplazaExtraFeeFix\Plugin\Controller\Product\ExtraFeePlugin;
 
 class ExtraFeePluginTest extends TestCase
 {
