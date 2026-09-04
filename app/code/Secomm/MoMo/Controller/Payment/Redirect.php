@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace Secomm\MoMo\Controller\Payment;
 
 use Magento\Checkout\Model\Session;
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\Result\Redirect as ResultRedirect;
+use Magento\Framework\Controller\Result\RedirectFactory;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
 use Magento\Payment\Gateway\Helper\ContextHelper;
@@ -28,40 +29,44 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Secomm\MoMo\Gateway\Helper\TransactionReader;
 
-class Redirect extends Action implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
+/**
+ * MoMo redirect (start) controller — composition style.
+ */
+class Redirect implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
     /**
      * Constructor
      *
-     * @param Context $context
-     * @param CommandPoolInterface $commandPool
      * @param Session $checkoutSession
+     * @param LoggerInterface $logger
+     * @param ManagerInterface $messageManager
+     * @param RedirectFactory $redirectFactory
+     * @param CommandPoolInterface $commandPool
      * @param OrderRepositoryInterface $orderRepository
      * @param PaymentDataObjectFactory $paymentDataObjectFactory
-     * @param LoggerInterface $logger
      */
     public function __construct(
-        Context $context,
-        private readonly CommandPoolInterface $commandPool,
         private readonly Session $checkoutSession,
+        private readonly LoggerInterface $logger,
+        private readonly ManagerInterface $messageManager,
+        private readonly RedirectFactory $redirectFactory,
+        private readonly CommandPoolInterface $commandPool,
         private readonly OrderRepositoryInterface $orderRepository,
-        private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
-        private readonly LoggerInterface $logger
+        private readonly PaymentDataObjectFactory $paymentDataObjectFactory
     ) {
-        parent::__construct($context);
     }
 
     /**
      * Create the MoMo order and redirect to the wallet.
      *
-     * @return \Magento\Framework\Controller\ResultInterface|void
+     * @return ResultRedirect
      */
-    public function execute()
+    public function execute(): ResultRedirect
     {
         try {
             $orderId = $this->checkoutSession->getLastOrderId();
             if (!$orderId) {
-                return $this->_redirect('checkout/cart');
+                return $this->redirectTo('checkout/cart');
             }
 
             $order = $this->orderRepository->get($orderId);
@@ -76,18 +81,27 @@ class Redirect extends Action implements CsrfAwareActionInterface, HttpPostActio
 
             $payUrl = TransactionReader::readPayUrl($result->get());
             if ($payUrl) {
-                $this->getResponse()->setRedirect($payUrl);
-
-                return;
+                return $this->redirectFactory->create()->setUrl($payUrl);
             }
         } catch (\Exception $e) {
             $this->logger->error('MoMo redirect failed: ' . $e->getMessage(), ['exception' => get_class($e)]);
             $this->messageManager->addErrorMessage(__('MoMo payment could not be started. Please try again later.'));
 
-            return $this->_redirect('checkout/cart/index');
+            return $this->redirectTo('checkout/cart/index');
         }
 
-        return $this->_redirect('checkout/cart/index');
+        return $this->redirectTo('checkout/cart/index');
+    }
+
+    /**
+     * Build a redirect result for a Magento path.
+     *
+     * @param string $path
+     * @return ResultRedirect
+     */
+    private function redirectTo(string $path): ResultRedirect
+    {
+        return $this->redirectFactory->create()->setPath($path);
     }
 
     /**
