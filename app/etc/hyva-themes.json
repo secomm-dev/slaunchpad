@@ -7,6 +7,9 @@
             "src": "vendor/hyva-themes/magento2-theme-module/src"
         },
         {
+            "src": "vendor/hyva-themes/magento2-cms-tailwind-jit/src"
+        },
+        {
             "src": "app/code/Hyva/MagefanBlog"
         },
         {
