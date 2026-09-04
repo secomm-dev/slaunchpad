@@ -29,6 +29,7 @@
 - **US-007**: As a customer, I want a Submit button on the VietQR payment page so that I can confirm I have completed the bank transfer.
 - **US-004**: As a merchant admin, I want to enable/disable VietQR and configure bank information from Admin so that I can update payment details without code changes.
 - **US-005**: As a merchant admin, I want to receive an order confirmation email with payment instructions so that I can confirm payment was received against the correct order.
+- **US-008**: As a merchant admin, I want stale unpaid VietQR orders to be canceled automatically after a configurable timeout so that inventory is released and the order grid is not polluted by abandoned transfers.
 
 ---
 
@@ -57,6 +58,11 @@
 - [ ] **AC-021** (i18n — BR-001): Chuỗi storefront mới có entry `vi_VN.csv` + `en_US.csv`; cả 2 locale render đúng. (BR-001)
 - [ ] **AC-022** (Hyvä/Alpine): Frontend dùng Alpine.js + Tailwind v4 (CSS-first `@theme`/`@source`), không Knockout/RequireJS. QR render client-side từ payload (QR code library inline hoặc SVG). (Hyvä conventions)
 - [ ] **AC-023** (Order ownership): Custom VietQR page (`/vietqr/payment/view/order_id/{id}`) chỉ cho phép owner của order truy cập. Nếu customer khác hoặc chưa login truy cập → redirect về trang phù hợp. Guest order hỗ trợ qua param `key` (Magento standard). (Security)
+- [ ] **AC-024** (Admin config — auto-cancel cron): Admin can enable/disable the auto-cancel cron and configure the payment timeout in minutes (default `1440` = 24h, matching offline bank-transfer behavior where customers may transfer later in the day) plus the cancel reason message (default `Canceled automatically because payment timeout exceeded.`) under the existing VietQR config section. The cron frequency is a **dropdown of preset intervals** — Every 5/10/15/30/60 minutes, default every 5 — not a raw cron expression field (invalid expressions would silently kill the job; preset values need no validation). (US-008)
+- [ ] **AC-025** (Cron — auto-cancel overdue orders): The cron cancels only orders with payment method `secomm_vietqr` whose status equals the configured New Order Status (default `vietqr_pending`, state `new`) — **not** the core `pending_payment` state, which belongs to Mollie/PayPal in-flight orders. Cutoff is computed from `created_at` stored in **UTC** and the timeout is resolved per the order's store (multi-store). Orders in `vietqr_awaiting_payment_confirm` are **never** auto-canceled — the customer already confirmed the transfer, so the merchant reconciles manually. The cancel reason is saved as a status history comment (not visible on front). (US-008)
+- [ ] **AC-026** (Cron — safety & idempotency): Immediately before canceling, the cron re-loads the order and re-verifies payment method + status (race against a concurrent customer Submit transitioning the order to `vietqr_awaiting_payment_confirm`). Runs are idempotent: canceled orders no longer match the status filter on subsequent runs. Orders are processed in batches (page size 100) and every cancel/failure is logged to the existing `var/log/secomm_vietqr.log` logger; one failing order must not abort the batch. (US-008)
+- [ ] **AC-027** (Frontend — canceled order): When the order status is no longer the configured New Order Status (e.g. canceled by the cron), the custom VietQR page hides the Submit form and shows an "order canceled" notice. The My Orders VietQR button remains hidden (existing AC-016 behavior — QC verify, no new work) and direct POST attempts to submit stay blocked by the existing status guard in `Submit.php`. (US-008)
+- [ ] **AC-028** (Payment deadline messaging): When the auto-cancel cron is enabled, the custom VietQR page shows a static deadline notice — "Please complete your bank transfer before {deadline} — after this time the order will be canceled automatically." — where deadline = order `created_at` + configured timeout. The same line appears in the order confirmation email. If the deadline has passed but the cron has not caught up yet (≤ 1 cron interval), the page shows a transitional notice stating the order **will be canceled within a few minutes** and the Submit form stays hidden — the deadline is a hard customer cutoff; allowing submit in this window would let orders escape the auto-cancel (confirm → `awaiting_confirm` → cron skips). No countdown JS. When the auto-cancel cron is disabled, no deadline messaging is shown anywhere. (US-008)
 
 ---
 
@@ -72,6 +78,8 @@ Secomm/VietQr
 │   └── Payment/
 │       ├── View.php                   # GET /vietqr/payment/view/order_id/{id}
 │       └── Submit.php                 # POST /vietqr/payment/submit — customer confirm
+├── Cron/
+│   └── CancelPendingOrders.php        # auto-cancel overdue vietqr_pending orders (AC-024..AC-027)
 ├── Model/
 │   ├── Payment.php                  # Magento payment method model
 │   ├── Config.php                   # Admin config reader
@@ -102,6 +110,7 @@ Secomm/VietQr
 │   ├── payment.xml                  # payment method declaration
 │   ├── di.xml                       # DI configuration & custom logger bindings
 │   ├── events.xml                   # checkout_submit_all_after
+│   ├── crontab.xml                  # secomm_vietqr_cancel_pending — schedule via config_path (AC-024)
 │   ├── acl.xml                      # ACL resource declarations
 │   ├── frontend/
 │   │   └── routes.xml               # route secomm_vietqr
@@ -160,6 +169,8 @@ Secomm/VietQr
 **Nút Cancel**:
 - Link đến thank-you page (`checkout/onepage/success` kèm `skip_vietqr=1` — `SuccessRedirectPlugin` skip redirect).
 - KHÔNG thay đổi order state, KHÔNG lưu gì.
+
+**Deadline notice** (AC-028): khi auto-cancel cron bật, hiển thị deadline tĩnh (`created_at` + timeout, format theo store timezone) phía trên form Submit; quá deadline nhưng cron chưa chạy → ẩn form + notice chuyển tiếp "đơn sẽ được hủy trong ít phút" (deadline là cutoff cứng — cho submit trong window này sẽ cho phép order thoát cron). Không JS.
 
 **Rate limiting**: `Model/RateLimiter.php` — 10 req/phút/IP trên view + submit endpoints (cache-based), chống brute-force order_id/guest key.
 
@@ -238,6 +249,12 @@ Secomm/VietQr
 | Payment | Payment Instructions | textarea | (i18n default) | No |
 | Payment | New Order Status | select | `vietqr_pending` | No |
 | Payment | Awaiting Confirm Status | select | `vietqr_awaiting_payment_confirm` | No |
+| Auto-Cancel | Enable Auto-Cancel Cron (`autocancel_active`) | select | 0 | No |
+| Auto-Cancel | Cron Frequency | select | `*/5 * * * *` | No |
+| Auto-Cancel | Payment Timeout in Minutes (`autocancel_timeout`) | text | 1440 | No |
+| Auto-Cancel | Cancel Reason Message (`autocancel_reason`) | text | `Canceled automatically because payment timeout exceeded.` | No |
+
+Cron Frequency stores the literal expression as the option value (Every 5 min → `*/5 * * * *`, …, Every 60 min → `0 * * * *`) via a small `source_model`. The `crontab.xml` job's `<config_path>` points **back** at this field's path (`payment/secomm_vietqr/autocancel_frequency`), so the schedule is resolved from the saved dropdown value at runtime. Note: the crontab path itself (`crontab/default/jobs/...`) cannot be used as the system.xml field's `config_path` — `system_file.xsd` restricts config paths to 3 segments. Field is default-scope only (crontab schedules are server-level).
 
 ### 4.9 Mageplaza OSC Compatibility
 
@@ -251,6 +268,22 @@ Secomm/VietQr
 - Thêm payment instructions block vào order confirmation email qua layout XML `sales_email_order_items.xml`.
 - Block đọc từ `PaymentInfo` ViewModel — cùng logic với custom VietQR page.
 - Payment instructions dạng text + QR image từ `img.vietqr.io` (fallback text khi image lỗi).
+- Khi auto-cancel cron bật, thêm 1 dòng deadline (`created_at` + timeout) vào email (AC-028) — email template đọc snapshot trực tiếp (không qua `PaymentInfo`, block đó session-dependent), deadline tính inline cùng phong cách.
+
+### 4.11 Auto-Cancel Cron (Payment Timeout)
+
+- `etc/crontab.xml` — job `secomm_vietqr_cancel_pending`, group `default`, schedule via `<config_path>payment/secomm_vietqr/autocancel_frequency</config_path>` (schedule is resolved from the Cron Frequency field's saved value at runtime, so the preset-interval dropdown needs no custom scheduling code). Default `*/5 * * * *`.
+  - Effective cancel delay = timeout + up to one interval (e.g. 60-min timeout, 30-min frequency → canceled between 60–90 min old). Document for QC so late cancels within this window are not filed as bugs.
+  - A frequency change takes effect on the next cron run, but already-generated pending schedule entries (Magento generates ~1h ahead) may still fire under the old interval for up to ~1 hour.
+- `Cron/CancelPendingOrders.php`:
+  1. No-op if `autocancel_active` is disabled.
+  2. Order collection: join `sales_order_payment` filtered `method = 'secomm_vietqr'`, filter `status` = configured New Order Status (`vietqr_pending`), `created_at < now (UTC) - timeout`, `setPageSize(100)` per batch.
+  3. **Timezone**: `created_at` is stored UTC — compute the cutoff in UTC. Using store-local time (UTC+7) shifts the cutoff by 7 hours and cancels orders prematurely.
+  4. Per order (timeout resolved against the order's store): re-load the order, re-verify method + status immediately before canceling (race with `Submit.php` transitioning to `vietqr_awaiting_payment_confirm`), then `$order->cancel()` + `addCommentToStatusHistory(<cancel reason>)` + save.
+  5. Log each canceled order and every failure via `Logger/Logger.php` (`var/log/secomm_vietqr.log`); wrap each order in try/catch so one failure does not abort the batch.
+- Idempotency is structural — a canceled order's status no longer matches the collection filter on the next run.
+- ponytail: `created_at` as the timeout anchor — VietQR orders are created directly into `vietqr_pending`, so there is no earlier status. If merchants routinely reset old orders back to `vietqr_pending`, switch the anchor to the latest status-history timestamp.
+- Deliberately out of this cron: canceling `vietqr_awaiting_payment_confirm` orders (money may already have arrived — merchant reconciles) and restoring the customer quote/cart (stale sessions make it pointless).
 
 ---
 
@@ -290,7 +323,7 @@ Secomm/VietQr
 - Virtual Account / Settlement / Refund qua ngân hàng.
 - Transaction matching / Custom reconciliation UI.
 - Multi-bank QR (chỉ support 1 bank account theo config).
-- QR expiry / timeout.
+- QR expiry at the VietQR API level (e.g. an `expireAt` param on the QR payload). Order-level payment-timeout auto-cancel is **in scope** — AC-024..AC-027.
 
 ---
 
@@ -313,6 +346,16 @@ Secomm/VietQr
 - **Error case**: Config sai API endpoint → place order → verify manual instructions hiển thị trên custom page, order vẫn tạo.
 - **i18n**: Switch vi_VN/en_US → verify strings render đúng.
 - **Email**: Trigger order confirmation email → verify payment instructions có đầy đủ thông tin.
+- **Auto-cancel cron — happy path**: set timeout 1 min, place VietQR order, do not submit → run `bin/magento cron:run --group=default` → order canceled with the configured reason as history comment. Verify cutoff in UTC (canceled after ~1 min, not shifted by the UTC+7 store timezone).
+- **Cron skips confirmed orders**: VietQR order in `vietqr_awaiting_payment_confirm` past the timeout → cron run → order NOT canceled.
+- **Cron skips non-VietQR / wrong status**: Mollie order in `pending_payment` past the timeout, and a VietQR order already processing → both NOT canceled.
+- **Race guard**: VietQR order past timeout submitted at nearly the same moment as a cron run → the just-confirmed order is NOT canceled (status re-checked before cancel).
+- **Cron disabled**: `autocancel_active` off → cron run is a no-op.
+- **Canceled order — frontend**: open `/vietqr/payment/view/order_id/{id}` for a cron-canceled order → Submit form hidden, "order canceled" notice shown; My Orders button hidden; direct POST to `vietqr/payment/submit` → rejected by the existing status guard.
+- **Cron idempotency**: run cron twice with the same overdue order → second run processes 0 orders.
+- **Cron frequency**: change the dropdown (e.g. every 5 → every 60 min) → `cron:run` executes on the new interval; overdue orders are canceled within timeout + one interval, not instantly at the timeout boundary.
+- **Deadline notice (AC-028)**: auto-cancel enabled → custom page + email show the deadline = `created_at` + timeout; disabled → deadline messaging absent everywhere.
+- **Deadline passed pre-cron**: order past deadline but still `vietqr_pending` (cron lag window) → page hides the Submit form and shows the "deadline passed" notice.
 
 ---
 <!-- Reference: project-context/02_BUSINESS_RULES.md (BR-001, BR-003, BR-004), project-context/10_CHECKOUT_PAYMENT_SHIPPING_ORDER_FLOW.md -->

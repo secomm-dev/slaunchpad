@@ -65,8 +65,8 @@ define([
                 if (!address) {
                     return;
                 }
-                // country changed
-                if (address.countryId) {
+                // country changed or initial cascade setup
+                if (address.countryId && $(CUSTOM_CITY_SELECTOR).length === 0) {
                     self.initializeCityCascadeElements();
                 }
             });
@@ -251,8 +251,8 @@ define([
         setupCityCascade: function (cityElement) {
             let self = this;
             this.ensureVnSchema();
-            if ($('#custom-city-select-billing').length === 0) {
-                let cityDiv = $('<div class="field mp-clear col-mp mp-6 required select _required shipping-address-city" name="billingAddress.customCity"></div>');
+            if ($(CUSTOM_CITY_SELECTOR).length === 0) {
+                let cityDiv = $('<div id="custom-city-select-billing" class="field mp-clear col-mp mp-6 required select _required billing-address-city" name="billingAddress.customCity"></div>');
                 let cityLabel = $('<label class="label" for="custom-city-select">' + this.wardLabel() + '</label>');
                 let customCitySelect = $('<select required id="custom-city-select" name="custom_city" class="field input">')
                     .append($('<option></option>').attr('value', '').text(this.wardPlaceholder()));
@@ -311,7 +311,7 @@ define([
         bindCityChange: function (customCitySelect) {
             let self = this;
 
-            customCitySelect.on('change', function () {
+            customCitySelect.off('change.secommBillingCity').on('change.secommBillingCity', function () {
                 let selectedCity = $(this).val() ?? "";
                 let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
                 if (cityInputViewModel && cityInputViewModel.value) {
@@ -328,7 +328,7 @@ define([
             let regionElementInterval = setInterval(function () {
                 let regionElement = $(REGION_SELECTOR);
                 if (regionElement.length) {
-                    regionElement.on('change', function () {
+                    regionElement.off('change.secommBillingRegion').on('change.secommBillingRegion', function () {
                         let currentCountryId = self.getCountryId();
                         if (self.lastCountryId === 'VN' && currentCountryId !== 'VN') {
                             let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);

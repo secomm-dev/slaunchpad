@@ -18,6 +18,7 @@ use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\Template\Context;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
@@ -46,6 +47,7 @@ class PaymentInfo extends \Magento\Framework\View\Element\Template
         private readonly UrlInterface $urlBuilder,
         private readonly Config $config,
         private readonly QrGeneratorInterface $qrGenerator,
+        private readonly TimezoneInterface $timezone,
         private readonly LoggerInterface $logger,
         array $data = []
     ) {
@@ -134,6 +136,72 @@ class PaymentInfo extends \Magento\Framework\View\Element\Template
     public function isConfirmed(): bool
     {
         return (bool)($this->paymentInfo['vietqr_customer_confirmed'] ?? false);
+    }
+
+    /**
+     * Whether online payment confirmation is closed for this order — canceled
+     * by the auto-cancel cron, or moved on by the merchant (AC-027).
+     *
+     * @return bool
+     */
+    public function isPaymentClosed(): bool
+    {
+        if (!$this->order || $this->isConfirmed()) {
+            return false;
+        }
+        return $this->order->getStatus() !== $this->config->getNewOrderStatus();
+    }
+
+    /**
+     * Payment deadline (order created_at + configured timeout) when the
+     * auto-cancel cron is enabled — null otherwise, so no deadline messaging
+     * is rendered (AC-028).
+     *
+     * @return \DateTime|null UTC deadline
+     */
+    public function getPaymentDeadline(): ?\DateTime
+    {
+        if (!$this->order) {
+            return null;
+        }
+        $storeId = (int)$this->order->getStoreId();
+        if (!$this->config->isAutoCancelEnabled($storeId)) {
+            return null;
+        }
+
+        // created_at is stored in UTC — the deadline must be computed in UTC
+        $deadline = new \DateTime($this->order->getCreatedAt(), new \DateTimeZone('UTC'));
+        $deadline->modify('+' . $this->config->getAutoCancelTimeout($storeId) . ' minutes');
+        return $deadline;
+    }
+
+    /**
+     * Whether the deadline has passed while the order is still pending (the
+     * cron has not caught up yet, max one interval) — hides the form (AC-028).
+     *
+     * @return bool
+     */
+    public function isPastDeadline(): bool
+    {
+        if (!$this->order || $this->isConfirmed() || $this->isPaymentClosed()) {
+            return false;
+        }
+        $deadline = $this->getPaymentDeadline();
+        return $deadline !== null
+            && $deadline < new \DateTime('now', new \DateTimeZone('UTC'));
+    }
+
+    /**
+     * Deadline formatted for display in the store locale/timezone (AC-028).
+     *
+     * @return string
+     */
+    public function getFormattedDeadline(): string
+    {
+        $deadline = $this->getPaymentDeadline();
+        return $deadline
+            ? $this->timezone->formatDateTime($deadline, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT)
+            : '';
     }
 
     /**

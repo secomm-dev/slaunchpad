@@ -4,14 +4,18 @@ define([
     'Magento_Checkout/js/model/quote',
     'Magento_Checkout/js/action/set-shipping-information',
     'mage/loader', // Ensure loader is included
-    'knockout'
+    'knockout',
+    'Magento_Checkout/js/model/shipping-rate-registry',
+    'Mageplaza_Osc/js/model/shipping-rate-service'
 ], function (
     $,
     Component,
     quote,
     setShippingInformationAction,
     loader,
-    ko
+    ko,
+    rateRegistry,
+    shippingRateService
 ) {
     'use strict';
 
@@ -104,24 +108,24 @@ define([
             $(document)
                 .off('change.secommShippingCountry', COUNTRY_SELECTOR + ', ' + COUNTRY_SELECTOR_ALT)
                 .on('change.secommShippingCountry', COUNTRY_SELECTOR + ', ' + COUNTRY_SELECTOR_ALT, function () {
-                let selectedCountryId = $(this).val();
-                let previousCountryId = self.lastCountryId;
+                    let selectedCountryId = $(this).val();
+                    let previousCountryId = self.lastCountryId;
 
-                if (previousCountryId === 'VN' && !self.isVietnamCountry(selectedCountryId)) {
-                    let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
-                    if (cityInputViewModel && cityInputViewModel.value) {
-                        cityInputViewModel.value('');
+                    if (previousCountryId === 'VN' && !self.isVietnamCountry(selectedCountryId)) {
+                        let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
+                        if (cityInputViewModel && cityInputViewModel.value) {
+                            cityInputViewModel.value('');
+                        }
+                        $(CITY_SELECTOR).val('').trigger('change');
                     }
-                    $(CITY_SELECTOR).val('').trigger('change');
-                }
 
-                if (!self.isVietnamCountry(selectedCountryId)) {
-                    self.applyNonVietnamUiState();
-                }
+                    if (!self.isVietnamCountry(selectedCountryId)) {
+                        self.applyNonVietnamUiState();
+                    }
 
-                self.lastCountryId = selectedCountryId;
-                self.cityVisible();
-            });
+                    self.lastCountryId = selectedCountryId;
+                    self.cityVisible();
+                });
         },
 
         initializeCityCascadeElements: function () {
@@ -218,8 +222,8 @@ define([
                 if (!$scope.length) {
                     return;
                 }
-                let $postcode  = $scope.find('input[name="postcode"]');
-                let $country   = $scope.find('select[name="country_id"]');
+                let $postcode = $scope.find('input[name="postcode"]');
+                let $country = $scope.find('select[name="country_id"]');
                 let $cityLabel = $scope.find('label[for="custom-city-select"]');
 
                 if ($postcode.length && $country.length) {
@@ -314,20 +318,44 @@ define([
         bindCityChange: function (customCitySelect) {
             let self = this;
 
-            customCitySelect.on('change', function () {
+            customCitySelect.off('change.secommWard').on('change.secommWard', function () {
                 let selectedOption = $(this).find('option:selected');
-                let defaultName = $(this).val() ?? "";
-                let cityLabel = selectedOption.text() || defaultName;
-                let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
-                if (cityInputViewModel && cityInputViewModel.value) {
-                    cityInputViewModel.value(cityLabel);
-                    $(CITY_SELECTOR).val(cityLabel).trigger('change');
+                let defaultName = $(this).val() || '';
+                let cityLabel = defaultName !== '' ? (selectedOption.text() || defaultName) : '';
+
+                let cityElement = $(CITY_SELECTOR);
+                if (cityElement.length) {
+                    let cityInputViewModel = ko.dataFor(cityElement[0]);
+                    if (cityInputViewModel && typeof cityInputViewModel.value === 'function') {
+                        cityInputViewModel.value(cityLabel);
+                    }
+                    cityElement.val(cityLabel).trigger('change');
                 }
-                let hash = window.location.hash;
-                if (hash === '#shipping') {
-                    setShippingInformationAction();
+
+                let shippingAddress = quote.shippingAddress();
+                if (shippingAddress) {
+                    shippingAddress.city = cityLabel;
+                    if (typeof quote.shippingAddress.valueHasMutated === 'function') {
+                        quote.shippingAddress.valueHasMutated();
+                    }
+                }
+
+                if (defaultName !== '') {
                     $(CITY_ERROR).hide();
                     $(CUSTOM_CITY_SELECTOR).removeClass('custom-error');
+
+                    if (shippingAddress) {
+                        rateRegistry.set(shippingAddress.getKey(), null);
+                        rateRegistry.set(shippingAddress.getCacheKey(), null);
+                    }
+
+                    if (shippingRateService && typeof shippingRateService.estimateShippingMethod === 'function') {
+                        shippingRateService.isAddressChange = true;
+                        shippingRateService.estimateShippingMethod();
+                    }
+                } else {
+                    $(CITY_ERROR).show();
+                    $(CUSTOM_CITY_SELECTOR).addClass('custom-error');
                 }
             });
         },
@@ -522,11 +550,11 @@ define([
             if ($(CUSTOM_CITY_SELECTOR).val() === '' && $(SHIPPING_ADDRESS_CITY).is(':visible')) {
                 $(CITY_ERROR).show();
                 $(CUSTOM_CITY_SELECTOR).addClass('custom-error');
-            }else{
+            } else {
                 $(CITY_ERROR).hide();
                 $(CUSTOM_CITY_SELECTOR).removeClass('custom-error');
             }
-            if ($(CITY_SELECTOR).val() === '' && $(CITY_DEFAULT).is(':visible')){
+            if ($(CITY_SELECTOR).val() === '' && $(CITY_DEFAULT).is(':visible')) {
                 $(CITY_DEFAULT).find(".field-error").show();
             }
         },

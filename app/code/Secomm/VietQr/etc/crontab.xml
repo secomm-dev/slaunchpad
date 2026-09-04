@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="secomm_vietqr_cancel_pending" instance="Secomm\VietQr\Cron\CancelPendingOrders" method="execute">
+            <!-- Schedule read at runtime from the Cron Frequency admin field
+                 (Secomm\VietQr\Model\Source\CronFrequency stores literal expressions). -->
+            <config_path>payment/secomm_vietqr/autocancel_frequency</config_path>
+        </job>
+    </group>
+</config>
