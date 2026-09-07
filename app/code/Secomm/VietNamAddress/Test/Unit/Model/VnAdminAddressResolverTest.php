@@ -103,6 +103,62 @@ class VnAdminAddressResolverTest extends TestCase
         $this->assertSame(['VNAP25-A', 'VNAP25-B'], $reverse->getCandidateCodes());
     }
 
+    /**
+     * TASK-NDSZ7V — reverse of a 1:N split: EACH new target resolves back MAPPED to the single
+     * source unit (one incoming candidate per target), never AMBIGUOUS, never UNMAPPED.
+     */
+    public function testReverseOfSplitMapsEachTargetBackToTheSourceUnit(): void
+    {
+        $this->arrangeUnits([
+            [VnSchemes::VN_ADMIN_2025, 'VNA25-X'],
+            [VnSchemes::VN_ADMIN_2025, 'VNA25-Y'],
+        ]);
+
+        // PRE A --SPLIT_INTO--> 2025 X and 2025 Y (stored single-direction).
+        $this->finder->edges = [['code' => 'VNAP25-A', 'relation_type' => 'SPLIT_INTO', 'direction' => 'incoming']];
+
+        $x = $this->resolver->resolve(VnSchemes::VN_ADMIN_2025, 'VNA25-X', VnSchemes::VN_ADMIN_PRE_2025);
+        $this->assertSame(VnAddressResolutionInterface::STATUS_MAPPED, $x->getStatus());
+        $this->assertSame('VNAP25-A', $x->getResolvedCode());
+
+        $y = $this->resolver->resolve(VnSchemes::VN_ADMIN_2025, 'VNA25-Y', VnSchemes::VN_ADMIN_PRE_2025);
+        $this->assertSame(VnAddressResolutionInterface::STATUS_MAPPED, $y->getStatus());
+        $this->assertSame('VNAP25-A', $y->getResolvedCode());
+    }
+
+    /**
+     * TASK-NDSZ7V — N:N topology from the canonical review (A→X, A→Y, B→X, all SPLIT_INTO):
+     * the outcome is derived from CANDIDATE CARDINALITY only — even though every edge carries
+     * SPLIT_INTO, X sees 2 incoming candidates (AMBIGUOUS, never auto-picked) and Y sees 1
+     * (MAPPED A). relation_type is descriptive metadata, never resolution logic.
+     */
+    public function testMixedNNTopologyDerivesOutcomeFromCardinalityNotRelationType(): void
+    {
+        $this->arrangeUnits([
+            [VnSchemes::VN_ADMIN_2025, 'VNA25-X'],
+            [VnSchemes::VN_ADMIN_2025, 'VNA25-Y'],
+        ]);
+
+        // Resolve 2025 X -> PRE: both A and B claim X on the incoming side.
+        $this->finder->edges = [
+            ['code' => 'VNAP25-A', 'relation_type' => 'SPLIT_INTO', 'direction' => 'incoming'],
+            ['code' => 'VNAP25-B', 'relation_type' => 'SPLIT_INTO', 'direction' => 'incoming'],
+        ];
+        $x = $this->resolver->resolve(VnSchemes::VN_ADMIN_2025, 'VNA25-X', VnSchemes::VN_ADMIN_PRE_2025);
+        $this->assertSame(VnAddressResolutionInterface::STATUS_AMBIGUOUS, $x->getStatus());
+        $this->assertNull($x->getResolvedCode());
+        $this->assertNull($x->getRelationType());
+        $this->assertSame(['VNAP25-A', 'VNAP25-B'], $x->getCandidateCodes());
+
+        // Resolve 2025 Y -> PRE: only A claims Y — MAPPED despite the SPLIT_INTO label.
+        $this->finder->edges = [
+            ['code' => 'VNAP25-A', 'relation_type' => 'SPLIT_INTO', 'direction' => 'incoming'],
+        ];
+        $y = $this->resolver->resolve(VnSchemes::VN_ADMIN_2025, 'VNA25-Y', VnSchemes::VN_ADMIN_PRE_2025);
+        $this->assertSame(VnAddressResolutionInterface::STATUS_MAPPED, $y->getStatus());
+        $this->assertSame('VNAP25-A', $y->getResolvedCode());
+    }
+
     public function testUnmappedNoMappingReasonWhenSourceUnitExists(): void
     {
         $this->arrangeUnit(VnSchemes::VN_ADMIN_PRE_2025, 'VNAP25-OLD');
@@ -140,6 +196,23 @@ class VnAdminAddressResolverTest extends TestCase
                     return $exists
                         ? new VnAddressUnitData($scheme, $code, null, '01', 2, 'X', 'X')
                         : null;
+                }
+
+                return null;
+            }
+        );
+    }
+
+    /**
+     * @param array<int, array{0: string, 1: string}> $units [scheme, code] pairs that exist
+     */
+    private function arrangeUnits(array $units): void
+    {
+        $known = array_map(static fn (array $unit): string => $unit[0] . '|' . $unit[1], $units);
+        $this->unitProvider->method('getUnit')->willReturnCallback(
+            function (string $schemeCode, string $unitCode) use ($known): ?VnAddressUnitData {
+                if (in_array($schemeCode . '|' . $unitCode, $known, true)) {
+                    return new VnAddressUnitData($schemeCode, $unitCode, null, '01', 2, 'X', 'X');
                 }
 
                 return null;

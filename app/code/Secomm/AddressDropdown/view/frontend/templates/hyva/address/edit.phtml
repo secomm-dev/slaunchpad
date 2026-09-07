@@ -46,7 +46,7 @@ $cityInitial = (string) $block->getAddress()->getCity();
     <?= $escaper->escapeHtml(__('Customer Address')) ?>
 </div>
 <form class="form-address-edit"
-      x-data="Object.assign(initCustomerAddressEdit(), hyva.formValidation($root))"
+      x-data="Object.assign(initCustomerAddressEdit(), hyva.formValidation($el))"
       @private-content-loaded.window="onPrivateContentLoaded($event.detail.data)"
       @submit="onSubmit"
       action="<?= $escaper->escapeUrl($block->getSaveUrl()) ?>"
@@ -206,14 +206,13 @@ $cityInitial = (string) $block->getAddress()->getCity();
                                 x-ref="region_id"
                                 x-model="selectedRegion"
                                 :required="isRegionRequired"
-                                @input.debounce="onRegionIdChange"
+                                @change="onRegionIdChange"
                         >
                             <option value=""><?= $escaper->escapeHtml(__('Please select a region, state or province.')) ?></option>
-                            <template x-for="regionId in Object.keys(availableRegions)">
+                            <template x-for="regionId in Object.keys(availableRegions)" :key="regionId">
                                 <option :value="regionId"
                                         :name="availableRegions[regionId] && availableRegions[regionId].name"
                                         x-text="availableRegions[regionId] && availableRegions[regionId].name"
-                                        :selected="selectedRegion === regionId"
                                 >
                                 </option>
                             </template>
@@ -249,7 +248,7 @@ $cityInitial = (string) $block->getAddress()->getCity();
                             class="form-select"
                             :disabled="isLoadingCities || cities.length === 0">
                         <option value=""><?= $escaper->escapeHtml(__('Please select a city')) ?></option>
-                        <template x-for="city in cities" :key="city.default_name">
+                        <template x-for="city in cities" :key="city.city_id">
                             <option :value="city.default_name" x-text="city.label"></option>
                         </template>
                     </select>
@@ -326,6 +325,9 @@ function initCustomerAddressEdit() {
         selectedCity: '<?= $escaper->escapeJs($cityInitial) ?>',
         cities: [],
         isLoadingCities: false,
+        // Monotonic request token (BUG-25XDH4): every new city request invalidates
+        // the previous one; stale responses must never overwrite `cities`.
+        cityRequestId: 0,
 
         async onPrivateContentLoaded(data) {
             this.directoryData = data['directory-data'] || {};
@@ -336,6 +338,9 @@ function initCustomerAddressEdit() {
                 // Pre-fill VN cascade for an existing address (edit mode).
                 const initialRegionId = this.selectedRegion;
                 if (initialRegionId && initialRegionId !== '0') {
+                    // x-model owns the selected state now (`:selected` removed, BUG-25XDH4);
+                    // re-sync the <select> once its async-populated <option>s exist.
+                    await this.reapplySelected('selectedRegion');
                     await this.populateCities(initialRegionId);
                     // Re-sync the <select> to the saved city: Alpine x-model does not
                     // re-apply the value once its <option>s are populated asynchronously
@@ -399,13 +404,21 @@ function initCustomerAddressEdit() {
             return Object.keys(this.availableRegions).length > 0;
         },
         onRegionIdChange(event) {
-            this.$refs.region.value = this.selectedRegion.length > 0 ?
-                this.availableRegions[this.selectedRegion].name :
-                ''
+            // Defensive reads (BUG-25XDH4): selectedRegion may be '0'/'' and the id may
+            // be absent from availableRegions — never assume a matching region entry.
+            const regionId = String(this.selectedRegion || '');
+            const region = this.availableRegions[regionId];
+
+            this.$refs.region.value = region ? region.name : ''
             this.onChange(event)
-            this.validateField(this.fields['region'])
-            // Region change reloads cities (province → city).
-            this.loadCities(this.selectedRegion);
+            this.fields['region'] && this.validateField(this.fields['region'])
+            // Region change reloads cities (province → city); an emptied selection
+            // resets the cascade and invalidates any in-flight request.
+            if (regionId && regionId !== '0') {
+                this.loadCities(regionId);
+            } else {
+                this.resetVnCascade();
+            }
         },
         updateSubmitBtnText() {
             return this.isSubmitting
@@ -415,11 +428,13 @@ function initCustomerAddressEdit() {
 
         // ---- VN hierarchical dropdown helpers (SL-001) ----
         resetVnCascade() {
+            // Invalidate any in-flight city request before clearing state (BUG-25XDH4).
+            ++this.cityRequestId;
             this.cities = [];
             this.selectedCity = '';
         },
         async fetchCities(regionId) {
-            const query = 'query{ GetListCity(input:{region_id:"' + regionId + '"}){ default_name label } }';
+            const query = 'query{ GetListCity(input:{region_id:"' + regionId + '"}){ city_id default_name label } }';
             try {
                 const response = await fetch('/graphql', {
                     method: 'POST',
@@ -438,9 +453,21 @@ function initCustomerAddressEdit() {
                 this.cities = [];
                 return;
             }
+            const requestId = ++this.cityRequestId;
             this.isLoadingCities = true;
-            this.cities = await this.fetchCities(regionId);
-            this.isLoadingCities = false;
+            try {
+                const cities = await this.fetchCities(regionId);
+                if (requestId !== this.cityRequestId) {
+                    // Superseded by a newer region change or a cascade reset (BUG-25XDH4).
+                    return;
+                }
+                this.cities = cities;
+            } finally {
+                // Only the still-active request may clear the loading flag.
+                if (requestId === this.cityRequestId) {
+                    this.isLoadingCities = false;
+                }
+            }
         },
         async loadCities(regionId) {
             // Fresh region selection resets downstream selections.

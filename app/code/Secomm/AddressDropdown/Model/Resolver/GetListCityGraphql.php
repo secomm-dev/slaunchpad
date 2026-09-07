@@ -52,6 +52,8 @@ class GetListCityGraphql implements ResolverInterface
             if (isset($args['input']['region_id'])) {
                 $cityCollection->addFieldToFilter('region_id', $args['input']['region_id']);
             }
+            // Deterministic ordering is owned by CityLocaleCollection::_initSelect
+            // (TASK-7HVGAB) so every consumer shares the canonical generic sort.
             $cityCollection->load();
             foreach ($cityCollection as $city) {
                 $output[] = [

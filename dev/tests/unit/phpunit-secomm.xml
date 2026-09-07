@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+  ~ TASK-NDSZ7V — scoped phpunit config for the Secomm custom modules.
+  ~ Same framework bootstrap as phpunit.xml.dist (registers the generated-class autoloaders,
+  ~ e.g. FactoryGenerator for the ResourceModel *Factory mocks), but the testsuite is limited
+  ~ to app/code/Secomm/* so vendor/_files helpers (PayPal double-declare fatal) stay out.
+  ~ Usage: php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml
+  -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="./framework/bootstrap.php">
+    <testsuites>
+        <testsuite name="Secomm_App_Code">
+            <directory>../../../app/code/Secomm/*/Test/Unit</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
