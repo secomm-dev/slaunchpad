@@ -13,16 +13,15 @@ declare(strict_types=1);
 
 namespace Secomm\MoMo\Controller\Payment;
 
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Controller\Result\Json;
-use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Serialize\Serializer\Json as SerializerJson;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
@@ -31,12 +30,16 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
 
-class Notify extends Action implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
+/**
+ * MoMo Notify (IPN) controller — composition style.
+ */
+class Notify implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
     /**
      * Constructor
      *
-     * @param Context $context
+     * @param Http $request
+     * @param JsonFactory $resultJsonFactory
      * @param CommandPoolInterface $commandPool
      * @param PaymentDataObjectFactory $paymentDataObjectFactory
      * @param OrderRepositoryInterface $orderRepository
@@ -45,7 +48,8 @@ class Notify extends Action implements CsrfAwareActionInterface, HttpPostActionI
      * @param LoggerInterface $logger
      */
     public function __construct(
-        Context $context,
+        private readonly Http $request,
+        private readonly JsonFactory $resultJsonFactory,
         private readonly CommandPoolInterface $commandPool,
         private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
         private readonly OrderRepositoryInterface $orderRepository,
@@ -53,21 +57,19 @@ class Notify extends Action implements CsrfAwareActionInterface, HttpPostActionI
         private readonly SerializerJson $serializer,
         private readonly LoggerInterface $logger
     ) {
-        parent::__construct($context);
     }
 
     /**
      * Handle the MoMo IPN POST.
      *
-     * @return \Magento\Framework\Controller\ResultInterface
+     * @return Json
      */
-    public function execute()
+    public function execute(): Json
     {
-        /** @var Json $resultJson */
-        $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+        $resultJson = $this->resultJsonFactory->create();
 
-        $rawBody = $this->getRequest()->getContent();
-        $response = $rawBody ? (array)$this->serializer->unserialize($rawBody) : $this->getRequest()->getParams();
+        $rawBody = $this->request->getContent();
+        $response = $rawBody ? (array)$this->serializer->unserialize($rawBody) : $this->request->getParams();
 
         try {
             $incrementId = (string)($response['orderId'] ?? '');

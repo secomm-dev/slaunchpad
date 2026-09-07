@@ -8,7 +8,12 @@ Built on `Magento\Payment\Model\Method\Adapter` (virtualType `MoMoFacade`) with 
 CommandPool — **not** the deprecated `AbstractMethod`. Mirrors `Secomm_ZaloPay`.
 
 - **Create order** → POST `/v2/gateway/api/create` → redirect browser to returned `payUrl`.
-- **Return** (`momo/payment/returnaction`, GET) — browser redirect back; lenient.
+- **Return** (`momo/payment/returnaction`, GET) — browser redirect back; lenient on
+  `resultCode != 0`. On `resultCode = 0` `Service/ReturnProcessor` resolves the order
+  from MoMo's `orderId` (= increment id; session fallback), checks it is a MoMo order,
+  and rebuilds the success-session keys (`clearHelperData` + the 5 `Last*` keys, like
+  core `Onepage::saveOrder`) so a duplicate return or lost session still lands on a
+  valid success page.
 - **Notify / IPN** (`momo/payment/notify`, POST) — **authoritative**; verifies MoMo signature,
   creates invoice, sets order to `processing`.
 - **Refund** — admin creditmemo → POST `/v2/gateway/api/refund`.
