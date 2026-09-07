@@ -51,6 +51,8 @@ class GetListCityGraphql implements ResolverInterface
             $cityCollection->addFieldToSelect('*');
             if (isset($args['input']['region_id'])) {
                 $cityCollection->addFieldToFilter('region_id', $args['input']['region_id']);
+                //Adding sort order by city name
+                $cityCollection->setOrder('name', 'ASC');
             }
             $cityCollection->load();
             foreach ($cityCollection as $city) {
