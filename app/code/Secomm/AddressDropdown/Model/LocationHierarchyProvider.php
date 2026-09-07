@@ -267,14 +267,13 @@ class LocationHierarchyProvider implements LocationHierarchyProviderInterface
             ->where($parentCityId === null
                 ? new Zend_Db_Expr('c.parent_city_id IS NULL')
                 : $connection->quoteInto('c.parent_city_id = ?', $parentCityId))
-            // Vietnamese-correct ordering (target §8: Đ/đ must sort as D/d). No MySQL 5.7
-            // collation provides this (utf8*/utf8mb4_unicode_ci keep Đ as a distinct letter
-            // sorted after D — verified on dev DB 2026-08-28), so normalise Đ/đ to D/d in the
-            // sort key; unicode_ci already ignores tone marks. CONVERT(… USING utf8mb4) is
-            // charset-safe for utf8 and utf8mb4 installs; city_id tiebreaker is deterministic.
-            ->order(new Zend_Db_Expr(
-                "REPLACE(REPLACE(CONVERT(name USING utf8mb4) COLLATE utf8mb4_unicode_ci, 'Đ', 'D'), 'đ', 'd') ASC, c.city_id ASC"
-            ));
+            // Canonical generic sort (TASK-7HVGAB): effective localized display name with
+            // default_name fallback, city_id as deterministic tie-breaker. This module is
+            // language-agnostic — no locale-specific normalization here; ordering quality is
+            // owned by the column collation (schema baseline) and, if ever needed, by a
+            // locale-specific sorter in the locale module (e.g. Secomm_VietNamAddress).
+            // Mirrors CityLocaleCollection::_initSelect.
+            ->order(new Zend_Db_Expr('COALESCE(n.name, c.default_name) ASC, c.city_id ASC'));
 
         return $connection->fetchAll($select);
     }
