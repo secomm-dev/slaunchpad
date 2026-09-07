@@ -451,6 +451,7 @@ return [
         'Secomm_VietNamAddress' => 1,
         'Secomm_GhnAddressMapper' => 1,
         'Launchpad_MageplazaExtraFeeFix' => 1,
+        'Secomm_MageplazaTranslate' => 1,
         'Secomm_MoMo' => 1,
         'Secomm_Promotion' => 1,
         'Secomm_PromotionMaxDiscount' => 1,

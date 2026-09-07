@@ -1,0 +1,52 @@
+[
+  {
+    "store": "vi",
+    "lang": "vi",
+    "blockKind": "KNOCKOUT(luma-scope)",
+    "titleDeliveryDate": "Ngày giao hàng",
+    "titleDeliveryTime": "Thời gian giao hàng",
+    "titleHouseSecurity": "Mã bảo mật nhà",
+    "titleDeliveryComment": "Ghi chú giao hàng",
+    "timePlaceholder": "-- Vui lòng chọn thời gian giao hàng--",
+    "calendar": {
+      "month": "September",
+      "year": "2026",
+      "weekdayMin": [
+        "Su",
+        "Mo",
+        "Tu",
+        "We",
+        "Th",
+        "Fr",
+        "Sa"
+      ]
+    },
+    "consoleErrorsRaw": 5,
+    "consoleErrorsAmbient": 5
+  },
+  {
+    "store": "en",
+    "lang": "en",
+    "blockKind": "KNOCKOUT(luma-scope)",
+    "titleDeliveryDate": "Delivery Date",
+    "titleDeliveryTime": "Delivery Time",
+    "titleHouseSecurity": "House Security Code",
+    "titleDeliveryComment": "Delivery Comment",
+    "timePlaceholder": "-- Please select a delivery time--",
+    "calendar": {
+      "month": "September",
+      "year": "2026",
+      "weekdayMin": [
+        "Su",
+        "Mo",
+        "Tu",
+        "We",
+        "Th",
+        "Fr",
+        "Sa"
+      ]
+    },
+    "consoleErrorsRaw": 5,
+    "consoleErrorsAmbient": 5
+  }
+]
