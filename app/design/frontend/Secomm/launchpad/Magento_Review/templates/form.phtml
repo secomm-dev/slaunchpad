@@ -75,6 +75,7 @@ $starIconSize = $block->getData('rating_icon_size') ?: 24;
         <?php if ($block->getAllowWriteReviewFlag()): ?>
             <form class="review-form"
                   id="<?= $escaper->escapeHtmlAttr($formId) ?>"
+                  novalidate
                   @submit.prevent="submitForm()"
                   action=""
                   x-data="initReviewForm()"
@@ -220,7 +221,7 @@ $starIconSize = $block->getData('rating_icon_size') ?: 24;
                             <?= $escaper->escapeHtml(__('You submitted your review for moderation.')) ?>
                         </p>
                         <template x-if="displayErrorMessage">
-                            <p class="text-red flex items-center">
+                            <p class="text-red-500 flex items-center">
                                 <span class="inline-block w-8 h-8 mr-3">
                                     <?= $lucideIcons->circleAlertHtml('', 24, 24, ['aria-hidden' => true]); ?>
                                 </span>
@@ -266,6 +267,7 @@ $starIconSize = $block->getData('rating_icon_size') ?: 24;
                             }
                         },
                         validate: function () {
+                            this.errors = 0;
                             this.nickname = document.getElementById('nickname_field').value;
                             this.summary = document.getElementById('summary_field').value;
                             this.review = document.getElementById('review_field').value;
