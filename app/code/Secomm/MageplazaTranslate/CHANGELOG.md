@@ -23,3 +23,11 @@ All notable changes to this module are documented here (append-only).
   `Mageplaza_OscPro/js/action/{set,cancel}-coupon-code.js` remapped by the OscPro
   requirejs-config on checkout). Values mirror the `Secomm/launchpad` theme CSV pair.
   BUG-5NR0PD / ext ticket SLP-150.
+- `i18n/vi_VN.csv` +4 phrase (discount form + REST error, BUG-5NR0PD / SLP-150):
+  `Enter discount code`, `Apply Discount`, `Cancel coupon` (literals in
+  `Mageplaza_Osc/view/frontend/web/template/container/{payment,review}/discount.html`)
+  and `The coupon code isn't valid. Verify the code and try again.` (server-side
+  `Magento\Quote\Model\CouponManagement` — rendered in the **webapi area**; verified
+  end-to-end via real REST guest-cart PUT on both stores: vi returns the Vietnamese
+  message, en stays English). Error value mirrors into the `Secomm/launchpad` theme
+  CSV pair (BR-001).
