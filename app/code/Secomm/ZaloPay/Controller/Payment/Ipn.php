@@ -16,17 +16,16 @@ use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Service\IpnProcessor;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
+
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Json;
-use Magento\Framework\Controller\ResultFactory;
-use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Controller\Result\JsonFactory;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Serialize\Serializer\Json as SerializerJson;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
@@ -35,12 +34,17 @@ use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 
-class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
+/**
+ * ZaloPay IPN (server-to-server callback) controller — composition style.
+ */
+class Ipn implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
     /**
      * Ipn constructor.
      *
-     * @param Context $context
+     * @param Http $request
+     * @param JsonFactory $resultJsonFactory
+     * @param ManagerInterface $messageManager
      * @param MethodInterface $method
      * @param PaymentDataObjectFactory $paymentDataObjectFactory
      * @param OrderRepositoryInterface $orderRepository
@@ -51,7 +55,9 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
      * @param IpnProcessor $ipnProcessor
      */
     public function __construct(
-        Context $context,
+        private readonly Http $request,
+        private readonly JsonFactory $resultJsonFactory,
+        private readonly ManagerInterface $messageManager,
         private readonly MethodInterface $method,
         private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
         private readonly OrderRepositoryInterface $orderRepository,
@@ -61,7 +67,6 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
         private readonly Logger $logger,
         private readonly IpnProcessor $ipnProcessor
     ) {
-        parent::__construct($context);
     }
 
     /**
@@ -70,20 +75,19 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
      * The message sent from Payment Service Provider (PSP) to Payment Service Consumer (PSC).
      * An example of this is closing the browser while Zalo pay is not redirected to payment success/failure
      *
-     * @return ResponseInterface|Json|ResultInterface
+     * @return Json|null
      */
-    public function execute()
+    public function execute(): ?Json
     {
-        if (!$this->getRequest()->isPost()) {
-            return;
+        if (!$this->request->isPost()) {
+            return null;
         }
-        $rawContent = (string)$this->getRequest()->getContent();
+        $rawContent = (string)$this->request->getContent();
         $this->logger->info(
             'ZaloPay IPN Hit. Content: ' . $rawContent
-            . ' Params: ' . json_encode($this->getRequest()->getParams())
+            . ' Params: ' . json_encode($this->request->getParams())
         );
-        /** @var Json $resultJson */
-        $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
+        $resultJson = $this->resultJsonFactory->create();
         $data       = [
             'errors' => true,
             'messages' => __('Something went wrong white execute.')
@@ -94,10 +98,10 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
                 try {
                     $response = $this->serializer->unserialize($rawContent);
                 } catch (\Exception $e) {
-                    $response = $this->getRequest()->getParams();
+                    $response = $this->request->getParams();
                 }
             } else {
-                $response = $this->getRequest()->getParams();
+                $response = $this->request->getParams();
             }
 
             if (isset($response['data']) && is_string($response['data'])) {

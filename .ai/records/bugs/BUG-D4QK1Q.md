@@ -10,7 +10,7 @@ specification_level: MINI
 spec_status: VALID
 specification_ref: null
 risk: high
-status: qa_code_verified_delivery_blocked
+status: closed
 created: '2026-08-26'
 updated: '2026-08-26'
 decisions: []
@@ -88,6 +88,10 @@ supersedes: []
    `llms.txt?store=<code` MUST advertise the exact configured base path for that specific Store View.
 5. **No Static Route Compromises**:
    Do NOT use hardcoded redirects, 301/302 rewrites, generated `routes.xml`, or fake aliases. Fix the custom router implementation natively in PHP.
+
+## Closure (Integration AI — 2026-08-26)
+
+**CLOSED.** Sole QA blocker (delivery topology) resolved: the complete verified AI line (fix `ce5f2361`, merge `aa8701d1`, QA evidence `2712424d`) was merged into canonical `development` at `f0eadf1f` (`origin/development` verified). Tree identical to the QA-reverified branch; suites re-run at merge (108/108 + 74/74). Code unchanged since QA re-verification (`.ai/evidence/BUG-D4QK1Q/qa_reverification.md`). No new QA run or BUG ID required — closure per governance §16B condition satisfied.
 
 ## QA Re-Verification (Independent QA — 2026-08-26)
 

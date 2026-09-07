@@ -3,7 +3,13 @@
  * MoMo Return (browser redirect) controller.
  *
  * Lenient: the authoritative confirmation is the Notify (IPN). Here we only
- * look at MoMo's resultCode to decide success/failure page.
+ * look at MoMo's resultCode to decide success/failure page — and on success,
+ * delegate to ReturnProcessor so the checkout success session is rebuilt
+ * from the order MoMo reports (orderId = increment id), never assumed from
+ * whatever the browser session happens to hold.
+ *
+ * Composition over inheritance: implements the HTTP-method interface directly
+ * (no deprecated Action base class) and injects only what it uses.
  *
  * @author    Secomm Teams
  * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
@@ -13,31 +19,69 @@ declare(strict_types=1);
 
 namespace Secomm\MoMo\Controller\Payment;
 
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Controller\Result\RedirectFactory;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Message\ManagerInterface;
+use Secomm\MoMo\Service\ReturnProcessor;
 
-class ReturnAction extends Action implements HttpGetActionInterface
+/**
+ * MoMo Return (browser redirect) controller.
+ */
+class ReturnAction implements HttpGetActionInterface
 {
-    public const RESULT_CODE = 'resultCode';
+    public const RESULT_CODE = ReturnProcessor::RESULT_CODE;
+
+    /**
+     * ReturnAction constructor.
+     *
+     * @param RequestInterface $request
+     * @param ManagerInterface $messageManager
+     * @param RedirectFactory $redirectFactory
+     * @param ReturnProcessor $returnProcessor
+     */
+    public function __construct(
+        private readonly RequestInterface $request,
+        private readonly ManagerInterface $messageManager,
+        private readonly RedirectFactory $redirectFactory,
+        private readonly ReturnProcessor $returnProcessor
+    ) {
+    }
 
     /**
      * Redirect the customer based on MoMo's resultCode.
      *
-     * @return \Magento\Framework\Controller\ResultInterface
+     * @return Redirect
      */
-    public function execute()
+    public function execute(): Redirect
     {
-        $resultCode = (int)$this->getRequest()->getParam(self::RESULT_CODE, -1);
+        try {
+            $path = $this->returnProcessor->process($this->request->getParams());
+        } catch (LocalizedException $e) {
+            $this->messageManager->addErrorMessage($e->getMessage());
 
-        if ($resultCode === 0) {
-            return $this->_redirect('checkout/onepage/success');
+            return $this->redirectTo(ReturnProcessor::PATH_CART);
         }
 
-        $this->messageManager->addErrorMessage(
-            __('MoMo payment was not completed. Please try again.')
-        );
+        if ($path !== ReturnProcessor::PATH_SUCCESS) {
+            $this->messageManager->addErrorMessage(
+                __('MoMo payment was not completed. Please try again.')
+            );
+        }
 
-        return $this->_redirect('checkout/cart');
+        return $this->redirectTo($path);
+    }
+
+    /**
+     * Build a redirect result for a Magento path.
+     *
+     * @param string $path
+     * @return Redirect
+     */
+    private function redirectTo(string $path): Redirect
+    {
+        return $this->redirectFactory->create()->setPath($path);
     }
 }

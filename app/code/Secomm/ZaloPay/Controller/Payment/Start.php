@@ -15,15 +15,14 @@ use Secomm\ZaloPay\Gateway\Helper\TransactionReader;
 use Secomm\ZaloPay\Model\PaymentAttemptManagement;
 use Exception;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Controller\Result\RedirectFactory;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Payment\Gateway\ConfigInterface;
@@ -46,39 +45,40 @@ use Psr\Log\LoggerInterface;
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Start extends Action implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
+class Start implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
     /**
      * Start constructor.
      *
-     * @param Context $context
-     * @param CommandPoolInterface $commandPool
+     * @param Session $checkoutSession
      * @param LoggerInterface $logger
+     * @param ManagerInterface $messageManager
+     * @param RedirectFactory $redirectFactory
+     * @param CommandPoolInterface $commandPool
      * @param OrderRepositoryInterface $orderRepository
      * @param PaymentDataObjectFactory $paymentDataObjectFactory
-     * @param Session $checkoutSession
      * @param PaymentFailuresInterface $paymentFailures
      * @param PaymentAttemptManagement $attemptManagement
      * @param ConfigInterface $config
      */
     public function __construct(
-        Context                             $context,
-        private readonly CommandPoolInterface        $commandPool,
+        private readonly Session                   $checkoutSession,
         private readonly LoggerInterface            $logger,
+        private readonly ManagerInterface           $messageManager,
+        private readonly RedirectFactory           $redirectFactory,
+        private readonly CommandPoolInterface        $commandPool,
         private readonly OrderRepositoryInterface   $orderRepository,
         private readonly PaymentDataObjectFactory   $paymentDataObjectFactory,
-        private readonly Session                   $checkoutSession,
         private readonly PaymentFailuresInterface  $paymentFailures,
         private readonly PaymentAttemptManagement  $attemptManagement,
         private readonly ConfigInterface           $config
     ) {
-        parent::__construct($context);
     }
 
     /**
      * Start the ZaloPay payment (payment-first or legacy path).
      *
-     * @return ResponseInterface|ResultInterface|void
+     * @return Redirect|null
      */
     public function execute()
     {
@@ -92,9 +92,9 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
     /**
      * Payment-first: active quote -> attempt -> ZaloPay transaction -> redirect.
      *
-     * @return ResponseInterface|ResultInterface|void
+     * @return Redirect
      */
-    private function executePaymentFirst()
+    private function executePaymentFirst(): Redirect
     {
         $quote = $this->checkoutSession->getQuote();
         try {
@@ -107,9 +107,7 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
 
             $attempt = $this->attemptManagement->initiate($quote);
             if ($attempt->getPayUrl()) {
-                $this->getResponse()->setRedirect($attempt->getPayUrl());
-
-                return;
+                return $this->redirectFactory->create()->setUrl($attempt->getPayUrl());
             }
             throw new LocalizedException(__('ZaloPay payment URL is unavailable.'));
         } catch (Exception $e) {
@@ -120,9 +118,9 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
     /**
      * Historical order-first flow (unchanged behavior).
      *
-     * @return ResponseInterface|ResultInterface|void
+     * @return Redirect|null
      */
-    private function executeLegacy()
+    private function executeLegacy(): ?Redirect
     {
         try {
             $orderId = $this->checkoutSession->getLastOrderId();
@@ -141,7 +139,7 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
 
                 $payUrl = TransactionReader::readPayUrl($commandResult->get());
                 if ($payUrl) {
-                    $this->getResponse()->setRedirect($payUrl);
+                    return $this->redirectFactory->create()->setUrl($payUrl);
                 }
             }
         } catch (Exception $e) {
@@ -154,9 +152,9 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
      *
      * @param int $quoteId
      * @param Exception $e
-     * @return ResultInterface
+     * @return Redirect
      */
-    private function handleFailure(int $quoteId, Exception $e)
+    private function handleFailure(int $quoteId, Exception $e): Redirect
     {
         try {
             $this->paymentFailures->handle($quoteId, $e->getMessage());
@@ -168,7 +166,7 @@ class Start extends Action implements CsrfAwareActionInterface, HttpPostActionIn
 
         $this->messageManager->addErrorMessage(__($e->getMessage()));
 
-        return $this->_redirect('checkout/cart/index');
+        return $this->redirectFactory->create()->setPath('checkout/cart/index');
     }
 
     /**
