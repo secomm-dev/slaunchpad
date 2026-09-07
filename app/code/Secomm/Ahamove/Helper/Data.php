@@ -228,20 +228,21 @@ class Data extends AbstractHelper
      */
     public function convertPriceToDefaultCurrency($shippingFee)
     {
+        $baseCurrencyCode = $this->getBaseCurrencyCode();
+        if ($baseCurrencyCode === 'VND' || empty($shippingFee)) {
+            return (float)$shippingFee;
+        }
+
         try {
-            $defaultCurrencyCode = $this->getDefaultCurrencyCode();
-            if ($defaultCurrencyCode != 'VND') {
-                $rate = $this->currency->getRate($defaultCurrencyCode, 'VND');
-                return $this->priceCurrency->roundPrice($shippingFee / $rate);
-            } else {
-                $baseCurrencyCode = $this->getBaseCurrencyCode();
-                $rate = $this->currency->getRate($baseCurrencyCode, 'VND');
-                return $this->priceCurrency->roundPrice($shippingFee / $rate);
+            $rate = (float)$this->currency->getRate($baseCurrencyCode, 'VND');
+            if ($rate > 0) {
+                return (float)$this->priceCurrency->roundPrice($shippingFee / $rate);
             }
         } catch (\Exception $exception) {
-            $this->_logger->error($exception->getMessage());
-            return 0;
+            $this->_logger->error('Ahamove convert currency error: ' . $exception->getMessage());
         }
+
+        return (float)$shippingFee;
     }
 
     /**
@@ -535,4 +536,31 @@ class Data extends AbstractHelper
 
         return strtoupper($cityId . '-' . $serviceCode);
     }
+
+    /**
+     * Sanitize phone number (Vietnamese format: convert +84/84 to 0, strip spaces and non-numeric chars)
+     *
+     * @param string|null $phone
+     * @return string
+     */
+    public function sanitizePhoneNumber(?string $phone): string
+    {
+        if (empty($phone)) {
+            return '';
+        }
+
+        $phone = trim((string)$phone);
+        // Replace leading +84 or 84 with 0
+        if (str_starts_with($phone, '+84')) {
+            $phone = '0' . substr($phone, 3);
+        } elseif (str_starts_with($phone, '84') && strlen(preg_replace('/[^0-9]/', '', $phone)) >= 11) {
+            $phone = '0' . substr($phone, 2);
+        }
+
+        // Strip non-numeric characters
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        return (string)$phone;
+    }
 }
+

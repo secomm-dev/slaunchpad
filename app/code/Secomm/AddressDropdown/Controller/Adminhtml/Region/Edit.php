@@ -17,7 +17,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Secomm\AddressDropdown\Helper\Data;
 
 /**
- * Edit SubCity entity backend controller.
+ * Edit Region entity backend controller.
  */
 class Edit extends Action implements HttpGetActionInterface
 {
@@ -55,7 +55,7 @@ class Edit extends Action implements HttpGetActionInterface
     }
 
     /**
-     * Edit SubCity action.
+     * Edit Region action.
      *
      */
     public function execute()

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-008: generate VietQR after order placement -->
+    <event name="checkout_submit_all_after">
+        <observer name="vietqr_generate_qr" instance="Secomm\VietQr\Observer\GenerateQrAfterOrder"/>
+    </event>
+</config>

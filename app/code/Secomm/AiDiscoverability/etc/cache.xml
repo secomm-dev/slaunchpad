@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Cache/etc/cache.xsd">
+    <type name="secomm_ai_discoverability" instance="Secomm\AiDiscoverability\Model\Cache\Type">
+        <label>AI Discoverability (llms.txt)</label>
+        <description>Cached llms.txt discovery document bodies per store view</description>
+    </type>
+</config>

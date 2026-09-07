@@ -1,0 +1,78 @@
+<?php
+/**
+ * Adapted from Hyvä UI shortcuts/A-simple 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+use Hyva\Theme\ViewModel\LucideIcons;
+
+$data = (array)$block->getData('component_data');
+$items = (array)($data['items'] ?? []);
+/** @var LucideIcons $lucideIcons */
+$lucideIcons = $viewModels->require(LucideIcons::class);
+$iconMethods = [
+    'circle_user' => 'circleUserHtml',
+    'message_square' => 'messageSquareHtml',
+    'mail' => 'mailHtml',
+    'phone' => 'phoneHtml',
+    'map_pin' => 'mapPinHtml',
+    'circle_help' => 'circleHelpHtml',
+];
+?>
+<?php if ($items): ?>
+    <section class="bg-blue-900 p-7" data-secomm-ui-component="shortcuts_a">
+        <div class="container mx-auto">
+            <div class="grid gap-16 sm:grid-cols-3">
+                <?php foreach ($items as $item): ?>
+                    <?php
+                    $iconMethod = $iconMethods[$item['icon'] ?? 'circle_user'];
+                    $targetAttributes = !empty($item['open_in_new'])
+                        ? ' target="_blank" rel="noopener noreferrer"'
+                        : '';
+                    ?>
+                    <div class="flex flex-col items-center gap-4 xl:flex-row xl:gap-8">
+                        <a href="<?= $escaper->escapeUrl((string)$item['url']) ?>"
+                           class="text-white"
+                           aria-label="<?= $escaper->escapeHtmlAttr((string)$item['label']) ?>"
+                            <?= /* @noEscape validated static target attributes */ $targetAttributes ?>>
+                            <?php if (!empty($item['image'])): ?>
+                                <img src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                                     alt="<?= $escaper->escapeHtmlAttr((string)$item['image_alt']) ?>"
+                                     width="48"
+                                     height="48"
+                                     loading="lazy"
+                                     class="h-12 w-12 object-contain xl:h-16 xl:w-16">
+                            <?php else: ?>
+                                <?= /* @noEscape allowlisted Lucide method and fixed arguments */
+                                $lucideIcons->{$iconMethod}(
+                                    'h-12 w-12 xl:h-16 xl:w-16',
+                                    48,
+                                    48,
+                                    ['aria-hidden' => 'true']
+                                ) ?>
+                            <?php endif; ?>
+                        </a>
+                        <div class="text-center xl:text-left">
+                            <a href="<?= $escaper->escapeUrl((string)$item['url']) ?>"
+                               class="text-xl leading-7 font-semibold text-white"
+                                <?= /* @noEscape validated static target attributes */ $targetAttributes ?>>
+                                <?= $escaper->escapeHtml((string)$item['label']) ?>
+                            </a>
+                            <div class="text-gray-400 leading-6 mt-1 hidden lg:block">
+                                <?= /* @noEscape escaped before applying nl2br */
+                                nl2br($escaper->escapeHtml((string)$item['description'])) ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>

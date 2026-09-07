@@ -1,5 +1,11 @@
 # Changelog — Secomm_Ghtk
 
+## 1.4.0 — 2026-09-03 (TASK-Q4B98P / DEC-FEATYA2C0W-004)
+
+### Added — VN scheme-swap reference guard
+- `Model/Import/DirectoryReferenceGuard` — đăng ký bảng `secomm_ghtk_address_map` (keys `region_id` + `ward_id`) với guard extension point của `Secomm_VietNamAddress`; mỗi destructive VN scheme operation (swap/rebuild/stray purge) sẽ chặn khi bảng này vẫn tham chiếu runtime directory rows. Trước đây logic này hardcode trong `VietNamAddress/Model/Import/VnAddressSchemeImporter` — giờ bảng được khai báo bởi module sở hữu (DI argument `directoryReferenceGuards`). Behavior parity với guard cũ (cùng COUNT + cùng message, message có i18n vi_VN/en_US).
+- `etc/di.xml` registration + `etc/module.xml` sequence += `Secomm_VietNamAddress` (đúng chuỗi dependency DEC-004 D1; chưa có composer.json — kế thừa trạng thái cũ).
+
 ## 1.3.0 — 2026-08-17 (SL-017 / DEC-SL017-001)
 
 ### Added — carrier tracking

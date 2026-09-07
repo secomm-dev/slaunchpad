@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <!-- FEAT-31X6N2 / DEC-FEAT31X6N2-001: commerce tracking event layer.
+         One module (D2) — event contract, browser dataLayer pipeline, and server-side
+         vendor adapters (Meta CAPI, TikTok Events API) with outbox delivery.
+         Magefan_GoogleTagManager is NOT a hard dependency: the browser pipeline reads
+         its dataLayer output via layout/plugin at runtime, no class-level coupling. -->
+    <module name="Secomm_Tracking">
+        <sequence>
+            <module name="Magento_Sales"/>
+            <module name="Magento_Quote"/>
+            <module name="Magento_CatalogSearch"/>
+            <module name="Magento_Config"/>
+            <module name="Magento_Cron"/>
+        </sequence>
+    </module>
+</config>

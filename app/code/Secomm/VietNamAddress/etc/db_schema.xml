@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!--
+      ~ DEC-FEATYA2C0W-003 — HISTORICAL REFERENCE LAYER (TASK-9394A9).
+      ~ Runtime directory tables hold ONE scheme at a time (swap model); these tables keep
+      ~ EVERY scheme ever imported, identified by immutable codes — portable across
+      ~ environments and untouched by runtime swaps. No FKs to runtime tables by design.
+      -->
+
+    <table name="secomm_vietnam_address_scheme" resource="default" engine="innodb" comment="Secomm Vietnam Address scheme registry (status is a label, never the identity)">
+        <column xsi:type="varchar" name="scheme_code" nullable="false" length="32" comment="Canonical scheme identity, e.g. VN_ADMIN_2025"/>
+        <column xsi:type="varchar" name="label" nullable="false" length="255" comment="Human label"/>
+        <column xsi:type="varchar" name="profile_code" nullable="false" length="64" comment="Rendering profile code (address_profiles.xml)"/>
+        <column xsi:type="smallint" name="level_count" nullable="false" unsigned="true" comment="Admin levels below country (2 or 3)"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="16" comment="CURRENT | HISTORICAL | FUTURE (label, not identity)"/>
+        <column xsi:type="date" name="effective_from" nullable="true" comment="Optional effective date"/>
+        <column xsi:type="date" name="effective_to" nullable="true" comment="Optional end date"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="scheme_code"/>
+        </constraint>
+        <index referenceId="SECOMM_VN_ADDR_SCHEME_STATUS" indexType="btree">
+            <column name="status"/>
+        </index>
+    </table>
+
+    <table name="secomm_vietnam_address_unit" resource="default" engine="innodb" comment="Secomm Vietnam Address historical unit reference (accumulates across schemes; swap never purges)">
+        <column xsi:type="int" name="entity_id" nullable="false" unsigned="true" identity="true" comment="Row id"/>
+        <column xsi:type="varchar" name="scheme_code" nullable="false" length="32" comment="Owning scheme identity"/>
+        <column xsi:type="varchar" name="code" nullable="false" length="64" comment="Immutable Secomm unit code (dataset-supplied)"/>
+        <column xsi:type="varchar" name="parent_code" nullable="true" length="64" comment="Parent unit code (NULL = region row or depth-1 unit)"/>
+        <column xsi:type="varchar" name="region_code" nullable="false" length="16" comment="Official region code within the scheme"/>
+        <column xsi:type="smallint" name="level" nullable="false" unsigned="true" comment="1 = region, 2 = first sub-level, 3 = second sub-level"/>
+        <column xsi:type="varchar" name="name_vi" nullable="false" length="255" comment="Vietnamese display name"/>
+        <column xsi:type="varchar" name="name_en" nullable="false" length="255" comment="English display name"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_VN_ADDR_UNIT_SCHEME_CODE">
+            <column name="scheme_code"/>
+            <column name="code"/>
+        </constraint>
+        <index referenceId="SECOMM_VN_ADDR_UNIT_SCHEME_PARENT" indexType="btree">
+            <column name="scheme_code"/>
+            <column name="parent_code"/>
+        </index>
+        <index referenceId="SECOMM_VN_ADDR_UNIT_SCHEME_REGION" indexType="btree">
+            <column name="scheme_code"/>
+            <column name="region_code"/>
+        </index>
+    </table>
+
+    <!-- DEC-FEATYA2C0W-003 — ADMINISTRATIVE MAPPING LAYER (TASK-J9AVGK): directed edges
+         between unit codes of two schemes. No FKs — the mapping CLI validates both sides
+         against secomm_vietnam_address_unit. -->
+    <table name="secomm_vietnam_address_mapping" resource="default" engine="innodb" comment="Secomm Vietnam Address administrative mapping (directed, code-based)">
+        <column xsi:type="int" name="mapping_id" nullable="false" unsigned="true" identity="true" comment="Row id"/>
+        <column xsi:type="varchar" name="source_scheme" nullable="false" length="32" comment="Source scheme identity"/>
+        <column xsi:type="varchar" name="source_code" nullable="false" length="64" comment="Source unit code"/>
+        <column xsi:type="varchar" name="target_scheme" nullable="false" length="32" comment="Target scheme identity"/>
+        <column xsi:type="varchar" name="target_code" nullable="false" length="64" comment="Target unit code"/>
+        <column xsi:type="varchar" name="relation_type" nullable="false" length="16" comment="SAME_AS | RENAMED_TO | MERGED_INTO | SPLIT_INTO"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="mapping_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_VN_ADDR_MAPPING_EDGE">
+            <column name="source_scheme"/>
+            <column name="source_code"/>
+            <column name="target_scheme"/>
+            <column name="target_code"/>
+        </constraint>
+        <index referenceId="SECOMM_VN_ADDR_MAPPING_TARGET" indexType="btree">
+            <column name="target_scheme"/>
+            <column name="target_code"/>
+        </index>
+        <index referenceId="SECOMM_VN_ADDR_MAPPING_SOURCE" indexType="btree">
+            <column name="source_scheme"/>
+            <column name="source_code"/>
+        </index>
+    </table>
+</schema>

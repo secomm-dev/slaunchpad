@@ -33,6 +33,12 @@ class OrderAdditionalInformationDataBuilder extends AbstractDataBuilder implemen
     const DESCRIPTION_TEXT = 'ZaloPay Integration for Magento 2';
 
     /**
+     * Build subject key carrying the display-currency code for the amount
+     * conversion (payment-first flow passes the QUOTE display currency).
+     */
+    const CURRENCY = 'currency';
+
+    /**
      * OrderAdditionalInformationDataBuilder constructor.
      *
      * @param Json $serializer
@@ -49,6 +55,12 @@ class OrderAdditionalInformationDataBuilder extends AbstractDataBuilder implemen
     }
 
     /**
+     * Works for BOTH flows. The PaymentDataObject order adapter exposes
+     * getOrderIncrementId() on sales orders (increment id) and on quotes
+     * (reserved order id) alike. Amount conversion uses the subject
+     * currency when provided (payment-first: quote display currency) and
+     * falls back to the sales-order currency of the legacy flow.
+     *
      * @param array $buildSubject
      * @return array
      * @throws LocalizedException
@@ -57,8 +69,15 @@ class OrderAdditionalInformationDataBuilder extends AbstractDataBuilder implemen
     public function build(array $buildSubject): array
     {
         $payment = SubjectReader::readPayment($buildSubject);
-        $order = $payment->getPayment()->getOrder();
-        $incrementId = $order->getIncrementId();
+        $incrementId = $payment->getOrder()->getOrderIncrementId();
+        $amount = round((float)SubjectReader::readAmount($buildSubject), 2);
+        $currency = (string)($buildSubject[self::CURRENCY] ?? '');
+        if ($currency !== '') {
+            $vndAmount = (int)$this->helperRate->getVndAmountByCurrency($currency, $amount);
+        } else {
+            // Legacy order-first flow: convert from the order display currency.
+            $vndAmount = (int)$this->helperRate->getVndAmount($payment->getPayment()->getOrder(), $amount);
+        }
         $form = $this->config->getValue('form');
         $embed = $this->getEmbedData();
         $bankCode = '';
@@ -72,7 +91,7 @@ class OrderAdditionalInformationDataBuilder extends AbstractDataBuilder implemen
         };
         return [
             self::EMBED_DATA => $this->serializer->serialize($embed),
-            self::AMOUNT => (int)$this->helperRate->getVndAmount($order, round((float)SubjectReader::readAmount($buildSubject), 2)),
+            self::AMOUNT => $vndAmount,
             self::DESCRIPTION => $this->getDesc() . " #$incrementId",
             self::BANK_CODE => $bankCode,
             self::CALL_BACK => $this->getCallBackUrl()

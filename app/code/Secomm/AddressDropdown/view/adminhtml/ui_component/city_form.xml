@@ -65,6 +65,27 @@
                 <dataScope>region_id</dataScope>
             </settings>
         </field>
+        <field name="parent_city_id" sortOrder="05" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">parent_city_id</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>int</dataType>
+                <label translate="true">Parent City</label>
+                <dataScope>parent_city_id</dataScope>
+                <notice translate="true">Leave empty to place the city directly under the region. Pick a parent to nest it deeper — depth is derived from the parent chain.</notice>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\AddressDropdown\Model\OptionSource\CityParentOptions"/>
+                        <caption translate="true">— Directly under the region —</caption>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
         <field name="default_name" sortOrder="10" formElement="input">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
@@ -78,6 +99,22 @@
                 <dataType>string</dataType>
                 <label translate="true">Default Name</label>
                 <dataScope>default_name</dataScope>
+            </settings>
+        </field>
+        <field name="code" sortOrder="15" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">code</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>string</dataType>
+                <label translate="true">Code</label>
+                <dataScope>code</dataScope>
+                <notice translate="true">Optional stable identifier; unique per parent within the region (max 64 chars).</notice>
+                <validation>
+                    <rule name="max_text_length" xsi:type="number">64</rule>
+                </validation>
             </settings>
         </field>
     </fieldset>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-005: expose payment instructions to checkout JS -->
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="secomm_vietqr_instructions_config_provider" xsi:type="object">Secomm\VietQr\Model\InstructionsConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-011: post-order redirect to VietQR payment page -->
+    <type name="Magento\Checkout\Controller\Onepage\Success">
+        <plugin name="vietqr_success_redirect" type="Secomm\VietQr\Plugin\SuccessRedirectPlugin"/>
+    </type>
+</config>

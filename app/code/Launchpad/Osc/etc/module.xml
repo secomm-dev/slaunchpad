@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Launchpad Osc — OSC address integration for the Launchpad package.
+ *
+ * TASK-FMAN1B / DEC-TASKFMAN1B-001.
+ *
+ * Soft coupling contract (Magento Open Source 2.4.8 has no module.xml soft="true"):
+ * - <sequence> only orders loading WHEN the module is present, it is not a hard
+ *   requirement — without Mageplaza_Osc the module still installs.
+ * - All frontend behaviour is scoped to the `onestepcheckout_index_index` handle,
+ *   so when OSC is disabled the module contributes nothing at all.
+ * - Any future PHP integration must runtime-gate on
+ *   ModuleManager::isEnabled('Mageplaza_Osc') / isOutputEnabled().
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Launchpad_Osc">
+        <sequence>
+            <module name="Magento_Checkout"/>
+            <module name="Mageplaza_Osc"/>
+            <module name="Secomm_AddressDropdown"/>
+        </sequence>
+    </module>
+</config>

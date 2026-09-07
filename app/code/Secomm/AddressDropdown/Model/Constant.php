@@ -9,7 +9,6 @@ namespace Secomm\AddressDropdown\Model;
 
 class Constant
 {
-    const SUBCITY_CODE = 'sub_city';
     const DEFAULT_LOCALE = 'en_US';
     const DIRECTORY_COUNTRY_REGION_NAME = 'directory_country_region_name';
 

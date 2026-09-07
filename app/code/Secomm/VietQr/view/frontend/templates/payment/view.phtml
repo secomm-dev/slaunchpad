@@ -1,0 +1,189 @@
+<?php
+/** @var \Secomm\VietQr\Block\PaymentInfo $block */
+$info = $block->getData('payment_info');
+if (!$info || !$info->getOrder()) {
+    return;
+}
+$qrCode = $block->escapeJs($info->getQrCode());
+$deadline = $info->getFormattedDeadline();
+$pastDeadline = $info->isPastDeadline();
+?>
+<div class="max-w-4xl mx-auto p-4 sm:p-6"
+     x-data="{ confirmed: <?= $info->isConfirmed() ? 'true' : 'false' ?>, closed: <?= $info->isPaymentClosed() ? 'true' : 'false' ?>, past: <?= $pastDeadline ? 'true' : 'false' ?> }">
+
+    <!-- 2-Column Grid Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-start">
+
+        <!-- Left Column: VietQR Card -->
+        <div class="flex flex-col items-center">
+            <!-- VietQR Branded Card -->
+            <div class="flex w-full flex-col items-center overflow-hidden rounded-xl bg-white border border-gray-200 shadow-md p-4">
+                <!-- Bank Logo & Account -->
+                <div class="flex items-center justify-center gap-2 py-2 md:gap-3 md:py-1.5">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white p-1">
+                        <img alt="<?= $block->escapeHtmlAttr($info->getBankCode()) ?>"
+                             class="h-full w-full object-contain"
+                             src="https://api.vietqr.io/img/<?= $block->escapeUrl($info->getBankCode()) ?>.png"
+                             onerror="this.style.display='none';"/>
+                    </div>
+                    <div class="flex min-w-0 flex-col justify-center">
+                        <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold font-mono leading-tight text-gray-900 md:text-base">
+                            <?= $block->escapeHtml($info->getBankAccount()) ?>
+                        </div>
+                        <div class="mt-0.5 line-clamp-1 overflow-hidden text-ellipsis text-[10px] font-medium leading-tight text-gray-500 uppercase md:text-xs">
+                            <?= $block->escapeHtml($info->getAccountName()) ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QR Code with Center Badge -->
+                <div class="flex w-full items-center justify-center py-2">
+                    <div class="relative" style="width: 256px; max-width: 100%;">
+                        <div class="relative flex items-center justify-center" style="width: 256px; max-width: 100%; aspect-ratio: 1 / 1;">
+                            <div id="vietqr-qr-container" class="flex items-center justify-center w-full h-full overflow-hidden">
+                                <?= /* @noEscape */ $info->getQrSvg() ?>
+                            </div>
+                            <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                                <div class="bg-white p-0.5 rounded-full shadow border border-gray-100 flex items-center justify-center">
+                                    <svg class="h-6 w-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="16" cy="16" r="15" fill="#EE0033"/>
+                                        <path d="M10 12L16 22L22 12H18.5L16 16.5L13.5 12H10Z" fill="white"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Amount -->
+                <div class="flex flex-col items-center pb-1 md:pb-2">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold"><?= $block->escapeHtml(__('Amount (VND)')) ?></div>
+                    <div class="text-base font-bold text-gray-900 md:text-lg"><?= $block->escapeHtml($info->getFormattedAmount()) ?></div>
+                </div>
+
+                <!-- Transfer Content -->
+                <div class="flex items-baseline justify-center gap-1 pb-2 text-center md:pb-3">
+                    <span class="shrink-0 text-xs font-semibold text-gray-500 md:text-sm"><?= $block->escapeHtml(__('Ref:')) ?></span>
+                    <span class="line-clamp-1 text-xs font-medium text-gray-900 font-mono md:text-sm"><?= $block->escapeHtml($info->getContent()) ?></span>
+                </div>
+            </div>
+
+            <p class="text-xs text-gray-500 text-center mt-3">
+                <?= $block->escapeHtml(__('Scan the QR code using your banking app to complete payment automatically')) ?>
+            </p>
+        </div>
+
+        <!-- Right Column: Order Details & Form -->
+        <div class="flex flex-col">
+            <!-- Order Title -->
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">
+                <?= $block->escapeHtml(__('Order %1', $info->getOrderIncrementId())) ?>
+            </h2>
+
+            <!-- Bank Info Breakdown -->
+            <div class="border rounded-lg divide-y mb-4 bg-white text-sm">
+                <div class="flex justify-between px-4 py-3">
+                    <span class="text-gray-600"><?= $block->escapeHtml(__('Bank')) ?></span>
+                    <span class="font-medium text-gray-900"><?= $block->escapeHtml($info->getBankCode()) ?></span>
+                </div>
+                <div class="flex justify-between px-4 py-3">
+                    <span class="text-gray-600"><?= $block->escapeHtml(__('Account Number')) ?></span>
+                    <span class="font-mono font-medium text-gray-900"><?= $block->escapeHtml($info->getBankAccount()) ?></span>
+                </div>
+                <div class="flex justify-between px-4 py-3">
+                    <span class="text-gray-600"><?= $block->escapeHtml(__('Account Holder')) ?></span>
+                    <span class="font-medium text-gray-900"><?= $block->escapeHtml($info->getAccountName()) ?></span>
+                </div>
+                <div class="flex justify-between px-4 py-3">
+                    <span class="text-gray-600"><?= $block->escapeHtml(__('Amount')) ?></span>
+                    <span class="font-semibold text-gray-900"><?= $block->escapeHtml($info->getFormattedAmount()) ?></span>
+                </div>
+                <div class="flex justify-between px-4 py-3">
+                    <span class="text-gray-600"><?= $block->escapeHtml(__('Transfer Content')) ?></span>
+                    <span class="font-mono font-medium text-blue-700"><?= $block->escapeHtml($info->getContent()) ?></span>
+                </div>
+            </div>
+
+            <!-- Payment Instructions -->
+            <?php if ($instructions = $block->getInstructions()): ?>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 text-sm text-gray-700">
+                    <?= $block->escapeHtml($instructions) ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Deadline notice (auto-cancel cron enabled, AC-028) -->
+            <?php if ($deadline && !$pastDeadline): ?>
+                <div x-show="!confirmed && !closed && !past"
+                     class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-amber-800 text-sm">
+                    <?= $block->escapeHtml(__('Please complete your bank transfer before %1 — after this time the order will be canceled automatically.', $deadline)) ?>
+                </div>
+            <?php elseif ($pastDeadline): ?>
+                <!-- Transitional window: deadline passed, cron will cancel within one interval.
+                     Form stays hidden — allowing submit here would let orders escape the auto-cancel. -->
+                <div x-show="past && !confirmed && !closed" x-cloak
+                     class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 text-red-800 text-sm">
+                    <?= $block->escapeHtml(__('The payment deadline has passed — this order will be canceled within a few minutes. If you have already transferred, please contact us for assistance.')) ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Confirmed Message -->
+            <div x-show="confirmed" x-cloak class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 text-green-800 text-sm">
+                <?= $block->escapeHtml(__('You have confirmed the bank transfer. We will verify your payment and update the order status.')) ?>
+            </div>
+
+            <!-- Closed-order notice (canceled by payment timeout, or already processed) -->
+            <div x-show="closed" x-cloak class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 text-red-800 text-sm">
+                <?= $block->escapeHtml(__('This order is no longer awaiting payment. It may have been canceled automatically due to a payment timeout, or is already being processed. Please contact us if you still wish to pay for this order.')) ?>
+            </div>
+
+            <!-- Submit Form -->
+            <form x-show="!confirmed && !closed && !past"
+                  method="POST" action="<?= $block->escapeUrl($info->getFormActionUrl()) ?>"
+                  class="space-y-3 mb-2">
+                <?= $info->getFormKey() ?>
+                <input type="hidden" name="order_id"
+                       value="<?= (int)$info->getOrder()->getId() ?>"/>
+
+                <div>
+                    <label for="transaction_ref" class="block text-sm font-medium text-gray-700 mb-1">
+                        <?= $block->escapeHtml(__('Transaction Reference (optional)')) ?>
+                    </label>
+                    <input type="text" id="transaction_ref" name="transaction_ref"
+                           class="w-full border rounded-md px-3 py-2 text-sm"
+                           placeholder="<?= $block->escapeHtml(__('Enter bank transaction reference')) ?>"/>
+                </div>
+
+                <div>
+                    <label for="customer_notes" class="block text-sm font-medium text-gray-700 mb-1">
+                        <?= $block->escapeHtml(__('Notes (optional)')) ?>
+                    </label>
+                    <textarea id="customer_notes" name="customer_notes" rows="2"
+                              class="w-full border rounded-md px-3 py-2 text-sm"
+                              placeholder="<?= $block->escapeHtml(__('Any additional notes')) ?>"></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-1">
+                    <button type="submit"
+                            class="inline-flex shrink-0 ml-auto xl:mt-0 btn btn-primary">
+                        <?= $block->escapeHtml(__('I have completed the transfer')) ?>
+                    </button>
+                    <a href="<?= $block->escapeUrl($info->getCancelUrl()) ?>"
+                       class="inline-flex shrink-0 ml-auto xl:mt-0 btn btn-secondary">
+                        <?= $block->escapeHtml(__('Cancel')) ?>
+                    </a>
+                </div>
+            </form>
+
+            <!-- Back button (when confirmed, closed, or past deadline) -->
+            <div x-show="confirmed || closed || past" x-cloak class="mt-2">
+                <a href="<?= $block->escapeUrl($info->getCancelUrl()) ?>"
+                   class="block w-full border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-4 rounded-md text-sm text-center">
+                    <?= $block->escapeHtml(__('Back')) ?>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+

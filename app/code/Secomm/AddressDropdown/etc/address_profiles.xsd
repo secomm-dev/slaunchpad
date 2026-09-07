@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Secomm_AddressDropdown — FEAT-2PZQKJ / TASK-NW66H9
+  ~ Merged-schema XSD for etc/address_profiles.xml (address profile + address schema declarations).
+  ~ Profiles are CODE-SHIPPED (DEC-FEAT2PZQKJ-001 D4): each module may declare profiles in its own
+  ~ etc/address_profiles.xml; files merge by <profile code>. Country adapters (e.g. Secomm_VietnamAddress)
+  ~ own country-specific profiles; the generic module ships only the `default` fallback profile.
+  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="config">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="profile" type="profileType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="profileType">
+        <xs:sequence>
+            <xs:element name="levels">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="level" type="levelType" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <!-- Unique profile code across all merged files; the store config address/profiles/mapping
+             binds a countryId to a profile code. -->
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <!-- Translation key (resolved by the declaring module's i18n at render time). NEVER inferred from depth. -->
+        <xs:attribute name="label" type="xs:string"/>
+        <!-- Informational only: the country this profile was authored for. Resolution is config-driven. -->
+        <xs:attribute name="country" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="levelType">
+        <xs:attribute name="entity_type" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="region"/>
+                    <xs:enumeration value="city"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <!-- City depth counted from region (1 = directly below region). Required for entity_type=city. -->
+        <xs:attribute name="depth" type="xs:nonNegativeInteger"/>
+        <xs:attribute name="label" type="xs:string" use="required"/>
+        <xs:attribute name="placeholder" type="xs:string"/>
+        <xs:attribute name="sort_order" type="xs:integer"/>
+        <xs:attribute name="required" type="xs:boolean"/>
+        <xs:attribute name="translate" type="xs:string"/>
+    </xs:complexType>
+</xs:schema>

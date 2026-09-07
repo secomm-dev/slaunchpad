@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Secomm_AddressDropdown — per-file validation schema (identical rules to the merged schema).
+  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="config">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="profile" type="profileType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="profileType">
+        <xs:sequence>
+            <xs:element name="levels">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="level" type="levelType" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="label" type="xs:string"/>
+        <xs:attribute name="country" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="levelType">
+        <xs:attribute name="entity_type" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="region"/>
+                    <xs:enumeration value="city"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="depth" type="xs:nonNegativeInteger"/>
+        <xs:attribute name="label" type="xs:string" use="required"/>
+        <xs:attribute name="placeholder" type="xs:string"/>
+        <xs:attribute name="sort_order" type="xs:integer"/>
+        <xs:attribute name="required" type="xs:boolean"/>
+        <xs:attribute name="translate" type="xs:string"/>
+    </xs:complexType>
+</xs:schema>

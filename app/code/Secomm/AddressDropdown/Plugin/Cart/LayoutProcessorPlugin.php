@@ -16,7 +16,7 @@ class LayoutProcessorPlugin
 
     public function afterProcess(LayoutProcessor $subject, array $jsLayout)
     {
-        $fieldsAttribute = ['city', 'custom_city', 'subCity', 'custom_sub_city'];
+        $fieldsAttribute = ['city', 'custom_city'];
         $template = 'ui/form/field';
         $cityField = [
             'component' => 'Magento_Ui/js/form/element/abstract',
@@ -65,57 +65,8 @@ class LayoutProcessorPlugin
             'visible' => false,
         ];
 
-        $subCityField = [
-            'component' => 'Magento_Ui/js/form/element/abstract',
-            'config' => [
-                'customScope' => 'shippingAddress.custom_attributes.sub_city',
-                'customEntry' => null,
-                'template' => $template,
-                'elementTmpl' => 'ui/form/element/input',
-            ],
-            'dataScope' => 'shippingAddress.custom_attributes.sub_city',
-            'label' => __('Sub City'),
-            'provider' => 'checkoutProvider',
-            'sortOrder' => 116,
-            'validation' => [
-                'required-entry' => false
-            ],
-            'options' => [],
-            'filterBy' => null,
-            'customEntry' => null,
-            'visible' => false,
-        ];
-
-        $customSubCityField = [
-            'component' => 'Magento_Ui/js/form/element/select',
-            'config' => [
-                'customScope' => 'shippingAddress.custom_attributes.custom_sub_city',
-                'customEntry' => null,
-                'template' => $template,
-                'elementTmpl' => 'ui/form/element/select',
-            ],
-            'dataScope' => 'shippingAddress.custom_attributes.custom_sub_city',
-            'label' => __('Sub City'),
-            'provider' => 'checkoutProvider',
-            'sortOrder' => 116,
-            'validation' => [
-                'required-entry' => false
-            ],
-            'options' => [
-                [
-                    'value' => '',
-                    'label' => __('Please select a sub-city'),
-                ]
-            ],
-            'filterBy' => null,
-            'customEntry' => null,
-            'visible' => false,
-        ];
-
         $jsLayout['components']['block-summary']['children']['block-shipping']['children']['address-fieldsets']['children'][$fieldsAttribute[0]] = $cityField;
         $jsLayout['components']['block-summary']['children']['block-shipping']['children']['address-fieldsets']['children'][$fieldsAttribute[1]] = $customCityField;
-        $jsLayout['components']['block-summary']['children']['block-shipping']['children']['address-fieldsets']['children'][$fieldsAttribute[2]] = $subCityField;
-        $jsLayout['components']['block-summary']['children']['block-shipping']['children']['address-fieldsets']['children'][$fieldsAttribute[3]] = $customSubCityField;
 
         return $jsLayout;
     }

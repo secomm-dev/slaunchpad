@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<widgets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Widget:etc/widget.xsd">
+    <widget id="secomm_ui"
+            class="Secomm\UiWidget\Block\Widget\SecommUi"
+            is_email_compatible="false">
+        <label translate="true">Secomm UI</label>
+        <description translate="true">Render an approved Secomm UI component.</description>
+        <parameters>
+            <parameter name="component"
+                       xsi:type="select"
+                       source_model="Secomm\UiWidget\Model\Config\Source\Component"
+                       visible="true"
+                       required="true"
+                       sort_order="10">
+                <label translate="true">Component</label>
+                <description translate="true">Select an approved component to configure.</description>
+            </parameter>
+            <parameter name="schema_version"
+                       xsi:type="text"
+                       visible="false"
+                       required="false"
+                       sort_order="20">
+                <value>1</value>
+            </parameter>
+            <parameter name="payload"
+                       xsi:type="block"
+                       visible="true"
+                       required="true"
+                       sort_order="30">
+                <label translate="true">Component Options</label>
+                <description translate="true">Configure the fields provided by the selected component.</description>
+                <block class="Secomm\UiWidget\Block\Adminhtml\Widget\ComponentOptions"/>
+            </parameter>
+        </parameters>
+    </widget>
+</widgets>

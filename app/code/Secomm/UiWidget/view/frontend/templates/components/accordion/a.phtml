@@ -1,0 +1,56 @@
+<?php
+/**
+ * Adapted from Hyvä UI accordion/A-basic 2.8.0 with visual parity.
+ *
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$panels = (array)($data['panels'] ?? []);
+$instanceId = $block->getInstanceId();
+$allowMultiple = (bool)($data['allow_multiple'] ?? false);
+$showDividers = (bool)($data['show_dividers'] ?? true);
+$singleOpenRendered = false;
+$wrapperClasses = array_filter([
+    'py-3 px-6 bg-gray-100',
+    $showDividers ? 'divide-y' : '',
+]);
+?>
+<?php if ($panels): ?>
+    <div id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+         class="<?= $escaper->escapeHtmlAttr(implode(' ', $wrapperClasses)) ?>"
+         data-secomm-ui-component="accordion_a">
+        <?php foreach ($panels as $panel): ?>
+            <?php
+            $isOpen = !empty($panel['open']) && ($allowMultiple || !$singleOpenRendered);
+            $singleOpenRendered = $singleOpenRendered || $isOpen;
+            $panelContent = $block->renderTrustedHtml((string)$panel['content']);
+            ?>
+            <details class="group details-animate" <?= $isOpen ? 'open' : '' ?>
+                <?php if (!$allowMultiple): ?>
+                    name="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+                <?php endif; ?>>
+                <summary class="flex [&::-webkit-details-marker]:hidden w-full items-center justify-between
+                                py-3 font-bold cursor-pointer">
+                    <?= $escaper->escapeHtml((string)$panel['title']) ?>
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"
+                         aria-hidden="true" class="transition-transform group-open:rotate-180">
+                        <path fill-rule="evenodd"
+                              d="M5.293 7.293a1 1 0 0 1 1.414 0L10 10.586l3.293-3.293
+                                 a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4
+                                 a1 1 0 0 1 0-1.414Z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </summary>
+                <div class="flow-root pb-3">
+                    <?= /* @noEscape trusted-rich-text filtered by Magento CMS */ $panelContent ?>
+                </div>
+            </details>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="order.items.additional">
+            <block class="Magento\Sales\Block\Order\Email\Items" name="vietqr.email.payment.info"
+                   template="Secomm_VietQr::email/payment-info.phtml">
+                <arguments>
+                    <argument name="vietqr_config" xsi:type="object">Secomm\VietQr\Model\Config</argument>
+                    <argument name="vietqr_timezone" xsi:type="object">Magento\Framework\Stdlib\DateTime\Timezone</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

@@ -18,22 +18,5 @@
                 </select>
             </formElements>
         </field>
-        <field name="sub_city" sortOrder="101" formElement="select">
-            <settings>
-                <dataType>text</dataType>
-                <label translate="true">Sub City</label>
-                <visible>true</visible>
-                <validation>
-                    <rule name="required-entry" xsi:type="boolean">false</rule>
-                </validation>
-            </settings>
-            <formElements>
-                <select>
-                    <settings>
-                        <options class="Secomm\AddressDropdown\Model\Customer\Address\Config\Selector\SubCity"/>
-                    </settings>
-                </select>
-            </formElements>
-        </field>
     </fieldset>
 </form>

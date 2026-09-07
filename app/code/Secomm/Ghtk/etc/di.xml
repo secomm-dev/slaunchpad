@@ -9,4 +9,14 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Secomm\Ghtk\Model\OrderSubmit\CodAmountResolverInterface"
                 type="Secomm\Ghtk\Model\OrderSubmit\DefaultCodAmountResolver" />
+
+    <!-- DEC-FEATYA2C0W-004 (D7) / TASK-Q4B98P: register the GHTK mapping table with the
+         VN scheme-swap reference guard. Table knowledge stays in this module. -->
+    <type name="Secomm\VietNamAddress\Model\Import\VnAddressSchemeImporter">
+        <arguments>
+            <argument name="directoryReferenceGuards" xsi:type="array">
+                <item name="secomm_ghtk_address_map" xsi:type="object">Secomm\Ghtk\Model\Import\DirectoryReferenceGuard</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

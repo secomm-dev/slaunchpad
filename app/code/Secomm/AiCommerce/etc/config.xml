@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <seocomm_ai_commerce>
+            <general>
+                <enabled>1</enabled>
+                <endpoint_path>ai</endpoint_path>
+                <max_page_size>50</max_page_size>
+                <filter_allowlist>color,size</filter_allowlist>
+                <category_depth>5</category_depth>
+            </general>
+            <cache>
+                <lifetime>3600</lifetime>
+            </cache>
+        </seocomm_ai_commerce>
+    </default>
+</config>

@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+  ~ Secomm_VietnamAddress — FEAT-YA2C0W / TASK-R83FXW + DEC-FEATYA2C0W-003 (accepted 2026-08-27).
+  ~ Vietnam Address Profiles, declared through the generic Secomm_AddressDropdown profile engine
+  ~ (etc/address_profiles.xml merges across modules by <profile code> — TASK-NW66H9).
+  ~
+  ~ Labels/placeholders are TRANSLATION KEYS resolved through this module's i18n
+  ~ (vi_VN / en_VN / en_US) — never hard-coded in any renderer (DEC-FEATJSZQV3-003).
+  ~
+  ~ vn_admin_2025     — VN_ADMIN_2025 scheme: region (34 provinces) → ward (city depth 1).
+  ~ vn_admin_pre_2025 — VN_ADMIN_PRE_2025 scheme: region (63 provinces) → district (depth 1) → ward (depth 2).
+  ~
+  ~ Profile codes are renamed from the pre-DEC-003 vn_current/vn_legacy (aliases kept in
+  ~ VnSchemes::schemeForProfile so already-seeded membership/config upgrade without purge).
+  ~
+  ~ SWAP MODEL (DEC-FEATYA2C0W-002, retained by DEC-003): the DB holds exactly ONE scheme at
+  ~ a time; the installed dataset's profile claims every VN region root (membership reseeded
+  ~ on each import / scheme swap). The active scheme config lives at
+  ~ secomm_vietnam_address/general/active_scheme; the country→profile binding in
+  ~ address/profiles/mapping is kept in sync by `secomm:vietnam-address:import`.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Secomm_AddressDropdown:etc/address_profiles.xsd">
+    <profile code="vn_admin_2025" label="VN Admin 2025 (2-level)" country="VN">
+        <levels>
+            <level entity_type="region" label="Province/City"
+                   placeholder="Please select a Province/City."
+                   sort_order="10" required="true" translate="label placeholder"/>
+            <level entity_type="city" depth="1" label="Ward/Commune"
+                   placeholder="Please select a Ward/Commune."
+                   sort_order="20" required="true" translate="label placeholder"/>
+        </levels>
+    </profile>
+
+    <profile code="vn_admin_pre_2025" label="VN Admin pre-2025 (3-level)" country="VN">
+        <levels>
+            <level entity_type="region" label="Province/City"
+                   placeholder="Please select a Province/City."
+                   sort_order="10" required="true" translate="label placeholder"/>
+            <level entity_type="city" depth="1" label="District/Town"
+                   placeholder="Please select a District/Town."
+                   sort_order="20" required="true" translate="label placeholder"/>
+            <level entity_type="city" depth="2" label="Ward/Commune"
+                   placeholder="Please select a Ward/Commune."
+                   sort_order="30" required="true" translate="label placeholder"/>
+        </levels>
+    </profile>
+</config>

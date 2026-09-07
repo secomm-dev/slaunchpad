@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <!-- FEAT-31X6N2 / TASK-WY5JRN — QC reconcile grid under the Secomm CORE menu
+         (Secomm_Base admin shell). Read-only: resend/retry belongs to the outbox
+         flush cron, not manual actions (spec §10). -->
+    <menu>
+        <add id="Secomm_Tracking::tracking"
+             title="Commerce Tracking"
+             module="Secomm_Tracking"
+             translate="title"
+             sortOrder="20"
+             parent="MenuSecomm_Base::menu"
+             resource="Secomm_Tracking::delivery"/>
+        <add id="Secomm_Tracking::delivery"
+             title="Delivery Log"
+             module="Secomm_Tracking"
+             translate="title"
+             sortOrder="10"
+             parent="Secomm_Tracking::tracking"
+             action="secomm_tracking/delivery/index"
+             resource="Secomm_Tracking::delivery"/>
+        <add id="Secomm_Tracking::outbox"
+             title="Event Outbox"
+             module="Secomm_Tracking"
+             translate="title"
+             sortOrder="20"
+             parent="Secomm_Tracking::tracking"
+             action="secomm_tracking/event/index"
+             resource="Secomm_Tracking::outbox"/>
+    </menu>
+</config>

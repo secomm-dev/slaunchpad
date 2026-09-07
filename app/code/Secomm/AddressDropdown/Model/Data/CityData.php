@@ -79,4 +79,50 @@ class CityData extends DataObject implements CityInterface
     {
         $this->setData(self::DEFAULT_NAME, $defaultName);
     }
+
+    /**
+     * Getter for ParentCityId.
+     *
+     * @return int|null
+     */
+    public function getParentCityId(): ?int
+    {
+        return $this->getData(self::PARENT_CITY_ID) === null ? null
+            : (int)$this->getData(self::PARENT_CITY_ID);
+    }
+
+    /**
+     * Setter for ParentCityId.
+     *
+     * @param int|null $parentCityId
+     *
+     * @return void
+     */
+    public function setParentCityId(?int $parentCityId): void
+    {
+        $this->setData(self::PARENT_CITY_ID, $parentCityId);
+    }
+
+    /**
+     * Getter for Code.
+     *
+     * @return string|null
+     */
+    public function getCode(): ?string
+    {
+        return $this->getData(self::CODE) === null ? null
+            : (string)$this->getData(self::CODE);
+    }
+
+    /**
+     * Setter for Code.
+     *
+     * @param string|null $code
+     *
+     * @return void
+     */
+    public function setCode(?string $code): void
+    {
+        $this->setData(self::CODE, $code);
+    }
 }

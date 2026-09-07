@@ -10,10 +10,12 @@
  * the component behaves IDENTICALLY to native (Ward field is x-if gated on country=VN).
  *
  * Reuse (no data/logic duplication, DEC-019): ward options come from the GENERIC
- * Secomm_AddressDropdown GraphQL `GetListCity(region_id)`; province uses native
- * directory-data. Ward value is persisted as the Magento native `city` field so the
- * estimate payload + carriers receive it; per-carrier code mapping is NOT done here
- * (Launchpad, DEC-018). Server-side relationship validation in Plugin/Cart.
+ * Secomm_AddressDropdown GraphQL `addressLocations` (recursive engine, filtered by the
+ * country's Address Profile — TASK-YQSS3M; replaces the legacy `GetListCity` call);
+ * labels come from `addressSchema`. Province uses native directory-data. Ward value is
+ * persisted as the Magento native `city` field so the estimate payload + carriers
+ * receive it; per-carrier code mapping is NOT done here (Launchpad, DEC-018).
+ * Server-side relationship validation in Plugin/Cart.
  *
  * Native source: vendor/hyva-themes/magento2-default-theme/Magento_Checkout/templates/php-cart/shipping.phtml
  */
@@ -77,6 +79,10 @@ $totalsOutput = $viewModels->require(TotalsOutput::class);
             selectedWard: '',
             isLoadingWards: false,
             _wardReqId: 0,
+            /* TASK-YQSS3M: resolved Address Profile (labels + membership filter for
+             * addressLocations). null until addressSchema(VN) resolves; stays null for
+             * unmapped countries (ward cascade then keeps native behaviour). */
+            vnSchema: null,
             init() {
                 const selectedShippingMethod = window.checkoutConfig.selectedShippingMethod;
                 if (selectedShippingMethod) {
@@ -229,6 +235,8 @@ $totalsOutput = $viewModels->require(TotalsOutput::class);
                 /* SL-003 VN: restore ward dropdown for a saved VN quote, then re-select. */
                 if (this.isVietnam() && this.cartData.address.regionId) {
                     this.loadWards(this.cartData.address.regionId).then(() => this.reapplyWard());
+                } else if (this.isVietnam()) {
+                    this.ensureVnSchema();
                 }
 
                 if (this.showEstimateShipping) {
@@ -387,11 +395,56 @@ $totalsOutput = $viewModels->require(TotalsOutput::class);
 
             /* =========================================================================
              * SL-003 VN — 2-level hierarchy helpers (Province/City -> Ward/Commune).
-             * Province = Magento region (native directory-data); Ward = GetListCity by
-             * region_id; ward persisted as native `city`. No carrier code here (DEC-018).
+             * Province = Magento region (native directory-data); Ward = addressLocations
+             * (Secomm_AddressDropdown recursive engine, TASK-YQSS3M) filtered by the
+             * country's Address Profile; ward persisted as native `city`. No carrier
+             * code here (DEC-018). Labels come from addressSchema (profile-owned).
              * ========================================================================= */
             isVietnam() {
                 return !!(this.cartData.address && this.cartData.address.countryId === 'VN');
+            },
+            async ensureVnSchema() {
+                if (this.vnSchema !== null) {
+                    return;
+                }
+                try {
+                    const query = 'query{addressSchema(input:{country_id:"VN"})'
+                        + '{profile_code levels{entity_type label placeholder}}}';
+                    const response = await fetch('/graphql', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: query })
+                    });
+                    const json = await response.json();
+                    const schema = json && json.data && json.data.addressSchema;
+                    if (!schema || !schema.profile_code) {
+                        this.vnSchema = false; /* unmapped country — native behaviour */
+                        return;
+                    }
+                    const regionLevel = (schema.levels || []).find(level => level.entity_type === 'region');
+                    const cityLevel = (schema.levels || []).find(level => level.entity_type === 'city');
+                    this.vnSchema = {
+                        profileCode: schema.profile_code,
+                        regionLabel: regionLevel && regionLevel.label || '',
+                        wardLabel: cityLevel && cityLevel.label || '',
+                        wardPlaceholder: cityLevel && cityLevel.placeholder || ''
+                    };
+                } catch (error) {
+                    console.error('VN cart estimate: failed to load address schema', error);
+                    this.vnSchema = false;
+                }
+            },
+            vnRegionLabel() {
+                return (this.isVietnam() && this.vnSchema && this.vnSchema.regionLabel)
+                    || '<?= $escaper->escapeJs(__('State/Province')) ?>';
+            },
+            vnWardLabel() {
+                return (this.vnSchema && this.vnSchema.wardLabel)
+                    || '<?= $escaper->escapeJs(__('Ward/Commune')) ?>';
+            },
+            vnWardPlaceholder() {
+                return (this.vnSchema && this.vnSchema.wardPlaceholder)
+                    || '<?= $escaper->escapeJs(__('Please select a Ward/Commune.')) ?>';
             },
             maybeFetchRates() {
                 /* VN requires both Province (regionId) and Ward (city) before estimating;
@@ -410,9 +463,19 @@ $totalsOutput = $viewModels->require(TotalsOutput::class);
                     }
                     return;
                 }
+                await this.ensureVnSchema();
+                if (reqId !== this._wardReqId) {
+                    return; /* a newer province change superseded this request */
+                }
+                if (!this.vnSchema || !this.vnSchema.profileCode) {
+                    this.wards = [];
+                    return;
+                }
                 this.isLoadingWards = true;
                 try {
-                    const query = 'query{ GetListCity(input:{region_id:"' + regionId + '"}){ default_name label } }';
+                    const query = 'query{addressLocations(input:{region_id:' + parseInt(regionId, 10)
+                        + ',profile_code:' + JSON.stringify(this.vnSchema.profileCode)
+                        + '}){city_id default_name name}}';
                     const response = await fetch('/graphql', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -422,7 +485,7 @@ $totalsOutput = $viewModels->require(TotalsOutput::class);
                         return; /* a newer province change superseded this request */
                     }
                     const json = await response.json();
-                    this.wards = (json && json.data && json.data.GetListCity) ? json.data.GetListCity : [];
+                    this.wards = (json && json.data && json.data.addressLocations) ? json.data.addressLocations : [];
                 } catch (error) {
                     if (reqId === this._wardReqId) {
                         this.wards = [];
@@ -517,7 +580,8 @@ $totalsOutput = $viewModels->require(TotalsOutput::class);
                     <template x-if="hasAvailableRegions()">
 
                         <label class="label">
-                            <?= $escaper->escapeHtml(__('State/Province')) ?>
+                            <?php /* TASK-YQSS3M: VN reads the label from the Address Profile schema. */ ?>
+                            <span x-text="vnRegionLabel()"></span>
 
                             <select class="form-select w-full"
                                     id="region_id"
@@ -537,7 +601,8 @@ $totalsOutput = $viewModels->require(TotalsOutput::class);
                     <template x-if="directoryData && !hasAvailableRegions()">
 
                         <label class="label">
-                            <?= $escaper->escapeHtml(__('State/Province')) ?>
+                            <?php /* TASK-YQSS3M: VN reads the label from the Address Profile schema. */ ?>
+                            <span x-text="vnRegionLabel()"></span>
 
                             <input class="form-input w-full"
                                    id="region"
@@ -555,16 +620,20 @@ $totalsOutput = $viewModels->require(TotalsOutput::class);
                 <template x-if="isVietnam()">
                     <div class="field mt-2" name="shippingAddress.city">
                         <label class="label">
-                            <span><?= $escaper->escapeHtml(__('Ward/Commune')) ?></span>
+                            <?php /* TASK-YQSS3M: label + placeholder from the Address Profile schema. */ ?>
+                            <span x-text="vnWardLabel()"></span>
                             <select class="form-select w-full"
                                     name="city"
                                     x-model="selectedWard"
                                     @change="setCity($event.target.value)"
                                     :disabled="isLoadingWards || wards.length === 0"
                                     :required="isVietnam()">
-                                <option value=""><?= $escaper->escapeHtml(__('Please select a Ward/Commune.')) ?></option>
-                                <template x-for="ward in wards" :key="ward.default_name">
-                                    <option :value="ward.default_name" x-text="ward.label"></option>
+                                <option value="" x-text="vnWardPlaceholder()"></option>
+                                <?php /* Key by city_id: merged provinces (2025 dataset) contain duplicate
+                                       ward names (e.g. "Thanh An" x2 in TP.HCM) — a name key breaks Alpine
+                                       x-for reconciliation (effects die, options never render). */ ?>
+                                <template x-for="ward in wards" :key="ward.city_id">
+                                    <option :value="ward.default_name" x-text="ward.name"></option>
                                 </template>
                             </select>
                         </label>

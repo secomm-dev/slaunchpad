@@ -1,0 +1,42 @@
+{
+    "secomm_tracking_event": {
+        "column": {
+            "entity_id": true,
+            "event_name": true,
+            "event_id": true,
+            "vendor": true,
+            "payload": true,
+            "status": true,
+            "attempts": true,
+            "next_attempt_at": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "SECOMM_TRACKING_EVENT_STATUS_NEXT_ATTEMPT": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_TRACKING_EVENT_EVENT_ID_VENDOR": true
+        }
+    },
+    "secomm_tracking_delivery": {
+        "column": {
+            "entity_id": true,
+            "event_id": true,
+            "event_name": true,
+            "vendor": true,
+            "direction": true,
+            "http_status": true,
+            "response_summary": true,
+            "created_at": true
+        },
+        "index": {
+            "SECOMM_TRACKING_DELIVERY_EVENT_ID": true,
+            "SECOMM_TRACKING_DELIVERY_VENDOR_CREATED": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

@@ -13,6 +13,7 @@ namespace Secomm\ZaloPay\Controller\Payment;
 
 use Secomm\ZaloPay\Gateway\Helper\TransactionReader;
 use Secomm\ZaloPay\Logger\Logger;
+use Secomm\ZaloPay\Service\IpnProcessor;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Action\Action;
@@ -47,6 +48,7 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
      * @param SerializerJson $serializer
      * @param CommandPoolInterface $commandPool
      * @param Logger $logger
+     * @param IpnProcessor $ipnProcessor
      */
     public function __construct(
         Context $context,
@@ -56,13 +58,16 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
         private readonly SearchCriteriaBuilder $searchCriteriaBuilder,
         private readonly SerializerJson $serializer,
         private readonly CommandPoolInterface $commandPool,
-        private readonly Logger $logger
+        private readonly Logger $logger,
+        private readonly IpnProcessor $ipnProcessor
     ) {
         parent::__construct($context);
     }
 
     /**
-     * The message sent from Payment Service Provider (PSP) to Payment Service Consumer (PSC)
+     * Handle the ZaloPay server-to-server IPN callback.
+     *
+     * The message sent from Payment Service Provider (PSP) to Payment Service Consumer (PSC).
      * An example of this is closing the browser while Zalo pay is not redirected to payment success/failure
      *
      * @return ResponseInterface|Json|ResultInterface
@@ -73,7 +78,10 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
             return;
         }
         $rawContent = (string)$this->getRequest()->getContent();
-        $this->logger->info('ZaloPay IPN Hit. Content: ' . $rawContent . ' Params: ' . json_encode($this->getRequest()->getParams()));
+        $this->logger->info(
+            'ZaloPay IPN Hit. Content: ' . $rawContent
+            . ' Params: ' . json_encode($this->getRequest()->getParams())
+        );
         /** @var Json $resultJson */
         $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         $data       = [
@@ -97,6 +105,24 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
             }
 
             $this->logger->info('ZaloPay IPN Parsed Response: ' . json_encode($response));
+
+            // Payment-first: attempt-first lookup. An IPN arriving BEFORE the
+            // Return action (order not yet placed) is a valid lifecycle state —
+            // the processor marks the attempt PAID and answers 200, not 404.
+            // null = payload references no payment attempt -> legacy flow below.
+            $paymentFirstResult = $this->ipnProcessor->process($response);
+            if ($paymentFirstResult !== null) {
+                if ($paymentFirstResult['http_code'] !== 200) {
+                    $resultJson->setHttpResponseCode($paymentFirstResult['http_code']);
+                }
+
+                return $resultJson->setData(
+                    [
+                        'errors' => $paymentFirstResult['errors'],
+                        'messages' => __($paymentFirstResult['messages'])
+                    ]
+                );
+            }
 
             $orderIncrementId = TransactionReader::readOrderId($response);
             $order            = $this->loadOrderByIncrementId($orderIncrementId);
@@ -171,10 +197,10 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
 
     /**
      * Create exception in case CSRF validation failed.
+     *
      * Return null if default exception will suffice.
      *
      * @param RequestInterface $request
-     *
      * @return InvalidRequestException|null
      */
     public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
@@ -184,10 +210,10 @@ class Ipn extends Action implements CsrfAwareActionInterface, HttpPostActionInte
 
     /**
      * Perform custom request validation.
+     *
      * Return null if default validation is needed.
      *
      * @param RequestInterface $request
-     *
      * @return boolean|null
      */
     public function validateForCsrf(RequestInterface $request): ?bool

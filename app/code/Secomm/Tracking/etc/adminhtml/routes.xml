@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/routes.xsd">
+    <!-- FEAT-31X6N2 / TASK-WY5JRN — admin frontName for the read-only QC grids.
+         Without this declaration the menu actions 404 (router never matches
+         secomm_tracking/... paths). -->
+    <router id="admin">
+        <route id="secomm_tracking" frontName="secomm_tracking">
+            <module name="Secomm_Tracking" before="Magento_Backend"/>
+        </route>
+    </router>
+</config>

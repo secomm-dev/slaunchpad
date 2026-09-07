@@ -9,15 +9,15 @@ namespace Secomm\AddressDropdown\Plugin;
 
 use Magento\Customer\Block\Address\Renderer\DefaultRenderer;
 use Secomm\AddressDropdown\Api\CityRepositoryInterface;
-use Secomm\AddressDropdown\Helper\Data as AddressDropdownHelper;
 use Secomm\AddressDropdown\Helper\Address as AddressHelper;
+use Secomm\AddressDropdown\Helper\Data as AddressDropdownHelper;
 
 class AddressRendererPlugin
 {
     public function __construct(
         protected CityRepositoryInterface $cityRepository,
         protected AddressDropdownHelper   $addressDropdownHelper,
-        protected AddressHelper $addressHelper
+        protected AddressHelper           $addressHelper
     )
     {
     }
@@ -41,12 +41,6 @@ class AddressRendererPlugin
             $regionId = $addressAttributes['region_id'];
             $locale = $addressAttributes['locale'] ?? null;
             $cityName = $this->getCityNameByDefaultName($cityDefaultName, $regionId, $locale);
-            //move sub_city on top of city
-            if (isset($addressAttributes['sub_city'])) {
-                $subCity = $this->addressHelper->getSubCityNameByDefaultName($addressAttributes['sub_city'], $cityDefaultName, $locale);
-                unset($addressAttributes['sub_city']);
-                $addressAttributes = ['sub_city' => $subCity] + $addressAttributes;
-            }
 
             if (!is_null($cityName)) {
                 $addressAttributes['city'] = $cityName;

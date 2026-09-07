@@ -1,0 +1,12 @@
+GetListCity total cities: 3321 | regions: 34
+city_id present in every row: True
+
+Regions with duplicate default_name (the x-for :key='default_name' collision set):
+  region 1199 (Dong Nai): Loc Thanh x2 (city_ids ['4030', '4031'])
+  region 1200 (Dong Thap): My Tho x2 (city_ids ['4139', '4140']); Tan Thanh x2 (city_ids ['4171', '4172'])
+  region 1204 (Hai Phong): Cam Giang x2 (city_ids ['4537', '4538'])
+  region 1205 (Ho Chi Minh): Thanh An x2 (city_ids ['4779', '4780'])
+  region 1216 (Quang Ngai): Ba To x2 (city_ids ['5748', '5749']); Son Ha x2 (city_ids ['5813', '5814'])
+  region 1220 (Tay Ninh): Tan Thanh x2 (city_ids ['6122', '6123'])
+  region 1221 (Thai Nguyen): Van Lang x2 (city_ids ['6223', '6224'])
+  region 1222 (Thanh Hoa): Dong Tien x2 (city_ids ['6258', '6259'])

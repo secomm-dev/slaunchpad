@@ -13,9 +13,6 @@ define([
 
     var mixin = {
 
-        CUSTOM_SUB_CITY_SELECTOR: '#co-shipping-form #custom-sub-city-select',
-        SHIPPING_ADDRESS_SUB_CITY: '.shipping-address-sub-city',
-
         /**
          * Save new shipping address
          */
@@ -26,9 +23,7 @@ define([
             this.source.set('params.invalid', false);
             this.triggerShippingDataValidateEvent();
 
-            const subCityValidate = $(this.CUSTOM_SUB_CITY_SELECTOR).val() === '' && $(this.SHIPPING_ADDRESS_SUB_CITY).is(':visible')
-
-            if (!this.source.get('params.invalid') && !subCityValidate) {
+            if (!this.source.get('params.invalid')) {
                 addressData = this.source.get('shippingAddress');
                 // if user clicked the checkbox, its value is true or false. Need to convert.
                 addressData['save_in_address_book'] = this.saveInAddressBook ? 1 : 0;

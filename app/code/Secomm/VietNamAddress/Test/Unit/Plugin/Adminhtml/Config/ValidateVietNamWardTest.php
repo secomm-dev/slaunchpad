@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace Secomm\VietNamAddress\Test\Unit\Plugin\Adminhtml\Config;
 
 use Magento\Config\Model\Config;
+use Magento\Framework\DB\Adapter\Pdo\Mysql;
+use Magento\Framework\DB\Select;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Secomm\AddressDropdown\Model\ResourceModel\CityModel\CityLocaleCollection;
@@ -32,16 +34,40 @@ class ValidateVietNamWardTest extends TestCase
         return $subject;
     }
 
+    /**
+     * TASK-ADT94K: the validator now also matches the locale name via
+     * getSelect()->where(default_name OR rname.name) — the mock wires that surface too.
+     */
     private function collection(int $size): CityLocaleCollection
     {
+        $collection = $this->baseCollection();
+        $collection->method('getSize')->willReturn($size);
+
+        return $collection;
+    }
+
+    private function baseCollection(): CityLocaleCollection
+    {
+        $select = $this->getMockBuilder(Select::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['where'])
+            ->getMock();
+        $select->method('where')->willReturnSelf();
+
+        $connection = $this->createMock(Mysql::class);
+        $connection->method('quoteInto')->willReturnCallback(
+            static fn (string $text, mixed $value): string => 'q(' . $text . ')'
+        );
+
         $collection = $this->getMockBuilder(CityLocaleCollection::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['addFieldToFilter', 'setPageSize', 'setCurPage', 'getSize'])
+            ->onlyMethods(['addFieldToFilter', 'setPageSize', 'setCurPage', 'getSize', 'getSelect', 'getConnection'])
             ->getMock();
         $collection->method('addFieldToFilter')->willReturnSelf();
         $collection->method('setPageSize')->willReturnSelf();
         $collection->method('setCurPage')->willReturnSelf();
-        $collection->method('getSize')->willReturn($size);
+        $collection->method('getSelect')->willReturn($select);
+        $collection->method('getConnection')->willReturn($connection);
 
         return $collection;
     }
@@ -175,13 +201,7 @@ class ValidateVietNamWardTest extends TestCase
 
     public function testDoesNotBreakSaveWhenCollectionThrows(): void
     {
-        $collection = $this->getMockBuilder(CityLocaleCollection::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['addFieldToFilter', 'setPageSize', 'setCurPage', 'getSize'])
-            ->getMock();
-        $collection->method('addFieldToFilter')->willReturnSelf();
-        $collection->method('setPageSize')->willReturnSelf();
-        $collection->method('setCurPage')->willReturnSelf();
+        $collection = $this->baseCollection();
         $collection->method('getSize')->willThrowException(new \RuntimeException('db down'));
 
         $logger = $this->logger();

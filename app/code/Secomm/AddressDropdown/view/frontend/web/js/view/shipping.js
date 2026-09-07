@@ -11,14 +11,6 @@ define([
             return this;
         },
 
-        initObservable: function () {
-            this._super()
-                .observe([
-                    'sub_city'
-                ]);
-            return this;
-        },
-
         setShippingInformation: function () {
             if (this.validateShippingInformation()) {
                 this._super();

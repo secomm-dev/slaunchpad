@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="admin_system_config_changed_section_seocomm_ai_discoverability">
+        <observer name="seocomm_aidiscoverability_config_invalidation" instance="Secomm\AiDiscoverability\Observer\ConfigInvalidation"/>
+    </event>
+    <event name="admin_system_config_changed_section_seo">
+        <observer name="seocomm_aidiscoverability_seo_config_invalidation" instance="Secomm\AiDiscoverability\Observer\SeoConfigInvalidation"/>
+    </event>
+    <event name="admin_system_config_changed_section_seocomm_ai_commerce">
+        <observer name="seocomm_aidiscoverability_aicommerce_config_invalidation" instance="Secomm\AiDiscoverability\Observer\AiCommerceConfigInvalidation"/>
+    </event>
+    <event name="cms_page_save_commit_after">
+        <observer name="seocomm_aidiscoverability_cms_invalidation" instance="Secomm\AiDiscoverability\Observer\CmsInvalidation"/>
+    </event>
+    <event name="cms_page_delete_commit_after">
+        <observer name="seocomm_aidiscoverability_cms_delete_invalidation" instance="Secomm\AiDiscoverability\Observer\CmsInvalidation"/>
+    </event>
+    <event name="catalog_category_save_commit_after">
+        <observer name="seocomm_aidiscoverability_category_invalidation" instance="Secomm\AiDiscoverability\Observer\CategoryInvalidation"/>
+    </event>
+    <event name="catalog_category_delete_commit_after">
+        <observer name="seocomm_aidiscoverability_category_delete_invalidation" instance="Secomm\AiDiscoverability\Observer\CategoryInvalidation"/>
+    </event>
+    <event name="core_abstract_save_commit_after">
+        <observer name="seocomm_aidiscoverability_sitemap_invalidation" instance="Secomm\AiDiscoverability\Observer\SitemapInvalidation"/>
+    </event>
+    <event name="core_abstract_delete_commit_after">
+        <observer name="seocomm_aidiscoverability_sitemap_delete_invalidation" instance="Secomm\AiDiscoverability\Observer\SitemapInvalidation"/>
+    </event>
+</config>

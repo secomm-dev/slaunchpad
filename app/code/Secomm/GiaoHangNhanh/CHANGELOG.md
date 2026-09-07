@@ -1,5 +1,13 @@
 # Changelog — Secomm_GiaoHangNhanh
 
+## 1.1.1 — 2026-09-03 (BUG-YQT1FW / SLP-138)
+
+### Fixed
+- **Shipping Fee Currency Conversion**: `Helper\Rate::convertPriceToDefaultCurrency()` now normalizes the GHN VND shipping fee to the **store base currency** (carrier-price contract) instead of the current store view's display currency, which caused a double conversion and a ~0 USD shipping fee on the EN store view. Adds a `rate > 0` guard and safe fallback to the raw fee when the rate lookup fails; rate-lookup errors are now logged instead of silently swallowed.
+
+### Added
+- **Debug logging in `Model\Carrier\GHN`**: `isDebug()` flag (`giaohangnhanh_setting/general/debug`) gates debug logs for the calculate-rate API response/fee and estimate-shipping errors.
+
 ## 1.1.0 — 2026-08-18 (FEAT-008 / AC-001)
 
 ### Fixed

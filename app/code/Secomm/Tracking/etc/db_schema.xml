@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!--
+    @author Secomm Team
+    @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+    See COPYING.txt for license details.
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!--
+        FEAT-31X6N2 / TASK-0TTQRX — SPEC-FEAT-31X6N2 §3, §6.3, §10.
+        Two new tables owned exclusively by this module (Tier-2 review covered by the
+        VALID spec); no core table is touched. Declarative schema only — no
+        InstallData/UpgradeSchema patches.
+
+        secomm_tracking_event  — outbox. Observers only INSERT here (never call vendor
+        APIs in request scope); the flush cron picks up pending rows.
+          * UNIQUE (event_id, vendor) — idempotent re-enqueue of the same event for the
+            same vendor collapses to one row (retry-safe, dedup contract §7).
+          * payload JSON holds the normalized TrackingEvent with user data ALREADY
+            SHA-256 hashed by the normalizer — plain identifiers never persist.
+          * status: pending | sent | failed | skipped
+          * attempts + next_attempt_at drive exponential backoff (1m/5m/30m/2h/6h).
+
+        secomm_tracking_delivery — append-only delivery log for QC reconcile (AC-008).
+          * response_summary is masked before insert (IP dotted-quad truncated, hashes
+            kept as-is since they are already one-way).
+    -->
+    <table name="secomm_tracking_event" resource="default" engine="innodb"
+           comment="Secomm Tracking: server-side event outbox (normalized commerce events awaiting vendor delivery)">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="event_name" nullable="false" length="32" comment="Canonical event name (view_item|add_to_cart|begin_checkout|purchase|refund|...)"/>
+        <column xsi:type="varchar" name="event_id" nullable="false" length="128" comment="Deterministic event id (e.g. purchase-{increment_id}); dedup key shared browser/server"/>
+        <column xsi:type="varchar" name="vendor" nullable="false" length="16" comment="Target vendor (meta|tiktok)"/>
+        <column xsi:type="json" name="payload" nullable="false" comment="Normalized TrackingEvent JSON; user identifiers already hashed (never plain)"/>
+        <column xsi:type="varchar" name="status" nullable="false" default="pending" length="16" comment="pending|sent|failed|skipped"/>
+        <column xsi:type="smallint" name="attempts" unsigned="true" nullable="false" default="0" comment="Delivery attempts so far"/>
+        <column xsi:type="timestamp" name="next_attempt_at" nullable="true" comment="Next allowed flush time (backoff); NULL when pending immediately"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_TRACKING_EVENT_EVENT_ID_VENDOR">
+            <column name="event_id"/>
+            <column name="vendor"/>
+        </constraint>
+        <index referenceId="SECOMM_TRACKING_EVENT_STATUS_NEXT_ATTEMPT" indexType="btree">
+            <column name="status"/>
+            <column name="next_attempt_at"/>
+        </index>
+    </table>
+
+    <table name="secomm_tracking_delivery" resource="default" engine="innodb"
+           comment="Secomm Tracking: delivery/debug log (one row per vendor send attempt; masked payloads)">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="event_id" nullable="false" length="128" comment="Event id (matches outbox + browser dataLayer)"/>
+        <column xsi:type="varchar" name="event_name" nullable="false" length="32" comment="Canonical event name"/>
+        <column xsi:type="varchar" name="vendor" nullable="false" length="16" comment="Vendor (meta|tiktok)"/>
+        <column xsi:type="varchar" name="direction" nullable="false" length="8" comment="server (browser events are logged metadata-only when debug is on)"/>
+        <column xsi:type="smallint" name="http_status" unsigned="true" nullable="true" comment="HTTP status from vendor API; NULL when skipped before call"/>
+        <column xsi:type="text" name="response_summary" nullable="true" comment="Masked vendor response summary (events_received, trace ids); never tokens or plain PII"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false" comment="Created At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <index referenceId="SECOMM_TRACKING_DELIVERY_EVENT_ID" indexType="btree">
+            <column name="event_id"/>
+        </index>
+        <index referenceId="SECOMM_TRACKING_DELIVERY_VENDOR_CREATED" indexType="btree">
+            <column name="vendor"/>
+            <column name="created_at"/>
+        </index>
+    </table>
+</schema>

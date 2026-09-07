@@ -12,7 +12,6 @@
             <resource id="Magento_Backend::admin">
                 <resource id="Secomm_AddressDropdown::listing" title="Manage VN Address">
                     <resource id="Secomm_AddressDropdown::management" title="City Name Management"/>
-                    <resource id="Secomm_AddressDropdown::subcityname" title="Sub City Name Management"/>
                 </resource>
             </resource>
         </resources>

@@ -1,0 +1,697 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ *
+ * FEAT-2PZQKJ / TASK-3T3NSV — schema-driven generic address renderer (Hyva).
+ * Serves as the `schema` mode of address/general/renderer; the legacy template
+ * (hyva/address/edit.phtml) remains the default until per-store cutover.
+ *
+ * Differences from the legacy template — by design:
+ * - Region label/required/placeholder and every city level (label, placeholder, required,
+ *   ordering, COUNT of levels) come from the resolved Address Profile via GraphQL
+ *   `addressSchema` — never from depth, never hard-coded, never country-conditioned.
+ * - Cascade options come from `addressLocations` (ID-canonical; select state carries city_id).
+ * - The posted `city` value remains the leaf default_name (display/back-compat with validators
+ *   + carriers); the canonical ids travel in address_city_id / address_location_path.
+ * - No sub_city field: deeper levels are city levels of the recursive hierarchy.
+ *
+ * Everything else (contact fields, street, VAT, postcode/telephone validation rules,
+ * default billing/shipping, region handling) is ported 1:1 from the legacy template.
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Customer\Block\Address\Edit;
+use Magento\Customer\ViewModel\Address as AddressViewModel;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+
+/** @var Edit $block */
+/** @var Escaper $escaper */
+/** @var HyvaCsp $hyvaCsp */
+/** @var SecureHtmlRenderer $secureRenderer */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var AddressViewModel $addressViewModel */
+$addressViewModel = $block->getViewModel();
+$directoryViewModel = $viewModels->require(\Hyva\Theme\ViewModel\Directory::class);
+
+$companyBlock = $block->getLayout()->createBlock(\Magento\Customer\Block\Widget\Company::class);
+$phoneBlock = $block->getLayout()->createBlock(\Magento\Customer\Block\Widget\Telephone::class);
+$faxBlock = $block->getLayout()->createBlock(\Magento\Customer\Block\Widget\Fax::class);
+$streetLabel = $block->getAttributeData()->getFrontendLabel('street');
+$regionLabel = __('State/Province'); // fallback only — overridden by the resolved schema
+$showOptionalRegions = $block->getConfig('general/region/display_all');
+
+// Existing values for edit mode (pre-fill the cascade).
+$cityInitial = (string) $block->getAddress()->getCity();
+
+?>
+<div class="text-2xl mb-6">
+    <?= $escaper->escapeHtml(__('Customer Address')) ?>
+</div>
+<form class="form-address-edit"
+      x-data="Object.assign(initCustomerAddressSchemaEdit(), hyva.formValidation($el))"
+      @private-content-loaded.window="onPrivateContentLoaded($event.detail.data)"
+      @submit="onSubmit"
+      action="<?= $escaper->escapeUrl($block->getSaveUrl()) ?>"
+      method="post"
+      id="form-validate"
+      enctype="multipart/form-data"
+      data-hasrequired="<?= $escaper->escapeHtmlAttr(__('* Required Fields')) ?>"
+>
+    <fieldset class="fieldset">
+        <legend class="legend"><span><?= $escaper->escapeHtml(__('Contact Information')) ?></span></legend>
+        <?= $block->getBlockHtml('formkey') ?>
+        <input type="hidden" name="success_url" value="<?= $escaper->escapeUrl($block->getSuccessUrl()) ?>">
+        <input type="hidden" name="error_url" value="<?= $escaper->escapeUrl($block->getErrorUrl()) ?>">
+
+        <div class="md:grid grid-cols-2 gap-x-4 gap-y-0">
+            <?= $block->getNameBlockHtml() ?>
+
+            <?php if ($companyBlock->isEnabled()): ?>
+                <div class="w-full">
+                    <?= $companyBlock->setCompany($block->getAddress()->getCompany())->toHtml() ?>
+                </div>
+            <?php endif ?>
+
+            <?php if ($phoneBlock->isEnabled()): ?>
+                <div class="w-full">
+                    <?= $phoneBlock->setTelephone($block->getAddress()->getTelephone())->toHtml() ?>
+                </div>
+            <?php endif ?>
+
+            <?php if ($faxBlock->isEnabled()): ?>
+                <div class="w-full">
+                    <?= $faxBlock->setFax($block->getAddress()->getFax())->toHtml() ?>
+                </div>
+            <?php endif ?>
+        </div>
+    </fieldset>
+    <fieldset class="fieldset">
+        <legend class="legend w-full"><span><?= $escaper->escapeHtml(__('Address')) ?></span></legend>
+        <div class="md:grid grid-cols-2 gap-x-4 gap-y-0">
+            <div class="street col-span-full md:grid grid-cols-2 gap-x-4 mb-6">
+
+                <div class="field field-reserved required">
+                    <label for="street_1" class="label">
+                        <span><?= /* @noEscape */ $streetLabel ?></span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               name="street[]"
+                               required
+                               value="<?= $escaper->escapeHtmlAttr($block->getStreetLine(1)) ?>"
+                               title="<?= /* @noEscape */ $streetLabel ?>"
+                               id="street_1"
+                               class="form-input w-full"
+                               @input.debounce="onChange"
+                        >
+                    </div>
+                </div>
+
+                <?php for ($i = 1, $n = $addressViewModel->addressGetStreetLines(); $i < $n; $i++): ?>
+                    <div class="field additional">
+                        <label class="label" for="street_<?= /* @noEscape */ $i + 1 ?>">
+                            <span><?= $escaper->escapeHtml(__('Street Address %1', $i + 1)) ?></span>
+                        </label>
+                        <div class="control">
+                            <input type="text" name="street[]"
+                                   value="<?= $escaper->escapeHtmlAttr($block->getStreetLine($i + 1)) ?>"
+                                   title="<?= $escaper->escapeHtmlAttr(__('Street Address %1', $i + 1)) ?>"
+                                   id="street_<?= /* @noEscape */ $i + 1 ?>"
+                                   class="form-input w-full"
+                                   @input.debounce="onChange"
+                            >
+                        </div>
+                    </div>
+                <?php endfor; ?>
+            </div>
+
+            <?php if ($addressViewModel->addressIsVatAttributeVisible()): ?>
+                <div class="field field-reserved taxvat w-full">
+                    <label class="label" for="vat_id">
+                        <span><?= /* @noEscape */ $block->getAttributeData()->getFrontendLabel('vat_id') ?></span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               name="vat_id"
+                               value="<?= $escaper->escapeHtmlAttr($block->getAddress()->getVatId()) ?>"
+                               title="<?= $escaper->escapeHtmlAttr($block->getAttributeData()->getFrontendLabel('vat_id')) ?>"
+                               class="form-input w-full"
+                               id="vat_id"
+                               @input.debounce="onChange">
+                    </div>
+                </div>
+            <?php endif; ?>
+            <div class="field field-reserved zip w-full" :class="{ 'required': isZipRequired }">
+                <label class="label" for="zip">
+                    <span><?= /* @noEscape */ $block->getAttributeData()->getFrontendLabel('postcode') ?></span>
+                </label>
+                <div class="control">
+                    <input type="text"
+                           name="postcode"
+                           x-ref="postcode"
+                           value="<?= $escaper->escapeHtmlAttr($block->getAddress()->getPostcode()) ?>"
+                           title="<?= $escaper->escapeHtmlAttr($block->getAttributeData()->getFrontendLabel('postcode')) ?>"
+                           id="zip"
+                           :required="isZipRequired"
+                           @input.debounce="onChange"
+                           data-validate='{"postcode": true}'
+                           class="form-input w-full">
+                </div>
+            </div>
+
+            <div class="field field-reserved required country w-full">
+                <label class="label" for="country">
+                    <span><?= /* @noEscape */ $block->getAttributeData()->getFrontendLabel('country_id') ?></span>
+                </label>
+                <div class="control">
+                    <?php $countries = $block
+                        ->getCountryCollection()
+                        ->setForegroundCountries($directoryViewModel->getTopCountryCodes())
+                        ->toOptionArray();
+                    ?>
+                    <select name="country_id"
+                            id="country"
+                            title="<?= $escaper->escapeHtmlAttr($block->getAttributeData()->getFrontendLabel('country_id')) ?>"
+                            required
+                            class="form-select"
+                            x-ref="country_id"
+                            @input.debounce="changeCountry"
+                    >
+                        <?php foreach ($countries as $country): ?>
+                            <option name="<?= /** @noEscape */ $country['label'] ?>"
+                                    value="<?= /** @noEscape */ $country['value'] ?>"
+                                    data-is-zip-required="<?= (isset($country['is_zipcode_optional'])) ? '0' : '1' ?>"
+                                    data-is-region-required="<?= (isset($country['is_region_required'])) ? '1' : '0' ?>"
+                                    <?= ($block->getCountryId() ===  $country['value']) ? 'selected="selected"' : '' ?>
+                            >
+                                <?= /** @noEscape */ $country['label'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
+            <div
+                class="field field-reserved region w-full"
+                x-cloak
+                x-show="(hasAvailableRegions() && isRegionRequired) || showOptionalRegions"
+                :class="{ 'required': isRegionRequired }"
+            >
+                <label class="label" for="region_id">
+                    <span x-text="regionLabel"><?= /* @noEscape */ $regionLabel ?></span>
+                </label>
+                <div class="control">
+                    <template x-if="hasAvailableRegions() && (isRegionRequired || showOptionalRegions)">
+                        <select id="region_id" name="region_id"
+                                title="Region"
+                                class="form-select validate-select region_id"
+                                x-ref="region_id"
+                                x-model="selectedRegion"
+                                :required="isRegionRequired"
+                                @change="onRegionIdChange"
+                        >
+                            <option value="" x-text="regionPlaceholder"></option>
+                            <template x-for="regionId in Object.keys(availableRegions)" :key="regionId">
+                                <option :value="regionId"
+                                        :name="availableRegions[regionId] && availableRegions[regionId].name"
+                                        x-text="availableRegions[regionId] && availableRegions[regionId].name"
+                                >
+                                </option>
+                            </template>
+                        </select>
+                    </template>
+                    <input :type="hasAvailableRegions() && (isRegionRequired || showOptionalRegions) ? 'hidden' : 'text'"
+                           id="region"
+                           name="region"
+                           x-ref="region"
+                           value="<?= $escaper->escapeHtmlAttr($block->getRegion()) ?>"
+                           title="Region"
+                           class="form-input w-full"
+                           aria-label="Region"
+                           :required="!hasAvailableRegions() && !showOptionalRegions ? isRegionRequired : false"
+                           @input.debounce="onChange"
+                    >
+                </div>
+            </div>
+
+            <?php /* ===== FEAT-2PZQKJ / TASK-3T3NSV — schema-driven cascade =====
+                   Unmapped country (profileCode === null): native Magento `city` text input.
+                   Mapped country: one select per schema city level; the currently-leaf select
+                   posts its default_name as `city` (hidden input below), canonical ids travel
+                   in address_city_id / address_location_path. */ ?>
+            <div class="field field-reserved required city w-full" x-cloak x-show="profileCode === null">
+                <label class="label" for="city">
+                    <span><?= $escaper->escapeHtml(__('City')) ?></span>
+                </label>
+                <div class="control">
+                    <input type="text"
+                           name="city"
+                           id="city"
+                           class="form-input w-full"
+                           required
+                           value="<?= $escaper->escapeHtmlAttr($cityInitial) ?>"
+                           @input.debounce="onChange">
+                </div>
+            </div>
+
+            <template x-if="profileCode !== null">
+                <div class="contents">
+                    <template x-for="(level, idx) in cityLevels" :key="idx">
+                        <div class="field city-level w-full"
+                             x-show="level.active"
+                             :class="{ 'required': level.required }">
+                            <label class="label" :for="'city_level_' + idx">
+                                <span x-text="level.label"></span>
+                            </label>
+                            <div class="control">
+                                <select :id="'city_level_' + idx"
+                                        :name="'city_path_level_' + idx"
+                                        x-model="level.selectedId"
+                                        @change="onLevelChange(idx, $event)"
+                                        class="form-select"
+                                        :required="level.required && level.active"
+                                        :disabled="level.loading || level.options.length === 0"
+                                >
+                                    <option value="" x-text="level.placeholder"></option>
+                                    <template x-for="option in level.options" :key="option.city_id">
+                                        <option :value="option.city_id"
+                                                <?php /* String(): x-model writes selectedId as string, GraphQL city_id is a number —
+                                                       a strict compare is always false and the :selected effect then DEselects
+                                                       the option the user just picked (first pick appears to not stick). */ ?>
+                                                :selected="String(level.selectedId) === String(option.city_id)"
+                                                x-text="option.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+                    </template>
+                    <!-- Canonical identity (D2): ids alongside the BC name posted as `city` above. -->
+                    <input type="hidden" name="city" :value="leafName">
+                    <input type="hidden" name="address_city_id" :value="leafId">
+                    <input type="hidden" name="address_location_path" :value="leafPathJson">
+                </div>
+            </template>
+        </div>
+
+        <?= $block->getChildHtml('fieldset_address_info_additional') ?>
+
+        <?php $isDefaultMessages = array_filter([
+            $block->isDefaultBilling() ? __("It's a default billing address.") : null,
+            $block->isDefaultShipping() ? __("It's a default shipping address.") : null,
+        ]) ?>
+        <?php if ($isDefaultMessages): ?>
+            <div class="message">
+                <?= $escaper->escapeHtml(implode("<br>\n", $isDefaultMessages), ['br']) ?>
+            </div>
+        <?php endif; ?>
+        <?php if (! $block->isDefaultBilling() && $block->canSetAsDefaultBilling()): ?>
+            <div class="field choice set billing">
+                <input type="checkbox" id="primary_billing" name="default_billing" value="1" class="checkbox">
+                <label class="label" for="primary_billing">
+                    <span><?= $escaper->escapeHtml(__('Use as my default billing address')) ?></span>
+                </label>
+            </div>
+        <?php else: ?>
+            <input type="hidden" name="default_billing" value="1">
+        <?php endif; ?>
+
+        <?php if (! $block->isDefaultShipping() && $block->canSetAsDefaultShipping()): ?>
+            <div class="field choice set shipping">
+                <input type="checkbox" id="primary_shipping" name="default_shipping" value="1" class="checkbox">
+                <label class="label" for="primary_shipping">
+                    <span><?= $escaper->escapeHtml(__('Use as my default shipping address')) ?></span>
+                </label>
+            </div>
+        <?php else: ?>
+            <input type="hidden" name="default_shipping" value="1">
+        <?php endif; ?>
+    </fieldset>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button
+                type="submit"
+                class="action save btn btn-primary"
+                data-action="save-address"
+                x-text="updateSubmitBtnText"
+                :disabled="isSubmitting || (profileCode !== null && cityLevels.length > 0 && !leafName)"
+            >
+                <?= $escaper->escapeHtml(__('Save Address')) ?>
+            </button>
+        </div>
+        <div class="secondary">
+            <a class="action back" href="<?= $escaper->escapeUrl($block->getBackUrl()) ?>">
+                <span><?= $escaper->escapeHtml(__('Go back')) ?></span>
+            </a>
+        </div>
+    </div>
+</form>
+
+<script>
+    function initCustomerAddressSchemaEdit() {
+        return {
+            directoryData: {},
+            availableRegions: {},
+            messageTime: 5000,
+            fieldsNames: [],
+            selectedRegion: '<?= $escaper->escapeJs($block->getRegion() ?: 0) ?>',
+            isZipRequired: true,
+            isRegionRequired: true,
+            showOptionalRegions: <?= $showOptionalRegions ? 'true' : 'false' ?>,
+
+            // ---- Schema-driven cascade (FEAT-2PZQKJ / TASK-3T3NSV) ----
+            profileCode: null,          // null => unmapped country => native `city` input
+            regionLabel: '<?= $escaper->escapeJs(__('State/Province')) ?>',
+            regionPlaceholder: '<?= $escaper->escapeJs(__('Please select a region, state or province.')) ?>',
+            cityLevels: [],             // [{label, placeholder, required, options, selectedId, selectedName, loading, active}]
+            leafIndex: -1,              // index of the select currently acting as the leaf
+            cityInitial: '<?= $escaper->escapeJs($cityInitial) ?>',
+            // Monotonic request token (BUG-25XDH4): every new cascade request (schema
+            // or level options) invalidates the previous one; stale responses must
+            // never overwrite the cascade state.
+            cityRequestId: 0,
+
+            async onPrivateContentLoaded(data) {
+                this.directoryData = data['directory-data'] || {};
+
+                <?php if ($block->getCountryId()): ?>
+                    this.setCountry(this.$refs['country_id'], '<?= $escaper->escapeJs($block->getRegion()) ?>');
+                    const schemaRequestId = await this.loadSchemaForCountry(this.$refs['country_id'].value);
+
+                    // Pre-fill the cascade for an existing address (edit mode).
+                    const initialRegionId = this.selectedRegion;
+                    const cascadeSuperseded = schemaRequestId !== this.cityRequestId;
+                    if (!cascadeSuperseded && initialRegionId && initialRegionId !== '0' && this.profileCode !== null) {
+                        // x-model owns the selected state now (`:selected` removed, BUG-25XDH4);
+                        // re-sync the <select> once its async-populated <option>s exist.
+                        await this.reapplySelected('selectedRegion');
+                        const appliedRequestId = await this.loadLevelOptions(0, initialRegionId);
+                        if (appliedRequestId === this.cityRequestId) {
+                            await this.preFillCascade();
+                        }
+                    }
+                <?php endif; ?>
+            },
+            setRegionInputValue(regionName) {
+                this.$nextTick(() => {
+                    const regionInputElement = this.$refs['region'];
+                    if (regionInputElement) {
+                        regionInputElement.value = regionName;
+                    }
+                })
+            },
+            setCountry(countrySelectElement, initialRegion) {
+                const selectedOption = countrySelectElement.options[countrySelectElement.selectedIndex];
+                const countryCode = countrySelectElement.value;
+                const countryData = this.directoryData[countryCode] || false;
+
+                if (!countryData) {
+                    this.setRegionInputValue('');
+                    return;
+                }
+
+                this.isZipRequired = selectedOption.dataset.isZipRequired === '1';
+                this.isRegionRequired = selectedOption.dataset.isRegionRequired === '1';
+
+                this.availableRegions = countryData.regions || {};
+
+                const initialRegionId = Object.keys(this.availableRegions)
+                    .filter(regionId => this.availableRegions[regionId].name === initialRegion)[0];
+                this.selectedRegion = initialRegionId || '0';
+                this.setRegionInputValue(initialRegionId && this.availableRegions[initialRegionId].name || '');
+            },
+            async changeCountry(event, initialRegion) {
+                this.setCountry(event.target, initialRegion);
+                this.validateCountryDependentFields();
+                // Country change re-resolves the profile and resets the cascade.
+                const schemaRequestId = await this.loadSchemaForCountry(event.target.value);
+                if (schemaRequestId !== this.cityRequestId) {
+                    // Superseded mid-flight by a newer country/region change (BUG-25XDH4)
+                    // — it owns the cascade now; do not chain stale level loads.
+                    this.onChange(event);
+                    return;
+                }
+                const regionId = this.selectedRegion && this.selectedRegion !== '0' ? this.selectedRegion : null;
+                if (this.profileCode !== null && regionId) {
+                    await this.loadLevelOptions(0, regionId);
+                }
+                this.onChange(event);
+            },
+            validateCountryDependentFields() {
+                this.$nextTick(() => {
+                    this.fields['postcode'] && this.removeMessages(this.fields['postcode'])
+                    this.fields['region'] && this.removeMessages(this.fields['region'])
+                    delete this.fields['postcode'];
+                    delete this.fields['region'];
+                    this.setupField(this.$refs['country_id']);
+                    this.setupField(this.$refs['postcode']);
+                    this.setupField(this.$refs['region']);
+                    this.setupField(this.$refs['region_id']);
+
+                    this.fields['postcode'] && this.validateField(this.fields['postcode']);
+                    this.fields['region'] && this.validateField(this.fields['region']);
+                    this.fields['region_id'] && this.validateField(this.fields['region_id']);
+                })
+            },
+            hasAvailableRegions() {
+                return Object.keys(this.availableRegions).length > 0;
+            },
+            onRegionIdChange(event) {
+                // Defensive reads (BUG-25XDH4): selectedRegion may be '0'/'' and the id
+                // may be absent from availableRegions — never assume a matching entry.
+                const regionId = String(this.selectedRegion || '');
+                const region = this.availableRegions[regionId];
+
+                this.$refs.region.value = region ? region.name : ''
+                this.onChange(event)
+                this.fields['region'] && this.validateField(this.fields['region'])
+                // Region change reloads the first city level; an emptied selection
+                // resets the cascade and invalidates any in-flight request.
+                if (this.profileCode !== null && regionId && regionId !== '0') {
+                    this.loadLevelOptions(0, regionId);
+                } else if (!regionId || regionId === '0') {
+                    // Emptied selection — invalidate in-flight level loads and clear.
+                    ++this.cityRequestId;
+                    this.cityLevels = [];
+                    this.leafIndex = -1;
+                }
+                // else: region set but country unmapped — native `city` input stays.
+            },
+            updateSubmitBtnText() {
+                return this.isSubmitting
+                    ? '<?= $escaper->escapeJs(__('Saving...')) ?>'
+                    : '<?= $escaper->escapeJs(__('Save Address')) ?>'
+            },
+
+            // ---- Schema cascade helpers ----
+            get leafName() {
+                const level = this.cityLevels[this.leafIndex];
+                return level ? (level.selectedName || '') : '';
+            },
+            get leafId() {
+                const level = this.cityLevels[this.leafIndex];
+                return level && level.selectedId ? String(level.selectedId) : '';
+            },
+            get leafPathJson() {
+                const path = [];
+                for (let i = 0; i <= this.leafIndex; i++) {
+                    const level = this.cityLevels[i];
+                    if (level && level.selectedId) {
+                        path.push({city_id: level.selectedId, level: i + 1, default_name: level.selectedName});
+                    }
+                }
+                return path.length ? JSON.stringify(path) : '';
+            },
+            async fetchGraphQL(query) {
+                try {
+                    const response = await fetch('/graphql', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({query: query})
+                    });
+                    const json = await response.json();
+                    return (json && json.data) ? json.data : null;
+                } catch (error) {
+                    console.error('AddressDropdown schema renderer: GraphQL request failed', error);
+                    return null;
+                }
+            },
+            async loadSchemaForCountry(countryCode) {
+                const requestId = ++this.cityRequestId;
+                const data = await this.fetchGraphQL(
+                    'query{addressSchema(input:{country_id:' + JSON.stringify(String(countryCode)) + '})'
+                    + '{profile_code levels{entity_type depth label placeholder sort_order required}}}'
+                );
+                if (requestId !== this.cityRequestId) {
+                    // Superseded by a newer country/region change — do not touch state (BUG-25XDH4).
+                    return requestId;
+                }
+                const schema = data && data.addressSchema ? data.addressSchema : null;
+                const levels = schema && schema.levels ? schema.levels : [];
+
+                // Reset cascade state first (country switch).
+                this.cityLevels = [];
+                this.leafIndex = -1;
+
+                if (!schema || !schema.profile_code || levels.length === 0) {
+                    this.profileCode = null; // native Magento city input
+                    return requestId;
+                }
+                this.profileCode = schema.profile_code;
+
+                const regionLevel = levels.find(level => level.entity_type === 'region');
+                if (regionLevel) {
+                    this.regionLabel = regionLevel.label;
+                    this.regionPlaceholder = regionLevel.placeholder || this.regionPlaceholder;
+                }
+
+                this.cityLevels = levels
+                    .filter(level => level.entity_type === 'city')
+                    .map(level => ({
+                        label: level.label,
+                        placeholder: level.placeholder || '',
+                        required: !!level.required,
+                        options: [],
+                        selectedId: '',
+                        selectedName: '',
+                        loading: false,
+                        active: true
+                    }));
+                // Only the first level is selectable before a parent is chosen.
+                this.cityLevels.forEach((level, idx) => { level.active = idx === 0; });
+                return requestId;
+            },
+            async loadLevelOptions(idx, parentId) {
+                if (idx >= this.cityLevels.length || !this.profileCode) {
+                    return null;
+                }
+                const level = this.cityLevels[idx];
+                const requestId = ++this.cityRequestId;
+                level.loading = true;
+                level.options = [];
+                level.selectedId = '';
+                level.selectedName = '';
+                // Deactivate deeper levels until this one resolves.
+                this.cityLevels.forEach((other, otherIdx) => { if (otherIdx > idx) other.active = false; });
+                this.leafIndex = -1;
+
+                const input = idx === 0
+                    ? 'region_id:' + parseInt(parentId, 10)
+                    : 'parent_city_id:' + parseInt(parentId, 10);
+                try {
+                    const data = await this.fetchGraphQL(
+                        'query{addressLocations(input:{' + input
+                        + ',profile_code:' + JSON.stringify(this.profileCode)
+                        + '}){city_id default_name name has_children depth}}'
+                    );
+                    if (requestId !== this.cityRequestId) {
+                        // Superseded by a newer region/level change — do not touch state (BUG-25XDH4).
+                        return requestId;
+                    }
+                    const options = data && data.addressLocations ? data.addressLocations : [];
+                    level.options = options;
+                    level.active = true;
+                    if (options.length === 0) {
+                        // No qualifying children — the previous selection is the leaf.
+                        this.leafIndex = idx - 1;
+                    }
+                    return requestId;
+                } finally {
+                    // Only the still-active request may clear the loading flag (BUG-25XDH4).
+                    if (requestId === this.cityRequestId) {
+                        level.loading = false;
+                    }
+                }
+            },
+            async onLevelChange(idx, event) {
+                const level = this.cityLevels[idx];
+                const option = level.options.find(option => String(option.city_id) === String(level.selectedId));
+                level.selectedName = option ? option.default_name : '';
+                this.leafIndex = idx;
+                if (idx + 1 < this.cityLevels.length) {
+                    await this.loadLevelOptions(idx + 1, level.selectedId);
+                }
+                // Pass the real Alpine event: the form-validation mixin's onChange reads
+                // event.target (dataset/name) — a placeholder object throws TypeError.
+                this.onChange(event);
+            },
+            async preFillCascade() {
+                if (!this.cityLevels.length) {
+                    return;
+                }
+                const first = this.cityLevels[0];
+                // Saved addresses carry the leaf name (legacy data); new-format saves also
+                // carry address_city_id. Depth-1 profiles prefill exactly; deeper chains
+                // prefill the first level and require re-selection below it (known limitation
+                // until location_path is persisted server-side — TASK-YQSS3M).
+                const option = first.options.find(option => option.default_name === this.cityInitial)
+                    || first.options.find(option => String(option.city_id) === String(this.cityInitial));
+                if (!option) {
+                    return;
+                }
+                first.selectedId = String(option.city_id);
+                first.selectedName = option.default_name;
+                this.leafIndex = 0;
+                if (this.cityLevels.length > 1) {
+                    await this.loadLevelOptions(1, option.city_id);
+                }
+            },
+            async reapplySelected(key) {
+                // Alpine x-model does not re-apply a <select> value when its <option>s are
+                // populated asynchronously after the model was already set. Toggle through
+                // $nextTick so the saved value is re-selected once options exist (BUG-25XDH4).
+                const saved = this[key];
+                if (!saved || saved === '0') {
+                    return;
+                }
+                this[key] = '';
+                await this.$nextTick();
+                this[key] = saved;
+            }
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+
+        hyva.formValidation.addRule('telephone', (value, options) => {
+            const phoneNumber = value.trim().replace(' ', '');
+            if (phoneNumber && phoneNumber.length < (options.minlength || 3)) {
+                return '<?= $escaper->escapeJs(__('The telephone number is too short.')) ?>';
+            }
+
+            return true;
+        });
+
+        const postCodeSpecs = <?= /* @noEscape */ $block->getPostCodeConfig()->getSerializedPostCodes() ?>;
+
+        hyva.formValidation.addRule('postcode', (postCode, options, field, context) => {
+            context.removeMessages(field, 'postcode-warning')
+            const countryId = (context.fields['country_id'] && context.fields['country_id'].element.value),
+                  validatedPostCodeExamples = [],
+                  countryPostCodeSpecs = countryId && postCodeSpecs ? postCodeSpecs[countryId] : false;
+
+            if (! postCode || ! countryPostCodeSpecs) return true;
+
+            for (const postCodeSpec of Object.values(countryPostCodeSpecs)) {
+                if (new RegExp(postCodeSpec.pattern).test(postCode)) return true;
+                validatedPostCodeExamples.push(postCodeSpec.example);
+            }
+            if (validatedPostCodeExamples) {
+                context.addMessages(field, 'postcode-warning', [
+                    '<?= $escaper->escapeJs(__('Provided Zip/Postal Code seems to be invalid.')) ?>',
+                    '<?= $escaper->escapeJs(__(' Example: ')) ?>' + validatedPostCodeExamples.join('; ') + '. ',
+                    '<?= $escaper->escapeJs(__('If you believe it is the right one you can ignore this notice.')) ?>'
+                ]);
+            }
+
+            return true;
+        });
+    })
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

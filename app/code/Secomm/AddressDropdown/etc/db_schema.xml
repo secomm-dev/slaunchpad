@@ -8,22 +8,20 @@
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
 
-    <table name="sales_order_address">
-        <column name="sub_city" nullable="true" xsi:type="varchar" length="256" comment="Sub city"/>
-    </table>
-    <table name="quote_address">
-        <column name="sub_city" nullable="true" xsi:type="varchar" length="256" comment="Sub city"/>
-    </table>
-    <table name="customer_address_entity">
-        <column name="sub_city" nullable="true" xsi:type="varchar" length="256" comment="Sub city"/>
-    </table>
-
+    <!-- TASK-6MKF0V: sub_city columns (quote_address / sales_order_address / customer_address_entity)
+         and tables directory_city_sub_city(+) were dropped — city hierarchy is served by the
+         recursive directory_region_city.parent_city_id (address profile engine). -->
     <table name="directory_region_city" resource="default" engine="innodb" comment="City">
         <column xsi:type="int" name="city_id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="City Id Column"/>
         <column xsi:type="int" name="region_id" padding="10" unsigned="true" nullable="false" identity="false"
                 comment="Region Id Column"/>
         <column xsi:type="varchar" name="default_name" nullable="false" length="255" comment="Default Name Column"/>
+        <!-- FEAT-2PZQKJ / TASK-9AEAQQ: recursive hierarchy — parent_city_id NULL = root directly below region -->
+        <column xsi:type="int" name="parent_city_id" padding="10" unsigned="true" nullable="true" identity="false"
+                comment="Parent City Id Column (NULL = root below region)"/>
+        <!-- FEAT-2PZQKJ / TASK-9AEAQQ (D6): stable identifier for import dedupe + external references -->
+        <column xsi:type="varchar" name="code" nullable="true" length="64" comment="Location Code Column"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="city_id"/>
         </constraint>
@@ -31,8 +29,24 @@
                     referenceId="DIRECTORY_REGION_CITY_REGION_ID_DIRECTORY_COUNTRY_REGION_REGION_ID"
                     table="directory_region_city" column="region_id" referenceTable="directory_country_region"
                     referenceColumn="region_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign"
+                    referenceId="DIR_REGION_CITY_PARENT_CITY_ID_DIR_REGION_CITY_CITY_ID"
+                    table="directory_region_city" column="parent_city_id" referenceTable="directory_region_city"
+                    referenceColumn="city_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="DIRECTORY_REGION_CITY_REGION_ID_PARENT_CITY_ID_CODE">
+            <column name="region_id"/>
+            <column name="parent_city_id"/>
+            <column name="code"/>
+        </constraint>
         <index referenceId="DIRECTORY_REGION_CITY_CITY_ID" indexType="btree">
             <column name="city_id"/>
+        </index>
+        <index referenceId="DIRECTORY_REGION_CITY_REGION_ID_PARENT_CITY_ID" indexType="btree">
+            <column name="region_id"/>
+            <column name="parent_city_id"/>
+        </index>
+        <index referenceId="DIRECTORY_REGION_CITY_PARENT_CITY_ID" indexType="btree">
+            <column name="parent_city_id"/>
         </index>
     </table>
     <table name="directory_region_city_name" resource="default" engine="innodb" comment="CityName">
@@ -53,38 +67,26 @@
         </index>
     </table>
 
-    <table name="directory_city_sub_city" resource="default" engine="innodb" comment="SubCity">
-        <column xsi:type="int" name="sub_city_id" unsigned="true" nullable="false" identity="true"
-                comment="Sub City Id Column"/>
-        <column xsi:type="int" name="city_id" padding="10" unsigned="true" nullable="false" identity="false"
-                comment="City Id Column"/>
-        <column xsi:type="varchar" name="default_name" nullable="false" length="255" comment="Default Name Column"/>
+    <!-- FEAT-2PZQKJ / TASK-9AEAQQ (D5): address profile dataset membership.
+         A profile claims the divergent subtree ROOT nodes; nodes without an entry inherit
+         membership from their parent. location_id is deliberately polymorphic
+         (directory_country_region.region_id | directory_region_city.city_id) — no DB FK.
+         profile_code references XML-declared profiles (etc/address_profiles.xml) — logical FK only. -->
+    <table name="secomm_address_profile_location" resource="default" engine="innodb"
+           comment="Secomm AddressDropdown Profile Location Membership">
+        <column xsi:type="varchar" name="profile_code" nullable="false" length="64" comment="Profile Code"/>
+        <column xsi:type="varchar" name="location_type" nullable="false" length="16" comment="Location Type (region|city)"/>
+        <column xsi:type="int" name="location_id" padding="10" unsigned="true" nullable="false" identity="false"
+                comment="Location Id (region_id|city_id)"/>
+        <column xsi:type="boolean" name="include_subtree" nullable="false" default="1" comment="Include Subtree"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="sub_city_id"/>
+            <column name="profile_code"/>
+            <column name="location_type"/>
+            <column name="location_id"/>
         </constraint>
-        <constraint xsi:type="foreign"
-                    referenceId="DIRECTORY_REGION_SUB_CITY_CITY_ID_DIRECTORY_REGION_CITY_CITY_NAME"
-                    table="directory_city_sub_city" column="city_id" referenceTable="directory_region_city"
-                    referenceColumn="city_id" onDelete="CASCADE"/>
-        <index referenceId="DIRECTORY_CITY_SUB_CITY_SUB_CITY_ID" indexType="btree">
-            <column name="sub_city_id"/>
-        </index>
-    </table>
-    <table name="directory_city_sub_city_name" resource="default" engine="innodb" comment="SubCityName">
-        <column xsi:type="int" name="sub_city_id" unsigned="true" nullable="false" identity="false"
-                comment="Sub City Id Column"/>
-        <column xsi:type="varchar" name="locale" nullable="false" length="16" comment="Locale"/>
-        <column xsi:type="varchar" name="name" nullable="false" length="255" comment="Name Column"/>
-        <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="sub_city_id"/>
-            <column name="locale"/>
-        </constraint>
-        <constraint xsi:type="foreign"
-                    referenceId="DIRECTORY_REGION_SUB_CITY_NAME_SUB_CITY_NAME_DIRECTORY_REGION_SUBCITY_SUB_CITY_NAME"
-                    table="directory_city_sub_city_name" column="sub_city_id" referenceTable="directory_city_sub_city"
-                    referenceColumn="sub_city_id" onDelete="CASCADE"/>
-        <index referenceId="DIRECTORY_CITY_SUB_CITY_NAME_SUB_CITY_ID" indexType="btree">
-            <column name="sub_city_id"/>
+        <index referenceId="SECOMM_ADDRESS_PROFILE_LOCATION_LOCATION_TYPE_LOCATION_ID" indexType="btree">
+            <column name="location_type"/>
+            <column name="location_id"/>
         </index>
     </table>
 

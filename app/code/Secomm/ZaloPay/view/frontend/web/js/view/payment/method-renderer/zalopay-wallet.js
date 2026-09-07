@@ -110,18 +110,37 @@ define([
 
         /** Redirect to ZaloPay */
         continueToZaloPay: function () {
-            if (additionalValidators.validate()) {
-                var self = this;
+            var self = this;
+
+            if (this.validate() && additionalValidators.validate()) {
                 //update payment method information if additional data was changed
                 this.selectPaymentMethod();
                 setPaymentMethodAction(this.messageContainer).done(
                     function () {
+                        if (self.isPaymentFirst()) {
+                            // Payment-first (PayPal Express pattern): the ZaloPay
+                            // transaction is created from the ACTIVE QUOTE server-side.
+                            // No placeOrder() here — the order is placed only after
+                            // the payment is verified on return.
+                            redirectOnSuccessAction.execute();
+
+                            return;
+                        }
                         self.placeOrder();
                     }
                 );
 
                 return false;
             }
+        },
+
+        /**
+         * Whether the payment-first flow is enabled (payment/zalopay/payment_first).
+         *
+         * @returns {Boolean}
+         */
+        isPaymentFirst: function () {
+            return window.checkoutConfig.payment.zalopay.paymentFirst === true;
         }
     });
 });
