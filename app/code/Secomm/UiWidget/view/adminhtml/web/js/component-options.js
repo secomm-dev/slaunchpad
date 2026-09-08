@@ -8,9 +8,20 @@ define([
     'jquery',
     'mage/translate',
     'mage/adminhtml/wysiwyg/tiny_mce/setup',
-    'mage/adminhtml/wysiwyg/events'
+    'mage/adminhtml/wysiwyg/events',
+    'mage/validation'
 ], function ($, $t, WysiwygSetup, wysiwygEvents) {
     'use strict';
+
+    $.validator.addMethod(
+        'validate-secomm-ui-component',
+        function (value, element) {
+            var validateComponent = $(element).data('validate-secomm-ui-component');
+
+            return typeof validateComponent !== 'function' || validateComponent();
+        },
+        $t('Complete all required component fields before inserting the widget.')
+    );
 
     function canonicalize(value) {
         if (Array.isArray(value)) {
@@ -85,6 +96,10 @@ define([
             }
             if (type === 'decimal') {
                 input.attr('step', 'any');
+            }
+            if (type === 'media-image') {
+                // Magento's media chooser otherwise returns a temporary Admin directive URL.
+                input.data('force_static_path', true);
             }
         }
         if (type !== 'media-image') {
@@ -251,6 +266,87 @@ define([
             return false;
         }
 
+        function isMissing(value) {
+            return value === undefined || value === null || value === '';
+        }
+
+        function isRequired(field, rowData) {
+            if (field.required) {
+                return true;
+            }
+
+            return (field.required_with || []).some(function (peer) {
+                return !isMissing(rowData[peer]);
+            });
+        }
+
+        function addFieldError(path, message) {
+            var row = fieldsRoot.find('[data-path="' + path + '"]').first();
+            var control = row.children('.admin__field-control').first();
+
+            row.addClass('_error');
+            control.append($('<div/>', {
+                class: 'mage-error secomm-ui-field-error',
+                text: message
+            }));
+        }
+
+        function validateFields(fields, rowData, pathPrefix) {
+            var valid = true;
+
+            (fields || []).forEach(function (field) {
+                var path = pathPrefix ? pathPrefix + '.' + field.name : field.name;
+                var value = rowData[field.name];
+
+                if (field.type === 'collection') {
+                    var rows = Array.isArray(value) ? value : [];
+                    var minimum = Math.max(field.min_items || 0, field.required ? 1 : 0);
+
+                    if (rows.length < minimum) {
+                        addFieldError(path, $t('Add at least %1 item(s).').replace('%1', minimum));
+                        valid = false;
+                    }
+                    rows.forEach(function (item, index) {
+                        if (!validateFields(field.fields, item, path + '.' + index)) {
+                            valid = false;
+                        }
+                    });
+                    return;
+                }
+                if (isRequired(field, rowData) && isMissing(value)) {
+                    addFieldError(path, $t('This is a required field.'));
+                    valid = false;
+                }
+            });
+
+            return valid;
+        }
+
+        function validateComponent() {
+            var schema = config.schemas[component.val()];
+            var valid;
+
+            Object.keys(editors).forEach(function (id) {
+                var editor = editors[id].wysiwygInstance.get(id);
+
+                if (editor) {
+                    $('#' + id).val(editor.getContent()).trigger('change');
+                }
+            });
+            fieldsRoot.find('.secomm-ui-field-error').remove();
+            fieldsRoot.find('._error').removeClass('_error');
+            valid = !!schema && validateFields(schema.fields, state, '');
+            if (!valid) {
+                payloadError.removeAttr('hidden').text($t(
+                    'Complete all required component fields before inserting the widget.'
+                ));
+            } else {
+                payloadError.attr('hidden', true).text('');
+            }
+
+            return valid;
+        }
+
         function fieldRow(field, value, path, onChange) {
             var id = 'secomm-ui-' + idPrefix + '-' + (++sequence);
             var row = $('<div/>', {class: 'admin__field field'});
@@ -258,6 +354,11 @@ define([
                 .append($('<span/>', {text: $t(field.label || field.name)}));
             var control = $('<div/>', {class: 'admin__field-control control'});
             var input = createInput(field, value, id);
+
+            if (field.required) {
+                row.addClass('_required');
+                input.attr('aria-required', 'true');
+            }
 
             input.on('change input', function () {
                 onChange(normalizeInput(field, $(this).val()));
@@ -323,6 +424,10 @@ define([
                     list.append(item);
                 });
             }
+            wrapper.attr('data-path', path);
+            if (field.required) {
+                wrapper.addClass('_required');
+            }
             $('<label/>', {class: 'label admin__field-label'})
                 .append($('<span/>', {text: $t(field.label || field.name)}))
                 .appendTo(wrapper);
@@ -360,6 +465,7 @@ define([
             state = {};
             render();
         });
+        payload.data('validate-secomm-ui-component', validateComponent);
         render();
     };
 });

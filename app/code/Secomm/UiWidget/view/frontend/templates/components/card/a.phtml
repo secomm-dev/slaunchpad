@@ -27,9 +27,9 @@ $desktopImage = (string)($data['desktop_image'] ?? '');
          data-secomm-ui-component="card_a">
     <picture>
         <?php if ($desktopImage !== ''): ?>
-            <source media="(min-width: 1024px)" srcset="<?= $escaper->escapeUrl($desktopImage) ?>">
+            <source media="(min-width: 1024px)" srcset="<?= $escaper->escapeUrl($block->getMediaUrl($desktopImage)) ?>">
         <?php endif; ?>
-        <img src="<?= $escaper->escapeUrl($mobileImage) ?>"
+        <img src="<?= $escaper->escapeUrl($block->getMediaUrl($mobileImage)) ?>"
              alt="<?= $escaper->escapeHtmlAttr((string)$data['image_alt']) ?>"
              width="1500"
              height="480"

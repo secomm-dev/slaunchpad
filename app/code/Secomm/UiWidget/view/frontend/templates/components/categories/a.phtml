@@ -49,7 +49,7 @@ $itemClasses = $mobileSlider
                     <?php if (!empty($item['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
                     <img alt="<?= $escaper->escapeHtmlAttr((string)$item['image_alt']) ?>"
                          class="absolute w-full h-full object-cover md:group-hover:scale-105 transition duration-300"
-                         src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                         src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$item['image'])) ?>"
                          width="1280"
                          height="600"
                          loading="<?= $escaper->escapeHtmlAttr((string)($item['loading'] ?? 'lazy')) ?>">

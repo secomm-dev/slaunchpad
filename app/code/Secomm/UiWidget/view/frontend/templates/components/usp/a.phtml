@@ -54,7 +54,7 @@ $iconMethods = [
                     <div>
                         <div class="w-16 h-16 bg-blue-200 text-blue-800 rounded-full flex justify-center items-center">
                             <?php if (!empty($item['image'])): ?>
-                                <img src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                                <img src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$item['image'])) ?>"
                                      alt="<?= $escaper->escapeHtmlAttr((string)$item['image_alt']) ?>"
                                      width="48"
                                      height="48"

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fixed all schema-driven `media-image` controls to persist storefront media URLs instead of temporary Admin directive URLs.
+- Resolved portable widget media paths to the current store's absolute media base URL during storefront rendering.
+- Added schema-driven Admin validation for required fields, conditional required fields and minimum repeater item counts before widget insertion.
+
 ## 1.4.0 - 2026-08-28
 
 - Documented the component onboarding/upstream update workflow and verified the product-theme override contract with a non-shipped local fixture.
