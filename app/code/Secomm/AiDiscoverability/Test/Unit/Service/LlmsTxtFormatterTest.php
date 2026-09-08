@@ -185,4 +185,38 @@ class LlmsTxtFormatterTest extends TestCase
         // Route templates are never clickable Markdown links.
         $this->assertStringNotContainsString('[Product Detail](', $body);
     }
+
+    /**
+     * Product Search usage guidance renders after the Purpose line, and the
+     * documented query syntax survives verbatim: literal filter[...] brackets
+     * stay copy-pastable while markup/control characters are still stripped.
+     */
+    public function testUsageGuidanceRendersLiterallyAfterPurpose(): void
+    {
+        $sections = [
+            'Machine-readable Commerce' => [
+                ['detail' => [
+                    'label' => 'Product Search',
+                    'url' => 'https://example.com/ai/catalog/search?store=default',
+                    'purpose' => 'Search public products using the bounded AI Commerce catalog facade.',
+                    'usage' => [
+                        '- q=KEYWORD: keyword search.',
+                        '- filter[ATTRIBUTE]=OPTION_ID: allowlisted attributes only.',
+                    ],
+                ]],
+            ],
+        ];
+
+        $body = $this->formatter->format('S', '', 'vi_VN', $sections);
+
+        $this->assertStringContainsString(
+            "GET https://example.com/ai/catalog/search?store=default\n"
+            . "Purpose: Search public products using the bounded AI Commerce catalog facade.\n"
+            . '- q=KEYWORD: keyword search.' . "\n"
+            . '- filter[ATTRIBUTE]=OPTION_ID: allowlisted attributes only.',
+            $body
+        );
+        // The documented syntax must NOT be bracket-escaped.
+        $this->assertStringNotContainsString('\[', $body);
+    }
 }

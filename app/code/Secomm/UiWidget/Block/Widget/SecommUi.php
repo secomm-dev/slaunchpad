@@ -15,6 +15,7 @@ use Magento\Framework\View\Element\Template;
 use Magento\Widget\Block\BlockInterface;
 use Secomm\UiWidget\Api\TemplateResolverInterface;
 use Secomm\UiWidget\Model\Content\TrustedHtmlRenderer;
+use Secomm\UiWidget\Model\Media\UrlResolver;
 use Secomm\UiWidget\Model\Parameter\Validator;
 
 /**
@@ -37,6 +38,7 @@ class SecommUi extends Template implements BlockInterface
         private readonly TemplateResolverInterface $templateResolver,
         private readonly Validator $parameterValidator,
         private readonly TrustedHtmlRenderer $trustedHtmlRenderer,
+        private readonly UrlResolver $mediaUrlResolver,
         Random $random,
         array $data = []
     ) {
@@ -60,6 +62,14 @@ class SecommUi extends Template implements BlockInterface
     public function renderTrustedHtml(string $content): string
     {
         return $this->trustedHtmlRenderer->render($content);
+    }
+
+    /**
+     * Resolve a portable media value against the current store media base URL.
+     */
+    public function getMediaUrl(string $value): string
+    {
+        return $this->mediaUrlResolver->resolve($value);
     }
 
     /**

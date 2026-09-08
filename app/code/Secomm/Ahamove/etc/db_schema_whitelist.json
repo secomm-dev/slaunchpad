@@ -10,11 +10,9 @@
             "created_at": true,
             "updated_at": true
         },
-        "index": {
-            "AHAMOVE_CITY_CITY_ID": true
-        },
         "constraint": {
-            "PRIMARY": true
+            "PRIMARY": true,
+            "AHAMOVE_CITY_CITY_ID": true
         }
     },
     "ahamove_city_detail": {

@@ -27,5 +27,6 @@
 @import "../../../../../../../../vendor/magewirephp/magewire/src/view/frontend/tailwind/tailwind-source.css";
 @import "../../../../../../../code/Snowdog/Menu/view/frontend/tailwind/tailwind-source.css";
 
+@import "../../../../../../../../vendor/hyva-themes/magento2-cms-tailwind-jit/src/view/frontend/tailwind/module.css";
 @import "../../../../../../../../vendor/mollie/magento2-hyva-compatibility/src/view/frontend/tailwind/module.css";
 

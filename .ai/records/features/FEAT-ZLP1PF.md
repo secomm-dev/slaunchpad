@@ -14,8 +14,18 @@ status: done                 # Phase 1 scope §1–6 implemented; Phase 2 items 
 created: 2026-08-26
 updated: 2026-08-26
 ticket_ref: null
-decisions: []
+decisions:
+  - DEC-FEATZLP1PF-001       # §11.1 — payment contract fingerprint (Blocker 1 fix)
+  - DEC-FEATZLP1PF-002       # §11.2 — OrderFinalizer single success-session writer (Blocker 2 fix)
+  - DEC-FEATZLP1PF-003       # §11.3 — single flattened transaction, no intermediate ORDER_CREATED
 decision_assessment: material
+decision_approval_summary:
+  total: 3
+  pending_approval: [DEC-FEATZLP1PF-001, DEC-FEATZLP1PF-002, DEC-FEATZLP1PF-003]
+  approved: []
+  rejected: []
+  superseded: []
+  last_synced: '2026-08-27'
 components:
   - CMP-ZALOPAY
 source_areas:
@@ -27,6 +37,8 @@ source_areas:
   - app/code/Secomm/ZaloPay/Service/OrderFinalizer.php
   - app/code/Secomm/ZaloPay/Controller/Payment/Start.php
   - app/code/Secomm/ZaloPay/etc/db_schema.xml
+changes_project_state: true    # new table secomm_zalopay_payment_attempt + payment_first/attempt_ttl config flags
+verified_against_commit: ddd83871c5fc61122eb927ed0e7553fa692638df
 ---
 
 # FEAT-ZLP1PF — ZaloPay payment-first initiation, Phase 1

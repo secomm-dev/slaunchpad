@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<!--
+/**
+ * Launchpad MageplazaTranslate — Vietnamese translations for Mageplaza modules.
+ *
+ * BUG-GJT6C1 / ext ticket SLP-146. Module-level i18n CSVs are the only values
+ * source that reaches the js-translation dictionary of every theme scope,
+ * including the Magento/luma scope the Mageplaza OSC checkout page runs in
+ * (theme CSVs of Secomm/launchpad are NOT in the luma fallback chain).
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+	<module name="Launchpad_MageplazaTranslate"/>
+</config>

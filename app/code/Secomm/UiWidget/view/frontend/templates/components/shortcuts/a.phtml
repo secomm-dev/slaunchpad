@@ -43,7 +43,7 @@ $iconMethods = [
                            aria-label="<?= $escaper->escapeHtmlAttr((string)$item['label']) ?>"
                             <?= /* @noEscape validated static target attributes */ $targetAttributes ?>>
                             <?php if (!empty($item['image'])): ?>
-                                <img src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                                <img src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$item['image'])) ?>"
                                      alt="<?= $escaper->escapeHtmlAttr((string)$item['image_alt']) ?>"
                                      width="48"
                                      height="48"
