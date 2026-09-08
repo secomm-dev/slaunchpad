@@ -132,10 +132,21 @@ class SearchService
             throw new SearchUnavailableException(__('Search is temporarily unavailable.'));
         }
 
-        $products = array_values(array_filter(
-            $collection->getItems(),
-            static fn ($product): bool => $product instanceof ProductInterface
-        ));
+        // BUG-Q8L5RD: the Elasticsuite runtime can reset the window to page 1
+        // when the requested page is beyond the last page (within the parser
+        // cap) while the count query keeps reporting the true total. Derive
+        // the valid page range from total_count and the requested page_size —
+        // never from the collection items — and serve an empty window when
+        // the request exceeds it, so the response never maps another page's
+        // products under the requested page number.
+        $totalCount = (int) $collection->getSize();
+        $lastPage = (int) ceil($totalCount / max(1, $criteria['page_size']));
+        $products = $criteria['page'] > $lastPage
+            ? []
+            : array_values(array_filter(
+                $collection->getItems(),
+                static fn ($product): bool => $product instanceof ProductInterface
+            ));
 
         $statuses = $this->availability->getStatuses(array_map(
             static fn (ProductInterface $product): string => (string) $product->getSku(),
@@ -162,7 +173,7 @@ class SearchService
 
         return $this->searchResultDto->toArray(
             $items,
-            (int) $collection->getSize(),
+            $totalCount,
             $criteria['page'],
             $criteria['page_size']
         );

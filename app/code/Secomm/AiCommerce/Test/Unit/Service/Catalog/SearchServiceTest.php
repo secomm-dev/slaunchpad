@@ -75,6 +75,17 @@ class SearchServiceTest extends TestCase
     private array $collectionItems = [];
 
     /**
+     * Total reported by the collection mock (null = derive from items).
+     *
+     * Simulates the live-proven Elasticsuite quirk (BUG-Q8L5RD): the count
+     * query keeps reporting the TRUE total even after the runtime served
+     * page-1 items for a beyond-range window.
+     *
+     * @var int|null
+     */
+    private ?int $collectionSize = null;
+
+    /**
      * Wire a real parser (allowlist contract) around mocked collaborators.
      *
      * @return void
@@ -82,9 +93,12 @@ class SearchServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->collectionItems = [];
+        $this->collectionSize = null;
         $this->collection = $this->createMock(Collection::class);
         $this->collection->method('getItems')->willReturnCallback(fn (): array => $this->collectionItems);
-        $this->collection->method('getSize')->willReturnCallback(fn (): int => count($this->collectionItems));
+        $this->collection->method('getSize')->willReturnCallback(
+            fn (): int => $this->collectionSize ?? count($this->collectionItems)
+        );
         $this->collectionFactory = $this->createMock(CollectionFactory::class);
         $this->collectionFactory->method('create')->willReturn($this->collection);
 
@@ -160,6 +174,20 @@ class SearchServiceTest extends TestCase
             json_encode($condition),
             json_encode($calls)
         ));
+    }
+
+    /**
+     * Build a minimal product mock for result-shape tests.
+     *
+     * @return ProductInterface&MockObject
+     */
+    private function makeProduct(string $sku, int $id): ProductInterface&MockObject
+    {
+        $product = $this->createMock(ProductInterface::class);
+        $product->method('getSku')->willReturn($sku);
+        $product->method('getId')->willReturn($id);
+
+        return $product;
     }
 
     /**
@@ -435,5 +463,107 @@ class SearchServiceTest extends TestCase
         $result = $this->service->search($this->store, []);
 
         $this->assertCount(1, $result['items']);
+    }
+
+    /**
+     * BUG-Q8L5RD regression: a page beyond the last page must serve an
+     * empty window, never another page's products.
+     *
+     * Simulates the live-proven Elasticsuite quirk: the runtime resets the
+     * window to page 1 (items = page-1 products) while the count query
+     * still reports the true total. The guard must derive the valid range
+     * from total_count and the REQUESTED page_size — never from the items
+     * the mutated runtime hands back — and drop the loaded products.
+     */
+    public function testPageBeyondLastPageServesEmptyItems(): void
+    {
+        $this->collectionItems = [$this->makeProduct('dinnerware-terra-collection', 10)];
+        $this->collectionSize = 6;
+
+        $result = $this->service->search($this->store, ['page' => '7', 'page_size' => '1']);
+
+        $this->assertSame([], $result['items'], 'beyond-range page must not serve page-1 products');
+        $this->assertSame(6, $result['total_count']);
+        $this->assertSame(7, $result['page']);
+        $this->assertSame(1, $result['page_size']);
+    }
+
+    /**
+     * BUG-Q8L5RD regression: a far page still inside the parser cap
+     * (page <= 50) beyond the real last page must also serve an empty
+     * window with the requested metadata preserved.
+     */
+    public function testPageFarBeyondLastPageWithinParserCapServesEmptyItems(): void
+    {
+        $this->collectionItems = [$this->makeProduct('dinnerware-terra-collection', 10)];
+        $this->collectionSize = 6;
+
+        $result = $this->service->search($this->store, ['page' => '50', 'page_size' => '1']);
+
+        $this->assertSame([], $result['items']);
+        $this->assertSame(6, $result['total_count']);
+        $this->assertSame(50, $result['page']);
+        $this->assertSame(1, $result['page_size']);
+    }
+
+    /**
+     * The last valid page must pass through untouched by the guard.
+     */
+    public function testLastValidPageUnaffectedByBeyondRangeGuard(): void
+    {
+        $lastPageProduct = $this->makeProduct('fireplace-ground-grey', 15);
+        $this->collectionItems = [$lastPageProduct];
+        $this->collectionSize = 6;
+
+        $result = $this->service->search($this->store, ['page' => '6', 'page_size' => '1']);
+
+        $this->assertCount(1, $result['items']);
+        $this->assertSame('fireplace-ground-grey', $result['items'][0]['sku']);
+        $this->assertSame(6, $result['total_count']);
+        $this->assertSame(6, $result['page']);
+        $this->assertSame(1, $result['page_size']);
+    }
+
+    /**
+     * An in-range non-final page must pass through untouched by the guard.
+     */
+    public function testInRangePageUnaffectedByBeyondRangeGuard(): void
+    {
+        $this->collectionItems = [
+            $this->makeProduct('dinnerware-terra-collection', 10),
+            $this->makeProduct('dinnerware-terra-mug', 11),
+        ];
+        $this->collectionSize = 5;
+
+        $result = $this->service->search($this->store, ['page' => '2', 'page_size' => '2']);
+
+        $this->assertCount(2, $result['items']);
+        $this->assertSame(5, $result['total_count']);
+        $this->assertSame(2, $result['page']);
+        $this->assertSame(2, $result['page_size']);
+    }
+
+    /**
+     * Zero-result searches must serve empty items with correct metadata on
+     * page 1 and on any beyond-first page (never fabricate products).
+     */
+    public function testZeroResultSearchServesEmptyItemsOnAnyPage(): void
+    {
+        $this->collectionItems = [];
+        $this->collectionSize = 0;
+
+        $result = $this->service->search($this->store, ['q' => 'zzznomatch', 'page' => '1', 'page_size' => '20']);
+
+        $this->assertSame([], $result['items']);
+        $this->assertSame(0, $result['total_count']);
+        $this->assertSame(1, $result['page']);
+        $this->assertSame(20, $result['page_size']);
+
+        $result = $this->service->search($this->store, ['q' => 'zzznomatch', 'page' => '2', 'page_size' => '20']);
+
+        $this->assertSame([], $result['items']);
+        $this->assertSame(0, $result['total_count']);
+        $this->assertSame(2, $result['page']);
+        $this->assertSame(20, $result['page_size']);
     }
 }

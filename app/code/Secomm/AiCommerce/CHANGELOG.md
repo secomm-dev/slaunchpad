@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.2 (2026-09-08)
+
+Pagination-window correctness fix from the BUG-Q8L5RD follow-up (TL decision:
+Option A).
+
+### Fixed
+- Pages beyond the real last page (still inside the `page <= 50` parser cap)
+  now return `items: []` with the requested `page`/`page_size` echoed and the
+  true `total_count`. Previously the Elasticsuite runtime could reset the
+  collection window to page 1, so the endpoint served page-1 products under
+  the requested page number (response self-contradicting). `SearchService`
+  now derives the valid page range from `total_count` × requested
+  `page_size` after `load()` and never maps products from a window other
+  than the one requested.
+
 ## 1.2.1 (2026-09-08)
 
 Search correctness fixes from the live API audit (`/ai/catalog/search`).
