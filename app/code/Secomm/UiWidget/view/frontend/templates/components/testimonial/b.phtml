@@ -18,7 +18,7 @@ $rating = (int)($data['rating'] ?? 0);
     <?php if (!empty($data['avatar'])): ?>
         <div class="flex justify-center -mt-24 lg:mt-0">
             <div class="rounded-full overflow-hidden w-36 h-36 lg:w-56 lg:h-56">
-                <img src="<?= $escaper->escapeUrl((string)$data['avatar']) ?>"
+                <img src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$data['avatar'])) ?>"
                      alt="<?= $escaper->escapeHtmlAttr((string)$data['avatar_alt']) ?>"
                      width="240"
                      height="258"

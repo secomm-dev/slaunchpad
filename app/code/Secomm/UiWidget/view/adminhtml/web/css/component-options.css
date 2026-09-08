@@ -126,3 +126,7 @@
     flex-wrap: wrap;
     gap: 8px;
 }
+
+.secomm-ui-component-options .secomm-ui-field-error {
+    margin-top: 6px;
+}

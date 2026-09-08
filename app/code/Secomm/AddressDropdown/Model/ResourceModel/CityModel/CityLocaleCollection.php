@@ -20,6 +20,7 @@ use Psr\Log\LoggerInterface;
 use Secomm\AddressDropdown\Model\CityModel;
 use Secomm\AddressDropdown\Model\DataStorage;
 use Secomm\AddressDropdown\Model\ResourceModel\CityResource;
+use Zend_Db_Expr;
 
 class CityLocaleCollection extends CityCollection
 {
@@ -73,6 +74,13 @@ class CityLocaleCollection extends CityCollection
             'main_table.city_id = rname.city_id AND rname.locale = :region_locale',
             ['name' => 'rname.name']
         );
+        // Canonical generic sort (TASK-7HVGAB): effective localized display name with
+        // default_name fallback, city_id as deterministic tie-breaker — independent of
+        // insert order or execution plan. Language-agnostic: ordering quality is owned by
+        // the column collation (schema baseline). Mirrors LocationHierarchyProvider.
+        $this->getSelect()->order(new Zend_Db_Expr(
+            'COALESCE(rname.name, main_table.default_name) ASC, main_table.city_id ASC'
+        ));
 
         return $this;
     }

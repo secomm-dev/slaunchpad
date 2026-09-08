@@ -44,10 +44,28 @@
 - **Action**: đưa "diff non-nav skills vs toolkit `skills-source/`" vào checklist `after-ai-tool-update` để không sót skill drift lần sau.
 - **Status**: active
 
+## CL-0004 — Smile Elasticsuite Fulltext collection: 3 contract khác core SQL collection (sort theo giá, range cùng field, category filter)
+- **Date**: 2026-09-08
+- **Area**: magento / Secomm_AiCommerce
+- **Type**: gotcha
+- **Learning**: Khi collection runtime là `Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection` (preference của `Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection`), API core SQL có 3 bẫy: (1) **`setOrder('price')` đọc `_productLimitationFilters['customer_group_id']` KHÔNG fallback** trong `prepareSortOrders()` để build nested price sort — phải `addPriceData(Group::NOT_LOGGED_IN_ID, $websiteId)` trước, nếu không → undefined index → 500; (2) **`addFieldToFilter` lưu theo key mapped field name** (`$filters[$this->mapFieldName($field)] = $condition`) — gọi 2 lần cùng field thì bound sau GHI ĐÈ bound trước → gửi MỘT condition nhiều key (`['gteq'=>.., 'lteq'=>..]`, map `gteq→gte`, `lteq→lte` thành 1 Range query); (3) **`addCategoriesFilter()` bị lặng lẽ bỏ qua** (SQL-oriented, engine không thấy) — category constraint phải qua `addCategoryFilter(Model\Category)` → `addFieldToFilter('category_ids', ...)` → engine; category không tồn tại cần tự validate qua `CategoryRepositoryInterface::get($id, $storeId)` trước. Lưu ý `_applyProductLimitations()` của core early-return trên collection này (không set limitation keys theo nghĩa SQL) nên `addPriceData` KHÔNG sinh SQL price join.
+- **Context**: Audit live `/ai/catalog/search` — 3 defects (sort 500, price_min dropped, category ignored); root-cause từ vendor source, không đoán hành vi core.
+- **Evidence/Link**: `.ai/records/bugs/BUG-7M4KQX.md`, `BUG-K8T3WR.md`, `BUG-V2N9DL.md`; `vendor/smile/elasticsuite/src/module-elasticsuite-catalog/Model/ResourceModel/Product/Fulltext/Collection.php` (`prepareSortOrders`, `addFieldToFilter`, `addCategoryFilter`, `_renderFiltersBefore`).
+- **Status**: active
+
+## CL-0005 — Smile Fulltext collection: page ngoài phạm vi bị phục vụ nội dung trang 1 (lifecycle của instance class gốc, không phải code collection)
+- **Date**: 2026-09-08
+- **Area**: magento / Secomm_AiCommerce
+- **Type**: gotcha
+- **Learning**: Với collection Smile Elasticsuite, khi `page > ceil(total/page_size)` (nhưng vẫn dưới cap parser 50), engine nhận `from=0` thay vì `size*(page-1)` → API trả **items của trang 1** kèm `"page": <trang request>`. Bằng chứng probe (BUG-Q8L5RD): (1) TRACE slowlog OpenSearch chỉ thấy `"from":0,"size":1`, không có `from:6`; (2) engine trực tiếp với `from:6` trả hits rỗng đúng; (3) **subclass trần** của Smile collection chạy đúng (giữ curPage=7, 0 items) còn **instance class gốc** (qua `$om->create()`/CollectionFactory → Interceptor/di compiled) thì `_curPage` bị đưa về 1 sau `load()` — reset nằm ở lifecycle của instance class gốc (tầng di/interception), không phải logic collection, không có call `setCurPage(1)` nào. Ảnh hưởng cả flow CLI lẫn HTTP, độc lập với code module (probe không đi qua AiCommerce). Khi audit pagination trên Elasticsuite: **luôn test thêm trang ngoài phạm vi**, đừng tin echo `page` của response là window thực.
+- **Context**: Phase 8 verify llms.txt Example 2 trên result set hẹp (2 items) phát hiện page=2 trả items trang 1.
+- **Evidence/Link**: `.ai/records/bugs/BUG-Q8L5RD.md`; `vendor/smile/elasticsuite/src/module-elasticsuite-catalog/Model/ResourceModel/Product/Fulltext/Collection.php` (`prepareRequest`: `from = size*(max(1,curPage)-1)`); slowlog TRACE trên `magento2_default_catalog_product_*`.
+- **Status**: active
+
 <!--
 Template cho entry kế tiếp — copy từ đây:
 
-## CL-0003 — {tiêu đề ngắn}
+## CL-0004 — {tiêu đề ngắn}
 - **Date**:
 - **Area**:
 - **Type**:

@@ -55,7 +55,7 @@ $marqueeGroupClasses = 'shrink-0 flex gap-[var(--gap)] items-center justify-arou
                         <a href="<?= $escaper->escapeUrl((string)$item['url']) ?>"
                             <?php if (!empty($item['open_in_new'])): ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>>
                     <?php endif; ?>
-                    <img src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                    <img src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$item['image'])) ?>"
                          alt="<?= $escaper->escapeHtmlAttr((string)$item['image_alt']) ?>"
                          width="<?= $escaper->escapeHtmlAttr((string)($item['width'] ?? 270)) ?>"
                          height="<?= $escaper->escapeHtmlAttr((string)($item['height'] ?? 95)) ?>"
@@ -66,7 +66,7 @@ $marqueeGroupClasses = 'shrink-0 flex gap-[var(--gap)] items-center justify-arou
 
             <div aria-hidden="true" class="<?= $escaper->escapeHtmlAttr($marqueeGroupClasses) ?>">
                 <?php foreach ($items as $item): ?>
-                    <img src="<?= $escaper->escapeUrl((string)$item['image']) ?>"
+                    <img src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$item['image'])) ?>"
                          alt=""
                          width="<?= $escaper->escapeHtmlAttr((string)($item['width'] ?? 270)) ?>"
                          height="<?= $escaper->escapeHtmlAttr((string)($item['height'] ?? 95)) ?>"

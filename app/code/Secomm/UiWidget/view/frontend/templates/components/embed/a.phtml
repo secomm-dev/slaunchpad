@@ -76,7 +76,7 @@ $actionTitle = __('Play %1', $title);
                   bg-center overflow-hidden p-4"
            x-show="!open">
             <?php if ($poster !== ''): ?>
-                <img src="<?= $escaper->escapeUrl($poster) ?>"
+                <img src="<?= $escaper->escapeUrl($block->getMediaUrl($poster)) ?>"
                      alt=""
                      class="absolute inset-0 h-full w-full object-cover"
                      width="1280"

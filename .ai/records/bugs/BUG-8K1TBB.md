@@ -14,7 +14,7 @@ specification_ref: Embedded Mini-Spec
 risk: low
 status: in_progress
 created: 2026-08-26
-updated: 2026-08-26
+updated: 2026-09-07
 ticket_ref:
 affects_version: Magento 2.4.8-p5 + Hyva 3.x (default theme 1.5.2)
 decisions: []
@@ -22,14 +22,16 @@ decision_assessment: none-material
 # Knowledge-consolidation contract (RM-07)
 components:
   - app/design/frontend/Secomm/launchpad/i18n
+  - app/design/frontend/Secomm/launchpad/Magento_Review/templates
 source_areas:
   - theme-i18n
+  - theme-template
 changes_project_state: false
 changes_architecture: false
 changes_integration: false
 changes_known_limitations: false
-verified_against_commit:
-last_verified: 2026-08-26
+verified_against_commit: 6f5e796b (working tree, uncommitted)
+last_verified: 2026-09-07
 supersedes:
   - BUG-49DHE5
 ---
@@ -43,6 +45,8 @@ supersedes:
 
 Trên storefront vi_VN, toàn bộ chuỗi UI của product review hiển thị bằng tiếng Anh: form review trên PDP ("Write Your Own Review", "Nickname", "Summary", "Your Rating", "Submit Review"), danh sách review ("Customer Reviews", "Review by"), summary helper ("Be the first to review this product") và trang My Account → My Product Reviews. Phần sót phát hiện sau (SLP-06, gộp từ BUG-49DHE5): pager danh sách review ("Items 1 to 10 of 11 total", "Show") và dòng ngữ cảnh form ("You're reviewing:").
 
+Follow-up ngày 2026-09-05: khi submit form review còn thiếu trường bắt buộc, HTML5 constraint validation của trình duyệt chặn sự kiện submit và hiển thị thông báo native trước khi validation của Magento/Hyvä chạy. SLP-106 bổ sung yêu cầu tắt native constraint validation cho riêng form này để dùng validation đã có của review form.
+
 ## Mini Spec
 
 ### Goal
@@ -53,17 +57,22 @@ Toàn bộ chuỗi review hiển thị tiếng Việt trên storefront vi_VN, đ
 
 Các chuỗi review được render qua `__()` trên PDP (form + list + summary) và customer account dịch sang tiếng Việt khi locale là vi_VN; giữ nguyên English khi locale là en_US.
 
+Khi submit review thiếu rating, nickname, summary hoặc nội dung, trình duyệt không hiển thị validation bubble native. Sự kiện submit đi qua handler Magento/Hyvä hiện có, hiển thị thông báo validation đã được dịch và không gửi GraphQL mutation khi dữ liệu chưa hợp lệ.
+
 ### Constraints / Rules
 
 - Không sửa template trong `vendor/hyva-themes/magento2-default-theme/` (third-party — chỉ fix qua theme dictionary).
 - Không đổi placeholder `%1`/`%2`/`%3` trong chuỗi có tham số.
 - BR-001: mirror cùng dòng key vào `en_US.csv` (giá trị = bản English).
 - Giữ nguyên định dạng CSV hiện có (`"source","translation"`, không header).
+- Chỉ tắt HTML5 constraint validation ở `#review_form`; giữ nguyên các thuộc tính `required` và handler `@submit.prevent="submitForm()"` hiện có.
+- Reset `errors` trước mỗi lượt validation để form có thể submit lại sau khi người dùng sửa đủ dữ liệu; không refactor handler.
+- Giữ nguyên vị trí reCAPTCHA của SLP-44, validation/token reCAPTCHA, GraphQL mutation và `X-ReCaptcha` header.
 
 ### Out of Scope
 
 - Nhãn rating do admin cấu hình trong DB (`Quality`/`Value`/`Price`) — là store data, không dịch qua CSV; cần đổi trong Admin nếu client muốn.
-- Chuỗi JS validation chung (`This is a required field.`) — thuộc cơ chế i18n JS của Hyvä, ngoài phạm vi bug này.
+- Không refactor hoặc thay thế validation handler của Hyvä review form; không đổi nội dung thông báo validation hiện có.
 - Bản dịch cho các module khác ngoài Magento_Review.
 
 ### Acceptance Criteria
@@ -75,6 +84,17 @@ Các chuỗi review được render qua `__()` trên PDP (form + list + summary)
 - AC-005: `en_US.csv` có đủ các dòng key mirror (giá trị English) — BR-001.
 - AC-006: Flash message sau khi submit review ("You submitted your review for moderation." / controller message "Your review has been accepted for moderation.") hiển thị tiếng Việt.
 - AC-007 (SLP-06): Pager danh sách review hiển thị "Mục 1 đến 10 trong tổng số 11" + nút "Hiển thị"; dòng ngữ cảnh form hiển thị "Bạn đang đánh giá: <sản phẩm>".
+- AC-008 (SLP-106 follow-up): `#review_form` có `novalidate`; submit form rỗng không hiện HTML5 validation bubble, chạy handler Magento/Hyvä và hiển thị thông báo validation hiện có; không gọi GraphQL khi invalid.
+- AC-009 (SLP-106 follow-up): Sau một lượt submit invalid, điền đủ rating, nickname, summary và nội dung rồi submit lại thì validation pass, GraphQL flow tiếp tục bình thường.
+
+## Approach
+
+Specification: Embedded Mini-Spec — BUG-8K1TBB (SLP-106)
+
+1. Giữ nguyên child-theme override đã tạo cho SLP-44; thêm duy nhất thuộc tính `novalidate` vào `#review_form`.
+2. Không sửa `vendor/`, không thay đổi `required`, Alpine validation, reCAPTCHA hoặc GraphQL flow.
+3. Verify bằng static assertion (form có đúng một `novalidate`, handler/required/reCAPTCHA còn nguyên), PHP lint và browser test submit form rỗng nếu local storefront khả dụng.
+4. Reset `errors` ngay trước mỗi lượt validation để giữ khả năng submit lại sau khi người dùng sửa dữ liệu; không thay thế handler hiện có.
 
 ## Steps to Reproduce
 
@@ -120,3 +140,13 @@ Chú ý dictionary (frontend area): các key generic (`Review`, `Reviews`, `Summ
 - **SLP-06 verify (sau gộp):** dictionary 10/10 phrase mới resolve (810 entries); live PDP `/joust-duffle-bag.html` (11 review, store vi_VN): "Mục 1 đến 10 trong tổng số 11" · "Hiển thị" · "Bạn đang đánh giá: Joust Duffle Bag" · aria "Bạn đang đọc trang" — evidence tại `.ai/runtime/evidence/BUG-49DHE5/`
 
 > Raw debug output → `.ai/runtime/evidence/BUG-8K1TBB/` (verify-i18n.php + verify-output.txt) · `.ai/runtime/evidence/BUG-49DHE5/` (live-verify.txt)
+
+### SLP-106 follow-up verification (2026-09-07)
+
+- Static (rendered HTML, PDP `/joust-duffle-bag.html` store vi_VN): `#review_form` có đúng một `novalidate`; `validate()` render `this.errors = 0;`; message render dạng escapeJs `Vui lòng…` (= "Vui lòng kiểm tra bạn đã nhập đủ thông tin bắt buộc"); `required`/`@submit.prevent`/reCAPTCHA field name/GraphQL mutation còn nguyên; `php -l` pass.
+- Headless browser QC (chrome-headless-shell 1234, raw CDP — [verify-novalidate.mjs](../../../runtime/evidence/BUG-8K1TBB/verify-novalidate.mjs)): **10/10 PASS** (exit 0).
+  - AC-008: `form.noValidate=true`, `checkValidity()=false`, submit rỗng vẫn tới handler (native không chặn) → message đã dịch hiển thị, **0** GraphQL call.
+  - AC-009: điền đủ rating/nickname/summary/review rồi submit lại → validate pass (errors reset hoạt động) → GraphQL `createProductReview` chạy end-to-end, success message "Đánh giá của bạn đã được gửi và chờ duyệt."
+  - Caveat: headless không render bubble native — bằng chứng mang tính hành vi (checkValidity false + submit event vẫn fire). Browser QC thủ công trên Chrome thật khuyến nghị thêm 1 lượt khi release.
+  - Side effect: 3 review Pending tạo bởi QC trong local DB — `review_id` 619/620/621, nickname "QC SLP-106" (xóa qua Admin > Reviews).
+- Scope check: git diff chỉ 2 hunk trong `Magento_Review/templates/form.phtml` (`novalidate` + `errors` reset); CSV không đổi (phrase đã có từ đợt i18n).

@@ -20,7 +20,7 @@ $instanceId = $block->getInstanceId();
         <?php foreach ($highlights as $highlight): ?>
             <?php $imageRight = ($highlight['image_position'] ?? 'left') === 'right'; ?>
             <div class="flex flex-col <?= $imageRight ? 'md:flex-row-reverse' : 'md:flex-row' ?> md:items-start gap-4 my-6">
-                <img src="<?= $escaper->escapeUrl((string)$highlight['image']) ?>"
+                <img src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$highlight['image'])) ?>"
                      alt="<?= $escaper->escapeHtmlAttr((string)$highlight['image_alt']) ?>"
                      width="640"
                      height="640"

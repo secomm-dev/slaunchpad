@@ -1,0 +1,39 @@
+=== store 1 (vi) :: customer_password_forgot_email_template ===
+SUBJECT: Đặt lại mật khẩu  của bạn
+PASS  Đặt lại mật khẩu
+PASS  Gần đây có yêu cầu đổi mật khẩu
+PASS  hãy đặt mật khẩu mới tại đây
+PASS  Đặt mật khẩu mới
+PASS  bỏ qua email này và mật khẩu của bạn sẽ giữ nguyên
+CLEAN  EN-leak: There was recently a request to change
+CLEAN  EN-leak: If you requested this change
+CLEAN  EN-leak: password will remain the same
+RESET LINK: present
+
+=== store 1 (vi) :: customer_password_reset_password_template ===
+SUBJECT: Mật khẩu Main Website Store của bạn đã được thay đổi
+PASS  Mật khẩu
+PASS  Chúng tôi đã nhận được yêu cầu thay đổi thông tin
+PASS  vui lòng liên hệ ngay với chúng tôi qua
+PASS  hoặc gọi cho chúng tôi qua
+CLEAN  EN-leak: There was recently a request to change
+CLEAN  EN-leak: If you requested this change
+CLEAN  EN-leak: password will remain the same
+RESET LINK: MISSING
+
+=== store 2 (en) :: customer_password_forgot_email_template ===
+SUBJECT: Reset your  password
+PASS  There was recently a request to change the password
+PASS  Set a New Password
+FAIL  password has been changed
+FAIL  please contact us immediately
+RESET LINK: present
+
+=== store 2 (en) :: customer_password_reset_password_template ===
+SUBJECT: Your Main Website Store password has been changed
+FAIL  There was recently a request to change the password
+FAIL  Set a New Password
+PASS  password has been changed
+PASS  please contact us immediately
+RESET LINK: MISSING
+

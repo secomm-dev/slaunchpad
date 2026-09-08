@@ -16,9 +16,9 @@
             <column name="entity_id"/>
             <column name="city_id"/>
         </constraint>
-        <index referenceId="AHAMOVE_CITY_CITY_ID" indexType="btree">
+        <constraint xsi:type="unique" referenceId="AHAMOVE_CITY_CITY_ID">
             <column name="city_id"/>
-        </index>
+        </constraint>
     </table>
     <table name="ahamove_city_detail" resource="default" engine="innodb"
            comment="Ahamove City Details Table">

@@ -1,0 +1,56 @@
+[
+  {
+    "lang": "vi",
+    "calendar": {
+      "visible": true,
+      "month": "Tháng chín",
+      "year": "2026",
+      "weekdayMin": [
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "CN"
+      ],
+      "prevNext": [
+        "Trước",
+        "Sau"
+      ]
+    },
+    "regionalViRegistered": true,
+    "commentBlockPresent": false,
+    "commentsLabel": null,
+    "commentPlaceholder": null,
+    "titleDeliveryDate": "Ngày giao hàng",
+    "consoleErrorsReal": []
+  },
+  {
+    "lang": "en",
+    "calendar": {
+      "visible": true,
+      "month": "September",
+      "year": "2026",
+      "weekdayMin": [
+        "Su",
+        "Mo",
+        "Tu",
+        "We",
+        "Th",
+        "Fr",
+        "Sa"
+      ],
+      "prevNext": [
+        "Prev",
+        "Next"
+      ]
+    },
+    "regionalViRegistered": false,
+    "commentBlockPresent": false,
+    "commentsLabel": null,
+    "commentPlaceholder": null,
+    "titleDeliveryDate": "Delivery Date",
+    "consoleErrorsReal": []
+  }
+]

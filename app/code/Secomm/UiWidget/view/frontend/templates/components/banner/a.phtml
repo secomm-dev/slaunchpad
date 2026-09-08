@@ -68,10 +68,10 @@ $ctaClasses = implode(' ', array_filter([
          data-secomm-ui-component="banner_a">
     <picture>
         <?php if (!empty($data['desktop_image'])): ?>
-            <source srcset="<?= $escaper->escapeUrl((string)$data['desktop_image']) ?>"
+            <source srcset="<?= $escaper->escapeUrl($block->getMediaUrl((string)$data['desktop_image'])) ?>"
                     media="(min-width: 1024px)">
         <?php endif; ?>
-        <img src="<?= $escaper->escapeUrl((string)$data['mobile_image']) ?>"
+        <img src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$data['mobile_image'])) ?>"
              width="1280" height="640"
              alt="<?= $escaper->escapeHtmlAttr((string)$data['image_alt']) ?>"
              loading="<?= $escaper->escapeHtmlAttr((string)($data['loading'] ?? 'lazy')) ?>"

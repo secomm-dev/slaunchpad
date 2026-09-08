@@ -18,6 +18,14 @@
   - IpnUpdateDetailsCommand - IPN update handler
 
 ### Changed
+- Controllers `Start`, `Ipn` and `ReturnAction` migrated to composition
+  (`implements HttpGetActionInterface` / `HttpPostActionInterface` +
+  `CsrfAwareActionInterface`, injected dependencies instead of
+  `extends \Magento\Framework\App\Action\Action` — removed the deprecated
+  base-class inheritance flagged by static analysis (PHP6406). Behaviour
+  unchanged: same routes, same CSRF semantics, legacy fall-through of
+  `Start::executeLegacy()` (null when no order) and `Ipn` non-POST `null`
+  result preserved.
 - PHP 8.1-8.4 support via composer.json constraint update
 - Migrated HTTP client from ZendClient to LaminasClient in Gateway/Http/Client/Zend.php
 - Updated Gateway/Helper/Authorization.php:

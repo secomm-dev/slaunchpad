@@ -118,7 +118,9 @@ class Address extends AbstractHelper
                 ['n' => $tableName],
                 "m.city_id = n.city_id AND n.locale = '".$this->getLocale()."'",
                 ['n.name']
-            )->order('n.name ASC');
+            // Canonical generic sort (TASK-7HVGAB): localized display name with
+            // default_name fallback, city_id tie-breaker — mirrors CityLocaleCollection.
+            )->order(new \Zend_Db_Expr('COALESCE(n.name, m.default_name) ASC, m.city_id ASC'));
         $cities = $adapter->fetchAll($select);
 
         if (count($cities) > 0) {
