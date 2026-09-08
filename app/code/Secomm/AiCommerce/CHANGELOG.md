@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.2.1 (2026-09-08)
+
+Search correctness fixes from the live API audit (`/ai/catalog/search`).
+Bugs: `BUG-7M4KQX`, `BUG-K8T3WR`, `BUG-V2N9DL`.
+
+### Fixed
+- `sort=price_asc` / `price_desc` no longer crash with 500: the service pins
+  the guest price context via `addPriceData(Group::NOT_LOGGED_IN_ID, website)`
+  before ordering (the Elasticsuite collection reads
+  `_productLimitationFilters['customer_group_id']` unguarded when building the
+  nested price sort).
+- `price_min` + `price_max` combined are now issued as ONE
+  `addFieldToFilter('price', ['gteq' => .., 'lteq' => ..])` condition — the
+  collection stores filters keyed by mapped field name, so two separate calls
+  silently overwrote the lower bound.
+- `category=<id>` now actually constrains the engine query through
+  `addCategoryFilter()` (the SQL-oriented `addCategoriesFilter()` is silently
+  ignored by the Elasticsuite collection). A nonexistent category resolves to
+  400 `invalid_parameter` instead of silently returning the full catalog.
+
 ## 1.2.0 (2026-08-26)
 
 Configurable AI read endpoint base path. Spec: `SPEC-TASK-HL3WQD`.

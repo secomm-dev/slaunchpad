@@ -3,13 +3,17 @@ declare(strict_types=1);
 
 namespace Secomm\AiCommerce\Service\Catalog;
 
+use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection as FulltextCollection;
+use Magento\Customer\Model\Group;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
 use Secomm\AiCommerce\Service\Input\SearchQueryParser;
+use Secomm\AiCommerce\Service\InvalidParameterException;
 use Secomm\AiCommerce\Service\Inventory\Availability;
 use Secomm\AiCommerce\Service\Response\ProductDto;
 use Secomm\AiCommerce\Service\Response\SearchResultDto;
@@ -41,6 +45,7 @@ class SearchService
      * @param ProductDto $productDto product DTO builder
      * @param SearchResultDto $searchResultDto search result envelope builder
      * @param PublicUrlResolver $urlResolver batch public/canonical URL resolver
+     * @param CategoryRepositoryInterface $categoryRepository category resolution for the category filter
      */
     public function __construct(
         private readonly ProductCollectionFactory $collectionFactory,
@@ -48,7 +53,8 @@ class SearchService
         private readonly Availability $availability,
         private readonly ProductDto $productDto,
         private readonly SearchResultDto $searchResultDto,
-        private readonly PublicUrlResolver $urlResolver
+        private readonly PublicUrlResolver $urlResolver,
+        private readonly CategoryRepositoryInterface $categoryRepository
     ) {
     }
 
@@ -58,6 +64,7 @@ class SearchService
      * @param StoreInterface $store resolved store view
      * @param mixed[] $params raw GET parameters (parser enforces the allowlist)
      * @return mixed[] search result DTO array
+     * @throws InvalidParameterException when the parser or the category filter reject the request
      * @throws SearchUnavailableException when the engine/index cannot serve the query
      */
     public function search(StoreInterface $store, array $params): array
@@ -74,21 +81,38 @@ class SearchService
                  'special_from_date', 'special_to_date', 'price_type']
             );
             $collection->setVisibility([Visibility::VISIBILITY_IN_SEARCH, Visibility::VISIBILITY_BOTH]);
+            // Guest price context: the Elasticsuite collection reads
+            // _productLimitationFilters['customer_group_id'] unguarded when
+            // building the nested price sort — without addPriceData a
+            // price_asc/price_desc request crashes with an undefined index.
+            $collection->addPriceData(Group::NOT_LOGGED_IN_ID, (int) $store->getWebsiteId());
 
             if ($criteria['q'] !== null) {
                 $collection->addSearchFilter($criteria['q']);
             }
 
             if ($criteria['category_id'] !== null) {
-                $collection->addCategoriesFilter(['eq' => [$criteria['category_id']]]);
+                try {
+                    $category = $this->categoryRepository->get((int) $criteria['category_id'], $storeId);
+                } catch (NoSuchEntityException $exception) {
+                    throw new InvalidParameterException(__('Invalid request parameters.'));
+                }
+                // Engine-level category constraint — the SQL-oriented
+                // addCategoriesFilter is silently ignored by the Elasticsuite
+                // collection, leaking the unfiltered catalog.
+                $collection->addCategoryFilter($category);
             }
 
-            if ($criteria['price_min'] !== null) {
-                $collection->addFieldToFilter('price', ['gteq' => $criteria['price_min']]);
-            }
+            // ONE combined condition: the collection stores filters keyed by
+            // mapped field name, so a second addFieldToFilter('price', ...)
+            // would silently overwrite the first bound.
+            $priceCondition = array_filter([
+                'gteq' => $criteria['price_min'],
+                'lteq' => $criteria['price_max'],
+            ], static fn ($value): bool => $value !== null);
 
-            if ($criteria['price_max'] !== null) {
-                $collection->addFieldToFilter('price', ['lteq' => $criteria['price_max']]);
+            if ($priceCondition !== []) {
+                $collection->addFieldToFilter('price', $priceCondition);
             }
 
             foreach ($criteria['filters'] as $attribute => $value) {
@@ -100,6 +124,10 @@ class SearchService
             $collection->setCurPage($criteria['page']);
             $collection->setPageSize($criteria['page_size']);
             $collection->load();
+        } catch (InvalidParameterException $exception) {
+            // Parser/category rejections must surface as 400, not be
+            // re-wrapped as an engine outage.
+            throw $exception;
         } catch (LocalizedException $exception) {
             throw new SearchUnavailableException(__('Search is temporarily unavailable.'));
         }
