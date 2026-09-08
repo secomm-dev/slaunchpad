@@ -3,6 +3,8 @@
 namespace Vnpayment\VNPAY\Controller\Order;
 
 use Magento\Framework\App\Action\Context;
+use Magento\Quote\Api\CartManagementInterface;
+use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
 
 class Pay extends \Magento\Framework\App\Action\Action {
 
@@ -19,13 +21,21 @@ class Pay extends \Magento\Framework\App\Action\Action {
     protected $logger;
     protected $quoteFactory;
 
+    /** @var CartManagementInterface */
+    protected $cartManagement;
+
+    /** @var QuoteCollectionFactory */
+    protected $quoteCollectionFactory;
+
     public function __construct(
         Context $context,
         \Magento\Sales\Model\Order $order,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Vnpayment\VNPAY\Logger\Logger $logger,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        CartManagementInterface $cartManagement,
+        QuoteCollectionFactory $quoteCollectionFactory
     ) {
         parent::__construct($context);
         $this->order = $order;
@@ -33,6 +43,8 @@ class Pay extends \Magento\Framework\App\Action\Action {
         $this->scopeConfig = $scopeConfig;
         $this->logger = $logger;
         $this->quoteFactory = $quoteFactory;
+        $this->cartManagement = $cartManagement;
+        $this->quoteCollectionFactory = $quoteCollectionFactory;
     }
 
     /**
@@ -66,19 +78,43 @@ class Pay extends \Magento\Framework\App\Action\Action {
         $secureHash = hash_hmac('sha512', $hashData, $SECURE_SECRET);
         if ($secureHash == $vnp_SecureHash) {
             if ($vnp_ResponseCode == '00') {
+                $txnRef = $this->getRequest()->getParam('vnp_TxnRef');
+                $order = $this->order->loadByIncrementId($txnRef);
+                if (!$order->getId()) {
+                    $quote = $this->quoteCollectionFactory->create()
+                        ->addFieldToFilter('reserved_order_id', $txnRef)
+                        ->addFieldToFilter('is_active', 1)
+                        ->getFirstItem();
+                    if ($quote->getId()) {
+                        try {
+                            $orderId = $this->cartManagement->placeOrder($quote->getId());
+                            $order = $this->order->load($orderId);
+                        } catch (\Exception $e) {
+                            $this->logger->error('VNPAY place order error: ' . $e->getMessage());
+                        }
+                    }
+                }
+                if ($order->getId()) {
+                    $this->checkoutSession->setLastQuoteId($order->getQuoteId());
+                    $this->checkoutSession->setLastSuccessQuoteId($order->getQuoteId());
+                    $this->checkoutSession->setLastOrderId($order->getId());
+                    $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
+                }
                 $this->messageManager->addSuccess(__("Thanh toán thành công"));
                 return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success');
             } else {
                 $this->messageManager->addError(__("Thanh toán thất bại"));
                 $this->logger->error("responseCode: $vnp_ResponseCode - msg: ".$this->getResponseDescription($vnp_ResponseCode));
+                $this->clearStaleOrderSession();
                 $this->restoreCart();
-                return $this->resultRedirectFactory->create()->setPath('checkout/onepage/failure');
+                return $this->resultRedirectFactory->create()->setPath('checkout/cart');
             }
         } else {
-             $this->messageManager->addError(__("Thanh toán thất bại"));
-             $this->logger->error("msg: " . __("Chữ ký không hợp lệ"));
-             $this->restoreCart();
-             return $this->resultRedirectFactory->create()->setPath('checkout/onepage/failure');
+            $this->messageManager->addError(__("Thanh toán thất bại"));
+            $this->logger->error("msg: " . __("Chữ ký không hợp lệ"));
+            $this->clearStaleOrderSession();
+            $this->restoreCart();
+            return $this->resultRedirectFactory->create()->setPath('checkout/cart');
         }
     }
 
@@ -151,11 +187,28 @@ class Pay extends \Magento\Framework\App\Action\Action {
      */
     private function restoreCart()
     {
-        $order = $this->checkoutSession->getLastRealOrder();
-        $quote = $this->quoteFactory->create()->loadByIdWithoutStore($order->getQuoteId());
-        if ($quote->getId() && $order->getPayment()->getMethod() == 'vnpay'
-            && (in_array($order->getStatus(), array('pending','closed', 'canceled')))) {
+        $txnRef = $this->getRequest()->getParam('vnp_TxnRef');
+        if (!$txnRef) {
+            return;
+        }
+
+        $order = $this->order->loadByIncrementId($txnRef);
+        if ($order->getId()
+            && $order->getPayment()->getMethod() == 'vnpay'
+            && in_array($order->getStatus(), ['pending', 'closed', 'canceled'], true)
+        ) {
             $this->checkoutSession->restoreQuote();
         }
+    }
+
+    /**
+     * Remove previous successful order data from checkout session on payment failure.
+     *
+     * @return void
+     */
+    private function clearStaleOrderSession()
+    {
+        $this->checkoutSession->clearHelperData();
+        $this->checkoutSession->setLastSuccessQuoteId(null);
     }
 }

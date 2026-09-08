@@ -46,14 +46,20 @@ class Info extends \Magento\Framework\App\Action\Action {
     }
 
     public function execute() {
-        $id = $this->getRequest()->getParam('order_id', 0);
-        $order = $this->order->load(intval($id));
+        $quote = $this->checkoutSession->getQuote();
         $url = $this->scopeConfig->getValue('payment/vnpay/payment_url');
-        if ($order->getId()) {
-            $incrementID = $order->getIncrementId();
+        $vnp_Url = '';
+        if ($quote->getId() && $quote->getIsActive()) {
+            $quote->getPayment()->setMethod('vnpay');
+            if (!$quote->getReservedOrderId()) {
+                $quote->reserveOrderId();
+            }
+            $quote->collectTotals()->save();
 
-            $amount = $order->getTotalDue();
-            $vnpAmount = round(($this->helperRate->getVndAmount($order, $amount) * 100), 0);
+            $incrementID = $quote->getReservedOrderId();
+
+            $amount = $quote->getGrandTotal();
+            $vnpAmount = round(($this->helperRate->getVndAmountByCurrency($quote->getQuoteCurrencyCode(), $amount) * 100), 0);
 
             $returnUrl = $this->storeManager->getStore()->getBaseUrl();
             $returnUrl = rtrim($returnUrl, "/");

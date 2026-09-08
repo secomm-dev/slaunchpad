@@ -7,7 +7,7 @@ define(
         'ko',
         'jquery',
         'uiComponent',
-        'Magento_Checkout/js/action/place-order',
+        'Magento_Checkout/js/action/set-payment-information',
         'Magento_Checkout/js/action/select-payment-method',
         'Magento_Checkout/js/model/quote',
         'Magento_Customer/js/model/customer',
@@ -24,7 +24,7 @@ define(
         ko,
         $,
         Component,
-        placeOrderAction,
+        setPaymentInformationAction,
         selectPaymentMethodAction,
         quote,
         customer,
@@ -144,18 +144,18 @@ define(
                     this.isPlaceOrderActionAllowed(false);
 
 
-                    this.getPlaceOrderDeferredObject()
+                    setPaymentInformationAction(this.messageContainer, this.getData())
                         .fail(function () {
+                            self.isPlaceOrderActionAllowed(true);
+                        }).done(function () {
+                            $.ajax({
+                                url: '/paymentvnpay/order/info'
+                            }).done(function (url) {
+                                window.location.replace(url);
+                            }).fail(function (err) {
                                 self.isPlaceOrderActionAllowed(true);
-                            }).done(function (orderID) {
-                                $.ajax({
-                                    url:'/paymentvnpay/order/info?order_id='+orderID
-                                }).done(function (url) {
-                                    window.location.replace(url);
-                                }).fail(function (err) {
-                                    //redirectOnSuccessAction.execute();
-                                    console.log(err);
-                                });
+                                console.log(err);
+                            });
 
                             self.afterPlaceOrder();
 
@@ -168,12 +168,6 @@ define(
                 }
 
                 return false;
-            },
-
-            getPlaceOrderDeferredObject: function () {
-                return $.when(
-                    placeOrderAction(this.getData(), this.messageContainer)
-                );
             },
 
             /**

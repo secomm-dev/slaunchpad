@@ -3,6 +3,8 @@
 namespace Vnpayment\VNPAY\Controller\Order;
 
 use Magento\Framework\App\Action\Context;
+use Magento\Quote\Api\CartManagementInterface;
+use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
 
 class Ipn extends \Magento\Framework\App\Action\Action {
 
@@ -24,6 +26,12 @@ class Ipn extends \Magento\Framework\App\Action\Action {
     /** @var \Magento\Framework\DB\TransactionFactory  */
     protected $transactionFactory;
 
+    /** @var CartManagementInterface */
+    protected $cartManagement;
+
+    /** @var QuoteCollectionFactory */
+    protected $quoteCollectionFactory;
+
     public function __construct(
         Context $context,
         \Magento\Sales\Model\Order $order,
@@ -31,7 +39,9 @@ class Ipn extends \Magento\Framework\App\Action\Action {
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Vnpayment\VNPAY\Logger\Logger $logger,
         \Magento\Sales\Model\Service\InvoiceServiceFactory $invoiceServiceFactory,
-        \Magento\Framework\DB\TransactionFactory $transactionFactory
+        \Magento\Framework\DB\TransactionFactory $transactionFactory,
+        CartManagementInterface $cartManagement,
+        QuoteCollectionFactory $quoteCollectionFactory
     ) {
         parent::__construct($context);
         $this->order = $order;
@@ -40,6 +50,8 @@ class Ipn extends \Magento\Framework\App\Action\Action {
         $this->invoiceServiceFactory = $invoiceServiceFactory;
         $this->transactionFactory = $transactionFactory;
         $this->logger = $logger;
+        $this->cartManagement = $cartManagement;
+        $this->quoteCollectionFactory = $quoteCollectionFactory;
     }
 
     /**
@@ -76,6 +88,22 @@ class Ipn extends \Magento\Framework\App\Action\Action {
                 $vnp_TxnRef = $this->getRequest()->getParam('vnp_TxnRef', '000000000');
                 $vnp_Amount = $this->getRequest()->getParam('vnp_Amount');
                 $order = $this->order->loadByIncrementId($vnp_TxnRef);
+                if (!$order->getId()) {
+                    $quote = $this->quoteCollectionFactory->create()
+                        ->addFieldToFilter('reserved_order_id', $vnp_TxnRef)
+                        ->addFieldToFilter('is_active', 1)
+                        ->getFirstItem();
+                    if ($quote->getId() && $vnp_ResponseCode == '00') {
+                        $orderId = $this->cartManagement->placeOrder($quote->getId());
+                        $order = $this->order->load($orderId);
+                    } elseif ($quote->getId()) {
+                        $returnData['RspCode'] = '00';
+                        $returnData['Message'] = 'Confirm Success';
+                        $this->logger->debug("rspCode: ".$returnData['RspCode'] . " - msg:".$returnData['Message']);
+                        echo json_encode($returnData);
+                        return;
+                    }
+                }
                 $orderTotal = (int)($order->getBaseGrandTotal() * 100);
                 if ($order->getId()) {
                     if ((int)$vnp_Amount !== $orderTotal) {
@@ -84,37 +112,37 @@ class Ipn extends \Magento\Framework\App\Action\Action {
                     } elseif ($order->getStatus() != NULL && $order->getStatus() == 'pending') {
 
                         if ($vnp_ResponseCode == '00') {
-                                $amount = $this->getRequest()->getParam('vnp_Amount', '0');
-                                $setupStatus = $this->scopeConfig->getValue('payment/vnpay/order_status');
-                                if ($setupStatus == \Magento\Sales\Model\Order::STATE_PROCESSING) {
-                                    $order->setTotalPaid(floatval($amount) / 100);
-                                    $orderState = $order::STATE_PROCESSING;
-                                    $order->setState($orderState)->setStatus($order::STATE_PROCESSING);
-                                    $order->save();
-                                }
-                                if ($order->canInvoice()) {
-                                    /** @var \Magento\Sales\Model\Service\InvoiceService $invoiceService */
-                                    $invoiceService = $this->invoiceServiceFactory->create();
-                                    $invoice = $invoiceService->prepareInvoice($order);
-                                    $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
-                                    $invoice->register();
-
-                                    // Save the invoice
-                                    /** @var \Magento\Framework\DB\Transaction $transaction */
-                                    $transaction = $this->transactionFactory->create();
-                                    $transactionSave = $transaction
-                                        ->addObject($invoice)
-                                        ->addObject($invoice->getOrder());
-
-                                    $transactionSave->save();
-                                }
-                        } else {
-                                $amount = $this->getRequest()->getParam('vnp_Amount', '0');
+                            $amount = $this->getRequest()->getParam('vnp_Amount', '0');
+                            $setupStatus = $this->scopeConfig->getValue('payment/vnpay/order_status');
+                            if ($setupStatus == \Magento\Sales\Model\Order::STATE_PROCESSING) {
                                 $order->setTotalPaid(floatval($amount) / 100);
-                                $order->addStatusHistoryComment(__("Giao dịch thất bại"));
-                                $orderState = $order::STATE_CANCELED;
-                                $order->setState($orderState)->setStatus($order::STATE_CANCELED);
+                                $orderState = $order::STATE_PROCESSING;
+                                $order->setState($orderState)->setStatus($order::STATE_PROCESSING);
                                 $order->save();
+                            }
+                            if ($order->canInvoice()) {
+                                /** @var \Magento\Sales\Model\Service\InvoiceService $invoiceService */
+                                $invoiceService = $this->invoiceServiceFactory->create();
+                                $invoice = $invoiceService->prepareInvoice($order);
+                                $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
+                                $invoice->register();
+
+                                // Save the invoice
+                                /** @var \Magento\Framework\DB\Transaction $transaction */
+                                $transaction = $this->transactionFactory->create();
+                                $transactionSave = $transaction
+                                    ->addObject($invoice)
+                                    ->addObject($invoice->getOrder());
+
+                                $transactionSave->save();
+                            }
+                        } else {
+                            $amount = $this->getRequest()->getParam('vnp_Amount', '0');
+                            $order->setTotalPaid(floatval($amount) / 100);
+                            $order->addStatusHistoryComment(__("Giao dịch thất bại"));
+                            $orderState = $order::STATE_CANCELED;
+                            $order->setState($orderState)->setStatus($order::STATE_CANCELED);
+                            $order->save();
                         }
                         $returnData['RspCode'] = '00';
                         $returnData['Message'] = 'Confirm Success';
