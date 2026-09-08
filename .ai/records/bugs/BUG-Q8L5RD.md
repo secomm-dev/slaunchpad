@@ -10,7 +10,7 @@ specification_level: MINI
 spec_status: VALID
 specification_ref: null
 risk: medium
-status: open
+status: done
 created: '2026-09-08'
 updated: '2026-09-08'
 decisions: []
@@ -22,7 +22,7 @@ decision_approval_summary:
   rejected: []
   superseded: []
   last_synced: '2026-09-08'
-verified_against_commit: null
+verified_against_commit: 6e91e0a7
 components:
   - CMP-AICOMMERCE
 source_areas:
@@ -64,14 +64,50 @@ Kết luận: hành vi nằm ở **lifecycle runtime của `Smile\...\Fulltext\C
 
 Phạm vi: chỉ ảnh hưởng request `page` trong cap parser (1..50) nhưng vượt số trang thực (`ceil(total/page_size)`) — tức cửa sổ trống.
 
-## Required Fix Contract (Acceptance Criteria for Implementation AI) — CHỜ TL DECIDE
+## Required Fix Contract (Acceptance Criteria for Implementation AI) — RESOLVED (TL DECIDED: OPTION A)
 1. Request trang ngoài phạm vi phải trả `items: []` với đúng `page` đã request (hoặc 400 theo nghĩa out-of-range — TL chọn), KHÔNG được trả nội dung trang khác.
 2. Không đổi hành vi các trang trong phạm vi (đang known-good).
 3. Phương án ứng viên (cho TL):
-   - **A (module-level, smallest)**: sau `load()`, so `criteria['page']` với `$collection->getLastPageNumber()` (Smile đã override đúng theo total/page size) — nếu vượt thì trả `items: []` từ DTO (không query thêm).
-   - **B (report upstream)**: issue cho Smile Elasticsuite kèm probe 1–3 (bằng chứng đã đầy đủ).
-   - **C (không fix)**: nếu TL đánh giá agent-flow impact không đáng — nhưng cần ghi nhận `known_limitations` vì response hiện nói sai window.
-4. Nếu fix: thêm regression test + live verify đúng quy trình (red trước, green sau).
+   - **A (module-level, smallest) — ✅ CHỌN (TL decision 2026-09-08)**: sau `load()`, derive lastPage từ `total_count` × requested `page_size` (không phụ thuộc trạng thái collection mà Smile runtime có thể đã mutate về trang 1) — nếu `page > lastPage` thì map 0 products từ DTO, giữ nguyên `page`/`page_size` requested + `total_count` thật.
+   - **B (report upstream)**: issue cho Smile Elasticsuite kèm probe 1–3 (bằng chứng đã đầy đủ). Không loại trừ — có thể làm thêm sau fix A (upstream vẫn còn quirk ở tầng vendor).
+   - **C (không fix)**: bị loại — response nói sai về window đã phục vụ.
+4. Nếu fix: thêm regression test + live verify đúng quy trình (red trước, green sau). Đã thực hiện — xem Fix Evidence.
+
+## Fix Evidence (Implementation AI — 2026-09-08)
+
+**Implementation** (`SearchService.php`, commit `6e91e0a7`): sau `load()`, hoist
+`$totalCount = (int) $collection->getSize()` (count query độc lập với window — vẫn
+trả total thật kể cả khi runtime đã reset window về trang 1, theo probe 1),
+`$lastPage = (int) ceil($totalCount / max(1, $criteria['page_size']))`; nếu
+`$criteria['page'] > $lastPage` → `$products = []` (bỏ qua hoàn toàn items đã load —
+không bao giờ map sản phẩm của trang khác), ngược lại giữ nguyên filter
+`ProductInterface` như cũ. DTO nhận `$totalCount` đã hoist. `page_size >= 1` là
+bất biến của parser (`boundedInt(..., 1, getMaxPageSize, ...)`) nên phép chia an toàn.
+
+**Unit regression** (`SearchServiceTest`): 6 test mới —
+`testPageBeyondLastPageServesEmptyItems` + `testPageFarBeyondLastPageWithinParserCapServesEmptyItems`
+(**RED trên code pre-fix**: trả page-1 item thay vì `[]` — đúng bug live),
+`testLastValidPageUnaffectedByBeyondRangeGuard`, `testInRangePageUnaffectedByBeyondRangeGuard`,
+`testZeroResultSearchServesEmptyItemsOnAnyPage` (guard-rail, pass cả pre/post),
+mô phỏng quirk qua `$collectionSize=6` + items trang 1. Focused: 24/24 PASS (54 assertions).
+Full `Secomm_AiCommerce` suite: **132/132 PASS** (214 assertions). PHPCS Magento2:
+0 errors / 0 warnings. `setup:di:compile`: PASS (không đổi DI).
+
+**Live verification** (local stack mirror audit environment, 2026-09-08, sau khi
+clean cache tag `secomm_aic` — ResponseCache không có dedicated cache type nên
+`cache:clean` CLI không tác động được):
+
+| Case | Query | Kết quả |
+|---|---|---|
+| A | `q=Terra&page_size=1&page=6` | 200; `total_count:6, page:6, page_size:1`; items=`[fireplace-ground-grey]` (trang cuối hợp lệ nguyên vẹn) |
+| B | `q=Terra&page_size=1&page=7` | 200; `total_count:6, page:7, page_size:1`; **`items: []`** (pre-fix: trả `dinnerware-terra-collection` trang 1) |
+| C | `q=Terra&page_size=1&page=20` | 200; `total_count:6, page:20, page_size:1`; `items: []` |
+| D1 | `q=zzznomatch&page_size=20&page=1` | 200; `total_count:0, page:1`; `items: []` |
+| D2 | `q=zzznomatch&page_size=20&page=2` | 200; `total_count:0, page:2`; `items: []` |
+| Spot in-range | `q=Terra&page_size=1&page=1` / `page=2` | items đúng known-good (`dinnerware-terra-collection` / `dinnerware-terra-mug`) — guard không phá trang trong phạm vi |
+
+Quirk tầng Smile vẫn còn (guard là module-level) — đã ghi nhận trong
+`CONTINUOUS_LEARNING.md` CL-0005; phương án B (report upstream) vẫn mở nếu TL muốn.
 
 ## Notes
 - llms.txt hiện không đưa ra claim nào về trang ngoài phạm vi → không có hướng dẫn sai nào cần thu hồi trong khi chờ quyết.

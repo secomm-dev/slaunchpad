@@ -90,5 +90,5 @@ Independent QA audit `/ai/catalog/search` trên live stack chứng minh 3 defect
 
 ## Known Limitations / Follow-up
 
-- BUG-Q8L5RD (page ngoài phạm vi → items trang 1) — **open**, chờ TL decide (phương án A/B/C trong record).
+- BUG-Q8L5RD (page ngoài phạm vi → items trang 1) — **done**: TL chọn Option A (module-level guard), fixed trong follow-up commit `6e91e0a7`; bằng chứng đầy đủ trong [BUG-Q8L5RD](../bugs/BUG-Q8L5RD.md) §Fix Evidence.
 - Deploy staging/prod: human-initiated, ngoài task này.
