@@ -1,8 +1,16 @@
-# Changelog — Secomm_MageplazaTranslate
+# Changelog — Launchpad_MageplazaTranslate
 
 All notable changes to this module are documented here (append-only).
 
 ## [Unreleased]
+
+### Changed — 2026-09-08
+
+- Moved `Secomm_MageplazaTranslate` → `Launchpad_MageplazaTranslate`
+  (`app/code/Secomm/MageplazaTranslate` → `app/code/Launchpad/MageplazaTranslate`) —
+  project-layer modules live under the `Launchpad_` vendor (same convention as
+  `Launchpad_Osc`, `Launchpad_MageplazaExtraFeeFix`). History below refers to the
+  former `Secomm_` name.
 
 ### Added — 2026-09-07
 

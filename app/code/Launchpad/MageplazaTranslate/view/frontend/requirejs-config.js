@@ -7,7 +7,7 @@ var config = {
     config: {
         mixins: {
             'Mageplaza_DeliveryTime/js/view/delivery-information': {
-                'Secomm_MageplazaTranslate/js/delivery-date-locale-mixin': true
+                'Launchpad_MageplazaTranslate/js/delivery-date-locale-mixin': true
             }
         }
     }

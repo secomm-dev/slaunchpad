@@ -1,8 +1,8 @@
-# Secomm_MageplazaTranslate
+# Launchpad_MageplazaTranslate
 
 ## Purpose
 
-Central Secomm-owned home for **Vietnamese translations of Mageplaza modules**, keeping
+Central Launchpad-owned home for **Vietnamese translations of Mageplaza modules**, keeping
 `app/code/Mageplaza/*` untouched so third-party modules can be upgraded/overwritten freely.
 
 Magento resolves translation values per scope from the aggregate of **all enabled modules'**
