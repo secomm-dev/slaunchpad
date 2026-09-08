@@ -68,7 +68,7 @@ $lucideIcons = $viewModels->require(LucideIcons::class);
                 <?php $hasCaption = !empty($slide['eyebrow']) || !empty($slide['heading']) || !empty($slide['cta_url']); ?>
                 <figure class="shrink-0 grid *:row-start-1 *:col-start-1 w-full">
                     <img class="w-full h-[460px] md:h-[580px] lg:h-[800px] object-cover"
-                         src="<?= $escaper->escapeUrl((string)$slide['image']) ?>"
+                         src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$slide['image'])) ?>"
                          alt="<?= $escaper->escapeHtmlAttr((string)$slide['image_alt']) ?>"
                          width="1280"
                          height="853"

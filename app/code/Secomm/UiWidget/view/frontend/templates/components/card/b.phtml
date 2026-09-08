@@ -24,7 +24,7 @@ $linkClasses = [
          class="relative card card-interactive flex items-start gap-6 overflow-clip"
          aria-labelledby="<?= $escaper->escapeHtmlAttr($titleId) ?>"
          data-secomm-ui-component="card_b">
-    <img src="<?= $escaper->escapeUrl((string)$data['image']) ?>"
+    <img src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$data['image'])) ?>"
          alt="<?= $escaper->escapeHtmlAttr((string)$data['image_alt']) ?>"
          width="150"
          height="150"
