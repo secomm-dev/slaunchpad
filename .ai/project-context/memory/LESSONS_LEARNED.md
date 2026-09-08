@@ -33,6 +33,47 @@
 - **Action / prevention**: Quy tắc hard — prod env.php/Redis/OpenSearch/payment secrets nằm ngoài repo (env inject qua CI/CD hoặc secret manager). Review `env.php` diff trước mỗi commit (pre-commit hook + Hard Gate).
 - **Owner**: [TBD — DevOps/TL]
 
+
+## LL-0003 — Shell AI chạy as root trên local slaunchpad — magento CLI/PHP phải chạy as đúng user của vhost
+
+- **Date**: 2026-08-27
+- **Source**: SLP-128 / BUG-HE2NGV (storefront HTTP 500 giữa lúc live QC)
+- **Type**: avoid
+- **Lesson**: Shell AI (và mọi terminal sudo) chạy as **root**; vhost apache chạy worker as **secomm** (ruid2/itk, www-data chỉ là một phần). `bin/magento` / PHP CLI chạy as root tạo dirs root-owned trong `var/`, `generated/` → apache không đọc được session/cache → storefront 500. Session PHP tạo as `www-data` cũng không đọc được (file 600 trong `/var/lib/php/sessions` mode 1733).
+- **Root cause / trigger**: Chạy cache:flush + verify script PHP bằng root giữa phiên QC; tái phát đúng cái bẫy của BUG-8K1TBB/BUG-SDZPCD.
+- **Action / prevention**: (1) Chạy mọi lệnh chạm `var|generated` qua `sudo -u secomm php ...` (session QC cho curl) hoặc `sudo -u www-data` (CLI thuần). (2) Nếu đã dính: `chown -R www-data:secomm var generated` + setgid group-writable (precedent BUG-SDZPCD). (3) curl storefront cần `--resolve slaunchpad.localhost:80:127.0.0.1`.
+- **Owner**: dev team (ai chạy AI terminal / sudo)
+
+## LL-0004 — Dictionary theme render qua cache: phải cache:flush + soi HTML thật trước khi kết luận "đã dịch"
+
+- **Date**: 2026-08-27
+- **Source**: SLP-128 / BUG-HE2NGV batch 2–3 (verify false-negative)
+- **Type**: avoid
+- **Lesson**: Sau khi append CSV, trang storefront vẫn render chuỗi cũ cho tới khi `cache:flush`. Tệ hơn: **block_html cache cũ** có thể render trạng thái stale (SLP-128: fetch đầu của order view chỉ có 1 tab + status "Đang chờ" trong khi trang thật có 3 tabs + "Complete") — khiến batch 2 tưởng đã sạch và sót batch 3.
+- **Root cause / trigger**: Dictionary + block_html cache; verify framework-level đọc file trực tiếp (đúng) nhưng live fetch dùng cache.
+- **Action / prevention**: Quy trình verify i18n: (1) framework-level script (boot Magento, load dictionary, assert phrase) → (2) `cache:flush` → (3) fetch live bằng session fresh → (4) grep CẢ chuỗi vi lẫn chuỗi English tương ứng trong HTML render. Nếu kết quả live mâu thuẫn với framework (ít chuỗi hơn mong đợi) → nghi cache stale, flush + fetch lại.
+- **Owner**: dev team
+
+## LL-0005 — Verify i18n trên live HTML: decode HTML entities (aria/alt) + identity rows bị Translate::_addData skip
+
+- **Date**: 2026-08-28
+- **Source**: SLP-132 / BUG-M33P7N (translate category page/product list)
+- **Type**: avoid
+- **Lesson**: (1) Chuỗi vi trong `aria-label`/`alt`/JS config bị `escapeHtmlAttr` encode thành HTML **entities** (`Logo&#x1EED;a&#x20;c&#x1EED;a&#x20;h&#xE0;ng`) — grep UTF-8 thô trên HTML live cho **false-negative** ("không thấy chuỗi vi" trong khi có). (2) Row dictionary có **value == key** (identity, vd `"%1 - %2","%1 - %2"`, `"OK","OK"`) bị `Translate::_addData()` ([Translate.php:326](vendor/magento/framework/Translate.php#L326)) **skip có chủ đích** — không phải lỗi; fallback render giống hệt translation. (3) `Csv::getDataPairs` đếm **unique keys** — dup key có sẵn (`Email`) làm lệch row-count khi đối chiếu.
+- **Root cause / trigger**: Hyva escape thuộc tính qua escapeHtmlAttr (encode mọi non-ASCII); framework translate lược bỏ identity pairs theo design.
+- **Action / prevention**: Khi verify live i18n: (1) decode entities (`html.unescape` + regex `&#x..;`) trước khi grep; (2) grep CẢ English tương ứng — EN hit trong JS **comment** không phải UI leftover; (3) framework-level check nên kỳ vọng identity-keys vắng mặt trong dictionary loaded (không phải MISSING).
+- **Owner**: dev team
+
+## LL-0006 — js-translation.json chỉ harvest phrase có trong module en_US.csv — theme CSV không đủ cho JS $t()
+
+- **Date**: 2026-08-28
+- **Source**: SLP-133 / BUG-HVMB4G (translate message/popup/status)
+- **Type**: avoid
+- **Lesson**: Sau khi thêm key vào theme `vi_VN.csv` (vi + en mirror) và chạy `setup:static-content:deploy -f vi_VN`, `pub/static/frontend/<theme>/vi_VN/js-translation.json` **chỉ chứa key nào có mặt trong `i18n/en_US.csv` của một module nào đó** (vd `'New Address'` của core Magento_Checkout vào được). Phrase tồn tại **chỉ trong theme CSV** (JS `$t()` của Mageplaza Osc/OscPro — OscPro không có i18n dir) bị loại khỏi file → JS vẫn render English. Key theme-CSV vẫn vô hại và future-proof (PHP-rendered path dùng được), chỉ layer JS là thiếu.
+- **Root cause / trigger**: Generator js-translation build từ module base dictionary (en_US.csv), không scan `$t()` calls trong JS deploy để mở key-set.
+- **Action / prevention**: Khi cần dịch JS `$t()` của module không ship en_US.csv đầy đủ: phải thêm `i18n/vi_VN.csv` (hoặc bổ en_US.csv) vào module đó — với `app/code/Mageplaza/*` là chạm cây third-party → TL approval trước. Verify bằng `grep` key trong js-translation.json sau deploy, đừng kết luận từ theme CSV.
+- **Owner**: dev team
+
 <!--
 Template cho entry kế tiếp — copy từ đây:
 
@@ -80,4 +121,52 @@ Template cho entry kế tiếp — copy từ đây:
 - **Lesson**: Legacy import entity chạy với `needColumnCheck = true` validate CẢ HEADER CSV — xoá cột khỏi `validColumnNames` mà vẫn giữ cột đó trong file CSV shipped làm `validateSource` throw `ERROR_CODE_INVALID_ATTRIBUTE`. Patch wrapper nuốt exception (`catch + logger.error`) nên `setup:upgrade` vẫn exit success — fresh install đi kèm DB trống region/city, không có dấu hiệu lỗi nào ngoài 1 dòng trong var/log. Chuỗi bootstrap empty-DB đã từng verify (LL-0004 lineage) bị phá vỡ bởi một thay đổi tưởng là "additive-only".
 - **Root cause / trigger**: coi header thừa là "inert" mà không test lại qua pipeline import thật; hiểu nhầm rằng Magento importer map theo vị trí (thực tế validate theo TÊN header).
 - **Action / prevention**: khi bóc cột khỏi import entity: (1) grep mọi CSV shipped feed entity đó và strip cột chết khỏi header + data, (2) verify bằng zero-write check (adapter `getColNames()` ⊆ `validColumnNames` + parse đủ rows qua importer thật), (3) patch wrapper KHÔNG được nuốt exception khi import seed data — fail phải fail loudly hoặc ít nhất đánh dấu setup failure, (4) mọi thay đổi chạm data patches cần re-verify fresh-DB bootstrap, không chỉ hành vi trên DB đang chạy.
+- **Owner**: Dev team
+
+## LL-0007 — CLI framework-render verification cần wire Phrase renderer + 1 process/store
+- **Date**: 2026-09-04
+- **Source**: BUG-GJT6C1 (SLP-146 — translate Delivery Time calendar)
+- **Type**: repeat
+- **Lesson**: Verify template render thật từ CLI (block `toHtml()` với theme + locale per store) cần 2 thứ ngoài boot chuẩn: (1) `\Magento\Framework\Phrase::setRenderer($om->get(\Magento\Framework\Phrase\RendererInterface::class))` — web bootstrap tự wire composite renderer, CLI không; thiếu nó mọi `__()` trong render trả English nguyên bản dù dictionary đã `loadData`; (2) chạy 1 process per store — `$translate->loadData(force reload)` giữa 2 store trong cùng process để state vi dính sang render en (deterministic, không phải race). Dictionary-level check (`$translate->getData()` kiểu BUG-4TWFGD/BUG-HVMB4G) không đụng renderer nên không cần (1), nhưng với thay đổi render-level (template override, l10n JS inline) render thật cho bằng chứng mạnh hơn.
+- **Action / prevention**: script verify render mẫu: `.ai/runtime/evidence/BUG-GJT6C1/verify-render.php` (chạy `php verify-render.php <storeCode> <expectedLabel>` per store). Refactor script multi-store sang argv per-store ngay từ đầu, không đoán trước multi-store loop.
+- **Owner**: Dev team
+
+## LL-0008 — js-translation.json: candidate = literal $t() trong file scan được; targeted deploy skip file đã tồn tại
+- **Date**: 2026-09-04
+- **Source**: BUG-5NR0PD (SLP-150 — translate coupon + shipping errmsg checkout)
+- **Type**: repeat
+- **Lesson**: Bổ sung LL-0006 bằng 3 dữ kiện verified bằng thực nghiệm: (1) **candidate set của js-translation generator = các literal `$t('…')` nằm trong file JS/HTML được scan** (module `view/*/web` + theme `<Module>/web/template`) — chuỗi chỉ tồn tại trong `etc/config.xml`/PHP KHÔNG bao giờ vào dictionary dù module CSV có đủ key+value (case errmsg TableRate); (2) **translation value đọc từ module/theme CSV** tại generation (mục (1) là rào cản thật, không phải "gate en_US.csv" như LL-0006 ghi — hành vi quan sát được giống nhau nhưng cơ chế khác); (3) **`setup:static-content:deploy --theme` (quick mode) SKIP mọi file đã tồn tại trong pub/static** kể cả khi source mới hơn — chỉ tạo khi file THIẾU; thêm/sửa source static phải `rm` target trước hoặc chạy full deploy `-f <locale>` (~35s).
+- **Root cause / trigger**: kết luận sớm "gate = module en_US.csv" từ LL-0006 mà không bóc `Magento\Translation\Model\Js\DataProvider` + `di.xml` (`dataProviderCompositeRenderer`, `Json\PreProcessor`); tin targeted deploy "3.6s" đã re-process trong khi nó cache-hit toàn bộ.
+- **Action / prevention**: (1) khi cần dịch chuỗi dynamic từ server qua `$t()` client-side: literal phải được đưa vào 1 file scan được (phrase-registry comment trong template override là cách giữ mọi thứ trong app/design), value vào module/theme CSV; (2) sau khi sửa source static: luôn `rm pub/static/.../<file>` rồi deploy targeted, verify content file deployed (không tin exit code/thời gian deploy); (3) verify js-translation bằng `php -r` json_decode, không grep raw JSON.
+- **Owner**: Dev team
+
+## LL-0009 — Admin datepicker fix: requirejs mixin KHÔNG được khai báo target làm dependency; admin 404 = thiếu secret key
+
+- **Root cause / trigger**: (1) Viết mixin `mage/calendar` khai báo luôn `'mage/calendar'` trong deps của chính nó → circular dependency — requirejs treo NGẦM (không console error), widget không register, toàn bộ datepicker biến mất (BUG-SRF024). Mixin factory phải nhận target qua tham số: `define(['jquery'], function ($) { return function (calendar) {...} })`. (2) Trong QC admin, navigate trực tiếp URL không `/key/<secret>/` → trả trang "404 Error" chuẩn admin — tưởng section/module bị mất (mất ~45 phút trước khi ra: key hash theo route/controller/action nên **dùng chung cho mọi section param** — lấy key từ 1 link có sẵn để dựng URL section khác).
+- **Action / prevention**: Mixin target = tham số factory, không phải dep. Khi nghi "section/config biến mất" trên admin → kiểm tra URL có key chưa trước khi debug ACL/structure. QC harness Playwright headless (`/tmp/pw-cal`, pattern lưu `.ai/evidence/BUG-SRF024/`): login → navigate bằng menu anchors (đã có key) → đo `offset()` A/B. CLI module:enable/disable chạy as `secomm` (config.php owner secomm) + chown `var generated` về `www-data:secomm` sau (LL-0003).
+- **Owner**: dev team (ai fix admin JS / QC admin)
+## LL-0010 — js-translation/i18n: template override phải trúng module path BOUND tại runtime; CSV duplicate key = last-wins; dict ở locale root
+- **Date**: 2026-09-04
+- **Source**: BUG-5NR0PD (SLP-150 — đợt hoàn thiện translate checkout)
+- **Type**: repeat
+- **Lesson**: 4 dữ kiện verified thêm cho LL-0008: (1) **theme override `<theme>/<Module>/web/**` chỉ có tác dụng khi runtime BIND đúng module path đó** — vendor mixin được phép swap template/JS sang module khác (case: `Mageplaza_TableRateShipping/js/view/shipping-mixin-osc` đổi `shippingMethodItemTemplate` từ `Mageplaza_Osc/…` → `Mageplaza_TableRateShipping/…/shipping-method-item-osc`) → override bản `Mageplaza_Osc` là dead code; phải override file của module BOUND. Tương tự theme `<Module>/web/js/**` verbatim copy của vendor (không ai require) = dead code — kiểm chứng bằng diff với vendor trước khi tin override chạy. (2) **Theme CSV duplicate key: dòng SAU ghi đè dòng trước** (`Magento\Framework\App\Language\Dictionary`: `$result[$row[0]] = $row[1]`) — 1 dup sai giá trị âm thầm bóp đúng bản dịch đã có (case `"Delivery Date" => "Thanh toán một bước"` đè `"Ngày giao hàng"`); cột thứ 3+ bị bỏ qua (fgetcsv chỉ đọc col 0/1) nhưng phải giữ format 2-cột QUOTE_ALL. (3) **js-translation.json nằm ở locale root** `pub/static/frontend/<V>/<theme>/<locale>/js-translation.json` — KHÔNG phải `Magento_Translation/js-translation.json` (rm nhầm path = deploy không regenerate gì cả). (4) **default/developer mode: `setup:static-content:deploy` bắt buộc `-f`** (không -f chỉ in usage; thông báo lỗi nằm trên usage, `tail` làm mất).
+- **Root cause / trigger**: tin record cũ "OSC render raw tại template Osc" mà không trace requirejs mixin của TableRate; rm target theo trí nhớ path `Magento_Translation/…`; deploy không -f rồi tưởng syntax lỗi.
+- **Action / prevention**: (1) trước khi viết theme override, grep mixin/requirejs map tìm module path BOUND thật (`grep -rn "Template\|mixin" <vendor>*/view/frontend/requirejs-config.js`); (2) CI/hand-check CSV i18n: assert 2-cột + no-dup-key (script mẫu `.ai/runtime/evidence/BUG-5NR0PD/verify-dictionary.php`); (3) rm đúng locale-root dict rồi `deploy -f --theme=… <locale>`, verify bằng json_decode + diff file deployed.
+- **Owner**: Dev team
+
+## LL-0011 — Checkout OSC = Magento/luma scope: theme-layer i18n/override KHÔNG ăn trên trang checkout
+- **Date**: 2026-09-07
+- **Source**: BUG-GJT6C1 (SLP-146 — translate Delivery Time calendar, Phase A/B)
+- **Type**: repeat
+- **Lesson**: Trang `/checkout` (Mageplaza OSC) load **100% assets từ `Magento/luma`** (453/453; homepage = `Secomm/launchpad`) — fallback chain luma KHÔNG chứa theme `Secomm/launchpad`, nên (1) theme override (template/JS) trong `Secomm/launchpad/Mageplaza_*` và (2) theme CSV `Secomm/launchpad/i18n/` đều KHÔNG hiệu lực trên trang checkout; dictionary thật = `frontend/Magento/luma/<locale>/js-translation.json`. DeliveryTime tích hợp OSC qua **Knockout block** (`container/delivery-information.html` + jQuery UI datepicker binding `mpdatepicker`); container `checkout.shipping.section` trong `hyva_checkout_components.xml` không tồn tại ở layout nào khác → block Hyvä/flatpickr là dead layout (framework render PASS vẫn vô nghĩa nếu layout không nhét block vào trang). Value vi cho phrase chỉ có trong scope luma phải đến từ **module-level i18n CSV** — project convention (chỉ thị user 09-07): đặt trong module riêng **`Secomm_MageplazaTranslate`** (i18n CSV của MỌI enabled module đều feed dictionary mọi scope), KHÔNG ghi file vào `app/code/Mageplaza/*` (khó update vendor). Deploy `-f` KHÔNG regenerate `js-translation.json` đã tồn tại — phải `rm` target trước rồi deploy (mở rộng LL-0008(3)).
+- **Action / prevention**: TRƯỚC khi fix bất kỳ i18n/template nào trên checkout: probe asset scope + dictionary URL thật (script mẫu `.ai/evidence/BUG-GJT6C1/probe-scope.js`, `probe-i18n-state.js`); fix checkout i18n = module CSV hoặc requirejs mixin cấp module; sau deploy check mtime `js-translation.json` (deploy im lặng skip file cũ). Side-effect đã flag: BUG-5NR0PD theme-layer fixes có nguy cơ dead trên checkout — cần QC verify lại.
+- **Owner**: Dev team
+
+## LL-0012 — Language pack `app/i18n/*`: cơ chế + gotcha underscore registration; sẵn sàng làm route cho chuỗi webapi/REST
+- **Date**: 2026-09-07
+- **Source**: BUG-5NR0PD (SLP-150 — rework coupon messages; detour language pack đã verify rồi gỡ sạch theo directive user)
+- **Type**: repeat
+- **Lesson**: (1) Language pack `app/i18n/<Vendor>/<locale>/` (`language.xml` code/vendor/package + `registration.php` + `<locale>.csv`) feed CẢ PHP dictionary LÃN `js-translation.json` ở **mọi theme scope** (đã verify trên checkout luma-scope, LL-0011) — khác theme CSV (dead trên checkout); candidate rule LL-0008 vẫn áp dụng (value-only không đủ — vẫn cần literal `$t()` trong file scan được, case này là vendor OscPro JS). (2) **GOTCHA chính**: `ComponentRegistrar::register(LANGUAGE, 'secomm_vi_vn', __DIR__)` — key bắt buộc **UNDERSCORE** `vendor_package` (chuẩn pack thật: `magento_zh_hans_cn`); key slash `'secomm/vi_vn'` → `Dictionary::readPackCsv` `getPath('secomm_vi_vn')` = null → **silent skip** (deploy xong dict thiếu key, KHÔNG có error nào — chỉ phát hiện được bằng json_decode đếm key sau deploy). (3) Không cần `setup:upgrade` — `app/i18n` được register qua composer autoload files (`app/etc/NonComposerComponentRegistration.php` + `registration_globlist.php`) mỗi process bootstrap. (4) **VERIFIED 09-07 (cùng session, BUG-5NR0PD batch 2): module CSV của `Secomm_MageplazaTranslate` feed CẢ area webapi** — error REST `CouponManagement` trả VI qua module CSV thôi (REST thật: guest cart + `PUT /V1/guest-carts/<id>/coupons/<sai>`, vi = VI, en = EN) ⟹ error REST KHÔNG cần pack; pack chỉ còn là phương án cho case concat không dịch được hoặc override toàn cục. Lưu ý: phrase PHP (error REST) KHÔNG BAO GIỜ vào js-translation.json (literal nằm trong PHP — LL-0008(1)) — verify error REST phải qua REST call thật, không phải dict JSON.
+- **Root cause / trigger**: đọc nhầm directive "tạo translate trong secomm" → dựng pack khi convention của project (chỉ thị user 09-07 trong BUG-GJT6C1) đã chốt module `Secomm_MageplazaTranslate`; slash-vs-underscore registration không có tài liệu tường minh, lỗi im lặng.
+- **Action / prevention**: (1) chuỗi cần dịch ngoài theme scope: append vào `Secomm_MageplazaTranslate/i18n/vi_VN.csv` trước (đơn giản nhất, đủ cho JS dict mọi scope); pack chỉ khi cần webapi/override toàn cục — phải TL/SA duyệt vì blast radius toàn storefront+admin. (2) Sau MỌI thay đổi i18n: `rm` dict target + deploy `-f` + **json_decode verify key trước/sau** (không tin exit code). (3) Registration pack: copy key style underscore từ pack thật trong `vendor/magento/language-*`.
 - **Owner**: Dev team
