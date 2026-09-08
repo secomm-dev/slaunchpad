@@ -98,6 +98,15 @@ class LlmsTxtFormatter
                 $lines[] = 'Purpose: ' . $purpose;
             }
 
+            // Deterministic module-generated usage guidance (not
+            // merchant-entered text): rendered literally so the documented
+            // query syntax (e.g. filter[ATTRIBUTE]=OPTION_ID) stays
+            // copy-pastable; only unsafe markup/control characters are
+            // stripped.
+            foreach ((array) ($detail['usage'] ?? []) as $usageLine) {
+                $lines[] = $this->sanitizeUsageLine((string) $usageLine);
+            }
+
             return $lines;
         }
 
@@ -113,6 +122,23 @@ class LlmsTxtFormatter
         }
 
         return [$line];
+    }
+
+    /**
+     * Sanitize a module-generated usage line: strip HTML and control
+     * characters, collapse whitespace — but keep literal square brackets
+     * (the documented filter[...] query syntax must survive verbatim).
+     *
+     * @param string $text module-generated guidance line
+     * @return string sanitized single-line text
+     */
+    private function sanitizeUsageLine(string $text): string
+    {
+        $text = strip_tags($text);
+        $text = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $text) ?? '';
+        $text = trim(preg_replace('/\s+/u', ' ', $text) ?? '');
+
+        return $text;
     }
 
     /**

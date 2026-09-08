@@ -74,6 +74,22 @@ class CommerceEndpointsSourceTest extends TestCase
                     'label' => 'Product Search',
                     'url' => 'https://example.com/ai/catalog/search?store=vietnam',
                     'purpose' => 'Search public products using the bounded AI Commerce catalog facade.',
+                    // phpcs:disable Generic.Files.LineLength
+                    'usage' => [
+                        'Query parameters (all optional, combinable):',
+                        '- q=KEYWORD: keyword search; omit q to browse the bounded catalog listing.',
+                        '- category=CATEGORY_ID: one category id from the Categories endpoint; an unknown id returns 400 invalid_parameter.',
+                        '- price_min=NUMBER / price_max=NUMBER: price bounds in store currency; combined both bounds apply; each works alone.',
+                        '- sort=relevance|price_asc|price_desc|name_asc|name_desc: result ordering; relevance when omitted.',
+                        '- price_asc/price_desc order by the catalog price index, which can differ from the displayed price (special/link pricing).',
+                        '- filter[ATTRIBUTE]=OPTION_ID: allowlisted attributes only: color, size. OPTION_ID is a catalog attribute option id; text values may match nothing.',
+                        '- page=NUMBER / page_size=NUMBER: 1-based pagination, defaults 1/20, page_size up to 50.',
+                        '- store=STORE_CODE: read a specific store view; omit for the default store view; unknown code returns 400 invalid_store.',
+                        '- Unknown parameter names (camelCase pageSize included) return 400 invalid_parameter.',
+                        'Example: GET https://example.com/ai/catalog/search?store=vietnam&q=KEYWORD&sort=price_asc',
+                        'Example: GET https://example.com/ai/catalog/search?store=vietnam&category=CATEGORY_ID'
+                            . '&filter[ATTRIBUTE]=OPTION_ID&price_min=NUMBER&price_max=NUMBER&page=2&page_size=20',
+                    ],
                 ],
                 [
                     'label' => 'Categories',
@@ -109,6 +125,11 @@ class CommerceEndpointsSourceTest extends TestCase
 
         $this->assertSame('https://example.com/agent/store?store=vietnam', $entries[0]['url']);
         $this->assertSame('https://example.com/agent/products/{sku}?store=vietnam', $entries[3]['url']);
+        // Usage examples follow the configured store-scoped base path.
+        $this->assertStringContainsString(
+            'GET https://example.com/agent/catalog/search?store=vietnam&q=KEYWORD',
+            $entries[1]['usage'][10]
+        );
         // Every URL carries the store selector and NONE carries the default /ai/ prefix.
         foreach ($entries as $entry) {
             $this->assertStringContainsString('store=vietnam', $entry['url']);
@@ -137,6 +158,50 @@ class CommerceEndpointsSourceTest extends TestCase
         $source = new CommerceEndpointsSource($this->moduleList, $this->scopeConfig, $this->config);
 
         $this->assertSame([], $source->getEntries($this->store));
+    }
+
+    /**
+     * The Product Search usage guidance must mirror the LIVE-proven contract:
+     * allowlist + page-size bound read from config (never hardcoded values),
+     * examples built from the effective endpoint URL.
+     */
+    public function testUsageAdvertisesConfiguredAllowlistAndBound(): void
+    {
+        $this->scopeConfig->method('isSetFlag')->willReturn(true);
+        $this->scopeConfig->method('getValue')->willReturnCallback(
+            fn (string $path, string $scope = 'store', ?int $storeId = null): ?string => match ($path) {
+                'seocomm_ai_commerce/general/endpoint_path' => null,
+                'seocomm_ai_commerce/general/filter_allowlist' => ' Brand , material ',
+                'seocomm_ai_commerce/general/max_page_size' => '30',
+                default => null,
+            }
+        );
+        $source = new CommerceEndpointsSource($this->moduleList, $this->scopeConfig, $this->config);
+
+        $usage = $source->getEntries($this->store)[1]['usage'];
+
+        $this->assertStringContainsString('brand, material', $usage[6]);
+        $this->assertStringContainsString('up to 30', $usage[7]);
+    }
+
+    public function testUsageOmitsFilterLineWhenAllowlistEmpty(): void
+    {
+        $this->scopeConfig->method('isSetFlag')->willReturn(true);
+        $this->scopeConfig->method('getValue')->willReturnCallback(
+            fn (string $path, string $scope = 'store', ?int $storeId = null): ?string => match ($path) {
+                'seocomm_ai_commerce/general/filter_allowlist' => '',
+                'seocomm_ai_commerce/general/max_page_size' => '100',
+                default => null,
+            }
+        );
+        $source = new CommerceEndpointsSource($this->moduleList, $this->scopeConfig, $this->config);
+
+        $usage = $source->getEntries($this->store)[1]['usage'];
+
+        $this->assertCount(11, $usage);
+        foreach ($usage as $line) {
+            $this->assertStringNotContainsString('filter[', $line);
+        }
     }
 
     public function testAbsentModuleYieldsNoEntriesAndIgnoresConfig(): void

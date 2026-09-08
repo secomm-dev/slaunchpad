@@ -2,6 +2,29 @@
 
 All notable changes to `Secomm_AiDiscoverability` are documented here.
 
+## [1.6.0] - 2026-09-08
+
+Product Search usage guidance in llms.txt. Companion to the AiCommerce 1.2.1
+search fixes (BUG-7M4KQX / BUG-K8T3WR / BUG-V2N9DL): after those fixes were
+live-verified, the `### Product Search` endpoint block now documents the
+query contract an agent needs, so it never has to guess parameter names.
+
+### Added
+- `usage` lines under `### Product Search` (`CommerceEndpointsSource::getSearchUsageLines`),
+  advertising the live-proven read-only contract: `q`, `category` (ids from
+  the Categories endpoint, unknown id → 400 invalid_parameter),
+  `price_min`/`price_max` (both bounds apply, each works alone), the 5-value
+  `sort` allowlist (price sorts follow the catalog price index), conditional
+  `filter[ATTRIBUTE]=OPTION_ID` (attribute codes read store-scoped from the
+  AiCommerce filter allowlist config; omitted entirely when the allowlist is
+  empty), `page`/`page_size` (defaults 1/20, bound read from AiCommerce
+  `max_page_size` config), `store` selector, and the 400 invalid_parameter
+  contract for unknown parameter names. Two example GET URLs are built from
+  the effective endpoint URL (never a hardcoded domain/path/store).
+- `LlmsTxtFormatter` detail-entry `usage` rendering after the `Purpose:` line,
+  sanitized (HTML/control chars stripped) but with literal square brackets —
+  the documented `filter[...]` syntax stays copy-pastable.
+
 ## [1.5.0] - 2026-08-26
 
 Dedicated cache type + configurable section titles + configurable AI endpoint base path. Spec: `SPEC-TASK-HL3WQD`.
