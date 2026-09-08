@@ -145,3 +145,7 @@ Fix module **không còn** ở `app/code/Secomm/AdminCalendarFix` như ghi ở c
 2. `Launchpad_AdminCalendarFix` → **`Launchpad_MageplazaRewrite`** (user quyết định 2026-09-08: module trở thành nhà chung cho các Mageplaza fix; `Launchpad_MageplazaExtraFeeFix` giữ riêng. Lưu ý root cause như trên vẫn là **core** `mage/calendar`, chỉ lộ diện trên trang admin Mageplaza).
 
 Path hiện tại: `app/code/Launchpad/MageplazaRewrite`; mixin path trong requirejs-config: `Launchpad_MageplazaRewrite/js/calendar-position-mixin`. Đã sửa registration/module.xml/requirejs + `config.php` + `setup:upgrade` + deploy `-f` (mixin path mới live cả en/vi; module:status OK). Ghi chú thêm cho "Mystery" phía trên: các lần `config.php` tự thêm/sửa entry module sau 11:26 là `setup:upgrade` chạy trong session AI (as secomm), không phải watcher lạ.
+
+### Update 2026-09-08 (2) — rename lần cuối
+
+`Launchpad_MageplazaRewrite` → **`Launchpad_MageplazaDeliveryTime`** (user quyết định cùng ngày: scope thu hẹp thành fix cho `Mageplaza_DeliveryTime`, không còn là nhà chung Mageplaza fix). Path cuối: `app/code/Launchpad/MageplazaDeliveryTime`; mixin path: `Launchpad_MageplazaDeliveryTime/js/calendar-position-mixin`. Đã `setup:upgrade` + deploy `-f` + verify (module:status, requirejs en/vi path mới, admin 200).

@@ -2,9 +2,8 @@
 declare(strict_types=1);
 
 /**
- * Launchpad MageplazaRewrite — single home for Mageplaza-related fixes of the
- * Launchpad package, so future Mageplaza fixes land in one place instead of
- * per-bug modules. Fixes are requirejs mixins / plugins — never edits to
+ * Launchpad MageplazaDeliveryTime — fixes for Mageplaza_DeliveryTime of the
+ * Launchpad package. Fixes are requirejs mixins / plugins — never edits to
  * app/code/Mageplaza/* in place (vendor isolation).
  *
  * First fix: BUG-SRF024 (SLP-147) — admin datepicker position mixin
@@ -15,4 +14,4 @@ declare(strict_types=1);
 
 use Magento\Framework\Component\ComponentRegistrar;
 
-ComponentRegistrar::register(ComponentRegistrar::MODULE, 'Launchpad_MageplazaRewrite', __DIR__);
+ComponentRegistrar::register(ComponentRegistrar::MODULE, 'Launchpad_MageplazaDeliveryTime', __DIR__);

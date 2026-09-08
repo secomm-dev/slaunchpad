@@ -1,8 +1,15 @@
-# Changelog — Launchpad_MageplazaRewrite
+# Changelog — Launchpad_MageplazaDeliveryTime
 
 All notable changes to this module are documented here (append-only).
 
 ## [Unreleased]
+
+### Changed — 2026-09-08 (2)
+
+- Renamed again `Launchpad_MageplazaRewrite` →
+  **`Launchpad_MageplazaDeliveryTime`** (dir `app/code/Launchpad/MageplazaRewrite`
+  → `app/code/Launchpad/MageplazaDeliveryTime`): module scope narrowed to
+  `Mageplaza_DeliveryTime` fixes (user decision 2026-09-08).
 
 ### Changed — 2026-09-08
 

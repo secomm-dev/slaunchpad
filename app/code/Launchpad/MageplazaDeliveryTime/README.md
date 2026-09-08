@@ -1,15 +1,14 @@
-# Launchpad_MageplazaRewrite
+# Launchpad_MageplazaDeliveryTime
 
 ## Purpose
 
-Single Launchpad-owned home for **fixes to Mageplaza module behaviour** (and core bugs
-that surface inside Mageplaza admin/storefront surfaces). Future Mageplaza fixes land
-here instead of new per-bug modules.
+Launchpad-owned home for **fixes to `Mageplaza_DeliveryTime`** (and core bugs that
+surface on its admin/storefront surfaces). Future DeliveryTime fixes land here instead
+of new per-bug modules.
 
 Fixes are applied via requirejs mixins / plugins — **never by editing
 `app/code/Mageplaza/*` in place** (vendor must stay upgradable — same isolation rule
-as `Launchpad_MageplazaTranslate`). Sibling module `Launchpad_MageplazaExtraFeeFix`
-stays separate (shipped fix + unit test).
+as `Launchpad_MageplazaTranslate`).
 
 ## Contents
 
