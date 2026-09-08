@@ -7,7 +7,7 @@ var config = {
     config: {
         mixins: {
             'mage/calendar': {
-                'Secomm_AdminCalendarFix/js/calendar-position-mixin': true
+                'Launchpad_MageplazaRewrite/js/calendar-position-mixin': true
             }
         }
     }

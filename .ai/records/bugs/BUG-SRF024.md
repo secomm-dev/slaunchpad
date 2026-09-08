@@ -137,3 +137,11 @@ Playwright headless Chromium, A/B trên đúng Date Off grid của ticket, local
 - Pre-existing validator FAIL (ngoài scope ticket này): `BUG-EFWXPA` thiếu Out of Scope; 3 spec naming mismatch; 2 plan thiếu Specification reference; `FEAT-ZLP1PF` + `PLAN-TASKN35E28` frontmatter — flag TL xử lý riêng.
 - Mystery: `config.php` đã được 1 process ngoài AI thêm dòng `Secomm_AdminCalendarFix` lúc 11:26 (trước khi AI chạy module:enable) — khả năng watcher setup:upgrade; team nên xác nhận không có watcher lạ chạy tự động.
 
+
+## Update 2026-09-08 — module moved + renamed (2 lần trong ngày)
+
+Fix module **không còn** ở `app/code/Secomm/AdminCalendarFix` như ghi ở các section trên:
+1. `Secomm_AdminCalendarFix` → `Launchpad_AdminCalendarFix` (move sang vendor `app/code/Launchpad/` — convention project-layer).
+2. `Launchpad_AdminCalendarFix` → **`Launchpad_MageplazaRewrite`** (user quyết định 2026-09-08: module trở thành nhà chung cho các Mageplaza fix; `Launchpad_MageplazaExtraFeeFix` giữ riêng. Lưu ý root cause như trên vẫn là **core** `mage/calendar`, chỉ lộ diện trên trang admin Mageplaza).
+
+Path hiện tại: `app/code/Launchpad/MageplazaRewrite`; mixin path trong requirejs-config: `Launchpad_MageplazaRewrite/js/calendar-position-mixin`. Đã sửa registration/module.xml/requirejs + `config.php` + `setup:upgrade` + deploy `-f` (mixin path mới live cả en/vi; module:status OK). Ghi chú thêm cho "Mystery" phía trên: các lần `config.php` tự thêm/sửa entry module sau 11:26 là `setup:upgrade` chạy trong session AI (as secomm), không phải watcher lạ.

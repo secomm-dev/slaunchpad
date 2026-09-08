@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!--/**
- * Module AdminCalendarFix of Secomm package
- * @package Secomm_AdminCalendarFix
+ * Module MageplazaRewrite of Launchpad package — fixes for Mageplaza modules
+ * @package Launchpad_MageplazaRewrite
  * @see .ai/records/bugs/BUG-SRF024.md (SLP-147)
  */-->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-	<module name="Secomm_AdminCalendarFix">
+	<module name="Launchpad_MageplazaRewrite">
 		<sequence>
 			<module name="Magento_Backend"/>
 		</sequence>
