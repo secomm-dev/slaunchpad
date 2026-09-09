@@ -180,3 +180,23 @@ Template cho entry kế tiếp — copy từ đây:
 - **Root cause / trigger**: SLP-186 QC báo dropdown tài khoản cắt phải @1440x900/1024x768 trên demo sau khi fix SLP-129 đã commit `082ba2d6` (09-08) — static deploy demo `version1788752540` = 09-07 10:42, CSS thiếu `.sm\:left-auto`/`.sm\:-me-4`.
 - **Action / prevention**: (1) flow debug theme-bug trên demo: fetch HTML + CSS demo trước khi đọc code; (2) đề xuất deploy checklist thêm bước verify CSS rule mới sau `setup:static-content:deploy` (chờ TL duyệt — BUG-MNEZ92 §Notes); (3) mất ~30p điều tra có thể tránh được bằng 2 lệnh curl.
 - **Owner**: TL (chờ duyệt process)
+
+## LL-0014 — js-translation.json ($t JS dictionary): regen on-demand, chỉ chứa phrase literal-JS dịch khác source
+
+- **Date**: 2026-09-09
+- **Source**: BUG-NY0M3S (SLP-139) verify
+- **Type**: mechanism
+- **Lesson**: `pub/static/frontend/<theme>/<locale>/js-translation.json` (dictionary cho `$t()` Knockout/RequireJS) có 3 đặc tính gây hiểu nhầm: (1) `setup:static-content:deploy -f` **không regenerate** file đã tồn tại — dev mode chỉ generate on-demand khi file MISSING (cách đúng: xóa file rồi curl URL static); (2) chỉ chứa phrase có **literal `$t('…')`/`i18n:` trong JS/HTML** được scan (DataProvider `Files::getJsFiles` all-module) **và** bản dịch khác source tại thời điểm generate (`if ($phrase != $translatedPhrase)`) → en_US luôn rỗng (identity), phrase chỉ có trong CSV mà không có usage literal sẽ không vào; (3) dictionary tại thời điểm generate dùng theme fallback của page (luma trên checkout — LL-0011) + module CSVs → key chỉ có ở theme CSV (Secomm/launchpad) sẽ không dịch được trên checkout. Bổ sung cho finding BUG-1N8XC8 (SLP-112, cùng ngày: "phrase PHP-side không phụ thuộc js-translation.json") — hai mechanism độc lập: PHP `$t`/`__` = cache:flush; JS `$t` = js-translation.json.
+- **Root cause / trigger**: key "Please choose at least one option…" đã có trong theme CSV:523 từ trước nhưng vẫn EN trên checkout: theme CSV dead trên luma + module CSV chưa có + file stale. Sau +1 key module CSV, deploy -f xong key vẫn MISSING (file không regen) — chỉ PASS sau rm + curl.
+- **Action / prevention**: flow sửa phrase JS-side: (1) +key vào module CSV đúng layer; (2) `rm pub/static/frontend/<theme>/<locale>/js-translation.json`; (3) curl URL static để regen + verify `php -r json_decode` — không tin `deploy -f`.
+- **Owner**: TL (review)
+
+## LL-0015 — pub/static materialized copies (regular-file) không tự cập nhật khi source đổi
+
+- **Date**: 2026-09-09
+- **Source**: TASK-EPJVGG (SLP-198) verify
+- **Type**: mechanism
+- **Lesson**: file asset đã từng được deploy có thể nằm trong `pub/static/frontend/...` dưới 2 dạng: **symlink** → live theo source; **regular-file copy** → đứng yên mãi, `cache:flush` không đụng tới, dev-mode router cũng không override (file tồn tại được serve trực tiếp). Triệu chứng: fix CSS "không ăn" ở 1 store nhưng ăn ở store kia (vi_VN là symlink, en_US là copy từ deploy cũ).
+- **Root cause / trigger**: static materialize khác chiến lược giữa các lần deploy/khởi tạo (symlink ở developer mode, copy khi deploy bằng copy strategy) + lần "xóa toàn bộ pub/static/frontend/" 09-04 chỉ tái tạo lại 1 phần.
+- **Action / prevention**: khi sửa asset (`css/js/template`) đã từng deploy mà "fix không ăn": `ls -la pub/static/frontend/<theme>/<locale>/<Vendor>_<Module>/...` — nếu là regular-file → `rm` bản copy (as secomm) rồi request lại (dev-mode serve on-demand), hoặc chạy `setup:static-content:deploy` ở env deploy. Không kết luận "CSS sai" trước khi kiểm tra bản serve thật (fetch CSS URL trong page, so sheet cssRules).
+- **Owner**: TL (review) — bổ sung deploy checklist như đề xuất BUG-MNEZ92
