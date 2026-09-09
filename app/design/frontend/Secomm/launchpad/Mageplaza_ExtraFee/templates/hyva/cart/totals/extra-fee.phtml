@@ -1,0 +1,96 @@
+<?php
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Mageplaza\ExtraFee\Helper\Data;
+
+/**
+ * Secomm override (BUG-TK8C2Y / ext ticket SLP-144):
+ * Cart extra-fee total labels — the vendor template hardcodes the '(Excl. Tax)' /
+ * '(Incl. Tax)' suffixes inside Alpine x-html string concatenation, so they never
+ * pass through __() and stay untranslated. Suffixes are injected via the theme
+ * i18n dictionaries instead (' (Excl. Tax)' existing key, ' (Incl. Tax)' added by
+ * this ticket). All vendor logic kept verbatim — re-sync with
+ * Mageplaza_ExtraFee::hyva/cart/totals/extra-fee.phtml on module upgrades.
+ */
+
+/** @var $block \Mageplaza\ExtraFee\Block\Cart\ExtraFee */
+/** @var Escaper $escaper */
+
+$helper = $this->helper('Mageplaza\ExtraFee\Helper\Data');
+
+?>
+<script>
+    function initExtraFee() {
+        return {
+            displayMode: window.checkoutConfig.reviewShippingDisplayMode,
+            getTitle(segment) {
+                let data =JSON.parse(JSON.stringify(segment));
+                var labelText = data.extension_attributes.rule_label;
+                var titleText = (data.title && !data.code.includes('auto')) ? ' - ' + data.title : '';
+                var fullText = labelText + titleText;
+
+                return fullText;
+            },
+
+            getValue: function (value) {
+                return hyva.formatPrice(value);
+            },
+            isBothPricesDisplayed: function () {
+                return 'both' === this.displayMode
+            },
+            isIncludingDisplayed: function () {
+                return 'including' === this.displayMode;
+            },
+            isExcludingDisplayed: function () {
+                return 'excluding' === this.displayMode;
+            }
+        }
+    }
+</script>
+<template x-if="segment.code.indexOf('mp_extra_fee_rule') !== -1">
+    <div x-data="initExtraFee()">
+        <template x-if="isBothPricesDisplayed()">
+            <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container"  >
+                <div class="w-7/12 text-left md:w-auto"
+                 x-html="getTitle(segment) + '<?= $escaper->escapeHtml(__(' (Excl. Tax)')) ?>'"
+                ></div>
+                <div class="w-5/12 text-right md:w-auto"
+                 x-text="getValue(segment.value)"
+                ></div>
+            </div>
+
+            <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container"  >
+                <div class="w-7/12 text-left md:w-auto"
+                     x-html="getTitle(segment) + '<?= $escaper->escapeHtml(__(' (Incl. Tax)')) ?>'"
+                ></div>
+                <div class="w-5/12 text-right md:w-auto"
+                     x-text="getValue(segment.extension_attributes.value_incl_tax)"
+                ></div>
+            </div>
+        </template>
+
+        <template x-if="isIncludingDisplayed()">
+            <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container"  >
+                <div class="w-7/12 text-left md:w-auto"
+                     x-html="getTitle(segment) + '<?= $escaper->escapeHtml(__(' (Excl. Tax)')) ?>'"
+                ></div>
+                <div class="w-5/12 text-right md:w-auto"
+                     x-text="getValue(segment.extension_attributes.value_incl_tax)"
+                ></div>
+            </div>
+        </template>
+
+        <template x-if="isExcludingDisplayed()">
+            <div class="flex pb-2 my-2 border-b text-md lg:text-sm md:grid md:grid-cols-2 md:w-full border-container"  >
+                <div class="w-7/12 text-left md:w-auto"
+                     x-html="getTitle(segment)"
+                ></div>
+                <div class="w-5/12 text-right md:w-auto"
+                     x-text="getValue(segment.value)"
+                ></div>
+            </div>
+        </template>
+    </div>
+
+</template>

@@ -34,7 +34,7 @@ Enable,Enable
 "Select <strong>Yes</strong> to allow customers to commend on their orders.","Select <strong>Yes</strong> to allow customers to commend on their orders."
 "Enable Delivery Time","Enable Delivery Time"
 "Select <strong>Yes</strong> to allow customers to choose estimated delivery time.","Select <strong>Yes</strong> to allow customers to choose estimated delivery time."
-"Allows admins to choose the time frame for delivery","Select <strong>Yes</strong> to allow customers to choose estimated delivery time."
+"Allows admins to choose the time frame for delivery","Allows admins to choose the time frame for delivery"
 "Date Format","Date Format"
 "Select the date format used for delivery date.","Select the date format used for delivery date."
 "Day Off","Day Off"
@@ -53,3 +53,39 @@ Enable,Enable
 "Enter discount code","Enter discount code"
 "Apply Discount","Apply Discount"
 "Cancel coupon","Cancel coupon"
+"%1 day(s)","%1 day(s)"
+"%1 - %2 day(s)","%1 - %2 day(s)"
+"Please choose at least one option for each require extra fee","Please choose at least one option for each require extra fee"
+Already have an account? Click here to login,Already have an account? Click here to login
+You already have an account with us.,You already have an account with us.
+You already have an account with us. Sign in or continue as guest.,You already have an account with us. Sign in or continue as guest.
+Shipping Address,Shipping Address
+Email Address,Email Address
+My billing and shipping address are the same,My billing and shipping address are the same
+Billing Address,Billing Address
+Create an account,Create an account
+Shipping Methods,Shipping Methods
+Payment Methods,Payment Methods
+Payment Information,Payment Information
+Discount Code,Discount Code
+Order Summary,Order Summary
+Item in Cart,Item in Cart
+Items in Cart,Items in Cart
+Product Name,Product Name
+Quantity,Quantity
+Subtotal,Subtotal
+Action,Action
+Cart Subtotal,Cart Subtotal
+Shipping,Shipping
+Register for newsletter,Register for newsletter
+Place Order,Place Order
+Save in address book,Save in address book
+Please specify a payment method.,Please specify a payment method.
+Selected shipping method is not available. Please select another shipping method for this order.,Selected shipping method is not available. Please select another shipping method for this order.
+The selected shipping method is not applicable to your order. Please contact us for more details.,The selected shipping method is not applicable to your order. Please contact us for more details.
+Leave a message with the extra fee.,Leave a message with the extra fee.
+You will be charged for,You will be charged for
+Tooltip,Tooltip
+We'll send your order confirmation here.,We'll send your order confirmation here.
+For delivery questions.,For delivery questions.
+Please specify a shipping method.,Please specify a shipping method.
