@@ -170,3 +170,13 @@ Template cho entry kế tiếp — copy từ đây:
 - **Root cause / trigger**: đọc nhầm directive "tạo translate trong secomm" → dựng pack khi convention của project (chỉ thị user 09-07 trong BUG-GJT6C1) đã chốt module `Secomm_MageplazaTranslate`; slash-vs-underscore registration không có tài liệu tường minh, lỗi im lặng.
 - **Action / prevention**: (1) chuỗi cần dịch ngoài theme scope: append vào `Secomm_MageplazaTranslate/i18n/vi_VN.csv` trước (đơn giản nhất, đủ cho JS dict mọi scope); pack chỉ khi cần webapi/override toàn cục — phải TL/SA duyệt vì blast radius toàn storefront+admin. (2) Sau MỌI thay đổi i18n: `rm` dict target + deploy `-f` + **json_decode verify key trước/sau** (không tin exit code). (3) Registration pack: copy key style underscore từ pack thật trong `vendor/magento/language-*`.
 - **Owner**: Dev team
+
+## LL-0013 — Bug UI report trên demo: verify env freshness TRƯỚC khi debug code
+
+- **Date**: 2026-09-09
+- **Source**: BUG-MNEZ92 (SLP-186) investigation
+- **Type**: avoid
+- **Lesson**: Bug UI report từ demo có thể là stale deploy chứ không phải bug code. Dấu hiệu nhận biết: markup HTML đã có class/theme mới nhưng hành vi giữ nguyên → so `static/version<epoch>` timestamp (query string CSS URL) với ngày commit chứa fix TRƯỚC, rồi grep CSS-deployed có rule của class mới không. Markup có class nhưng CSS thiếu rule → CSS over-constrained resolution chạy theo hướng bất ngờ (vd `left-0` thắng `right-0` ở LTR → dropdown mở ngược chiều design).
+- **Root cause / trigger**: SLP-186 QC báo dropdown tài khoản cắt phải @1440x900/1024x768 trên demo sau khi fix SLP-129 đã commit `082ba2d6` (09-08) — static deploy demo `version1788752540` = 09-07 10:42, CSS thiếu `.sm\:left-auto`/`.sm\:-me-4`.
+- **Action / prevention**: (1) flow debug theme-bug trên demo: fetch HTML + CSS demo trước khi đọc code; (2) đề xuất deploy checklist thêm bước verify CSS rule mới sau `setup:static-content:deploy` (chờ TL duyệt — BUG-MNEZ92 §Notes); (3) mất ~30p điều tra có thể tránh được bằng 2 lệnh curl.
+- **Owner**: TL (chờ duyệt process)
