@@ -1,0 +1,222 @@
+[
+  {
+    "store": "vi",
+    "lang": "vi",
+    "pickLog": [
+      {
+        "sel": "AC8VD1I",
+        "val": "An Giang"
+      },
+      {
+        "sel": "TULAYPR",
+        "val": "An Giang"
+      },
+      {
+        "sel": "custom-city-select",
+        "val": "An Biên"
+      },
+      {
+        "sel": "custom-city-select",
+        "val": "An Biên"
+      }
+    ],
+    "block": {
+      "present": true,
+      "visible": true,
+      "gapLabelToOption": 49,
+      "rects": {
+        "dt": {
+          "top": 345.5,
+          "bottom": 400.5,
+          "left": 973.3,
+          "h": 55
+        },
+        "dtLabel": {
+          "top": 345.5,
+          "bottom": 365.5,
+          "left": 973.3,
+          "h": 20
+        },
+        "desc": {
+          "top": 380.5,
+          "bottom": 400.5,
+          "left": 973.3,
+          "h": 20
+        },
+        "dd": {
+          "top": 410.5,
+          "bottom": 450.5,
+          "left": 973.3,
+          "h": 40
+        },
+        "rule": {
+          "top": 410.5,
+          "bottom": 430.5,
+          "left": 973.3,
+          "h": 20
+        },
+        "input": {
+          "top": 414.5,
+          "bottom": 427.5,
+          "left": 973.3,
+          "h": 13
+        }
+      },
+      "computed": {
+        "form": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "dl": {
+          "marginTop": "20px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px"
+        },
+        "wrap": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "dt": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "dtLabel": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "display": "inline-block"
+        },
+        "desc": {
+          "marginTop": "10px",
+          "marginBottom": "10px"
+        },
+        "dd": {
+          "marginTop": "0px",
+          "marginBottom": "10px"
+        },
+        "rule": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "input": {
+          "marginTop": "2px",
+          "marginBottom": "0px"
+        }
+      },
+      "labelText": "rrrrrr",
+      "optionText": "20HKD 28,30 US$",
+      "noteLabel": "Leave a message with the extra fee."
+    },
+    "validationMessage": null
+  },
+  {
+    "store": "en",
+    "lang": "en",
+    "pickLog": [
+      {
+        "sel": "ARG6PDE",
+        "val": "Alabama"
+      },
+      {
+        "sel": "ES1J46U",
+        "val": "Alabama"
+      }
+    ],
+    "block": {
+      "present": true,
+      "visible": true,
+      "gapLabelToOption": 49,
+      "rects": {
+        "dt": {
+          "top": 345.5,
+          "bottom": 400.5,
+          "left": 973.3,
+          "h": 55
+        },
+        "dtLabel": {
+          "top": 345.5,
+          "bottom": 365.5,
+          "left": 973.3,
+          "h": 20
+        },
+        "desc": {
+          "top": 380.5,
+          "bottom": 400.5,
+          "left": 973.3,
+          "h": 20
+        },
+        "dd": {
+          "top": 410.5,
+          "bottom": 450.5,
+          "left": 973.3,
+          "h": 40
+        },
+        "rule": {
+          "top": 410.5,
+          "bottom": 430.5,
+          "left": 973.3,
+          "h": 20
+        },
+        "input": {
+          "top": 414.5,
+          "bottom": 427.5,
+          "left": 973.3,
+          "h": 13
+        }
+      },
+      "computed": {
+        "form": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "dl": {
+          "marginTop": "20px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px"
+        },
+        "wrap": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "dt": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "dtLabel": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "display": "inline-block"
+        },
+        "desc": {
+          "marginTop": "10px",
+          "marginBottom": "10px"
+        },
+        "dd": {
+          "marginTop": "0px",
+          "marginBottom": "10px"
+        },
+        "rule": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "input": {
+          "marginTop": "2px",
+          "marginBottom": "0px"
+        }
+      },
+      "labelText": "rrrrrr",
+      "optionText": "20HKD $28.30",
+      "noteLabel": "Leave a message with the extra fee."
+    },
+    "validationMessage": null
+  }
+]

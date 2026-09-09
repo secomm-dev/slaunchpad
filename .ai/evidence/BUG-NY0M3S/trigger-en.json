@@ -1,0 +1,28 @@
+{
+  "store": "en",
+  "lang": "en",
+  "before": {
+    "extraFeeVisible": true,
+    "paymentRadios": [
+      {
+        "value": "checkmo",
+        "vis": false
+      }
+    ],
+    "checkoutButtons": [
+      "Apply Discount",
+      "Place Order",
+      "Close",
+      "Close"
+    ],
+    "shippingMethodRadios": []
+  },
+  "btnText": "Place Order",
+  "after": {
+    "noticeMessage": "Please choose at least one option for each require extra fee",
+    "noticeVisible": true,
+    "globalErrors": [
+      "The selected shipping method is not applicable to your order. Please contact us for more details."
+    ]
+  }
+}

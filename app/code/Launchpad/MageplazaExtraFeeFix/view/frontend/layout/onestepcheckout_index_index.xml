@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * BUG-NY0M3S (SLP-139) — attach the Extra Fee checkout spacing fix to the
+ * Mageplaza OSC checkout page only (handle onestepcheckout_index_index).
+ * The OSC checkout runs in the Magento/luma scope (LL-0011), so a theme-level
+ * layout override would never load — module-level is required.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Launchpad_MageplazaExtraFeeFix::css/extra-fee-checkout.css"/>
+    </head>
+</page>

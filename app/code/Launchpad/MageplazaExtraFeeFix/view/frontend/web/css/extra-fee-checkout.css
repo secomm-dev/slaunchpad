@@ -1,0 +1,26 @@
+/**
+ * BUG-NY0M3S (SLP-139) — Extra Fee (Mageplaza OSC payment step): tighten vertical rhythm.
+ *
+ * Baseline measured on local (2026-09-09, 1504px viewport): gap between the rule
+ * label and the first option checkbox was 49px, because the empty `.mp-description`
+ * line box (20px label + 10px top/bottom inline margins) renders even when the rule
+ * has no description. The Mageplaza reference demo (extra-fee-demo.mageplaza.com/hyva)
+ * shows a ~0 gap.
+ *
+ * Scope: payment block only (#mp-extra-fee-billing). This stylesheet is attached
+ * exclusively to the onestepcheckout_index_index layout handle — it cannot leak
+ * into other pages.
+ */
+
+/* Keep a small gap when a rule actually has a description
+   (!important beats the template's inline style="margin: 10px 0" / KO style binding) */
+#mp-extra-fee-billing .mp-description {
+    margin: 4px 0 !important;
+}
+
+/* Hide the whole line when the description text is empty
+   (KO renders an empty <span>, the label still occupies a line box).
+   Browsers without :has() keep the current appearance with the 4px margins. */
+#mp-extra-fee-billing .mp-description:not(:has(span:not(:empty))) {
+    display: none;
+}
