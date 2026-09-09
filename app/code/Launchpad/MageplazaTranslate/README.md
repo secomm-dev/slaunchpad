@@ -25,6 +25,9 @@ Details / evidence: `.ai/evidence/BUG-GJT6C1/RESULTS.md`, lesson LL-0011.
   so both scopes render identical strings.
 - `i18n/vi_VN.csv` — coupon add/remove success messages on OSC checkout, sourced from
   `Mageplaza_OscPro` JS `$t()` literals (BUG-5NR0PD / ext ticket SLP-150).
+- `i18n/vi_VN.csv` — TableRate estimated-delivery day suffix (PHP `__('%1 day(s)')` /
+  `__('%1 - %2 day(s)')` from `Carrier\TableRate::getDeliveryDays()`, substituted into
+  the method title's `{{delivery_days}}` placeholder) (BUG-1N8XC8 / ext ticket SLP-112).
 
 ## Maintenance
 

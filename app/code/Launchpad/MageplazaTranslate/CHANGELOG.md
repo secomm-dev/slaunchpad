@@ -4,6 +4,14 @@ All notable changes to this module are documented here (append-only).
 
 ## [Unreleased]
 
+### Added — 2026-09-09
+
+- `i18n/vi_VN.csv` +2 phrase: `%1 day(s)` → `%1 ngày`, `%1 - %2 day(s)` → `%1 - %2 ngày`
+  — output của `Mageplaza_TableRateShipping` `Carrier\TableRate::getDeliveryDays()`
+  thay placeholder `{{delivery_days}}` trong method title (OSC Order Summary hiển thị
+  "Tiêu chuẩn 3 ngày" thay vì "3 day(s)"). Identity mirror rows in `i18n/en_US.csv`
+  (BR-001). BUG-1N8XC8 / ext ticket SLP-112.
+
 ### Changed — 2026-09-08
 
 - Moved `Secomm_MageplazaTranslate` → `Launchpad_MageplazaTranslate`
