@@ -19,11 +19,36 @@
  * @license     https://www.mageplaza.com/LICENSE.txt
  */
 
+/**
+ * Child-theme override (BUG-QKX5BW / SLP-185).
+ *
+ * Vendor renders Bootstrap-era markup (.btn .btn-block .btn-social + FontAwesome .fa) that this
+ * Hyva/Tailwind theme does not fully style: `.btn-block` does not exist in the theme bundle and
+ * the float-in-flex wrapper collapses the button width, truncating the label to "...".
+ * Buttons are rebuilt with static Tailwind utilities (single loop, no dead markup). The JS
+ * behavior (OAuth popup via window.open, disconnect confirm modal + AJAX) is preserved 1:1
+ * from vendor. FontAwesome is not loaded in Hyva -> brand icons are inline SVG.
+ */
+
 /** @var Social $block */
+/** @var \Magento\Framework\Escaper $escaper */
 
 use Mageplaza\SocialLoginPro\Block\Manager\Social;
 
-$helperData  = $this->helper(\Mageplaza\SocialLoginPro\Helper\Data::class);
+// Brand icons as inline SVG. Keys match lowercased getBtnKey() output.
+$socialIcons = [
+    'google' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6" aria-hidden="true">'
+        . '<path fill="#EA4335" d="M12 5.04c1.62 0 3.06.56 4.2 1.64l3.12-3.12C17.46 1.8 14.86.75 12 .75 7.62.75 3.84 3.25 2.06 6.86l3.66 2.84C6.55 7.87 9.05 5.04 12 5.04z"/>'
+        . '<path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.6v3h3.86c2.26-2.09 3.56-5.17 3.56-8.84z"/>'
+        . '<path fill="#FBBC05" d="M5.72 14.3c-.25-.74-.38-1.54-.38-2.3 0-.77.13-1.56.38-2.3L2.06 6.86C1.38 8.28 1 9.86 1 12s.38 3.72 1.06 5.14L5.72 14.3z"/>'
+        . '<path fill="#34A853" d="M12 23.25c2.86 0 5.26-.94 7.02-2.56l-3.86-3c-1.02.7-2.33 1.11-3.16 1.11-2.95 0-5.45-2.83-6.28-4.99L2.06 17.14C3.84 20.75 7.62 23.25 12 23.25z"/>'
+        . '</svg>',
+    'facebook' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6" aria-hidden="true">'
+        . '<circle cx="12" cy="12" r="12" fill="#1877F2"/>'
+        . '<path fill="#ffffff" d="M16.67 15.47l.53-3.47h-3.33V9.75c0-.95.46-1.87 1.96-1.87h1.52V4.94s-1.38-.23-2.7-.23c-2.74 0-4.53 1.66-4.53 4.67v2.62H7.08v3.47h3.04v8.38a12.2 12.2 0 0 0 3.75 0v-8.38h2.48z"/>'
+        . '</svg>',
+];
+
 $modal = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class)
     ->createModal()
     ->withDialogRefName('my-dialog')
@@ -73,7 +98,7 @@ $modal = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class)
                 }
             })
             .catch(() => {
-                alert('Lỗi Ajax. Vui lòng thử lại!');
+                alert('<?= $escaper->escapeJs(__('Ajax error. Please try again!')) ?>');
             });
         }
     }
@@ -81,11 +106,9 @@ $modal = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class)
     <?= /* @noEscape */ $modal ?>
 </div>
 
-
 <div class="block block-dashboard-social-login">
     <h2 class="block-title my-6 flex justify-between items-center card">
-        <span class="text-2xl block"><?= /* @noEscape */
-            __('Activate Social Login Connect') ?></span>
+        <span class="text-2xl block"><?= $escaper->escapeHtml(__('Activate Social Login Connect')) ?></span>
     </h2>
     <div class="block-content mp-12">
         <div class="flex flex-wrap justify-between -m-4">
@@ -93,20 +116,15 @@ $modal = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class)
                 <div class="flex p-8 sm:flex-row flex-col h-full card">
                     <div class="box-content">
                         <div class="block social-login-authentication-popup col-mp">
-                            <div x-data="initSocials()" style=" display: flex; flex-wrap: wrap;">
+                            <div x-data="initSocials()" class="flex flex-wrap gap-3">
                                 <template x-for="(social, key) in socials" :key="key">
-                                    <div class="block-content" style="float: left; margin-right: 5px;">
-                                        <div class="actions-toolbar social-btn"
-                                             :class="social.label.toLowerCase() + '-login'">
-                                            <a class="btn btn-block btn-social" style="text-align: center;"
-                                               :class="'btn-' + social.btnKey.toLowerCase()"
-                                               :href="social.connected ? social.ajaxUrl : social.login_url"
-                                               @click.prevent="handleClick(social)">
-                                                <span class="fa" :class="'fa-' + social.btnKey.toLowerCase()"></span>
-                                                <span x-text="social.connected ? 'Disconnect' : social.label"></span>
-                                            </a>
-                                        </div>
-                                    </div>
+                                    <a href="#" @click.prevent="handleClick(social)"
+                                       class="inline-flex w-full sm:w-auto items-center gap-3 rounded-md border border-gray-300 bg-surface px-4 py-2.5 text-sm font-medium text-ink shadow-sm transition-colors hover:border-gray-400">
+                                        <span class="shrink-0"
+                                              x-html="icons[social.btnKey.toLowerCase()] || fallbackIcon(social.label)"></span>
+                                        <span class="truncate"
+                                              x-text="social.connected ? disconnectLabel : social.label"></span>
+                                    </a>
                                 </template>
                             </div>
                         </div>
@@ -116,106 +134,50 @@ $modal = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class)
         </div>
     </div>
 </div>
-<!-- Popup Modal -->
-<div x-data="{ showPopup: false, message: '', type: 'success' }">
-    <!-- Modal -->
-    <template x-if="showPopup">
-        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-                <!-- Icon -->
-                <div class="flex items-center justify-center mb-3">
-                    <template x-if="type === 'success'">
-                        <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </template>
-                    <template x-if="type === 'error'">
-                        <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </template>
-                </div>
 
-                <!-- Nội dung -->
-                <p class="text-center text-lg font-medium" x-text="message"></p>
+<script>
+    function initSocials() {
+        return {
+            socials: <?= /* @noEscape */ $block->getAvailableSocialsPro() ?>,
+            icons: <?= /* @noEscape */ json_encode($socialIcons) ?>,
+            disconnectLabel: '<?= $escaper->escapeJs(__('Disconnect')) ?>',
 
-                <!-- Nút đóng -->
-                <button @click="showPopup = false"
-                        class="mt-4 w-full text-white py-2 rounded-lg hover:bg-blue-600">
-                    OK
-                </button>
-            </div>
-        </div>
-    </template>
-    <div x-data="initSocials()">
-        <template x-for="social in socials" :key="social.btnKey">
-            <button @click="handleClick(social)" class="px-4 py-2 rounded text-white">
-                <span x-text="social.label"></span>
-            </button>
-        </template>
-
-        <!-- Popup Confirm -->
-        <div x-data="{ showConfirm: false, confirmMessage: '', confirmCallback: null }">
-            <template x-if="showConfirm">
-                <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-                        <p class="text-center text-lg font-medium" x-text="confirmMessage"></p>
-                        <div class="mt-4 flex justify-between">
-                            <button @click="showConfirm = false" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">
-                                Hủy
-                            </button>
-                            <button @click="confirmCallback(); showConfirm = false" class="px-4 py-2 bg-red-500 text-white rounded-lg">
-                                Xác nhận
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </div>
-    </div>
-
-    <script>
-
-        /**
-         *
-         * @returns {{handleClick(*): void, socials: *}}
-         */
-        function initSocials() {
-            return {
-                socials: <?= /* @noEscape */  $block->getAvailableSocialsPro(); ?>,
-
-                handleClick(social) {
-                    if (social.connected) {
-                        openMyDialog(social);
-                    } else {
-                        var date = new Date();
-                        var currentTime = date.getTime();
-                        var popupParams = getPopupParams(500, 420);
-                        window.open(social.login_url + '?' + currentTime, social.label, popupParams);
-                    }
+            handleClick(social) {
+                if (social.connected) {
+                    openMyDialog(social);
+                } else {
+                    var date = new Date();
+                    var currentTime = date.getTime();
+                    var popupParams = getPopupParams(500, 420);
+                    window.open(social.login_url + '?' + currentTime, social.label, popupParams);
                 }
-            };
-        }
-        /**
-         *
-         * @param w
-         * @param h
-         * @param l
-         * @param t
-         * @returns {string}
-         */
-        function getPopupParams(w = 500, h = 420, l = null, t = null) {
-            var screenX = window.screenX ?? window.screenLeft;
-            var screenY = window.screenY ?? window.screenTop;
-            var outerWidth = window.outerWidth ?? document.body.clientWidth;
-            var outerHeight = window.outerHeight ?? (document.body.clientHeight - 22);
+            },
 
-            var left = l ?? Math.round(screenX + (outerWidth - w) / 2);
-            var top = t ?? Math.round(screenY + (outerHeight - h) / 2.5);
+            fallbackIcon(label) {
+                var ch = (label || '?').charAt(0).toUpperCase();
+                return '<span style="display:inline-flex;height:24px;width:24px;align-items:center;'
+                    + 'justify-content:center;border-radius:9999px;background:#e5e7eb;color:#374151;'
+                    + 'font-size:11px;font-weight:600">' + ch + '</span>';
+            }
+        };
+    }
 
-            return `width=${w},height=${h},left=${left},top=${top}`;
-        }
-    </script>
+    /**
+     * @param w
+     * @param h
+     * @param l
+     * @param t
+     * @returns {string}
+     */
+    function getPopupParams(w = 500, h = 420, l = null, t = null) {
+        var screenX = window.screenX ?? window.screenLeft;
+        var screenY = window.screenY ?? window.screenTop;
+        var outerWidth = window.outerWidth ?? document.body.clientWidth;
+        var outerHeight = window.outerHeight ?? (document.body.clientHeight - 22);
 
+        var left = l ?? Math.round(screenX + (outerWidth - w) / 2);
+        var top = t ?? Math.round(screenY + (outerHeight - h) / 2.5);
 
-
+        return `width=${w},height=${h},left=${left},top=${top}`;
+    }
+</script>

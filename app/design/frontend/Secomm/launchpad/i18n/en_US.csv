@@ -846,3 +846,5 @@
 "If you have not authorized this action, please contact us immediately at <a href=""mailto:%store_email"">%store_email</a>","If you have not authorized this action, please contact us immediately at <a href=""mailto:%store_email"">%store_email</a>"
 "or call us at <a href=""tel:%store_phone"">%store_phone</a>","or call us at <a href=""tel:%store_phone"">%store_phone</a>"
 " (Incl. Tax)"," (Incl. Tax)"
+"Disconnect","Disconnect"
+"Ajax error. Please try again!","Ajax error. Please try again!"

@@ -893,3 +893,5 @@
 "If you have not authorized this action, please contact us immediately at <a href=""mailto:%store_email"">%store_email</a>","Nếu bạn không thực hiện hành động này, vui lòng liên hệ ngay với chúng tôi qua <a href=""mailto:%store_email"">%store_email</a>"
 "or call us at <a href=""tel:%store_phone"">%store_phone</a>","hoặc gọi cho chúng tôi qua <a href=""tel:%store_phone"">%store_phone</a>"
 " (Incl. Tax)"," (đã gồm thuế)"
+"Disconnect","Ngắt kết nối"
+"Ajax error. Please try again!","Lỗi Ajax. Vui lòng thử lại!"
