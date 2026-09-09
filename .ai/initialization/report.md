@@ -44,7 +44,7 @@
 - SA inherits TL intents (no separate SA intent library)
 
 ## Accepted risks (blueprint §12)
-- `Vnpayment_VNPAY` custom gateway — IPN/signature, default inactive → cần enable + security review trước go-live
+- `Secomm_VNPAY` custom gateway — IPN/signature, default inactive → cần enable + security review trước go-live
 - Mageplaza OSC — complex checkout flow, payment/address interaction risk
 - `Secomm_AddressDropdown` + VietNamAddress — data quality + GraphQL surface risk
 - Production infrastructure undefined — Redis/Varnish/OpenSearch/CI chưa cấu hình

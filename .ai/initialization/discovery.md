@@ -43,7 +43,7 @@
 | Store scope | single-store (DB-only config) vs planned 2nd store | `app/etc/config.php` (1 store) | `launchpad_fashion` theme + `development_fashion` branch | OPEN — Q2 |
 
 ## Risks identified (→ `project-context/06`)
-- `Vnpayment_VNPAY` custom gateway — IPN/signature, default inactive → cần enable + security review
+- `Secomm_VNPAY` custom gateway — IPN/signature, default inactive → cần enable + security review
 - Mageplaza OSC — complex checkout flow, payment/address interaction risk
 - `Secomm_AddressDropdown` + VietNamAddress — data quality + GraphQL surface
 - Production infra undefined — chưa có Redis/Varnish/OpenSearch/CI

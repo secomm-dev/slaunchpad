@@ -39,13 +39,13 @@
 | Project overview | `project-context/01_PROJECT_OVERVIEW.md` | Stack, market, payments |
 | Business rules | `project-context/02_BUSINESS_RULES.md` | BR-001..BR-006 + BR-TBD-001 |
 | Architecture | `project-context/03_ARCHITECTURE_AND_INTEGRATIONS.md` | Module map, integrations |
-| Custom modules | `project-context/04_CUSTOM_MODULES_AND_CODE_AREAS.md` | Secomm_*, Vnpayment, Mageplaza |
+| Custom modules | `project-context/04_CUSTOM_MODULES_AND_CODE_AREAS.md` | Secomm_* |
 | API contracts | `project-context/05_API_CONTRACTS.md` | GraphQL (AddressDropdown), REST, IPN |
 | Risks | `project-context/06_KNOWN_CONSTRAINTS_AND_RISKS.md` | High-risk areas |
 | Magento module map | `project-context/09_MAGENTO_MODULE_MAP.md` | Plugin chain, preference, observer |
 | Secomm modules | `app/code/Secomm/` | Base, AddressDropdown, VietNamAddress |
 | Mageplaza modules | `app/code/Mageplaza/` | 16 modules (source-committed) |
-| VNPAY gateway | `app/code/Vnpayment/VNPAY/` | Pay/Info/IPN controller (Tier 2) |
+| VNPAY gateway | `app/code/Secomm/VNPAY/` | Pay/Info/IPN controller (Tier 2) |
 | Hyvä child theme | `app/design/frontend/Secomm/launchpad/` | Tailwind v4 source, Alpine component |
 | Theme config | `app/etc/hyva-themes.json`, `app/etc/config.php` | Theme fallback, DB-only config scope |
 | `[TBD]` checkout flow doc | `project-context/10_CHECKOUT_PAYMENT_SHIPPING_ORDER_FLOW.md` | Chưa generate — tạo khi làm checkout task |

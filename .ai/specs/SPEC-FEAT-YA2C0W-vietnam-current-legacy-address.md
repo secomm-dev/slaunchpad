@@ -183,5 +183,5 @@ Không có — FEAT này không chạm renderer (renderer schema-driven thuộc 
 3. Datasets: `VN_Address_2Level.csv` (CURRENT, 3.321 rows, 34 regions, đã cài) vs `VN_Address.csv` (LEGACY, 10.600 rows, 63 regions + 705 + 10.595, chưa cài).
 4. **Region codes 2 dataset chồng lấn namespace** (01–63 cũ vs 01–34 mới, khác nghĩa) — import legacy qua entity cũ sẽ đè regions đang chạy.
 5. Không có bảng/mapping relation hiện hữu; nguồn mapping authoritative (NĐ-CP 165/2025) chưa có file trong project.
-6. Cross-references: `Secomm_VietNamMarket` (sequence + locale en_VN); Mageplaza/themes/Vnpayment: 0 coupling với VietNamAddress.
+6. Cross-references: `Secomm_VietNamMarket` (sequence + locale en_VN); Mageplaza/themes/VNPAY: 0 coupling với VietNamAddress.
 7. Overlap với FEAT-2PZQKJ: phần "đăng ký vn_current profile" của TASK-4F1K3N chuyển sang FEAT-YA2C0W (TASK-S0M7YC ghi nhận).

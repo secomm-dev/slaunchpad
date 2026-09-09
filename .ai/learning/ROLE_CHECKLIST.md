@@ -23,7 +23,7 @@
 - [ ] Biết Tailwind CSS v4 CSS-first — **không** tạo `tailwind.config.js`
 - [ ] Biết Hyvä patterns (Alpine + Magewire, phtml-driven, không React/Vue)
 - [ ] Biết Mageplaza = third-party — extend bằng plugin/preference, không modify in-place
-- [ ] Biết vendor prefix: `Secomm_` (project), `Vnpayment_` (payment)
+- [ ] Biết vendor prefix: `Secomm_` (project)
 - [ ] Biết storefront string → cả `vi_VN.csv` + `en_US.csv`
 - [ ] Biết 6 business rules (BR-001..006)
 - [ ] Biết 5 high-risk areas (VNPAY, OSC, address dropdown, prod infra, search)

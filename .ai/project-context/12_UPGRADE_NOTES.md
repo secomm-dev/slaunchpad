@@ -47,7 +47,7 @@ Hyvä-specific upgrade considerations beyond standard Magento upgrade.
 | `magewirephp/magewire` (+ validation) | 1.13.3 / 1.0.1 | [TBD] | Verify with Hyvä + Magento |
 | `tailwindcss` (+ @tailwindcss/cli) | ^4.3.1 | [TBD] | CSS-first config |
 | Mageplaza_* (16 modules, source) | [TBD — committed as source, not composer] | [TBD] | Source-committed → version drift risk; manage versions manually. Do NOT modify in place |
-| `Vnpayment_VNPAY` (custom) | [TBD] | [TBD] | Custom payment — full regression (Pay/Info/IPN/signature) after any upgrade |
+| `Secomm_VNPAY` (custom) | [TBD] | [TBD] | Custom payment — full regression (Pay/Info/IPN/signature) after any upgrade |
 | `Secomm_AddressDropdown` / `VietNamAddress` / `Base` (custom) | [TBD] | [TBD] | Custom modules — regression-test VN address cascade + GraphQL surface |
 
 ## Known Breaking Changes

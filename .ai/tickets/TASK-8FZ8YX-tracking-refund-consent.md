@@ -46,7 +46,7 @@ Purchase + refund events vào outbox đúng 1 lần per order/creditmemo, đúng
 ### Constraints / Rules
 
 - State guard idempotent: fire điều kiện trên **transition** (from ≠ to), không phải current state — handle save thứ 2 không re-fire.
-- KHÔNG modify `Vnpayment_VNPAY`, Mollie module, core Sales — observer trên event chuẩn + plugin nếu cần.
+- KHÔNG modify `Secomm_VNPAY`, Mollie module, core Sales — observer trên event chuẩn + plugin nếu cần.
 - Consent=false → row status `skipped` (audit được) hoặc không insert + log — chọn insert-skipped cho reconcile.
 
 ### Out of Scope

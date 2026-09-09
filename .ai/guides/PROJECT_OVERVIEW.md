@@ -52,7 +52,7 @@
 
 ## Architecture summary
 
-Monolithic Magento 2.4.8-p5 storefront với Hyvä 3.x frontend. Custom code tập trung ở: module Secomm (base admin + address dropdown VN), Vnpayment_VNPAY, và bộ Mageplaza commerce suite (commit dưới dạng source trong `app/code/Mageplaza`). Hai Hyvä child theme: `launchpad` (primary) và `launchpad_fashion` (grandchild, scaffold).
+Monolithic Magento 2.4.8-p5 storefront với Hyvä 3.x frontend. Custom code tập trung ở: module Secomm (base admin + address dropdown VN), Secomm_VNPAY, và bộ Mageplaza commerce suite (commit dưới dạng source trong `app/code/Mageplaza`). Hai Hyvä child theme: `launchpad` (primary) và `launchpad_fashion` (grandchild, scaffold).
 
 **Quyết định kiến trúc chính:**
 - Hyvä 3.x thay Luma cho performance (Tailwind + Alpine, minimal JS).
@@ -67,7 +67,7 @@ Monolithic Magento 2.4.8-p5 storefront với Hyvä 3.x frontend. Custom code t�
 
 | Area | Lý do | Giảm thiểu |
 |---|---|---|
-| **Vnpayment_VNPAY** | Custom payment: IPN, chữ ký, mặc định inactive — nhạy cảm PCI | Enable + security review trước go-live; test idempotency + chữ ký. Tier 2 (SA review). |
+| **Secomm_VNPAY** | Custom payment: IPN, chữ ký, mặc định inactive — nhạy cảm PCI | Enable + security review trước go-live; test idempotency + chữ ký. Tier 2 (SA review). |
 | **Mageplaza One Step Checkout** | Thay checkout mặc định; tương tác payment/address phức tạp | End-to-end checkout QC + test payment trên mỗi change. Tier 2. |
 | **Secomm address dropdown + data VN** | Custom address capture + data import; rủi ro chất lượng data + GraphQL | Validate dropdown phân cấp end-to-end; test admin CRUD + CSV import/export. |
 | **Production infrastructure** | Chưa có Redis/Varnish/OpenSearch/CI | Chốt hạ tầng prod trước launch. **BLOCKING.** |

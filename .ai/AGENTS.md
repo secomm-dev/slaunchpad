@@ -54,7 +54,7 @@ Additional services: [ASSUMPTION: Redis (cache+sessions) + Varnish (FPC) + OpenS
 **Key directories:**
 - `app/code/Secomm/` — Secomm_Base, AddressDropdown, VietNamAddress
 - `app/code/Mageplaza/` — 16 Mageplaza modules (source-committed)
-- `app/code/Vnpayment/` — Vnpayment_VNPAY payment gateway
+- `app/code/Secomm/` — Secomm_VNPAY payment gateway
 - `app/design/frontend/Secomm/launchpad/` — primary Hyvä child theme (`web/tailwind/` build toolchain)
 - `app/design/frontend/Secomm/launchpad_fashion/` — fashion variant (scaffolded)
 - `app/etc/` — env.php (local dev), config.php, hyva-themes.json
@@ -82,7 +82,7 @@ Skills and functions declare their own superset **by section** (e.g. "`AGENTS.md
 - `06_KNOWN_CONSTRAINTS_AND_RISKS.md` — bugs, high-risk areas, legacy code, dependencies
 - `07_GLOSSARY.md` — domain terms, abbreviations, client-specific terminology
 - `08_SPEC_TEMPLATE.md` — spec template for creating feature specs
-- `09_MAGENTO_MODULE_MAP.md` — Magento module inventory (custom + Mageplaza + Vnpayment)
+- `09_MAGENTO_MODULE_MAP.md` — Magento module inventory (custom + Mageplaza)
 - `10_CHECKOUT_PAYMENT_SHIPPING_ORDER_FLOW.md` — OSC + Mollie/VNPAY + TableRate flows
 - `11_CRON_QUEUE_INDEXER_CACHE.md` — Mageplaza crons, indexers, cache (file cache → Redis in prod)
 - `12_UPGRADE_NOTES.md` — Magento/Hyvä/Mageplaza upgrade notes
@@ -147,13 +147,13 @@ Skills and functions declare their own superset **by section** (e.g. "`AGENTS.md
 - Write code that is readable and maintainable, not clever
 
 **Project-specific rules (from blueprint §15):**
-- Any change to `Vnpayment_VNPAY` (payment/IPN/signature) requires SA review (Tier 2 escalation)
+- Any change to `Secomm_VNPAY` (payment/IPN/signature) requires SA review (Tier 2 escalation)
 - Any change to Mageplaza OSC checkout flow requires end-to-end checkout QC + payment test
 - Address-related changes must validate the VN hierarchical dropdown (country→state→city→sub-city) end-to-end
 - Do NOT commit production env.php / Redis / OpenSearch credentials — local-dev config only in repo
 - Tailwind CSS v4 — CSS-first config via `@theme`/`@source` in `tailwind-source.css`; **do NOT create a `tailwind.config.js`**
 - Frontend uses Hyvä patterns (Alpine.js + Magewire, phtml-driven); no React/Vue
-- Custom module vendor prefixes: `Secomm_` (project) and `Vnpayment_` (payment); `Mageplaza_*` are third-party — extend via plugin/preference, do not modify in place
+- Custom module vendor prefixes: `Secomm_` (project) and `` for all Secomm-owned modules; `Mageplaza_*` are third-party — extend via plugin/preference, do not modify in place
 - All new PHP targets PHP 8.2+ (8.2–8.4 compatible); `strict_types` + Magento coding standard
 - Storefront strings must be added to both `vi_VN.csv` and `en_US.csv`
 
@@ -417,7 +417,7 @@ The following areas are high-risk. AI must flag any change touching these areas 
 
 | Area | Risk | Escalation |
 |------|------|------------|
-| `Vnpayment_VNPAY` — custom payment gateway (IPN validation, signature; default inactive) | Revenue, security | Tier 2 |
+| `Secomm_VNPAY` — custom payment gateway (IPN validation, signature; default inactive) | Revenue, security | Tier 2 |
 | `Secomm_AddressDropdown` + `VietNamAddress` — custom address capture + data import; GraphQL surface | UX, data integrity | Tier 2 |
 | Mageplaza OSC checkout (Osc/OscPro/OscUltimate) — complex flow, payment/address interaction | Revenue, UX | Tier 2 |
 | Search engine not configured — Magento 2.4.8 requires OpenSearch | Catalog, search | Tier 2 |

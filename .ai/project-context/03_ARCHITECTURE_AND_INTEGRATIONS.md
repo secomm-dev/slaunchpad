@@ -21,7 +21,7 @@ Architecture description comes first, then integration table.
 
 ## Architecture
 
-Monolithic Magento 2.4.8-p5 storefront with a Hyvä 3.x frontend (Tailwind CSS v4 CSS-first config, Alpine.js, Magewire 1.13). Two custom Hyvä child themes — Secomm/launchpad (primary, child of Hyva/default) and Secomm/launchpad_fashion (grandchild of launchpad, scaffolded). Custom code is concentrated in: 3 Secomm modules (base admin shell, Vietnam hierarchical address dropdown + data), Vnpayment_VNPAY gateway, and a committed Mageplaza commerce suite (checkout, shipping, marketing). Targets VN fashion retail, bilingual vi_VN/en_US.
+Monolithic Magento 2.4.8-p5 storefront with a Hyvä 3.x frontend (Tailwind CSS v4 CSS-first config, Alpine.js, Magewire 1.13). Two custom Hyvä child themes — Secomm/launchpad (primary, child of Hyva/default) and Secomm/launchpad_fashion (grandchild of launchpad, scaffolded). Custom code is concentrated in: 3 Secomm modules (base admin shell, Vietnam hierarchical address dropdown + data), Secomm_VNPAY gateway, and a committed Mageplaza commerce suite (checkout, shipping, marketing). Targets VN fashion retail, bilingual vi_VN/en_US.
 
 ### Key Architecture Decisions
 
@@ -53,7 +53,7 @@ Monolithic Magento 2.4.8-p5 storefront with a Hyvä 3.x frontend (Tailwind CSS v
 | Name | Type | Direction | Protocol | Criticality | Authentication | Notes |
 |------|------|-----------|----------|-------------|----------------|-------|
 | Mollie Payments | payment | bidirectional | REST/HTTP | high | API key + webhook | Composer-installed mollie/magento2 3.1.1 + Hyvä compat bundle. Active payment method. |
-| VNPAY | payment | bidirectional | HTTP (query redirect + IPN) | high | TmnCode + hash secret | Custom Vnpayment_VNPAY module (app/code). Controllers: Order/Pay, Order/Info, Order/Ipn. Default active=0 — enable + configure for VN market. |
+| VNPAY | payment | bidirectional | HTTP (query redirect + IPN) | high | TmnCode + hash secret | Custom Secomm_VNPAY module (app/code). Controllers: Order/Pay, Order/Info, Order/Ipn. Default active=0 — enable + configure for VN market. |
 | Mageplaza TableRate Shipping | shipping | outbound | internal carrier | medium | n/a | Carrier code `mptablerate`. Dimensional shipping (L/W/H, factor 5000). Default inactive. |
 | Mageplaza SMTP | email | outbound | SMTP | medium | n/a | Transactional email relay. Daily log-clear cron. |
 | Mageplaza SocialLogin | auth | bidirectional | OAuth (provider-dependent) | low | provider-dependent | Social sign-in (SocialLogin + SocialLoginPro). Provider config [TBD]. |

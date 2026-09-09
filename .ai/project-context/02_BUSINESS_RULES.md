@@ -45,7 +45,7 @@ Mageplaza One Step Checkout replaces the default Magento checkout. Address field
 
 | ID | Description | Affected Areas | Test Approach | Confidence |
 |----|-------------|----------------|---------------|------------|
-| BR-003 | Active payment: Mollie (composer module, Hyvä compat bundle). VNPAY (custom Vnpayment_VNPAY, default active=0) + Braintree/PayPal (bundled) available. | checkout payment step, order placement, IPN/webhook (VNPAY Controller/Order/Ipn.php) | Place order with Mollie; enable VNPAY and verify redirect + IPN signature validation | confirmed |
+| BR-003 | Active payment: Mollie (composer module, Hyvä compat bundle). VNPAY (custom Secomm_VNPAY, default active=0) + Braintree/PayPal (bundled) available. | checkout payment step, order placement, IPN/webhook (VNPAY Controller/Order/Ipn.php) | Place order with Mollie; enable VNPAY and verify redirect + IPN signature validation | confirmed |
 
 ## Shipping Rules
 

@@ -9,7 +9,7 @@ created: 2026-09-08
 last_verified: 2026-09-08
 verified_against_commit:
 supersedes: [DEC-BUG4WYXCB-002]
-superseded_by: DEC-BUG4WYXCB-004
+superseded_by: DEC-BUG4WYXCB-005
 work_items: [BUG-4WYXCB]
 ---
 
@@ -19,7 +19,7 @@ work_items: [BUG-4WYXCB]
 
 ## Context
 
-Sau hai vòng duyệt approach (DEC-001 quote-based qua class service riêng → DEC-002 pending_payment + core cron), requirement owner chốt lại yêu cầu gốc và các ràng buộc mới: (a) **đúng literal** — "chưa thanh toán thành công thì chưa tạo order" (tắt tab / rớt mạng = không tồn tại gì), phương án pending_payment của DEC-002 không đáp ứng vì order row vẫn được tạo rồi thành Canceled; (b) **không tạo file mới nào** — chỉ sửa các file có sẵn của `Vnpayment_VNPAY`; (c) **không gửi bất kỳ email nào** cho VNPAY orders.
+Sau hai vòng duyệt approach (DEC-001 quote-based qua class service riêng → DEC-002 pending_payment + core cron), requirement owner chốt lại yêu cầu gốc và các ràng buộc mới: (a) **đúng literal** — "chưa thanh toán thành công thì chưa tạo order" (tắt tab / rớt mạng = không tồn tại gì), phương án pending_payment của DEC-002 không đáp ứng vì order row vẫn được tạo rồi thành Canceled; (b) **không tạo file mới nào** — chỉ sửa các file có sẵn của `Secomm_VNPAY`; (c) **không gửi bất kỳ email nào** cho VNPAY orders.
 
 ## Decision (accepted)
 
