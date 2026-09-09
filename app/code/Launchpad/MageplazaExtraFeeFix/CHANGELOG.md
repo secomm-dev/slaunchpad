@@ -5,6 +5,15 @@ The module exists to keep `Mageplaza_ExtraFee` vendor code untouched.
 
 ## [Unreleased]
 
+### Added (2026-09-09) — TASK-EPJVGG (SLP-198)
+
+- `view/frontend/web/css/extra-fee-checkout.css`: extend the two SLP-139 rules
+  with the `#mp-extra-fee` selector so the Extra Fee block in the OSC checkout
+  summary/place-order area (KO template `cart/extra-fee.html`, area=3 Cart)
+  collapses its empty `.mp-description` line too — title → first-option gap
+  45px → 5px, matching the compact shopping-cart look. The block's external
+  `margin-bottom: 20px` is kept. Evidence: `.ai/evidence/TASK-EPJVGG/`.
+
 ### Added (2026-09-09) — BUG-NY0M3S (SLP-139)
 
 - `view/frontend/web/css/extra-fee-checkout.css`: collapse the empty

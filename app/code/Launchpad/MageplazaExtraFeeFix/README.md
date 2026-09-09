@@ -33,11 +33,25 @@ Mageplaza OSC payment step, Extra Fee block:
 Attachment: `view/frontend/layout/onestepcheckout_index_index.xml` loads the
 stylesheet on the OSC checkout page only.
 
+## Fix 3 — Summary Extra Fee spacing (TASK-EPJVGG / SLP-198)
+
+The same Extra Fee block in the OSC checkout **summary/place-order area**
+(`#mp-extra-fee`, KO template `cart/extra-fee.html`, rule area=3 Cart) had the
+identical empty-`.mp-description` gap (45px title → first option; the shopping
+cart page's Hyvä template collapses it and shows 13.5px).
+
+Fix: the two SLP-139 CSS rules now also carry the `#mp-extra-fee` selector
+(same `:has()` collapse + 4px cap, same graceful degradation). The block's
+external `margin-bottom: 20px` is kept — only the internal gap is tightened.
+No layout/CSV/template change; the stylesheet is already attached to the OSC
+handle only.
+
 ## Test
 
 ```bash
 vendor/bin/phpunit --filter ExtraFeePlugin # unit tests (Fix 1)
 ```
 
-Fix 2 is display-only; verify manually on `/onestepcheckout/` (vi_VN + en_US):
-message locale + label→option gap ≤ ~10px.
+Fix 2/3 are display-only; verify manually on `/onestepcheckout/` (vi_VN + en_US):
+message locale + label→option gap ≤ ~10px in both the payment block and the
+summary-area block; `/checkout/cart/` gap unchanged.

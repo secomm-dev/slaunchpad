@@ -1,0 +1,186 @@
+[
+  {
+    "store": "vi",
+    "lang": "vi",
+    "osc": {
+      "present": true,
+      "visible": true,
+      "ancestorChain": [
+        "#mp-extra-fee.",
+        ".osc-place-order-block.checkout-addition-block.col-mp.mp-12",
+        ".osc-addition-content-wrapper.col-mp.mp-lg-6.mp-md-6.mp-sm-12.mp-xs-12",
+        "#co-place-order-area.",
+        "#opc-sidebar.",
+        ".col-mp"
+      ],
+      "billingPresent": true,
+      "billingVisible": false,
+      "gapTitleToOption": 5,
+      "rects": {
+        "dtLabel": {
+          "top": 1357,
+          "bottom": 1376,
+          "h": 19
+        },
+        "desc": {
+          "top": 0,
+          "bottom": 0,
+          "h": 0
+        },
+        "rule": {
+          "top": 1377,
+          "bottom": 1397,
+          "h": 20
+        },
+        "input": {
+          "top": 1381,
+          "bottom": 1394,
+          "h": 13
+        },
+        "form": {
+          "top": 1357,
+          "bottom": 1514,
+          "h": 157
+        }
+      },
+      "computed": {
+        "form": {
+          "marginTop": "0px",
+          "marginBottom": "20px",
+          "display": "block"
+        },
+        "dl": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "display": "block"
+        },
+        "dt": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "display": "block"
+        },
+        "dtLabel": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "display": "inline",
+          "fontSize": "14px",
+          "lineHeight": "20px"
+        },
+        "desc": {
+          "marginTop": "4px",
+          "marginBottom": "4px",
+          "display": "none"
+        },
+        "descSpanText": "",
+        "rule": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "display": "block"
+        }
+      },
+      "titleText": "rrrrrr",
+      "optionText": "20HKD 28,30 US$"
+    },
+    "cart": {
+      "present": true,
+      "visible": true,
+      "gapTitleToOption": 13.5,
+      "descRectH": 0,
+      "descDisplay": "block",
+      "descSpanText": "",
+      "titleText": "rrrrrr"
+    }
+  },
+  {
+    "store": "en",
+    "lang": "en",
+    "osc": {
+      "present": true,
+      "visible": true,
+      "ancestorChain": [
+        "#mp-extra-fee.",
+        ".osc-place-order-block.checkout-addition-block.col-mp.mp-12",
+        ".osc-addition-content-wrapper.col-mp.mp-lg-6.mp-md-6.mp-sm-12.mp-xs-12",
+        "#co-place-order-area.",
+        "#opc-sidebar.",
+        ".col-mp"
+      ],
+      "billingPresent": true,
+      "billingVisible": false,
+      "gapTitleToOption": 45,
+      "rects": {
+        "dtLabel": {
+          "top": 1441.5,
+          "bottom": 1460.5,
+          "h": 19
+        },
+        "desc": {
+          "top": 1471.5,
+          "bottom": 1491.5,
+          "h": 20
+        },
+        "rule": {
+          "top": 1501.5,
+          "bottom": 1521.5,
+          "h": 20
+        },
+        "input": {
+          "top": 1505.5,
+          "bottom": 1518.5,
+          "h": 13
+        },
+        "form": {
+          "top": 1441.5,
+          "bottom": 1638.5,
+          "h": 197
+        }
+      },
+      "computed": {
+        "form": {
+          "marginTop": "0px",
+          "marginBottom": "20px",
+          "display": "block"
+        },
+        "dl": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "display": "block"
+        },
+        "dt": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "display": "block"
+        },
+        "dtLabel": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "display": "inline",
+          "fontSize": "14px",
+          "lineHeight": "20px"
+        },
+        "desc": {
+          "marginTop": "10px",
+          "marginBottom": "10px",
+          "display": "block"
+        },
+        "descSpanText": "",
+        "rule": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "display": "block"
+        }
+      },
+      "titleText": "rrrrrr",
+      "optionText": "20HKD $28.30"
+    },
+    "cart": {
+      "present": true,
+      "visible": true,
+      "gapTitleToOption": 13.5,
+      "descRectH": 0,
+      "descDisplay": "block",
+      "descSpanText": "",
+      "titleText": "rrrrrr"
+    }
+  }
+]

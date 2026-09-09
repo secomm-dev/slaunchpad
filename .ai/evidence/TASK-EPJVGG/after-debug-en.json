@@ -1,0 +1,16 @@
+{
+  "htmlLang": "en",
+  "storeCookieVisible": null,
+  "linkHref": "http://slaunchpad.localhost/static/version1788919383/frontend/Magento/luma/en_US/Launchpad_MageplazaExtraFeeFix/css/extra-fee-checkout.css",
+  "sheetRules": [
+    [
+      "#mp-extra-fee-billing .mp-description, #mp-extra-fee .mp-description",
+      "#mp-extra-fee-billing .mp-description:not(:has(span:not(:empty))), #mp-extra-fee .mp-description:not(:has(span:not(:empty)))"
+    ]
+  ],
+  "cssHasMpExtraFeeRule": 3,
+  "cssText": "/**\n * Extra Fee (Mageplaza OSC checkout): tighten vertical rhythm.\n *\n * This stylesheet is attached exclusively to the onestepcheckout_index_index\n * layout handle — it cannot leak into other pages.\n *\n * BUG-NY0M3S (SLP-139) — payment step block (#mp-extra-fee-billing):\n * Baseline measured on local (2026-09-09, 1504px viewport): gap between the rule\n * label and the first option checkbox was 49px, because the empty `.mp-description`\n * line box (20px label + 10px top/bottom inline margins) renders even when the rule\n * has no description. The Mageplaza reference demo (extra-fee-demo.mageplaza.com/hyva)\n * shows a ~0 gap. After fix: 9px.\n *\n * TASK-EPJVGG (SLP-198) — summary/place-order block (#mp-extra-fee, KO template\n * cart/extra-fee.html rendered in #opc-sidebar > #co-place-order-a",
+  "descDisplay": "none",
+  "descMargin": "4px 0px",
+  "gap": 5
+}
