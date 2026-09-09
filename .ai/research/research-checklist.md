@@ -23,7 +23,7 @@
 - [ ] `06_KNOWN_CONSTRAINTS_AND_RISKS` read (high-risk areas)
 
 ## Level 2 — Current implementation (Magento + Hyvä)
-- [ ] Existing code/module inspected (không guess): `app/code/Secomm/`, `app/code/Mageplaza/`, `app/code/Vnpayment/`
+- [ ] Existing code/module inspected (không guess): `app/code/Secomm/`, `app/code/Mageplaza/`, `app/code/Secomm/`
 - [ ] `di.xml` / `events.xml` / `module.xml` inspected (plugin chain, preference, observer)
 - [ ] Hyvä child theme inspected: `app/design/frontend/Secomm/launchpad/` (Tailwind source, Alpine, layout XML)
 - [ ] Similar module/pattern found → ghi vào `similar-code-analysis.md`
@@ -54,7 +54,7 @@
 - [ ] All findings classified `[VERIFIED]` / `[ASSUMPTION]` / `[EXTERNAL: verify]` / `[UNKNOWN]`
 
 ## Escalation check (Tier 2 — SA review)
-- [ ] Có động đến `Vnpayment_VNPAY` (payment/IPN/signature)? → escalate SA
+- [ ] Có động đến `Secomm_VNPAY` (payment/IPN/signature)? → escalate SA
 - [ ] Có động đến Mageplaza OSC checkout flow? → end-to-end checkout QC bắt buộc
 - [ ] Có động đến address (AddressDropdown / VietNamAddress)? → verify hierarchical dropdown end-to-end
 - [ ] Có DB schema change? → escalate SA

@@ -23,7 +23,7 @@
 - [ ] **Tailwind v4 CSS-first**: config trong `@theme`/`@source` của `tailwind-source.css`; không tạo `tailwind.config.js`.
 - [ ] **Hyvä patterns**: Alpine.js + Magewire; phtml-driven; không React/Vue.
 - [ ] **Mageplaza = third-party**: extend bằng plugin/preference; không modify in-place; theo dõi version.
-- [ ] **Vendor prefix**: `Secomm_` (project), `Vnpayment_` (payment).
+- [ ] **Vendor prefix**: `Secomm_` (project).
 - [ ] **PHP 8.2+**, `strict_types`, Magento coding standard (8.2–8.4 compatible).
 - [ ] **Storefront string** → cả `vi_VN.csv` + `en_US.csv` (BR-001).
 - [ ] **Address VN** (BR-002): validate cascade country→state→city→sub-city end-to-end + admin CRUD + CSV.

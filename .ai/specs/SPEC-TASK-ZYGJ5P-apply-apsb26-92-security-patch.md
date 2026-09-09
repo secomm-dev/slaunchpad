@@ -56,7 +56,7 @@ Thư mục: `patches/composer/APSB26-92-248p5-2026-08-001-CE/` — description �
 
 ### 2.4. Phạm vi KHÔNG chạm
 
-- Không có file nào trong `app/code/` (Secomm/Mageplaza/Vnpayment), `app/design/` hay config store bị thay đổi — toàn bộ diff nằm ở `composer.json`, 2 lock file và 5 patch file mới.
+- Không có file nào trong `app/code/` (Secomm/Mageplaza), `app/design/` hay config store bị thay đổi — toàn bộ diff nằm ở `composer.json`, 2 lock file và 5 patch file mới.
 
 ## 3. Acceptance Criteria (DoD)
 
@@ -107,7 +107,7 @@ patches.lock.json (_hash + sha256/patch — reproducible build)
 ## 7. Out of Scope
 
 - Nâng cấp platform lên release mới hơn (2.4.8-p6+ / 2.4.9+) — task này chỉ áp security-only patch trên baseline p5 hiện tại.
-- Sửa logic tùy chỉnh trong `app/code/Secomm/*`, `app/code/Mageplaza/*`, `app/code/Vnpayment/*`.
+- Sửa logic tùy chỉnh trong `app/code/Secomm/*`, `app/code/Mageplaza/*`, `app/code/Secomm/*`.
 - Evidence artifact `.ai/evidence/TASK-ZYGJ5P/` + QC testcase docs (đề xuất follow-up theo evidence-policy).
 - Update `12_UPGRADE_NOTES.md` với companion-patch note (đề xuất follow-up, xem record).
 

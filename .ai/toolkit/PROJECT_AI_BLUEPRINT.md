@@ -72,7 +72,7 @@ monorepo: false
 key_directories:
   - "app/code/Secomm/        — Secomm_Base, AddressDropdown, VietNamAddress"
   - "app/code/Mageplaza/     — 16 Mageplaza modules (source-committed)"
-  - "app/code/Vnpayment/     — Vnpayment_VNPAY payment gateway"
+  - "app/code/Secomm/     — Secomm_VNPAY payment gateway"
   - "app/design/frontend/Secomm/launchpad/          — primary Hyvä child theme (web/tailwind toolchain)"
   - "app/design/frontend/Secomm/launchpad_fashion/  — fashion variant (scaffolded)"
   - "app/etc/                — env.php (local dev), config.php, hyva-themes.json"
@@ -103,7 +103,7 @@ business_rules:
   # Payments
   - id: "BR-003"
     domain: "payment"
-    description: "Active payment: Mollie (composer module, Hyvä compat bundle). VNPAY (custom Vnpayment_VNPAY, default active=0) + Braintree/PayPal (bundled) available."
+    description: "Active payment: Mollie (composer module, Hyvä compat bundle). VNPAY (custom Secomm_VNPAY, default active=0) + Braintree/PayPal (bundled) available."
     affected_areas: "checkout payment step, order placement, IPN/webhook (VNPAY Controller/Order/Ipn.php)"
     confidence: "confirmed"
 
@@ -158,7 +158,7 @@ integrations:
     criticality: "high"
     authentication: "TmnCode + hash secret"
     rate_limits: "Not documented"
-    notes: "Custom Vnpayment_VNPAY module (app/code). Controllers: Order/Pay, Order/Info, Order/Ipn. Default active=0 — enable + configure for VN market."
+    notes: "Custom Secomm_VNPAY module (app/code). Controllers: Order/Pay, Order/Info, Order/Ipn. Default active=0 — enable + configure for VN market."
 
   - name: "Mageplaza TableRate Shipping"
     type: "shipping"
@@ -207,7 +207,7 @@ architecture:
     Alpine.js, Magewire 1.13). Two custom Hyvä child themes — Secomm/launchpad (primary, child of
     Hyva/default) and Secomm/launchpad_fashion (grandchild of launchpad, scaffolded). Custom code is
     concentrated in: 3 Secomm modules (base admin shell, Vietnam hierarchical address dropdown +
-    data), Vnpayment_VNPAY gateway, and a committed Mageplaza commerce suite (checkout, shipping,
+    data), Secomm_VNPAY gateway, and a committed Mageplaza commerce suite (checkout, shipping,
     marketing). Targets VN fashion retail, bilingual vi_VN/en_US.
 
   key_decisions:
@@ -246,7 +246,7 @@ stack_context:
     - name: "Secomm_VietNamAddress"
       purpose: "Vietnam address data set (VN_Address.csv, VN_Address_2Level.csv) for AddressDropdown"
       risk_level: "low"
-    - name: "Vnpayment_VNPAY"
+    - name: "Secomm_VNPAY"
       purpose: "VNPAY payment gateway — Pay/Info/IPN controllers, payment.xml/config.xml (default inactive)"
       risk_level: "high"
     - name: "Mageplaza_* (16 modules)"
@@ -378,7 +378,7 @@ known_issues:
     - "[none confirmed yet — freshly initialized repo]"
 
   high_risk_areas:
-    - "Vnpayment_VNPAY — custom payment gateway (IPN validation, signature, default inactive) — needs enablement + security review before going live"
+    - "Secomm_VNPAY — custom payment gateway (IPN validation, signature, default inactive) — needs enablement + security review before going live"
     - "Mageplaza One Step Checkout — complex flow replacing default checkout; risk on payment/address interaction"
     - "Secomm_AddressDropdown + VietNamAddress — custom address capture + data import; risk on data quality + GraphQL surface"
     - "Production infrastructure undefined — no Redis/Varnish/OpenSearch/CI configured in repo"
@@ -450,12 +450,12 @@ generation:
   coding_rules_override:
     - "Tailwind CSS v4 — CSS-first config via @theme/@source in tailwind-source.css; DO NOT create a tailwind.config.js"
     - "Frontend components use Hyvä patterns: Alpine.js + Magewire 1.13; phtml-driven, no React/Vue"
-    - "Custom module vendor prefixes: Secomm_ (project), Vnpayment_ (payment); Mageplaza_* are third-party (do not modify in place — extend via plugin/preference)"
+    - "Custom module vendor prefixes: Secomm_ (project), Mageplaza_* are third-party (do not modify in place — extend via plugin/preference)"
     - "All new PHP targets PHP 8.2+ (8.2–8.4 compatible); strict_types + Magento coding standard"
     - "Storefront strings must be added to both vi_VN.csv and en_US.csv translation dictionaries"
   additional_project_context_sections: []
   custom_rules:
-    - "Any change to Vnpayment_VNPAY (payment/IPN/signature) requires SA review (Tier 2 escalation)"
+    - "Any change to Secomm_VNPAY (payment/IPN/signature) requires SA review (Tier 2 escalation)"
     - "Any change to Mageplaza OSC checkout flow requires end-to-end checkout QC + payment test"
     - "Address-related changes must validate the VN hierarchical dropdown (country→state→city→sub-city) end-to-end"
     - "Do NOT commit production env.php / Redis / OpenSearch credentials — local-dev config only in repo"

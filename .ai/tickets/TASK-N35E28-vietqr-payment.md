@@ -61,7 +61,7 @@ Tham khảo spec SPEC-FEAT-ZKD4VA §3 (AC-001..AC-023).
 - `app/code/Secomm/VietQr/view/frontend/layout/` — layout handles cho custom page, My Orders button, email.
 - `app/code/Secomm/VietQr/view/frontend/templates/` — custom page, checkout info, My Orders button, email.
 - `app/code/Secomm/VietQr/i18n/` — vi_VN.csv + en_US.csv.
-- **KHÔNG affect**: core Magento, Mageplaza modules, Vnpayment_VNPAY, Mollie.
+- **KHÔNG affect**: core Magento, Mageplaza modules, Secomm_VNPAY, Mollie.
 
 ## Risks
 

@@ -52,7 +52,7 @@ Trong phase Build, bạn: nhận ticket + AC từ BA → plan từ TL → resear
 
 - **Tailwind CSS v4 CSS-first**: dùng `@theme`/`@source` trong `tailwind-source.css` — **KHÔNG** tạo `tailwind.config.js`.
 - **Hyvä patterns**: Alpine.js + Magewire 1.13; phtml-driven, **không** React/Vue.
-- **Vendor prefix**: `Secomm_` (project), `Vnpayment_` (payment). `Mageplaza_*` = third-party — **không modify in-place**, extend bằng plugin/preference.
+- **Vendor prefix**: `Secomm_` (project). `Mageplaza_*` = third-party — **không modify in-place**, extend bằng plugin/preference.
 - **PHP 8.2+**, `strict_types`, Magento coding standard (compatible 8.2–8.4).
 - **Storefront string** → thêm vào cả `vi_VN.csv` + `en_US.csv` (BR-001).
 - **Đừng commit** production `env.php` / Redis / OpenSearch credentials.

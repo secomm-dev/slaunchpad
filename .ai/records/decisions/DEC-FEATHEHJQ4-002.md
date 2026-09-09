@@ -36,7 +36,7 @@ Prevents auto-settling fraudulent payments and lost valid ones; requires SA to r
 
 ## Affected components
 
-`Vnpayment_VNPAY/Controller/Order/Ipn.php` (status branch); payment model.
+`Secomm_VNPAY/Controller/Order/Ipn.php` (status branch); payment model.
 
 ## Related records
 

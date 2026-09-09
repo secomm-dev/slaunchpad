@@ -34,7 +34,7 @@
   - `Secomm_Base` — admin shell + config tab (low risk)
   - `Secomm_AddressDropdown` — AJAX hierarchical address dropdowns + GraphQL (medium risk)
   - `Secomm_VietNamAddress` — VN address data set (low risk)
-  - `Vnpayment_VNPAY` — VNPAY payment gateway Pay/Info/IPN, default inactive (high risk)
+  - `Secomm_VNPAY` — VNPAY payment gateway Pay/Info/IPN, default inactive (high risk)
 - **third-party modules (source-committed):** 16 Mageplaza modules — Core, Osc/OscPro/OscUltimate,
   SocialLogin/Pro, Smtp, GeoIP, ExtraFee, DeliveryTime, TableRateShipping, QuickCart, Lookbook,
   AbandonedCart, ThankYouPage, BackendReindex
@@ -77,5 +77,5 @@
 | `toolkit/PROJECT_AI_BLUEPRINT.md` | blueprint (approved) | Single source of truth — §1–§15 |
 | `composer.json` / `composer.lock` | config | Stack versions |
 | `app/etc/env.php` | config | Local-dev (MAGE_MODE developer) |
-| `app/code/Secomm/`, `app/code/Mageplaza/`, `app/code/Vnpayment/` | source | Module inventory |
+| `app/code/Secomm/`, `app/code/Mageplaza/`, `app/code/Secomm/` | source | Module inventory |
 | `app/design/frontend/Secomm/launchpad/` | source | Hyvä child theme |

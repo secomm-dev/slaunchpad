@@ -81,7 +81,7 @@ ENGINEERING_PRINCIPLES, ARCHITECTURE, DEVELOPMENT, CODING, SOLID, COMMENT, DESIG
 ## Project-specific rules (coding_rules_override)
 - Tailwind CSS v4 CSS-first (`@theme`/`@source` in `tailwind-source.css`); DO NOT create `tailwind.config.js`.
 - Hyvä patterns: Alpine.js + Magewire 1.13; phtml-driven, no React/Vue.
-- Vendor prefixes: `Secomm_` (project), `Vnpayment_` (payment); `Mageplaza_*` third-party — extend via plugin/preference only.
+- Vendor prefixes: `Secomm_` (project); `Mageplaza_*` third-party — extend via plugin/preference only.
 - PHP 8.2+ strict_types; Magento coding standard.
 - Storefront strings → both `vi_VN.csv` and `en_US.csv`.
 - VNPAY (payment/IPN/signature) change → SA review (Tier 2). Mageplaza OSC change → end-to-end checkout QC + payment test. Do NOT commit production env.php.

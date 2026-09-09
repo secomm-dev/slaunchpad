@@ -18,7 +18,7 @@ và **mandatory** (trừ khi bypass).
 - **Platform:** Magento 2.4.8-p5 (Open Source / Adobe Commerce)
 - **Frontend:** Hyvä 3.x (default theme 1.5.2) — Tailwind CSS v4 (CSS-first config), Alpine.js, Magewire 1.13
 - **Market:** Fashion retail Vietnam — bilingual `vi_VN` (primary) + `en_US`
-- **Payments:** Mollie (active) + VNPAY (custom `Vnpayment_VNPAY`, default inactive)
+- **Payments:** Mollie (active) + VNPAY (custom `Secomm_VNPAY`, default inactive)
 - **Checkout:** Mageplaza One Step Checkout · **Shipping:** Mageplaza TableRate
 
 → Profile đầy đủ: `research-profile.md` (magento + hyva merged).
@@ -40,7 +40,7 @@ và **mandatory** (trừ khi bypass).
 ```
 L1: Project memory (blueprint, project-context/01–09, RESEARCH_NOTES, DECISIONS)
     ↓
-L2: Existing implementation (app/code/Secomm, app/code/Mageplaza, app/code/Vnpayment,
+L2: Existing implementation (app/code/Secomm, app/code/Mageplaza, app/code/Secomm,
     app/design/frontend/Secomm/launchpad, di.xml, events.xml, module.xml)
     ↓
 L3: Internal docs (project-context/03 architecture, /05 API, /02 business rules)
@@ -55,7 +55,7 @@ Chỉ bypass khi: typo / formatting / config thuần / UI text. Khi bypass → g
 
 ## Escalation areas (Tier 2 — SA review bắt buộc)
 
-- `Vnpayment_VNPAY` (payment logic, IPN, signature) — `[TBD: enable + secure trước go-live]`
+- `Secomm_VNPAY` (payment logic, IPN, signature) — `[TBD: enable + secure trước go-live]`
 - Mageplaza One Step Checkout flow (checkout customization)
 - `Secomm_AddressDropdown` + `Secomm_VietNamAddress` (GraphQL + address capture)
 - Database schema changes

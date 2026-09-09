@@ -43,7 +43,7 @@ AI should check this file before planning any work to avoid known problem areas.
 
 | Area | Reason | Mitigation | Escalation |
 |------|--------|------------|------------|
-| Vnpayment_VNPAY payment gateway | Custom payment: IPN validation, signature, default inactive — PCI-sensitive | Enable + security review before go-live; idempotency + signature tests | Tier 2 (SA review required) |
+| Secomm_VNPAY payment gateway | Custom payment: IPN validation, signature, default inactive — PCI-sensitive | Enable + security review before go-live; idempotency + signature tests | Tier 2 (SA review required) |
 | Mageplaza One Step Checkout | Complex flow replacing default checkout; risk on payment/address interaction | End-to-end checkout QC + payment test on every change | Tier 2 |
 | Secomm_AddressDropdown + VietNamAddress | Custom address capture + data import; risk on data quality + GraphQL surface | Validate VN hierarchical dropdown end-to-end; test admin CRUD + CSV import/export | Tier 2 |
 | Production infrastructure undefined | No Redis/Varnish/OpenSearch/CI configured in repo | Define prod infra (Redis, Varnish, OpenSearch, hosting) before launch | DevOps / SA (BLOCKING open question) |

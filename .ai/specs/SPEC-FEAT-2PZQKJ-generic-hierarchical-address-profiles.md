@@ -127,7 +127,7 @@ Thay đổi kiến trúc dữ liệu + render của CMP-ADDR (chi tiết DEC-FEA
 - BC shim: `GetListCity` → getRootLocations; `GetListSubCity` → getChildLocations (giữ response shape), deprecate sau đó retire Phase 3.
 
 ### 5.5 Integration Impact
-GhnAddressMapper (CascadingOptions rời sub_city query), GiaoHangNhanh (đổi nguồn reader theo D2 + khai báo sequence), Ghtk (verify, không đổi logic), Mageplaza OSC (không đổi code — QC regression), Vnpayment (không ảnh hưởng).
+GhnAddressMapper (CascadingOptions rời sub_city query), GiaoHangNhanh (đổi nguồn reader theo D2 + khai báo sequence), Ghtk (verify, không đổi logic), Mageplaza OSC (không đổi code — QC regression), VNPAY (không ảnh hưởng).
 
 ## 6. UI/UX
 Renderer Hyva mới dùng form markup + Tailwind v4 tương đương template hiện tại (không đổi visual language); label/placeholder động từ schema. Admin giữ pattern UI hiện có, chỉ đổi nguồn data cascade.
@@ -199,6 +199,6 @@ Renderer Hyva mới dùng form markup + Tailwind v4 tương đương template hi
 
 1. Schema hiện tại: `directory_region_city` (city_id, region_id FK, default_name — không có code) + `directory_city_sub_city` (1 cấp cố định) + name-tables per locale; cột `sub_city` trên 3 bảng core + EAV attribute.
 2. DB local: sub_city tables 0 rows; sub_city column: 0 customer / 3 quote (test) / 0 order; 3.313 city rows (VN only, 2 locales).
-3. Dependency: VietNamAddress (writer qua import patch + 4 GraphQL callers + validators); GhnAddressMapper (FK `city_id` SET NULL + CascadingOptions query sub_city table); GiaoHangNhanh (đọc `sub_city`/`city_id` từ quote/order address; thiếu sequence decl); Ghtk (WardIdBridge tên→ID); Mageplaza OSC + themes + Vnpayment: 0 coupling.
+3. Dependency: VietNamAddress (writer qua import patch + 4 GraphQL callers + validators); GhnAddressMapper (FK `city_id` SET NULL + CascadingOptions query sub_city table); GiaoHangNhanh (đọc `sub_city`/`city_id` từ quote/order address; thiếu sequence decl); Ghtk (WardIdBridge tên→ID); Mageplaza OSC + themes + VNPAY: 0 coupling.
 4. Khiếm khuyết: SQL string interpolation (`Helper/Address.php:77,163`, `Helper/Data.php:95`); CityData single cache key (locale collision); `(int)` cast bug `SaveToQuote.php:36`; extension attribute khai báo lặp; import dedupe name-hack `CONVERT(? USING binary)`.
 5. Governance: DEC-FEATE2HM1J-001 point 3 (sub_city fixed 3rd level) bị thay thế bởi DEC-FEAT2PZQKJ-001; `09_MAGENTO_MODULE_MAP.md` stale (thiếu 8+ module Secomm — TASK-ZHFVRH).

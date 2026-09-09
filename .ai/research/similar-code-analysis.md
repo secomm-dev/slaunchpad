@@ -13,7 +13,7 @@
 | Admin shell + config tab | `app/code/Secomm/Base/` | Admin menu (`Secomm` → `CORE`) + system config tab + helper + plugins | ✓ | Theo pattern này khi thêm module Secomm mới |
 | Address dropdown (AJAX hierarchical) | `app/code/Secomm/AddressDropdown/` | Controller AJAX + GraphQL schema + admin CRUD + import/export | ✓ | Extend (không rewrite) cho address feature |
 | VN address data set | `app/code/Secomm/VietNamAddress/` | CSV data (`VN_Address.csv`, `VN_Address_2Level.csv`) | ✓ | Reuse data set; thêm locale qua CSV |
-| Payment gateway (custom) | `app/code/Vnpayment/VNPAY/` | Pay/Info/IPN controller + `payment.xml`/`config.xml` | ✓ (extend only) | Tier 2 — SA review; KHÔNG modify signature/IPN |
+| Payment gateway (custom) | `app/code/Secomm/VNPAY/` | Pay/Info/IPN controller + `payment.xml`/`config.xml` | ✓ (extend only) | Tier 2 — SA review; KHÔNG modify signature/IPN |
 | Checkout customization | `app/code/Mageplaza/Osc/` (+ OscPro/OscUltimate) | One Step Checkout layout/flow | ✗ (do not modify in place) | Extend via plugin/preference; KHÔNG sửa source Mageplaza |
 | Shipping carrier | `app/code/Mageplaza/TableRateShipping/` | Carrier code `mptablerate`, dimensional (L/W/H, factor 5000) | ✗ (extend only) | Configure/extend; KHÔNG sửa source |
 | Hyvä child theme | `app/design/frontend/Secomm/launchpad/` | Child of `Hyva/default`; Tailwind v4 `tailwind-source.css`; oklch tokens | ✓ | Override template theo Hyvä fallback convention |
@@ -21,7 +21,7 @@
 
 ## Convention discovered
 
-- **Vendor prefix:** `Secomm_` (project module), `Vnpayment_` (payment gateway); `Mageplaza_*` là third-party (KHÔNG sửa in place — extend qua plugin/preference).
+- **Vendor prefix:** `Secomm_` (project module); `Mageplaza_*` là third-party (KHÔNG sửa in place — extend qua plugin/preference).
 - **Localization:** mọi storefront string phải có ở cả `vi_VN.csv` (primary) + `en_US.csv`.
 - **Theme toolchain:** Tailwind v4 CSS-first (`@theme`/`@source` trong `tailwind-source.css`); KHÔNG tạo `tailwind.config.js`.
 - **Frontend pattern:** Alpine.js + Magewire 1.13; phtml-driven; KHÔNG React/Vue/jQuery.
