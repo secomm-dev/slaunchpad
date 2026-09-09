@@ -17,6 +17,15 @@
  * ExtraFee needs nothing from its own copy (fee UI lives in the product.info.addtocart
  * block, which stays in place). Re-sync this file whenever the Hyva default theme
  * template changes in a composer update.
+ *
+ * SLP-183 / BUG-KFJ49A (deviation from the verbatim copy): render #qty-messages-<productId>
+ * below the price/qty/button row — message container cho validation qty (quantity.phtml trỏ
+ * data-validation-container về đây). Không có container ngoài row này, hyva.formValidation
+ * tự wrap input qty vào <div class="field field-reserved"> trong row → input lệch 4px so với
+ * button (margin-top của .field) và message bị ép vào cột hẹp giữa giá và button.
+ * quantity.phtml chỉ render trong block product.info.quantity (con của template này — cùng
+ * duy nhất trên catalog_product_view, gồm cart configure), nên container luôn tồn tại khi
+ * input qty có mặt.
  */
 
 declare(strict_types=1);
@@ -102,6 +111,11 @@ $productType = $product->getTypeId();
         </div>
 
     </div>
+
+    <?php /* SLP-183 / BUG-KFJ49A: message container cho validation qty — see header comment */ ?>
+    <?php if ($product->isSaleable()): ?>
+        <div id="qty-messages-<?= (int) $product->getId() ?>"></div>
+    <?php endif; ?>
 
     <?php /* BUG-SDZPCD / SLP-109: extra fee block full-width below the price row */ ?>
     <?= $block->getChildHtml('product.info.extrafee') ?>

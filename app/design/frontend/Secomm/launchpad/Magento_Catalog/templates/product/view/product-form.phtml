@@ -1,0 +1,95 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * SLP-183 / BUG-KFJ49A: copy của Hyva_default/Magento_Catalog/templates/product/view/product-form.phtml.
+ * Đổi khác: wire hyva.formValidation trên form add-to-cart PDP (component tự set novalidate —
+ * tắt HTML5 native validation; message render VI/EN theo theme CSV thay vì native bubble
+ * theo locale trình duyệt) và đăng ký 2 custom rule:
+ *   - validate-number: bắt badInput của <input type="number"> (bubble cũ "Please enter a number.").
+ *   - validate-one-required: bắt buộc chọn 1 option trong nhóm radio super_attribute
+ *     (bubble cũ "Please select one of these options."; message dùng key có sẵn
+ *     "Please select one of the options." trong theme CSV).
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Catalog\Block\Product\View;
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Option;
+use Magento\Framework\Escaper;
+
+// phpcs:disable Generic.WhiteSpace.ScopeIndent
+
+/** @var View $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var HyvaCsp $hyvaCsp */
+
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+
+/** @var Product $product */
+$product = $block->getProduct();
+
+/**
+ * Add to cart url is set on 'product.info' block by
+ * @see \Magento\Checkout\Block\Cart\Item\Configure::_prepareLayout
+ */
+$productInfoBlock = $block->getLayout()->getBlock('product.info');
+
+$productOptions = $product->getOptions() ?? [];
+$hasMultiFormInputOption = (bool) array_filter($productOptions, fn($o) => $o->getType() === Option::OPTION_TYPE_FILE);
+?>
+<?php if ($product->isSaleable()): ?>
+    <form method="post"
+          action="<?= $escaper->escapeUrl($productInfoBlock->getSubmitUrl($product)) ?>"
+          class="mb-6"
+          id="product_addtocart_form"
+          x-data="initProductCartForm"
+          @submit="onSubmit"
+          <?php if ($hasMultiFormInputOption): ?>
+              enctype="multipart/form-data"
+          <?php endif; ?>
+          <?php foreach ($block->getData('product_data_attributes') ?? [] as $attribute => $include): ?>
+              <?php if ($include): ?>
+                  <?php /** Append data-* attributes based on layout XML arguments */ ?>
+                  <?= $escaper->escapeHtml(sprintf('data-%s', $attribute)); ?>="<?= $escaper->escapeHtmlAttr($product->getData($attribute)); ?>"
+              <?php endif; ?>
+          <?php endforeach; ?>
+    >
+        <input type="hidden" name="product" value="<?= (int)$product->getId() ?>">
+        <input type="hidden" name="selected_configurable_option" value="">
+        <input type="hidden" name="related_product" id="related-products-field" value="">
+        <input type="hidden" name="item"  value="<?= (int)$block->getRequest()->getParam('id') ?>">
+        <?= $block->getBlockHtml('formkey') ?>
+        <?= $block->getChildHtml() ?>
+    </form>
+    <script>
+        function initProductCartForm() {
+            hyva.formValidation.addRule('validate-number', (value, options, field) => {
+                return field.element.checkValidity && field.element.validity.badInput
+                    ? '<?= $escaper->escapeJs(__('Please enter a number.')) ?>'
+                    : true;
+            });
+
+            hyva.formValidation.addRule('validate-one-required', (value, options, field) => {
+                const name = field.element.name.replace(/([\\"])/g, '\\$1');
+                const checked = field.element.form.querySelectorAll('input[name="' + name + '"]:checked');
+                return checked.length
+                    ? true
+                    : '<?= $escaper->escapeJs(__('Please select one of the options.')) ?>';
+            });
+
+            return hyva.formValidation(this.$el);
+        }
+
+        window.addEventListener('alpine:init', () => {
+            Alpine.data('initProductCartForm', initProductCartForm)
+        }, { once: true })
+    </script>
+    <?php $hyvaCsp->registerInlineScript() ?>
+<?php endif; ?>
