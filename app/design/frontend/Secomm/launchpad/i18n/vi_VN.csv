@@ -887,3 +887,4 @@
 "We have received a request to change the following information associated with your account at %store_name: password.","Chúng tôi đã nhận được yêu cầu thay đổi thông tin sau đây liên quan đến tài khoản của bạn tại %store_name: mật khẩu."
 "If you have not authorized this action, please contact us immediately at <a href=""mailto:%store_email"">%store_email</a>","Nếu bạn không thực hiện hành động này, vui lòng liên hệ ngay với chúng tôi qua <a href=""mailto:%store_email"">%store_email</a>"
 "or call us at <a href=""tel:%store_phone"">%store_phone</a>","hoặc gọi cho chúng tôi qua <a href=""tel:%store_phone"">%store_phone</a>"
+" (Incl. Tax)"," (đã gồm thuế)"

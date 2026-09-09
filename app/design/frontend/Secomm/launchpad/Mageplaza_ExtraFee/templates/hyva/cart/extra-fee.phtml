@@ -1,0 +1,455 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_ExtraFee
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/**
+ * Secomm override (BUG-TK8C2Y / ext ticket SLP-144):
+ * Extra fee form on the cart — the required-field validation message was
+ * hardcoded English inside the checkout-link JS handler. It is injected via
+ * __() instead ('This is a required field.' — Magento core phrase, already in
+ * the theme i18n dictionaries). All vendor logic kept verbatim (no
+ * strict_types: vendor price formatting relies on type coercion) — re-sync
+ * with Mageplaza_ExtraFee::hyva/cart/extra-fee.phtml on module upgrades.
+ */
+
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+?>
+<script>
+    function initExtraFeeSummary() {
+        return {
+            ruleConfig: [],
+            selectedOptions: [],
+            billingSelectedOptions: [],
+            billingRuleConfig: [],
+            shippingSelectedOptions: [],
+            shippingRuleConfig: [],
+            customer: false,
+            cart: false,
+            isLoading: false,
+            area: '3',
+            store_id: window.checkoutConfig.quoteData.store_id,
+            cartData: {
+                address: {
+                    countryId: window.checkoutConfig.defaultCountryId,
+                    regionId: window.checkoutConfig.defaultRegionId,
+                    postcode: window.checkoutConfig.defaultPostcode
+                },
+                cartVersion: Math.floor(Date.now()/1000),
+                rates: [],
+                shippingCarrierCode: null,
+                shippingMethodCode: null,
+            },
+            getRuleConfig: function () {
+                return this.ruleConfig;
+            },
+            getTitle: function (rule) {
+                var labels = JSON.parse(rule.labels);
+                return labels[this.store_id] || rule.name;
+            },
+
+            getDescription: function (rule) {
+                return rule.description;
+            },
+            getFormattedPrice: function (price) {
+                return hyva.formatPrice(price);
+            },
+            isAllowNote: function (rule) {
+                return rule.allow_note_message > 0;
+            },
+            getNoteTitle: function (rule) {
+                return rule.message_title;
+            },
+            getNoteMessage: function(key) {
+                var ele = document.getElementById(key);
+
+                if (this.ruleConfig && this.selectedOptions[key]) {
+                    ele.value = this.selectedOptions[key];
+                }
+                if (this.shippingRuleConfig && this.shippingSelectedOptions[key]) {
+                    ele.value = extraFee.shippingSelectedOptions()[key];
+                }
+                if (this.billingRuleConfig && this.billingSelectedOptions[key]) {
+                    ele.value = this.billingSelectedOptions[key];
+                }
+            },
+            afterRenderOptions: function (option, optionVal) {
+                let selectedOptions = JSON.parse(JSON.stringify(this.selectedOptions));
+
+
+                if(!selectedOptions?.rule) {
+                    return;
+                }
+                let data = selectedOptions?.rule,
+                    type = optionVal?.display_type || optionVal?.type;
+                if(type === '3') {
+                        if (data[optionVal?.rule_id] === optionVal?.value) {
+                            option.setAttribute('selected', true);
+                        }
+                } else {
+                    var inputs = option.querySelectorAll('input');
+                    inputs.forEach(function (inputElement) {
+                        let rule_id = inputElement.getAttribute('ruleId');
+                        let valueInput = inputElement.value;
+
+                        if (rule_id !== undefined) {
+                            if (data[rule_id] === valueInput) {
+                                inputElement.checked = true;
+                            }
+                            if (data[rule_id] && data[rule_id][valueInput] !== undefined) {
+                                inputElement.checked = data[rule_id][valueInput];
+                            }
+                        }
+                    });
+                }
+            },
+            receiveCustomerData(data) {
+                if (data.customer) {
+                    this.customer = data.customer;
+                }
+                if (data.cart) {
+                    this.cart = data.cart;
+                }
+                if (data['cart-data']) {
+                    this.cartData = data['cart-data'];
+                }
+                this.updateRule();
+            },
+            checkRender: function () {
+                return this.ruleConfig.length > 0;
+
+            },
+            updateRule: function() {
+
+                const path = this.customer && this.customer.fullname
+                    ? '/V1/carts/mine/mpextrafee'
+                    : '/V1/guest-carts/' + this.cart.cartId + '/mpextrafee';
+                let addressInformation = {
+                    shipping_address: this.cartData.address,
+                    billing_address: {
+                        "street": [
+                            ""
+                        ]
+                    },
+                    shipping_method_code: this.cartData.shippingMethodCode ?? '',
+                    shipping_carrier_code: this.cartData.shippingCarrierCode ?? '',
+                    extension_attributes: {
+                        "mp_ef_payment_method": ""
+                    }
+                };
+                let payload = {
+                    area: this.area,
+                    addressInformation: addressInformation
+                };
+
+                fetch(BASE_URL + 'rest/' + CURRENT_STORE_CODE + path, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body:  JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(result => {
+
+                    switch (this.area) {
+                        case '1':
+                            this.billingRuleConfig = result[0][0];
+                            this.billingSelectedOptions = result[1][0];
+                            break;
+                        case '2':
+                            this.shippingRuleConfig = result[0][0];
+                            this.shippingSelectedOptions = result[1][0];
+                            break;
+                        case '3':
+                            this.ruleConfig = result[0][0];
+                            this.selectedOptions = result[1][0];
+                            break;
+                        case '1,2,3':
+                            this.billingRuleConfig = result[0][0];
+                            this.billingSelectedOptions = result[1][0];
+
+                            this.shippingRuleConfig = result[0][1];
+                            this.shippingSelectedOptions = result[1][1];
+
+                            this.ruleConfig = result[0][2];
+                            this.selectedOptions = result[1][2];
+                            break;
+                        case '2,3':
+                            extraFee.shippingSelectedOptions(response[1][0]);
+                            extraFee.shippingRuleConfig(response[0][0]);
+                            extraFee.selectedOptions(response[1][1]);
+                            extraFee.ruleConfig(response[0][1]);
+
+                            this.shippingRuleConfig = result[0][0];
+                            this.shippingSelectedOptions = result[1][0];
+
+                            this.ruleConfig = result[0][1];
+                            this.selectedOptions = result[1][1];
+                            break;
+                    }
+
+                })
+                .catch(error => console.error('Error:', error));
+
+            },
+            getOptions: function (data) {
+                let rule =JSON.parse(JSON.stringify(data));
+                let self = this;
+                var options = JSON.parse(rule.options),
+                    result = [];
+                Object.keys(options.option.value).forEach(function (key) {
+                    var object = options.option.value[key];
+                    var title = (object[`${self.store_id}`] || object[0])
+                                + ' '
+                                + self.getFormattedPrice(object['calculated_amount']);
+                    result.push({
+                        rule_id: rule.rule_id,
+                        value: key,
+                        title: title,
+                        type: rule.display_type
+                    });
+                });
+                return result;
+            },
+            changeOption: function (e) {
+                this.collectTotal(this.area)
+            },
+            selectOption: function (e) {
+                this.collectTotal(this.area, e)
+            },
+            collectTotal: function (area, event) {
+                var formData,
+                    billingEl = document.querySelector('#mp-extra-fee-billing'),
+                    shippingEl = document.querySelector('#mp-extra-fee-shipping'),
+                    extraFeeEl = document.querySelector('#mp-extra-fee');
+
+                switch (area) {
+                    case '1':
+                        formData = new URLSearchParams(new FormData(billingEl)).toString();
+                        break;
+                    case '2':
+                        formData = new URLSearchParams(new FormData(shippingEl)).toString();
+                        break;
+                    case '3':
+                        formData = new URLSearchParams(new FormData(extraFeeEl)).toString();
+                        break;
+                    case '1,2,3':
+                        formData = [
+                            new URLSearchParams(new FormData(billingEl)).toString(),
+                            new URLSearchParams(new FormData(shippingEl)).toString(),
+                            new URLSearchParams(new FormData(extraFeeEl)).toString()
+                        ].join(',');
+                        break;
+                    case '2,3':
+                        formData = [
+                            new URLSearchParams(new FormData(shippingEl)).toString(),
+                            new URLSearchParams(new FormData(extraFeeEl)).toString()
+                        ].join(',');
+                        break;
+                }
+                var payload = {
+                    formData: formData,
+                    area: area
+                };
+                this.$dispatch('update-totals-start', {});
+                const path = this.customer && this.customer.fullname
+                    ? '/V1/carts/mine/mpextrafee/collecttotal'
+                    : '/V1/guest-carts/' + this.cart.cartId + '/mpextrafee/collecttotal';
+
+                fetch(BASE_URL + 'rest/' + CURRENT_STORE_CODE + path, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body:  JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    this.$dispatch('update-totals', {data: result});
+                })
+                .catch(error => console.error('Error:', error))
+                .finally(() => {
+                        this.$dispatch('update-totals-end', {});
+                    }
+                );
+
+            }
+        }
+    }
+</script>
+<div  x-data="initExtraFeeSummary()" @private-content-loaded.window="receiveCustomerData($event.detail.data)">
+    <template x-if="checkRender()">
+    <div class=" flex flex-col pb-2 my-2 border-b-2 border-gray-300 ">
+    <div class="card" >
+        <div id="block-extrafee" class="block shipping" >
+            <div id="block-extrafee-summary"  style="position: relative">
+                <form id="mp-extra-fee" style="margin-bottom: 20px">
+                    <fieldset class="fieldset rate">
+                        <template x-for="rule in getRuleConfig()">
+                            <dl class="fieldset items methods" >
+                                <dt class="item-title field" data-bind="css: is_required == '1' ? 'required' :''" style="margin: unset">
+                                    <div><label class="label font-semibold"><span x-html="getTitle(rule)"></span></label></div>
+                                    <div class="mp-description" style="margin: 10px 0">
+                                        <label class="label" style="font-weight: 400">
+                                            <span x-html="getDescription(rule)"></span>
+                                        </label>
+                                    </div>
+                                </dt>
+                                <template x-if="rule.display_type !== '3'">
+                                    <div x-init="$nextTick(() => {afterRenderOptions($el)});" :class="rule.is_required ? 'mp-extra-fee-required' : ''">
+                                        <template x-for="option in getOptions(rule)" >
+                                                <div class="rule">
+                                                    <template x-if="rule.display_type === '1'">
+                                                        <div>
+                                                            <input type="radio"
+                                                                   class="radio"
+                                                                   :name="'rule[' + option.rule_id + ']'"
+                                                                   :value="option.value"
+                                                                   :id="'s_rule_' + option.rule_id + '_' + option.value"
+                                                                   :ruleId="option.rule_id"
+                                                                   @click="selectOption($el)"
+                                                            >
+                                                            <label class="label"
+                                                                   style="display: inline-block"
+                                                                   x-html="option.title"
+                                                                   :for="'s_rule_' + option.rule_id + '_' + option.value"
+                                                            >
+                                                            </label>
+                                                        </div>
+                                                        </label>
+                                                    </template>
+                                                    <template x-if="rule.display_type === '2'">
+                                                        <div>
+                                                            <input type="checkbox"
+                                                                   class="checkbox"
+                                                                   :name="'rule[' + option.rule_id + '][' + option.value + ']'"
+                                                                   :value="option.value"
+                                                                   :id="'s_rule_' + option.rule_id + '_' + option.value"
+                                                                   :ruleId="option.rule_id"
+                                                                   :required="rule.is_required ? 'required' : false"
+                                                                   @click="selectOption($el)"
+                                                            >
+                                                            <label class="label"
+                                                                   style="display: inline-block"
+                                                                   :for="'s_rule_' + option.rule_id + '_' + option.value"
+                                                                   x-html="option.title">
+                                                            </label>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template x-if="rule.display_type === '3'">
+                                    <div>
+                                        <select class="item-options"
+                                                :id="'select_rule_' + rule.rule_id"
+                                                :ruleId="rule.rule_id"
+                                                :name="'rule[' + rule.rule_id + ']'"
+                                                @change="changeOption($el)"
+                                                >
+                                            <template x-for="option in getOptions(rule)">
+                                                <option :value="option.value"  x-html="option.title" x-init="$nextTick(() => {afterRenderOptions($el,option)});">
+
+                                                </option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </template>
+                                <template x-if="isAllowNote(rule)">
+                                    <div class="mt-3">
+                                        <label x-html="getNoteTitle(rule)" :for="'mp-extrafee-note-' + rule.rule_id"></label>
+                                        <textarea
+                                            x-init="$nextTick(() => {getNoteMessage('mp-extrafee-note-' + rule.rule_id)});"
+                                            cols="30"
+                                            rows="2"
+                                            :id="'mp-extrafee-note-' + rule.rule_id"
+                                            :name="'mp-extrafee-note-' + rule.rule_id"
+                                            @change="changeOption($el)"
+                                            class="input input-light w-full"
+                                        ></textarea>
+                                    </div>
+                                </template>
+                            </dl>
+                        </template>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+    </template>
+</div>
+<style>
+    #block-extrafee-summary .message.notice > *:first-child:before{
+        display: unset;
+    }
+    #block-extrafee-summary .message.notice{
+        padding-left: 45px;
+    }
+    #extra-fee-loader {
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        z-index: 99;
+        position: absolute;
+        background: rgba(255, 255, 255, 0.5);
+        text-align: center;
+    }
+</style>
+<script>
+    document.addEventListener("DOMContentLoaded", (event) => {
+        let checkoutBtn = document.querySelector('#checkout-link-button');
+        checkoutBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            let isValid = true;
+            var noticeMessages = document.querySelectorAll('#block-extrafee-summary .message.warning');
+            if(noticeMessages) {
+                noticeMessages.forEach(function (message) {
+                    message.parentNode.removeChild(message);
+                });
+            }
+            let extraFeeRequired = document.querySelectorAll('.mp-extra-fee-required');
+            if(extraFeeRequired) {
+                extraFeeRequired.forEach(function (element) {
+                    let inputCheckedEl = element.querySelectorAll('input:checked');
+                    if (!inputCheckedEl.length) {
+                        var messageDiv = document.createElement('div');
+                        messageDiv.className = 'message warning';
+                        messageDiv.innerHTML = '<span><?= $escaper->escapeJs(__('This is a required field.')) ?></span>';
+                        element.appendChild(messageDiv);
+                        isValid = false;
+                    }
+                });
+            }
+            if(isValid) {
+                window.location.assign(e.target.href);
+            }
+
+        })
+    });
+</script>
