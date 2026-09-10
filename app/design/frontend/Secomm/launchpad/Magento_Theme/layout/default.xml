@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+  TASK-QX93G3 (SLP-158): extend the Hyvä cart drawer via the vendor-declared
+  container `cart-drawer.totals.before` (see vendor Magento_Theme/layout/default.xml).
+  Additive merge only — no vendor nodes removed.
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="cart-drawer.totals.before">
+            <block class="Magento\Checkout\Block\Cart\Coupon"
+                   name="cart-drawer.coupon"
+                   template="Magento_Theme::html/cart/coupon-form.phtml"/>
+            <block class="Magento\Cms\Block\Block" name="cart-drawer.promo">
+                <arguments>
+                    <argument name="block_id" xsi:type="string">cart-drawer-promo</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>
