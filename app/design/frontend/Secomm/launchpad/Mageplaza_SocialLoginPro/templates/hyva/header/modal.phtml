@@ -1,3 +1,4 @@
+<?php /* TASK-QX93G3 (SLP-158): Secomm/launchpad override of Mageplaza_SocialLoginPro::hyva/header/modal.phtml — verbatim copy with ONE change: line 355 `let popup` -> `var popup`. The inline script is re-executed by hyva.replaceDomElement on cart-page content refresh; a top-level lexical `let` redeclaration throws "Identifier already declared" and aborts the DOM replace, breaking coupon/qty sync between the cart page and the cart drawer (and native postCart refreshes). `var` redeclaration is legal in sloppy mode, making the script idempotent. Keep this file a minimal diff against the vendor template when upgrading Mageplaza. */ ?>
 <?php
 /**
  * Mageplaza
@@ -24,7 +25,7 @@ $helperData  = $this->helper(\Mageplaza\SocialLoginPro\Helper\Data::class);
 $popupEffect = $helperData->getPopupEffect();
 $modal       = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class)
     ->createModal()
-    ->addDialogClass("p-3 w-full wrap-modal-login  transform origin-left opacity-0" . " " . $popupEffect . "-appear")
+    ->addDialogClass("p-3 w-full wrap-modal-login  transform origin-left opacity-0 scale-0" . " " . $popupEffect . "-appear")
     ->removeDialogClass('shadow-xl', 'inline-block', 'bg-white', 'rounded-lg', 'p-10', 'max-h-screen', 'overflow-auto',
         'border border-10', 'border-blue-500')
     ->withDialogRefName('my-dialog')
@@ -351,7 +352,7 @@ $btnPosition     = $helperData->getSocialBtnPosition();
     <div style="clear: both"></div>
 </div>
 <script type="text/javascript">
-    let popup = ``;
+    var popup = ``;
 
     function showMyDialog () {
         const modal = document.querySelector('.wrap-modal-login');

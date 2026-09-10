@@ -849,3 +849,5 @@
 "Disconnect","Disconnect"
 "Ajax error. Please try again!","Ajax error. Please try again!"
 "Not enough items for sale","Not enough items for sale"
+"Decrease quantity of product ""%0""","Decrease quantity of product ""%0"""
+"Increase quantity of product ""%0""","Increase quantity of product ""%0"""

@@ -398,6 +398,7 @@ return [
         'Mageplaza_Core' => 1,
         'Launchpad_MageplazaTranslate' => 1,
         'Mageplaza_SocialLogin' => 1,
+        'Launchpad_QuickCart' => 1,
         'Magefan_AdminUserGuide' => 1,
         'Magefan_Blog' => 1,
         'Magefan_BlogGraphQl' => 1,
