@@ -32,7 +32,7 @@ Prevents timing-attack signature forgery; correctness depends on exact VNPAY spe
 
 ## Affected components
 
-`Vnpayment_VNPAY/Controller/Order/Ipn.php` (signature block); possibly a shared verify helper.
+`Secomm_VNPAY/Controller/Order/Ipn.php` (signature block); possibly a shared verify helper.
 
 ## Related records
 

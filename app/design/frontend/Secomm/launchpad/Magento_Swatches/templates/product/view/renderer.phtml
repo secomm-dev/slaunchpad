@@ -1,0 +1,146 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * SLP-183 / BUG-KFJ49A: copy của Hyva_default/Magento_Swatches/templates/product/view/renderer.phtml.
+ * Đổi khác: render div #attribute-messages-<attributeId> sau container swatch trong mỗi fieldset —
+ * message container cho rule `validate-one-required` của radio swatch (swatch-item.phtml trỏ
+ * data-validation-container về đây) để message hiển thị dưới fieldset thay vì bọc trong chip.
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\SwatchRenderer;
+use Magento\Framework\Escaper;
+use Magento\Swatches\Block\Product\Renderer\Configurable;
+use Magento\Swatches\ViewModel\Product\Renderer\Configurable as ConfigurableViewModel;
+
+/** @var Configurable $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var HyvaCsp $hyvaCsp */
+
+/** @var ConfigurableViewModel $configurableViewModel */
+$configurableViewModel = $viewModels->require(ConfigurableViewModel::class);
+
+/** @var SwatchRenderer $swatchRendererViewModel */
+$swatchRendererViewModel = $viewModels->require(SwatchRenderer::class);
+
+$product = $block->getProduct();
+$productId = $product->getId();
+
+$attributes = $block->decorateArray($block->getAllowAttributes());
+
+$layout = $block->getLayout();
+$swatchItemBlock = $layout->getBlock('product.swatch.item');
+$swatchItemBlock->setData('product_id', $productId);
+
+$jsonConfig = $block->getJsonConfig();
+$jsonSwatchConfig = $block->getJsonSwatchConfig();
+$swatchConfig = json_decode($jsonSwatchConfig, true);
+?>
+<?php if ($product->isSaleable() && count($attributes)): ?>
+    <script>
+        function initConfigurableSwatchProductOptions() {
+            const { productId } = this.$root.dataset;
+            const configEl = this.$root.querySelector('script[type="application/json"]');
+            if (!configEl) {
+                throw new Error(`initConfigurableSwatchProductOptions:
+                    missing inline JSON config in component root,
+                    outdated renderer.phtml override?`);
+            }
+
+            const configurableOptionsComponent = initConfigurableOptions(productId, JSON.parse(configEl.textContent));
+            const swatchOptionsComponent = initSwatchOptions();
+
+            return Object.assign(
+                configurableOptionsComponent,
+                swatchOptionsComponent,
+                {
+                    getSelectedOption() {
+                        return this.selectedOptions[this.$el.dataset.attributeId];
+                    }
+                }
+            );
+        }
+
+        window.addEventListener('alpine:init', () => {
+            Alpine.data('initConfigurableSwatchProductOptions', initConfigurableSwatchProductOptions)
+        }, { once: true });
+    </script>
+    <?php $hyvaCsp->registerInlineScript() ?>
+
+    <div
+        x-data="initConfigurableSwatchProductOptions"
+        data-product-id="<?= (int) $productId ?>"
+        class="mb-2 relative"
+    >
+        <script type="application/json"><?= /* @noEscape */ str_replace('</script>', '<\/script>', $jsonConfig) ?></script>
+
+        <?php foreach ($attributes as $attribute): ?>
+            <?php
+            $attributeId = $attribute->getAttributeId();
+            $productAttribute = $attribute->getProductAttribute();
+            $productOptions = $attribute->getOptions();
+            $attributeSwatchConfig = $swatchConfig[$attributeId] ?? [];
+            ?>
+            <?php if ($swatchRendererViewModel->isSwatchAttribute($productAttribute)): ?>
+                <fieldset class="mt-0 mb-4">
+                    <legend class="mb-1 text-base font-normal">
+                        <?= $escaper->escapeHtml($productAttribute->getStoreLabel()) ?>:
+                        <span
+                            class="font-medium"
+                            data-attribute-id="<?= (int) $attributeId ?>"
+                            x-text="getSelectedOption"
+                        ></span>
+                    </legend>
+                    <div class="flex flex-wrap gap-2">
+                        <?php foreach ($productOptions ?? [] as $option): ?>
+                            <?= /* @noEscape */ $swatchItemBlock
+                                ->setData('option', $option)
+                                ->setData('swatch_data', $attributeSwatchConfig[$option['value_index']] ?? null)
+                                ->setData('attribute_id', $attributeId)
+                                ->toHtml(); ?>
+                        <?php endforeach; ?>
+                    </div>
+                    <div id="attribute-messages-<?= (int) $attributeId ?>"></div>
+                </fieldset>
+            <?php else: ?>
+                <div role="group" class="mb-4">
+                    <label
+                        class="mb-1 text-base font-medium"
+                        for="attribute<?= $escaper->escapeHtmlAttr($attributeId) ?>"
+                    >
+                        <?= $escaper->escapeHtml($productAttribute->getStoreLabel()) ?>
+                    </label>
+                    <select
+                        id="attribute<?= $escaper->escapeHtmlAttr($attributeId) ?>"
+                        name="super_attribute[<?= $escaper->escapeHtmlAttr($attributeId) ?>]"
+                        class="form-select w-full"
+                        required
+                        data-attribute-id="<?= $escaper->escapeHtmlAttr($attributeId) ?>"
+                        @change="reflectOption"
+                    >
+                        <option value=""><?= $escaper->escapeHtml(__('Choose an Option...')) ?></option>
+                        <?php foreach ($productOptions ?? [] as $option): ?>
+                            <option
+                                value="<?= $escaper->escapeHtmlAttr($option['value_index']) ?>"
+                                data-attribute-id="<?= $escaper->escapeHtmlAttr($attributeId) ?>"
+                                data-option-label="<?= $escaper->escapeHtmlAttr($option['store_label']) ?>"
+                                :disabled="optionIsDisabled"
+                                x-text="getOptionLabel"
+                            ><?= $escaper->escapeHtml($option['store_label']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
+        <?php if ($configurableViewModel->getShowSwatchTooltip()): ?>
+            <?= /* @noEscape */ $block->getBlockHtml('product.swatch.tooltip') ?>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>

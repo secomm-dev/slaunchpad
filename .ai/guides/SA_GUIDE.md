@@ -60,7 +60,7 @@ Bạn vào ở phase **Design/Architecture** (Mode A): nhận requirement từ B
 ## Coding conventions (SA phải giữ)
 - **Tailwind CSS v4 CSS-first** — không `tailwind.config.js`.
 - **Hyvä patterns** — Alpine.js + Magewire; phtml-driven.
-- **Vendor prefix**: `Secomm_` (project), `Vnpayment_` (payment); `Mageplaza_*` = third-party, extend bằng plugin/preference.
+- **Vendor prefix**: `Secomm_` (project); `Mageplaza_*` = third-party, extend bằng plugin/preference.
 - **PHP 8.2+**, strict_types, backward-compat (8.2–8.4).
 
 ## Common mistakes

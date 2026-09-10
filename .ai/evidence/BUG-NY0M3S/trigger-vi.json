@@ -1,0 +1,28 @@
+{
+  "store": "vi",
+  "lang": "vi",
+  "before": {
+    "extraFeeVisible": true,
+    "paymentRadios": [
+      {
+        "value": "checkmo",
+        "vis": false
+      }
+    ],
+    "checkoutButtons": [
+      "Áp dụng",
+      "Place Order",
+      "Close",
+      "Close"
+    ],
+    "shippingMethodRadios": []
+  },
+  "btnText": "Place Order",
+  "after": {
+    "noticeMessage": "Vui lòng chọn ít nhất một tùy chọn cho mỗi phí bổ sung bắt buộc",
+    "noticeVisible": true,
+    "globalErrors": [
+      "The selected shipping method is not applicable to your order. Please contact us for more details."
+    ]
+  }
+}

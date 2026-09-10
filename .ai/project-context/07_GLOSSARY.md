@@ -29,7 +29,7 @@ AI should refer to this file when encountering unfamiliar terms.
 | Alpine.js | Minimal JavaScript framework used by Hyvä for client-side reactivity (`x-data`, `x-init`, `x-show`, `$store`). | All Hyvä `.phtml` templates |
 | ViewModel | A class implementing `Magento\Framework\View\Element\Block\ArgumentInterface`, injected into `.phtml` via layout XML to provide data without coupling templates to Block classes. Preferred over Block methods in Hyvä. | Hyvä template data binding |
 | OSC | One Step Checkout — Mageplaza module family (Osc / OscPro / OscUltimate) that replaces the default multi-step Magento checkout. | Checkout (BR-004) |
-| VNPAY | Vietnam national payment gateway. Custom `Vnpayment_VNPAY` module with Pay/Info/IPN controllers (default inactive). | Payments (BR-003) |
+| VNPAY | Vietnam national payment gateway. Custom `Secomm_VNPAY` module with Pay/Info/IPN controllers (default inactive). | Payments (BR-003) |
 | Mollie | International payment gateway (composer module `mollie/magento2` 3.1.1 + Hyvä compat bundle). Active payment method. | Payments (BR-003) |
 | FPC | Full Page Cache — Magento's whole-page caching layer; in production backed by Varnish. NOT configured in committed env.php (file cache only). | Cache, performance |
 | GraphQL | Query language API for Magento storefront. Secomm_AddressDropdown exposes a custom GraphQL schema for VN address data. | Address dropdown, headless surface |

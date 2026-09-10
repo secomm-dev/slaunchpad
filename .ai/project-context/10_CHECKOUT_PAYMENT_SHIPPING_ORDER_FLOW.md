@@ -41,11 +41,11 @@ Same structure as Luma version — checkout flow differs due to Hyvä checkout.
 | Method | Module | Hyvä Compat? | Risk |
 |--------|--------|-------------|------|
 | Mollie | `mollie/magento2` 3.1.1 (+ `mollie/magento2-hyva-compatibility` 3.1.0) | Yes | H (payment) |
-| VNPAY | `Vnpayment_VNPAY` (custom, app/code) — default `active=0` | TBD (custom UI) | H (payment/IPN/signature) |
+| VNPAY | `Secomm_VNPAY` (custom, app/code) — default `active=0` | TBD (custom UI) | H (payment/IPN/signature) |
 | Braintree | Bundled (Magento core) | TBD | M |
 | PayPal | Bundled (Magento core) | TBD | M |
 
-> **Payment escalation**: Any change to Vnpayment_VNPAY (payment/IPN/signature) requires SA review (Tier 2). Payment logging must never include PAN/CVV/full cardholder+expiry (PCI DSS 3.4).
+> **Payment escalation**: Any change to Secomm_VNPAY (payment/IPN/signature) requires SA review (Tier 2). Payment logging must never include PAN/CVV/full cardholder+expiry (PCI DSS 3.4).
 
 ---
 

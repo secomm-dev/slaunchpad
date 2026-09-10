@@ -1,0 +1,84 @@
+[
+  {
+    "store": "vi",
+    "lang": "vi",
+    "present": true,
+    "visible": false,
+    "gapLabelToOption": null,
+    "rects": {
+      "dtLabel": null,
+      "labelSpan": null,
+      "desc": null,
+      "dd": null,
+      "rule": null,
+      "input": null
+    },
+    "computed": {
+      "form": {
+        "marginTop": "0px",
+        "marginBottom": "0px",
+        "paddingTop": "0px",
+        "paddingBottom": "0px",
+        "maxWidth": "500px"
+      },
+      "dl": {
+        "marginTop": "20px",
+        "marginBottom": "0px",
+        "paddingTop": "0px",
+        "paddingBottom": "0px"
+      },
+      "wrap": null,
+      "dt": null,
+      "dtLabel": null,
+      "desc": null,
+      "dd": null,
+      "rule": null
+    },
+    "labelText": null,
+    "optionText": null,
+    "noteLabel": null,
+    "errorMessage": "",
+    "consoleErrorsRaw": 1
+  },
+  {
+    "store": "en",
+    "lang": "en",
+    "present": true,
+    "visible": false,
+    "gapLabelToOption": null,
+    "rects": {
+      "dtLabel": null,
+      "labelSpan": null,
+      "desc": null,
+      "dd": null,
+      "rule": null,
+      "input": null
+    },
+    "computed": {
+      "form": {
+        "marginTop": "0px",
+        "marginBottom": "0px",
+        "paddingTop": "0px",
+        "paddingBottom": "0px",
+        "maxWidth": "500px"
+      },
+      "dl": {
+        "marginTop": "20px",
+        "marginBottom": "0px",
+        "paddingTop": "0px",
+        "paddingBottom": "0px"
+      },
+      "wrap": null,
+      "dt": null,
+      "dtLabel": null,
+      "desc": null,
+      "dd": null,
+      "rule": null
+    },
+    "labelText": null,
+    "optionText": null,
+    "noteLabel": null,
+    "errorMessage": "",
+    "consoleErrorsRaw": 2
+  }
+]

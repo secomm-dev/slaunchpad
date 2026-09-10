@@ -1369,6 +1369,6 @@ throw new \Magento\Framework\GraphQl\Exception\GraphQlNoSuchEntityException(
 
 - Tailwind CSS v4 — CSS-first config via @theme/@source in tailwind-source.css; DO NOT create a tailwind.config.js
 - Frontend components use Hyvä patterns: Alpine.js + Magewire 1.13; phtml-driven, no React/Vue
-- Custom module vendor prefixes: Secomm_ (project), Vnpayment_ (payment); Mageplaza_* are third-party (do not modify in place — extend via plugin/preference)
+- Custom module vendor prefixes: Secomm_ (project), Mageplaza_* are third-party (do not modify in place — extend via plugin/preference)
 - All new PHP targets PHP 8.2+ (8.2–8.4 compatible); strict_types + Magento coding standard
 - Storefront strings must be added to both vi_VN.csv and en_US.csv translation dictionaries

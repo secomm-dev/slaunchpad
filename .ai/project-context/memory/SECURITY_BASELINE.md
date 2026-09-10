@@ -40,11 +40,11 @@
 ## 5. Payment / checkout / order / auth / PII
 
 - **Payment gateway**:
-  - **VNPAY** — custom `Vnpayment_VNPAY` (default inactive) · controllers `Order/Pay`, `Order/Info`, `Order/Ipn` · auth = TmnCode + hash secret · sandbox/testing: [TBD — VNPAY sandbox]
+  - **VNPAY** — custom `Secomm_VNPAY` (default inactive) · controllers `Order/Pay`, `Order/Info`, `Order/Ipn` · auth = TmnCode + hash secret · sandbox/testing: [TBD — VNPAY sandbox]
   - **Mollie** 3.1.1 — active · Hyvä compat bundle · auth = API key + webhook · test mode: [TBD]
 - **PII handled**: email, tên, SĐT, Vietnam address (quốc gia/tỉnh-thành/phường-xã) — masking: [TBD — log masking cho PII]
 - **Auth mechanism**: Magento customer session + Mageplaza SocialLogin (OAuth) — high-risk change → Tier 2 escalation
-- **Production-sensitive areas** (từ blueprint §12): `Vnpayment_VNPAY` (IPN/signature), Mageplaza OSC checkout, `Secomm_AddressDropdown` + `VietNamAddress` (data + GraphQL surface). Mọi change các area này require SA review + security-review checklist.
+- **Production-sensitive areas** (từ blueprint §12): `Secomm_VNPAY` (IPN/signature), Mageplaza OSC checkout, `Secomm_AddressDropdown` + `VietNamAddress` (data + GraphQL surface). Mọi change các area này require SA review + security-review checklist.
 
 ## 6. Client confidentiality
 

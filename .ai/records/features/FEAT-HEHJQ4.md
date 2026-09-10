@@ -32,10 +32,10 @@ decision_approval_summary:   # DERIVED (B1) — single-read approval state; all 
 components:
   - CMP-VNPAY                 # placeholder stable ID (COMPONENT_INDEX = Phase 1c)
 source_areas:
-  - app/code/Vnpayment/VNPAY/Controller/Order/Ipn.php
-  - app/code/Vnpayment/VNPAY/Model/vnpay.php
-  - app/code/Vnpayment/VNPAY/etc/config.xml
-  - app/code/Vnpayment/VNPAY/etc/adminhtml/system.xml
+  - app/code/Secomm/VNPAY/Controller/Order/Ipn.php
+  - app/code/Secomm/VNPAY/Model/vnpay.php
+  - app/code/Secomm/VNPAY/etc/config.xml
+  - app/code/Secomm/VNPAY/etc/adminhtml/system.xml
 changes_project_state: true   # likely a new audit store (SA decision: table vs log)
 changes_architecture: true    # callback flow redesign (retry queue / idempotency / payment-transaction update)
 changes_integration: true     # VNPAY payload contract may change
@@ -65,7 +65,7 @@ supersedes: []
 
 ## Context
 
-Harden the VNPAY IPN callback (`Vnpayment_VNPAY/Controller/Order/Ipn.php`) end-to-end: signature validation, transaction-status mapping, retry for early callbacks, duplicate prevention, proper order+payment-transaction update, and an audit trail — without corrupting existing production orders/transactions. The VNPAY payload contract may change.
+Harden the VNPAY IPN callback (`Secomm_VNPAY/Controller/Order/Ipn.php`) end-to-end: signature validation, transaction-status mapping, retry for early callbacks, duplicate prevention, proper order+payment-transaction update, and an audit trail — without corrupting existing production orders/transactions. The VNPAY payload contract may change.
 
 **Current callback (read 2026-07-21, `Ipn::execute()`):**
 - Reads `vnp_SecureHash` + secret `payment/vnpay/hash_code`; builds hashData from sorted `urlencode(k)=urlencode(v)` joined by `&`; `hash_hmac('sha512', …)`; compares `$secureHash == $vnp_SecureHash` (**non-strict `==` — timing-unsafe**).
@@ -139,7 +139,7 @@ _Status: proposed._ Planned QC (L3, per AGENTS §7.3): valid IPN → order PROCE
 
 ## Compatibility Conclusions
 
-- **Modules affected:** `Vnpayment_VNPAY` (Ipn controller + payment model + config); possibly a new audit model/table (D5). **Mollie untouched** (AC-010).
+- **Modules affected:** `Secomm_VNPAY` (Ipn controller + payment model + config); possibly a new audit model/table (D5). **Mollie untouched** (AC-010).
 - **API contracts:** VNPAY IPN payload contract — may change (D6); Magento-facing behaviour (response codes) preserved where possible.
 - **Schema:** possibly a new audit table (D5) → migration + SA review; **no change to existing sales/order/payment tables** (AC-008).
 - **Data integrity:** existing orders/transactions immutable by new logic (AC-008).
@@ -161,8 +161,8 @@ _Status: proposed._ Planned QC (L3, per AGENTS §7.3): valid IPN → order PROCE
 
 ## References
 
-- Legacy/current source: [Ipn.php](../../../app/code/Vnpayment/VNPAY/Controller/Order/Ipn.php), [Model/vnpay.php](../../../app/code/Vnpayment/VNPAY/Model/vnpay.php)
-- AGENTS §6 (VNPAY integration), §11 (Tier-2 escalation), §12 (high-risk: `Vnpayment_VNPAY`)
+- Legacy/current source: [Ipn.php](../../../app/code/Secomm/VNPAY/Controller/Order/Ipn.php), [Model/vnpay.php](../../../app/code/Secomm/VNPAY/Model/vnpay.php)
+- AGENTS §6 (VNPAY integration), §11 (Tier-2 escalation), §12 (high-risk: `Secomm_VNPAY`)
 - CLAUDE.md / AGENTS §7.1: payment + signature + external contract = stop-and-request-TL-review
 - Generic risk categories: `core/risk-categories.md` (Phase 1b)
 - Related: FEAT-YVN39K (address module — unrelated), FEAT-KQ6WC4/003 (storefront notice — unrelated)

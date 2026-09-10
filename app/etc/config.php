@@ -460,6 +460,7 @@ return [
         'Secomm_Ahamove' => 1,
         'Secomm_Tracking' => 1,
         'Secomm_UiWidget' => 1,
+        'Secomm_VNPAY' => 1,
         'Secomm_Ghtk' => 1,
         'Secomm_VietNamMarket' => 1,
         'Secomm_VietQr' => 1,
@@ -476,8 +477,7 @@ return [
         'Smile_ElasticsuiteIndices' => 1,
         'Smile_ElasticsuiteAnalytics' => 1,
         'Smile_ElasticsuiteVirtualCategory' => 1,
-        'Snowdog_Menu' => 1,
-        'Vnpayment_VNPAY' => 1
+        'Snowdog_Menu' => 1
     ],
     'system' => [
         'default' => [

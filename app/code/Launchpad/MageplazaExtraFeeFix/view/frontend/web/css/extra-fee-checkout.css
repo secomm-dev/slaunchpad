@@ -1,0 +1,37 @@
+/**
+ * Extra Fee (Mageplaza OSC checkout): tighten vertical rhythm.
+ *
+ * This stylesheet is attached exclusively to the onestepcheckout_index_index
+ * layout handle — it cannot leak into other pages.
+ *
+ * BUG-NY0M3S (SLP-139) — payment step block (#mp-extra-fee-billing):
+ * Baseline measured on local (2026-09-09, 1504px viewport): gap between the rule
+ * label and the first option checkbox was 49px, because the empty `.mp-description`
+ * line box (20px label + 10px top/bottom inline margins) renders even when the rule
+ * has no description. The Mageplaza reference demo (extra-fee-demo.mageplaza.com/hyva)
+ * shows a ~0 gap. After fix: 9px.
+ *
+ * TASK-EPJVGG (SLP-198) — summary/place-order block (#mp-extra-fee, KO template
+ * cart/extra-fee.html rendered in #opc-sidebar > #co-place-order-area): same root
+ * cause — an empty `.mp-description` (span text "") renders a 20px line box plus
+ * 10px top/bottom margins, so the title -> first checkbox gap measured 45px,
+ * while the shopping cart page (Hyvä template, margins collapse through) shows
+ * 13.5px. Fix mirrors the SLP-139 pattern; the block's own external
+ * margin-bottom: 20px (inline on the form) is kept — the ticket only asks to
+ * tighten the internal title -> options gap.
+ */
+
+/* Keep a small gap when a rule actually has a description
+   (!important beats the template's inline style="margin: 10px 0" / KO style binding) */
+#mp-extra-fee-billing .mp-description,
+#mp-extra-fee .mp-description {
+    margin: 4px 0 !important;
+}
+
+/* Hide the whole line when the description text is empty
+   (KO renders an empty <span>, the label still occupies a line box).
+   Browsers without :has() keep the current appearance with the 4px margins. */
+#mp-extra-fee-billing .mp-description:not(:has(span:not(:empty))),
+#mp-extra-fee .mp-description:not(:has(span:not(:empty))) {
+    display: none;
+}

@@ -1,0 +1,116 @@
+[
+  {
+    "store": "vi",
+    "lang": "vi",
+    "pickLog": [
+      {
+        "sel": "JOJXB4T",
+        "val": "An Giang"
+      },
+      {
+        "sel": "GEKRYXY",
+        "val": "An Giang"
+      },
+      {
+        "sel": "custom-city-select",
+        "val": "An Biên"
+      },
+      {
+        "sel": "custom-city-select",
+        "val": "An Biên"
+      }
+    ],
+    "block": {
+      "present": true,
+      "visible": true,
+      "gapLabelToOption": 9,
+      "rects": {
+        "dt": {
+          "top": 345.5,
+          "bottom": 370.5,
+          "left": 973.3,
+          "h": 25
+        },
+        "dtLabel": {
+          "top": 345.5,
+          "bottom": 365.5,
+          "left": 973.3,
+          "h": 20
+        },
+        "desc": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "h": 0
+        },
+        "dd": {
+          "top": 370.5,
+          "bottom": 410.5,
+          "left": 973.3,
+          "h": 40
+        },
+        "rule": {
+          "top": 370.5,
+          "bottom": 390.5,
+          "left": 973.3,
+          "h": 20
+        },
+        "input": {
+          "top": 374.5,
+          "bottom": 387.5,
+          "left": 973.3,
+          "h": 13
+        }
+      },
+      "computed": {
+        "form": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "dl": {
+          "marginTop": "20px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px"
+        },
+        "wrap": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "dt": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "dtLabel": {
+          "marginTop": "0px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "fontSize": "14px",
+          "lineHeight": "20px",
+          "display": "inline-block"
+        },
+        "desc": {
+          "marginTop": "4px",
+          "marginBottom": "4px"
+        },
+        "dd": {
+          "marginTop": "0px",
+          "marginBottom": "10px"
+        },
+        "rule": {
+          "marginTop": "0px",
+          "marginBottom": "0px"
+        },
+        "input": {
+          "marginTop": "2px",
+          "marginBottom": "0px"
+        }
+      },
+      "labelText": "rrrrrr",
+      "optionText": "20HKD 28,30 US$",
+      "noteLabel": "Leave a message with the extra fee."
+    },
+    "validationMessage": null
+  }
+]

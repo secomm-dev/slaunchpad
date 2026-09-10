@@ -35,7 +35,7 @@ TmnCode (merchant terminal code) + hash secret (HMAC used for request signature 
 
 | Field | Value |
 |-------|-------|
-| **Purpose** | Redirect customer from Magento checkout to VNPAY hosted payment page. Implemented by `Vnpayment\VNPAY\Controller\Order\Pay`. |
+| **Purpose** | Redirect customer from Magento checkout to VNPAY hosted payment page. Implemented by `Secomm\VNPAY\Controller\Order\Pay`. |
 | **Request format** | HTTP query string: `tmnCode`, `amount`, `orderId`, `orderInfo`, `returnUrl`, `vnp_SecureHash` (signature over sorted params) |
 | **Response format** | VNPAY hosted payment page (HTML); customer completes payment |
 | **Rate limit** | Not documented |
@@ -46,7 +46,7 @@ TmnCode (merchant terminal code) + hash secret (HMAC used for request signature 
 
 | Field | Value |
 |-------|-------|
-| **Purpose** | Customer return landing after VNPAY payment. Implemented by `Vnpayment\VNPAY\Controller\Order\Info`. |
+| **Purpose** | Customer return landing after VNPAY payment. Implemented by `Secomm\VNPAY\Controller\Order\Info`. |
 | **Request format** | HTTP query params from VNPAY (response signature included) |
 | **Response format** | Magento checkout success / failure redirect |
 | **Rate limit** | Not documented |
@@ -57,7 +57,7 @@ TmnCode (merchant terminal code) + hash secret (HMAC used for request signature 
 
 | Field | Value |
 |-------|-------|
-| **Purpose** | VNPAY server-to-server payment notification. Implemented by `Vnpayment\VNPAY\Controller\Order\Ipn`. |
+| **Purpose** | VNPAY server-to-server payment notification. Implemented by `Secomm\VNPAY\Controller\Order\Ipn`. |
 | **Request format** | HTTP query params: transaction status, amount, orderId, `vnp_SecureHash` |
 | **Response format** | HTTP 200 ack (idempotent) |
 | **Rate limit** | Not documented |

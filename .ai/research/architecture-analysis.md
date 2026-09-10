@@ -31,7 +31,7 @@
 
 ## High-risk areas (blueprint §12)
 
-- `Vnpayment_VNPAY` — custom payment gateway (IPN validation, signature, default inactive).
+- `Secomm_VNPAY` — custom payment gateway (IPN validation, signature, default inactive).
   Cần enable + security review trước go-live.
 - Mageplaza One Step Checkout — flow phức tạp thay default checkout; risk payment/address interaction.
 - `Secomm_AddressDropdown` + `VietNamAddress` — custom address capture + data import; risk data quality + GraphQL surface.
