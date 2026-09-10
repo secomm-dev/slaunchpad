@@ -9,7 +9,7 @@ Spec: `.ai/specs/SPEC-TASK-0X552E-ai-discoverability-llms-txt.md` (LC-30).
 ## What it does
 
 - `GET /llms.txt` → `200 text/plain; charset=UTF-8` with a deterministic, curated document
-  (`# Site`, `> summary`, `Locale:`, `Currency:`, V1.1 sections — Store Summary, Agent
+  (`# Site`, `Locale:`, `Currency:`, V1.1 sections — Store Summary, Agent
   Guidance, Priority Pages, Featured Collections, Key Pages, Machine-readable Commerce
   (GET + Purpose), Commerce Limitations, Sitemap — Markdown links `- [Label](url)` with
   optional `: Description`). Category descriptions: `meta_description` → sanitized
@@ -33,7 +33,7 @@ all values store-view scoped:
 |---|---|---|---|
 | Enabled | `general/enabled` | `0` | 404 when off |
 | Site / Brand Title | `general/site_title` | — | H1 title; falls back to store information name, then store view name |
-| Brand Summary | `general/brand_summary` | — | one-line `>` summary; falls back to Site / Brand Title, never the internal store view name |
+| Brand Summary | `general/brand_summary` | — | rendered exactly once under the Store Summary section; when empty the section is omitted (no fallback); never the internal store view name |
 | Priority Paths | `general/priority_paths` | — | one internal path per line (e.g. `sales/guest/form`) |
 | CMS Pages | `urls/cms_pages` | — | multiselect, max 20 rendered |
 | Categories | `urls/categories` | — | hierarchical checkbox tree (core jstree widget), saved as category IDs, max 20 rendered; scoped to the edited store view's category tree (website/default scope: that scope's trees, distinct roots as labeled groups) |
@@ -114,11 +114,16 @@ among non-redirect `url_rewrite` rows for the category in the store, the row wit
 
 ## Tests
 
-37 unit tests / 76 assertions covering the llms.txt v2 Markdown link format (exact bytes,
-optional description, sanitization/bounds), config title fallback chain + deterministic
+79 unit tests / 226 assertions covering the llms.txt v2 Markdown link format (exact bytes,
+optional description, sanitization/bounds), the single-render Store Summary contract
+(exact bytes, exactly-once summary, no blockquote ever emitted, empty-summary omission),
+config title fallback chain + deterministic
 currency read, formatter determinism & sanitization, eligibility,
 collector bound/dedupe/sort, SEO policy (JSON + legacy serialize + wildcard + trailing slash),
-canonical policy (oldest-rewrite, query strip, home URL):
+canonical policy (oldest-rewrite, query strip, home URL). The public `/ai/store` payload
+contract is pinned by `Secomm_AiCommerce`'s `StoreDtoTest` (exact V1 allowlist:
+`store_code`, `locale`, `currency`, `base_url`; internal ids never exposed;
+`base_url` trailing-slash normalization):
 
 ```
 docker exec slaunchpad-phpfpm-1 bash -c \

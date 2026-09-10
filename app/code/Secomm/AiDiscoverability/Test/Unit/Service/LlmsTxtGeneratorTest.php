@@ -20,8 +20,10 @@ use Secomm\AiDiscoverability\Service\Source\SitemapRefsSource;
 use Secomm\AiDiscoverability\Service\UrlCollector;
 
 /**
- * Covers the public-safe summary fallback policy (SPEC-TASK-0X552E §12.2, second pass):
- * brand_summary → effective site title → omitted; never the internal store-view name.
+ * Covers the Store Summary rendering policy (SPEC-TASK-0X552E §12.2, second pass):
+ * the configured brand_summary renders EXACTLY ONCE under the Store Summary
+ * section; when empty the section is omitted (no fallback text, no blockquote).
+ * The site-title fallback applies to the H1 only — never as a summary.
  */
 class LlmsTxtGeneratorTest extends TestCase
 {
@@ -91,27 +93,34 @@ class LlmsTxtGeneratorTest extends TestCase
         );
     }
 
-    public function testConfiguredBrandSummaryWinsAndStoreSummarySectionRenders(): void
+    public function testConfiguredBrandSummaryRendersExactlyOnceUnderStoreSummary(): void
     {
         $this->config->method('getBrandSummary')->willReturn('Official OLV fashion store in Vietnam.');
         $this->config->method('getSiteTitle')->willReturn('OLV');
 
+        $body = $this->generator->generate(1);
+
         $this->assertSame(
-            "# OLV\n> Official OLV fashion store in Vietnam.\n\nLocale: vi_VN\nCurrency: VND\n"
+            "# OLV\n\nLocale: vi_VN\nCurrency: VND\n"
             . "\n## Store Summary\nOfficial OLV fashion store in Vietnam.\n",
-            $this->generator->generate(1)
+            $body
         );
+        // Exactly once — never duplicated as a top-level blockquote.
+        $this->assertSame(1, substr_count($body, 'Official OLV fashion store in Vietnam.'));
+        $this->assertStringNotContainsString("\n> ", $body);
     }
 
-    public function testEmptySummaryFallsBackToPublicSiteTitleAndOmitsStoreSummary(): void
+    public function testEmptyBrandSummaryOmitsStoreSummaryWithoutTitleFallbackText(): void
     {
         $this->config->method('getBrandSummary')->willReturn('');
         $this->config->method('getSiteTitle')->willReturn('OLV');
 
         $body = $this->generator->generate(1);
 
-        $this->assertSame("# OLV\n> OLV\n\nLocale: vi_VN\nCurrency: VND\n", $body);
+        // H1 keeps the site title; NO blockquote fallback and NO Store Summary.
+        $this->assertSame("# OLV\n\nLocale: vi_VN\nCurrency: VND\n", $body);
         $this->assertStringNotContainsString('## Store Summary', $body);
+        $this->assertStringNotContainsString("\n> ", $body);
     }
 
     public function testInternalStoreNameIsNeverEmittedAsSummary(): void
@@ -121,13 +130,15 @@ class LlmsTxtGeneratorTest extends TestCase
 
         $body = $this->generator->generate(1);
 
-        // No public summary at all: blockquote omitted entirely, H1 falls back
-        // to the internal store-view name (last resort, H1 only).
+        // No public summary at all: Store Summary omitted entirely (no
+        // fallback), H1 falls back to the internal store-view name (last
+        // resort, H1 only).
         $this->assertSame(
             "# Default Store View\n\nLocale: vi_VN\nCurrency: VND\n",
             $body
         );
         $this->assertStringNotContainsString('> Default Store View', $body);
+        $this->assertStringNotContainsString('## Store Summary', $body);
     }
 
     public function testCommerceSectionsRenderWithGuidanceAndLimitationsWhenAdvertised(): void
@@ -141,7 +152,7 @@ class LlmsTxtGeneratorTest extends TestCase
             [
                 'label' => 'Store Information',
                 'url' => 'https://example.com/ai/store?store=default',
-                'purpose' => 'Store metadata, locale, currency and supported public catalog context.',
+                'purpose' => 'Store metadata: store code, locale, currency and base URL.',
             ],
             [
                 'label' => 'Product Detail',

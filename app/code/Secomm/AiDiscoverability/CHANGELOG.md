@@ -2,6 +2,34 @@
 
 All notable changes to `Secomm_AiDiscoverability` are documented here.
 
+## [1.6.1] - 2026-09-10
+
+llms.txt metadata contract alignment: the configured Brand / Site Summary
+renders exactly once under Store Summary (no duplicated top-level blockquote),
+and the Store Information purpose line states the actual `/ai/store` V1
+response contract.
+
+### Fixed
+- Removed the duplicated Brand / Site Summary blockquote: the summary used to
+  render twice (as `> summary` under the H1 — with a site-title fallback —
+  and again under `## Store Summary`) although both originate from the same
+  `general/brand_summary` config field. `LlmsTxtFormatter::format()` no longer
+  accepts or renders a summary block (signature is now
+  `format($siteName, $locale, $sections, $currency)`); `LlmsTxtGenerator`
+  renders the configured summary exactly once as the Store Summary prose
+  section and omits the section entirely when the field is empty — no
+  fallback, no fabricated text. Site-title fallback behavior for the H1 is
+  unchanged.
+
+### Changed
+- `/ai/store` purpose line in llms.txt now matches the StoreDto V1 allowlist
+  (`store_code`, `locale`, `currency`, `base_url`): "Store metadata: store
+  code, locale, currency and base URL." (was: "Store metadata, locale,
+  currency and supported public catalog context."). Documentation only — the
+  endpoint response contract is unchanged.
+- `Brand / Site Summary` admin field comment (+ en_US/vi_VN translations) now
+  documents the rendered-once-under-Store-Summary behavior.
+
 ## [1.6.0] - 2026-09-08
 
 Product Search usage guidance in llms.txt. Companion to the AiCommerce 1.2.1

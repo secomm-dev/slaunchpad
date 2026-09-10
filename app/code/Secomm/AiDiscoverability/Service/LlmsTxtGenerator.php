@@ -71,7 +71,7 @@ class LlmsTxtGenerator
      * @param CmsPagesSource $cmsPagesSource CMS pages source
      * @param CategoriesSource $categoriesSource categories source
      * @param SitemapRefsSource $sitemapRefsSource sitemap references source
-     * @param CommerceEndpointsSource $commerce commerce discovery source (soft seam)
+     * @param CommerceEndpointsSource $commerceEndpointsSource commerce discovery source (soft seam)
      * @param UrlCollector $collector URL dedup/bound collector
      * @param LlmsTxtFormatter $formatter llms.txt formatter
      * @param LoggerInterface $logger PSR logger
@@ -155,12 +155,12 @@ class LlmsTxtGenerator
             ]);
         }
 
-        // Summary fallback: configured brand_summary, else the effective public
-        // site title. The internal store-view name is never emitted as the
-        // AI-facing summary (SPEC-TASK-0X552E §12.3); when no safe public text
-        // exists the blockquote is omitted entirely.
+        // Store Summary renders only from configured brand summary text (never
+        // generated, never the site title fallback — SPEC-TASK-0X552E §12.3):
+        // exactly once, as the leading prose section; omitted entirely when
+        // brand_summary is empty. The site title fallback applies to the H1
+        // only.
         $brandSummary = $this->config->getBrandSummary($storeId);
-        $summary = $brandSummary !== '' ? $brandSummary : $this->config->getSiteTitle($storeId);
 
         $locale = (string) $this->scopeConfig->getValue(
             'general/locale/code',
@@ -205,6 +205,6 @@ class LlmsTxtGenerator
         }
         $ordered[self::SECTION_SITEMAP] = $bounded[self::SECTION_SITEMAP] ?? [];
 
-        return $this->formatter->format($title, $summary, $locale, $ordered, $currency);
+        return $this->formatter->format($title, $locale, $ordered, $currency);
     }
 }
