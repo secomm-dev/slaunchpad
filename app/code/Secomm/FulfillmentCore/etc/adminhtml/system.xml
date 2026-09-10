@@ -13,17 +13,17 @@
             <resource>Secomm_FulfillmentCore::config</resource>
             <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>General</label>
-                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable outbound order export</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>When disabled, observers and retry cron skip all exporters. Default: Yes.</comment>
+                    <comment>Master switch for every OMS adapter (Pancake POS and later adapters). When No, the place-order observer and the 10-minute retry cron do not push any order. Each adapter still has its own enable flag. Default: Yes. No external data is required.</comment>
                 </field>
             </group>
             <group id="export" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Export retry</label>
-                <field id="max_attempts" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="max_attempts" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Max export attempts</label>
-                    <comment>Pending/failed mapping rows are retried until this count. Default: 5.</comment>
+                    <comment>How many times Magento retries a failed outbound push. Source: local config only (not read from Pancake). Cron secomm_fulfillmentcore_retry_failed_export runs every 10 minutes and retries rows in secomm_fulfillment_export with push_status pending or failed until this count. Default: 5. After the limit, fix the adapter error (for example warehouse_unmapped) then the row is not retried automatically.</comment>
                     <validate>validate-digits validate-greater-than-zero</validate>
                 </field>
             </group>

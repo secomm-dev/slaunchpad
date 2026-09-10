@@ -17,8 +17,9 @@ use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\ResultFactory;
-use Psr\Log\LoggerInterface;
 use Secomm\FulfillmentCore\Model\Inbound\InboundUpdateApplier;
+use Secomm\FulfillmentCore\Model\Log\FulfillmentLogger;
+use Secomm\Pancake\Model\Order\PancakeOrderExporter;
 use Secomm\Pancake\Model\Config\PancakeConfig;
 use Secomm\Pancake\Model\Inbound\OrderPayloadParser;
 
@@ -32,7 +33,7 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
         private readonly PancakeConfig $config,
         private readonly OrderPayloadParser $parser,
         private readonly InboundUpdateApplier $applier,
-        private readonly LoggerInterface $logger
+        private readonly FulfillmentLogger $fulfillmentLogger
     ) {
         parent::__construct($context);
     }
@@ -52,7 +53,11 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
         try {
             return $this->handle();
         } catch (\Throwable $e) {
-            $this->logger->error('Pancake webhook failed.', ['error' => $e->getMessage()]);
+            $this->fulfillmentLogger->error(
+                PancakeOrderExporter::SERVICE_CODE,
+                'Pancake webhook failed.',
+                ['error' => $e->getMessage()]
+            );
             return $this->json(['ok' => false, 'error' => 'internal_error']);
         }
     }
@@ -61,7 +66,10 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
     {
         $secret = $this->config->getWebhookSecret();
         if ($secret !== '' && !hash_equals($secret, (string) $this->getRequest()->getParam('secret', ''))) {
-            $this->logger->warning('Pancake webhook rejected: invalid secret.');
+            $this->fulfillmentLogger->warning(
+                PancakeOrderExporter::SERVICE_CODE,
+                'Pancake webhook rejected: invalid secret.'
+            );
             return $this->json(['ok' => false, 'error' => 'invalid_secret']);
         }
 

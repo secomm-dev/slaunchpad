@@ -8,6 +8,7 @@
             "external_order_id": true,
             "origin": true,
             "push_status": true,
+            "current_status": true,
             "attempt_count": true,
             "last_error": true,
             "last_pushed_at": true,
@@ -63,6 +64,25 @@
             "PRIMARY": true,
             "SECOMM_FF_WH_MAP_SERVICE_SOURCE": true,
             "SECOMM_FF_WH_MAP_SERVICE_WAREHOUSE": true
+        }
+    },
+    "secomm_fulfillment_status_map": {
+        "column": {
+            "entity_id": true,
+            "service_code": true,
+            "magento_order_status": true,
+            "external_status_code": true,
+            "external_status_label": true,
+            "is_active": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "SECOMM_FF_ST_MAP_ACTIVE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_FF_ST_MAP_SERVICE_EXTERNAL": true
         }
     }
 }

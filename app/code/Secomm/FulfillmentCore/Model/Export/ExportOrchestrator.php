@@ -12,7 +12,7 @@ namespace Secomm\FulfillmentCore\Model\Export;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Psr\Log\LoggerInterface;
+use Secomm\FulfillmentCore\Model\Log\FulfillmentLogger;
 use Secomm\FulfillmentCore\Api\ExportPushStatus;
 use Secomm\FulfillmentCore\Api\OrderExporterInterface;
 use Secomm\FulfillmentCore\Model\Config\FulfillmentConfig;
@@ -35,7 +35,7 @@ class ExportOrchestrator
         private readonly ExportCollectionFactory $exportCollectionFactory,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly DateTime $dateTime,
-        private readonly LoggerInterface $logger
+        private readonly FulfillmentLogger $fulfillmentLogger
     ) {
     }
 
@@ -47,22 +47,30 @@ class ExportOrchestrator
     public function exportOrder(OrderInterface $order): void
     {
         try {
-            if (!$this->config->isEnabled((int) $order->getStoreId())) {
+            $orderId = (int) $order->getEntityId();
+            if ($orderId <= 0) {
                 return;
             }
 
             $storeId = (int) $order->getStoreId();
+            if (!$this->config->isEnabled($storeId)) {
+                return;
+            }
+
+            $exported = false;
             foreach ($this->exporterPool->getExporters() as $exporter) {
                 if (!$exporter->isEnabled($storeId)) {
                     continue;
                 }
+                $exported = true;
                 $this->exportForService($order, $exporter);
             }
-        } catch (Throwable $e) {
-            $this->logger->error(
-                'FulfillmentCore exportOrder failed',
-                ['order_id' => (int) $order->getEntityId(), 'exception' => $e->getMessage()]
-            );
+
+            if (!$exported) {
+                return;
+            }
+        } catch (Throwable) {
+            return;
         }
     }
 
@@ -73,6 +81,7 @@ class ExportOrchestrator
      */
     public function retryExport(int $exportEntityId): void
     {
+        $serviceCode = '';
         try {
             /** @var FulfillmentExport $row */
             $row = $this->exportFactory->create();
@@ -80,6 +89,7 @@ class ExportOrchestrator
             if (!$row->getEntityId()) {
                 return;
             }
+            $serviceCode = $row->getServiceCode();
             if ($row->getOrigin() !== ExportPushStatus::ORIGIN_MAGENTO) {
                 return;
             }
@@ -104,9 +114,10 @@ class ExportOrchestrator
 
             $this->runExportAttempt($order, $exporter, $row);
         } catch (Throwable $e) {
-            $this->logger->error(
+            $this->fulfillmentLogger->error(
+                $serviceCode,
                 'FulfillmentCore retryExport failed',
-                ['export_id' => $exportEntityId, 'exception' => $e->getMessage()]
+                ['export_id' => $exportEntityId, 'error' => $e->getMessage()]
             );
         }
     }
@@ -137,12 +148,12 @@ class ExportOrchestrator
         try {
             $result = $exporter->export($order);
         } catch (Throwable $e) {
-            $this->logger->error(
+            $this->fulfillmentLogger->error(
+                $exporter->getServiceCode(),
                 'FulfillmentCore exporter threw',
                 [
-                    'service' => $exporter->getServiceCode(),
                     'order_id' => (int) $order->getEntityId(),
-                    'exception' => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]
             );
             $row->setPushStatus(ExportPushStatus::FAILED);

@@ -6,7 +6,7 @@
   -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
-    <group id="default">
+    <group id="secomm_pos">
         <job name="secomm_fulfillmentcore_retry_failed_export"
              instance="Secomm\FulfillmentCore\Cron\RetryFailedExport"
              method="execute">

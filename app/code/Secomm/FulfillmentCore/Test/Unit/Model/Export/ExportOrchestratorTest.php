@@ -14,7 +14,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
+use Secomm\FulfillmentCore\Model\Log\FulfillmentLogger;
 use Secomm\FulfillmentCore\Api\Data\ExportResult;
 use Secomm\FulfillmentCore\Api\ExportPushStatus;
 use Secomm\FulfillmentCore\Api\OrderExporterInterface;
@@ -77,7 +77,7 @@ class ExportOrchestratorTest extends TestCase
             $collectionFactory,
             $this->createMock(OrderRepositoryInterface::class),
             $this->createDateTimeMock(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(FulfillmentLogger::class)
         );
 
         $orchestrator->exportOrder($order);
@@ -105,7 +105,7 @@ class ExportOrchestratorTest extends TestCase
             $this->createMock(ExportCollectionFactory::class),
             $this->createMock(OrderRepositoryInterface::class),
             $this->createDateTimeMock(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(FulfillmentLogger::class)
         );
 
         $order = $this->createMock(OrderInterface::class);

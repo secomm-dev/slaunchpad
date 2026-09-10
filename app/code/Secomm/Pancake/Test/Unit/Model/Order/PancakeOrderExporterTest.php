@@ -11,7 +11,7 @@ namespace Secomm\Pancake\Test\Unit\Model\Order;
 
 use Magento\Sales\Api\Data\OrderInterface;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
+use Secomm\FulfillmentCore\Model\Log\FulfillmentLogger;
 use Secomm\FulfillmentCore\Api\Data\WarehouseMapDto;
 use Secomm\FulfillmentCore\Api\OrderFulfillmentSourceResolverInterface;
 use Secomm\FulfillmentCore\Api\WarehouseMapResolverInterface;
@@ -42,7 +42,7 @@ class PancakeOrderExporterTest extends TestCase
             $posClient,
             $sourceResolver,
             $mapResolver,
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(FulfillmentLogger::class)
         );
 
         $order = $this->createMock(OrderInterface::class);
@@ -92,7 +92,7 @@ class PancakeOrderExporterTest extends TestCase
             $posClient,
             $sourceResolver,
             $mapResolver,
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(FulfillmentLogger::class)
         );
 
         $result = $exporter->export($order);

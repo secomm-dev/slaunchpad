@@ -21,6 +21,7 @@ class PancakeConfig
     public const XML_PATH_API_KEY = 'pancake/api/api_key';
     public const XML_PATH_WEBHOOK_SECRET = 'pancake/webhook/secret';
     public const XML_PATH_POLL_ENABLED = 'pancake/poll/enabled';
+    public const XML_PATH_ENABLE_LOG = 'pancake/general/enable_log';
 
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
@@ -31,6 +32,16 @@ class PancakeConfig
     public function isEnabled(?int $storeId = null): bool
     {
         return $this->scopeConfig->isSetFlag(self::XML_PATH_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * Whether Pancake file logs may be written under var/log/fulfillment/pancake/.
+     *
+     * @param int|null $storeId Store scope; null uses default config scope
+     */
+    public function isLogEnabled(?int $storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(self::XML_PATH_ENABLE_LOG, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isPollEnabled(?int $storeId = null): bool

@@ -56,6 +56,7 @@
             <settings>
                 <dataType>text</dataType>
                 <label translate="true">Magento MSI Source</label>
+                <notice translate="true">Loaded from Magento Inventory sources (Stores → Inventory → Sources), not from Pancake. This is the source Magento uses when the order is exported. One source can map to only one Pancake warehouse.</notice>
                 <dataScope>magento_source_code</dataScope>
                 <validation>
                     <rule name="required-entry" xsi:type="boolean">true</rule>
@@ -73,6 +74,7 @@
             <settings>
                 <dataType>text</dataType>
                 <label translate="true">Pancake Warehouse</label>
+                <notice translate="true">Loaded live from Pancake POS GET /shops/{Shop ID}/warehouses using the API Key in Stores → Configuration → Secomm Extensions → Pancake POS. If the list is empty, set Shop ID and API Key first and confirm the key is enabled on Pancake. One warehouse can map to only one Magento source. Unmapped sources block the order push (error warehouse_unmapped).</notice>
                 <dataScope>external_warehouse_id</dataScope>
                 <validation>
                     <rule name="required-entry" xsi:type="boolean">true</rule>
@@ -90,6 +92,7 @@
             <settings>
                 <dataType>boolean</dataType>
                 <label translate="true">Active</label>
+                <notice translate="true">Only active rows are used at export. Inactive maps are ignored; the order then fails with warehouse_unmapped until another active map exists for that MSI source.</notice>
                 <dataScope>is_active</dataScope>
             </settings>
             <formElements>

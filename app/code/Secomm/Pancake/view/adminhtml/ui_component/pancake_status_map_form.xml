@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">pancake_status_map_form.pancake_status_map_form_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Status Map</item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="back" class="Secomm\Pancake\Block\Adminhtml\StatusMap\Edit\BackButton"/>
+            <button name="save" class="Secomm\Pancake\Block\Adminhtml\StatusMap\Edit\SaveButton"/>
+        </buttons>
+        <namespace>pancake_status_map_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>pancake_status_map_form.pancake_status_map_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="pancake_status_map_form_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+        <settings>
+            <submitUrl path="pancake/statusmap/save"/>
+        </settings>
+        <dataProvider class="Secomm\Pancake\Model\StatusMap\FormDataProvider"
+                      name="pancake_status_map_form_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <fieldset name="general">
+        <settings>
+            <label translate="true">Mapping</label>
+        </settings>
+        <field name="entity_id" formElement="input">
+            <settings>
+                <dataType>text</dataType>
+                <visible>false</visible>
+                <dataScope>entity_id</dataScope>
+            </settings>
+        </field>
+        <field name="magento_order_status" formElement="select">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Magento Order Status</label>
+                <notice translate="true">Loaded from Magento order statuses (same pattern as MSI Source on Warehouse Mapping). When an inbound Pancake status matches this map, Magento sales_order is updated to this status.</notice>
+                <dataScope>magento_order_status</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Sales\Model\Config\Source\Order\Status"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="external_status_code" formElement="select">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Pancake Status</label>
+                <notice translate="true">Pancake POS order status code (e.g. 2 = shipped). One Pancake code maps to one Magento status per service. Rows are hard-scoped to service_code=pancake. Unmapped codes only add order comments.</notice>
+                <dataScope>external_status_code</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\Pancake\Model\Config\Source\PancakeStatuses"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="is_active" formElement="checkbox">
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Active</label>
+                <notice translate="true">Only active rows change Magento order status. Inactive maps are ignored (comment-only), same as inactive warehouse maps.</notice>
+                <dataScope>is_active</dataScope>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <valueMap>
+                            <map name="false" xsi:type="number">0</map>
+                            <map name="true" xsi:type="number">1</map>
+                        </valueMap>
+                        <prefer>toggle</prefer>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+    </fieldset>
+</form>

@@ -15,7 +15,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Secomm\FulfillmentCore\Model\Export\ExportOrchestrator;
 
 /**
- * Triggers outbound OMS export after Magento order place.
+ * Triggers outbound OMS export after quote submit success (order already saved).
  */
 class ExportOrderAfterPlaceObserver implements ObserverInterface
 {

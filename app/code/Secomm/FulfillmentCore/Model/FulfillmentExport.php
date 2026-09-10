@@ -83,6 +83,23 @@ class FulfillmentExport extends AbstractModel
         return $this->setData('push_status', $status);
     }
 
+    /**
+     * Latest raw status reported by the POS for this service_code.
+     */
+    public function getCurrentStatus(): ?string
+    {
+        $value = $this->getData('current_status');
+        return $value !== null && $value !== '' ? (string) $value : null;
+    }
+
+    /**
+     * @param string|null $status POS raw status code; null clears the column
+     */
+    public function setCurrentStatus(?string $status): self
+    {
+        return $this->setData('current_status', $status);
+    }
+
     public function getAttemptCount(): int
     {
         return (int) $this->getData('attempt_count');

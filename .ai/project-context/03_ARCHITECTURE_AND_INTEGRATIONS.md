@@ -58,6 +58,7 @@ Monolithic Magento 2.4.8-p5 storefront with a Hyvä 3.x frontend (Tailwind CSS v
 | Mageplaza SMTP | email | outbound | SMTP | medium | n/a | Transactional email relay. Daily log-clear cron. |
 | Mageplaza SocialLogin | auth | bidirectional | OAuth (provider-dependent) | low | provider-dependent | Social sign-in (SocialLogin + SocialLoginPro). Provider config [TBD]. |
 | Mageplaza AbandonedCart | marketing | outbound | internal + email | low | n/a | Abandoned-cart recovery. 2 email schedules (1h + 24h). Cron every minute. vi_VN translations via `i18n/vi_VN.csv`. DB: 4 tables (`mageplaza_abandonedcart_logs`, `_logs_token`, `_reports_index`, `_product_reports_index`) + 5 core columns. Hyvä compat builtin (templates + layout handles). **Configured and E2E verified (TASK-WN0PBT).** |
+| Pancake POS | fulfillment (offline OMS) | bidirectional | REST/HTTP (HTTPS) | high | query-param `api_key` (ApiKeyAuth) | **Planned — not yet implemented** (epic SLP-30: `Secomm_Pancake` adapter on offline fulfillment core). Contract canonical: [05 §Pancake POS](05_API_CONTRACTS.md) — base URL, auth, endpoints, tracking fields, status enum. |
 
 > **NOT present (confirmed by audit — do not assume):** No ERP/SAP/Odoo; No Klaviyo/Mailchimp/Dotdigital; No ElasticSuite/Smile (core Magento search only); No Amasty/Mirasvit/Wyomind.
 
@@ -69,3 +70,4 @@ Monolithic Magento 2.4.8-p5 storefront with a Hyvä 3.x frontend (Tailwind CSS v
 - **Order/Event → SMTP**: outbound transactional email relay for order/customer notifications.
 - **Checkout → AddressDropdown**: AJAX hierarchical dropdown fetches VN address data (Secomm_VietNamAddress CSV) country→state→city→sub-city.
 - **Abandoned Cart → Email**: Mageplaza cron (every minute) detects idle quotes → sends scheduled recovery emails via Mageplaza SMTP → customer clicks restore token → quote reactivated → redirect to checkout. (TASK-WN0PBT)
+- **Order → Fulfillment (Pancake POS)** *(planned — SLP-30)*: outbound POS order create from Magento sales order (`custom_id` = `increment_id`); inbound status/tracking via poll cron + optional webhook endpoint. Contract: [05 §Pancake POS](05_API_CONTRACTS.md).

@@ -54,5 +54,8 @@ class PayloadBuilderTest extends TestCase
         $this->assertSame('b4cb5897-warehouse', $payload['warehouse_id']);
         $this->assertTrue($payload['items'][0]['one_time_product']);
         $this->assertSame('Tee', $payload['items'][0]['variation_info']['name']);
+        $this->assertArrayNotHasKey('country_code', $payload['shipping_address']);
+        $this->assertArrayNotHasKey('post_code', $payload['shipping_address']);
+        $this->assertStringContainsString('VN', $payload['shipping_address']['full_address']);
     }
 }

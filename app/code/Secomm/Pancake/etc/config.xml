@@ -10,6 +10,7 @@
         <pancake>
             <general>
                 <enabled>0</enabled>
+                <enable_log>0</enable_log>
             </general>
             <api>
                 <base_url>https://pos.pages.fm/api/v1</base_url>

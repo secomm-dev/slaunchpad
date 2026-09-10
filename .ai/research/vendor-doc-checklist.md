@@ -19,6 +19,7 @@
 | Mollie | mollie/magento2 + Hyvä compat bundle docs | 3.1.1 (+ hyva-compat 3.1.0) | `[TBD]` | `[TBD]` | `[EXTERNAL: verify]` |
 | Mageplaza | OSC / TableRate / ExtraFee / DeliveryTime docs | (source-committed, version `[TBD]`) | `[TBD]` | `[TBD]` | `[EXTERNAL: verify]` |
 | VNPAY | VNPAY payment gateway integration doc (merchant) | n/a (custom module) | `[TBD]` | `[TBD]` | `[EXTERNAL: verify]` |
+| Pancake POS | `.ai/research/api-1.json` (Pancake POS Open API) — **not** Chat `openapi.yaml` | n/a (adapter `Secomm_Pancake`) | 2026-08-19 | Base `https://pos.pages.fm/api/v1`; auth `api_key` query; orders create/get/list/put + arrange_shipment. Tracking on order `partner.extend_update[].tracking_id`, `tracking_link`, `delivery_name`, `status` enum. **Gaps (SA):** webhook vs poll; increment_id field (`custom_id` default); `province_id/district_id/commune_id` vs AddressDropdown; cancel codes 6/7 vs OpenAPI list-filter enum. | `[EXTERNAL: verify]` |
 | MySQL | MySQL 8.0 reference — when query/index tuning needed | 8.0 | `[TBD]` | `[TBD]` | `[EXTERNAL: verify]` |
 
 ## Version-specific notes

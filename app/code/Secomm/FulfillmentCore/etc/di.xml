@@ -23,4 +23,8 @@
                 type="Secomm\FulfillmentCore\Model\Warehouse\OrderFulfillmentSourceResolver"/>
     <preference for="Secomm\FulfillmentCore\Api\WarehouseMapRepositoryInterface"
                 type="Secomm\FulfillmentCore\Model\Warehouse\WarehouseMapRepository"/>
+    <preference for="Secomm\FulfillmentCore\Api\StatusMapResolverInterface"
+                type="Secomm\FulfillmentCore\Model\Status\StatusMapResolver"/>
+    <preference for="Secomm\FulfillmentCore\Api\StatusMapRepositoryInterface"
+                type="Secomm\FulfillmentCore\Model\Status\StatusMapRepository"/>
 </config>

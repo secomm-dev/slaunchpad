@@ -17,6 +17,8 @@ use Secomm\Pancake\Model\Config\PancakeConfig;
 /**
  * Map Magento order to POS create-order JSON.
  * Q4: custom_id = increment_id. PNC-004: warehouse_id required from core map.
+ * Address is full_address text. Do not send Magento ISO country_id as country_code
+ * (Pancake country_code is a POS geo id; "VN" returns 422).
  *
  * @param OrderInterface $order Magento sales order
  * @param string $warehouseId Pancake warehouse UUID from core WarehouseMapResolver
@@ -94,8 +96,6 @@ class PayloadBuilder
                 'full_address' => $fullAddress,
                 'full_name' => $fullName !== '' ? $fullName : 'Customer',
                 'phone_number' => $phone !== '' ? $phone : '0000000000',
-                'country_code' => $country !== '' ? $country : null,
-                'post_code' => $postcode !== '' ? $postcode : null,
             ],
             'items' => $items,
         ];

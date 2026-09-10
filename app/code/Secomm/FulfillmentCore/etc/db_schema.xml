@@ -22,6 +22,8 @@
                 comment="Always magento for outbound-created rows"/>
         <column xsi:type="varchar" name="push_status" nullable="false" length="16" default="pending"
                 comment="pending|success|failed"/>
+        <column xsi:type="varchar" name="current_status" nullable="true" length="64"
+                comment="Current raw status from the POS/OMS (adapter-defined, e.g. Pancake status code)"/>
         <column xsi:type="smallint" name="attempt_count" unsigned="true" nullable="false" default="0"
                 comment="Export attempts"/>
         <column xsi:type="varchar" name="last_error" nullable="true" length="255"
@@ -119,6 +121,36 @@
             <column name="external_warehouse_id"/>
         </constraint>
         <index referenceId="SECOMM_FF_WH_MAP_ACTIVE" indexType="btree">
+            <column name="service_code"/>
+            <column name="is_active"/>
+        </index>
+    </table>
+    <table name="secomm_fulfillment_status_map" resource="default" engine="innodb"
+           comment="POS raw status to Magento sales_order.status map per service (like warehouse map)">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true"
+                comment="Entity ID"/>
+        <column xsi:type="varchar" name="service_code" nullable="false" length="32"
+                comment="Adapter service_code (scopes uniqueness)"/>
+        <column xsi:type="varchar" name="magento_order_status" nullable="false" length="32"
+                comment="Magento sales_order.status"/>
+        <column xsi:type="varchar" name="external_status_code" nullable="false" length="64"
+                comment="Remote POS/OMS status code"/>
+        <column xsi:type="varchar" name="external_status_label" nullable="true" length="255"
+                comment="Cached remote status label for admin"/>
+        <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" default="1"
+                comment="1=active"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true"
+                default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true"
+                default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_FF_ST_MAP_SERVICE_EXTERNAL">
+            <column name="service_code"/>
+            <column name="external_status_code"/>
+        </constraint>
+        <index referenceId="SECOMM_FF_ST_MAP_ACTIVE" indexType="btree">
             <column name="service_code"/>
             <column name="is_active"/>
         </index>

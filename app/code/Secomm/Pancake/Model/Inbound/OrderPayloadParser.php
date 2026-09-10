@@ -24,12 +24,21 @@ class OrderPayloadParser
      */
     public function parse(array $order): ?InboundUpdate
     {
-        $id = $order['id'] ?? $order['order_id'] ?? null;
+        $id = $order['id'] ?? $order['order_id'] ?? $order['custom_id'] ?? null;
         if ($id === null || $id === '') {
+            if (isset($order['order']) && is_array($order['order'])) {
+                return $this->parse($order['order']);
+            }
             return null;
         }
 
-        $rawStatus = (string) ($order['status'] ?? '');
+        $rawStatus = '';
+        foreach (['status', 'order_status'] as $key) {
+            if (isset($order[$key]) && $order[$key] !== '' && !is_array($order[$key])) {
+                $rawStatus = (string) $order[$key];
+                break;
+            }
+        }
         $tracking = $this->extractTracking($order);
         $eventId = sha1(
             PancakeOrderExporter::SERVICE_CODE . '|' . $id . '|' . $rawStatus . '|'

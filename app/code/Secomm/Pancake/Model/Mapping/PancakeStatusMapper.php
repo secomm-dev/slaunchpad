@@ -14,7 +14,8 @@ use Secomm\FulfillmentCore\Api\NormalizedFulfillmentStatus;
 use Secomm\Pancake\Model\Order\PancakeOrderExporter;
 
 /**
- * Only class in Secomm_Pancake that may contain Pancake integer status codes.
+ * Maps Pancake integer status → NormalizedFulfillmentStatus for timeline/comments.
+ * Magento sales_order.status changes come only from admin Status Mapping table.
  */
 class PancakeStatusMapper implements FulfillmentStatusMapperInterface
 {

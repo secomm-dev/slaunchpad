@@ -10,7 +10,8 @@ declare(strict_types=1);
 namespace Secomm\FulfillmentCore\Api;
 
 /**
- * Many-to-one vendor raw status → NormalizedFulfillmentStatus. Adapters implement.
+ * Many-to-one vendor raw status → NormalizedFulfillmentStatus (timeline/comments).
+ * Magento sales_order.status changes use admin Status Mapping table, not this mapper.
  */
 interface FulfillmentStatusMapperInterface
 {

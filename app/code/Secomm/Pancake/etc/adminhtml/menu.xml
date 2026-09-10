@@ -22,5 +22,13 @@
              resource="Secomm_Pancake::warehouse_map"
              parent="Secomm_Pancake::pancake"
              action="pancake/warehousemap/index"/>
+        <add id="Secomm_Pancake::status_map"
+             title="Status Mapping"
+             module="Secomm_Pancake"
+             translate="title"
+             sortOrder="20"
+             resource="Secomm_Pancake::status_map"
+             parent="Secomm_Pancake::pancake"
+             action="pancake/statusmap/index"/>
     </menu>
 </config>

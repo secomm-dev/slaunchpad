@@ -2,7 +2,7 @@
   "name": "secomm/module-pancake",
   "description": "Pancake POS adapter for Secomm_FulfillmentCore (create order + inbound). No ShippingCore.",
   "type": "magento2-module",
-  "version": "0.2.0",
+  "version": "0.3.1",
   "license": [
     "proprietary"
   ],

@@ -10,8 +10,9 @@ declare(strict_types=1);
 namespace Secomm\Pancake\Model\Client;
 
 use Magento\Framework\HTTP\Client\CurlFactory;
-use Psr\Log\LoggerInterface;
+use Secomm\FulfillmentCore\Model\Log\FulfillmentLogger;
 use Secomm\Pancake\Model\Config\PancakeConfig;
+use Secomm\Pancake\Model\Order\PancakeOrderExporter;
 
 /**
  * Pancake POS HTTP client. api_key is query-only and never logged.
@@ -21,7 +22,7 @@ class PosClient
     public function __construct(
         private readonly CurlFactory $curlFactory,
         private readonly PancakeConfig $config,
-        private readonly LoggerInterface $logger
+        private readonly FulfillmentLogger $fulfillmentLogger
     ) {
     }
 
@@ -110,16 +111,22 @@ class PosClient
         }
 
         $status = (int) $curl->getStatus();
-        $this->logger->info('Pancake POS HTTP call.', ['method' => $method, 'path' => $path, 'http_status' => $status]);
+        $rawBody = (string) $curl->getBody();
+        $hint = $status >= 400 ? $this->errorHint($rawBody) : '';
+        $this->fulfillmentLogger->info(
+            PancakeOrderExporter::SERVICE_CODE,
+            'Pancake POS HTTP call.',
+            ['method' => $method, 'path' => $path, 'http_status' => $status, 'error_hint' => $hint]
+        );
 
         if ($status === 401 || $status === 403) {
             throw new PosClientException('pancake_auth_failed');
         }
         if ($status === 0 || $status >= 500) {
-            throw new PosClientException('pancake_http_' . $status);
+            throw new PosClientException('pancake_http_' . $status . ($hint !== '' ? ':' . $hint : ''));
         }
         if ($status >= 400) {
-            throw new PosClientException('pancake_http_' . $status);
+            throw new PosClientException('pancake_http_' . $status . ($hint !== '' ? ':' . $hint : ''));
         }
 
         $decoded = json_decode((string) $curl->getBody(), true);
@@ -128,5 +135,48 @@ class PosClient
         }
 
         return $decoded;
+    }
+
+    /**
+     * Short vendor message for logs and last_error. Never includes api_key or raw phone.
+     *
+     * @param string $body Raw HTTP body
+     */
+    private function errorHint(string $body): string
+    {
+        $body = str_replace(["\r", "\n"], ' ', $body);
+        $body = (string) preg_replace('/api_key=[^&\s"]+/i', 'api_key=<redacted>', $body);
+        $decoded = json_decode($body, true);
+        if (!is_array($decoded)) {
+            return $this->clip($body);
+        }
+
+        $parts = [];
+        foreach (['message', 'error', 'msg'] as $key) {
+            if (isset($decoded[$key]) && is_scalar($decoded[$key]) && (string) $decoded[$key] !== '') {
+                $parts[] = (string) $decoded[$key];
+            }
+        }
+        if (isset($decoded['errors'])) {
+            $encoded = json_encode($decoded['errors'], JSON_UNESCAPED_UNICODE);
+            if (is_string($encoded) && $encoded !== '' && $encoded !== 'null') {
+                $parts[] = $encoded;
+            }
+        }
+
+        return $this->clip($parts === [] ? $body : implode(' | ', $parts));
+    }
+
+    /**
+     * Clip and mask digit runs that may be phone numbers.
+     */
+    private function clip(string $text): string
+    {
+        $text = (string) preg_replace('/\+?\d[\d\s\-().]{7,}\d/', '<phone>', $text);
+        if (strlen($text) > 160) {
+            return substr($text, 0, 160);
+        }
+
+        return $text;
     }
 }
