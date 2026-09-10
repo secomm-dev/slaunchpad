@@ -1,18 +1,14 @@
 {
   "name": "secomm/module-pancake",
-  "description": "Pancake POS adapter for Secomm_FulfillmentCore (create order + inbound). No ShippingCore.",
+  "description": "DEPRECATED — replaced by secomm/module-pancake-bridge + secomm/module-pancake-function. Disable Secomm_Pancake and enable those modules instead.",
   "type": "magento2-module",
-  "version": "0.3.1",
+  "version": "0.9.0-deprecated",
   "license": [
     "proprietary"
   ],
   "require": {
     "php": "~8.2.0||~8.3.0||~8.4.0",
-    "magento/framework": "*",
-    "magento/module-sales": "*",
-    "magento/module-config": "*",
-    "magento/module-cron": "*",
-    "magento/module-store": "*"
+    "magento/framework": "*"
   },
   "autoload": {
     "files": [

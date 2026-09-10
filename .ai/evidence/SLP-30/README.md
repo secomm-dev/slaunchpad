@@ -75,3 +75,20 @@ Environment: WSL2 local, Magento 2.4.8-p5 developer mode, DB local `slp`; POS sa
 - TL review working tree (Tier 2: order state transitions qua status map TASK-BS91A3, DB schema, external API) — record `.ai/records/tasks/TASK-BS91A3.md`.
 - Admin UI Status Mapping + Warehouse Mapping: QC flow trên backend (Save/Delete/duplicate reject).
 - Thêm OS crontab `--group=secomm_pos` rồi verify poll tự chạy 2 chu kỳ liên tiếp.
+
+## Bridge / Function migration (2026-09-10)
+
+Convention SLP-30 cập nhật: **Core + `Secomm_PancakeBridge` + `Secomm_PancakeFunction`** (legacy `Secomm_Pancake` stub, disabled).
+
+| Check | Result |
+|-------|--------|
+| `module:status` Function/Bridge enabled, Pancake disabled | **Pass** |
+| `setup:upgrade` after split | **Pass** |
+| CLI `secomm:pancake:poll --help` (class trên Bridge) | **Pass** |
+| Poll smoke `--force --limit=2` (orders `000000046-6/7`) | **Pass 2026-09-10** — GET ok, status map FOUND, `ok=2 fail=0` (skipped_same_event idempotent) |
+| Unit `PancakeFunction` StatusMapperTest | **Pass** — 2 tests |
+| Function không reference `Secomm\PancakeBridge` | **Pass** (code review / grep) |
+| `module.xml` Bridge/Function không sequence ShippingCore/Ghtk/Ahamove | **Pass** |
+| Behavior relocate only (export/poll/webhook/admin maps) | Parity expected; re-run full e2e DoD-01/02 after TL review if needed |
+
+Plan: `.cursor/tasks/SLP-30/plans/2026-09-10-bridge-function-convention.md`

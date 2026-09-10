@@ -20,7 +20,8 @@ decisions: [DEC-TASKBS91A3-001]  # inbound đổi Magento order status khi có a
 decision_assessment: material
 components:
   - Secomm_FulfillmentCore
-  - Secomm_Pancake
+  - Secomm_PancakeBridge    # update 2026-09-10 sau split TASK-ZR2ZNS (trước đây Secomm_Pancake)
+  - Secomm_PancakeFunction
 source_areas:
   - app/code/Secomm/FulfillmentCore/etc/db_schema.xml                                     # bảng secomm_fulfillment_status_map
   - app/code/Secomm/FulfillmentCore/Model/Status/                                        # StatusMapResolver / StatusMapRepository / StatusMapConflictException
@@ -92,6 +93,7 @@ Mirror pattern warehouse map (FFC-004 core + PNC-004 UI): core owns table + reso
 - Applier: `applyToExport()` public (dùng bởi poll), comment storefront locale vi/en, guard terminal downgrade, hook `resolveStatusMap` → đổi order status khi có map.
 - Pancake UI: `Controller/Adminhtml/StatusMap/*`, `Block/Adminhtml/StatusMap/Edit`, `Model/StatusMap/{FormDataProvider,ListingDataProvider}`, `Ui/.../StatusMapActions`, `view/adminhtml/layout+ui_component pancake_status_map_*`, `Model/Mapping/PancakeStatusCatalog`, `Model/Config/Source/PancakeStatuses`, menu/acl/system comment, i18n vi_VN/en_US.
 - Data patches Pancake: `SeedPancakeStatusMaps` + `BackfillPancakeStatusMapMagentoStatus` (idempotent) seed map mặc định từ `PancakeStatusCatalog` — **sau `setup:upgrade`, inbound mặc định ĐỔI Magento order status** (Delivered→Complete, Returned→Closed, Cancelled→Canceled…); xóa/deactivate row để về lại comment-only. TL cần xác nhận mặc định này là chủ đích.
+- **Cập nhật 2026-09-10 (split TASK-ZR2ZNS)**: code Pancake của feature này relocate — admin UI Status Mapping + data patches + `PancakeStatusCatalog`/`PancakeStatuses` sang `Secomm_PancakeBridge`; resolver/repository/table/interface ở Core giữ nguyên. Smoke sau split: poll tìm thấy status map (`status map FOUND`, `ok=2`). Core của feature đã commit trong `313e952a`.
 - CHANGELOG entries đã bổ sung 2026-09-10: FulfillmentCore **0.4.0** + Pancake **0.3.0** (feature này), 0.4.1/0.4.2 + 0.3.1 cho cron group + inbound hardening — khớp `composer.json` 0.4.2/0.3.1.
 
 ## Verification
