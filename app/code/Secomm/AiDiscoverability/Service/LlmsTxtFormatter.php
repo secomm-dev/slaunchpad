@@ -9,17 +9,20 @@ namespace Secomm\AiDiscoverability\Service;
  *
  * Link entries use the llms.txt v2 Markdown hyperlink form
  * `- [Label](url)` with an optional `: Description` suffix.
+ *
+ * The configured Brand / Site Summary is NOT a formatter concern: it renders
+ * exactly once, under the configured Store Summary section, as a prose section
+ * owned by LlmsTxtGenerator. No top-level blockquote is ever emitted.
  */
 class LlmsTxtFormatter
 {
-    private const SUMMARY_MAX_LENGTH = 500;
+    private const TEXT_MAX_LENGTH = 500;
     private const DESCRIPTION_MAX_LENGTH = 240;
 
     /**
      * Format the llms.txt document body.
      *
      * @param string $siteName site display name
-     * @param string $summary brand summary block
      * @param string $locale locale code
      * @param array $sections ordered section-key => entries
      * @param string $currency ISO currency code ('' to omit the line)
@@ -27,18 +30,12 @@ class LlmsTxtFormatter
      */
     public function format(
         string $siteName,
-        string $summary,
         string $locale,
         array $sections,
         string $currency = ''
     ): string {
         $lines = [];
         $lines[] = '# ' . $this->sanitizeText($siteName);
-
-        $summary = $this->sanitizeText($summary);
-        if ($summary !== '') {
-            $lines[] = '> ' . $summary;
-        }
 
         $locale = trim($locale);
         if ($locale !== '' || $currency !== '') {
@@ -147,7 +144,7 @@ class LlmsTxtFormatter
      * Strips HTML, control characters and square-bracket Markdown breaks.
      *
      * @param string $text raw input text
-     * @param int|null $maxLength character bound (null = summary default)
+     * @param int|null $maxLength character bound (null = default text bound)
      * @return string sanitized single-line text
      */
     private function sanitizeText(string $text, ?int $maxLength = null): string
@@ -155,7 +152,7 @@ class LlmsTxtFormatter
         $text = strip_tags($text);
         $text = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $text) ?? '';
         $text = trim(preg_replace('/\s+/u', ' ', $text) ?? '');
-        $text = mb_substr($text, 0, $maxLength ?? self::SUMMARY_MAX_LENGTH);
+        $text = mb_substr($text, 0, $maxLength ?? self::TEXT_MAX_LENGTH);
         $text = str_replace(['[', ']'], ['\\[', '\\]'], $text);
 
         return $text;

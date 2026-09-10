@@ -68,7 +68,7 @@ class CommerceEndpointsSourceTest extends TestCase
                 [
                     'label' => 'Store Information',
                     'url' => 'https://example.com/ai/store?store=vietnam',
-                    'purpose' => 'Store metadata, locale, currency and supported public catalog context.',
+                    'purpose' => 'Store metadata: store code, locale, currency and base URL.',
                 ],
                 [
                     'label' => 'Product Search',

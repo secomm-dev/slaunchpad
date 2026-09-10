@@ -76,7 +76,7 @@ class CommerceEndpointsSource
             [
                 'label' => $this->config->getSectionTitle('store_information', $storeId),
                 'url' => $base . '/' . $basePath . '/store' . $suffix,
-                'purpose' => 'Store metadata, locale, currency and supported public catalog context.',
+                'purpose' => 'Store metadata: store code, locale, currency and base URL.',
             ],
             [
                 'label' => $this->config->getSectionTitle('product_search', $storeId),

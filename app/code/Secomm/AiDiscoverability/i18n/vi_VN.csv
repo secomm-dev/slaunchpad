@@ -5,7 +5,7 @@
 "Site / Brand Title","Tiêu đề trang / thương hiệu"
 "Public title used as the llms.txt H1. Falls back to the store information name, then to the internal store view name.","Tiêu đề công khai dùng làm H1 của llms.txt. Nếu bỏ trống sẽ dùng tên thông tin cửa hàng, sau đó là tên store view nội bộ."
 "Brand / Site Summary","Mô tả thương hiệu / trang"
-"One concise line describing the brand and site for AI agents. Falls back to the Site / Brand Title; the internal store view name is never used. Avoid entities whose canonical URL is managed by conditional Mirasvit canonical rewrite rules.","Một dòng ngắn gọn mô tả thương hiệu và trang web dành cho các AI agent. Nếu bỏ trống sẽ dùng Tiêu đề trang / thương hiệu; tên store view nội bộ không bao giờ được dùng. Tránh các thực thể có URL canonical được quản lý bởi quy tắc canonical rewrite có điều kiện của Mirasvit."
+"One concise line describing the brand and site for AI agents. Rendered exactly once under the Store Summary section of llms.txt. When empty, the Store Summary section is omitted (no fallback). The internal store view name is never used.","Một dòng ngắn gọn mô tả thương hiệu và trang web dành cho các AI agent. Được render đúng một lần trong section Store Summary của llms.txt. Nếu bỏ trống, section Store Summary bị lược bỏ (không có fallback). Tên store view nội bộ không bao giờ được dùng."
 "Priority Paths","Đường dẫn ưu tiên"
 "Internal paths only, one per line (e.g. ""about-us""). External URLs, query strings and private routes (cart/checkout/account/...) are rejected.","Chỉ nhận đường dẫn nội bộ, mỗi dòng một đường dẫn (vd. ""about-us""). URL ngoài, chuỗi truy vấn và các trang riêng tư (giỏ hàng/thanh toán/tài khoản/...) sẽ bị từ chối."
 "Curated URLs","Danh sách URL tuyển chọn"

@@ -8,6 +8,10 @@ use Secomm\AiDiscoverability\Service\LlmsTxtFormatter;
 
 /**
  * Covers the llms.txt v2 conformance output (SPEC-TASK-0X552E §12.1).
+ *
+ * The formatter has NO summary parameter: the configured Brand / Site Summary
+ * renders exactly once, under the Store Summary section, and no top-level
+ * blockquote is ever emitted (llms.txt metadata contract alignment, 1.6.1).
  */
 class LlmsTxtFormatterTest extends TestCase
 {
@@ -29,14 +33,13 @@ class LlmsTxtFormatterTest extends TestCase
         ];
 
         $expected = "# Fashion Shop\n"
-            . "> Nice clothes\n"
             . "\nLocale: vi_VN\nCurrency: VND\n"
             . "\n## Priority Pages\n- [Home](https://shop.test)\n"
             . "\n## Collections\n- [Dresses](https://shop.test/dresses)\n";
 
         $this->assertSame(
             $expected,
-            $this->formatter->format('Fashion Shop', 'Nice clothes', 'vi_VN', $sections, 'VND')
+            $this->formatter->format('Fashion Shop', 'vi_VN', $sections, 'VND')
         );
     }
 
@@ -50,7 +53,7 @@ class LlmsTxtFormatterTest extends TestCase
 
         $this->assertSame(
             "# S\n\nLocale: vi_VN\n\n## Pages\n- [About](https://shop.test/about): Our story\n",
-            $this->formatter->format('S', '', 'vi_VN', $sections)
+            $this->formatter->format('S', 'vi_VN', $sections)
         );
     }
 
@@ -64,7 +67,7 @@ class LlmsTxtFormatterTest extends TestCase
 
         $this->assertSame(
             "# S\n\nLocale: vi_VN\n\n## Pages\n- [About](https://shop.test/about)\n",
-            $this->formatter->format('S', '', 'vi_VN', $sections)
+            $this->formatter->format('S', 'vi_VN', $sections)
         );
     }
 
@@ -85,7 +88,7 @@ class LlmsTxtFormatterTest extends TestCase
 
         $this->assertStringContainsString(
             $line,
-            $this->formatter->format('S', '', 'vi_VN', $sections)
+            $this->formatter->format('S', 'vi_VN', $sections)
         );
     }
 
@@ -93,8 +96,8 @@ class LlmsTxtFormatterTest extends TestCase
     {
         $sections = ['Pages' => [['label' => 'About', 'url' => 'https://shop.test/about', 'description' => 'd']]];
 
-        $a = $this->formatter->format('S', 'sum', 'vi_VN', $sections, 'VND');
-        $b = $this->formatter->format('S', 'sum', 'vi_VN', $sections, 'VND');
+        $a = $this->formatter->format('S', 'vi_VN', $sections, 'VND');
+        $b = $this->formatter->format('S', 'vi_VN', $sections, 'VND');
 
         $this->assertSame($a, $b);
     }
@@ -103,35 +106,67 @@ class LlmsTxtFormatterTest extends TestCase
     {
         $sections = ['Pages' => [['label' => "Evil [x]\nlabel", 'url' => 'https://shop.test/x']]];
 
-        $body = $this->formatter->format('S', "line1\nline2\x00", 'vi_VN', $sections);
+        $body = $this->formatter->format("line1\nline2\x00", 'vi_VN', $sections);
 
         $this->assertStringNotContainsString('[x]', $body);
         $this->assertStringContainsString('\[x\]', $body);
         $this->assertStringNotContainsString("\nlabel", $body);
         $this->assertStringNotContainsString("\x00", $body);
-        $this->assertStringContainsString('> line1 line2', $body);
+        // Top-level text is still sanitized (H1 only — no blockquote line follows it).
+        $this->assertStringContainsString("# line1 line2\n", $body);
     }
 
     public function testSkipsEmptySectionsAndEmptyMetadata(): void
     {
-        $body = $this->formatter->format('S', '', '', ['Pages' => []]);
+        $body = $this->formatter->format('S', '', ['Pages' => []]);
 
         $this->assertSame("# S\n", $body);
     }
 
     public function testCurrencyLineOmittedWhenEmpty(): void
     {
-        $body = $this->formatter->format('S', 'sum', 'vi_VN', [], '');
+        $body = $this->formatter->format('S', 'vi_VN', [], '');
 
-        $this->assertSame("# S\n> sum\n\nLocale: vi_VN\n", $body);
+        $this->assertSame("# S\n\nLocale: vi_VN\n", $body);
         $this->assertStringNotContainsString('Currency:', $body);
     }
 
     public function testUtf8Output(): void
     {
-        $body = $this->formatter->format('Thời trang', 'Thời trang Việt Nam', 'vi_VN', [], 'VND');
+        $body = $this->formatter->format('Thời trang', 'vi_VN', [], 'VND');
 
-        $this->assertSame("# Thời trang\n> Thời trang Việt Nam\n\nLocale: vi_VN\nCurrency: VND\n", $body);
+        $this->assertSame("# Thời trang\n\nLocale: vi_VN\nCurrency: VND\n", $body);
+    }
+
+    /**
+     * The configured Brand / Site Summary (passed as the Store Summary prose
+     * section) renders EXACTLY ONCE — never as a duplicated top-level
+     * `> summary` blockquote.
+     */
+    public function testStoreSummaryProseRendersOnceAndNeverAsBlockquote(): void
+    {
+        $sections = ['Store Summary' => [['prose' => ['Hyva theme1']]]];
+
+        $body = $this->formatter->format('Demo store1', 'vi_VN', $sections, 'VND');
+
+        $this->assertSame(
+            "# Demo store1\n\nLocale: vi_VN\nCurrency: VND\n\n## Store Summary\nHyva theme1\n",
+            $body
+        );
+        $this->assertSame(1, substr_count($body, 'Hyva theme1'));
+        $this->assertStringNotContainsString("\n> Hyva theme1", $body);
+    }
+
+    /**
+     * The formatter never emits a summary blockquote itself — no `>` line
+     * exists anywhere in a document without prose sections.
+     */
+    public function testNoBlockquoteIsEverEmitted(): void
+    {
+        $body = $this->formatter->format('S', 'vi_VN', [], 'VND');
+
+        $this->assertSame("# S\n\nLocale: vi_VN\nCurrency: VND\n", $body);
+        $this->assertStringNotContainsString('> ', $body);
     }
 
     /**
@@ -143,7 +178,7 @@ class LlmsTxtFormatterTest extends TestCase
 
         $this->assertSame(
             "# S\n\nLocale: vi_VN\n\n## Agent Guidance\nLine one\nline two\n",
-            $this->formatter->format('S', '', 'vi_VN', $sections)
+            $this->formatter->format('S', 'vi_VN', $sections)
         );
     }
 
@@ -158,7 +193,7 @@ class LlmsTxtFormatterTest extends TestCase
                 ['detail' => [
                     'label' => 'Store Information',
                     'url' => 'https://example.com/ai/store?store=default',
-                    'purpose' => 'Store metadata, locale, currency and supported public catalog context.',
+                    'purpose' => 'Store metadata: store code, locale, currency and base URL.',
                 ]],
                 ['detail' => [
                     'label' => 'Product Detail',
@@ -169,14 +204,14 @@ class LlmsTxtFormatterTest extends TestCase
             ],
         ];
 
-        $body = $this->formatter->format('S', '', 'vi_VN', $sections);
+        $body = $this->formatter->format('S', 'vi_VN', $sections);
 
         $this->assertSame(
             "# S\n\nLocale: vi_VN\n"
             . "\n## Machine-readable Commerce\n"
             . "\n### Store Information\n"
             . "GET https://example.com/ai/store?store=default\n"
-            . "Purpose: Store metadata, locale, currency and supported public catalog context.\n"
+            . "Purpose: Store metadata: store code, locale, currency and base URL.\n"
             . "\n### Product Detail\n"
             . "GET https://example.com/ai/products/{sku}?store=default\n"
             . "Purpose: Retrieve public product information for a known SKU.\n",
@@ -207,7 +242,7 @@ class LlmsTxtFormatterTest extends TestCase
             ],
         ];
 
-        $body = $this->formatter->format('S', '', 'vi_VN', $sections);
+        $body = $this->formatter->format('S', 'vi_VN', $sections);
 
         $this->assertStringContainsString(
             "GET https://example.com/ai/catalog/search?store=default\n"
