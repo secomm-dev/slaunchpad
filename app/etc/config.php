@@ -456,7 +456,6 @@ return [
         'Secomm_MoMo' => 1,
         'Secomm_Pancake' => 1,
         'Secomm_PancakeBridge' => 1,
-        'Secomm_PancakeFunction' => 0,
         'Secomm_Promotion' => 1,
         'Secomm_PromotionMaxDiscount' => 1,
         'Secomm_Ahamove' => 1,
