@@ -59,7 +59,7 @@ Giao dịch VNPAY chưa thanh toán thành công thì **không tồn tại order
 - Implementation do owner tự viết inline trong `Info.php` / `Ipn.php` / `Pay.php` / `vnpay-method.js` — không class service, không plugin, không schema migration.
 - `Secomm_PaymentCore` (FEAT-CSWYEJ) đã bị loại (owner confirm 2026-09-08: không còn sử dụng).
 - Hash `hash_hmac('sha512')` + `ksort` giữ nguyên thuật toán; `vnp_TxnRef` = reserved order id của quote.
-- Không gửi email xác nhận order cho VNPAY orders (`Model/Vnpay.php::order()` override `setCanSendNewEmailFlag(false)`).
+- Message source là English; tiếng Việt dịch qua `i18n/vi_VN.csv` (BR-001).
 
 ### Out of Scope
 
@@ -72,7 +72,7 @@ Giao dịch VNPAY chưa thanh toán thành công thì **không tồn tại order
 - AC-002: Pay success (`00`) → order tạo từ quote đúng 1 lần (tại Ipn hoặc Pay), invoice, `total_paid` đúng, session success state set.
 - AC-003: Fail/hủy tại VNPAY (VD code `24`) → **0 order**, cart restore được, retry OK.
 - AC-004: Abandon (tắt tab / rớt mạng / timeout) → **0 order vĩnh viễn**.
-- AC-005: Không gửi order confirmation email cho VNPAY orders.
+- AC-005: Message source tiếng Anh; `vi_VN.csv` map ngược sang tiếng Việt (BR-001).
 - AC-006: Regression — JS các method khác, Mollie, OSC validation không đổi.
 
 ## Steps to Reproduce
@@ -103,7 +103,7 @@ Mỗi lần Place Order tạo 1 order `pending` + email xác nhận; abandon đ�
 - `Ipn.php` (SSOT): verify hash → `loadByIncrementId(vnp_TxnRef)`; nếu chưa có order → tra quote active theo `reserved_order_id` → code `00` → `CartManagement::placeOrder()`, sau đó chạy logic confirm gốc (amount check vs `baseGrandTotal`, status theo config, invoice); mã khác → respond `00` (không có gì để cancel).
 - `Pay.php` (return fallback): cùng logic tra quote → `placeOrder()` khi order chưa tồn tại → set session success state (`LastQuoteId/LastSuccessQuoteId/LastOrderId/LastRealOrderId`) → success page; fail → `clearStaleOrderSession()` + `restoreCart()` → cart.
 
-**Files** (4 file sửa + 1 file chặn email; toàn bộ dưới `app/code/Secomm/VNPAY/` sau rename):
+**Files** (4 file sửa + i18n; toàn bộ dưới `app/code/Secomm/VNPAY/` sau rename):
 
 | File | Vai trò |
 |------|---------|
@@ -111,7 +111,7 @@ Mỗi lần Place Order tạo 1 order `pending` + email xác nhận; abandon đ�
 | `Controller/Order/Ipn.php` | SSOT: place order từ quote khi `00` + confirm logic; fail → respond `00` |
 | `Controller/Order/Pay.php` | Return fallback: place order nếu chưa có → success page; fail → restore cart |
 | `view/frontend/web/js/view/payment/method-renderer/vnpay-method.js` | `setPaymentInformationAction` → POST Info → redirect URL |
-| `Model/Vnpay.php` | `order()` override — chặn email xác nhận lúc place |
+| `i18n/en_US.csv`, `i18n/vi_VN.csv` | Message source English; `vi_VN.csv` map ngược tiếng Việt |
 
 **Lưu ý đã nêu với owner:** payment thành công mà `placeOrder` lỗi (hết stock / quote đổi giữa chừng) → không có order + log error — hoàn tiền thủ công theo SOP. Không gửi `vnp_ExpireDate` (đã loại sau khi gây sandbox Error code=15 do lệch timezone UTC vs GMT+7 — nếu dùng lại phải format `Asia/Ho_Chi_Minh`).
 
@@ -120,10 +120,9 @@ Mỗi lần Place Order tạo 1 order `pending` + email xác nhận; abandon đ�
 1. Amount check `Ipn` so `(int)vnp_Amount` với `(int)(baseGrandTotal * 100)` trong khi Info gửi amount **đã convert VND** — chỉ đúng khi base currency = VND; base ≠ VND sẽ `RspCode 04` (khách trả mà không confirm).
 2. Invoice `CAPTURE_ONLINE` cho offline method (`_canCapture = false`) — invoice không `pay()`, order có thể không nhảy `processing` qua invoice (chỉ qua branch set status nếu config = processing).
 3. Nhánh fail IPN vẫn `setTotalPaid()` trên order bị cancel — dữ liệu tài chính sai.
-4. `catch (Exception $e)` thiếu `\` — exception thật không được catch, VNPAY nhận không đủ JSON; `echo` không `exit` ở nhánh cuối.
+4. `echo` không `exit` ở nhánh cuối Ipn — response có thể lẫn output khác (`catch (\Exception)` đã fix ở A13).
 5. Không idempotency lock: IPN + return song song có thể `placeOrder` 2 lần (cửa sổ hẹp, guard `is_active` của quote trong transaction + `loadByIncrementId` giảm xác suất) — QC T6 bắt buộc.
 6. Retry trên cùng quote dùng lại cùng `reserved_order_id` (Info chỉ reserve khi chưa có) — có thể bị VNPAY từ chối trùng `vnp_TxnRef` khi attempt trước đã tạo giao dịch.
-7. Email: chặn qua `order()` override (sync path); nếu store bật `sales_email/general/async_sending` thì cron `sales_send_order_emails` có thể vẫn gửi → verify khi QC.
 
 Rollback: `git checkout` 5 file + `app/etc/config.php`.
 
@@ -135,6 +134,7 @@ Rollback: `git checkout` 5 file + `app/etc/config.php`.
 - **A9**: giữ cấu trúc `Info.php` gốc, sửa tối thiểu; bug "không place order được" = JS cache + race select-payment-method vs POST Info.
 - **A10**: owner tự vá inline phát hiện thiếu "đuôi" (Ipn không thấy order, Pay không tạo order = mất tiền) → yêu cầu solution tối ưu → AI dựng service class (DEC-004).
 - **A11**: owner tự implement lại toàn bộ theo hướng inline của mình (DEC-005), không dùng service class — AI không sửa code, chỉ cập nhật records.
+- **A13 (2026-09-09)**: refactor code style theo yêu cầu review: message source English (dịch ngược tiếng Việt qua `i18n/vi_VN.csv`), properties PHP 8.1 toàn module (typed + constructor property promotion + `readonly` dependencies; `Vnpay.php` `$_code`/`$_isOffline` + `Logger/Handler.php` giữ untyped do inherited từ parent — redeclare typed là fatal), nullable khi cần, `catch (\Exception)` thay catch sai namespace, bỏ deprecated API (`addError/addSuccess` → `addErrorMessage/addSuccessMessage`), save qua Repository (`QuoteRepository`, `OrderRepositoryInterface`) thay vì model `save()` trực tiếp, `$_SERVER[REMOTE_ADDR]` → `RemoteAddress`. Flow KHÔNG đổi. Email: không chặn — order chỉ tạo sau khi paid nên email xác nhận tự nhiên chỉ ứng với giao dịch thật.
 - **A12 (2026-09-09)**: rename module `Vnpayment_VNPAY` → `Secomm_VNPAY` (thống nhất vendor prefix `Secomm_`): move `app/code/Vnpayment/VNPAY` → `app/code/Secomm/VNPAY`, đổi namespace/registration.php/config.php/JS references, `Model/vnpay.php` → `Model/Vnpay.php` (class `Vnpay`), dọn các file code không dùng, cập nhật `.ai` references. Config path `payment/vnpay/*` và payment code `vnpay` KHÔNG đổi.
 
 ## Test Plan (QC)
@@ -144,7 +144,7 @@ Sandbox VNPAY, guest + registered (`bin/magento setup:upgrade && bin/magento cac
 | # | Scenario | Kỳ vọng | AC |
 |---|----------|---------|-----|
 | T1 | Bấm thanh toán | Redirect VNPAY, `sales_order` 0 row mới | AC-001 |
-| T2 | Pay success (IPN tới) | 1 order + invoice, không email, success page | AC-002/005 |
+| T2 | Pay success (IPN tới) | 1 order + invoice, success page; message hiển thị tiếng Anh/việt đúng locale | AC-002/005 |
 | T3 | Pay success (IPN không tới — local) | Return tạo order → success page | AC-002 |
 | T4 | Abandon (tắt tab / rớt mạng / timeout) | 0 order vĩnh viễn | AC-004 |
 | T5 | Fail/cancel tại VNPAY → về store | Message thất bại + cart restore + retry OK | AC-003 |

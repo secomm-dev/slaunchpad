@@ -2,50 +2,37 @@
 
 namespace Secomm\VNPAY\Controller\Order;
 
+use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Controller\Result\Json;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Quote\Model\QuoteRepository;
+use Magento\Store\Model\StoreManagerInterface;
+use Secomm\VNPAY\Helper\Rate;
 
-class Info extends \Magento\Framework\App\Action\Action {
-
-    protected $resultPageFactory;
-    protected $jsonFac;
-
-    /** @var  \Magento\Sales\Model\Order */
-    protected $order;
-
-    /** @var \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig */
-    protected $scopeConfig;
-
-    /** @var  \Magento\Store\Model\StoreManagerInterface */
-    protected $storeManager;
-
-    /** @var  \Magento\Checkout\Model\Session */
-    protected $checkoutSession;
-
-    protected $helperRate;
-
+/**
+ * Creates a VNPAY payment attempt for the current checkout quote and returns
+ * the VNPAY payment URL. No order is created here — the order is placed by
+ * Ipn/Pay only after VNPAY confirms a successful payment.
+ */
+class Info extends Action
+{
     public function __construct(
         Context $context,
-        PageFactory $resultPageFactory,
-        \Magento\Framework\Controller\Result\Json $json,
-        \Magento\Sales\Model\Order $order,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Secomm\VNPAY\Helper\Rate $helperRate
+        private readonly Json $jsonFac,
+        private readonly ScopeConfigInterface $scopeConfig,
+        private readonly StoreManagerInterface $storeManager,
+        private readonly \Magento\Checkout\Model\Session $checkoutSession,
+        private readonly Rate $helperRate,
+        private readonly QuoteRepository $quoteRepository,
+        private readonly RemoteAddress $remoteAddress
     ) {
         parent::__construct($context);
-        $this->resultPageFactory = $resultPageFactory;
-        $this->jsonFac = $json;
-        $this->order = $order;
-        $this->scopeConfig = $scopeConfig;
-        $this->storeManager = $storeManager;
-        $this->checkoutSession = $checkoutSession;
-        $this->helperRate = $helperRate;
     }
 
-    public function execute() {
+    public function execute()
+    {
         $quote = $this->checkoutSession->getQuote();
         $url = $this->scopeConfig->getValue('payment/vnpay/payment_url');
         $vnp_Url = '';
@@ -54,7 +41,8 @@ class Info extends \Magento\Framework\App\Action\Action {
             if (!$quote->getReservedOrderId()) {
                 $quote->reserveOrderId();
             }
-            $quote->collectTotals()->save();
+            $quote->collectTotals();
+            $this->quoteRepository->save($quote);
 
             $incrementID = $quote->getReservedOrderId();
 
@@ -64,20 +52,20 @@ class Info extends \Magento\Framework\App\Action\Action {
             $returnUrl = $this->storeManager->getStore()->getBaseUrl();
             $returnUrl = rtrim($returnUrl, "/");
             $returnUrl .= "/paymentvnpay/order/pay";
-            $inputData = array(
+            $inputData = [
                 "vnp_Version" => "2.1.0",
                 "vnp_TmnCode" => $this->scopeConfig->getValue('payment/vnpay/tmn_code'),
                 "vnp_Amount" => $vnpAmount,
                 "vnp_Command" => "pay",
                 "vnp_CreateDate" => date('YmdHis'),
                 "vnp_CurrCode" => "VND",
-                "vnp_IpAddr" => $_SERVER['REMOTE_ADDR'],
+                "vnp_IpAddr" => $this->remoteAddress->getRemoteAddress(),
                 "vnp_Locale" => 'vn',
                 "vnp_OrderInfo" => $incrementID,
                 "vnp_OrderType" => 'other',
                 "vnp_ReturnUrl" => $returnUrl,
                 "vnp_TxnRef" => $incrementID,
-            );
+            ];
             ksort($inputData);
             $query = "";
             $i = 0;
@@ -102,5 +90,4 @@ class Info extends \Magento\Framework\App\Action\Action {
         $this->jsonFac->setData($vnp_Url);
         return $this->jsonFac;
     }
-
 }
