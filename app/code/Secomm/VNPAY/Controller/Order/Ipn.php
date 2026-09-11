@@ -2,69 +2,53 @@
 
 namespace Secomm\VNPAY\Controller\Order;
 
+use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\DB\TransactionFactory;
 use Magento\Quote\Api\CartManagementInterface;
 use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Invoice;
+use Magento\Sales\Model\Service\InvoiceServiceFactory;
+use Secomm\VNPAY\Logger\Logger;
 
-class Ipn extends \Magento\Framework\App\Action\Action {
-
-    /** @var  \Magento\Sales\Model\Order */
-    protected $order;
-
-    /** @var  \Magento\Checkout\Model\Session */
-    protected $checkoutSession;
-
-    /** @var  \Magento\Framework\App\Config\ScopeConfigInterface */
-    protected $scopeConfig;
-
-    /** @var \Secomm\VNPAY\Logger\Logger */
-    protected $logger;
-
-    /** @var \Magento\Sales\Model\Service\InvoiceServiceFactory  */
-    protected $invoiceServiceFactory;
-
-    /** @var \Magento\Framework\DB\TransactionFactory  */
-    protected $transactionFactory;
-
-    /** @var CartManagementInterface */
-    protected $cartManagement;
-
-    /** @var QuoteCollectionFactory */
-    protected $quoteCollectionFactory;
-
+/**
+ * IPN (server-to-server) — the source of truth for the VNPAY flow.
+ *
+ * vnp_TxnRef is the reserved order id of a payment attempt on the quote (the
+ * order may NOT exist yet). On response code '00' the order is placed from
+ * the quote; any other code has no order to cancel.
+ */
+class Ipn extends Action
+{
     public function __construct(
         Context $context,
-        \Magento\Sales\Model\Order $order,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Secomm\VNPAY\Logger\Logger $logger,
-        \Magento\Sales\Model\Service\InvoiceServiceFactory $invoiceServiceFactory,
-        \Magento\Framework\DB\TransactionFactory $transactionFactory,
-        CartManagementInterface $cartManagement,
-        QuoteCollectionFactory $quoteCollectionFactory
+        private readonly Order $order,
+        private readonly ScopeConfigInterface $scopeConfig,
+        private readonly Logger $logger,
+        private readonly InvoiceServiceFactory $invoiceServiceFactory,
+        private readonly TransactionFactory $transactionFactory,
+        private readonly CartManagementInterface $cartManagement,
+        private readonly QuoteCollectionFactory $quoteCollectionFactory,
+        private readonly OrderRepositoryInterface $orderRepository
     ) {
         parent::__construct($context);
-        $this->order = $order;
-        $this->checkoutSession = $checkoutSession;
-        $this->scopeConfig = $scopeConfig;
-        $this->invoiceServiceFactory = $invoiceServiceFactory;
-        $this->transactionFactory = $transactionFactory;
-        $this->logger = $logger;
-        $this->cartManagement = $cartManagement;
-        $this->quoteCollectionFactory = $quoteCollectionFactory;
     }
 
     /**
      * Order success action
      *
-     * @return \Magento\Framework\Controller\ResultInterface
+     * @return void
      */
-    public function execute() {
+    public function execute()
+    {
         $vnp_SecureHash = $this->getRequest()->getParam('vnp_SecureHash', '');
         $SECURE_SECRET = $this->scopeConfig->getValue('payment/vnpay/hash_code');
         $responseParams = $this->getRequest()->getParams();
         $vnp_ResponseCode = $this->getRequest()->getParam('vnp_ResponseCode', '');
-        $inputData = array();
+        $inputData = [];
         foreach ($responseParams as $key => $value) {
             $inputData[$key] = $value;
         }
@@ -75,13 +59,13 @@ class Ipn extends \Magento\Framework\App\Action\Action {
         $hashData = "";
         foreach ($inputData as $key => $value) {
             if ($i == 1) {
-                $hashData = $hashData . '&' . urlencode($key). "=" . urlencode($value);
+                $hashData = $hashData . '&' . urlencode($key) . "=" . urlencode($value);
             } else {
                 $hashData = $hashData . urlencode($key) . "=" . urlencode($value);
                 $i = 1;
             }
         }
-        $returnData = array();
+        $returnData = [];
         $secureHash = hash_hmac('sha512', $hashData, $SECURE_SECRET);
         try {
             if ($secureHash == $vnp_SecureHash) {
@@ -95,11 +79,11 @@ class Ipn extends \Magento\Framework\App\Action\Action {
                         ->getFirstItem();
                     if ($quote->getId() && $vnp_ResponseCode == '00') {
                         $orderId = $this->cartManagement->placeOrder($quote->getId());
-                        $order = $this->order->load($orderId);
+                        $order = $this->orderRepository->get($orderId);
                     } elseif ($quote->getId()) {
                         $returnData['RspCode'] = '00';
                         $returnData['Message'] = 'Confirm Success';
-                        $this->logger->debug("rspCode: ".$returnData['RspCode'] . " - msg:".$returnData['Message']);
+                        $this->logger->debug("rspCode: " . $returnData['RspCode'] . " - msg:" . $returnData['Message']);
                         echo json_encode($returnData);
                         return;
                     }
@@ -109,26 +93,24 @@ class Ipn extends \Magento\Framework\App\Action\Action {
                     if ((int)$vnp_Amount !== $orderTotal) {
                         $returnData['RspCode'] = '04';
                         $returnData['Message'] = 'Invalid amount';
-                    } elseif ($order->getStatus() != NULL && $order->getStatus() == 'pending') {
-
+                    } elseif ($order->getStatus() != null && $order->getStatus() == 'pending') {
                         if ($vnp_ResponseCode == '00') {
                             $amount = $this->getRequest()->getParam('vnp_Amount', '0');
                             $setupStatus = $this->scopeConfig->getValue('payment/vnpay/order_status');
-                            if ($setupStatus == \Magento\Sales\Model\Order::STATE_PROCESSING) {
+                            if ($setupStatus == Order::STATE_PROCESSING) {
                                 $order->setTotalPaid(floatval($amount) / 100);
                                 $orderState = $order::STATE_PROCESSING;
-                                $order->setState($orderState)->setStatus($order::STATE_PROCESSING);
-                                $order->save();
+                                $order->setState($orderState)->setStatus(Order::STATE_PROCESSING);
+                                $this->orderRepository->save($order);
                             }
                             if ($order->canInvoice()) {
                                 /** @var \Magento\Sales\Model\Service\InvoiceService $invoiceService */
                                 $invoiceService = $this->invoiceServiceFactory->create();
                                 $invoice = $invoiceService->prepareInvoice($order);
-                                $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
+                                $invoice->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE);
                                 $invoice->register();
 
                                 // Save the invoice
-                                /** @var \Magento\Framework\DB\Transaction $transaction */
                                 $transaction = $this->transactionFactory->create();
                                 $transactionSave = $transaction
                                     ->addObject($invoice)
@@ -139,10 +121,10 @@ class Ipn extends \Magento\Framework\App\Action\Action {
                         } else {
                             $amount = $this->getRequest()->getParam('vnp_Amount', '0');
                             $order->setTotalPaid(floatval($amount) / 100);
-                            $order->addStatusHistoryComment(__("Giao dịch thất bại"));
+                            $order->addStatusHistoryComment(__('Transaction failed'));
                             $orderState = $order::STATE_CANCELED;
-                            $order->setState($orderState)->setStatus($order::STATE_CANCELED);
-                            $order->save();
+                            $order->setState($orderState)->setStatus(Order::STATE_CANCELED);
+                            $this->orderRepository->save($order);
                         }
                         $returnData['RspCode'] = '00';
                         $returnData['Message'] = 'Confirm Success';
@@ -156,15 +138,14 @@ class Ipn extends \Magento\Framework\App\Action\Action {
                 }
             } else {
                 $returnData['RspCode'] = '97';
-                $returnData['Message'] = 'Chu ky khong hop le';
+                $returnData['Message'] = 'Invalid checksum';
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $returnData['RspCode'] = '99';
-            $returnData['Message'] = 'Unknow error';
+            $returnData['Message'] = 'Unknown error';
         }
-        $this->logger->debug("rspCode: ".$returnData['RspCode'] . " - msg:".$returnData['Message']);
-//Trả lại VNPAY theo định dạng JSON
+        $this->logger->debug("rspCode: " . $returnData['RspCode'] . " - msg:" . $returnData['Message']);
+        // Return the response to VNPAY in JSON format
         echo json_encode($returnData);
     }
-
 }

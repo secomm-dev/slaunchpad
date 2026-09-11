@@ -3,13 +3,13 @@
 namespace Secomm\VNPAY\Model;
 
 /**
- * Class VNPAY
+ * Class Vnpay
  *
  * @method \Magento\Quote\Api\Data\PaymentMethodExtensionInterface getExtensionAttributes()
  */
 class Vnpay extends \Magento\Payment\Model\Method\AbstractMethod
 {
-    const PAYMENT_METHOD_VNPAY_CODE = 'vnpay';
+    public const PAYMENT_METHOD_VNPAY_CODE = 'vnpay';
 
     /**
      * Payment method code
