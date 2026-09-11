@@ -198,6 +198,17 @@ $starIconSize = $block->getData('rating_icon_size') ?: 24;
                 <div class="my-3">
                     <div>
                         <?= $recaptcha ? $recaptcha->getInputHtml(ReCaptcha::RECAPTCHA_FORM_ID_PRODUCT_REVIEW) : '' ?>
+                        <?php /* BUG-NGX81D (SLP-204): validation errors render above the submit button */ ?>
+                        <template x-if="displayErrorMessage">
+                            <p class="text-red-500 flex items-center">
+                                <span class="inline-block w-8 h-8 mr-3">
+                                    <?= $lucideIcons->circleAlertHtml('', 24, 24, ['aria-hidden' => true]); ?>
+                                </span>
+                                <template x-for="errorMessage in errorMessages">
+                                    <span x-text="errorMessage"></span>
+                                </template>
+                            </p>
+                        </template>
                         <button x-show="!displaySuccessMessage" type="submit"
                                 class="btn btn-primary">
                             <span>
@@ -220,16 +231,6 @@ $starIconSize = $block->getData('rating_icon_size') ?: 24;
                             <?= $lucideIcons->circleCheckHtml('', 28, 28, ['aria-hidden' => true]); ?>
                             <?= $escaper->escapeHtml(__('You submitted your review for moderation.')) ?>
                         </p>
-                        <template x-if="displayErrorMessage">
-                            <p class="text-red-500 flex items-center">
-                                <span class="inline-block w-8 h-8 mr-3">
-                                    <?= $lucideIcons->circleAlertHtml('', 24, 24, ['aria-hidden' => true]); ?>
-                                </span>
-                                <template x-for="errorMessage in errorMessages">
-                                    <span x-text="errorMessage"></span>
-                                </template>
-                            </p>
-                        </template>
                     </div>
                     <?= $block->getChildHtml('form_additional_after') ?>
                     <?= $recaptcha ? $recaptcha->getLegalNoticeHtml(ReCaptcha::RECAPTCHA_FORM_ID_PRODUCT_REVIEW) : '' ?>
@@ -260,7 +261,30 @@ $starIconSize = $block->getData('rating_icon_size') ?: 24;
                             const $form = document.querySelector('#<?= $escaper->escapeJs($formId) ?>');
                             this.validate();
 
-                            <?= $recaptcha ? $recaptcha->getValidationJsHtml(ReCaptcha::RECAPTCHA_FORM_ID_PRODUCT_REVIEW) : '' ?>
+                            // BUG-NGX81D (SLP-204): required data missing — show the inline error only.
+                            // The submit button must stay usable: no reCAPTCHA check, no GraphQL call.
+                            if (this.errors > 0) {
+                                return;
+                            }
+
+                            <?php /* getRecaptchaData() returns null when captcha is disabled for this form —
+                                       the pre-check must not block submits when no captcha is configured */ ?>
+                            <?php if ($recaptcha && $recaptcha->getRecaptchaData(ReCaptcha::RECAPTCHA_FORM_ID_PRODUCT_REVIEW)): ?>
+                            // BUG-NGX81D (SLP-204): captcha not solved yet — show the inline error instead
+                            // of the vendor global message and never disable the submit button, so the
+                            // customer can solve the captcha and resubmit without reloading the page.
+                            const recaptchaField =
+                                $form.elements['<?= $escaper->escapeJs($recaptcha->getResultTokenFieldName($formId)) ?>'];
+                            if (!recaptchaField || !recaptchaField.value.length) {
+                                this.setErrorMessages(
+                                    ['<?= $escaper->escapeJs(__('Please verify the reCAPTCHA before submitting your review.')) ?>']
+                                );
+                                this.displayErrorMessage = true;
+                                return;
+                            }
+
+                            <?= $recaptcha->getValidationJsHtml(ReCaptcha::RECAPTCHA_FORM_ID_PRODUCT_REVIEW) ?>
+                            <?php endif; ?>
 
                             if (this.errors === 0) {
                                 this.placeReview();
