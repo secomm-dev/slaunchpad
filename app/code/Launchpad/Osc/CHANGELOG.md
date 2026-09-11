@@ -6,6 +6,12 @@ All notable changes to this project layer module are documented here.
 
 ### Added
 
+- BUG-2MK37V (SLP-199): `view/frontend/web/css/osc-discount-code.css` + head entry in
+  `onestepcheckout_index_index.xml` — align the apply-discount-code section on the OSC
+  checkout (button landed +12px below the input; input collapsed to ~30px on narrow
+  columns). CSS-only, scoped under `.opc-payment-additional.discount-code`; checkout
+  runs the Magento/luma scope (LL-0011) so the fix is attached at module level, same
+  mechanism as BUG-NY0M3S.
 - TASK-FMAN1B / DEC-TASKFMAN1B-001: module created. OSC-tuned copies of the address
   cascade components (`shipping-address-dropdown`, `billing-address-dropdown`) moved
   out of `Secomm_AddressDropdown` (generic module keeps its default-checkout copies),

@@ -1,0 +1,74 @@
+/**
+ * BUG-2MK37V (SLP-199) — align the apply-discount-code section on the OSC checkout.
+ *
+ * The section (Knockout template Mageplaza_Osc/.../container/payment/discount.html)
+ * is rendered in the Magento/luma scope and was never purpose-styled there:
+ *   - Luma gives .actions-toolbar a padding-top: 12px and the vendor .control keeps a
+ *     label that is visually clipped (1x1px) yet occupies a line (~14px), so the inner
+ *     row grows asymmetric and the 36px button lands +12px below the 36px input;
+ *   - vendor `#discount-form input[type="text"] { width: 98% !important }` leaves the
+ *     input 2% short, and on mobile the space-between layout collapses it to ~30px.
+ *
+ * Every rule is scoped under .opc-payment-additional.discount-code so no other
+ * .actions-toolbar on the page (place order, billing address, auth popup, ...) is
+ * affected. Specificity stays above Luma styles-m/styles-l and the vendor rules;
+ * the input override pairs !important with a higher-specificity selector to beat
+ * the vendor !important (cascade: same origin/importance -> specificity decides).
+ */
+
+/* Vendor markup renders the form as display:table (shrink-to-fit); make it fill
+   the section so the row below can use the whole available width. */
+.opc-payment-additional.discount-code #discount-form {
+    width: 100%;
+}
+
+.opc-payment-additional.discount-code .payment-option-inner {
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* flex-basis 170px: wide column -> grows on one row beside the button;
+   narrow column (OSC mobile keeps the payment column ~172px) -> the input
+   wraps onto its own full-width row instead of collapsing to ~20px. */
+.opc-payment-additional.discount-code .payment-option-inner .control {
+    flex: 1 1 170px;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    float: none;
+}
+
+/* Visually clipped 1x1 label that still reserves a text line inside .control. */
+.opc-payment-additional.discount-code .payment-option-inner .control .label {
+    display: none;
+}
+
+/* Beats vendor `#discount-form input[type="text"]` (1,1,1 + !important):
+   (1,2,1) + !important wins on specificity within the same importance. */
+.opc-payment-additional.discount-code #discount-form input[type="text"] {
+    width: 100% !important;
+    margin: 0;
+}
+
+.opc-payment-additional.discount-code .payment-option-inner .actions-toolbar {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    flex-direction: row;
+    align-items: center;
+}
+
+/* Neutralizes vendor placement rule .osc-payment-after-methods
+   .opc-payment-additional .actions-toolbar > .primary { width: 100% } if active. */
+.opc-payment-additional.discount-code .payment-option-inner .actions-toolbar > .primary {
+    width: auto;
+    margin: 0;
+}
+
+.opc-payment-additional.discount-code .payment-option-inner .actions-toolbar .action {
+    margin: 0;
+    white-space: nowrap;
+}
