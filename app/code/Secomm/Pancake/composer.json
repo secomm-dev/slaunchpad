@@ -2,7 +2,7 @@
   "name": "secomm/module-pancake",
   "description": "Pancake POS vendor logic for FulfillmentCore; Bridge does Magento wiring.",
   "type": "magento2-module",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": [
     "proprietary"
   ],

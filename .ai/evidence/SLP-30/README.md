@@ -76,6 +76,22 @@ Environment: WSL2 local, Magento 2.4.8-p5 developer mode, DB local `slp`; POS sa
 - Admin UI Status Mapping + Warehouse Mapping: QC flow trên backend (Save/Delete/duplicate reject).
 - Thêm OS crontab `--group=secomm_pos` rồi verify poll tự chạy 2 chu kỳ liên tiếp.
 
+## Inbound webhook harden (2026-09-11)
+
+Plan: `.cursor/tasks/SLP-30/plans/2026-09-11-pancake-inbound-webhook.md` — **poll giữ nguyên**.
+
+| Check | Result |
+|-------|--------|
+| Bridge `POST /pancake/webhook/index` unwrap + export resolve + `applyToExport` | Code delivered |
+| Parser `ServiceCode` + WebhookOrderResponse carrier/tracking | Code delivered |
+| Bridge README webhook ops guide | Done |
+| `05_API_CONTRACTS` webhook section | Updated (POS OpenAPI PUT shops) |
+| Poll cron/CLI | Unchanged |
+| Unit tests Pancake (pre-review AI 2026-09-11) | **7 tests, 1 ERROR** — `PayloadBuilderTest` `UnknownTypeException: Secomm\Pancake\Model\Config\PancakeConfig does not exist` (class chưa tồn tại; 6/7 pass gồm 2 test parser mới) |
+| Pre-review findings (canonical: `TASK-AEZTTB` §Verification) | **2 BLOCKER**: F1 `PayloadBuilder` inject class không tồn tại (DI gãy export); F2 `findExportByIncrementId` filter `increment_id` thay vì `magento_increment_id` (SQL error nhánh fallback custom_id). Kèm WARN: F3 so sánh `$result === 'error'` không khớp `'error: msg'`; F4 `@source` tailwind lệch 1 cấp (không resolve); F5 31 file CRLF→LF trộn diff |
+
+Ticket process: batch này canonical tại `.ai/records/tasks/TASK-AEZTTB.md` (Mode A, DEC-TASKAEZTTB-001) — **chưa request TL review cho tới khi fix F1/F2**.
+
 ## Bridge / Function migration (2026-09-10)
 
 Convention SLP-30 cập nhật: **Core + `Secomm_PancakeBridge` + `Secomm_PancakeFunction`** (legacy `Secomm_Pancake` stub, disabled).

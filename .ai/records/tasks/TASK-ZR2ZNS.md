@@ -54,6 +54,8 @@ supersedes: []
 Tách adapter đơn `Secomm_Pancake` theo convention **Core + Bridge + Function**: `Secomm_PancakeFunction` (vendor logic: PosClient, PayloadBuilder, parser, status mapper/catalog, warehouse catalog) + `Secomm_PancakeBridge` (Magento wiring: config, exporter, cron/CLI/webhook, admin warehouse/status map, DI pools, data patches). Legacy `Secomm_Pancake` thành registration stub disabled. Behavior relocate-only — không đổi contract POS, DB schema Core, config path (`pancake/*`), `service_code=pancake`.
 
 > **UPDATE 2026-09-11 (MIG-002 — ticket mirror SLP-30/MIG-002, working tree)**: convention 3 lớp bị **thu gọn còn 2 lớp** ngay ngày hôm sau — vendor logic gộp về **`Secomm_Pancake` 0.4.0** (revive), `Secomm_PancakeFunction` thành deprecated stub disabled (0.1.1), Bridge 0.2.0 đổi dependency/namespaces sang `Secomm_Pancake`. Boundary chính (wiring ↔ vendor logic, dependency một chiều, BC config/CLI/service_code) giữ nguyên. DEC: `DEC-TASKZR2ZNS-001` rejected → `DEC-TASKZR2ZNS-002` hiện hành. Evidence: `.ai/evidence/SLP-30/README.md` §"Pancake + Bridge collapse (2026-09-11)" (7 tests/23 assertions, setup:upgrade, module status, poll smoke ok=1).
+>
+> **UPDATE 2026-09-11 (tách scope)**: batch **inbound webhook** phát sinh sau collapse (Pancake 0.4.1 + Bridge 0.2.1 — parser ServiceCode, webhook harden, README ops guide) **không thuộc item này** — đã tách thành **TASK-AEZTTB** (Mode A, 2 blocker pre-review F1/F2, xem record đó). Item này chỉ chốt kiến trúc 2 lớp tại 0.4.0/0.2.0.
 
 ## Mini Spec
 
@@ -96,7 +98,7 @@ Theo plan `2026-09-10-bridge-function-convention.md`: scaffold 2 module → move
 - Legacy `Secomm_Pancake` 0.9.0-deprecated: stub 4 file (composer/README/registration/module.xml trống sequence); 61 file xóa; CHANGELOG stub mới tạo (history kế thừa chuyển sang Bridge).
 - `app/etc/config.php`: `Secomm_Pancake=0`, `Bridge=1`, `Function=1`.
 - CHANGELOG: Bridge 0.1.0 kế thừa toàn bộ history 0.1.0–0.3.1 của monolith; Function 0.1.0.
-- **Bám kèm working tree (không thuộc item này — tách commit riêng)**: `app/code/Secomm/Ahamove/etc/db_schema.xml` (xóa UNIQUE `AHAMOVE_CITY_CITY_ID` — Tier 2 DB schema, scope khác), `app/design/.../tailwind-source.css` (+1 line), `dev/null` (file rác 0 byte do redirect nhầm — nên xoá), `.cursor.zip`, `tools/` (script migration — quyết định TL có commit không).
+- **Bám kèm working tree (không thuộc item này — tách commit riêng)**: `app/code/Secomm/Ahamove/etc/db_schema.xml` (xóa UNIQUE `AHAMOVE_CITY_CITY_ID` — Tier 2 DB schema, scope khác), `app/design/.../tailwind-source.css` (+1 line `@source` FulfillmentCore phtml — **sai path**, theo dõi tại TASK-AEZTTB F4), `dev/null` (file rác 0 byte do redirect nhầm — nên xoá), `.cursor.zip`, `tools/` (script migration — quyết định TL có commit không). Ngoài ra 31 file chỉ đổi line-ending CRLF→LF (FulfillmentCore + Pancake) — nên tách commit normalization riêng (TASK-AEZTTB F5).
 
 ## Verification
 
@@ -110,5 +112,6 @@ Theo plan `2026-09-10-bridge-function-convention.md`: scaffold 2 module → move
 
 - DEC-TASKZR2ZNS-001 (convention Bridge/Function)
 - TASK-BS91A3 (status mapping — UI/patches relocate sang Bridge, logic map giữ ở Core)
+- TASK-AEZTTB (inbound webhook — batch phát sinh sau collapse, bám kiến trúc 2 lớp của item này)
 - Evidence: `.ai/evidence/SLP-30/README.md`
 - Mirror tickets: `.cursor/tasks/SLP-30/[SLP-30][{CONV-001,FNC-001,BRG-001,MIG-001}]-*.md`

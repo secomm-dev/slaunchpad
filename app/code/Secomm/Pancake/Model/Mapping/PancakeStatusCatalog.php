@@ -13,6 +13,7 @@ use Magento\Sales\Model\Order;
 
 /**
  * Static catalog of Pancake order status codes for admin Status Mapping options.
+ * Same role as PosWarehouseCatalog for warehouse mapping (not a live POS API).
  */
 class PancakeStatusCatalog
 {

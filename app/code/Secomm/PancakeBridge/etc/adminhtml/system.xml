@@ -45,7 +45,7 @@
                 <field id="secret" translate="label comment" type="obscure" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Webhook secret</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-                    <comment>A random string you invent in Magento (Pancake Open API does not issue this secret). Then configure the caller to POST the storefront URL https://&lt;store&gt;/pancake/webhook/index?secret=&lt;this value&gt;. Empty disables the check — do not leave empty on a public store. Optional: status can also arrive via Poll below without a webhook.</comment>
+                    <comment>Random string you invent in Magento (Pancake does not issue this secret). Configure Pancake POS Webhook/API with URL https://&lt;store&gt;/pancake/webhook/index?secret=&lt;this value&gt; and webhook type orders. Empty disables the check — do not leave empty on a public store. Poll below still runs as fallback.</comment>
                 </field>
             </group>
             <group id="poll" translate="label" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">

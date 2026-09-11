@@ -11,7 +11,7 @@ specification_ref: Embedded Mini-Spec (record này, §Mini Spec)
 risk: high                    # đổi Magento order status từ inbound + DB schema mới
 status: in_progress           # code xong (uncommitted), chờ TL review + QC e2e
 created: 2026-09-10
-updated: 2026-09-10
+updated: 2026-09-11
 external_refs:
   cursor: SLP-30              # epic mirror .cursor/tasks/SLP-30/ — mở rộng scope của FFC-002 (Q2) theo pattern PNC-004
 legacy_ids: []
@@ -98,7 +98,7 @@ Mirror pattern warehouse map (FFC-004 core + PNC-004 UI): core owns table + reso
 
 ## Verification
 
-- [ ] AC-001 — chưa verify e2e (cần TL review + QC trên local với POS sandbox)
+- [ ] AC-001 — chưa verify e2e (cần TL review + QC trên local với POS sandbox); **từ 2026-09-11 phải QC trên cả 2 đường inbound**: poll (như trước) và **webhook** (TASK-AEZTTB) vì cả hai cùng gọi `InboundUpdateApplier` → status map
 - [ ] AC-002 — poll comment-only path đã verify live 2026-09-10 (cron manual run, 4 orders, `applied=4`); nhánh có-map chưa test
 - [ ] AC-003 — chưa verify (admin UI flow)
 - [ ] AC-004 — unit `PancakeStatusMapper`/`MapperPool` path unchanged; chưa chạy lại full suite lần này
@@ -106,6 +106,7 @@ Mirror pattern warehouse map (FFC-004 core + PNC-004 UI): core owns table + reso
 
 ## Related records
 
+- TASK-AEZTTB (inbound webhook 2026-09-11 — đường inbound thứ 2 cùng pipeline applier/status map của feature này)
 - Epic mirror: `.cursor/tasks/SLP-30/[SLP-30] Epic.md` (external, không phải canonical)
 - Tickets liên quan (mirror): FFC-002 (Q2 mở rộng), PNC-004 (pattern UI), PNC-003 (QC)
 - Evidence epic: `.ai/evidence/SLP-30/README.md`

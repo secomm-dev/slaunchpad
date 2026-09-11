@@ -255,6 +255,14 @@ Query parameter `api_key` (`securitySchemes.ApiKeyAuth`). Store encrypted in Mag
 
 ### Webhooks
 
-POS OpenAPI **does not** document a Magento webhook. Adapter exposes optional `POST pancake/webhook/index?secret=<webhook_secret>` for ops/middleware plus poll cron. **[ASSUMPTION]**
+Pancake POS Open API documents **Webhook configuration** on `PUT /shops/{SHOP_ID}` (`webhook_enable`, `webhook_url`, `webhook_types`). When type includes **`orders`**, POS sends **POST** bodies shaped as `WebhookOrderResponse` (includes `id`, `custom_id`, `status`, `tracking_link`, `partner.*`).
+
+| Field | Value |
+|-------|-------|
+| **Magento endpoint** | `POST /pancake/webhook/index?secret=<pancake/webhook/secret>` (`Secomm_PancakeBridge`) |
+| **Auth** | Query `secret` must match Magento config (`hash_equals`). Empty Magento secret disables the check (not for public stores). |
+| **Apply** | Parse via `OrderPayloadParser` → `InboundUpdateApplier` for Magento-origin exports only. |
+| **Fallback** | Poll cron/CLI `GET /shops/{SHOP_ID}/orders/{ORDER_ID}` remains enabled; do not replace poll with webhook-only. |
+| **Ops UI** | Pancake: Setting → Advance → Third-party connection → Webhook/API. Magento: see `Secomm_PancakeBridge` README. |
 
 ---

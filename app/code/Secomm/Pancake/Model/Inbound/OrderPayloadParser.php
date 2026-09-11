@@ -13,20 +13,29 @@ use Secomm\FulfillmentCore\Api\Data\InboundUpdate;
 use Secomm\Pancake\Model\ServiceCode;
 
 /**
- * Parse POS order JSON (GET order or webhook body) into core InboundUpdate.
+ * Parse POS order JSON (GET order or WebhookOrderResponse) into core InboundUpdate.
  */
 class OrderPayloadParser
 {
     /**
-     * @param array<string, mixed> $order POS order object
+     * Parse a Pancake order object into an inbound update DTO.
+     *
+     * @param array<string, mixed> $order POS order / WebhookOrderResponse object
      */
     public function parse(array $order): ?InboundUpdate
     {
-        $id = $order['id'] ?? $order['order_id'] ?? $order['custom_id'] ?? null;
+        if (isset($order['order']) && is_array($order['order'])
+            && !isset($order['id']) && !isset($order['order_id']) && !isset($order['custom_id'])
+        ) {
+            return $this->parse($order['order']);
+        }
+
+        // Prefer POS numeric id for secomm_fulfillment_export.external_order_id lookup.
+        $id = $order['id'] ?? $order['order_id'] ?? null;
         if ($id === null || $id === '') {
-            if (isset($order['order']) && is_array($order['order'])) {
-                return $this->parse($order['order']);
-            }
+            $id = $order['custom_id'] ?? null;
+        }
+        if ($id === null || $id === '') {
             return null;
         }
 
@@ -55,23 +64,23 @@ class OrderPayloadParser
     }
 
     /**
-     * @param array<string, mixed> $order
+     * Extract carrier / tracking number / tracking URL from WebhookOrderResponse fields.
+     *
+     * @param array<string, mixed> $order POS order object
      * @return array{carrier: ?string, number: ?string, url: ?string}
      */
     private function extractTracking(array $order): array
     {
-        $carrier = isset($order['partner_name']) ? (string) $order['partner_name'] : null;
-        if ($carrier === null && isset($order['delivery_name'])) {
-            $carrier = (string) $order['delivery_name'];
-        }
-
+        $carrier = null;
         $url = isset($order['tracking_link']) ? (string) $order['tracking_link'] : null;
         $number = null;
 
         $partner = $order['partner'] ?? null;
         if (is_array($partner)) {
-            if ($carrier === null && isset($partner['partner_name'])) {
+            if (!empty($partner['partner_name'])) {
                 $carrier = (string) $partner['partner_name'];
+            } elseif (!empty($partner['delivery_name'])) {
+                $carrier = (string) $partner['delivery_name'];
             }
             $updates = $partner['extend_update'] ?? null;
             if (is_array($updates)) {
@@ -83,10 +92,18 @@ class OrderPayloadParser
             }
         }
 
+        // Legacy flat fields (some GET shapes).
+        if ($carrier === null && isset($order['partner_name']) && $order['partner_name'] !== '') {
+            $carrier = (string) $order['partner_name'];
+        }
+        if ($carrier === null && isset($order['delivery_name']) && $order['delivery_name'] !== '') {
+            $carrier = (string) $order['delivery_name'];
+        }
+
         return [
-            'carrier' => $carrier !== '' ? $carrier : null,
-            'number' => $number !== '' ? $number : null,
-            'url' => $url !== '' ? $url : null,
+            'carrier' => $carrier !== null && $carrier !== '' ? $carrier : null,
+            'number' => $number !== null && $number !== '' ? $number : null,
+            'url' => $url !== null && $url !== '' ? $url : null,
         ];
     }
 }

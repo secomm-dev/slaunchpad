@@ -1,5 +1,11 @@
 # Changelog — Secomm_PancakeBridge
 
+## 0.2.1 — 2026-09-11 (SLP-30 / inbound webhook)
+
+### Changed
+- Hardened `Controller/Webhook/Index`: unwrap `data`/`order`, resolve Magento-origin export by POS `id` then `custom_id`/`increment_id`, apply via `InboundUpdateApplier::applyToExport`, gated logging.
+- Admin webhook comment + README: ops guide for Pancake POS Webhook/API (`orders`) → Magento URL. Poll unchanged as fallback.
+
 ## 0.2.0 — 2026-09-11 (SLP-30 / MIG-002)
 
 ### Changed
