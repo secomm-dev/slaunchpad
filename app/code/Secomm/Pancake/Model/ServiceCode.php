@@ -7,10 +7,12 @@
 
 declare(strict_types=1);
 
-use Magento\Framework\Component\ComponentRegistrar;
+namespace Secomm\Pancake\Model;
 
-ComponentRegistrar::register(
-    ComponentRegistrar::MODULE,
-    'Secomm_PancakeFunction',
-    __DIR__
-);
+/**
+ * Stable FulfillmentCore service_code for Pancake POS.
+ */
+final class ServiceCode
+{
+    public const CODE = 'pancake';
+}

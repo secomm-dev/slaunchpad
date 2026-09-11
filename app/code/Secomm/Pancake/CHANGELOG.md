@@ -1,10 +1,18 @@
-# Changelog — Secomm_Pancake (DEPRECATED)
+# Changelog — Secomm_Pancake
 
-## 0.9.0-deprecated — 2026-09-10 (SLP-30 / MIG-001)
+## 0.4.0 — 2026-09-11 (SLP-30 / MIG-002)
 
-### Deprecated
-- Module **deprecated và disabled** — chỉ còn registration stub rỗng (composer/README/registration/module.xml). Toàn bộ code đã relocate:
-  - Vendor logic → **`Secomm_PancakeFunction`** (PosClient, PayloadBuilder, OrderPayloadParser, StatusMapper/Catalog, PosWarehouseCatalog).
-  - Magento wiring → **`Secomm_PancakeBridge`** (config, exporter, cron/CLI/webhook, admin Warehouse/Status Mapping, data patches).
-- **CHANGELOG history 0.1.0–0.3.1 kế thừa tại `Secomm_PancakeBridge/CHANGELOG.md`** (file này không lặp lại).
-- **Deploy**: env đã bật module này chạy `bin/magento module:disable Secomm_Pancake && bin/magento module:enable Secomm_PancakeBridge Secomm_PancakeFunction && bin/magento setup:upgrade && bin/magento cache:flush`. Config path `pancake/*` + `service_code=pancake` + DB mapping rows giữ nguyên (BC).
+### Changed
+- Merged all Pancake POS vendor logic and unit tests from deprecated `Secomm_PancakeFunction`.
+- Restored `Secomm_Pancake` as the vendor module used by `Secomm_PancakeBridge`.
+- Preserved `pancake/*` configuration paths, `service_code=pancake`, and existing POS behavior.
+
+## 0.1.0 — 2026-09-10 (SLP-30 / FNC-001)
+
+### Added
+- Vendor logic layer originally split from `Secomm_Pancake`, without a dependency on Magento wiring.
+- `Model/Client/PosClient` and `PosClientException`: POS HTTP calls with redacted error hints, order listing, and warehouse listing.
+- `Model/Order/PayloadBuilder`: creates Pancake order payloads from Magento orders.
+- `Model/Inbound/OrderPayloadParser`: parses GET order and webhook payloads into inbound updates.
+- `Model/Mapping/PancakeStatusMapper`, `PancakeStatusCatalog`, and `Model/Warehouse/PosWarehouseCatalog`.
+- `Api/PosApiConfigInterface`, `Model/ServiceCode`, and unit tests for payload, parser, and status mapping.

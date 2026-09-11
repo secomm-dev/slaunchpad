@@ -1,7 +1,7 @@
 ---
 id: DEC-TASKZR2ZNS-001
 title: POS adapter convention — Core + Bridge (Magento wiring) + Function (vendor logic)
-status: proposed             # chờ TL approve (Tier 2: architecture module, order lifecycle)
+status: rejected             # chưa từng được approve; bị MIG-002 (2026-09-11) thay bằng convention 2 lớp — xem DEC-TASKZR2ZNS-002
 owners: [tl, sa]
 decision_type: architecture
 approval_date:
@@ -9,7 +9,7 @@ created: 2026-09-10
 last_verified: 2026-09-10
 verified_against_commit:
 supersedes: []
-superseded_by:
+superseded_by: DEC-TASKZR2ZNS-002   # 2026-09-11: Function collapse vào Pancake (MIG-002)
 work_items: [TASK-ZR2ZNS]    # epic mirror SLP-30; thay thế constraint "một module Secomm_Pancake" của epic ban đầu
 ---
 

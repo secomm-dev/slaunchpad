@@ -1,18 +1,14 @@
 {
   "name": "secomm/module-pancake-function",
-  "description": "Pancake POS vendor functions (HTTP, payload, parse, status map) for Secomm_FulfillmentCore. No Magento admin/cron wiring.",
+  "description": "DEPRECATED: merged into secomm/module-pancake. Use Secomm_Pancake with Secomm_PancakeBridge.",
   "type": "magento2-module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": [
     "proprietary"
   ],
   "require": {
     "php": "~8.2.0||~8.3.0||~8.4.0",
-    "magento/framework": "*",
-    "magento/module-sales": "*",
-    "magento/module-store": "*",
-    "magento/module-config": "*",
-    "secomm/module-fulfillment-core": "*"
+    "magento/framework": "*"
   },
   "autoload": {
     "files": [

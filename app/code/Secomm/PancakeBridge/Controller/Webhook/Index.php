@@ -21,7 +21,7 @@ use Secomm\FulfillmentCore\Model\Inbound\InboundUpdateApplier;
 use Secomm\FulfillmentCore\Model\Log\FulfillmentLogger;
 use Secomm\PancakeBridge\Model\Order\PancakeOrderExporter;
 use Secomm\PancakeBridge\Model\Config\PancakeConfig;
-use Secomm\PancakeFunction\Model\Inbound\OrderPayloadParser;
+use Secomm\Pancake\Model\Inbound\OrderPayloadParser;
 
 /**
  * Optional inbound POST /pancake/webhook/index?secret=... POS OpenAPI does not document Magento webhooks.

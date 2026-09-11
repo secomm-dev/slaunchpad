@@ -92,3 +92,23 @@ Convention SLP-30 cập nhật: **Core + `Secomm_PancakeBridge` + `Secomm_Pancak
 | Behavior relocate only (export/poll/webhook/admin maps) | Parity expected; re-run full e2e DoD-01/02 after TL review if needed |
 
 Plan: `.cursor/tasks/SLP-30/plans/2026-09-10-bridge-function-convention.md`
+
+## Pancake + Bridge collapse (2026-09-11)
+
+Current convention: **Core + `Secomm_Pancake` + `Secomm_PancakeBridge`**. `Secomm_PancakeFunction` is a disabled deprecated stub.
+
+| Check | Result |
+|-------|--------|
+| Vendor logic and unit tests moved to `Secomm_Pancake` namespace | Pass |
+| Bridge dependency, PHP references, and DI mapper target use `Secomm_Pancake` | Pass |
+| `Secomm_Pancake` has no PHP `use Secomm\PancakeBridge\...` | Pass |
+| Pancake/Bridge `module.xml` exclude ShippingCore/Ghtk/Ahamove | Pass |
+| Function business code removed | Pass |
+| Unit tests (`Pancake` + `PancakeBridge`) | Pass — 7 tests, 23 assertions |
+| PHP lint across three module trees | Pass |
+| Composer validation across three modules | Pass with existing-style warnings for explicit versions and wildcard constraints |
+| `setup:upgrade` + cache flush | Pass |
+| Module status | Pancake/Bridge/Core enabled; Function disabled |
+| Poll smoke `--force --limit=1` | Pass — `ok=1 fail=0`, idempotent `skipped_same_event` |
+
+Current plan: `.cursor/tasks/SLP-30/plans/2026-09-11-pancake-plus-bridge-only.md`

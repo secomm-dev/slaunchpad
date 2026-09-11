@@ -15,10 +15,10 @@ use Secomm\FulfillmentCore\Model\Log\FulfillmentLogger;
 use Secomm\FulfillmentCore\Api\Data\WarehouseMapDto;
 use Secomm\FulfillmentCore\Api\OrderFulfillmentSourceResolverInterface;
 use Secomm\FulfillmentCore\Api\WarehouseMapResolverInterface;
-use Secomm\PancakeFunction\Model\Client\PosClient;
+use Secomm\Pancake\Model\Client\PosClient;
 use Secomm\PancakeBridge\Model\Config\PancakeConfig;
 use Secomm\PancakeBridge\Model\Order\PancakeOrderExporter;
-use Secomm\PancakeFunction\Model\Order\PayloadBuilder;
+use Secomm\Pancake\Model\Order\PayloadBuilder;
 
 class PancakeOrderExporterTest extends TestCase
 {

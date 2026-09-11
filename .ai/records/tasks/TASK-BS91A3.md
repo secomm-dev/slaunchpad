@@ -20,8 +20,8 @@ decisions: [DEC-TASKBS91A3-001]  # inbound đổi Magento order status khi có a
 decision_assessment: material
 components:
   - Secomm_FulfillmentCore
-  - Secomm_PancakeBridge    # update 2026-09-10 sau split TASK-ZR2ZNS (trước đây Secomm_Pancake)
-  - Secomm_PancakeFunction
+  - Secomm_PancakeBridge    # update 2026-09-10 sau split TASK-ZR2ZNS; 2026-09-11 MIG-002 dependency về Secomm_Pancake
+  - Secomm_Pancake          # vendor logic (catalog PancakeStatusCatalog) — revive theo MIG-002
 source_areas:
   - app/code/Secomm/FulfillmentCore/etc/db_schema.xml                                     # bảng secomm_fulfillment_status_map
   - app/code/Secomm/FulfillmentCore/Model/Status/                                        # StatusMapResolver / StatusMapRepository / StatusMapConflictException

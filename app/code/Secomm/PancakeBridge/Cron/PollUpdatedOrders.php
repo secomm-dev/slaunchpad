@@ -17,9 +17,9 @@ use Secomm\FulfillmentCore\Model\FulfillmentExport;
 use Secomm\FulfillmentCore\Model\Inbound\InboundUpdateApplier;
 use Secomm\FulfillmentCore\Model\Log\FulfillmentLogger;
 use Secomm\FulfillmentCore\Model\ResourceModel\FulfillmentExport\CollectionFactory as ExportCollectionFactory;
-use Secomm\PancakeFunction\Model\Client\PosClient;
+use Secomm\Pancake\Model\Client\PosClient;
 use Secomm\PancakeBridge\Model\Config\PancakeConfig;
-use Secomm\PancakeFunction\Model\Inbound\OrderPayloadParser;
+use Secomm\Pancake\Model\Inbound\OrderPayloadParser;
 use Secomm\PancakeBridge\Model\Order\PancakeOrderExporter;
 
 /**

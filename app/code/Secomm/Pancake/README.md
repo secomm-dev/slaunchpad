@@ -1,19 +1,17 @@
-# Secomm_Pancake — DEPRECATED
+# Secomm_Pancake
 
-This module is **deprecated** and retained only as an empty registration stub.
+Pancake POS vendor logic for offline fulfillment (SLP-30):
 
-## Use instead
+- HTTP client (`PosClient`)
+- Create-order payload builder
+- Inbound order JSON parser
+- Status mapper and status catalog
+- Warehouse catalog API
 
-- **Secomm_PancakeFunction** — POS API client, payload builder, inbound parser, status/warehouse catalogs, status mapper.
-- **Secomm_PancakeBridge** — Magento wiring (admin UI, cron, CLI, webhook, FulfillmentCore pools).
+Depends on `Secomm_FulfillmentCore` APIs. Magento admin, cron, CLI, webhook, and configuration wiring live in the separate `Secomm_PancakeBridge` module. `Secomm_Pancake` must not depend on the Bridge.
 
-## Action required
+Configuration is injected through `PosApiConfigInterface`, implemented by the Bridge Magento configuration class.
 
-Disable this module and enable Bridge + Function:
+`Secomm_PancakeFunction` is deprecated and its vendor logic was merged into this module in version 0.4.0.
 
-```bash
-php bin/magento module:disable Secomm_Pancake
-php bin/magento module:enable Secomm_PancakeFunction Secomm_PancakeBridge
-php bin/magento setup:upgrade
-php bin/magento cache:flush
-```
+Does not depend on `Secomm_ShippingCore`, Ghtk, or Ahamove.

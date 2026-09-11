@@ -9,23 +9,26 @@ specification_level: MINI
 spec_status: DRAFT            # plan + epic do dev session 2026-09-10 tự cập nhật; chờ TL approve để VALID
 specification_ref: "[SLP-30] Epic.md (rewrite 2026-09-10) + plans/2026-09-10-bridge-function-convention.md"
 risk: high                    # restructure module + module enable/disable + admin UI relocate; không đổi DB schema Core
-status: in_progress           # code xong + smoke pass (2026-09-10), working tree CHƯA commit, chờ TL review
+status: in_progress           # code xong + smoke pass; working tree CHƯA commit, chờ TL review
 created: 2026-09-10
-updated: 2026-09-10
+updated: 2026-09-11
 external_refs:
-  cursor: SLP-30              # mirror .cursor/tasks/SLP-30/ — consolidate 4 ticket con CONV-001/FNC-001/BRG-001/MIG-001
-legacy_ids: []                # không phải consolidate từ SL-NNN; là 4 ticket Cursor con của epic
+  cursor: SLP-30              # mirror .cursor/tasks/SLP-30/ — consolidate tickets con CONV/FNC/BRG/MIG-001 + MIG-002
+legacy_ids: []                # không phải consolidate từ SL-NNN; là các ticket Cursor con của epic
 ticket_ref:
   - SLP-30/CONV-001
   - SLP-30/FNC-001
   - SLP-30/BRG-001
   - SLP-30/MIG-001
-decisions: [DEC-TASKZR2ZNS-001]
+  - SLP-30/MIG-002
+decisions:
+  - DEC-TASKZR2ZNS-001        # 3 lớp — rejected 2026-09-11
+  - DEC-TASKZR2ZNS-002        # 2 lớp (Pancake + Bridge) — hiện hành
 decision_assessment: material
 components:
-  - Secomm_PancakeBridge      # mới (0.1.0)
-  - Secomm_PancakeFunction    # mới (0.1.0)
-  - Secomm_Pancake            # legacy stub 0.9.0-deprecated
+  - Secomm_Pancake            # vendor logic (0.4.0 — revive theo MIG-002)
+  - Secomm_PancakeBridge      # Magento wiring (0.2.0)
+  - Secomm_PancakeFunction    # deprecated stub disabled (0.1.1)
 source_areas:
   - app/code/Secomm/PancakeBridge/
   - app/code/Secomm/PancakeFunction/
@@ -49,6 +52,8 @@ supersedes: []
 ## Summary
 
 Tách adapter đơn `Secomm_Pancake` theo convention **Core + Bridge + Function**: `Secomm_PancakeFunction` (vendor logic: PosClient, PayloadBuilder, parser, status mapper/catalog, warehouse catalog) + `Secomm_PancakeBridge` (Magento wiring: config, exporter, cron/CLI/webhook, admin warehouse/status map, DI pools, data patches). Legacy `Secomm_Pancake` thành registration stub disabled. Behavior relocate-only — không đổi contract POS, DB schema Core, config path (`pancake/*`), `service_code=pancake`.
+
+> **UPDATE 2026-09-11 (MIG-002 — ticket mirror SLP-30/MIG-002, working tree)**: convention 3 lớp bị **thu gọn còn 2 lớp** ngay ngày hôm sau — vendor logic gộp về **`Secomm_Pancake` 0.4.0** (revive), `Secomm_PancakeFunction` thành deprecated stub disabled (0.1.1), Bridge 0.2.0 đổi dependency/namespaces sang `Secomm_Pancake`. Boundary chính (wiring ↔ vendor logic, dependency một chiều, BC config/CLI/service_code) giữ nguyên. DEC: `DEC-TASKZR2ZNS-001` rejected → `DEC-TASKZR2ZNS-002` hiện hành. Evidence: `.ai/evidence/SLP-30/README.md` §"Pancake + Bridge collapse (2026-09-11)" (7 tests/23 assertions, setup:upgrade, module status, poll smoke ok=1).
 
 ## Mini Spec
 

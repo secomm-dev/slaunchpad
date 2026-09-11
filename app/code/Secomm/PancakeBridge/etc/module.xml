@@ -9,7 +9,7 @@
     <module name="Secomm_PancakeBridge">
         <sequence>
             <module name="Secomm_FulfillmentCore"/>
-            <module name="Secomm_PancakeFunction"/>
+            <module name="Secomm_Pancake"/>
             <module name="Magento_Sales"/>
             <module name="Magento_Config"/>
             <module name="Magento_Cron"/>

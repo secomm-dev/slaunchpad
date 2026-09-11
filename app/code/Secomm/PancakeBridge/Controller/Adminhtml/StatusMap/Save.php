@@ -16,7 +16,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Secomm\FulfillmentCore\Api\StatusMapRepositoryInterface;
 use Secomm\FulfillmentCore\Model\FulfillmentStatusMapFactory;
 use Secomm\FulfillmentCore\Model\Status\StatusMapConflictException;
-use Secomm\PancakeFunction\Model\Mapping\PancakeStatusCatalog;
+use Secomm\Pancake\Model\Mapping\PancakeStatusCatalog;
 use Secomm\PancakeBridge\Model\Order\PancakeOrderExporter;
 
 /**

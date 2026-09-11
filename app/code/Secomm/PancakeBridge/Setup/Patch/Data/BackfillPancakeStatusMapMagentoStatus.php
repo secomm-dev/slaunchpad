@@ -12,8 +12,8 @@ namespace Secomm\PancakeBridge\Setup\Patch\Data;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Secomm\FulfillmentCore\Model\ResourceModel\FulfillmentStatusMap\CollectionFactory;
-use Secomm\PancakeFunction\Model\Mapping\PancakeStatusCatalog;
-use Secomm\PancakeFunction\Model\ServiceCode;
+use Secomm\Pancake\Model\Mapping\PancakeStatusCatalog;
+use Secomm\Pancake\Model\ServiceCode;
 
 /**
  * Ensure magento_order_status is filled on existing Pancake status map rows.

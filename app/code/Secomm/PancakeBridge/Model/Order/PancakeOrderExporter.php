@@ -16,11 +16,11 @@ use Secomm\FulfillmentCore\Api\Data\ExportResultInterface;
 use Secomm\FulfillmentCore\Api\OrderExporterInterface;
 use Secomm\FulfillmentCore\Api\OrderFulfillmentSourceResolverInterface;
 use Secomm\FulfillmentCore\Api\WarehouseMapResolverInterface;
-use Secomm\PancakeFunction\Model\Client\PosClient;
-use Secomm\PancakeFunction\Model\Client\PosClientException;
-use Secomm\PancakeFunction\Model\Order\PayloadBuilder;
+use Secomm\Pancake\Model\Client\PosClient;
+use Secomm\Pancake\Model\Client\PosClientException;
+use Secomm\Pancake\Model\Order\PayloadBuilder;
 use Secomm\PancakeBridge\Model\Config\PancakeConfig;
-use Secomm\PancakeFunction\Model\ServiceCode;
+use Secomm\Pancake\Model\ServiceCode;
 
 class PancakeOrderExporter implements OrderExporterInterface
 {

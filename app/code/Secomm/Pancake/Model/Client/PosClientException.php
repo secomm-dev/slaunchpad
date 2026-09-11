@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-use Magento\Framework\Component\ComponentRegistrar;
+namespace Secomm\Pancake\Model\Client;
 
-ComponentRegistrar::register(
-    ComponentRegistrar::MODULE,
-    'Secomm_PancakeFunction',
-    __DIR__
-);
+use RuntimeException;
+
+class PosClientException extends RuntimeException
+{
+}

@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace Secomm\PancakeBridge\Model\Config;
 
-use Secomm\PancakeFunction\Api\PosApiConfigInterface;
+use Secomm\Pancake\Api\PosApiConfigInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;

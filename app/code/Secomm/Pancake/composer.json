@@ -1,14 +1,18 @@
 {
   "name": "secomm/module-pancake",
-  "description": "DEPRECATED — replaced by secomm/module-pancake-bridge + secomm/module-pancake-function. Disable Secomm_Pancake and enable those modules instead.",
+  "description": "Pancake POS vendor logic for FulfillmentCore; Bridge does Magento wiring.",
   "type": "magento2-module",
-  "version": "0.9.0-deprecated",
+  "version": "0.4.0",
   "license": [
     "proprietary"
   ],
   "require": {
     "php": "~8.2.0||~8.3.0||~8.4.0",
-    "magento/framework": "*"
+    "magento/framework": "*",
+    "magento/module-sales": "*",
+    "magento/module-store": "*",
+    "magento/module-config": "*",
+    "secomm/module-fulfillment-core": "*"
   },
   "autoload": {
     "files": [

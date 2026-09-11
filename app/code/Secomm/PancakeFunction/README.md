@@ -1,15 +1,10 @@
 # Secomm_PancakeFunction
 
-Pancake POS **vendor functions** for offline fulfillment (SLP-30):
+**DEPRECATED**: all vendor logic was merged into `Secomm_Pancake` in SLP-30.
 
-- HTTP client (`PosClient`)
-- Create-order payload builder
-- Inbound order JSON parser
-- Status mapper / status catalog
-- Warehouse catalog API
+Use these modules instead:
 
-Depends on `Secomm_FulfillmentCore` APIs. Magento admin/cron/webhook wiring lives in a separate Bridge Magento module (this Function module must not depend on it).
+- `Secomm_Pancake` for Pancake POS vendor logic.
+- `Secomm_PancakeBridge` for Magento configuration, cron, CLI, webhook, and admin wiring.
 
-Config is injected via `PosApiConfigInterface` (implemented by the Bridge Magento config class).
-
-Does **not** depend on `Secomm_ShippingCore` / Ghtk / Ahamove.
+This package remains only as a disabled compatibility stub and contains no business logic.

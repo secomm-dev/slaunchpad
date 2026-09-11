@@ -11,7 +11,7 @@ namespace Secomm\PancakeBridge\Model\Log;
 
 use Secomm\FulfillmentCore\Api\PosLogConfigInterface;
 use Secomm\PancakeBridge\Model\Config\PancakeConfig;
-use Secomm\PancakeFunction\Model\ServiceCode;
+use Secomm\Pancake\Model\ServiceCode;
 
 /**
  * Pancake admin flag for FulfillmentCore file logging.

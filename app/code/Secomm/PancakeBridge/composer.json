@@ -1,8 +1,8 @@
 {
   "name": "secomm/module-pancake-bridge",
-  "description": "Magento wiring for Pancake POS (admin, cron, webhook, FulfillmentCore pools). Depends on PancakeFunction + FulfillmentCore.",
+  "description": "Magento wiring for Pancake POS (admin, cron, webhook, FulfillmentCore pools). Depends on Pancake + FulfillmentCore.",
   "type": "magento2-module",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": [
     "proprietary"
   ],
@@ -16,7 +16,7 @@
     "magento/module-backend": "*",
     "magento/module-ui": "*",
     "magento/module-inventory-api": "*",
-    "secomm/module-pancake-function": "*",
+    "secomm/module-pancake": "*",
     "secomm/module-fulfillment-core": "*"
   },
   "autoload": {

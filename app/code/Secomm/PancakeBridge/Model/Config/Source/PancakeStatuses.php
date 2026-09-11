@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace Secomm\PancakeBridge\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
-use Secomm\PancakeFunction\Model\Mapping\PancakeStatusCatalog;
+use Secomm\Pancake\Model\Mapping\PancakeStatusCatalog;
 
 /**
  * Admin select of known Pancake order status codes (static catalog, not live API).

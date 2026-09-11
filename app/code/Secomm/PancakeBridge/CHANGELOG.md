@@ -1,10 +1,16 @@
 # Changelog — Secomm_PancakeBridge
 
+## 0.2.0 — 2026-09-11 (SLP-30 / MIG-002)
+
+### Changed
+- Updated the vendor-module dependency and namespaces to `Secomm_Pancake` 0.4.0.
+- Preserved Bridge exporters, Magento configuration, cron, CLI, webhook, admin maps, and FulfillmentCore DI pools.
+
 ## 0.1.0 — 2026-09-10 (SLP-30 / BRG-001)
 
 ### Added
 - Magento wiring split from `Secomm_Pancake` (monolith — deprecated 2026-09-10, xem `Secomm_Pancake` stub): admin UI (Warehouse/Status Mapping), cron `secomm_pancake_poll_orders` + CLI `secomm:pancake:poll`, webhook `POST /pancake/webhook/index`, `PancakeOrderExporter`, `PancakeConfig` (+ preference `PosApiConfigInterface`), data patches seed/backfill status maps, FulfillmentCore pool registration (exporter/mapper/log gate).
-- Depends on `Secomm_PancakeFunction` (POS client, payload, mapper) + `Secomm_FulfillmentCore`. Behavior giữ nguyên (relocate-only); config path `pancake/*`, `service_code=pancake`, tên CLI/bridge route BC.
+- Depends on `Secomm_Pancake` (POS client, payload, mapper) + `Secomm_FulfillmentCore`. Behavior giữ nguyên (relocate-only); config path `pancake/*`, `service_code=pancake`, tên CLI/bridge route BC.
 
 ---
 

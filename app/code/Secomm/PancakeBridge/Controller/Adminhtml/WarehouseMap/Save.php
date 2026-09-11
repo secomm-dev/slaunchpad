@@ -17,7 +17,7 @@ use Secomm\FulfillmentCore\Api\WarehouseMapRepositoryInterface;
 use Secomm\FulfillmentCore\Model\FulfillmentWarehouseMapFactory;
 use Secomm\FulfillmentCore\Model\Warehouse\WarehouseMapConflictException;
 use Secomm\PancakeBridge\Model\Order\PancakeOrderExporter;
-use Secomm\PancakeFunction\Model\Warehouse\PosWarehouseCatalog;
+use Secomm\Pancake\Model\Warehouse\PosWarehouseCatalog;
 
 class Save extends Action implements HttpPostActionInterface
 {

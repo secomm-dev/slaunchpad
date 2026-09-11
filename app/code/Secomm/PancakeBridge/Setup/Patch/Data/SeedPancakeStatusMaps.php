@@ -14,8 +14,8 @@ use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Secomm\FulfillmentCore\Api\StatusMapRepositoryInterface;
 use Secomm\FulfillmentCore\Model\FulfillmentStatusMapFactory;
 use Secomm\FulfillmentCore\Model\ResourceModel\FulfillmentStatusMap\CollectionFactory;
-use Secomm\PancakeFunction\Model\Mapping\PancakeStatusCatalog;
-use Secomm\PancakeFunction\Model\ServiceCode;
+use Secomm\Pancake\Model\Mapping\PancakeStatusCatalog;
+use Secomm\Pancake\Model\ServiceCode;
 
 /**
  * Seed default Magento status ↔ Pancake status maps (idempotent; same idea as empty warehouse grid + defaults).

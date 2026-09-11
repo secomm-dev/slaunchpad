@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace Secomm\PancakeBridge\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
-use Secomm\PancakeFunction\Model\Warehouse\PosWarehouseCatalog;
+use Secomm\Pancake\Model\Warehouse\PosWarehouseCatalog;
 
 class PancakeWarehouses implements OptionSourceInterface
 {
