@@ -200,3 +200,12 @@ Template cho entry kế tiếp — copy từ đây:
 - **Root cause / trigger**: static materialize khác chiến lược giữa các lần deploy/khởi tạo (symlink ở developer mode, copy khi deploy bằng copy strategy) + lần "xóa toàn bộ pub/static/frontend/" 09-04 chỉ tái tạo lại 1 phần.
 - **Action / prevention**: khi sửa asset (`css/js/template`) đã từng deploy mà "fix không ăn": `ls -la pub/static/frontend/<theme>/<locale>/<Vendor>_<Module>/...` — nếu là regular-file → `rm` bản copy (as secomm) rồi request lại (dev-mode serve on-demand), hoặc chạy `setup:static-content:deploy` ở env deploy. Không kết luận "CSS sai" trước khi kiểm tra bản serve thật (fetch CSS URL trong page, so sheet cssRules).
 - **Owner**: TL (review) — bổ sung deploy checklist như đề xuất BUG-MNEZ92
+## LL-0018 — Curl QC flow: form_key rotate sau loginPost + guest OAR 2.4.8 đổi field name & thiếu `oar_zip` → 500
+
+- **Date**: 2026-09-11
+- **Source**: BUG-HE2NGV batch 4 (SLP-128) — live verify newsletter + order comment labels
+- **Type**: avoid
+- **Lesson**: (1) Theme Hyvä render `form_key` bằng JS (`document.createElement`) — HTML không chứa value; lấy form_key từ PHP session file `/var/lib/php/sessions/sess_<PHPSESSID>` (regex `form_key";s:16:"..."`, chạy as `secomm`). (2) **`loginPost` rotate form_key** — key lấy trước login chết sau login; đọc lại session file sau mỗi POST đổi trạng thái. (3) Guest order lookup 2.4.8: field là `oar_billing_lastname` (không phải `oar_billing`), và POST phải mang key `oar_zip` (rỗng cũng được) — thiếu → `Undefined array key "oar_zip"` warning trong `Sales/Helper/Guest.php:278` → **HTTP 500** ở developer mode. (4) `sales/guest/view` redirect user đã login về `sales/order/history` — verify guest page phải dùng session guest tươi.
+- **Root cause / trigger**: script curl QC đi mô phỏng flow guest/customer; các guard session + controller helper của core khác nhau theo flow và version.
+- **Action / prevention**: script curl QC My Account/guest: (a) seed session qua GET trang không-FPC (`customer/account/login`), (b) đọc form_key từ session file mỗi lần trước POST, (c) gọi lại đúng field name từ HTML form thật (grep `name="oar*"`), (d) flow guest luôn session mới, không tái dùng jar đã login.
+- **Owner**: dev/QC team (ai viết script curl verify)
