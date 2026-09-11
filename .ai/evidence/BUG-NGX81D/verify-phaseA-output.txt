@@ -1,0 +1,64 @@
+PASS setup-alpine-init: Alpine component initialized (x-defer intersect)
+PASS AC001-no-native-block-reached-handler: empty submit reached custom handler (novalidate flow), inline message shown
+PASS AC001-message-text: message: "Vui lòng kiểm tra bạn đã nhập đủ thông tin bắt buộc"
+PASS AC001-message-above-button: inline error renders ABOVE the submit button (QA-confirmed position)
+PASS AC001-button-not-disabled: submit button NOT locked (disabled=false, visible=true) — ticket symptom gone
+PASS AC001-no-vendor-banner: no "ReCaptcha validation failed" global banner (vendor lock path not reached)
+PASS AC001-no-graphql: graphql calls after empty submit: 0
+PASS AC006-flow-unchanged-graphql-runs: captcha disabled: submit went through to GraphQL (calls: 1) — no pre-check blocking
+PASS AC006-button-still-usable: button never locked during/after flow
+PASS AC006-outcome: success: "Đánh giá đã được gửi và chờ duyệt."
+
+SUMMARY [A]: 10/10 checks passed
+[
+  {
+    "id": "setup-alpine-init",
+    "ok": true,
+    "detail": "Alpine component initialized (x-defer intersect)"
+  },
+  {
+    "id": "AC001-no-native-block-reached-handler",
+    "ok": true,
+    "detail": "empty submit reached custom handler (novalidate flow), inline message shown"
+  },
+  {
+    "id": "AC001-message-text",
+    "ok": true,
+    "detail": "message: \"Vui lòng kiểm tra bạn đã nhập đủ thông tin bắt buộc\""
+  },
+  {
+    "id": "AC001-message-above-button",
+    "ok": true,
+    "detail": "inline error renders ABOVE the submit button (QA-confirmed position)"
+  },
+  {
+    "id": "AC001-button-not-disabled",
+    "ok": true,
+    "detail": "submit button NOT locked (disabled=false, visible=true) — ticket symptom gone"
+  },
+  {
+    "id": "AC001-no-vendor-banner",
+    "ok": true,
+    "detail": "no \"ReCaptcha validation failed\" global banner (vendor lock path not reached)"
+  },
+  {
+    "id": "AC001-no-graphql",
+    "ok": true,
+    "detail": "graphql calls after empty submit: 0"
+  },
+  {
+    "id": "AC006-flow-unchanged-graphql-runs",
+    "ok": true,
+    "detail": "captcha disabled: submit went through to GraphQL (calls: 1) — no pre-check blocking"
+  },
+  {
+    "id": "AC006-button-still-usable",
+    "ok": true,
+    "detail": "button never locked during/after flow"
+  },
+  {
+    "id": "AC006-outcome",
+    "ok": true,
+    "detail": "success: \"Đánh giá đã được gửi và chờ duyệt.\""
+  }
+]

@@ -1,0 +1,58 @@
+PASS setup-alpine-init: Alpine component initialized (x-defer intersect)
+PASS AC001B-field-message: empty submit: field message "Vui lòng kiểm tra bạn đã nhập đủ thông tin bắt buộc"
+PASS AC001B-button-not-disabled: button NOT locked (disabled=false) — vendor lock line exists in HTML but unreachable
+PASS AC001B-no-banner-no-graphql: banner=false, graphql=0
+PASS AC002-no-token: no usable token (field present=true, value length=0) — Google injects an empty textarea with the dummy key; pre-check catches both flavors
+PASS AC002-captcha-message: captcha inline message replaces field message: "Vui lòng xác thực reCAPTCHA trước khi gửi đánh giá."
+PASS AC002-message-above-button: captcha message renders ABOVE the submit button
+PASS AC002-button-not-disabled: button NOT locked — customer can tick captcha and resubmit without reload
+PASS AC002-no-banner-no-graphql: banner=false, graphql=0 (early return before vendor JS + placeReview)
+
+SUMMARY [B]: 9/9 checks passed
+[
+  {
+    "id": "setup-alpine-init",
+    "ok": true,
+    "detail": "Alpine component initialized (x-defer intersect)"
+  },
+  {
+    "id": "AC001B-field-message",
+    "ok": true,
+    "detail": "empty submit: field message \"Vui lòng kiểm tra bạn đã nhập đủ thông tin bắt buộc\""
+  },
+  {
+    "id": "AC001B-button-not-disabled",
+    "ok": true,
+    "detail": "button NOT locked (disabled=false) — vendor lock line exists in HTML but unreachable"
+  },
+  {
+    "id": "AC001B-no-banner-no-graphql",
+    "ok": true,
+    "detail": "banner=false, graphql=0"
+  },
+  {
+    "id": "AC002-no-token",
+    "ok": true,
+    "detail": "no usable token (field present=true, value length=0) — Google injects an empty textarea with the dummy key; pre-check catches both flavors"
+  },
+  {
+    "id": "AC002-captcha-message",
+    "ok": true,
+    "detail": "captcha inline message replaces field message: \"Vui lòng xác thực reCAPTCHA trước khi gửi đánh giá.\""
+  },
+  {
+    "id": "AC002-message-above-button",
+    "ok": true,
+    "detail": "captcha message renders ABOVE the submit button"
+  },
+  {
+    "id": "AC002-button-not-disabled",
+    "ok": true,
+    "detail": "button NOT locked — customer can tick captcha and resubmit without reload"
+  },
+  {
+    "id": "AC002-no-banner-no-graphql",
+    "ok": true,
+    "detail": "banner=false, graphql=0 (early return before vendor JS + placeReview)"
+  }
+]

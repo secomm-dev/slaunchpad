@@ -12,6 +12,15 @@
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <!--
+            BUG-2MK37V (SLP-199) — align the apply-discount-code section UI.
+            The OSC checkout runs in the Magento/luma scope (LL-0011), so this CSS
+            must be attached at module level — a theme stylesheet never loads here
+            (same mechanism as BUG-NY0M3S / Launchpad_MageplazaExtraFeeFix).
+        -->
+        <css src="Launchpad_Osc::css/osc-discount-code.css"/>
+    </head>
     <body>
         <referenceBlock name="checkout.root">
             <arguments>
