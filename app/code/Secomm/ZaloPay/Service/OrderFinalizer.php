@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Service;
 
-use Magento\Checkout\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
@@ -34,13 +33,16 @@ use Secomm\ZaloPay\Model\QuoteContractFingerprint;
  *
  * One DB transaction with the attempt row locked (SELECT ... FOR UPDATE on
  * app_trans_id) — see the class-level atomicity note below:
- *  - FINALIZED already   -> recover the BOUND order (binding validated) and
- *                           rebuild the checkout success session — the ONLY
- *                           place session state is written (BLOCKER 2);
+ *  - FINALIZED already   -> recover the BOUND order (binding validated);
  *  - PAID                -> verify the CURRENT quote still matches the paid
  *                           payment contract (amount + fingerprint,
  *                           BLOCKER 1), then place, bind, FINALIZE, capture;
  *  - anything else       -> refused (illegal transition).
+ *
+ * PURE business boundary: no Magento\Checkout\Model\Session dependency —
+ * customer-facing session state is prepared by SuccessSessionPreparer on
+ * the browser Return path only, so the IPN (server-to-server, no browser)
+ * never reads or writes a session (review-corrective TASK-EDS9T5 Blocker 4).
  *
  * Contract mismatch (quote edited after payment, bound order missing/wrong):
  * NO order is created, the attempt keeps its money-real state (PAID or
@@ -59,6 +61,21 @@ use Secomm\ZaloPay\Model\QuoteContractFingerprint;
  * reservations + attempt FINALIZED + local capture commit together at THIS
  * class's commit() — or not at all. An intermediate ORDER_CREATED state is
  * unnecessary.
+ *
+ * Sole quote -> Sales Order boundary: this class is the ONLY place a
+ * ZaloPay quote is converted automatically. Its internal placeOrder() call
+ * is authorized by OrderPlacementAuthorization (opened/cleared around the
+ * call) — every other caller of CartManagementInterface::placeOrder is
+ * refused by CartManagementPlaceOrderGuard for ZaloPay quotes.
+ *
+ * Reconciliation discipline (corrective round 3): a quarantined attempt
+ * (requires_reconciliation — amount/contract/provider-id conflict) can
+ * NEVER be finalized by any generic caller: the fresh locked row is
+ * re-checked here and refused. Contract-mismatch evidence is persisted
+ * through PaymentAttemptLifecycle::recordContractMismatch() — this class
+ * NEVER saves its (possibly stale, pre-rollback) attempt copy after
+ * releasing the row lock, so a stale save can never overwrite a newer
+ * FINALIZED binding (corrective round 3, Blocker 2).
  */
 class OrderFinalizer
 {
@@ -75,7 +92,8 @@ class OrderFinalizer
      * @param Rate $rate
      * @param QuoteContractFingerprint $fingerprint
      * @param ResourceConnection $resourceConnection
-     * @param Session $checkoutSession
+     * @param OrderPlacementAuthorization $placementAuthorization
+     * @param PaymentAttemptLifecycle $lifecycle
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -89,7 +107,8 @@ class OrderFinalizer
         private readonly Rate                              $rate,
         private readonly QuoteContractFingerprint          $fingerprint,
         private readonly ResourceConnection                $resourceConnection,
-        private readonly Session                           $checkoutSession,
+        private readonly OrderPlacementAuthorization       $placementAuthorization,
+        private readonly PaymentAttemptLifecycle           $lifecycle,
         private readonly LoggerInterface                   $logger
     ) {
     }
@@ -119,13 +138,26 @@ class OrderFinalizer
                 );
             }
 
+            if ($locked->getRequiresReconciliation()) {
+                // Quarantined (amount/contract/provider-id conflict): money
+                // is real but automatic placement is structurally refused —
+                // only an explicit manual reconciliation may clear it.
+                throw new ContractMismatchException(
+                    __(
+                        'ZaloPay attempt "%1" requires reconciliation (%2) and cannot be auto-finalized.',
+                        $appTransId,
+                        (string)$locked->getReconciliationCode()
+                    )
+                );
+            }
+
             if ($locked->getPaymentStatus() === PaymentAttemptInterface::STATUS_FINALIZED) {
-                // Duplicate return/callback: recover the bound order and
-                // rebuild the success session (BLOCKER 2). Validation inside
-                // recoverBoundOrder throws on a broken binding.
+                // Duplicate return/callback: recover the bound order.
+                // Validation inside recoverBoundOrder throws on a broken
+                // binding. Session rebuild is the caller's (Return path)
+                // concern via SuccessSessionPreparer — never done here.
                 $existing = $this->recoverBoundOrder($locked, $appTransId);
                 $connection->commit();
-                $this->prepareSuccessSession($locked, $existing);
 
                 return $existing;
             }
@@ -144,7 +176,9 @@ class OrderFinalizer
                 ? $this->recoverBoundOrder($locked, $appTransId)
                 : $this->placeOrderForAttempt($locked);
 
-            if ($providerTransactionId !== '') {
+            // The FIRST authoritative provider id owns the row: only
+            // backfill when empty — never overwrite a recorded zp_trans_id.
+            if ($providerTransactionId !== '' && $locked->getProviderTransactionId() === null) {
                 $locked->setProviderTransactionId($providerTransactionId);
             }
             $locked->markFinalized((int)$order->getEntityId());
@@ -155,32 +189,18 @@ class OrderFinalizer
             $connection->commit();
         } catch (ContractMismatchException $exception) {
             $connection->rollBack();
-            // Persist AFTER the rollback so the reason survives; the attempt
+            // Persist AFTER the rollback so the reason survives — through the
+            // lifecycle (fresh row lock), NEVER by saving this possibly stale
+            // pre-rollback copy (corrective round 3, Blocker 2). The attempt
             // keeps its money-real state (PAID/FINALIZED) — never FAILED.
-            $this->recordContractMismatch($locked ?? $attempt, $exception, $appTransId);
+            $this->lifecycle->recordContractMismatch($appTransId, (string)$exception->getMessage());
             throw $exception;
         } catch (\Exception $e) {
             $connection->rollBack();
             throw $e;
         }
 
-        $this->prepareSuccessSession($attempt, $order);
-
         return $order;
-    }
-
-    /**
-     * Legacy alias kept for callers that pre-date the review rename.
-     *
-     * @param PaymentAttemptInterface $attempt
-     * @param string $providerTransactionId
-     * @return OrderInterface
-     * @throws ContractMismatchException
-     * @throws LocalizedException
-     */
-    public function finalize(PaymentAttemptInterface $attempt, string $providerTransactionId = ''): OrderInterface
-    {
-        return $this->finalizeOrRecover($attempt, $providerTransactionId);
     }
 
     /**
@@ -201,6 +221,16 @@ class OrderFinalizer
 
         if ($quote !== null && $quote->getIsActive()) {
             $this->assertQuoteMatchesContract($attempt, $quote);
+            // THE internal authorization: payment verification alone (PAID)
+            // never permits a ZaloPay placement — the placeOrder guard only
+            // lets the call through when it consumes THIS grant, bound to the
+            // exact (quote, attempt, app_trans_id). Single-use + finally
+            // clear: a second generic call in this request can never pass.
+            $this->placementAuthorization->grant(
+                (int)$attempt->getQuoteId(),
+                (int)$attempt->getEntityId(),
+                (string)$attempt->getAppTransId()
+            );
             try {
                 $orderId = $this->cartManagement->placeOrder((int)$attempt->getQuoteId());
 
@@ -212,6 +242,8 @@ class OrderFinalizer
                     'ZaloPay finalizer: quote submitted concurrently, recovering by reserved order id.',
                     ['app_trans_id' => $attempt->getAppTransId()]
                 );
+            } finally {
+                $this->placementAuthorization->clear();
             }
         }
 
@@ -356,10 +388,10 @@ class OrderFinalizer
     }
 
     /**
-     * Capture a PENDING_PAYMENT order (mirrors UpdateOrderCommand semantics;
-     * here the capture is driven by the authoritative v2/query verification).
-     * Local only — the ZaloPay gateway `capture` command is a NullCommand,
-     * so no HTTP runs inside the transaction.
+     * Capture a PENDING_PAYMENT order — the authoritative v2/query/IPN
+     * verification has already confirmed the money, so the local capture
+     * finalises the order state. Local only — the ZaloPay gateway `capture`
+     * command is a NullCommand, so no HTTP runs inside the transaction.
      *
      * @param OrderInterface $order
      * @param string $appTransId
@@ -385,66 +417,6 @@ class OrderFinalizer
         /** @var \Magento\Sales\Model\Order $order */
         $order->addCommentToStatusHistory($message);
         $this->orderRepository->save($order);
-    }
-
-    /**
-     * Persist the reconciliation reason AFTER the outer transaction has been
-     * rolled back (a save inside the rollback path would be lost). The
-     * attempt keeps its money-real state — FAILED is never used here.
-     *
-     * @param PaymentAttemptInterface $attempt
-     * @param ContractMismatchException $exception
-     * @param string $appTransId
-     * @return void
-     */
-    private function recordContractMismatch(
-        PaymentAttemptInterface $attempt,
-        ContractMismatchException $exception,
-        string $appTransId
-    ): void {
-        $this->logger->critical(
-            'ZaloPay contract mismatch — automatic order creation refused.',
-            [
-                'app_trans_id' => $appTransId,
-                'attempt_id' => $attempt->getEntityId(),
-                'status' => $attempt->getPaymentStatus(),
-                'reason' => $exception->getMessage(),
-            ]
-        );
-        try {
-            $attempt->setLastError(
-                'Contract mismatch — no automatic order creation: ' . $exception->getMessage()
-            );
-            $this->repository->save($attempt);
-        } catch (\Exception $saveError) {
-            $this->logger->critical(
-                'ZaloPay contract-mismatch state could not be persisted: ' . $saveError->getMessage(),
-                ['app_trans_id' => $appTransId, 'attempt_id' => $attempt->getEntityId()]
-            );
-        }
-    }
-
-    /**
-     * Mirror the core Onepage::saveOrder session updates so the standard
-     * success page validates after the payment-first redirect flow. This is
-     * the ONLY writer of the success-session state (BLOCKER 2).
-     *
-     * @param PaymentAttemptInterface $attempt
-     * @param OrderInterface $order
-     * @return void
-     */
-    private function prepareSuccessSession(PaymentAttemptInterface $attempt, OrderInterface $order): void
-    {
-        try {
-            $this->checkoutSession
-                ->setLastQuoteId($attempt->getQuoteId())
-                ->setLastSuccessQuoteId($attempt->getQuoteId())
-                ->setLastOrderId((int)$order->getEntityId())
-                ->setLastRealOrderId((string)$order->getIncrementId())
-                ->setLastOrderStatus((string)$order->getState());
-        } catch (\Exception $e) {
-            $this->logger->error('ZaloPay success session preparation failed: ' . $e->getMessage());
-        }
     }
 
     /**

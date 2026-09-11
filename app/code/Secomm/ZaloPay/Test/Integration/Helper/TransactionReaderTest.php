@@ -7,25 +7,18 @@ declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Test\Integration\Helper;
 
-use \Secomm\ZaloPay\Gateway\Helper\TransactionReader as Data;
-use Secomm\ZaloPay\Gateway\Request\AbstractDataBuilder;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Secomm\ZaloPay\Gateway\Helper\TransactionReader as Data;
+use Secomm\ZaloPay\Gateway\Validator\AbstractResponseValidator;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Payment\Gateway\Config\Config;
-use Magento\Sales\Model\Order;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
-use Secomm\ZaloPay\Gateway\Validator\AbstractResponseValidator;
-use InvalidArgumentException;
 
 /**
  * @magentoDbIsolation enabled
  */
 class TransactionReaderTest extends TestCase
 {
-
-    const IS_IPN = 'is_ipn';
 
     /**
      * @var ObjectManagerInterface
@@ -55,9 +48,11 @@ class TransactionReaderTest extends TestCase
     }
 
     /**
+     * TASK-EDS9T5: the reader's only job left is extracting the pay url —
+     * the order-first readOrderId/isIpn helpers were removed with the
+     * order-first flow.
+     *
      * @return void
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
      */
     public function testReadPayUrl(): void
     {
@@ -72,53 +67,5 @@ class TransactionReaderTest extends TestCase
 
         $this->expectExceptionMessage('Pay Url should be provided');
         $this->assertEquals([], $this->data->readPayUrl($dataTestError));
-    }
-
-    /**
-     * @return void
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    public function testReadOrderId(): void
-    {
-        $dataTest = [
-            AbstractResponseValidator::TRANS_DATA => [
-                AbstractDataBuilder::APP_TRANS_ID => 'orderid_1'
-            ]
-        ];
-        $dataTestError = [
-            'error' => AbstractResponseValidator::PAY_URL
-        ];
-        $this->assertEquals('1', $this->data->readOrderId($dataTest));
-        $this->expectException(\InvalidArgumentException::class);
-
-        $this->expectExceptionMessage('Order Id doesn\'t exist');
-        $this->assertEquals([], $this->data->readOrderId($dataTestError));
-    }
-
-    /**
-     * @return void
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    public function testIsIpn(): void
-    {
-        $dataTest = [
-            self::IS_IPN => 'test'
-        ];
-        $dataTestError = [
-            'error' => 'test'
-        ];
-        $this->assertTrue($this->data->isIpn($dataTest));
-        $this->assertFalse($this->data->isIpn($dataTestError));
-    }
-
-    /**
-     * @param int $orderId
-     * @return Order
-     */
-    private function getOrder(int $orderId): Order
-    {
-        return $this->objectManager->create(Order::class)->load($orderId);
     }
 }

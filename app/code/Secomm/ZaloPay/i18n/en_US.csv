@@ -1,4 +1,11 @@
-"Giao dịch thành công!","Transaction successful!"
-"Giao dịch đang refund!","Transaction in progress!"
-"Dữ liệu yêu cầu không hợp lệ","Invalid request data",
-"Chữ ký không hợp lệ","Invalid signature",
+"The ZaloPay order can only be created after the payment is verified. Please complete the ZaloPay payment.","The ZaloPay order can only be created after the payment is verified. Please complete the ZaloPay payment."
+"The cart is no longer payable with ZaloPay. Please refresh your cart and try again.","The cart is no longer payable with ZaloPay. Please refresh your cart and try again."
+"ZaloPay payment URL is unavailable.","ZaloPay payment URL is unavailable."
+"ZaloPay payment session not found. Please contact support.","ZaloPay payment session not found. Please contact support."
+"Transaction has been declined. Please try again later.","Transaction has been declined. Please try again later."
+"Transaction verification failed.","Transaction verification failed."
+"Invalid ZaloPay return payload.","Invalid ZaloPay return payload."
+"Your ZaloPay payment was not completed.","Your ZaloPay payment was not completed."
+"Your ZaloPay payment is still being processed. Please check back shortly.","Your ZaloPay payment is still being processed. Please check back shortly."
+"Payment not found.","Payment not found."
+"Refund for order #%1","Refund for order #%1"

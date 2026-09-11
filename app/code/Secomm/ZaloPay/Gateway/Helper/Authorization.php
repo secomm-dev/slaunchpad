@@ -106,13 +106,27 @@ class Authorization
     }
 
     /**
+     * Get the configured ZaloPay app_id (plain config value, not encrypted).
+     *
+     * Used to verify that a MAC-valid callback actually belongs to THIS
+     * merchant application (corrective round 4, Blocker 1d).
+     *
+     * @return string|null
+     */
+    public function getAppId(): ?string
+    {
+        $value = $this->config->getValue(AbstractDataBuilder::APP_ID);
+
+        return $value === null || $value === '' ? null : (string)$value;
+    }
+
+    /**
      * Get Key 1 (decrypted if backend_model encrypted)
      *
      * @return string
      */
     public function getKey1(): string
-    {
-        $value = $this->config->getValue(AbstractDataBuilder::KEY_1);
+    {        $value = $this->config->getValue(AbstractDataBuilder::KEY_1);
         if (!$value) {
             return $value;
         }

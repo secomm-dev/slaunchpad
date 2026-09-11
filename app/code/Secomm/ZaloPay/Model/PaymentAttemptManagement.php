@@ -157,9 +157,28 @@ class PaymentAttemptManagement
 
     /**
      * Guarded attempt creation. Runs in a short DB transaction that locks the
-     * quote row: concurrent Starts serialize here. Reuses a matching ACTIVE
-     * attempt; otherwise stale-marks the previous owner and mints a new
-     * INITIATED row whose app_trans_id is persisted before the provider call.
+     * quote row: concurrent Starts serialize here.
+     *
+     * DOUBLE-PAYMENT GUARD (corrective round 4, Blocker 2): under the SAME
+     * quote lock, BEFORE any reuse/stale/mint decision, the quote's attempt
+     * history is inspected for money-real or quarantined rows (PAID,
+     * FINALIZED, requires_reconciliation — structured flags only, never
+     * last_error parsing). When one exists, NO new attempt and NO new
+     * provider transaction is created — a customer clicking Pay again after
+     * a paid-but-not-yet-finalized attempt can never mint a second provider
+     * transaction (double-charge protection). Convergence to FINALIZED is
+     * owned by IPN/Return/PaymentRecovery; the OrderFinalizer is NEVER
+     * invoked while the quote row lock is held.
+     *
+     * A pending INITIATED attempt that has not expired is another Start's
+     * in-flight provider transaction: a concurrent Start refuses with a
+     * retry-safe message instead of stale-marking it and minting a second
+     * provider transaction (at most ONE provider transaction per payment).
+     *
+     * Otherwise a matching reusable ACTIVE attempt is returned as-is (no
+     * second provider transaction); anything else transitions explicitly
+     * (STALE) and a new attempt is minted whose app_trans_id is persisted
+     * before the provider call.
      *
      * @param Quote $quote
      * @param int $amount VND snapshot of the current quote total.
@@ -179,8 +198,29 @@ class PaymentAttemptManagement
                     ->forUpdate(true)
             );
 
+            // BLOCKER 2 (round 4): money-real/quarantined evidence BLOCKS a
+            // new provider transaction. Bounded lookup (LIMIT 1), under the
+            // quote lock, so two concurrent Starts can never both decide
+            // "nothing blocks" and both mint a transaction.
+            $blocking = $this->repository->getBlockingAttemptByQuoteId($quoteId);
+            if ($blocking !== null) {
+                throw new LocalizedException($this->blockingMessage($blocking));
+            }
+
             $existing = $this->repository->getActiveByQuoteId($quoteId);
             if ($existing !== null) {
+                if ($existing->getPaymentStatus() === PaymentAttemptInterface::STATUS_INITIATED
+                    && !$existing->isExpired()
+                ) {
+                    // Round 4 (concurrency): an unexpired INITIATED row is
+                    // another Start's in-flight provider transaction — never
+                    // stale-mark it into a SECOND provider transaction.
+                    throw new LocalizedException(
+                        __(
+                            'Your ZaloPay payment is being initialized. Please wait a moment and try again.'
+                        )
+                    );
+                }
                 // Reuse ONLY when the whole contract is unchanged: a qty or
                 // address edit landing on the same total must not reuse a
                 // pay URL minted for a different contract (BLOCKER 1).
@@ -196,6 +236,8 @@ class PaymentAttemptManagement
                 }
                 // Contract changed or the in-flight attempt never became
                 // ACTIVE: explicit transition, then a fresh attempt below.
+                // (Only reachable with NO money-real evidence — the blocking
+                // check above already refused those.)
                 $existing->markStale();
                 $this->repository->save($existing);
             }
@@ -228,6 +270,46 @@ class PaymentAttemptManagement
             $connection->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Customer-safe refusal for a quote that must not start a second
+     * payment (corrective round 4, Blocker 2). No internal identifiers,
+     * no jargon. The quarantine check comes FIRST: a quarantined row will
+     * NOT auto-finalize, so even a PAID one must never be promised
+     * "the order will appear shortly" — it reads as "under review — do
+     * not pay twice". PAID-but-unfinalized reads as "payment received,
+     * being finalized"; FINALIZED as "order created".
+     *
+     * @param PaymentAttemptInterface $blocking
+     * @return \Magento\Framework\Phrase
+     */
+    private function blockingMessage(PaymentAttemptInterface $blocking): \Magento\Framework\Phrase
+    {
+        if ($blocking->getRequiresReconciliation()) {
+            return __(
+                'Your previous ZaloPay payment is under review. Please contact customer support '
+                . 'before trying again — do not pay twice for the same cart.'
+            );
+        }
+        $status = $blocking->getPaymentStatus();
+        if ($status === PaymentAttemptInterface::STATUS_PAID) {
+            return __(
+                'Your ZaloPay payment has already been received and is being finalized. '
+                . 'Please do not pay again — the order will appear shortly.'
+            );
+        }
+        if ($status === PaymentAttemptInterface::STATUS_FINALIZED) {
+            return __(
+                'Your ZaloPay payment has already been received and the order has been created. '
+                . 'Please do not pay again.'
+            );
+        }
+
+        return __(
+            'Your previous ZaloPay payment is under review. Please contact customer support '
+            . 'before trying again — do not pay twice for the same cart.'
+        );
     }
 
     /**

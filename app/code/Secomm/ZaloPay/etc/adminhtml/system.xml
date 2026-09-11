@@ -52,12 +52,6 @@
                     <label>Sandbox Mode</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="payment_first" translate="label comment" type="select" sortOrder="63" showInDefault="1"
-                       showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Payment-First Flow</label>
-                    <comment><![CDATA[Yes: create the ZaloPay transaction from the ACTIVE QUOTE — the Magento order is placed only after the payment is verified (PayPal Express pattern). No: historical order-first flow.]]></comment>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
                 <field id="attempt_ttl" translate="label comment" type="text" sortOrder="66" showInDefault="1"
                        showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Payment Attempt TTL (minutes)</label>

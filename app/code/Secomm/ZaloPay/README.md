@@ -62,10 +62,33 @@ Configuration info to integrate with MoMo API.
  ![Zalopay Payment page](https://github.com/secomm/wiki/blob/master/magento/magento2/images/zalopay/zalo_pay_scan_qr.png)
  
  ### Purchased Successfully
- 
+
   ![Zalopay Payment page](https://github.com/secomm/wiki/blob/master/magento/magento2/images/zalopay/zalopay_sucess_payment.png)
- 
-  
+
+ ### Payment-first flow (since 1.1.0)
+
+ ZaloPay is **payment-first**: a Magento Sales Order exists ONLY after the
+ payment is verified server-side by ZaloPay. The flow:
+
+ 1. The customer clicks "Place Order" — the renderer saves the payment
+    method on the active quote (no order) and the browser is redirected to
+    the ZaloPay gateway.
+ 2. A `secomm_zalopay_payment_attempt` row snapshots the quote contract
+    (amount, currency, fingerprint, reserved order id) and goes
+    `INITIATED -> ACTIVE`.
+ 3. ZaloPay notifies the store **server-to-server (IPN)**. The IPN verifies
+    the MAC (key2) and the amount against the snapshot, marks the attempt
+    `PAID`, and the `OrderFinalizer` creates exactly ONE Sales Order —
+    the customer browser is never required (closing the browser after
+    paying still produces the order).
+ 4. The browser return verifies authoritatively via ZaloPay `v2/query`
+    and recovers/rebuilds the success page (idempotent — IPN and return
+    races converge to one attempt and one order).
+ 5. A server-side guard blocks every generic placeOrder path (REST,
+    GraphQL, SOAP, stale browser sessions, one-step-checkout plugins) for
+    ZaloPay quotes: no verified payment, no order. Admin order creation is
+    unaffected. Abandoned/cancelled payments create no order.
+
 Contribution
 ---
 Want to contribute to this extension? The quickest way is to open a [pull request on GitHub](https://help.github.com/articles/using-pull-requests)

@@ -1,0 +1,33 @@
+=== 1. Create throwaway database zalopay_r5_it (root, db container) ===
+=== 2. Apply DDL (from db_schema.xml, FKs omitted) ===
+=== 3. Copy production worktree classes (verbatim) + scaffolding into container /tmp ===
+=== 4. Run integration scenarios against real MariaDB ===
+
+Warning: Array to string conversion in /var/www/html/vendor/magento/zend-db/library/Zend/Db/Adapter/Pdo/Abstract.php on line 79
+--- repository's own first query ---
+SELECT `main_table`.* FROM `secomm_zalopay_payment_attempt` AS `main_table` WHERE (`quote_id` = '990101') AND ((`payment_status` IN('paid', 'finalized')) OR (`requires_reconciliation` = 1)) ORDER BY entity_id DESC
+ LIMIT 1
+---
+PASS  PAID blocks second payment
+PASS  PAID row hydrated with real typed getter
+PASS  FINALIZED blocks second payment
+PASS  requires_reconciliation blocks second payment
+PASS  quarantined row hydrated with flag=true (real DB round-trip)
+PASS  ordinary FAILED/EXPIRED/STALE do not block (retry allowed)
+PASS  ordinary EXPIRED/STALE do not block
+PASS  recovery_exhausted without money-real evidence does not block
+PASS  mixed quote returns a blocking row
+PASS  latest entity wins (DESC order + LIMIT 1)
+PASS  fixture sanity: 990108 has exactly 1 row
+PASS  quote without attempts returns null
+PASS  quote_id=0 guarded to null
+
+--- assembled production SQL (real renderer pipeline) ---
+SELECT `main_table`.* FROM `secomm_zalopay_payment_attempt` AS `main_table` WHERE (`quote_id` = '990107') AND ((`payment_status` IN('paid', 'finalized')) OR (`requires_reconciliation` = 1))
+---
+PASS  assembled SQL contains both OR branches
+PASS  repository query renders ORDER BY entity_id DESC + LIMIT 1 (latest-first, bounded)
+
+RESULT: PASS=15 FAIL=0
+=== 5. Drop throwaway database ===
+=== 6. Cleanup container /tmp ===
