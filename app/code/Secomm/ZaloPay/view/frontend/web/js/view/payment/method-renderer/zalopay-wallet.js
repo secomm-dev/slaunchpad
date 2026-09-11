@@ -19,7 +19,6 @@ define([
         defaults: {
             template: 'Secomm_ZaloPay/payment/zalopay'
         },
-        redirectAfterPlaceOrder: true,
         placeOrderHandler: null,
         validateHandler: null,
 
@@ -74,29 +73,37 @@ define([
         },
 
         /**
-         * Place order.
+         * Place order: ZaloPay is payment-first — there is NO Magento order
+         * placement before the provider redirect. Any caller of the renderer's
+         * placeOrder (e.g. Mageplaza OSC's Place Order button, which clicks the
+         * active payment renderer's button) goes through the same payment-first
+         * path below; the Magento order is created only after the payment is
+         * verified server-side (IPN/Return -> OrderFinalizer).
          */
         placeOrder: function (data, event) {
-            var self = this;
-
             if (event) {
                 event.preventDefault();
             }
 
-            if (this.validate() &&
-                additionalValidators.validate() &&
-                this.isPlaceOrderActionAllowed() === true
-            ) {
+            return this.continueToZaloPay();
+        },
+
+        /** Save the payment method, then redirect to the ZaloPay gateway. */
+        continueToZaloPay: function () {
+            var self = this;
+
+            if (this.validate() && additionalValidators.validate()) {
                 this.isPlaceOrderActionAllowed(false);
-                this.getPlaceOrderDeferredObject()
-                    .done(
-                        function () {
-                            self.afterPlaceOrder();
-                            if (self.redirectAfterPlaceOrder) {
-                                redirectOnSuccessAction.execute();
-                            }
-                        }
-                    ).always(
+                //update payment method information if additional data was changed
+                this.selectPaymentMethod();
+                setPaymentMethodAction(this.messageContainer).done(
+                    function () {
+                        // Payment-first (PayPal Express pattern): the ZaloPay
+                        // transaction is created server-side from the ACTIVE
+                        // QUOTE — no placeOrder() here.
+                        redirectOnSuccessAction.execute();
+                    }
+                ).always(
                     function () {
                         self.isPlaceOrderActionAllowed(true);
                     }
@@ -106,41 +113,6 @@ define([
             }
 
             return false;
-        },
-
-        /** Redirect to ZaloPay */
-        continueToZaloPay: function () {
-            var self = this;
-
-            if (this.validate() && additionalValidators.validate()) {
-                //update payment method information if additional data was changed
-                this.selectPaymentMethod();
-                setPaymentMethodAction(this.messageContainer).done(
-                    function () {
-                        if (self.isPaymentFirst()) {
-                            // Payment-first (PayPal Express pattern): the ZaloPay
-                            // transaction is created from the ACTIVE QUOTE server-side.
-                            // No placeOrder() here — the order is placed only after
-                            // the payment is verified on return.
-                            redirectOnSuccessAction.execute();
-
-                            return;
-                        }
-                        self.placeOrder();
-                    }
-                );
-
-                return false;
-            }
-        },
-
-        /**
-         * Whether the payment-first flow is enabled (payment/zalopay/payment_first).
-         *
-         * @returns {Boolean}
-         */
-        isPaymentFirst: function () {
-            return window.checkoutConfig.payment.zalopay.paymentFirst === true;
         }
     });
 });

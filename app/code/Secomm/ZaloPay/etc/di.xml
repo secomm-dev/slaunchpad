@@ -92,8 +92,6 @@
                 <item name="get_pay_url" xsi:type="string">Secomm\ZaloPay\Gateway\Command\GetPayUrlCommand</item>
                 <item name="query_transaction" xsi:type="string">Secomm\ZaloPay\Gateway\Command\QueryTransactionCommand</item>
                 <item name="capture" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
-                <item name="ipn" xsi:type="string">Secomm\ZaloPay\Gateway\Command\IpnCommand</item>
-                <item name="complete" xsi:type="string">Secomm\ZaloPay\Gateway\Command\CompleteCommand</item>
                 <item name="cancel_order" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
                 <item name="refund" xsi:type="string">Secomm\ZaloPay\Gateway\Command\RefundCommand</item>
             </argument>
@@ -153,25 +151,20 @@
         </arguments>
     </virtualType>
 
-    <!-- Controllers Dependency Injection -->
-    <type name="Secomm\ZaloPay\Controller\Payment\Start">
-        <arguments>
-            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
-            <argument name="attemptManagement" xsi:type="object">Secomm\ZaloPay\Model\PaymentAttemptManagement</argument>
-            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
-        </arguments>
-    </type>
-    <type name="Secomm\ZaloPay\Controller\Payment\ReturnAction">
-        <arguments>
-            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
-            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
-        </arguments>
-    </type>
-    <type name="Secomm\ZaloPay\Controller\Payment\Ipn">
-        <arguments>
-            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
-            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
-        </arguments>
+    <!--
+        placeOrder guard: a ZaloPay quote may only become a Sales Order via
+        the exact internal authorization opened by OrderFinalizer
+        (OrderPlacementAuthorization). Registered on the concrete
+        QuoteManagement (the single CartManagementInterface implementation and
+        the interface preference) so the plugin compiles for frontend,
+        webapi_rest, graphql and webapi_soap. Admin order creation is
+        unaffected: it places orders via QuoteManagement::submit()
+        (AdminOrder\Create::createOrder), which is not intercepted.
+    -->
+    <type name="Magento\Quote\Model\QuoteManagement">
+        <plugin name="zalopay_place_order_guard"
+                type="Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard"
+                sortOrder="10"/>
     </type>
 
     <!-- Payment-first services -->
@@ -193,59 +186,25 @@
             <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
         </arguments>
     </type>
-    <type name="Secomm\ZaloPay\Model\ZaloPayConfigProvider">
+    <type name="Secomm\ZaloPay\Service\IpnProcessor">
         <arguments>
-            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+            <!-- Authoritative v2/query fallback for callbacks that arrive
+                 without a verifiable amount (corrective round 3, Blocker 4). -->
+            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\ZaloPay\Service\PaymentRecovery">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
         </arguments>
     </type>
     <preference for="Secomm\ZaloPay\Api\PaymentAttemptRepositoryInterface"
                 type="Secomm\ZaloPay\Model\PaymentAttemptRepository"/>
 
-    <!-- CompleteCommand uses ReturnValidator for GET params callback -->
-    <type name="Secomm\ZaloPay\Gateway\Command\CompleteCommand">
-        <arguments>
-            <argument name="updateDetailsCommand" xsi:type="object">Secomm\ZaloPay\Gateway\Command\CompleteUpdateDetailsCommand</argument>
-            <argument name="updateOrderCommand" xsi:type="object">Secomm\ZaloPay\Gateway\Command\UpdateOrderCommand</argument>
-        </arguments>
-    </type>
-
-    <!-- IpnCommand uses IpnValidator for POST JSON data -->
-    <type name="Secomm\ZaloPay\Gateway\Command\IpnCommand">
-        <arguments>
-            <argument name="updateDetailsCommand" xsi:type="object">Secomm\ZaloPay\Gateway\Command\IpnUpdateDetailsCommand</argument>
-            <argument name="updateOrderCommand" xsi:type="object">Secomm\ZaloPay\Gateway\Command\UpdateOrderCommand</argument>
-        </arguments>
-    </type>
-
-    <!-- CompleteUpdateDetailsCommand with ReturnValidator + Return handler (no trans_data) -->
-    <type name="Secomm\ZaloPay\Gateway\Command\CompleteUpdateDetailsCommand">
-        <arguments>
-            <argument name="validator" xsi:type="object">Secomm\ZaloPay\Gateway\Validator\ReturnValidator</argument>
-            <argument name="handler" xsi:type="object">Secomm\ZaloPay\Gateway\Response\TransactionReturnHandler</argument>
-        </arguments>
-    </type>
-
-    <!-- IpnUpdateDetailsCommand with CompleteValidator -->
-    <type name="Secomm\ZaloPay\Gateway\Command\IpnUpdateDetailsCommand">
-        <arguments>
-            <argument name="validator" xsi:type="object">Secomm\ZaloPay\Gateway\Validator\CompleteValidator</argument>
-            <argument name="handler" xsi:type="object">Secomm\ZaloPay\Gateway\Response\TransactionCompleteHandler</argument>
-        </arguments>
-    </type>
-
-    <!-- Old UpdateDetailsCommand for backward compatibility -->
-    <type name="Secomm\ZaloPay\Gateway\Command\UpdateDetailsCommand">
-        <arguments>
-            <argument name="validator" xsi:type="object">Secomm\ZaloPay\Gateway\Validator\CompleteValidator</argument>
-            <argument name="handler" xsi:type="object">Secomm\ZaloPay\Gateway\Response\TransactionCompleteHandler</argument>
-        </arguments>
-    </type>
+    <!-- CompleteCommand/IpnCommand/UpdateOrderCommand (order-first
+         verification chain) were removed with the order-first flow —
+         TASK-EDS9T5: payment-first only. -->
     <type name="Secomm\ZaloPay\Gateway\Request\ZaloAppInfoDataBuilder">
-        <arguments>
-            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
-        </arguments>
-    </type>
-    <type name="Secomm\ZaloPay\Gateway\Command\UpdateOrderCommand">
         <arguments>
             <argument name="config" xsi:type="object">ZaloPayConfig</argument>
         </arguments>

@@ -1,0 +1,481 @@
+# TASK-EDS9T5 — Command output evidence (excerpts)
+
+Base: 3b26189e5d19e60ea3b778baa56bcc9650d69355 · Branch: task/zalopay-payment-first
+Môi trường: docker markoshust/magento-php:8.3-fpm (PHP 8.3.20), vendor chính bind-mount :ro.
+Lưu ý: host KHÔNG có PHP — mọi lệnh chạy trong container, worktree mount tại /var/www/html.
+
+## 1. php -l (toàn bộ module)
+
+```
+$ find app/code/Secomm/ZaloPay -name "*.php" | xargs -n1 php -l
+ALL PHP FILES: NO SYNTAX ERRORS (92 files)
+```
+
+## 2. Unit suite — Secomm_ZaloPay (Test/Unit)
+
+```
+$ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage \
+    app/code/Secomm/ZaloPay/Test/Unit
+PHPUnit 10.5.64
+Runtime: PHP 8.3.20
+................................................................. 65 / 78 ( 83%)
+.............                                                     78 / 78 (100%)
+OK (78 tests, 254 assertions)
+```
+
+## 3. Regression baseline — clean base 3b26189e (detached evidence worktree /tmp, đã xoá)
+
+```
+# base ZaloPay Test/Unit
+OK (61 tests, 196 assertions)
+
+# base full suite (phpunit-secomm.xml)
+Tests: 849, Assertions: 3125, Errors: 15, PHPUnit Deprecations: 5.
+```
+
+## 4. Full suite — branch này
+
+```
+$ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage
+Tests: 866, Assertions: 3183, Errors: 15, PHPUnit Deprecations: 5.
+```
+
+849 + 17 test ZaloPay mới = 866 ✓ (không test nào khác bị ảnh hưởng).
+
+### 15 lỗi — GIỐNG HỆT baseline (pre-existing, không liên quan task)
+
+```
+ 1-8)  Secomm\PromotionMaxDiscount\...\MaxDiscountCapTest::test* (ArgumentCountError, PHP 8.3 ctor strictness)
+ 9-15) Secomm\Tracking\...\EventNormalizerTest::test*           (ArgumentCountError, PHP 8.3 ctor strictness)
+```
+
+→ 0 regression. ZaloPay: 61 → 78 test, 0 fail.
+
+## 5. PHPCS Magento2 (severity 10 = tất cả)
+
+```
+$ vendor/bin/phpcs --standard=Magento2 --severity=10 app/code/Secomm/ZaloPay
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+  view/frontend/web/template/payment/zalopay.html:1 — "Avoid using closing slash with void tags"
+```
+File `zalopay.html` KHÔNG bị sửa bởi task (diff vs base trống) — warning pre-existing, giữ nguyên để diff tối thiểu.
+
+## 6. setup:di:compile
+
+```
+$ php -d memory_limit=-1 bin/magento setup:di:compile
+...
+Plugin list generation... 9/9 [==============] 100% 28 secs 556.0 MiB
+Generated code and dependency injection configuration successfully.
+```
+
+## 7. Compiled plugin-list proof — guard có mặt ở mọi area
+
+```
+primary|global|plugin-list.php            | Magento\Quote\Model\QuoteManagement | Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard
+primary|global|frontend|plugin-list.php   | Magento\Quote\Model\QuoteManagement | Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard
+primary|global|webapi_rest|plugin-list.php| Magento\Quote\Model\QuoteManagement | Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard
+primary|global|graphql|plugin-list.php    | Magento\Quote\Model\QuoteManagement | Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard
+primary|global|webapi_soap|plugin-list.php| Magento\Quote\Model\QuoteManagement | Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard
+(+ adminhtml, crontab — vô hại: guard cho quote khác-ZaloPay đi qua, admin dùng submit())
+```
+
+## 8. §19 CodeGraph + static proof — OrderFinalizer là chủ sở hữu DUY NHẤT của placeOrder
+
+```
+$ grep -rn "placeOrder" app/code/Secomm/ZaloPay --include="*.php" --include="*.js" | grep -v Test/ | grep -v "\*"
+Service/OrderFinalizer.php:223:  $orderId = $this->cartManagement->placeOrder((int)$attempt->getQuoteId());
+```
+→ CHỈ MỘT call placeOrder production trong module, nằm trong OrderFinalizer
+(grant OrderPlacementAuthorization mở ngay trước, clear trong finally;
+guard tiêu thụ grant — mọi caller khác bị chặn).
+
+CodeGraph (main workspace index):
+- codegraph_callers/context "placeOrder": các call site app-level chỉ ra
+  Mageplaza_Osc Model/Plugin/Quote/QuoteManagement.php — `beforeSubmit`
+  (đăng ký customer mới), KHÔNG đụng placeOrder → không xung đột guard.
+- Admin path: vendor/magento/module-sales/Model/AdminOrder/Create.php:2071
+  dùng QuoteManagement::submit() — không bị guard chặn (đã verify ở base).
+- JS renderer: action DUY NHẤT lên server là `setPaymentMethodAction`
+  → Magento_Paypal set-payment-method → set-payment-information-extended
+  → POST /V1/carts/mine/set-payment-information (chỉ lưu payment method
+  lên QUOTE, không tạo order). Endpoint tạo order (/payment-information →
+  savePaymentInformationAndPlaceOrder → placeOrder) đi qua guard → bị chặn
+  với quote ZaloPay.
+
+---
+
+# CORRECTIVE ROUND 2 (TL review 4 BLOCKER) — command output evidence
+
+Base: 66f684468c9969e64e341f98ccafd475576ab138 (round-1 HEAD) · Branch: task/zalopay-payment-first
+Môi trường: docker markoshust/magento-php:8.3-fpm (PHP 8.3.20), vendor chính bind-mount :ro.
+
+## C1. php -l (toàn bộ module, sau corrective)
+
+```
+97 file OK — ALL PHP FILES: NO SYNTAX ERRORS
+```
+
+## C2. Unit suite — Secomm_ZaloPay (Test/Unit) sau corrective
+
+```
+$ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage \
+    app/code/Secomm/ZaloPay/Test/Unit
+PHPUnit 10.5.64, Runtime: PHP 8.3.20
+...............................................................  63 / 112 ( 56%)
+.................................................               112 / 112 (100%)
+OK (112 tests, 351 assertions)
+```
+
+## C3. Regression — base 3b26189e đo LẠI cùng điều kiện (detached worktree + setup:di:compile)
+
+```
+# base ZaloPay Test/Unit
+OK (61 tests, 196 assertions)
+
+# base full suite (SAU khi compile base worktree — giống điều kiện branch)
+Tests: 849, Assertions: 3165, Errors: 7, PHPUnit Deprecations: 5.
+  1-7) Secomm\Tracking EventNormalizerTest (pre-existing, PHP 8.3 ctor strictness)
+
+LƯU Ý phương pháp: lần đo trước base cho 15 errors vì base worktree thiếu thư mục
+generated/ (gitignored) — Interface Magento\Quote\Api\Data\CartItemExtensionInterface
+là GENERATED code (extension_attributes.xml) nên mock của MaxDiscountCapTest thiếu
+method getDiscounts. Compile base xong: 849/7. Đây là baseline so sánh đúng.
+```
+
+## C4. Full suite — branch corrective
+
+```
+$ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage
+Tests: 900, Assertions: 3320, Errors: 7, PHPUnit Deprecations: 5.
+
+  1-7) Secomm\Tracking EventNormalizerTest::test*  (GIỐNG HỆT base)
+
+849 + 51 (ZaloPay 61→112) = 900 ✓ — 0 regression, 0 lỗi ngoài pre-existing.
+```
+
+## C5. PHPCS Magento2 (severity 10)
+
+```
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+  view/frontend/web/template/payment/zalopay.html:1 — void-tag closing slash
+(file KHÔNG bị sửa — `git diff 3b26189e -- ...zalopay.html` trống; warning pre-existing)
+```
+
+## C6. setup:di:compile
+
+```
+Plugin list generation... 9/9 [==============] 100% 28 secs 556.0 MiB
+Generated code and dependency injection configuration successfully.
+```
+
+## C7. Plugin-list compiled — guard (ctor mới) có mặt mọi area
+
+```
+primary|global, |frontend, |webapi_rest, |graphql, |webapi_soap, |adminhtml
+=> Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard PRESENT (cả 6 scope)
+```
+
+## C8. §19 re-proof + writers audit (trên worktree task branch)
+
+```
+$ grep -rn -- "->placeOrder(\|->submit(" Service/ Controller/ Model/ Plugin/ Helper/ Gateway/ Observer/ Cron/
+Service/OrderFinalizer:207:  $orderId = $this->cartManagement->placeOrder(...);
+→ DUY NHẤT 1 call site production, trong grant window (grant → placeOrder → finally clear).
+
+payment_status writers (production):
+  Service/PaymentAttemptLifecycle.php:98,135,196,231  (canonical callback transitions)
+  Service/OrderFinalizer.php:158                      (markFinalized trong locked tx)
+  Model/PaymentAttemptManagement.php:143,147,199,216  (initiation-side: ACTIVE/FAILED/STALE/INITIATED)
+order_id writers: chỉ qua markFinalized (grep setOrderId chỉ trúng RefundData/RefundCommand — domain refund, không phải attempt)
+provider_transaction_id writers: OrderFinalizer:156 + Lifecycle:293 (backfill/evidence)
+last_error writers: Lifecycle:148,206,270 (evidence) + OrderFinalizer:419 (contract-mismatch, sau rollback)
+```
+
+CodeGraph (main index): `codegraph_callers('placeOrder')` — app-code hit duy nhất ngoài dev tests là
+Mageplaza_Osc `view/frontend/web/js/view/review/placeOrder.js` (nút frontend đã chứng minh ở round 1
+chỉ POST set-payment-information — không tạo order). Index main không chứa branch task
+(đúng topology) — bằng chứng branch-authoritative là grep trên worktree task (mục C8).
+
+# ============================================================================
+# CORRECTIVE ROUND 3 (6 BLOCKER) — 2026-09-10, HEAD da510930 + round-3 commits
+# ============================================================================
+
+## R3.1 php -l (mọi file đổi của round 3, PHP 8.3.20)
+
+```
+$ for f in <git diff --name-only da510930 | grep .php> + 4 file NEW; do php -l $f; done
+PHP_LINT: ALL CLEAN
+```
+
+## R3.2 Unit ZaloPay Test/Unit
+
+```
+$ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage \
+    app/code/Secomm/ZaloPay/Test/Unit
+PHPUnit 10.5.63 — Runtime: PHP 8.3.20
+OK (157 tests, 530 assertions)
+```
+(112 round 2 → +45: IpnProcessorTest rewrite theo outcome contract + B4/B5 cases;
+lifecycle +7 (recordContractMismatch/stale-writer/conflict/quarantine-idempotence);
+OrderFinalizerTest +2 (quarantine gate ×2) và 4 mismatch test chuyển evidence-via-lifecycle;
+Ipn controller test NEW 12 case; PaymentRecovery test NEW 13 case.)
+
+## R3.3 Full Secomm regression (cùng điều kiện compiled)
+
+```
+$ php -d memory_limit=-1 vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage
+There were 7 errors:
+Tests: 945, Assertions: 3499, Errors: 7, PHPUnit Deprecations: 5.
+7/7 errors: Secomm_Tracking Test\Unit\Event\EventNormalizerTest (pre-existing PHP 8.3
+ctor strictness, đúng bộ lỗi baseline 3b26189e=849/7 và round 2=900/7).
+945 = 849 base + 96 ZaloPay (61→157). 0 regression.
+```
+
+## R3.4 PHPCS Magento2 severity 10
+
+```
+$ vendor/bin/phpcs --standard=Magento2 --severity=10 app/code/Secomm/ZaloPay
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+  view/frontend/web/template/payment/zalopay.html:1 — void-tag closing slash
+(file KHÔNG đụng — pre-existing, y hệt round 1/2)
+```
+
+## R3.5 setup:di:compile — pre-existing vendor breakage đã chứng minh + equal-condition OK
+
+Full compile (KHÔNG can thiệp) fail TẠI CẢ round-3 HEAD LẪN da510930 với cùng vendor mount:
+
+```
+There is an error in app/code/Mageplaza/SocialLoginPro/Model/Providers/Pinterest.php:16
+Class "Hybridauth\Provider\Pinterest" not found
+  → da510930 (detached worktree /tmp/da510930-compile, cùng vendor bind-mount): CÙNG LỖI
+  → vendor workspace chính không còn hybridauth (composer.lock 0 hit; commit "fix auth
+    composer" upstream) — KHÔNG liên quan round 3 (diff vs da510930 không có file Mageplaza)
+```
+
+Equal-condition compile (park 2 module Hybridauth-broken trong /var, restore sau —
+diff sạch) thành công ở CẢ HAI:
+
+```
+# round-3 HEAD:
+App action list generation... 7/9 ... Plugin list generation... 9/9 100%
+Generated code and dependency injection configuration successfully.  (RC=0)
+# da510930 (throwaway worktree):
+Generated code and dependency injection configuration successfully.  (RC=0)
+→ 2 module park là blocker DUY NHẤT, pre-existing; code round 3 compile sạch.
+```
+
+## R3.6 §19 audit — writers của payment_status/order_id/provider_transaction_id/
+reconciliation flag/last_error (grep trên worktree task branch)
+
+```
+$ grep -rn "(repository|attempt|locked|\$this)->save(" --exclude-dir=Test .
+Service/PaymentAttemptLifecycle.php:489   $this->repository->save($locked);   ← trong tx, row ĐÃ LOCK
+Service/OrderFinalizer.php:185            $this->repository->save($locked);   ← trong tx riêng, row ĐÃ LOCK
+Model/PaymentAttemptManagement.php:144,148,200,222                            (initiation-side CHECKOUT: ACTIVE/FAILED/STALE/INITIATED — trước tiền)
+→ KHÔNG còn save attempt-copy sau rollback ở Service/ (Blocker 2 xoá sạch).
+
+$ grep -rn "insert(|->update(" --exclude-dir=Test .
+Service/PaymentRecovery.php:177  → UPDATE claim DUY NHẤT, WHERE điều kiện
+  (entity_id + status IN active,paid + recovery_attempts < max + order_id IS NULL
+   + requires_reconciliation = 0); KHÔNG đụng status/order_id/provider id/quarantine/last_error.
+
+$ grep -rn "lockByAppTransId" (production) → ĐÚNG 2 caller:
+  PaymentAttemptLifecycle.php:481, OrderFinalizer.php:134 — đều ngay sau beginTransaction.
+
+placeOrder/submit production (module + Secomm-wide grep + codegraph_callers):
+  Secomm/ZaloPay/Service/OrderFinalizer.php:235 — DUY NHẤT, trong grant window
+  (OrderPlacementAuthorization grant → placeOrder → finally clear);
+  Secomm/VNPAY placeOrder riêng cho quote VNPAY (method khác, ngoài scope guard ZaloPay).
+```
+
+## R3.7 No-HTTP-under-lock rule (case 26)
+
+```
+PaymentRecoveryTest::testClaimRunsBeforeHttpAndNoLockSpansTheCall — event log thực tế:
+  ['claim-update', 'provider-http', 'lifecycle', 'finalize']
+  + connection->beginTransaction/rollBack: expects never (0 lần trong cả pass).
+Lifecycle/Finalizer/Recovery: HTTP (v2/query) luôn TRƯỚC beginTransaction hoặc NGOÀI tx.
+```
+
+## R3.8 Integration
+
+ENVIRONMENT-BLOCKED (cần Magento test framework + DB, không có local) — KHÔNG claim PASS.
+
+---
+
+# ROUND 4 (corrective, trên HEAD 5285ab78) — command output evidence
+
+Môi trường: docker markoshust/magento-php:8.3-fpm (PHP 8.3.20), vendor workspace
+chính bind-mount :ro, worktree tại /var/www/html. Git chỉ chạy trên HOST.
+
+## 1. php -l (mọi file đổi round 4)
+
+```
+$ php -l app/code/Secomm/ZaloPay/Test/Unit/Service/IpnProcessorTest.php
+No syntax errors detected
+$ php -l app/code/Secomm/ZaloPay/Test/Unit/Service/PaymentAttemptLifecycleTest.php
+No syntax errors detected
+$ php -l app/code/Secomm/ZaloPay/Test/Unit/Model/PaymentAttemptManagementTest.php
+No syntax errors detected
+$ php -l app/code/Secomm/ZaloPay/Test/Unit/Service/PaymentRecoveryTest.php
+No syntax errors detected
+(8 file production round 4: php -l ALL CLEAN — chạy trước khi viết test)
+```
+
+## 2. Unit Secomm_ZaloPay (sau round 4)
+
+```
+$ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage app/code/Secomm/ZaloPay/Test/Unit
+Time: 00:00.212, Memory: 34.00 MB
+OK (188 tests, 669 assertions)
+```
+(157 test round-1/2/3 GIỮ NGUYÊN + 31 test round 4 = 188.)
+
+## 3. PHPCS Magento2 severity 10 — toàn module
+
+```
+$ php vendor/bin/phpcs --standard=Magento2 --severity=10 app/code/Secomm/ZaloPay --report=summary
+...omm/ZaloPay/view/frontend/web/template/payment/zalopay.html  0       1
+A TOTAL OF 0 ERRORS AND 1 WARNING WERE FOUND IN 1 FILE
+```
+(0 errors; 1 warning pre-existing ở knockout template không đụng round 4.)
+
+## 4. setup:di:compile (park Mageplaza SocialLogin(Pro) — nguyên nhân pre-existing đã chứng minh round 3)
+
+```
+$ mv app/code/Mageplaza/SocialLogin var/SocialLogin_parked_compile
+$ mv app/code/Mageplaza/SocialLoginPro var/SocialLoginPro_parked_compile
+$ php bin/magento setup:di:compile
+Interception cache generation... 9/9 [==============] 100% 34 secs 554.0 MiB
+Generated code and dependency injection configuration successfully.
+$ mv var/SocialLogin_parked_compile app/code/Mageplaza/SocialLogin
+$ mv var/SocialLoginPro_parked_compile app/code/Mageplaza/SocialLoginPro
+# git status sau restore: đúng 17 entry round 4 (16 modified + 1 untracked evidence)
+# HEAD trước = HEAD sau: 5285ab78... (chưa commit docs khi chạy compile)
+```
+
+## 5. Full regression (suite Secomm đầy đủ)
+
+```
+$ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage
+Tests: 976, Assertions: 3638, Errors: 7, PHPUnit Deprecations: 5.
+# 7 errors = Secomm\Tracking\Test\Unit\Event\EventNormalizerTest (7) — PRE-EXISTING
+# baseline 3b26189e: 849/7 · round 2: 900/7 · round 3: 945/7 · round 4: 976/7 (+31 test round 4)
+```
+
+## 6. Audit §19 (grep trên worktree, production = loại trừ Test/Unit + *.md)
+
+```
+=== AUDIT 1: placeOrder call sites (production) ===
+$ grep -rn '\->placeOrder(' app/code/Secomm/ZaloPay | grep -v Test/Unit
+Service/OrderFinalizer.php:235:
+    $orderId = $this->cartManagement->placeOrder((int)$attempt->getQuoteId());
+⇒ DUY NHẤT. Không `QuoteManagement::submit` trong module; placeOrder generic
+  (REST/GraphQL/SOAP/JS/OSC) bị CartManagementPlaceOrderGuard + grant chặn.
+
+=== AUDIT 2: consumers của getBlockingAttemptByQuoteId (production) ===
+$ grep -rl getBlockingAttemptByQuoteId --include=*.php . | grep -v Test/Unit
+Api/PaymentAttemptRepositoryInterface.php      (khai báo)
+Model/PaymentAttemptManagement.php             (DUY NHẤT consumer — trong quote lock)
+Model/PaymentAttemptRepository.php             (hiện thực, LIMIT 1)
+⇒ Không tồn tại đường quote-has-PAID ⇒ Start ⇒ provider transaction thứ hai
+  đi qua ngoài guard này.
+
+=== AUDIT 3: ghi XÓA flag (sticky) ===
+$ grep -rn 'setRequiresReconciliation(false)\|setRecoveryExhausted(false)' . | grep -v Test/Unit
+(no matches — exit 1)
+⇒ quarantine STICKY; marker exhaustion không bao giờ tự xóa.
+
+=== AUDIT 4: writers lifecycle ===
+$ grep -rln -- '->markPaid('   . | grep -v Test/Unit  ⇒ Service/PaymentAttemptLifecycle.php   (duy nhất)
+$ grep -rln -- '->markFinalized(' . | grep -v Test/Unit ⇒ Service/OrderFinalizer.php          (duy nhất)
+setRequiresReconciliation / setReconciliationCode ⇒ duy nhất PaymentAttemptLifecycle.php
+setProviderTransactionId ⇒ PaymentAttemptLifecycle + OrderFinalizer (+ model nội bộ)
+recovery_attempts / recovery_exhausted ⇒ duy nhất claim SQL của PaymentRecovery
+setOrderId trên PaymentAttempt: chỉ markFinalized (setOrderId RefundCommand:118
+  là refundTransactionFactory của Sales — KHÔNG phải attempt row)
+```
+
+# Round 5 (small corrective trên reviewed HEAD 1c6fe65b)
+
+## 1. Preconditions
+
+```
+$ git -C <worktree> rev-parse --abbrev-ref HEAD  ⇒ task/zalopay-payment-first
+$ git -C <worktree> rev-parse HEAD               ⇒ 1c6fe65bb176a5dea0e9832742a279349e46aaf0
+$ git -C <worktree> status --porcelain           ⇒ (0 dòng — CLEAN)
+```
+
+## 2. ZaloPay unit suite (5 file đổi + toàn module)
+
+```
+$ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage app/code/Secomm/ZaloPay/Test/Unit
+OK (192 tests, 690 assertions)
+# baseline round 4: 188/669 ⇒ +4 test (2 repository + 1 lifecycle + 1 management-STALE), +21 assertion
+```
+
+## 3. Two-direction proof — test mới BẮT được bug (chạy trên code CŨ revert tạm)
+
+```
+$ # git checkout -- Model/PaymentAttemptRepository.php Service/PaymentAttemptLifecycle.php (tạm về 1c6fe65b)
+$ php vendor/bin/phpunit ... --filter 'testBlockingLookupUsesValidAbstractDbParallelArrayOrSignature|
+    testBlockingLookupRendersRealCollectionSql|testPaidQuarantineFlagFlipPersistsEvenWhenMessageAlreadyMatches' ...
+Tests: 3, Assertions: 7, Errors: 1, Failures: 2.
+1) ...RepositoryTest::testBlockingLookupUsesValidAbstractDbParallelArrayOrSignature
+   # recorded call: [['attribute' => 'payment_status', ...], ['attribute' => 'requires_reconciliation', 'eq' => 1]] ≠ parallel arrays
+2) ...LifecycleTest::testPaidQuarantineFlagFlipPersistsEvenWhenMessageAlreadyMatches
+   Method was expected to be called 1 time, actually called 0 times.   # save KHÔNG được gọi
+3) ...RepositoryTest::testBlockingLookupRendersRealCollectionSql
+   PHPUnit\Framework\Exception: Warning: Array to string conversion in
+   vendor/magento/zend-db/library/Zend/Db/Adapter/Abstract.php:1048    # query build PHÁ VỠ trên collection thật
+$ # restore 2 file fix ⇒ 3/3 PASS
+```
+
+## 4. php -l + PHPCS
+
+```
+$ php -l <5 file đổi>  ⇒ No syntax errors detected (5/5)
+$ php vendor/bin/phpcs --standard=Magento2 --severity=10 --report=json --ignore=*/view/* app/code/Secomm/ZaloPay
+TOTALS errors=0 warnings=0 files=112
+# (warning duy nhất cả module nằm ở view/frontend/web/template/payment/zalopay.html — pre-existing, không đụng round 5)
+```
+
+## 5. setup:di:compile
+
+```
+$ mv app/code/Mageplaza/SocialLogin var/SocialLogin_parked_compile
+$ mv app/code/Mageplaza/SocialLoginPro var/SocialLoginPro_parked_compile
+$ php bin/magento setup:di:compile
+Plugin list generation... 9/9 [==============] 100% 34 secs 554.0 MiB
+Generated code and dependency injection configuration successfully.   # COMPILE_RC=0
+$ mv var/SocialLogin_parked_compile app/code/Mageplaza/SocialLogin
+$ mv var/SocialLoginPro_parked_compile app/code/Mageplaza/SocialLoginPro
+# git status sau restore: đúng 5 entry round 5 (4 modified + 1 untracked test mới)
+```
+
+## 6. Full regression
+
+```
+$ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --no-coverage
+Tests: 980, Assertions: 3659, Errors: 7, PHPUnit Deprecations: 5.
+# 7 errors = Secomm\Tracking\Test\Unit\Event\EventNormalizerTest (7) — PRE-EXISTING
+# baseline: 849/7 → round 2: 900/7 → round 3: 945/7 → round 4: 976/7 → round 5: 980/7 (+4)
+```
+
+## 7. Audit round 5
+
+```
+=== markRequiresReconciliation callsites (lifecycle) ===
+172: $changed = $this->markRequiresReconciliation(          # recordVerifiedFailure PAID — FIX round 5
+241: $this->markRequiresReconciliation(...)                  # recordAmountMismatch (return true — không mất)
+294: $changed = $this->markRequiresReconciliation(          # recordContractMismatch (đã tổng hợp)
+404: $changed = $this->markRequiresReconciliation(...) || $changed;   # applyMoneyRealQuarantine
+467: $changed = $this->markRequiresReconciliation(          # recordTerminalPaidEvidence (đã tổng hợp)
+525: $changed = $this->markRequiresReconciliation(          # quarantineProviderTransactionConflict (đã tổng hợp)
+⇒ class-bug "state đổi nhưng mutator trả false ⇒ mất save": DUY NHẤT dòng 172 (đã fix)
+
+=== residue signature EAV-style (production) ===
+$ grep -rn "'attribute'" app/code/Secomm/ZaloPay --include='*.php' | grep -v Test/
+(no matches, rc=1)
+```

@@ -274,6 +274,214 @@ class PaymentAttemptManagementTest extends TestCase
         $this->assertSame(1, $attempt->getRetryCount());
     }
 
+    // ---- Round 4, Blocker 2: double-payment guard (matrix #11-#22) ----
+
+    /**
+     * Round-4 #11/#12/#13: a PAID attempt on the quote BLOCKS Start — no new
+     * PaymentAttempt, no new provider transaction, customer-safe
+     * "payment received / being finalized" message. This holds even while
+     * finalization is failing transiently: convergence is owned by
+     * IPN/Return/Recovery, never by a second payment.
+     *
+     * @return void
+     */
+    public function testPaidAttemptBlocksSecondPaymentAndProviderTransaction(): void
+    {
+        $paid = $this->newAttempt()->markActive('https://pay')->markPaid('240801000001');
+        $quote = $this->newPayableQuote(100.0, 'VND');
+        $this->rate->method('getVndAmountByCurrency')->willReturn(100000.0);
+        $this->repository->method('getBlockingAttemptByQuoteId')->willReturn($paid);
+        $this->repository->expects($this->never())->method('save');
+        $this->commandPool->expects($this->never())->method('get');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('already been received and is being finalized');
+        $this->management->initiate($quote);
+    }
+
+    /**
+     * Round-4 #14: a FINALIZED attempt (order bound) BLOCKS a Start even
+     * when the quote is still active (anomaly) — never a second payment.
+     *
+     * @return void
+     */
+    public function testFinalizedAttemptBlocksSecondPayment(): void
+    {
+        $finalized = $this->newAttempt()->markActive('https://pay')
+            ->markPaid('240801000001')->markFinalized(77);
+        $quote = $this->newPayableQuote(100.0, 'VND');
+        $this->rate->method('getVndAmountByCurrency')->willReturn(100000.0);
+        $this->repository->method('getBlockingAttemptByQuoteId')->willReturn($finalized);
+        $this->repository->expects($this->never())->method('save');
+        $this->commandPool->expects($this->never())->method('get');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('the order has been created');
+        $this->management->initiate($quote);
+    }
+
+    /**
+     * Round-4 #15/#17: a quarantined attempt (requires_reconciliation,
+     * e.g. provider_transaction_conflict) BLOCKS a new payment until an
+     * explicit reconciliation resolves it — customer-safe "under review"
+     * message, no new provider transaction.
+     *
+     * @return void
+     */
+    public function testQuarantinedAttemptBlocksSecondPayment(): void
+    {
+        $quarantined = $this->newAttempt()->markActive('https://pay')->markPaid('240801000001');
+        $quarantined->setRequiresReconciliation(true);
+        $quarantined->setReconciliationCode(PaymentAttemptInterface::RECON_PROVIDER_TX_CONFLICT);
+        $quote = $this->newPayableQuote(100.0, 'VND');
+        $this->rate->method('getVndAmountByCurrency')->willReturn(100000.0);
+        $this->repository->method('getBlockingAttemptByQuoteId')->willReturn($quarantined);
+        $this->repository->expects($this->never())->method('save');
+        $this->commandPool->expects($this->never())->method('get');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('under review');
+        $this->management->initiate($quote);
+    }
+
+    /**
+     * Round-4 #16: a late-paid TERMINAL attempt (FAILED status + structured
+     * late_paid_terminal_state quarantine — money-real evidence) BLOCKS a
+     * new payment. Blocking is structured-flags-only: no last_error parsing.
+     *
+     * @return void
+     */
+    public function testLatePaidTerminalAttemptBlocksSecondPayment(): void
+    {
+        $latePaid = $this->newAttempt()->markActive('https://pay')->markFailed('query said no.');
+        $latePaid->setRequiresReconciliation(true);
+        $latePaid->setReconciliationCode(PaymentAttemptInterface::RECON_LATE_PAID_TERMINAL_STATE);
+        $quote = $this->newPayableQuote(100.0, 'VND');
+        $this->rate->method('getVndAmountByCurrency')->willReturn(100000.0);
+        $this->repository->method('getBlockingAttemptByQuoteId')->willReturn($latePaid);
+        $this->repository->expects($this->never())->method('save');
+        $this->commandPool->expects($this->never())->method('get');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('under review');
+        $this->management->initiate($quote);
+    }
+
+    /**
+     * Round-4 #18: an ORDINARY unpaid failure (FAILED, no money-real
+     * evidence anywhere) does NOT block — a fresh provider transaction is
+     * minted (retry UX preserved) and the FAILED row is never re-mutated.
+     *
+     * @return void
+     */
+    public function testOrdinaryUnpaidFailureAllowsFreshPayment(): void
+    {
+        $failed = $this->newAttempt()->markActive('https://pay')->markFailed('query said no.');
+        $quote = $this->newPayableQuote(100.0, 'VND');
+        $this->rate->method('getVndAmountByCurrency')->willReturn(100000.0);
+        $this->repository->method('getBlockingAttemptByQuoteId')->willReturn(null);
+        // A real repository never returns a terminal FAILED row as "active".
+        $this->repository->method('getActiveByQuoteId')->willReturn(null);
+        $this->repository->method('getListByQuoteId')->willReturn([$failed]);
+        $this->stubSave();
+        $this->stubGetPayUrlCommand('https://pay.zalopay.vn/order/new');
+
+        $attempt = $this->management->initiate($quote);
+
+        $this->assertSame(PaymentAttemptInterface::STATUS_ACTIVE, $attempt->getPaymentStatus());
+        $this->assertNotSame($failed, $attempt);
+        // The FAILED row was untouched; the NEW attempt is persisted twice
+        // (INITIATED inside the locked creation, ACTIVE after the provider
+        // call) — never a third time, never the FAILED row.
+        $this->assertSame(PaymentAttemptInterface::STATUS_FAILED, $failed->getPaymentStatus());
+        $this->assertCount(2, $this->savedAttempts);
+        $this->assertSame($attempt, $this->savedAttempts[0]);
+        $this->assertSame($attempt, $this->savedAttempts[1]);
+        $this->assertSame(1, $attempt->getRetryCount());
+    }
+
+    /**
+     * Round-4 #19: an ordinary EXPIRED/unpaid attempt (no money-real
+     * evidence) is stale-marked and a fresh payment is allowed.
+     *
+     * @return void
+     */
+    public function testExpiredUnpaidAttemptMayStartFreshPayment(): void
+    {
+        $expired = $this->newAttempt();
+        $expired->markActive('https://pay');
+        $expired->setExpiresAt('2020-01-01 00:00:00'); // long past TTL
+        $quote = $this->newPayableQuote(100.0, 'VND');
+        $this->rate->method('getVndAmountByCurrency')->willReturn(100000.0);
+        $this->repository->method('getBlockingAttemptByQuoteId')->willReturn(null);
+        $this->repository->method('getActiveByQuoteId')->willReturn($expired);
+        $this->repository->method('getListByQuoteId')->willReturn([$expired]);
+        $this->stubSave();
+        $this->stubGetPayUrlCommand('https://pay.zalopay.vn/order/new');
+
+        $attempt = $this->management->initiate($quote);
+
+        $this->assertNotSame($expired, $attempt);
+        $this->assertSame(PaymentAttemptInterface::STATUS_STALE, $expired->getPaymentStatus());
+        $this->assertSame(PaymentAttemptInterface::STATUS_ACTIVE, $attempt->getPaymentStatus());
+    }
+
+    /**
+     * Corrective round 5: an ORDINARY STALE attempt (no money-real
+     * evidence, not quarantined) neither blocks Start nor counts as an
+     * active row — a fresh provider transaction is minted.
+     *
+     * @return void
+     */
+    public function testStaleUnpaidAttemptMayStartFreshPayment(): void
+    {
+        $stale = $this->newAttempt()->markActive('https://pay');
+        $stale->setPaymentStatus(PaymentAttemptInterface::STATUS_STALE);
+        $quote = $this->newPayableQuote(100.0, 'VND');
+        $this->rate->method('getVndAmountByCurrency')->willReturn(100000.0);
+        // A real repository never returns an ordinary STALE row from the
+        // blocking lookup (PAID/FINALIZED/requires_reconciliation only).
+        $this->repository->method('getBlockingAttemptByQuoteId')->willReturn(null);
+        $this->repository->method('getActiveByQuoteId')->willReturn(null);
+        $this->repository->method('getListByQuoteId')->willReturn([$stale]);
+        $this->stubSave();
+        $this->stubGetPayUrlCommand('https://pay.zalopay.vn/order/new');
+
+        $attempt = $this->management->initiate($quote);
+
+        $this->assertNotSame($stale, $attempt);
+        $this->assertSame(PaymentAttemptInterface::STATUS_STALE, $stale->getPaymentStatus());
+        $this->assertSame(PaymentAttemptInterface::STATUS_ACTIVE, $attempt->getPaymentStatus());
+    }
+
+    /**
+     * Round-4 #22 (concurrency): an UNEXPIRED INITIATED attempt is another
+     * Start's in-flight provider transaction — the concurrent Start refuses
+     * with a retry-safe message instead of stale-marking it and minting a
+     * SECOND provider transaction.
+     *
+     * @return void
+     */
+    public function testConcurrentStartDuringInitializationRefusesInsteadOfMintingSecond(): void
+    {
+        $inFlight = $this->newAttempt(); // INITIATED, expires far in the future
+        $quote = $this->newPayableQuote(100.0, 'VND');
+        $this->rate->method('getVndAmountByCurrency')->willReturn(100000.0);
+        $this->repository->method('getBlockingAttemptByQuoteId')->willReturn(null);
+        $this->repository->method('getActiveByQuoteId')->willReturn($inFlight);
+        $this->repository->expects($this->never())->method('save');
+        $this->commandPool->expects($this->never())->method('get');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('being initialized');
+        try {
+            $this->management->initiate($quote);
+        } finally {
+            // Never stale-marked into a second provider transaction.
+            $this->assertSame(PaymentAttemptInterface::STATUS_INITIATED, $inFlight->getPaymentStatus());
+        }
+    }
+
     /**
      * Provider rejection marks the attempt FAILED with the error before
      * rethrowing (explicit transition, auditable row).

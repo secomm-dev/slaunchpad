@@ -31,18 +31,35 @@ use Secomm\ZaloPay\Gateway\Helper\Rate;
 use Secomm\ZaloPay\Model\PaymentAttempt;
 use Secomm\ZaloPay\Model\QuoteContractFingerprint;
 use Secomm\ZaloPay\Service\OrderFinalizer;
+use Secomm\ZaloPay\Service\OrderPlacementAuthorization;
+use Secomm\ZaloPay\Service\PaymentAttemptLifecycle;
 use Secomm\ZaloPay\Test\Unit\Model\QuoteStub;
 
 /**
- * ZALOPAY-PAYMENT-FIRST review fixes:
+ * ZALOPAY-PAYMENT-FIRST review fixes (TASK-EDS9T5):
  *
  * BLOCKER 1 — the CURRENT quote must still match the paid payment contract
  * (method, amount, fingerprint) before any automatic placeOrder; mismatch
  * keeps the attempt PAID (money is real), records last_error and creates NO
- * order. BLOCKER 2 — a duplicate FINALIZED return recovers the bound order
- * (binding validated) and rebuilds the success session here, never in the
- * controller. Plus the idempotent place + bind + capture contract and the
- * capture-failure rollback behaviour.
+ * order. A duplicate FINALIZED call recovers the bound order (binding
+ * validated); the customer success session is NOT a finalizer concern —
+ * SuccessSessionPreparer on the Return path owns it (corrective Blocker 4),
+ * so this suite proves session-free finalization. Plus the idempotent
+ * place + bind + capture contract and the capture-failure rollback
+ * behaviour.
+ *
+ * TASK-EDS9T5 placeOrder authorization (the guard contract): the internal
+ * placement opens the single-use OrderPlacementAuthorization grant bound to
+ * the exact (quote_id, attempt entity_id, app_trans_id) and clears it in a
+ * finally block — verification (PAID status) alone never authorizes an
+ * order; recovery paths and pre-grant mismatch refusals never open one.
+ *
+ * Corrective round 3 (Blockers 2 + 5):
+ *  - a quarantined attempt (requires_reconciliation) is NEVER auto-finalized:
+ *    the gate refuses before any state inspection, placeOrder or grant;
+ *  - a refused finalization persists its evidence through
+ *    PaymentAttemptLifecycle::recordContractMismatch() (fresh row lock) and
+ *    NEVER saves its possibly-stale pre-rollback attempt copy.
  */
 class OrderFinalizerTest extends TestCase
 {
@@ -52,6 +69,11 @@ class OrderFinalizerTest extends TestCase
      * @var PaymentAttemptRepositoryInterface|MockObject
      */
     private $repository;
+
+    /**
+     * @var PaymentAttemptLifecycle|MockObject
+     */
+    private $lifecycle;
 
     /**
      * @var CartManagementInterface|MockObject
@@ -99,9 +121,9 @@ class OrderFinalizerTest extends TestCase
     private $connection;
 
     /**
-     * @var SessionStub
+     * @var OrderPlacementAuthorization|MockObject
      */
-    private SessionStub $session;
+    private $placementAuthorization;
 
     /**
      * @var OrderFinalizer
@@ -134,7 +156,8 @@ class OrderFinalizerTest extends TestCase
         $this->connection = $this->createMock(AdapterInterface::class);
         $resourceConnection = $this->createMock(ResourceConnection::class);
         $resourceConnection->method('getConnection')->willReturn($this->connection);
-        $this->session = new SessionStub();
+        $this->placementAuthorization = $this->createMock(OrderPlacementAuthorization::class);
+        $this->lifecycle = $this->createMock(PaymentAttemptLifecycle::class);
 
         $this->finalizer = new OrderFinalizer(
             $this->repository,
@@ -147,7 +170,8 @@ class OrderFinalizerTest extends TestCase
             $this->rate,
             $this->fingerprint,
             $resourceConnection,
-            $this->session,
+            $this->placementAuthorization,
+            $this->lifecycle,
             $this->createMock(LoggerInterface::class)
         );
     }
@@ -166,6 +190,11 @@ class OrderFinalizerTest extends TestCase
         $this->stubSave();
         $this->stubMatchingQuote();
 
+        // Matrix 17: the placement authorization is bound to the EXACT
+        // (quote_id, attempt entity_id, app_trans_id) around placeOrder.
+        $this->placementAuthorization->expects($this->once())->method('grant')->with(42, 9, '260826_1000_000000123');
+        $this->placementAuthorization->expects($this->once())->method('clear');
+
         $payment = $this->createMock(OrderPayment::class);
         $payment->method('getMethod')->willReturn('zalopay');
         $payment->expects($this->once())->method('setTransactionId')->with('240801000001');
@@ -182,7 +211,6 @@ class OrderFinalizerTest extends TestCase
         $this->assertSame(PaymentAttemptInterface::STATUS_FINALIZED, $this->saved->getPaymentStatus());
         $this->assertSame(88, $this->saved->getOrderId());
         $this->assertSame('240801000001', $this->saved->getProviderTransactionId());
-        $this->assertSame(88, $this->session->calls['last_order_id']);
     }
 
     /**
@@ -195,9 +223,19 @@ class OrderFinalizerTest extends TestCase
     {
         $attempt = $this->newPaidAttempt();
         $this->repository->method('lockByAppTransId')->willReturn($attempt);
-        $this->stubSave();
         $this->stubMatchingQuote(currentVndAmount: 700000);
 
+        // Round-3 Blocker 2: the refusal evidence goes through the LIFECYCLE
+        // (fresh row lock) — the finalizer NEVER saves its possibly-stale
+        // pre-rollback copy.
+        $this->repository->expects($this->never())->method('save');
+        $this->lifecycle->expects($this->once())->method('recordContractMismatch')
+            ->with('260826_1000_000000123', $this->stringContains('total changed'));
+
+        // Matrix 19: a refused contract never opens the placement grant —
+        // PAID verification alone authorizes nothing.
+        $this->placementAuthorization->expects($this->never())->method('grant');
+        $this->placementAuthorization->expects($this->never())->method('clear');
         $this->cartManagement->expects($this->never())->method('placeOrder');
 
         try {
@@ -206,10 +244,10 @@ class OrderFinalizerTest extends TestCase
         } catch (ContractMismatchException $e) {
             $this->assertStringContainsString('total changed', $e->getMessage());
         }
-        $this->assertSame(PaymentAttemptInterface::STATUS_PAID, $this->saved->getPaymentStatus());
-        $this->assertNull($this->saved->getOrderId());
-        $this->assertStringContainsString('total changed', (string)$this->saved->getLastError());
-        $this->assertSame([], $this->session->calls);
+        // The in-memory attempt copy keeps its money-real state (it was never
+        // persisted after the rollback — nothing regressed).
+        $this->assertSame(PaymentAttemptInterface::STATUS_PAID, $attempt->getPaymentStatus());
+        $this->assertNull($attempt->getOrderId());
     }
 
     /**
@@ -222,8 +260,10 @@ class OrderFinalizerTest extends TestCase
     {
         $attempt = $this->newPaidAttempt();
         $this->repository->method('lockByAppTransId')->willReturn($attempt);
-        $this->stubSave();
         $this->stubMatchingQuote(hashMatches: false);
+        $this->repository->expects($this->never())->method('save');
+        $this->lifecycle->expects($this->once())->method('recordContractMismatch')
+            ->with('260826_1000_000000123', $this->stringContains('fingerprint mismatch'));
 
         $this->cartManagement->expects($this->never())->method('placeOrder');
 
@@ -233,9 +273,7 @@ class OrderFinalizerTest extends TestCase
         } catch (ContractMismatchException $e) {
             $this->assertStringContainsString('fingerprint mismatch', $e->getMessage());
         }
-        $this->assertSame(PaymentAttemptInterface::STATUS_PAID, $this->saved->getPaymentStatus());
-        $this->assertStringContainsString('fingerprint mismatch', (string)$this->saved->getLastError());
-        $this->assertSame([], $this->session->calls);
+        $this->assertSame(PaymentAttemptInterface::STATUS_PAID, $attempt->getPaymentStatus());
     }
 
     /**
@@ -267,9 +305,11 @@ class OrderFinalizerTest extends TestCase
     {
         $attempt = $this->newPaidAttempt();
         $this->repository->method('lockByAppTransId')->willReturn($attempt);
-        $this->stubSave();
         $this->stubMatchingQuote(active: false);
         $this->stubOrderSearch([]);
+        $this->repository->expects($this->never())->method('save');
+        $this->lifecycle->expects($this->once())->method('recordContractMismatch')
+            ->with('260826_1000_000000123', $this->stringContains('inactive'));
 
         $this->cartManagement->expects($this->never())->method('placeOrder');
 
@@ -279,9 +319,8 @@ class OrderFinalizerTest extends TestCase
         } catch (ContractMismatchException $e) {
             $this->assertStringContainsString('inactive', $e->getMessage());
         }
-        $this->assertSame(PaymentAttemptInterface::STATUS_PAID, $this->saved->getPaymentStatus());
-        $this->assertNull($this->saved->getOrderId());
-        $this->assertSame([], $this->session->calls);
+        $this->assertSame(PaymentAttemptInterface::STATUS_PAID, $attempt->getPaymentStatus());
+        $this->assertNull($attempt->getOrderId());
     }
 
     /**
@@ -326,6 +365,11 @@ class OrderFinalizerTest extends TestCase
         $this->cartManagement->method('placeOrder')
             ->willThrowException(new NoSuchEntityException(__('No such entity.')));
 
+        // Matrix 18: the grant is single-use and cleared in the finally
+        // block even when placeOrder explodes mid-placement.
+        $this->placementAuthorization->expects($this->once())->method('grant')->with(42, 9, '260826_1000_000000123');
+        $this->placementAuthorization->expects($this->once())->method('clear');
+
         $payment = $this->createMock(OrderPayment::class);
         $payment->method('getMethod')->willReturn('zalopay');
         $payment->method('prependMessage');
@@ -342,7 +386,7 @@ class OrderFinalizerTest extends TestCase
         $payment->expects($this->never())->method('capture');
     }
 
-    // ---- BLOCKER 2: FINALIZED duplicate returns recover session state ----
+    // ---- FINALIZED duplicate recovery (customer session is NOT finalizer scope) ----
 
     /**
      * Review case 1/5: duplicate return on FINALIZED -> existing order, no
@@ -360,6 +404,8 @@ class OrderFinalizerTest extends TestCase
         $existing = $this->newOrder(77, Order::STATE_PROCESSING, '000000123', $payment);
         $this->orderRepository->method('get')->with(77)->willReturn($existing);
         $this->cartManagement->expects($this->never())->method('placeOrder');
+        // Matrix 20: FINALIZED recovery never opens a placement grant.
+        $this->placementAuthorization->expects($this->never())->method('grant');
 
         $order = $this->finalizer->finalizeOrRecover($attempt, '240801000001');
 
@@ -368,34 +414,30 @@ class OrderFinalizerTest extends TestCase
     }
 
     /**
-     * Review case 2: FINALIZED duplicate with a NEW/LOST checkout session ->
-     * the finalizer rebuilds the whole Last* success session.
+     * Corrective Blocker 4: the finalizer is session-free — a FINALIZED
+     * duplicate recovery writes NO checkout session state (the Return
+     * processor's SuccessSessionPreparer owns that).
      *
      * @return void
      */
-    public function testDuplicateFinalizeRebuildsEmptySuccessSession(): void
+    public function testDuplicateFinalizeDoesNotTouchCheckoutSession(): void
     {
-        $attempt = $this->newPaidAttempt()->markFinalized(77);
-        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+        $reflector = new \ReflectionClass(OrderFinalizer::class);
+        $sessionParams = array_filter(
+            $reflector->getConstructor()->getParameters(),
+            fn (\ReflectionParameter $parameter) => $parameter->getType()?->getName() === \Magento\Checkout\Model\Session::class
+        );
 
-        $payment = $this->createMock(OrderPayment::class);
-        $payment->method('getMethod')->willReturn('zalopay');
-        $existing = $this->newOrder(77, Order::STATE_PROCESSING, '000000123', $payment);
-        $this->orderRepository->method('get')->with(77)->willReturn($existing);
-
-        $this->assertSame([], $this->session->calls); // "lost" session state.
-        $this->finalizer->finalizeOrRecover($attempt);
-
-        $this->assertSame(42, $this->session->calls['last_quote_id']);
-        $this->assertSame(42, $this->session->calls['last_success_quote_id']);
-        $this->assertSame(77, $this->session->calls['last_order_id']);
-        $this->assertSame('000000123', $this->session->calls['last_real_order_id']);
-        $this->assertSame(Order::STATE_PROCESSING, $this->session->calls['last_order_status']);
+        $this->assertSame(
+            [],
+            $sessionParams,
+            'OrderFinalizer must not depend on the checkout session (SuccessSessionPreparer owns it).'
+        );
     }
 
     /**
-     * Review case 3: FINALIZED without a bound order -> reconciliation, no
-     * session, customer-safe failure.
+     * Review case 3: FINALIZED without a bound order -> reconciliation,
+     * customer-safe failure.
      *
      * @return void
      */
@@ -404,21 +446,18 @@ class OrderFinalizerTest extends TestCase
         $attempt = $this->newPaidAttempt();
         $attempt->setPaymentStatus(PaymentAttemptInterface::STATUS_FINALIZED); // no order bound
         $this->repository->method('lockByAppTransId')->willReturn($attempt);
-        $this->stubSave();
+        $this->repository->expects($this->never())->method('save');
+        $this->lifecycle->expects($this->once())->method('recordContractMismatch')
+            ->with('260826_1000_000000123', $this->stringContains('without a bound order'));
 
         $this->expectException(ContractMismatchException::class);
         $this->expectExceptionMessage('without a bound order');
-        try {
-            $this->finalizer->finalizeOrRecover($attempt);
-        } finally {
-            $this->assertSame([], $this->session->calls);
-            $this->assertStringContainsString('without a bound order', (string)$this->saved->getLastError());
-        }
+        $this->finalizer->finalizeOrRecover($attempt);
     }
 
     /**
      * Review case 4: bound order does not match the attempt contract
-     * (different increment id) -> rejected, no session rebuild.
+     * (different increment id) -> rejected.
      *
      * @return void
      */
@@ -426,7 +465,9 @@ class OrderFinalizerTest extends TestCase
     {
         $attempt = $this->newPaidAttempt()->markFinalized(77);
         $this->repository->method('lockByAppTransId')->willReturn($attempt);
-        $this->stubSave();
+        $this->repository->expects($this->never())->method('save');
+        $this->lifecycle->expects($this->once())->method('recordContractMismatch')
+            ->with('260826_1000_000000123', $this->stringContains('does not match'));
 
         $payment = $this->createMock(OrderPayment::class);
         $payment->method('getMethod')->willReturn('zalopay');
@@ -435,11 +476,59 @@ class OrderFinalizerTest extends TestCase
 
         $this->expectException(ContractMismatchException::class);
         $this->expectExceptionMessage('does not match');
-        try {
-            $this->finalizer->finalizeOrRecover($attempt);
-        } finally {
-            $this->assertSame([], $this->session->calls);
-        }
+        $this->finalizer->finalizeOrRecover($attempt);
+    }
+
+    // ---- Round 3, Blocker 5: the quarantine gate ----
+
+    /**
+     * Round-3 case 18: a quarantined attempt (requires_reconciliation — e.g.
+     * an amount mismatch recorded earlier) is NEVER auto-finalized by a
+     * later generic callback: the gate refuses BEFORE any state inspection,
+     * placement, grant or capture.
+     *
+     * @return void
+     */
+    public function testQuarantinedAttemptIsNeverAutoFinalized(): void
+    {
+        $attempt = $this->newPaidAttempt();
+        $attempt->setRequiresReconciliation(true);
+        $attempt->setReconciliationCode(PaymentAttemptInterface::RECON_AMOUNT_MISMATCH);
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+
+        $this->cartManagement->expects($this->never())->method('placeOrder');
+        $this->placementAuthorization->expects($this->never())->method('grant');
+        $this->repository->expects($this->never())->method('save');
+        // The refusal is still quarantined-evidenced through the lifecycle.
+        $this->lifecycle->expects($this->once())->method('recordContractMismatch')
+            ->with('260826_1000_000000123', $this->stringContains('requires reconciliation'));
+
+        $this->expectException(ContractMismatchException::class);
+        $this->expectExceptionMessage('requires reconciliation (amount_mismatch)');
+        $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+    }
+
+    /**
+     * The quarantine gate takes precedence even over a FINALIZED row
+     * (defense in depth — the lifecycle never quarantines a bound order,
+     * but if a row ever lands in that state it is refused, never silently
+     * recovered).
+     *
+     * @return void
+     */
+    public function testQuarantinedFinalizedRowIsRefusedToo(): void
+    {
+        $attempt = $this->newPaidAttempt()->markFinalized(77);
+        $attempt->setRequiresReconciliation(true);
+        $attempt->setReconciliationCode(PaymentAttemptInterface::RECON_PROVIDER_TX_CONFLICT);
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+
+        $this->orderRepository->expects($this->never())->method('get');
+        $this->lifecycle->expects($this->once())->method('recordContractMismatch');
+
+        $this->expectException(ContractMismatchException::class);
+        $this->expectExceptionMessage('requires reconciliation');
+        $this->finalizer->finalizeOrRecover($attempt, '240801000001');
     }
 
     // ---- Lifecycle + transaction behaviour ----
@@ -485,11 +574,7 @@ class OrderFinalizerTest extends TestCase
 
         $this->expectException(LocalizedException::class);
         $this->expectExceptionMessage('Capture failed');
-        try {
-            $this->finalizer->finalizeOrRecover($attempt, '240801000001');
-        } finally {
-            $this->assertSame([], $this->session->calls);
-        }
+        $this->finalizer->finalizeOrRecover($attempt, '240801000001');
     }
 
     // ---- helpers ----

@@ -19,12 +19,18 @@
                 <order_status>pending_payment</order_status>
                 <title>ZaloPay</title>
                 <sandbox_flag>0</sandbox_flag>
-                <!-- Payment-first: create the ZaloPay transaction from the ACTIVE
-                     QUOTE (no order at redirect). 0 keeps the historical
-                     order-first flow for staged rollout. -->
-                <payment_first>0</payment_first>
+                <!-- Payment-first is the ONLY flow: the ZaloPay transaction is
+                     created from the ACTIVE QUOTE and the Magento order is
+                     placed only after the payment is verified (IPN/Return ->
+                     OrderFinalizer). No order-first fallback exists. -->
                 <!-- Attempt TTL in minutes (ZaloPay unpaid orders expire ~15min). -->
                 <attempt_ttl>15</attempt_ttl>
+                <!-- Lost-callback recovery worker (official ZaloPay guidance:
+                     query the order proactively when no callback arrived
+                     within 15 minutes of order establishment). -->
+                <recovery_window>15</recovery_window>
+                <recovery_batch_size>25</recovery_batch_size>
+                <recovery_max_attempts>5</recovery_max_attempts>
                 <allowspecific>0</allowspecific>
                 <payment_action>authorize_capture</payment_action>
                 <can_initialize>1</can_initialize>

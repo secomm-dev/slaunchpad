@@ -11,13 +11,8 @@ declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Controller\Payment;
 
-use Secomm\ZaloPay\Gateway\Helper\TransactionReader;
 use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Service\IpnProcessor;
-use Magento\Checkout\Model\Session;
-use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\App\Action\HttpGetActionInterface;
-
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\Http;
@@ -25,57 +20,64 @@ use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Serialize\Serializer\Json as SerializerJson;
-use Magento\Payment\Gateway\Command\CommandPoolInterface;
-use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
-use Magento\Payment\Gateway\Helper\ContextHelper;
-use Magento\Payment\Model\MethodInterface;
-use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Sales\Model\Order;
 
 /**
- * ZaloPay IPN (server-to-server callback) controller — composition style.
+ * ZaloPay IPN (server-to-server callback) controller — payment-first only.
+ *
+ * The controller is composition-only (no business logic): it parses the
+ * payload, delegates to IpnProcessor and serializes the EXACT official
+ * ZaloPay callback response contract
+ * (https://docs.zalopay.vn/docs/specs/callback-api/ + knowledge base
+ * "Callback"): HTTP 200 JSON `{return_code, return_message}` —
+ *  - return_code 1 ("Success"): processed / valid evidence recorded;
+ *  - return_code 2 ("Invalid"): MAC failure, malformed or unknown reference;
+ *  - return_code 0 (official sample: "callback again (up to 3 times)"):
+ *    transient failure or still-processing payment.
+ *
+ * The legacy `{errors, messages}` body with 404/500 codes was NOT the
+ * provider protocol (corrective round 3, Blocker 3).
+ *
+ * POST-only (corrective round 3): the official callback contract is
+ * `Method: POST` — HttpGetActionInterface was removed; the runtime guard
+ * below is defence in depth.
  */
-class Ipn implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
+class Ipn implements CsrfAwareActionInterface, HttpPostActionInterface
 {
+    /**
+     * Official response bodies per IpnProcessor domain outcome.
+     *
+     * @var array<string, array{0: int, 1: string}>
+     */
+    private const RESPONSE_BY_OUTCOME = [
+        IpnProcessor::OUTCOME_SUCCESS => [1, 'Success'],
+        IpnProcessor::OUTCOME_ACK_RECONCILIATION => [1, 'Success'],
+        IpnProcessor::OUTCOME_INVALID_CALLBACK => [2, 'Invalid'],
+        IpnProcessor::OUTCOME_RETRYABLE_FAILURE => [0, 'Temporary failure, please retry.'],
+    ];
+
     /**
      * Ipn constructor.
      *
      * @param Http $request
      * @param JsonFactory $resultJsonFactory
-     * @param ManagerInterface $messageManager
-     * @param MethodInterface $method
-     * @param PaymentDataObjectFactory $paymentDataObjectFactory
-     * @param OrderRepositoryInterface $orderRepository
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param SerializerJson $serializer
-     * @param CommandPoolInterface $commandPool
      * @param Logger $logger
      * @param IpnProcessor $ipnProcessor
      */
     public function __construct(
-        private readonly Http $request,
-        private readonly JsonFactory $resultJsonFactory,
-        private readonly ManagerInterface $messageManager,
-        private readonly MethodInterface $method,
-        private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
-        private readonly OrderRepositoryInterface $orderRepository,
-        private readonly SearchCriteriaBuilder $searchCriteriaBuilder,
-        private readonly SerializerJson $serializer,
-        private readonly CommandPoolInterface $commandPool,
-        private readonly Logger $logger,
-        private readonly IpnProcessor $ipnProcessor
+        private readonly Http            $request,
+        private readonly JsonFactory     $resultJsonFactory,
+        private readonly SerializerJson  $serializer,
+        private readonly Logger          $logger,
+        private readonly IpnProcessor    $ipnProcessor
     ) {
     }
 
     /**
      * Handle the ZaloPay server-to-server IPN callback.
      *
-     * The message sent from Payment Service Provider (PSP) to Payment Service Consumer (PSC).
-     * An example of this is closing the browser while Zalo pay is not redirected to payment success/failure
-     *
-     * @return Json|null
+     * @return Json|null Null for non-POST probes (the provider contract is POST-only).
      */
     public function execute(): ?Json
     {
@@ -88,10 +90,6 @@ class Ipn implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetA
             . ' Params: ' . json_encode($this->request->getParams())
         );
         $resultJson = $this->resultJsonFactory->create();
-        $data       = [
-            'errors' => true,
-            'messages' => __('Something went wrong white execute.')
-        ];
         try {
             $response = [];
             if ($rawContent !== '') {
@@ -110,93 +108,30 @@ class Ipn implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetA
 
             $this->logger->info('ZaloPay IPN Parsed Response: ' . json_encode($response));
 
-            // Payment-first: attempt-first lookup. An IPN arriving BEFORE the
-            // Return action (order not yet placed) is a valid lifecycle state —
-            // the processor marks the attempt PAID and answers 200, not 404.
-            // null = payload references no payment attempt -> legacy flow below.
-            $paymentFirstResult = $this->ipnProcessor->process($response);
-            if ($paymentFirstResult !== null) {
-                if ($paymentFirstResult['http_code'] !== 200) {
-                    $resultJson->setHttpResponseCode($paymentFirstResult['http_code']);
-                }
+            $outcome = $this->ipnProcessor->process($response);
+            [$returnCode, $returnMessage] = self::RESPONSE_BY_OUTCOME[$outcome]
+                ?? [0, 'Temporary failure, please retry.'];
 
-                return $resultJson->setData(
-                    [
-                        'errors' => $paymentFirstResult['errors'],
-                        'messages' => __($paymentFirstResult['messages'])
-                    ]
-                );
-            }
-
-            $orderIncrementId = TransactionReader::readOrderId($response);
-            $order            = $this->loadOrderByIncrementId($orderIncrementId);
-            if ($order === null) {
-                $this->logger->error('ZaloPay IPN Order Not Found: ' . $orderIncrementId);
-                $resultJson->setHttpResponseCode(404);
-                $data = ['errors' => true, 'messages' => __('Order not found.')];
-
-                return $resultJson->setData($data);
-            }
-            $payment          = $order->getPayment();
-            ContextHelper::assertOrderPayment($payment);
-            $this->logger->info(sprintf(
-                'ZaloPay IPN Order #%s payment method: %s (expected: %s), order state: %s',
-                $orderIncrementId,
-                $payment->getMethod(),
-                $this->method->getCode(),
-                $order->getState()
-            ));
-            if ($payment->getMethod() === $this->method->getCode()
-                && $order->getState() === Order::STATE_PENDING_PAYMENT) {
-                $paymentDataObject = $this->paymentDataObjectFactory->create($payment);
-                $this->commandPool->get('ipn')->execute(
-                    [
-                        'payment' => $paymentDataObject,
-                        'response' => $response,
-                        'is_ipn' => true,
-                        'amount' => $order->getTotalDue()
-                    ]
-                );
-                $this->logger->info('ZaloPay IPN Command executed successfully for order #' . $orderIncrementId);
-                $data = [
-                    'errors' => false,
-                    'messages' => __('Success')
-                ];
-            } else {
-                $this->logger->warning(sprintf(
-                    'ZaloPay IPN condition not met for order #%s. Payment method: %s, State: %s',
-                    $orderIncrementId,
-                    $payment->getMethod(),
-                    $order->getState()
-                ));
-            }
+            // ALWAYS HTTP 200: the provider protocol lives in the JSON body
+            // (return_code) — the official sample answers res.json(result)
+            // for every branch.
+            return $resultJson->setData(
+                [
+                    'return_code' => $returnCode,
+                    'return_message' => $returnMessage,
+                ]
+            );
         } catch (\Exception $e) {
             $this->logger->error('ZaloPay IPN Exception: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            $this->messageManager->addErrorMessage(__('Transaction has been declined. Please try again later.'));
-            $resultJson->setHttpResponseCode(500);
+
+            // Transient: the official sample's return_code 0 = callback again.
+            return $resultJson->setData(
+                [
+                    'return_code' => 0,
+                    'return_message' => 'Temporary failure, please retry.',
+                ]
+            );
         }
-
-        return $resultJson->setData($data);
-    }
-
-    /**
-     * Load an order by increment id via the repository (no deprecated ->load()).
-     *
-     * @param string $incrementId
-     * @return \Magento\Sales\Api\Data\OrderInterface|null
-     */
-    private function loadOrderByIncrementId(string $incrementId)
-    {
-        if ($incrementId === '') {
-            return null;
-        }
-
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', $incrementId)
-            ->create();
-        $orders = $this->orderRepository->getList($searchCriteria)->getItems();
-
-        return $orders ? reset($orders) : null;
     }
 
     /**
