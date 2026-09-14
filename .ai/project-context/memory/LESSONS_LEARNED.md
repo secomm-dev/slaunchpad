@@ -227,3 +227,11 @@ Template cho entry kế tiếp — copy từ đây:
 - **Root cause / trigger**: developer mode vẫn tái dùng DI config đã compile trong `generated/`; assumption "developer mode tự recompile ngay" sai trong thực tế với cron path.
 - **Action / prevention**: (1) sau khi pull/checkout code đổi constructor bất kỳ class nào chạy bởi cron/consumer: `rm -rf generated/code/* generated/metadata/*` + `bin/magento cache:flush` (production: `setup:di:compile`); (2) khi cron "chạy mà không làm gì": đọc `cron_schedule.messages` trước khi nghi logic; (3) row kẹt `running`/`error` do `\Error` sẽ không tự retry — chờ job kế theo đúng lịch.
 - **Owner**: Dev team
+## LL-0026 — Verify automation local: curl cookie-jar PSL trap + Playwright waitForURL glob + ?___store works
+
+- **Date**: 2026-09-14
+- **Source**: BUG-PWP31X (SLP-152) verify session — login/store-switch/render automation trên local
+- **Type**: avoid
+- **Context**: (1) `curl -c jar` **không persist** cookie có attr `domain=slaunchpad.localhost` (verbose vẫn "Added cookie") — PSL coi `localhost` là public suffix; jar chỉ giữ cookie không có domain attr → login 302 thành công nhưng GET sau không session. (2) Playwright `waitForURL('**/customer/address/**')` **resolve ngay lập tức** nếu URL hiện tại đã match glob (`/customer/address/new/` cũng match) → assert điều hướng phải dùng `waitForFunction(() => !location.pathname.includes('/new/'))` hoặc check pathname. (3) `?___store=launchpad_en` **hoạt động** trên local khi dùng thuần; session 09-11 thấy no-op là do kèm `___from_store` (redirect về default — xem memory store-switch đã update). (4) Playwright `waitForURL` sau save-address: validation zip fail vẫn đứng yên form (inline "Trường Mã bưu chính là bắt buộc") — phải assert success message, không chỉ URL.
+- **Action / prevention**: (1) login curl: tự cấp `form_key` (Hyvä sinh client-side — cookie + POST param cùng giá trị), parse `PHPSESSID`/`X-Magento-Vary` từ `-D header-file` rồi gửi `-b "PHPSESSID=…; X-Magento-Vary=…"` thủ công cho các request sau; Location phải ra `/customer/account/` (ra `/login` = sai credentials). (2) working pattern hoàn chỉnh: `.ai/runtime/evidence/BUG-PWP31X/verify-live.sh` + `e2e-edit-save.js` (playwright as root, `NODE_PATH=/tmp/pw-cal/node_modules`, `--host-resolver-rules=MAP slaunchpad.localhost 127.0.0.1`).
+- **Owner**: dev/QC team
