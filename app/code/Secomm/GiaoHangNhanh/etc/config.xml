@@ -50,25 +50,30 @@
                 <handling_type>F</handling_type>
             </giaohangnhanh_standard>
             <ghn>
+                <!-- Advanced settings defaults (BUG-M5NZFO): weight in grams, dims in cm.
+                     maximum_length = 150: GHN create-order API rejects length > 150
+                     ("Kích thước (dài) vượt quá mức cho phép: 150") even though the fee API
+                     accepts up to 200. Standard defaults aligned with its MAX_* consts
+                     (were 10x typos: 20000cm / 5000kg / 50kg item weight over a 20kg package). -->
                 <advanced_settings>
                     <giaohangnhanh_express>
                         <maximum_height>200</maximum_height>
                         <maximum_width>200</maximum_width>
-                        <maximum_length>200</maximum_length>
+                        <maximum_length>150</maximum_length>
                         <maximum_weight>50000</maximum_weight>
                         <maximum_converted_mass_order>200000</maximum_converted_mass_order>
                     </giaohangnhanh_express>
                     <giaohangnhanh_standard>
-                        <maximum_height>20000</maximum_height>
-                        <maximum_width>20000</maximum_width>
-                        <maximum_length>20000</maximum_length>
-                        <maximum_weight>5000000</maximum_weight>
+                        <maximum_height>200</maximum_height>
+                        <maximum_width>200</maximum_width>
+                        <maximum_length>150</maximum_length>
+                        <maximum_weight>20000</maximum_weight>
                         <maximum_converted_mass_order>1600000</maximum_converted_mass_order>
-                        <maximum_weight_item>50000</maximum_weight_item>
+                        <maximum_weight_item>20000</maximum_weight_item>
                         <maximum_length_item>200</maximum_length_item>
                         <maximum_width_item>200</maximum_width_item>
                         <maximum_height_item>200</maximum_height_item>
-                        <maximum_converted_mass_item>200000</maximum_converted_mass_item>
+                        <maximum_converted_mass_item>1600000</maximum_converted_mass_item>
                     </giaohangnhanh_standard>
                 </advanced_settings>
             </ghn>

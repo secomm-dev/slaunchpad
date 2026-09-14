@@ -18,7 +18,7 @@ class Standard extends GHN
     const SERVICE_NAME_SHORT = 'Hàng nhẹ';
     const MAX_HEIGHT = 200; //centimeter
     const MAX_WIDTH = 200; //centimeter
-    const MAX_LENGTH = 200; //centimeter
+    const MAX_LENGTH = 150; //centimeter — GHN create-order API limit (fee API allows 200)
     const MAX_WEIGHT = 20; //kilograms
     const MAX_CONVERTED_MASS = 1600; //kilograms
 
@@ -29,10 +29,11 @@ class Standard extends GHN
 
     public function canDisplay($request): bool
     {
-        $length = ceil($request->getPackageLength());
-        $width = ceil($request->getPackageWidth());
-        $height = ceil($request->getPackageHeight());
-        //If not set value, that means no limit
+        // (float) cast: getPackage*() may be null on some collect-rates paths —
+        // PHP 8 ceil(null) throws TypeError.
+        $length = ceil((float)$request->getPackageLength());
+        $width = ceil((float)$request->getPackageWidth());
+        $height = ceil((float)$request->getPackageHeight());
 
         $maxWeight = $this->getMaxWeight() ?: self::MAX_WEIGHT;
         $maxWidth = $this->getMaxWidth() ?: self::MAX_WIDTH;
@@ -41,14 +42,13 @@ class Standard extends GHN
         $weightKgMagento = $this->ghnHelperData->convertToKilograms($request->getPackageWeight());
         $ruleWeightKgGhn = ($length * $width * $height) / 5000;
         $maxConvertedMassOrder = $this->getMaxConvertedMassOrder() ?: self::MAX_CONVERTED_MASS;
-        if ($length <= $maxLength && $width <= $maxWidth && $height <= $maxHeight && $weightKgMagento < $maxWeight && $ruleWeightKgGhn <= $maxConvertedMassOrder) {
-            if (!$this->validateDataProduct($request)) {
-                return false;
-            }
-            return true;
-        } else {
-            return false;
-        }
+
+        return $length <= $maxLength
+            && $width <= $maxWidth
+            && $height <= $maxHeight
+            && $weightKgMagento <= $maxWeight
+            && $ruleWeightKgGhn <= $maxConvertedMassOrder
+            && $this->validateDataProduct($request);
     }
 
     /**
@@ -63,13 +63,12 @@ class Standard extends GHN
         }
 
         /** @var \Magento\Quote\Model\Quote\Item[] $allItems */
-        $defaultValue = $this->getDefaultValueItem();
         $config = [
-            'max_width_item' => $this->getMaxWidthItem() ?: $defaultValue['max_width'],
-            'max_weight_item' => $this->getMaxWeightItem() ?: $defaultValue['max_weight'],
-            'max_height_item' => $this->getMaxHeightItem() ?: $defaultValue['max_height'],
-            'max_length_item' => $this->getMaxLengthItem() ?: $defaultValue['max_length'],
-            'max_converted_mass_item' => $this->getMaxConvertedMassItem() ?: $defaultValue['max_converted_mass'],
+            'max_width_item' => $this->getMaxWidthItem() ?: self::MAX_WIDTH,
+            'max_weight_item' => $this->getMaxWeightItem() ?: self::MAX_WEIGHT,
+            'max_height_item' => $this->getMaxHeightItem() ?: self::MAX_HEIGHT,
+            'max_length_item' => $this->getMaxLengthItem() ?: self::MAX_LENGTH,
+            'max_converted_mass_item' => $this->getMaxConvertedMassItem() ?: self::MAX_CONVERTED_MASS,
         ];
         foreach($allItems as $item){
             if (is_null($item->getWidth()) || empty($item->getWidth())
@@ -101,32 +100,10 @@ class Standard extends GHN
         $ruleWeightKgGhn = ($length * $width * $height) / 5000;
         $weightKgMagento = $this->ghnHelperData->convertToKilograms($item->getWeight());
 
-        if ($weightKgMagento > $config['max_weight_item']
-            || $item->getHeight() > $config['max_height_item']
-            || $item->getLength() > $config['max_length_item']
-            || $item->getWidth() > $config['max_width_item']
-            || $ruleWeightKgGhn > $config['max_converted_mass_item']
-        ) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Get a default value of item
-     * @return array
-     */
-    private function getDefaultValueItem()
-    {
-        $defaultValue = [
-            'max_height' => 200, //centimeter
-            'max_length' => 200, //centimeter
-            'max_width' => 200, //centimeter
-            'max_weight' => 50, //kilograms
-            'max_converted_mass' => 200 //kilograms
-        ];
-
-        return $defaultValue;
+        return $weightKgMagento <= $config['max_weight_item']
+            && $height <= $config['max_height_item']
+            && $length <= $config['max_length_item']
+            && $width <= $config['max_width_item']
+            && $ruleWeightKgGhn <= $config['max_converted_mass_item'];
     }
 }
