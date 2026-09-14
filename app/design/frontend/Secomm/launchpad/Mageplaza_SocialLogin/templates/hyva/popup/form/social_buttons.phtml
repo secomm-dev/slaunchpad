@@ -1,0 +1,125 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_SocialLogin
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Mageplaza\SocialLogin\Model\System\Config\Source\Position;
+
+/**
+ * Child-theme override (TASK-7P5RJP / SLP-160).
+ *
+ * Vendor renders Bootstrap-era markup (.btn .btn-block .btn-social + FontAwesome .fa) inside the
+ * sign-in modal's social column; FontAwesome is not loaded in Hyva. Buttons are rebuilt with
+ * static Tailwind utilities, matching the approved dashboard pattern (BUG-QKX5BW / SLP-185).
+ * The JS behavior (data-mage-init socialProvider widget + onclick clickLoginSocial + popup-window
+ * helpers + the PAGE_AUTHEN config script) and every class hook the vendor JS relies on
+ * (#mp-popup-social-content, .block.social-login-authentication-channel, .block-content,
+ * .actions-toolbar.social-btn, <key>-login) are preserved 1:1 from vendor — template/CSS-only,
+ * no auth flow changes.
+ */
+
+?>
+<?php /** @var \Mageplaza\SocialLogin\Block\Popup\Social $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$availableSocials = $block->getAvailableSocials();
+
+// Brand icons as inline SVG (FontAwesome is not loaded in Hyva). Keys match lowercased
+// getBtnKey() output; unknown providers fall back to a letter badge. Same map as the
+// dashboard override (BUG-QKX5BW / SLP-185).
+$socialIcons = [
+    'google' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6" aria-hidden="true">'
+        . '<path fill="#EA4335" d="M12 5.04c1.62 0 3.06.56 4.2 1.64l3.12-3.12C17.46 1.8 14.86.75 12 .75 7.62.75 3.84 3.25 2.06 6.86l3.66 2.84C6.55 7.87 9.05 5.04 12 5.04z"/>'
+        . '<path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.6v3h3.86c2.26-2.09 3.56-5.17 3.56-8.84z"/>'
+        . '<path fill="#FBBC05" d="M5.72 14.3c-.25-.74-.38-1.54-.38-2.3 0-.77.13-1.56.38-2.3L2.06 6.86C1.38 8.28 1 9.86 1 12s.38 3.72 1.06 5.14L5.72 14.3z"/>'
+        . '<path fill="#34A853" d="M12 23.25c2.86 0 5.26-.94 7.02-2.56l-3.86-3c-1.02.7-2.33 1.11-3.16 1.11-2.95 0-5.45-2.83-6.28-4.99L2.06 17.14C3.84 20.75 7.62 23.25 12 23.25z"/>'
+        . '</svg>',
+    'facebook' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6" aria-hidden="true">'
+        . '<circle cx="12" cy="12" r="12" fill="#1877F2"/>'
+        . '<path fill="#ffffff" d="M16.67 15.47l.53-3.47h-3.33V9.75c0-.95.46-1.87 1.96-1.87h1.52V4.94s-1.38-.23-2.7-.23c-2.74 0-4.53 1.66-4.53 4.67v2.62H7.08v3.47h3.04v8.38a12.2 12.2 0 0 0 3.75 0v-8.38h2.48z"/>'
+        . '</svg>',
+];
+?>
+<?php if ($block->canShow(Position::PAGE_POPUP) && sizeof($availableSocials)): ?>
+    <div id="mp-popup-social-content">
+        <div class="block social-login-authentication-channel mb-3 col-mp mp-5">
+            <div class="block-title mb-3 text-sm font-medium text-ink-muted">
+                <?= /* @noEscape */ __('Or Sign In With') ?>
+            </div>
+            <div class="block-content flex flex-col gap-3">
+                <?php foreach ($availableSocials as $key => $social):
+                    $iconKey = strtolower((string) $block->getBtnKey($key));
+                    $icon = $socialIcons[$iconKey]
+                        ?? '<span style="display:inline-flex;height:24px;width:24px;align-items:center;'
+                        . 'justify-content:center;border-radius:9999px;background:#e5e7eb;color:#374151;'
+                        . 'font-size:11px;font-weight:600">'
+                        . $escaper->escapeHtml(mb_strtoupper(mb_substr((string) $social['label'], 0, 1)))
+                        . '</span>';
+                    ?>
+                    <div class="actions-toolbar social-btn <?= /* @noEscape */ $key ?>-login m-0">
+                        <a class="inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-md border border-gray-300 bg-surface px-4 py-2.5 text-sm font-medium text-ink shadow-sm transition-colors hover:border-gray-400"
+                           data-mage-init='{"socialProvider": {"url": "<?= /* @noEscape */ $social['login_url'] ?>", "label": "<?= /* @noEscape */ __('Login By %1', $social['label']) ?>"}}'
+                            onclick='clickLoginSocial("<?= /* @noEscape */ $social['login_url'] ?>","<?= /* @noEscape */ $social['label'] ?>")'
+                        >
+                            <span class="shrink-0"><?= /* @noEscape */ $icon ?></span>
+                            <?= /* @noEscape */ __('Sign in with %1', $social['label']) ?>
+                        </a>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function getPopupParams(w, h, l, t) {
+            var screenX = typeof window.screenX !== 'undefined' ? window.screenX : window.screenLeft;
+            var screenY = typeof window.screenY !== 'undefined' ? window.screenY : window.screenTop;
+            var outerWidth = typeof window.outerWidth !== 'undefined' ? window.outerWidth : document.body.clientWidth;
+            var outerHeight = typeof window.outerHeight !== 'undefined' ? window.outerHeight : (document.body.clientHeight - 22);
+            var width = w ? w : 500;
+            var height = h ? h : 420;
+            var left = l ? l : parseInt(screenX + ((outerWidth - width) / 2), 10);
+            var top = t ? t : parseInt(screenY + ((outerHeight - height) / 2.5), 10);
+
+            return (
+                'width=' + width +
+                ',height=' + height +
+                ',left=' + left +
+                ',top=' + top
+            );
+        }
+        function clickLoginSocial(login_url, label) {
+            var date = new Date();
+            var currentTime = date.getTime();
+            window.open(login_url + '?' + currentTime, label, getPopupParams());
+        }
+
+    </script>
+<?php endif; ?>
+
+<?php
+/**
+ * Add variable to show social buttons on customer authentication popup
+ */
+?>
+<?php $authenConfig = $block->getSocialButtonsConfig(); ?>
+<?php if ($block->canShow(Position::PAGE_AUTHEN) && sizeof($availableSocials)): ?>
+    <script>
+        window.socialAuthenticationPopup = <?= \Laminas\Json\Json::encode($authenConfig); ?>;
+    </script>
+<?php endif; ?>
