@@ -2,9 +2,7 @@
 
 namespace Secomm\GiaoHangNhanh\Model\Service;
 
-use Secomm\GiaoHangNhanh\Helper\Data as GHNHelperData;
-use Secomm\GiaoHangNhanh\IntegrationBase\Model\Service\Command\CommandPoolInterface;
-use Secomm\GiaoHangNhanh\Model\Config;
+use Magento\Framework\DB\TransactionFactory;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -12,6 +10,9 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentRepositoryInterface;
 use Magento\Sales\Model\Order\ShipmentFactory;
 use Psr\Log\LoggerInterface;
+use Secomm\GiaoHangNhanh\Helper\Data as GHNHelperData;
+use Secomm\GiaoHangNhanh\IntegrationBase\Model\Service\Command\CommandPoolInterface;
+use Secomm\GiaoHangNhanh\Model\Config;
 
 class OrderSyncService
 {
@@ -27,6 +28,7 @@ class OrderSyncService
      * @param GHNHelperData $ghnHelperData
      * @param ShipmentFactory $shipmentFactory
      * @param ShipmentRepositoryInterface $shipmentRepository
+     * @param TransactionFactory $transactionFactory
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -36,6 +38,7 @@ class OrderSyncService
         private readonly GHNHelperData $ghnHelperData,
         private readonly ShipmentFactory $shipmentFactory,
         private readonly ShipmentRepositoryInterface $shipmentRepository,
+        private readonly TransactionFactory $transactionFactory,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -109,6 +112,14 @@ class OrderSyncService
 
         $shipment = $this->shipmentFactory->create($order, $items, $track);
         $shipment->register();
-        $this->shipmentRepository->save($shipment);
+        $shipment->getOrder()->setIsInProcess(true);
+
+        // Save both shipment AND order so that qty_shipped on sales_order_item is persisted.
+        // register() updates qty_shipped in memory on the order object; without saving the order
+        // the column stays at 0 and "Qty Shipped" never appears in the admin Items Ordered grid.
+        $transaction = $this->transactionFactory->create();
+        $transaction->addObject($shipment);
+        $transaction->addObject($shipment->getOrder());
+        $transaction->save();
     }
 }

@@ -78,9 +78,11 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
         $toDistrictId = $locationTo['toDistrictId'];
         $toWardCode = $locationTo['toWardCode'];
 
-        $length = ceil($rateRequest->getPackageLength());
-        $width = ceil($rateRequest->getPackageWidth());
-        $height = ceil($rateRequest->getPackageHeight());
+        // (float) cast: getPackage*() may be null (e.g. cart-add collects rates
+        // before package dims are set) — PHP 8 ceil(null) throws TypeError.
+        $length = ceil((float)$rateRequest->getPackageLength());
+        $width = ceil((float)$rateRequest->getPackageWidth());
+        $height = ceil((float)$rateRequest->getPackageHeight());
 
         $data = [
             self::TOKEN => $this->config->getValue('api_token'),
@@ -135,10 +137,11 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
                 $tmp['name'] = $item->getName();
                 $tmp['code'] = $item->getSku();
                 $tmp['quantity'] = (int)$item->getQty();
-                $tmp['weight'] = ceil($item->getWeight() * $weightRate * $tmp['quantity']);
-                $tmp['width'] = !is_null($item->getWidth()) ? (ceil($item->getWidth()*$tmp['quantity'])) : 0;
-                $tmp['height'] = !is_null($item->getHeight()) ? (ceil($item->getHeight()*$tmp['quantity'])) : 0;
-                $tmp['length'] = !is_null($item->getLength()) ? (ceil($item->getLength()*$tmp['quantity'])) : 0;
+                // GHN items[] values are per-unit (GHN multiplies by quantity itself)
+                $tmp['weight'] = ceil($item->getWeight() * $weightRate);
+                $tmp['width'] = $item->getWidth() !== null ? (int)ceil((float)$item->getWidth()) : 0;
+                $tmp['height'] = $item->getHeight() !== null ? (int)ceil((float)$item->getHeight()) : 0;
+                $tmp['length'] = $item->getLength() !== null ? (int)ceil((float)$item->getLength()) : 0;
 
                 array_push($result, $tmp);
             }

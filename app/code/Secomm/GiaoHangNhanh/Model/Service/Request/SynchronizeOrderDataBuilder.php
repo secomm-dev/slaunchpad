@@ -110,9 +110,17 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
         $clientOrderCode = $order->getIncrementId();
 
         $note = '';
-        $length = 1;
-        $width = 1;
-        $height = 1;
+        // Root dims = per-axis sum of item dims × qty — same convention as
+        // Secomm\Base\Plugin\Model\Shipping::getTotal() used for rate requests.
+        $length = $width = $height = 0;
+        foreach ($items as $item) {
+            $length += $item['length'] * $item['quantity'];
+            $width += $item['width'] * $item['quantity'];
+            $height += $item['height'] * $item['quantity'];
+        }
+        $length = (int)ceil($length);
+        $width = (int)ceil($width);
+        $height = (int)ceil($height);
 
         $data = [
             self::TOKEN => $this->config->getValue('api_token'),
@@ -174,10 +182,11 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
                 $item['code'] = $itemOrder->getSku();
                 $item['quantity'] = (int)$itemOrder->getQtyOrdered();
                 $item['price'] = $price;
-                $item['weight'] = ceil($itemOrder->getWeight() * $weightRate * $item['quantity']);
-                $item['width'] = !is_null($product->getWidth()) ? ceil($product->getWidth()*$item['quantity']) : 0;
-                $item['height'] = !is_null($product->getHeight()) ? ceil($product->getHeight()*$item['quantity']) : 0;
-                $item['length'] = !is_null($product->getLength()) ? ceil($product->getLength()*$item['quantity']) : 0;
+                // GHN items[].weight is per-unit (docs example: item 300g x qty 2 = root 600g total)
+                $item['weight'] = ceil($itemOrder->getWeight() * $weightRate);
+                $item['width'] = $product->getWidth() !== null ? (int)ceil((float)$product->getWidth()) : 0;
+                $item['height'] = $product->getHeight() !== null ? (int)ceil((float)$product->getHeight()) : 0;
+                $item['length'] = $product->getLength() !== null ? (int)ceil((float)$product->getLength()) : 0;
 
                 array_push($items, $item);
             }
