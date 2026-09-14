@@ -1,0 +1,450 @@
+/*
+ * Social Login (Mageplaza) — theme overlay (TASK-7P5RJP / SLP-160).
+ *
+ * File này được import từ tailwind-source.css ở top level (ngoài mọi @layer) → cascade
+ * unlayered: thắng Tailwind utilities layer và đứng trước inline <style> của vendor
+ * css.phtml (unlayered, load sau styles.css) về mặt specificity (mỗi rule bên dưới cao
+ * hơn +1 so với rule vendor tương ứng).
+ *
+ * Root fix (record TASK-7P5RJP §Summary): modal Hyvä của Mageplaza SocialLogin render
+ * 0×0 trên Tailwind v4 — dialog mang `opacity-0 scale-0`; Tailwind v4 sinh standalone
+ * property `scale: 0` trong khi keyframes vendor chỉ animate `transform`/`opacity` →
+ * standalone scale kẹt 0 vĩnh viễn. Neutralize đúng thuộc tính standalone, giữ nguyên
+ * animation vendor (animate qua transform).
+ */
+
+/* ------------------------------------------------------------------ */
+/* 1. Root fix — dialog hiện lại (kẹt scale:0 của Tailwind v4)         */
+/* ------------------------------------------------------------------ */
+dialog.wrap-modal-login.scale-0 {
+    scale: 1;
+}
+
+/* Hyvä modal chuẩn: dialog trong suốt + backdrop mờ (UA <dialog> nền
+   trắng đục toàn màn che hết trang). Vendor quick_login mode có CSS
+   riêng trong template (bg-black unset), chỉ áp dụng cho mode đó. */
+dialog.wrap-modal-login {
+    background: transparent;
+    /* Ép full viewport: inset/padding ngầm của modal base làm client thấp hơn
+       viewport 32px → 100vh content tràn → scrollbar; scroll dọc chỉ xuất
+       hiện khi card dài hơn viewport (tab create mobile) */
+    inset: 0;
+    margin: 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    padding: 0;
+    overflow: hidden auto;
+    /* Base opacity 0 — model "invisible unless animating": keyframes appear/
+       disappear (opacity 0↔1, fill forwards) là nguồn chân lý cho visibility.
+       Không có rule này, khi class animation bị remove sau khi đóng, legacy
+       `dialog[open] { opacity: 1 }` (spec (0,1,1) BẰNG rule này nhưng load
+       sau — đúng pattern F5) bật dialog FULL SIZE trở lại rồi mới fade —
+       chính là cú "giật lên" trước khi tắt. [open] nâng lên (0,2,1). */
+    opacity: 0;
+    border-radius: 0;
+}
+
+dialog.wrap-modal-login[open] {
+    opacity: 0;
+}
+
+dialog.wrap-modal-login::backdrop {
+    /* Backdrop trong suốt hoàn toàn — lớp dim đen chuyển sang phần tử thật
+       `#test` (round 7): ::backdrop tĩnh sẽ "giật lên" sau khi class animation
+       bị remove ở ~301ms (dialog vẫn open đến ~660ms) */
+    background: transparent;
+}
+
+/* Lớp dim mờ phía sau card, trên phần tử thật #test (full viewport, đồng thời
+   là vùng click-outside) — theo model "invisible unless animating": base
+   trong suốt, chỉ tối khi appear (fill forwards giữ) / mờ dần khi disappear;
+   sau khi class bị remove ở ~301ms → trong suốt, không còn flash đen */
+#popup_test #test {
+    background-color: transparent;
+}
+
+/* dim-in chỉ khi appear đang chạy (fill forwards giữ tối suốt lúc mở);
+   dim-out khi disappear; sau khi cả 2 class bị remove (~301ms) → base
+   trong suốt → không còn flash đen 301→660ms */
+dialog.wrap-modal-login[class*="-appear"] #popup_test #test {
+    animation: slp-dim-in 300ms forwards;
+}
+
+dialog.wrap-modal-login[class*="-disappear"] #popup_test #test {
+    animation: slp-dim-out 300ms forwards;
+}
+
+@keyframes slp-dim-in {
+    from {
+        background-color: transparent;
+    }
+    to {
+        background-color: rgb(15 23 42 / 0.5);
+    }
+}
+
+@keyframes slp-dim-out {
+    from {
+        background-color: rgb(15 23 42 / 0.5);
+    }
+    to {
+        background-color: transparent;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* 2. Card trong dialog — thay look của legacy .white-popup            */
+/*    (legacy css chỉ cung cấp bg #fff; legacy load trước styles.css)  */
+/* ------------------------------------------------------------------ */
+#social-login-popup {
+    width: min(760px, calc(100vw - 2rem));
+    max-width: none;
+    margin-inline: auto;
+    background: var(--color-surface, #fff);
+    border-radius: var(--radius-lg, 0.5rem);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.5rem;
+    text-align: start;
+    overflow: hidden;
+    /* Bố cục 2 cột tường minh (legacy css dùng float % + width dư, bị clip);
+       children: fake-email block, .mp-social-popup (forms), #mp-popup-social-content, additional */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 2rem;
+    align-items: flex-start;
+    /* Vendor đẩy card xuống 30% viewport (translateY inline) → lệch dưới;
+       margin:auto trong flex cha + transform:none (beats inline non-important)
+       → căn giữa 2 chiều, không tràn (auto margin collapse khi hết chỗ) */
+    transform: none !important;
+    margin: auto;
+}
+
+/* Căn giữa card + bỏ scrollbar dialog: vendor #test cao 100vh (giữ nguyên
+   để vùng click-outside hoạt động) nhưng dialog có padding 12px (class p-3)
+   → 100vh + 24px > viewport → scrollbar; #test display:block inline → flex
+   center (author !important beats inline non-important) */
+#popup_test #test {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Cột form (login/create/forgot) */
+#social-login-popup > .mp-social-popup {
+    float: none;
+    width: auto;
+    flex: 1 1 0;
+    min-width: 280px;
+}
+
+/* Form + fieldset full cột — legacy css giới hạn form 360px giữa cột 430px
+   (khoảng chết giữa 2 cột); collapse mọi padding ngang trung gian để form
+   fills cột (mp-social-popup inline/legacy 10px + block-content legacy) */
+#social-login-popup > .mp-social-popup {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+#social-login-popup .mp-social-popup .social-login.block-container,
+#social-login-popup .mp-social-popup .social-login.block-container .block,
+#social-login-popup .mp-social-popup .social-login.block-container .block .block-content {
+    width: auto;
+    max-width: none;
+    padding-inline: 0;
+    float: none;
+}
+
+/* Legacy `#social-login-popup .block-container .block { padding: 20px 25px }`
+   là 1-2-0 nhưng load sau styles.css; dùng physical properties + 1-4-0 để chắc thắng */
+#social-login-popup .mp-social-popup .social-login.block-container .block.col-mp {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+#social-login-popup .social-login.block-container .block form,
+#social-login-popup .social-login.block-container .block form .fieldset {
+    width: 100%;
+    max-width: none;
+    float: none;
+}
+
+/* Title — legacy `... > div.mp-social-popup.col-mp.mp-7 div.social-login-title
+   { width: 200% }` thực tế là 1-4-0 (id + 4 class) và load sau → cần 1-5-0
+   (:first-child đếm như class; title luôn là con đầu của block-container) */ 
+#social-login-popup .mp-social-popup div.social-login.block-container div.social-login-title:first-child {
+    width: auto;
+}
+
+/* Cột social — beat legacy `#mp-popup-social-content { padding-top: 75px }`
+   (legacy load sau styles.css nên phải specifier cao hơn) */
+#social-login-popup > #mp-popup-social-content {
+    float: none;
+    width: auto;
+    max-width: none;
+    flex: 0 0 240px;
+    padding-top: 15px;
+}
+
+#social-login-popup > #mp-popup-social-content > .block {
+    width: 100%;
+}
+
+/* Fake-email (request info) block chiếm toàn hàng khi hiện */
+#social-login-popup > .block-container.fake-email {
+    flex: 1 1 100%;
+}
+
+@media (max-width: 640px) {
+    #social-login-popup {
+        width: calc(100vw - 2rem);
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    #social-login-popup > .mp-social-popup,
+    #social-login-popup > #mp-popup-social-content {
+        flex: none;
+        width: 100%;
+    }
+
+    #social-login-popup > .mp-social-popup {
+        margin-top: 20px;
+    }
+}
+
+/* Close button (vendor render <button class="mfp-close">×</button>) —
+   icon button tròn rõ ràng (legacy .mfp-close fs 28px / #popup_test .mfp-close
+   đều legacy không phù hợp card theme) */
+#social-login-popup button.mfp-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-gray-200, #e2e8f0);
+    border-radius: 9999px;
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--color-ink-muted, #475569);
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#social-login-popup button.mfp-close:hover {
+    background: var(--color-gray-100, #f1f5f9);
+    color: var(--color-ink, #0f172a);
+}
+
+#social-login-popup button.mfp-close:focus-visible {
+    outline: 2px solid var(--color-primary, #14532d);
+    outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* 7. Đóng mượt — vendor animation appear/disappear 500ms nhưng JS      */
+/*    hideMyDialog() chạy sau closeTime 300ms → animation bị cắt ngang  */
+/*    (giựt). Đồng bộ duration mọi effect disappear về 300ms.           */
+/* ------------------------------------------------------------------ */
+dialog.wrap-modal-login[class*="-disappear"] {
+    animation-duration: 300ms !important;
+}
+
+/* Backdrop mờ dần theo animation đóng (Chrome 122+; fallback = snap như cũ) */
+@keyframes slp-backdrop-out {
+    from {
+        background-color: rgb(15 23 42 / 0.5);
+    }
+    to {
+        background-color: transparent;
+    }
+}
+
+dialog.wrap-modal-login[class*="-disappear"]::backdrop {
+    animation: slp-backdrop-out 300ms forwards;
+}
+
+/* ------------------------------------------------------------------ */
+/* 3. Title — CONFIG-RESPECTING: `.social-login-title` mang màu banner */
+/*    từ config `style_management` (css.phtml inject, local = #3399cc; */
+/*    admin đổi per store view). Overlay chỉ shape (padding/radius),   */
+/*    KHÔNG đè màu; chữ trắng trên banner màu = legacy chuẩn vendor.   */
+/* ------------------------------------------------------------------ */
+#social-login-popup .block-container .social-login-title {
+    padding: 0.625rem 1rem;
+    margin-block: 0 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+/* Mọi title variant (login-title / create-account-title / forgot-pass-title) —
+   chữ trắng trên banner màu config (legacy set color #fff — giữ nguyên);
+   legacy còn gắn `background-image: url(images/*-title.png)` + `padding-left:
+   40px` (icon PNG đè lên chữ khi banner màu config hiện lại) → khử cả hai,
+   overlay chỉ chỉnh typography + căn giữa */
+#social-login-popup .block-container div.social-login-title h2 {
+    background: none;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+    width: auto;
+}
+
+#social-login-popup .social-login.block-container .block .block-title {
+    margin-block: 0 0.75rem;
+    border: 0;
+    padding: 0;
+    background: transparent;
+}
+
+#social-login-popup .social-login.block-container .block .block-title span {
+    color: var(--color-ink, #0f172a);
+    font-weight: 500;
+}
+
+/* Nút social trong modal: wrapper `.actions-toolbar` bị legacy co hẹp (~188px)
+   làm chữ 14px VI tràn biên button (scrollWidth > clientWidth); nới full cột
+   + giảm padding ngang để icon + label vừa khít */
+#social-login-popup #mp-popup-social-content .actions-toolbar.social-btn {
+    width: auto;
+    max-width: none;
+}
+
+#social-login-popup #mp-popup-social-content .actions-toolbar.social-btn a {
+    white-space: nowrap;
+    width: 100%;
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Title "Hoặc Đăng nhập bằng" kiểu Hyvä: dòng kẻ 2 bên, text giữa */
+#social-login-popup #mp-popup-social-content .block-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    text-align: center;
+}
+
+#social-login-popup #mp-popup-social-content .block-title::before,
+#social-login-popup #mp-popup-social-content .block-title::after {
+    content: "";
+    flex: 1 1 0;
+    height: 1px;
+    background: var(--color-gray-200, #e2e8f0);
+}
+
+/* Nút social trên trang auth: legacy css giới hạn .actions-toolbar.social-btn
+   width 215px (0-3-0, load sau styles.css) làm label wrap — bỏ giới hạn. */
+.block.social-login-authentication-channel.account-social-login .actions-toolbar.social-btn {
+    width: auto;
+    max-width: none;
+}
+
+.block.social-login-authentication-channel.account-social-login .actions-toolbar.social-btn a {
+    white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ */
+/* 4. Nút primary trong modal — CONFIG-RESPECTING: màu nền/border      */
+/*    theo `style_management` (css.phtml inject #social-login-popup    */
+/*    .social-login #bnt-… = 2-1-0). Overlay CHỈ shape: radius,        */
+/*    padding, weight; hover dùng brightness để hợp mọi màu config.    */
+/* ------------------------------------------------------------------ */
+#social-login-popup .social-login form#social-form-login #bnt-social-login-authentication,
+#social-login-popup .social-login.block-container.forgot .primary button,
+#social-login-popup .social-login.block-container.create .primary button,
+#social-login-popup .social-login.block-container.fake-email .primary button {
+    border-radius: var(--radius-lg, 0.5rem);
+    font-weight: 500;
+    padding-block: 0.5rem;
+    padding-inline: 1.25rem;
+    cursor: pointer;
+}
+
+#social-login-popup .social-login form#social-form-login #bnt-social-login-authentication:hover,
+#social-login-popup .social-login.block-container.forgot .primary button:hover,
+#social-login-popup .social-login.block-container.create .primary button:hover,
+#social-login-popup .social-login.block-container.fake-email .primary button:hover {
+    filter: brightness(0.92);
+}
+
+/* Social Button Position (config `social_btn_position`, default right):
+   layout flex mặc định = forms trái + social phải (Right ✓). Các vị trí
+   khác theo class vendor JS thêm theo config — không hardcode ضد config */
+#social-login-popup > #mp-popup-social-content.social-left {
+    order: -1;
+}
+
+#social-login-popup > #mp-popup-social-content.social-top {
+    order: -1;
+    flex: 1 1 100%;
+}
+
+/* ------------------------------------------------------------------ */
+/* 5. Link phụ (forgot/create/back) + label + input trong modal        */
+/* ------------------------------------------------------------------ */
+#social-login-popup .block-container .action.remind,
+#social-login-popup .block-container .action.create,
+#social-login-popup .block-container .action.back {
+    color: var(--color-ink-muted, #475569);
+    text-decoration: none;
+}
+
+#social-login-popup .block-container .action.remind:hover,
+#social-login-popup .block-container .action.create:hover,
+#social-login-popup .block-container .action.back:hover {
+    text-decoration: underline;
+}
+
+#social-login-popup .fieldset > .field > .label,
+#social-login-popup .fieldset > .field .label span {
+    color: var(--color-ink, #0f172a);
+}
+
+#social-login-popup .fieldset .field .control input.input-text {
+    width: 100%;
+    border-radius: 0.375rem;
+}
+
+/* Checkbox choice (newsletter) — legacy css set `#social-login-popup .social-login
+   .fieldset .field { display: block }` (1-3-0, load sau) làm input/label rời dòng;
+   override cùng chuỗi +1 class = 1-4-0 */
+#social-login-popup .social-login .fieldset .field.choice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#social-login-popup .field.choice label,
+#social-login-popup .field.choice .label {
+    margin: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* 6. Messages + loading overlay trong popup                           */
+/* ------------------------------------------------------------------ */
+#social-login-popup .messages .message {
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    margin-block: 0 0.75rem;
+}
+
+#social-login-popup .social-login-ajax-loading {
+    position: absolute;
+    inset: 0;
+    background: rgb(255 255 255 / 0.6);
+}
