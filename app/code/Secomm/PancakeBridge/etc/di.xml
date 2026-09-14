@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Secomm\Pancake\Api\PosApiConfigInterface"
+                type="Secomm\PancakeBridge\Model\Config\PancakeConfig"/>
+
+    <preference for="Secomm\FulfillmentCore\Api\StatusMapResolverInterface"
+                type="Secomm\FulfillmentCore\Model\Status\StatusMapResolver"/>
+    <preference for="Secomm\FulfillmentCore\Api\StatusMapRepositoryInterface"
+                type="Secomm\FulfillmentCore\Model\Status\StatusMapRepository"/>
+
+    <type name="Secomm\FulfillmentCore\Model\Export\ExporterPool">
+        <arguments>
+            <argument name="exporters" xsi:type="array">
+                <item name="pancake" xsi:type="object">Secomm\PancakeBridge\Model\Order\PancakeOrderExporter</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\FulfillmentCore\Model\Log\FulfillmentLogger">
+        <arguments>
+            <argument name="gates" xsi:type="array">
+                <item name="pancake" xsi:type="object">Secomm\PancakeBridge\Model\Log\PancakeLogConfig</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\FulfillmentCore\Model\Inbound\MapperPool">
+        <arguments>
+            <argument name="mappers" xsi:type="array">
+                <item name="pancake" xsi:type="object">Secomm\Pancake\Model\Mapping\PancakeStatusMapper</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\FulfillmentCore\Model\Inbound\InboundUpdateApplier">
+        <arguments>
+            <argument name="statusMapResolver" xsi:type="object">Secomm\FulfillmentCore\Model\Status\StatusMapResolver</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="secomm_pancake_poll" xsi:type="object">
+                    Secomm\PancakeBridge\Console\Command\PollOrdersCommand
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>

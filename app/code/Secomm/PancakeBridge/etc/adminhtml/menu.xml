@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Secomm_PancakeBridge::pancake"
+             title="Pancake POS"
+             module="Secomm_PancakeBridge"
+             translate="title"
+             sortOrder="55"
+             resource="Secomm_PancakeBridge::warehouse_map"
+             parent="MenuSecomm_Base::menu"/>
+        <add id="Secomm_PancakeBridge::warehouse_map"
+             title="Warehouse Mapping"
+             module="Secomm_PancakeBridge"
+             translate="title"
+             sortOrder="10"
+             resource="Secomm_PancakeBridge::warehouse_map"
+             parent="Secomm_PancakeBridge::pancake"
+             action="pancake/warehousemap/index"/>
+        <add id="Secomm_PancakeBridge::status_map"
+             title="Status Mapping"
+             module="Secomm_PancakeBridge"
+             translate="title"
+             sortOrder="20"
+             resource="Secomm_PancakeBridge::status_map"
+             parent="Secomm_PancakeBridge::pancake"
+             action="pancake/statusmap/index"/>
+    </menu>
+</config>

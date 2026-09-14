@@ -209,3 +209,21 @@ Template cho entry kế tiếp — copy từ đây:
 - **Root cause / trigger**: script curl QC đi mô phỏng flow guest/customer; các guard session + controller helper của core khác nhau theo flow và version.
 - **Action / prevention**: script curl QC My Account/guest: (a) seed session qua GET trang không-FPC (`customer/account/login`), (b) đọc form_key từ session file mỗi lần trước POST, (c) gọi lại đúng field name từ HTML form thật (grep `name="oar*"`), (d) flow guest luôn session mới, không tái dùng jar đã login.
 - **Owner**: dev/QC team (ai viết script curl verify)
+
+## LL-0016 — Cron group `secomm_pos` KHÔNG chạy dưới `cron:run --group=default`; và env local WSL2 chưa có OS crontab cho Magento cron
+- **Date**: 2026-09-10
+- **Source**: SLP-30 poll debug ("cron không update status từ API call" — Pancake `PollUpdatedOrders`)
+- **Type**: avoid
+- **Lesson**: Hai failure mode xếp lớp khiến cron fulfillment "im lặng chết": (1) jobs khai báo trong custom group (`secomm_pos` — poll Pancake + retry FulfillmentCore) **không bao giờ chạy** nếu OS crontab chỉ chạy `cron:run` không group ở phiên bản thiếu hoặc `--group=default/index`; crontab user `secomm` trống, `/etc/cron.d` không có entry Magento → mọi tick trong `cron.log` đều là lệnh gọi tay (gap 15h giữa 2 session). (2) Khi Debug "cron không chạy": kiểm tra `cron_schedule` theo `job_code` (status + messages) + `crontab -l` TRƯỚC khi đọc code — bằng chứng scheduling sống ở đó, không ở `system.log`.
+- **Root cause / trigger**: đưa 2 job về group riêng `secomm_pos` (declare `cron_groups.xml` FulfillmentCore) mà chưa thêm dòng crontab tương ứng; giả định "cron chạy" trên env dev WSL2 nơi chưa từng cấu hình.
+- **Action / prevention**: (1) deploy checklist: mỗi custom cron group cần 1 dòng OS crontab riêng `* * * * * php bin/magento cron:run --group=secomm_pos …` (đã ghi trong README cả 2 module); (2) khi thêm cron job mới: verify bằng 2 lần `cron:run --group=<group>` gọi tay (lần 1 schedule, lần 2 execute) rồi query `cron_schedule`; (3) quy tắc debug: `cron_schedule.messages` + `cron.log` trước, code sau.
+- **Owner**: Dev team / DevOps
+
+## LL-0017 — Đổi constructor signature của cron class mà không clear `generated/` → DI stale chết với `\Error`, row cron_schedule kẹt `running`
+- **Date**: 2026-09-10
+- **Source**: SLP-30 poll debug — `PollUpdatedOrders` constructor 6→8 tham số (working tree 2026-09-10)
+- **Type**: avoid
+- **Lesson**: Sau khi đổi constructor (vd thêm `FulfillmentLogger`, `OrderRepositoryInterface`), DI compiled trong `generated/code` + `generated/metadata` vẫn truyền arg theo signature CŨ dù `MAGE_MODE=developer` → cron chết `Type Error: Too few arguments … 6 passed … exactly 8 expected`. Vì đây là `\Error` (không phải `\Exception`), Magento cron runner không catch → row `cron_schedule` kẹt trạng thái `running` (sau mới bị dọn thành `error`), KHÔNG có dấu vết trong `system.log`/`fulfillment.log`. Kiểm tra sức khỏe qua `php bin/magento cron:run --group=<group>` gọi tay + đọc `cron_schedule.messages`.
+- **Root cause / trigger**: developer mode vẫn tái dùng DI config đã compile trong `generated/`; assumption "developer mode tự recompile ngay" sai trong thực tế với cron path.
+- **Action / prevention**: (1) sau khi pull/checkout code đổi constructor bất kỳ class nào chạy bởi cron/consumer: `rm -rf generated/code/* generated/metadata/*` + `bin/magento cache:flush` (production: `setup:di:compile`); (2) khi cron "chạy mà không làm gì": đọc `cron_schedule.messages` trước khi nghi logic; (3) row kẹt `running`/`error` do `\Error` sẽ không tự retry — chờ job kế theo đúng lịch.
+- **Owner**: Dev team

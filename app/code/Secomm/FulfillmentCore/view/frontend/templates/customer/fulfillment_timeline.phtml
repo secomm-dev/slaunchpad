@@ -1,0 +1,76 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+declare(strict_types=1);
+
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Secomm\FulfillmentCore\ViewModel\CustomerFulfillmentTimeline $viewModel */
+$viewModel = $block->getData('view_model');
+$orderBlock = $block->getLayout()->getBlock('sales.order.info');
+$order = $orderBlock && method_exists($orderBlock, 'getOrder') ? $orderBlock->getOrder() : null;
+if (!$viewModel || !$order) {
+    return;
+}
+$viewModel->setOrderId((int) $order->getEntityId());
+if (!$viewModel->hasState()) {
+    return;
+}
+?>
+<section class="secomm-fulfillment-timeline my-6" aria-label="<?= $block->escapeHtmlAttr(__('Fulfillment progress')) ?>">
+    <h2 class="text-lg font-semibold mb-4"><?= $block->escapeHtml(__('Fulfillment progress')) ?></h2>
+    <ol class="flex flex-wrap gap-2 list-none p-0 m-0">
+        <?php foreach ($viewModel->getSteps() as $step): ?>
+            <?php
+            $reached = $viewModel->isStepReached($step);
+            $current = $viewModel->isCurrentStep($step);
+            $label = match ($step) {
+                'confirmed' => __('Confirmed'),
+                'packing' => __('Packing'),
+                'waiting_pickup' => __('Waiting for pickup'),
+                'shipped' => __('Shipped'),
+                'delivered' => __('Delivered'),
+                'returning' => __('Returning'),
+                'returned' => __('Returned'),
+                'cancelled' => __('Cancelled'),
+                default => __(ucfirst(str_replace('_', ' ', $step))),
+            };
+            $classes = 'px-3 py-1 text-sm border';
+            if ($current) {
+                $classes .= ' font-bold border-current';
+            } elseif ($reached) {
+                $classes .= ' opacity-80';
+            } else {
+                $classes .= ' opacity-40';
+            }
+            ?>
+            <li class="<?= $block->escapeHtmlAttr($classes) ?>"
+                <?= $current ? 'aria-current="step"' : '' ?>>
+                <?= $block->escapeHtml($label) ?>
+            </li>
+        <?php endforeach; ?>
+    </ol>
+    <?php if ($viewModel->getTrackingNumber() || $viewModel->getCarrierName()): ?>
+        <p class="mt-3 text-sm">
+            <?php if ($viewModel->getCarrierName()): ?>
+                <span><?= $block->escapeHtml(__('Carrier')) ?>: <?= $block->escapeHtml($viewModel->getCarrierName()) ?></span>
+            <?php endif; ?>
+            <?php if ($viewModel->getTrackingNumber()): ?>
+                <span class="ml-2">
+                    <?= $block->escapeHtml(__('Tracking')) ?>:
+                    <?php if ($viewModel->getTrackingUrl()): ?>
+                        <a href="<?= $block->escapeUrl($viewModel->getTrackingUrl()) ?>"
+                           class="underline" rel="noopener noreferrer" target="_blank">
+                            <?= $block->escapeHtml($viewModel->getTrackingNumber()) ?>
+                        </a>
+                    <?php else: ?>
+                        <?= $block->escapeHtml($viewModel->getTrackingNumber()) ?>
+                    <?php endif; ?>
+                </span>
+            <?php endif; ?>
+        </p>
+    <?php endif; ?>
+</section>

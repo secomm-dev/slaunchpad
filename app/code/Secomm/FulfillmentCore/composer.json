@@ -1,0 +1,28 @@
+{
+  "name": "secomm/module-fulfillment-core",
+  "description": "Secomm offline fulfillment core — order export port, mapping store, retry. No vendor OMS logic.",
+  "type": "magento2-module",
+  "version": "0.4.2",
+  "license": [
+    "proprietary"
+  ],
+  "require": {
+    "php": "~8.2.0||~8.3.0||~8.4.0",
+    "magento/framework": "*",
+    "magento/module-sales": "*",
+    "magento/module-store": "*",
+    "magento/module-config": "*",
+    "magento/module-cron": "*",
+    "magento/module-inventory-api": "*",
+    "magento/module-inventory-catalog-api": "*",
+    "magento/module-inventory-sales-api": "*"
+  },
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Secomm\\FulfillmentCore\\": ""
+    }
+  }
+}

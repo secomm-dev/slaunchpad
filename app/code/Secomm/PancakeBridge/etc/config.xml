@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <pancake>
+            <general>
+                <enabled>0</enabled>
+                <enable_log>0</enable_log>
+            </general>
+            <api>
+                <base_url>https://pos.pages.fm/api/v1</base_url>
+            </api>
+            <poll>
+                <enabled>1</enabled>
+            </poll>
+        </pancake>
+    </default>
+</config>

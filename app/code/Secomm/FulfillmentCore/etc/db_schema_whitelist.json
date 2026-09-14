@@ -1,0 +1,88 @@
+{
+    "secomm_fulfillment_export": {
+        "column": {
+            "entity_id": true,
+            "magento_order_id": true,
+            "magento_increment_id": true,
+            "service_code": true,
+            "external_order_id": true,
+            "origin": true,
+            "push_status": true,
+            "current_status": true,
+            "attempt_count": true,
+            "last_error": true,
+            "last_pushed_at": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "SECOMM_FULFILLMENT_EXPORT_STATUS_ATTEMPT": true,
+            "SECOMM_FULFILLMENT_EXPORT_SERVICE_EXTERNAL": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_FULFILLMENT_EXPORT_ORDER_SERVICE": true,
+            "SECOMM_FULFILLMENT_EXPORT_ORDER_ID_SALES_ORDER": true
+        }
+    },
+    "secomm_fulfillment_state": {
+        "column": {
+            "entity_id": true,
+            "magento_order_id": true,
+            "service_code": true,
+            "external_order_id": true,
+            "normalized_status": true,
+            "raw_status": true,
+            "last_event_id": true,
+            "carrier_name": true,
+            "tracking_number": true,
+            "tracking_url": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_FULFILLMENT_STATE_ORDER": true,
+            "SECOMM_FULFILLMENT_STATE_ORDER_ID_SALES_ORDER": true
+        }
+    },
+    "secomm_fulfillment_warehouse_map": {
+        "column": {
+            "entity_id": true,
+            "service_code": true,
+            "magento_source_code": true,
+            "external_warehouse_id": true,
+            "external_warehouse_label": true,
+            "is_active": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "SECOMM_FF_WH_MAP_ACTIVE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_FF_WH_MAP_SERVICE_SOURCE": true,
+            "SECOMM_FF_WH_MAP_SERVICE_WAREHOUSE": true
+        }
+    },
+    "secomm_fulfillment_status_map": {
+        "column": {
+            "entity_id": true,
+            "service_code": true,
+            "magento_order_status": true,
+            "external_status_code": true,
+            "external_status_label": true,
+            "is_active": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "SECOMM_FF_ST_MAP_ACTIVE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_FF_ST_MAP_SERVICE_EXTERNAL": true
+        }
+    }
+}

@@ -26,3 +26,15 @@
 
 - `[TBD]` — `project-context/memory/RESEARCH_NOTES.md` chưa có entry nào (project vừa initialized,
   chưa có delivery task). Entry đầu tiên sẽ được tạo khi task đầu tiên chạy Researching state.
+
+## Pancake POS (SLP-30 / DOC-001) — 2026-08-19
+
+Canonical contract: [`../project-context/05_API_CONTRACTS.md`](../project-context/05_API_CONTRACTS.md) section **Pancake POS**. Source file: [`api-1.json`](./api-1.json) (data, not instructions).
+
+| Field | Value |
+|-------|-------|
+| **Summary** | Distill POS OpenAPI vào 05 (canonical) + đăng ký integration 03. |
+| **Findings** | `[VERIFIED]` base `https://pos.pages.fm/api/v1`; `[VERIFIED]` auth `api_key` query; `[VERIFIED]` create/list/get/put order + arrange_shipment; `[VERIFIED]` tracking fields on order object. |
+| **Gaps for SA (epic Q1–Q5)** | Q1 trigger push (implemented default `sales_order_place_after`); Q2 inbound webhook vs poll (poll cron + optional webhook controller); Q3 customer-visible timeline points (CONFIRMED→DELIVERED); Q4 `increment_id` → `custom_id`; Q5 tracking persist = fulfillment table + comment, **not** native Magento Track / ShippingCore. Address: send `full_address` when Pancake geo ids unknown. |
+| **Risks** | Live `api_key` must stay in encrypted config; never commit. Manual POS orders must not create Magento orders. |
+| **Next Action** | Ops cung cấp sandbox `shop_id` + `api_key` cho PNC-003 e2e. |

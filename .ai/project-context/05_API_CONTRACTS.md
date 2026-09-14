@@ -186,3 +186,83 @@ No external API. Internal cron-driven recovery flow (`mageplaza_abandonedcart_cr
 | **Rate limit** | n/a |
 | **Error handling** | [TBD] |
 | **Notes** | Cron runs every minute — monitor throughput in production. |
+
+---
+
+## Pancake POS (offline OMS)
+
+**Type**: fulfillment / OMS offline | **Criticality**: high | **Direction**: bidirectional  
+**Canonical source**: `.ai/research/api-1.json` (`Pancake POS Open API`). Chat/Inbox `openapi.yaml` (pages.fm) is **out of scope**.
+
+### Authentication
+
+Query parameter `api_key` (`securitySchemes.ApiKeyAuth`). Store encrypted in Magento config (`pancake/api/api_key`). Logs and evidence **must** use placeholder `<api_key>` — never a live key. **[BLOCK]**
+
+### Base URL
+
+`https://pos.pages.fm/api/v1`
+
+### Endpoints (SLP-30)
+
+#### POST /shops/{SHOP_ID}/orders
+
+| Field | Value |
+|-------|-------|
+| **Purpose** | Create a POS order from a Magento-origin sales order (`Secomm_Pancake` exporter). |
+| **Request format** | JSON body. Correlation: `custom_id` = Magento `increment_id` (SA default Q4). Also: `bill_full_name`, `bill_phone_number`, `items[]`, `shipping_address`, `shipping_fee`, `shop_id`, `note`. Address ids `province_id` / `district_id` / `commune_id` when known; otherwise `full_address` text. |
+| **Response format** | JSON with POS order `id` (integer) — stored as `secomm_fulfillment_export.external_order_id`. |
+| **Rate limit** | Not documented in OpenAPI |
+| **Error handling** | Non-2xx / missing id → export `failed`; core retry cron. Do not log `api_key` or raw PII. |
+| **Notes** | Magento does **not** call `arrange_shipment` as a required step (ops on Pancake). |
+
+#### GET /shops/{SHOP_ID}/orders/{ORDER_ID}
+
+| Field | Value |
+|-------|-------|
+| **Purpose** | Poll a single POS order for status + tracking (inbound path when no webhook). |
+| **Request format** | Path `SHOP_ID`, `ORDER_ID`; `api_key` query |
+| **Response format** | Order object: `status` (int enum), `partner` / `partner.extend_update[]` tracking fields |
+| **Notes** | Adapter parses then calls core `InboundUpdateApplier`. No mapping Magento-origin → no Magento write. |
+
+#### GET /shops/{SHOP_ID}/orders
+
+| Field | Value |
+|-------|-------|
+| **Purpose** | List/search orders for poll cron (`updateStatus=updated_at`). |
+| **Request format** | Query: `page_size`, `page_number`, `updateStatus`, `filter_status[]`, `search` |
+| **Notes** | Manual POS-only orders may appear; core origin filter drops them. |
+
+#### PUT /shops/{SHOP_ID}/orders/{ORDER_ID}
+
+| Field | Value |
+|-------|-------|
+| **Purpose** | Update POS order. **Not used** by SLP-30 Magento adapter (one-way create + inbound status). |
+
+#### POST /shops/{SHOP_ID}/orders/arrange_shipment
+
+| Field | Value |
+|-------|-------|
+| **Purpose** | Prepare shipment on POS. Magento **does not** require this call. |
+
+### Tracking fields (order object)
+
+| Field | Meaning |
+|-------|---------|
+| `status` | Integer enum (0 New, 17 Restocking, 11 Purchased, 20 Confirmed, 1 Wait for printing, 12 Printed, 13 Packaging, 8 Packaging, 9 Waiting for pick up, 2 Shipped, 3 Received, 16 Collected money, 4 Returning, 15 Partial return, 5 Returned). Cancel codes 6/7 used in adapter mapper if POS returns them. |
+| `partner_name` / `delivery_name` | Carrier display name → core `carrier_name` |
+| `partner.extend_update[].tracking_id` | Tracking number |
+| `tracking_link` | Tracking URL |
+
+### Webhooks
+
+Pancake POS Open API documents **Webhook configuration** on `PUT /shops/{SHOP_ID}` (`webhook_enable`, `webhook_url`, `webhook_types`). When type includes **`orders`**, POS sends **POST** bodies shaped as `WebhookOrderResponse` (includes `id`, `custom_id`, `status`, `tracking_link`, `partner.*`).
+
+| Field | Value |
+|-------|-------|
+| **Magento endpoint** | `POST /pancake/webhook/index?secret=<pancake/webhook/secret>` (`Secomm_PancakeBridge`) |
+| **Auth** | Query `secret` must match Magento config (`hash_equals`). Empty Magento secret disables the check (not for public stores). |
+| **Apply** | Parse via `OrderPayloadParser` → `InboundUpdateApplier` for Magento-origin exports only. |
+| **Fallback** | Poll cron/CLI `GET /shops/{SHOP_ID}/orders/{ORDER_ID}` remains enabled; do not replace poll with webhook-only. |
+| **Ops UI** | Pancake: Setting → Advance → Third-party connection → Webhook/API. Magento: see `Secomm_PancakeBridge` README. |
+
+---
