@@ -26,7 +26,7 @@ class CancelOrderValidator extends AbstractResponseValidator
         $validationResult = $this->validateResponseMsg($response);
 
         if (!$validationResult) {
-            $errorMessages = [__('Something went wrong when cancel order.')];
+            $errorMessages = [__('GHN cancel failed: %1', $this->getGhnErrorMessage($response))];
         }
 
         return $this->createResult($validationResult, $errorMessages);

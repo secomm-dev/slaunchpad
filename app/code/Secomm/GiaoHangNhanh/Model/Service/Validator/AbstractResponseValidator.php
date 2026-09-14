@@ -45,4 +45,18 @@ abstract class AbstractResponseValidator extends AbstractValidator
     {
         return isset($response[self::MSG]) && $response[self::MSG] === self::SUCCESS_MESSAGE;
     }
+
+    /**
+     * Extract the real error message from a GHN error response
+     * (e.g. "Kích thước (dài) vượt quá mức cho phép: 150").
+     *
+     * @param array $response
+     * @return string
+     */
+    protected function getGhnErrorMessage(array $response): string
+    {
+        return $response[self::MSG]
+            ?: ($response['code_message_value'] ?? '')
+            ?: '';
+    }
 }

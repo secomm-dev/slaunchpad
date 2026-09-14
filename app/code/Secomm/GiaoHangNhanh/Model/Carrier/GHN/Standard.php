@@ -16,10 +16,10 @@ class Standard extends GHN
 {
     const SERVICE_NAME = 'Chuyển phát truyền thống';
     const SERVICE_NAME_SHORT = 'Hàng nhẹ';
-    const MAX_HEIGHT = 20000; //centimeter
-    const MAX_WIDTH = 20000; //centimeter
-    const MAX_LENGTH = 20000; //centimeter
-    const MAX_WEIGHT = 5000; //kilograms
+    const MAX_HEIGHT = 200; //centimeter
+    const MAX_WIDTH = 200; //centimeter
+    const MAX_LENGTH = 200; //centimeter
+    const MAX_WEIGHT = 20; //kilograms
     const MAX_CONVERTED_MASS = 1600; //kilograms
 
     /**
@@ -41,7 +41,7 @@ class Standard extends GHN
         $weightKgMagento = $this->ghnHelperData->convertToKilograms($request->getPackageWeight());
         $ruleWeightKgGhn = ($length * $width * $height) / 5000;
         $maxConvertedMassOrder = $this->getMaxConvertedMassOrder() ?: self::MAX_CONVERTED_MASS;
-        if ($length <= $maxLength && $width <= $maxWidth && $height <= $maxHeight && $weightKgMagento <= $maxWeight && $ruleWeightKgGhn <= $maxConvertedMassOrder) {
+        if ($length <= $maxLength && $width <= $maxWidth && $height <= $maxHeight && $weightKgMagento < $maxWeight && $ruleWeightKgGhn <= $maxConvertedMassOrder) {
             if (!$this->validateDataProduct($request)) {
                 return false;
             }
