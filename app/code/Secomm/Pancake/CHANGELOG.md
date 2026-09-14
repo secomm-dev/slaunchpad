@@ -1,5 +1,10 @@
 # Changelog - Secomm_Pancake
 
+## 0.4.2 - 2026-09-14 (SLP-30 / Bridge pattern)
+
+### Fixed
+- `PayloadBuilder` depends on `PosApiConfigInterface` (Bridge `PancakeConfig` preference) instead of missing `Secomm\Pancake\Model\Config\PancakeConfig` — fixes DI compile.
+
 ## 0.4.1 - 2026-09-11 (SLP-30 / inbound webhook)
 
 ### Changed
