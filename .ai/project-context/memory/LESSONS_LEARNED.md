@@ -227,3 +227,53 @@ Template cho entry kế tiếp — copy từ đây:
 - **Root cause / trigger**: developer mode vẫn tái dùng DI config đã compile trong `generated/`; assumption "developer mode tự recompile ngay" sai trong thực tế với cron path.
 - **Action / prevention**: (1) sau khi pull/checkout code đổi constructor bất kỳ class nào chạy bởi cron/consumer: `rm -rf generated/code/* generated/metadata/*` + `bin/magento cache:flush` (production: `setup:di:compile`); (2) khi cron "chạy mà không làm gì": đọc `cron_schedule.messages` trước khi nghi logic; (3) row kẹt `running`/`error` do `\Error` sẽ không tự retry — chờ job kế theo đúng lịch.
 - **Owner**: Dev team
+
+
+## LL-0016 — Alpine @submit: return false KHÔNG preventDefault (bundle Hyvä alpine3)
+
+- **Date**: 2026-09-11
+- **Source**: BUG-CW6KDK (SLP-205) — wishlist share form validation
+- **Type**: mechanism
+- **Lesson**: vendor Hyvä `Magento_Wishlist::sharing.phtml` dùng `@submit="validateForm()"` với `return false` trong các nhánh invalid như thể đó là guard — dead code: alpine3 bundle chỉ auto-preventDefault cho modifier `.prevent` (1 occurrence `preventDefault` trong `alpine3.min.js` = chính implementation `.prevent`). Guard thực của form là browser constraint validation (customError set từ blur/input chặn TRƯỚC submit event) → race: field không từng focus/input → không customError → form vẫn submit bất kể return false.
+- **Root cause / trigger**: verify empty-field translated message phải bỏ attr `required` (bubble valueMissing là browser-language, không dịch được CSV) → lộ path submit không chặn khi field chưa từng được focus.
+- **Action / prevention**: form Alpine validate thủ công → guard tường minh CSP-safe: `@submit="!validateForm() && $event.preventDefault()"` (biểu thức, không `if` statement — CSP build không cho statement) + `reportValidity()` khi cần bubble; tin browser constraint validation cho path đã-set customError. Server-side validation vẫn là safety net (không coi client guard là security).
+- **Owner**: TL (review)
+
+## LL-0019 — Curl QC flow: form_key rotate sau loginPost + guest OAR 2.4.8 đổi field name & thiếu `oar_zip` → 500
+
+- **Date**: 2026-09-11
+- **Source**: BUG-HE2NGV batch 4 (SLP-128) — live verify newsletter + order comment labels
+- **Type**: avoid
+- **Lesson**: (1) Theme Hyvä render `form_key` bằng JS (`document.createElement`) — HTML không chứa value; lấy form_key từ PHP session file `/var/lib/php/sessions/sess_<PHPSESSID>` (regex `form_key";s:16:"..."`, chạy as `secomm`). (2) **`loginPost` rotate form_key** — key lấy trước login chết sau login; đọc lại session file sau mỗi POST đổi trạng thái. (3) Guest order lookup 2.4.8: field là `oar_billing_lastname` (không phải `oar_billing`), và POST phải mang key `oar_zip` (rỗng cũng được) — thiếu → `Undefined array key "oar_zip"` warning trong `Sales/Helper/Guest.php:278` → **HTTP 500** ở developer mode. (4) `sales/guest/view` redirect user đã login về `sales/order/history` — verify guest page phải dùng session guest tươi.
+- **Root cause / trigger**: script curl QC đi mô phỏng flow guest/customer; các guard session + controller helper của core khác nhau theo flow và version.
+- **Action / prevention**: script curl QC My Account/guest: (a) seed session qua GET trang không-FPC (`customer/account/login`), (b) đọc form_key từ session file mỗi lần trước POST, (c) gọi lại đúng field name từ HTML form thật (grep `name="oar*"`), (d) flow guest luôn session mới, không tái dùng jar đã login.
+- **Owner**: dev/QC team (ai viết script curl verify)
+
+---
+
+## LL-0024 — Vendor Hyvä reCAPTCHA validation JS khóa nút submit + ghi đè kết quả validate
+
+- **Date**: 2026-09-11
+- **Source**: BUG-NGX81D (SLP-204) — product review form submit lock
+- **Type**: avoid
+- **Context**: `Magento_ReCaptchaFrontendUi::js/script_token_recaptcha.phtml` (vendor Hyvä, inject inline trong `submitForm()` khi captcha bật) khi thiếu token: (a) `setAttribute('disabled')` nút submit **không có đường re-enable** + dispatch banner global "ReCaptcha validation failed..."; (b) **ghi đè `this.errors = hasCaptchaToken ? 0 : 1`** — phá kết quả field validation chạy trước đó. Với form có `novalidate` (vd `#review_form` — BUG-8K1TBB, chủ đích QC), mọi submit fail đều chạm code này: form rỗng → khóa nút; captcha tick + form rỗng → `errors` bị reset 0 → submit rỗng lên GraphQL (bypass validate).
+- **Action / prevention**: khi customize validation flow quanh captcha: (1) early-return sau field validate FAIL, trước khi chạy `getValidationJsHtml`; (2) pre-check token tự xử lý (`$form.elements[getResultTokenFieldName()]`) và return với inline error thay vì để vendor JS khóa nút; (3) guard pre-check bằng `$recaptcha->getRecaptchaData($formId)` (null khi captcha off cho form đó) — **KHÔNG** dùng `if ($recaptcha)` vì viewModelRecaptcha luôn được layout truyền vào (luôn non-null); (4) muốn đổi behavior lock cho mọi form v2 checkbox thì phải override template shared — blast radius lớn, cần TL duyệt riêng.
+- **Owner**: dev team (mọi task đụng form có reCAPTCHA trên Hyvä)
+
+## LL-0025 — config:set trên path có giá trị sẵn: check trước, không có config:unset trong 2.4.8
+
+- **Date**: 2026-09-11
+- **Source**: BUG-NGX81D verify session — ghi đè mất `recaptcha_frontend/type_recaptcha/public_key` (config_id 445) local
+- **Type**: avoid
+- **Context**: QC tạm bật captcha v2 product_review bằng `config:set` + dummy key; path `type_recaptcha/public_key` **đã có giá trị thật encrypted** từ trước → bị đè bằng dummy plain, không khôi phục được (site key public, lấy lại từ Google Admin/demo DB). Ngoài ra `bin/magento config:unset` **không tồn tại** trong Magento 2.4.8 CLI — revert phải xóa row qua DB (PDO as secomm).
+- **Action / prevention**: (1) trước khi `config:set` bất kỳ path nào: `config:show` + check row `core_config_data` (path có thể tồn tại sẵn dù `config:show` trả rỗng — row value rỗng vẫn chiếm config_id); (2) revert config tạm sau QC: DELETE row qua PDO (env.php creds, chạy as secomm) + `cache:clean config`; (3) pattern QC captcha-flow: bật tạm `type_for/<form>` + dummy public key → widget render, token không solve được → test pre-check path → revert; (4) `$recaptcha`/viewModel luôn non-null khỏi nhầm là "captcha bật".
+- **Owner**: dev/QC team
+
+## LL-0026 — Verify automation local: curl cookie-jar PSL trap + Playwright waitForURL glob + ?___store works
+
+- **Date**: 2026-09-14
+- **Source**: BUG-PWP31X (SLP-152) verify session — login/store-switch/render automation trên local
+- **Type**: avoid
+- **Context**: (1) `curl -c jar` **không persist** cookie có attr `domain=slaunchpad.localhost` (verbose vẫn "Added cookie") — PSL coi `localhost` là public suffix; jar chỉ giữ cookie không có domain attr → login 302 thành công nhưng GET sau không session. (2) Playwright `waitForURL('**/customer/address/**')` **resolve ngay lập tức** nếu URL hiện tại đã match glob (`/customer/address/new/` cũng match) → assert điều hướng phải dùng `waitForFunction(() => !location.pathname.includes('/new/'))` hoặc check pathname. (3) `?___store=launchpad_en` **hoạt động** trên local khi dùng thuần; session 09-11 thấy no-op là do kèm `___from_store` (redirect về default — xem memory store-switch đã update). (4) Playwright `waitForURL` sau save-address: validation zip fail vẫn đứng yên form (inline "Trường Mã bưu chính là bắt buộc") — phải assert success message, không chỉ URL.
+- **Action / prevention**: (1) login curl: tự cấp `form_key` (Hyvä sinh client-side — cookie + POST param cùng giá trị), parse `PHPSESSID`/`X-Magento-Vary` từ `-D header-file` rồi gửi `-b "PHPSESSID=…; X-Magento-Vary=…"` thủ công cho các request sau; Location phải ra `/customer/account/` (ra `/login` = sai credentials). (2) working pattern hoàn chỉnh: `.ai/runtime/evidence/BUG-PWP31X/verify-live.sh` + `e2e-edit-save.js` (playwright as root, `NODE_PATH=/tmp/pw-cal/node_modules`, `--host-resolver-rules=MAP slaunchpad.localhost 127.0.0.1`).
+- **Owner**: dev/QC team

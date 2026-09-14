@@ -25,7 +25,7 @@ $helperData  = $this->helper(\Mageplaza\SocialLoginPro\Helper\Data::class);
 $popupEffect = $helperData->getPopupEffect();
 $modal       = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class)
     ->createModal()
-    ->addDialogClass("p-3 w-full wrap-modal-login  transform origin-left opacity-0 scale-0" . " " . $popupEffect . "-appear")
+    ->addDialogClass("p-3 w-full wrap-modal-login  transform origin-left opacity-0" . " " . $popupEffect . "-appear")
     ->removeDialogClass('shadow-xl', 'inline-block', 'bg-white', 'rounded-lg', 'p-10', 'max-h-screen', 'overflow-auto',
         'border border-10', 'border-blue-500')
     ->withDialogRefName('my-dialog')
@@ -571,7 +571,12 @@ $btnPosition     = $helperData->getSocialBtnPosition();
 
         if (btnPosition !== "" && social && loginForms.length > 0) {
             document.querySelectorAll('.white-popup').forEach(popupTop => {
-                popupTop.style.setProperty("transform", "translateY(7%)", "important");
+                /* TASK-7P5RJP (SLP-160): vendor pushes the card down 7% (inline
+                   !important) even when social_btn_position is unset — getConfigGeneral()
+                   returns null, which !== "" so this branch always runs and breaks
+                   vertical centering. Neutralized: the themed popup is flex-centered
+                   via the theme stylesheet instead. */
+                popupTop.style.setProperty("transform", "none", "important");
             })
             switch (btnPosition){
                 case "left":

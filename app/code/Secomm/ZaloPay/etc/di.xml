@@ -166,6 +166,11 @@
                 type="Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard"
                 sortOrder="10"/>
     </type>
+    <type name="Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard">
+        <arguments>
+            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
+        </arguments>
+    </type>
 
     <!-- Payment-first services -->
     <type name="Secomm\ZaloPay\Model\PaymentAttemptManagement">
