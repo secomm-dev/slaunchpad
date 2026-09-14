@@ -139,7 +139,8 @@
             },
             "magento/framework": {
                 "APSB26-73: Security Patch for Framework UI Component Data Provider Sanitizer": "patches/composer/APSB26-73/APSB26-73-magento-framework.patch",
-                "Make ACL resource title attribute optional": "patches/magento-framework-acl-title-optional.patch"
+                "Make ACL resource title attribute optional": "patches/magento-framework-acl-title-optional.patch",
+                "Security release 248p5-2026-09-001 CE": "patches/composer/VULN-39341-248p5-2026-09-001-CE/framework.patch"
             },
             "magento/module-customer": {
                 "APSB26-73: Security Patch for Customer Config": "patches/composer/APSB26-73/APSB26-73-magento-module-customer.patch",
@@ -151,7 +152,17 @@
             "magento/magento2-base": {
                 "APSB26-73: Security Patch for Nginx Config Sample": "patches/composer/APSB26-73/APSB26-73-magento-magento2-base.patch",
                 "APSB26-92: Security release 248p5-2026-08-001 CE": "patches/composer/APSB26-92-248p5-2026-08-001-CE/magento2-base.patch",
-                "MAGENTO-40225-datepicker-fix-position (PR #40225)": "patches/composer/MAGENTO-40225-datepicker-fix-position.patch"
+                "MAGENTO-40225-datepicker-fix-position (PR #40225)": "patches/composer/MAGENTO-40225-datepicker-fix-position.patch",
+                "Security release 248p5-2026-09-001 CE": "patches/composer/VULN-39341-248p5-2026-09-001-CE/magento2-base.patch"
+            },
+            "magento/module-backend": {
+              "Security release 248p5-2026-09-001 CE": "patches/composer/VULN-39341-248p5-2026-09-001-CE/module-backend.patch"
+            },
+            "magento/module-email": {
+              "Security release 248p5-2026-09-001 CE": "patches/composer/VULN-39341-248p5-2026-09-001-CE/module-email.patch"
+            },
+            "magento/module-newsletter": {
+              "Security release 248p5-2026-09-001 CE": "patches/composer/VULN-39341-248p5-2026-09-001-CE/module-newsletter.patch"
             },
             "magento/module-page-cache": {
                 "AC-15223: Use vary cookie in FPC save identifier for store switch": "patches/composer/AC-15223_2.4.8.patch"
