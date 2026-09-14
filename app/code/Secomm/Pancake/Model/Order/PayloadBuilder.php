@@ -12,27 +12,28 @@ namespace Secomm\Pancake\Model\Order;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Model\Order as SalesOrder;
-use Secomm\Pancake\Model\Config\PancakeConfig;
+use Secomm\Pancake\Api\PosApiConfigInterface;
 
 /**
  * Map Magento order to POS create-order JSON.
  * Q4: custom_id = increment_id. PNC-004: warehouse_id required from core map.
  * Address is full_address text. Do not send Magento ISO country_id as country_code
  * (Pancake country_code is a POS geo id; "VN" returns 422).
- *
- * @param OrderInterface $order Magento sales order
- * @param string $warehouseId Pancake warehouse UUID from core WarehouseMapResolver
- * @return array<string, mixed> POS payload (no api_key)
+ * Config comes from PosApiConfigInterface (implemented by PancakeBridge PancakeConfig).
  */
 class PayloadBuilder
 {
     public function __construct(
-        private readonly PancakeConfig $config
+        private readonly PosApiConfigInterface $config
     ) {
     }
 
     /**
-     * @return array<string, mixed>
+     * Build Pancake create-order payload from a Magento sales order.
+     *
+     * @param OrderInterface $order Magento sales order
+     * @param string $warehouseId Pancake warehouse UUID from core WarehouseMapResolver
+     * @return array<string, mixed> POS payload (no api_key)
      */
     public function build(OrderInterface $order, string $warehouseId): array
     {

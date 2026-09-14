@@ -13,14 +13,14 @@ use Magento\Sales\Api\Data\OrderAddressInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use PHPUnit\Framework\TestCase;
-use Secomm\Pancake\Model\Config\PancakeConfig;
+use Secomm\Pancake\Api\PosApiConfigInterface;
 use Secomm\Pancake\Model\Order\PayloadBuilder;
 
 class PayloadBuilderTest extends TestCase
 {
     public function testCustomIdIsIncrementIdAndItemsAreOneTimeProducts(): void
     {
-        $config = $this->createMock(PancakeConfig::class);
+        $config = $this->createMock(PosApiConfigInterface::class);
         $config->method('getShopId')->willReturn('4');
 
         $address = $this->createMock(OrderAddressInterface::class);
