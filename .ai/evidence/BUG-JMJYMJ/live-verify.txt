@@ -1,0 +1,25 @@
+# BUG-JMJYMJ live verify — 2026-09-11 08:57:30 (sau reindex catalogsearch_fulltext)
+== [vi] q=test (spellcheck results) ==
+HTTP 500, 903 bytes
+  'Kết quả tìm kiếm cho' => 0
+  'Không tìm thấy kết quả chính xác cho' => 0
+  'ý của bạn là' => 0
+  'Độ phù hợp' => 0
+  'Search results for' => 0
+  'No exact results' => 0
+  'Did you mean' => 0
+  'Related search terms' => 0
+== [vi] q=no-result (#%^&&**) ==
+HTTP 500, 903 bytes
+  'Tìm kiếm của bạn không trả về kết quả nào' => 0
+  'Your search returned no results' => 0
+  'Kết quả tìm kiếm cho' => 0
+  'Từ khoá tìm kiếm liên quan' => 0
+== [en] q=test (___store=launchpad_en) ==
+HTTP 500, 903 bytes
+  'Search results for' => 0
+  'No exact results found for' => 0
+  'Did you mean' => 0
+  '>Relevance<' => 0
+  'Kết quả tìm kiếm cho' => 0
+  'Độ phù hợp' => 0

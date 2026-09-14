@@ -1,0 +1,8 @@
+Dictionary entries loaded: 1873
+OK       Search results for: '%1' => Kết quả tìm kiếm cho: '%1'
+OK       No exact results found for: <b>'%1'</b>. The displayed items are the closest matches. => Không tìm thấy kết quả chính xác cho: <b>'%1'</b>. Các sản phẩm hiển thị là những kết quả phù hợp nhất.
+OK       Did you mean => Ý của bạn là
+OK       Relevance => Độ phù hợp
+OK       Your search returned no results. => Tìm kiếm của bạn không trả về kết quả nào.
+OK       Related search terms => Từ khoá tìm kiếm liên quan
+Failed: 0/6

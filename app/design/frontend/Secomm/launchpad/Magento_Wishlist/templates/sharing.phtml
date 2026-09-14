@@ -1,0 +1,120 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * Slaunchpad override (SLP-205 / BUG-CW6KDK) of Hyva/magento2-default-theme
+ * Magento_Wishlist::sharing.phtml — verbatim + 4 diff:
+ *  - empty emails -> setCustomValidity(__('This is a required field.')) + reportValidity()
+ *    (translated message instead of the browser-language "Please fill out this field.")
+ *  - drop `required` attr on the emails textarea (native valueMissing bubble is
+ *    browser-language, not translatable via CSV)
+ *  - @submit explicitly blocks submission when validateForm() fails (Alpine does not
+ *    auto-preventDefault on a falsy handler result)
+ *  - submit button styled `btn btn-primary` (theme button component; unstyled text before)
+ */
+
+use Magento\Framework\Escaper;
+use Magento\Wishlist\Block\Customer\Sharing;
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+
+/** @var Escaper $escaper */
+/** @var Sharing $block */
+?>
+<script>
+    function initShareWishlist() {
+        return {
+            isValid: true,
+            validateEmailsRegex: /^([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*@([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*\.(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]){2,})$/i,
+            validateForm() {
+                const emailField = this.$refs['emails'];
+                if (!emailField.value.trim()) {
+                    this.isValid = false;
+                    emailField.setCustomValidity("<?= $escaper->escapeJs(__('This is a required field.')) ?>");
+                    emailField.reportValidity();
+                    return false;
+                }
+                const emails = emailField.value.split(/[\s\n\,]+/g);
+
+                for (i = 0; i < emails.length; i++) {
+                    if (!this.validateEmailsRegex.test(emails[i].trim())) {
+                        this.isValid = false;
+                        emailField.setCustomValidity("<?= $escaper->escapeJs(__('Please enter valid email addresses, separated by commas. For example, johndoe@domain.com, johnsmith@domain.com.')) ?>");
+                        return false;
+                    }
+                }
+
+                if (emails.length > <?= (int) $block->getEmailSharingLimit() ?>) {
+                    emailField.setCustomValidity("<?= $escaper->escapeJs(__('Maximum of %1 emails can be sent.', $block->getEmailSharingLimit())) ?>");
+                    return false;
+                }
+
+                this.isValid = true;
+                emailField.setCustomValidity("");
+                return true;
+            }
+
+        }
+    }
+
+</script>
+<form class="form wishlist share"
+      x-data="initShareWishlist()"
+      @submit="!validateForm() && $event.preventDefault()"
+      action="<?= $escaper->escapeUrl($block->getSendUrl()) ?>"
+      id="form-validate"
+      method="post"
+>
+    <fieldset class="fieldset">
+        <?= $block->getBlockHtml('formkey') ?>
+        <legend class="legend">
+            <span>
+                <?= $escaper->escapeHtml(__('Sharing Information')) ?>
+            </span>
+        </legend>
+        <div class="field emails required">
+            <label class="label"
+                   for="email_address">
+                <span>
+                    <?= $escaper->escapeHtml(__('Email addresses, separated by commas')) ?>
+                </span>
+            </label>
+            <div class="control max-w-xl">
+                <textarea name="emails"
+                          class="form-input w-full"
+                          :class=" { 'border-red-500 focus:border-red-500 focus:ring-red-500': !isValid }"
+                          rows="5"
+                          id="email_address"
+                          @blur="validateForm()"
+                          @input.debounce="validateForm()"
+                          x-ref="emails"
+                ><?= /* @noEscape */ $block->getEnteredData('emails') ?></textarea>
+            </div>
+        </div>
+        <div class="field text">
+            <label class="label" for="message"><span><?= $escaper->escapeHtml(__('Message')) ?></span></label>
+            <div class="control max-w-xl">
+                <textarea id="message" name="message" class="form-input w-full" rows="5" maxlength="<?= (int) $block->getTextSharingLimit() ?>"><?= /* @noEscape */ $block->getEnteredData('message') ?></textarea>
+            </div>
+        </div>
+    </fieldset>
+    <?= $block->getChildHtml('captcha'); ?>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button type="submit" title="<?= $escaper->escapeHtmlAttr(__('Share Wish List')) ?>"
+                    class="action submit primary btn btn-primary">
+                <span><?= $escaper->escapeHtml(__('Share Wish List')) ?></span>
+            </button>
+        </div>
+        <div class="secondary">
+            <a class="action back"
+               href="<?= $escaper->escapeUrl($block->getBackUrl()) ?>">
+                <span>
+                    <?= $escaper->escapeHtml(__('Back')) ?>
+                </span>
+            </a>
+        </div>
+    </div>
+</form>

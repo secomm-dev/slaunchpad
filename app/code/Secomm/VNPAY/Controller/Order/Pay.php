@@ -2,49 +2,36 @@
 
 namespace Secomm\VNPAY\Controller\Order;
 
+use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Quote\Api\CartManagementInterface;
 use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
+use Secomm\VNPAY\Logger\Logger;
 
-class Pay extends \Magento\Framework\App\Action\Action {
-
-    /** @var  \Magento\Sales\Model\Order */
-    protected $order;
-
-    /** @var  \Magento\Checkout\Model\Session */
-    protected $checkoutSession;
-
-    /** @var  \Magento\Framework\App\Config\ScopeConfigInterface */
-    protected $scopeConfig;
-
-    /** @var \Secomm\VNPAY\Logger\Logger */
-    protected $logger;
-    protected $quoteFactory;
-
-    /** @var CartManagementInterface */
-    protected $cartManagement;
-
-    /** @var QuoteCollectionFactory */
-    protected $quoteCollectionFactory;
-
+/**
+ * Browser return URL from VNPAY.
+ *
+ * If the IPN has already processed the payment the order exists by
+ * vnp_TxnRef and the customer is sent to the success page. If the IPN has
+ * not arrived (e.g. local sandbox) the order is placed here from the quote.
+ * On failure the cart is kept intact for a retry.
+ */
+class Pay extends Action
+{
     public function __construct(
         Context $context,
-        \Magento\Sales\Model\Order $order,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Secomm\VNPAY\Logger\Logger $logger,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        CartManagementInterface $cartManagement,
-        QuoteCollectionFactory $quoteCollectionFactory
+        private readonly Order $order,
+        private readonly \Magento\Checkout\Model\Session $checkoutSession,
+        private readonly ScopeConfigInterface $scopeConfig,
+        private readonly Logger $logger,
+        private readonly CartManagementInterface $cartManagement,
+        private readonly QuoteCollectionFactory $quoteCollectionFactory,
+        private readonly OrderRepositoryInterface $orderRepository
     ) {
         parent::__construct($context);
-        $this->order = $order;
-        $this->checkoutSession = $checkoutSession;
-        $this->scopeConfig = $scopeConfig;
-        $this->logger = $logger;
-        $this->quoteFactory = $quoteFactory;
-        $this->cartManagement = $cartManagement;
-        $this->quoteCollectionFactory = $quoteCollectionFactory;
     }
 
     /**
@@ -52,12 +39,13 @@ class Pay extends \Magento\Framework\App\Action\Action {
      *
      * @return \Magento\Framework\Controller\ResultInterface
      */
-    public function execute() {
+    public function execute()
+    {
         $vnp_SecureHash = $this->getRequest()->getParam('vnp_SecureHash', '');
         $SECURE_SECRET = $this->scopeConfig->getValue('payment/vnpay/hash_code');
         $responseParams = $this->getRequest()->getParams();
         $vnp_ResponseCode = $this->getRequest()->getParam('vnp_ResponseCode', '');
-        $inputData = array();
+        $inputData = [];
         foreach ($responseParams as $key => $value) {
             $inputData[$key] = $value;
         }
@@ -88,7 +76,7 @@ class Pay extends \Magento\Framework\App\Action\Action {
                     if ($quote->getId()) {
                         try {
                             $orderId = $this->cartManagement->placeOrder($quote->getId());
-                            $order = $this->order->load($orderId);
+                            $order = $this->orderRepository->get($orderId);
                         } catch (\Exception $e) {
                             $this->logger->error('VNPAY place order error: ' . $e->getMessage());
                         }
@@ -100,90 +88,89 @@ class Pay extends \Magento\Framework\App\Action\Action {
                     $this->checkoutSession->setLastOrderId($order->getId());
                     $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
                 }
-                $this->messageManager->addSuccess(__("Thanh toán thành công"));
+                $this->messageManager->addSuccessMessage(__('Payment successful'));
                 return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success');
             } else {
-                $this->messageManager->addError(__("Thanh toán thất bại"));
-                $this->logger->error("responseCode: $vnp_ResponseCode - msg: ".$this->getResponseDescription($vnp_ResponseCode));
+                $this->messageManager->addErrorMessage(__('Payment failed'));
+                $this->logger->error("responseCode: $vnp_ResponseCode - msg: " . $this->getResponseDescription($vnp_ResponseCode));
                 $this->clearStaleOrderSession();
                 $this->restoreCart();
                 return $this->resultRedirectFactory->create()->setPath('checkout/cart');
             }
         } else {
-            $this->messageManager->addError(__("Thanh toán thất bại"));
-            $this->logger->error("msg: " . __("Chữ ký không hợp lệ"));
+            $this->messageManager->addErrorMessage(__('Payment failed'));
+            $this->logger->error("msg: " . __("Invalid signature"));
             $this->clearStaleOrderSession();
             $this->restoreCart();
             return $this->resultRedirectFactory->create()->setPath('checkout/cart');
         }
     }
 
-    public function getResponseDescription($responseCode) {
-
+    public function getResponseDescription($responseCode)
+    {
         switch ($responseCode) {
             case "00" :
-                $result = __("Giao dịch thành công");
+                $result = __("Transaction successful");
                 break;
             case "01" :
-                $result = __("Giao dịch đã tồn tại");
+                $result = __("The transaction already exists");
                 break;
             case "02" :
-                $result = __("Merchant không hợp lệ (kiểm tra lại vnp_TmnCode)");
+                $result = __("Invalid merchant (check the vnp_TmnCode)");
                 break;
             case "03" :
-                $result = __("Dữ liệu gửi sang không đúng định dạng");
+                $result = __("Invalid request data format");
                 break;
             case "04" :
-                $result = __("Khởi tạo giao dịch không thành công do Website đang bị tạm khóa");
+                $result = __("Transaction initiation failed because the website is temporarily locked");
                 break;
             case "05" :
-                $result = __("Giao dịch không thành công do: Quý khách nhập sai mật khẩu quá số lần quy định. Xin quý khách vui lòng thực hiện lại giao dịch");
+                $result = __("Transaction failed: incorrect password entered too many times. Please try again");
                 break;
             case "06" :
-                $result = __("Giao dịch không thành công do Quý khách nhập sai mật khẩu xác thực giao dịch (OTP). Xin quý khách vui lòng thực hiện lại giao dịch");
+                $result = __("Transaction failed: incorrect OTP verification password. Please try again");
                 break;
             case "07" :
-                $result = __("Giao dịch bị nghi ngờ là giao dịch gian lận");
+                $result = __("Transaction is suspected to be fraudulent");
                 break;
             case "09" :
-                $result = __("Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng chưa đăng ký dịch vụ InternetBanking tại ngân hàng");
+                $result = __("Transaction failed: card/account has not registered for Internet banking at the bank");
                 break;
             case "10" :
-                $result = __("Giao dịch không thành công do: Khách hàng xác thực thông tin thẻ/tài khoản không đúng quá 3 lần");
+                $result = __("Transaction failed: incorrect card/account verification more than 3 times");
                 break;
             case "11" :
-                $result = __("Giao dịch không thành công do: Đã hết hạn chờ thanh toán. Xin quý khách vui lòng thực hiện lại giao dịch");
+                $result = __("Transaction failed: payment waiting period has expired. Please try again");
                 break;
             case "12" :
-                $result = __("Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng bị khóa");
+                $result = __("Transaction failed: card/account is locked");
                 break;
             case "24" :
-                $result = __("Giao dịch không thành công do: Khách hàng hủy giao dịch");
+                $result = __("Transaction failed: customer canceled the transaction");
                 break;
             case "51" :
-                $result = __("Giao dịch không thành công do: Tài khoản của quý khách không đủ số dư để thực hiện giao dịch");
+                $result = __("Transaction failed: insufficient account balance");
                 break;
             case "65" :
-                $result = __("Giao dịch không thành công do: Tài khoản của Quý khách đã vượt quá hạn mức giao dịch trong ngày");
+                $result = __("Transaction failed: daily transaction limit has been exceeded");
                 break;
             case "75" :
-                $result = __("Ngân hàng thanh toán đang bảo trì");
+                $result = __("The payment bank is under maintenance");
                 break;
             case "79" :
-                $result = __("Giao dịch không thành công do: Khách hàng nhập sai mật khẩu thanh toán quá số lần quy định. Xin quý khách vui lòng thực hiện lại giao dịch");
+                $result = __("Transaction failed: incorrect payment password entered too many times");
                 break;
             case "99" :
-                $result = __("Có lỗi xảy ra trong quá trình thực hiện giao dịch");
+                $result = __("An error occurred during the transaction");
                 break;
             default :
-                $result = __("Giao dịch thất bại");
+                $result = __("Transaction failed");
         }
         return $result;
     }
 
     /**
-     * Keep cart when failed payment
-     * @return void
+     * Keep the cart when payment failed
      */
     private function restoreCart()
     {
@@ -203,8 +190,6 @@ class Pay extends \Magento\Framework\App\Action\Action {
 
     /**
      * Remove previous successful order data from checkout session on payment failure.
-     *
-     * @return void
      */
     private function clearStaleOrderSession()
     {

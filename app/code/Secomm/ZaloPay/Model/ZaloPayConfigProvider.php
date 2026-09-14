@@ -15,7 +15,6 @@ use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Asset\Repository;
-use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Payment\Helper\Data as PaymentHelper;
 
 class ZaloPayConfigProvider implements ConfigProviderInterface
@@ -26,13 +25,11 @@ class ZaloPayConfigProvider implements ConfigProviderInterface
      * @param Repository    $assetRepository
      * @param PaymentHelper $paymentHelper
      * @param UrlInterface  $urlBuilder
-     * @param ConfigInterface $config
      */
     public function __construct(
-        private readonly Repository    $assetRepository,
+        private readonly Repository      $assetRepository,
         protected readonly PaymentHelper $paymentHelper,
-        protected readonly UrlInterface  $urlBuilder,
-        private readonly ConfigInterface $config
+        protected readonly UrlInterface  $urlBuilder
     ) {
     }
 
@@ -44,11 +41,12 @@ class ZaloPayConfigProvider implements ConfigProviderInterface
         return [
             'payment' => [
                 'zalopay' => [
+                    // Payment-first: the renderer only saves the payment method
+                    // and redirects here (PayPal Express pattern); the Magento
+                    // order is created exclusively after verified payment
+                    // (IpnProcessor/ReturnProcessor -> OrderFinalizer).
                     'redirectUrl' => $this->urlBuilder->getUrl('zalopay/payment/start'),
-                    'logoSrc' => $this->assetRepository->getUrl('Secomm_ZaloPay::images/logo.png'),
-                    // Payment-first: set payment method + redirect (PayPal Express
-                    // pattern); the renderer must NOT placeOrder() before redirect.
-                    'paymentFirst' => (bool)$this->config->getValue('payment_first')
+                    'logoSrc' => $this->assetRepository->getUrl('Secomm_ZaloPay::images/logo.png')
                 ]
             ]
         ];

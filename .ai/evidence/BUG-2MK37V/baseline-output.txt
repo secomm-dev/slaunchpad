@@ -1,0 +1,214 @@
+=== vi-1280-before ===
+{
+ "sectionFound": true,
+ "stylesheets": [
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/mage/calendar.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/styles-m.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/jquery/uppy/dist/uppy-custom.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/extra-fee.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_SocialLoginPro/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Launchpad_MageplazaExtraFeeFix/css/extra-fee-checkout.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/disabled-place-order.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_DeliveryTime/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/font-awesome.min.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Secomm_AddressDropdown/css/styles.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_TableRateShipping/css/checkout.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mollie_Payment/css/styles.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Osc/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/grid-mageplaza.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_OscUltimate/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_SocialLogin/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/magnific-popup.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/styles-l.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/print.css"
+ ],
+ "inner": {
+  "rect": {
+   "top": 378.1,
+   "bottom": 438.1,
+   "h": 60,
+   "w": 398.7
+  },
+  "display": "flex",
+  "alignItems": "normal",
+  "justifyContent": "space-between",
+  "flexWrap": "nowrap"
+ },
+ "control": {
+  "rect": {
+   "top": 378.1,
+   "bottom": 428.1,
+   "h": 50,
+   "w": 255.7
+  },
+  "display": "block",
+  "width": "255.656px",
+  "flex": "0 1 auto",
+  "marginBottom": "10px"
+ },
+ "label": {
+  "rect": {
+   "top": 377.1,
+   "bottom": 378.1,
+   "h": 1,
+   "w": 1
+  },
+  "display": "block",
+  "fontSize": "14px",
+  "height": "1px"
+ },
+ "input": {
+  "rect": {
+   "top": 378.1,
+   "bottom": 414.1,
+   "h": 36,
+   "w": 250.5
+  },
+  "width": "250.531px",
+  "height": "36px",
+  "borderRadius": "4px",
+  "padding": "0px 9px",
+  "fontSize": "14px",
+  "backgroundColor": "rgb(255, 255, 255)"
+ },
+ "toolbar": {
+  "rect": {
+   "top": 378.1,
+   "bottom": 438.1,
+   "h": 60,
+   "w": 140
+  },
+  "marginTop": "0px",
+  "paddingTop": "12px",
+  "borderTopWidth": "0px",
+  "borderTopColor": "rgb(51, 51, 51)",
+  "flexDirection": "row",
+  "alignItems": "normal"
+ },
+ "btn": {
+  "rect": {
+   "top": 390.1,
+   "bottom": 426.1,
+   "h": 36,
+   "w": 88
+  },
+  "backgroundColor": "rgb(1, 0, 127)",
+  "color": "rgb(255, 255, 255)",
+  "height": "36px",
+  "borderRadius": "4px",
+  "padding": "7px 15px",
+  "fontSize": "14px",
+  "width": "87.9688px"
+ },
+ "misalign": {
+  "dTop": 12,
+  "dBottom": 12
+ }
+}
+=== vi-375-before ===
+{
+ "sectionFound": true,
+ "stylesheets": [
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/mage/calendar.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/styles-m.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/jquery/uppy/dist/uppy-custom.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/extra-fee.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_SocialLoginPro/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Launchpad_MageplazaExtraFeeFix/css/extra-fee-checkout.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/disabled-place-order.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_DeliveryTime/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/font-awesome.min.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Secomm_AddressDropdown/css/styles.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_TableRateShipping/css/checkout.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mollie_Payment/css/styles.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Osc/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/grid-mageplaza.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_OscUltimate/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_SocialLogin/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/magnific-popup.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/styles-l.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/print.css"
+ ],
+ "inner": {
+  "rect": {
+   "top": 2984.9,
+   "bottom": 3044.9,
+   "h": 60,
+   "w": 172.5
+  },
+  "display": "flex",
+  "alignItems": "normal",
+  "justifyContent": "space-between",
+  "flexWrap": "nowrap"
+ },
+ "control": {
+  "rect": {
+   "top": 2984.9,
+   "bottom": 3034.9,
+   "h": 50,
+   "w": 29.5
+  },
+  "display": "block",
+  "width": "29.5px",
+  "flex": "0 1 auto",
+  "marginBottom": "10px"
+ },
+ "label": {
+  "rect": {
+   "top": 2983.9,
+   "bottom": 2984.9,
+   "h": 1,
+   "w": 1
+  },
+  "display": "block",
+  "fontSize": "14px",
+  "height": "1px"
+ },
+ "input": {
+  "rect": {
+   "top": 2984.9,
+   "bottom": 3020.9,
+   "h": 36,
+   "w": 28.9
+  },
+  "width": "28.9062px",
+  "height": "36px",
+  "borderRadius": "4px",
+  "padding": "0px 9px",
+  "fontSize": "14px",
+  "backgroundColor": "rgb(255, 255, 255)"
+ },
+ "toolbar": {
+  "rect": {
+   "top": 2984.9,
+   "bottom": 3044.9,
+   "h": 60,
+   "w": 140
+  },
+  "marginTop": "0px",
+  "paddingTop": "12px",
+  "borderTopWidth": "0px",
+  "borderTopColor": "rgb(51, 51, 51)",
+  "flexDirection": "row",
+  "alignItems": "normal"
+ },
+ "btn": {
+  "rect": {
+   "top": 2996.9,
+   "bottom": 3032.9,
+   "h": 36,
+   "w": 88
+  },
+  "backgroundColor": "rgb(1, 0, 127)",
+  "color": "rgb(255, 255, 255)",
+  "height": "36px",
+  "borderRadius": "4px",
+  "padding": "7px 15px",
+  "fontSize": "14px",
+  "width": "87.9688px"
+ },
+ "misalign": {
+  "dTop": 12,
+  "dBottom": 12
+ }
+}

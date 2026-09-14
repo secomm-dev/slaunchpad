@@ -16,5 +16,11 @@
             <!--At 00:00 on day-of-month 1-->
             <schedule>0 0 1 * *</schedule>
         </job>
+        <job name="secomm_zalopay_payment_recovery_cronjob" instance="Secomm\ZaloPay\Cron\PaymentRecoveryCronjob" method="execute">
+            <!--Lost-callback recovery (official ZaloPay guidance: query
+                proactively after 15 minutes without a callback). Every 5
+                minutes, bounded batch — see Service/PaymentRecovery.-->
+            <schedule>*/5 * * * *</schedule>
+        </job>
     </group>
 </config>

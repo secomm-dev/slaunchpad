@@ -1,0 +1,620 @@
+=== vi-1280-after2 ===
+{
+ "sectionFound": true,
+ "cssOrder": {
+  "myCssIdx": 15,
+  "vendorCssIdx": 12
+ },
+ "ancestorChain": [
+  {
+   "sel": "form#discount-form.form.form-discount",
+   "w": 398.7,
+   "display": "table",
+   "float": "none",
+   "position": "static",
+   "width": "398.656px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.payment-option-content",
+   "w": 398.7,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "398.656px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.payment-option.opc-payment-additional.discount-code",
+   "w": 398.7,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "398.656px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.osc-payment-after-methods",
+   "w": 398.7,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "398.656px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div#checkout-step-payment.step-content.col-mp.mp-12",
+   "w": 398.7,
+   "display": "block",
+   "float": "left",
+   "position": "static",
+   "width": "398.656px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div#payment.checkout-payment-method",
+   "w": 398.7,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "398.656px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.col-mp.hoverable",
+   "w": 398.7,
+   "display": "block",
+   "float": "left",
+   "position": "static",
+   "width": "398.656px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.mp-right",
+   "w": 406.7,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "398.656px",
+   "maxW": "none",
+   "minW": "auto",
+   "padL": "8px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.mp-col-2",
+   "w": 813.3,
+   "display": "flex",
+   "float": "none",
+   "position": "static",
+   "width": "813.328px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.columns-colspan.mp-8",
+   "w": 813.3,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "813.328px",
+   "maxW": "none",
+   "minW": "auto",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div#checkoutSteps.opc.one-step-checkout-container.mp-columns-colspan",
+   "w": 1240,
+   "display": "flex",
+   "float": "none",
+   "position": "static",
+   "width": "1240px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.opc-wrapper.one-step-checkout-wrapper",
+   "w": 1240,
+   "display": "block",
+   "float": "left",
+   "position": "static",
+   "width": "1240px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div#checkout.checkout-container",
+   "w": 1240,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "1240px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.column.main",
+   "w": 1240,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "1240px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  }
+ ],
+ "stylesheets": [
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/mage/calendar.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/styles-m.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/jquery/uppy/dist/uppy-custom.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/extra-fee.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_SocialLoginPro/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Launchpad_MageplazaExtraFeeFix/css/extra-fee-checkout.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/disabled-place-order.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_DeliveryTime/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/font-awesome.min.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Secomm_AddressDropdown/css/styles.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_TableRateShipping/css/checkout.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mollie_Payment/css/styles.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Osc/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/grid-mageplaza.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_OscUltimate/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Launchpad_Osc/css/osc-discount-code.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_SocialLogin/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/magnific-popup.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/styles-l.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/print.css"
+ ],
+ "inner": {
+  "rect": {
+   "top": 378.1,
+   "bottom": 414.1,
+   "h": 36,
+   "w": 398.7
+  },
+  "display": "flex",
+  "alignItems": "center",
+  "justifyContent": "flex-start",
+  "flexWrap": "nowrap"
+ },
+ "control": {
+  "rect": {
+   "top": 378.1,
+   "bottom": 414.1,
+   "h": 36,
+   "w": 246.7
+  },
+  "display": "block",
+  "width": "246.656px",
+  "flex": "1 1 auto",
+  "marginBottom": "0px"
+ },
+ "label": {
+  "rect": {
+   "top": 0,
+   "bottom": 0,
+   "h": 0,
+   "w": 0
+  },
+  "display": "none",
+  "fontSize": "14px",
+  "height": "1px"
+ },
+ "input": {
+  "rect": {
+   "top": 378.1,
+   "bottom": 414.1,
+   "h": 36,
+   "w": 246.7
+  },
+  "width": "246.656px",
+  "height": "36px",
+  "borderRadius": "4px",
+  "padding": "0px 9px",
+  "fontSize": "14px",
+  "backgroundColor": "rgb(255, 255, 255)"
+ },
+ "toolbar": {
+  "rect": {
+   "top": 378.1,
+   "bottom": 414.1,
+   "h": 36,
+   "w": 140
+  },
+  "marginTop": "0px",
+  "paddingTop": "0px",
+  "borderTopWidth": "0px",
+  "borderTopColor": "rgb(51, 51, 51)",
+  "flexDirection": "row",
+  "alignItems": "center"
+ },
+ "btn": {
+  "rect": {
+   "top": 378.1,
+   "bottom": 414.1,
+   "h": 36,
+   "w": 88
+  },
+  "backgroundColor": "rgb(1, 0, 127)",
+  "color": "rgb(255, 255, 255)",
+  "height": "36px",
+  "borderRadius": "4px",
+  "padding": "7px 15px",
+  "fontSize": "14px",
+  "width": "87.9688px"
+ },
+ "misalign": {
+  "dTop": 0,
+  "dBottom": 0
+ }
+}
+=== vi-375-after2 ===
+{
+ "sectionFound": true,
+ "cssOrder": {
+  "myCssIdx": 15,
+  "vendorCssIdx": 12
+ },
+ "ancestorChain": [
+  {
+   "sel": "form#discount-form.form.form-discount",
+   "w": 172.5,
+   "display": "table",
+   "float": "none",
+   "position": "static",
+   "width": "172.5px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.payment-option-content",
+   "w": 202.5,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "172.5px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "15px",
+   "padR": "15px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.payment-option.opc-payment-additional.discount-code",
+   "w": 202.5,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "202.5px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "-15px",
+   "mR": "-15px"
+  },
+  {
+   "sel": "div.osc-payment-after-methods",
+   "w": 172.5,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "172.5px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div#checkout-step-payment.step-content.col-mp.mp-12",
+   "w": 172.5,
+   "display": "block",
+   "float": "left",
+   "position": "static",
+   "width": "172.5px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div#payment.checkout-payment-method",
+   "w": 172.5,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "172.5px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.col-mp.hoverable",
+   "w": 172.5,
+   "display": "block",
+   "float": "left",
+   "position": "static",
+   "width": "172.5px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.mp-right",
+   "w": 180.5,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "172.5px",
+   "maxW": "none",
+   "minW": "auto",
+   "padL": "8px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.mp-col-2",
+   "w": 345,
+   "display": "flex",
+   "float": "none",
+   "position": "static",
+   "width": "345px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.columns-colspan.mp-8",
+   "w": 345,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "345px",
+   "maxW": "none",
+   "minW": "auto",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div#checkoutSteps.opc.one-step-checkout-container.mp-columns-colspan",
+   "w": 345,
+   "display": "flex",
+   "float": "none",
+   "position": "static",
+   "width": "345px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.opc-wrapper.one-step-checkout-wrapper",
+   "w": 345,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "345px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div#checkout.checkout-container",
+   "w": 345,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "345px",
+   "maxW": "none",
+   "minW": "0px",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  },
+  {
+   "sel": "div.column.main",
+   "w": 345,
+   "display": "block",
+   "float": "none",
+   "position": "static",
+   "width": "345px",
+   "maxW": "none",
+   "minW": "auto",
+   "padL": "0px",
+   "padR": "0px",
+   "mL": "0px",
+   "mR": "0px"
+  }
+ ],
+ "stylesheets": [
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/mage/calendar.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/styles-m.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/jquery/uppy/dist/uppy-custom.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/extra-fee.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_SocialLoginPro/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Launchpad_MageplazaExtraFeeFix/css/extra-fee-checkout.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/disabled-place-order.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_DeliveryTime/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/font-awesome.min.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Secomm_AddressDropdown/css/styles.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_TableRateShipping/css/checkout.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mollie_Payment/css/styles.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Osc/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/grid-mageplaza.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_OscUltimate/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Launchpad_Osc/css/osc-discount-code.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_SocialLogin/css/style.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/magnific-popup.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/styles-l.css",
+  "http://slaunchpad.localhost/static/version1789094208/frontend/Magento/luma/vi_VN/css/print.css"
+ ],
+ "inner": {
+  "rect": {
+   "top": 2984.9,
+   "bottom": 3020.9,
+   "h": 36,
+   "w": 172.5
+  },
+  "display": "flex",
+  "alignItems": "center",
+  "justifyContent": "flex-start",
+  "flexWrap": "nowrap"
+ },
+ "control": {
+  "rect": {
+   "top": 2984.9,
+   "bottom": 3020.9,
+   "h": 36,
+   "w": 20.5
+  },
+  "display": "block",
+  "width": "20.5px",
+  "flex": "1 1 auto",
+  "marginBottom": "0px"
+ },
+ "label": {
+  "rect": {
+   "top": 0,
+   "bottom": 0,
+   "h": 0,
+   "w": 0
+  },
+  "display": "none",
+  "fontSize": "14px",
+  "height": "1px"
+ },
+ "input": {
+  "rect": {
+   "top": 2984.9,
+   "bottom": 3020.9,
+   "h": 36,
+   "w": 20.5
+  },
+  "width": "20.5px",
+  "height": "36px",
+  "borderRadius": "4px",
+  "padding": "0px 9px",
+  "fontSize": "14px",
+  "backgroundColor": "rgb(255, 255, 255)"
+ },
+ "toolbar": {
+  "rect": {
+   "top": 2984.9,
+   "bottom": 3020.9,
+   "h": 36,
+   "w": 140
+  },
+  "marginTop": "0px",
+  "paddingTop": "0px",
+  "borderTopWidth": "0px",
+  "borderTopColor": "rgb(51, 51, 51)",
+  "flexDirection": "row",
+  "alignItems": "center"
+ },
+ "btn": {
+  "rect": {
+   "top": 2984.9,
+   "bottom": 3020.9,
+   "h": 36,
+   "w": 88
+  },
+  "backgroundColor": "rgb(1, 0, 127)",
+  "color": "rgb(255, 255, 255)",
+  "height": "36px",
+  "borderRadius": "4px",
+  "padding": "7px 15px",
+  "fontSize": "14px",
+  "width": "87.9688px"
+ },
+ "misalign": {
+  "dTop": 0,
+  "dBottom": 0
+ }
+}

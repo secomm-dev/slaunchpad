@@ -20,21 +20,4 @@
             </argument>
         </arguments>
     </type>
-    <type name="Secomm\ZaloPay\Controller\Payment\Start">
-        <arguments>
-            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
-        </arguments>
-    </type>
-    <type name="Secomm\ZaloPay\Controller\Payment\ReturnAction">
-        <arguments>
-            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
-            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
-        </arguments>
-    </type>
-    <type name="Secomm\ZaloPay\Controller\Payment\Ipn">
-        <arguments>
-            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
-            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
-        </arguments>
-    </type>
 </config>

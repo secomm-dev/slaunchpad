@@ -14,7 +14,7 @@ specification_ref: Embedded Mini-Spec
 risk: low
 status: in_progress
 created: 2026-08-26
-updated: 2026-09-07
+updated: 2026-09-11
 ticket_ref:
 affects_version: Magento 2.4.8-p5 + Hyva 3.x (default theme 1.5.2)
 decisions: []
@@ -31,7 +31,7 @@ changes_architecture: false
 changes_integration: false
 changes_known_limitations: false
 verified_against_commit: 6f5e796b (working tree, uncommitted)
-last_verified: 2026-09-07
+last_verified: 2026-09-11
 supersedes:
   - BUG-49DHE5
 ---
@@ -71,7 +71,7 @@ Khi submit review thiếu rating, nickname, summary hoặc nội dung, trình du
 
 ### Out of Scope
 
-- Nhãn rating do admin cấu hình trong DB (`Quality`/`Value`/`Price`) — là store data, không dịch qua CSV; cần đổi trong Admin nếu client muốn.
+- Nhãn rating do admin cấu hình trong DB (`Quality`/`Value`/`Price`) — là store data, không dịch qua CSV; cần đổi trong Admin nếu client muốn. *(Cập nhật 2026-09-11: QC response giữ nguyên quyết định "không dịch qua CSV" nhưng yêu cầu set per-store title theo bảng mới — xem Follow-up 2.)*
 - Không refactor hoặc thay thế validation handler của Hyvä review form; không đổi nội dung thông báo validation hiện có.
 - Bản dịch cho các module khác ngoài Magento_Review.
 
@@ -86,6 +86,7 @@ Khi submit review thiếu rating, nickname, summary hoặc nội dung, trình du
 - AC-007 (SLP-06): Pager danh sách review hiển thị "Mục 1 đến 10 trong tổng số 11" + nút "Hiển thị"; dòng ngữ cảnh form hiển thị "Bạn đang đánh giá: <sản phẩm>".
 - AC-008 (SLP-106 follow-up): `#review_form` có `novalidate`; submit form rỗng không hiện HTML5 validation bubble, chạy handler Magento/Hyvä và hiển thị thông báo validation hiện có; không gọi GraphQL khi invalid.
 - AC-009 (SLP-106 follow-up): Sau một lượt submit invalid, điền đủ rating, nickname, summary và nội dung rồi submit lại thì validation pass, GraphQL flow tiếp tục bình thường.
+- AC-010 (SLP-106 follow-up 2, 2026-09-11): Trên storefront vi_VN, mọi nơi render `rating_code` (vote rows trong danh sách review; legend form khi có >1 rating visible) hiển thị Rating → "Đánh giá", Price → "Giá", Quality → "Chất lượng", Value → "Mức đánh giá"; trên en_US giữ nguyên English (fallback `rating.rating_code`). CSV không bị sửa thêm dòng nào cho mục đích này.
 
 ## Approach
 
@@ -150,3 +151,32 @@ Chú ý dictionary (frontend area): các key generic (`Review`, `Reviews`, `Summ
   - Caveat: headless không render bubble native — bằng chứng mang tính hành vi (checkValidity false + submit event vẫn fire). Browser QC thủ công trên Chrome thật khuyến nghị thêm 1 lượt khi release.
   - Side effect: 3 review Pending tạo bởi QC trong local DB — `review_id` 619/620/621, nickname "QC SLP-106" (xóa qua Admin > Reviews).
 - Scope check: git diff chỉ 2 hunk trong `Magento_Review/templates/form.phtml` (`novalidate` + `errors` reset); CSV không đổi (phrase đã có từ đợt i18n).
+
+### SLP-106 follow-up 2 — translate nhãn rating (2026-09-11, Option A)
+
+**QC response:** "Translate từ admin đã nhập đang bị đè bởi file translate" — yêu cầu hiển thị: Rating → Đánh giá, Price → Giá, Quality → Chất lượng, Value → Mức đánh giá.
+
+**Kết quả xác minh cơ chế (chẩn đoán của QC không đúng thực tế, nhưng outcome mong muốn rõ ràng):**
+
+1. Nhãn rating render thẳng từ DB: `rating_code` = `COALESCE(rating_title.value, rating.rating_code)` — [`Rating/Collection.php:239`](../../../../../vendor/magento/module-review/Model/ResourceModel/Rating/Collection.php#L239) (`addRatingPerStoreName`) và [`Rating/Option/Vote/Collection.php:118`](../../../../../vendor/magento/module-review/Model/ResourceModel/Rating/Option/Vote/Collection.php#L118) (`addRatingInfo`). Template render qua `$escaper->escapeHtml($rating->getRatingCode())` — **không qua `__()`** → dictionary CSV không thể đè được các nhãn này (chỉ thêm CSV sẽ không có tác dụng).
+2. DB tại thời điểm đó: `rating_title` **rỗng hoàn toàn** — admin chưa nhập per-store title nào, không có gì "bị đè".
+
+**Fix đã áp dụng (Option A — store data, đúng cơ chế Magento cho bilingual rating labels; không đổi code):**
+
+- Set `rating_title` cho store 1 (vi, default): Quality → "Chất lượng", Value → "Mức đánh giá", Price → "Giá", Rating → "Đánh giá" (SQL INSERT idempotent trên local DB — đẳng cấu với nội dung Admin UI `Marketing → Reviews → Manage Ratings` lưu).
+- Store 2 (launchpad_en) không set → fallback về `rating.rating_code` = English.
+- Không sửa template, không sửa CSV.
+
+**Verification:**
+
+- Title mapping qua ORM, đúng chain `Form::getRatings()`: store 1 resolve đủ 4 bản Việt; store 2 resolve English fallback — **PASS cả 2** (exit 0) → [verify-rating-titles-output.txt](../../runtime/evidence/BUG-8K1TBB/verify-rating-titles-output.txt), script [verify-rating-titles.php](../../runtime/evidence/BUG-8K1TBB/verify-rating-titles.php).
+- Votes hydrate qua chain `ListView::addRateVotes()` (store 1): `rating_code` = "Đánh giá" ✅.
+- PDP `/joust-duffle-bag.html` (guest, vi): 10/10 vote label cells = "Đánh giá", 0 nhãn English; `cache:flush` đã chạy as secomm trước khi verify → [verify-storefront-rating-labels.txt](../../runtime/evidence/BUG-8K1TBB/verify-storefront-rating-labels.txt).
+- Local DB chỉ có votes của rating 4 (623 votes, 0 votes Quality/Value/Price) nên list local không thể render 3 nhãn còn lại — resolution của 3 nhãn đó được chứng minh bằng script title-mapping ở trên.
+
+**Data note phát hiện kèm (ngoài scope translate — flag TL/client quyết định, chưa sửa):**
+
+- `rating_store` (visibility "Visible In"): Quality/Value/Price **không có row nào** → invisible ở mọi store view (không hiện trong form review ở bất kỳ store nào; vote cũ vẫn render trong list vì votes collection không lọc theo rating_store); Rating visible store 0 + 1 → **store en hiện không có rating nào trong form**. Nghi ngờ mất data visibility khi thêm store 2 / thao tác admin trước đó.
+- Form vi store hiện chỉ có 1 rating visible nên legend render "Your Rating" (→ "Đánh giá:") thay vì `rating_code` (nhánh `size <= 1` trong [form.phtml:106](../../../../../../app/design/frontend/Secomm/launchpad/Magento_Review/templates/form.phtml#L106)). Khi client muốn form hiện đủ Quality/Value/Price/Rating thì cần quyết định visibility trước — các nhãn lúc đó sẽ tự hiện đúng tiếng Việt đã set.
+
+**Deploy note (staging/prod — store data không đi theo git):** set per-store title trong Admin UI: `Marketing → Reviews → Manage Ratings` → từng rating → cột store "Tiếng Việt" nhập tương ứng (Chất lượng / Mức đánh giá / Giá / Đánh giá); không cần set store English. Sau đó flush cache.

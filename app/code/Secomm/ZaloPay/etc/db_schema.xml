@@ -66,6 +66,14 @@
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true"
                 comment="Sales order entity id after finalize"/>
         <column xsi:type="text" name="last_error" nullable="true" comment="Last error message"/>
+        <column xsi:type="boolean" name="requires_reconciliation" nullable="false" default="false"
+                comment="Money-real but NOT auto-finalizable (amount/contract/provider-id conflict)"/>
+        <column xsi:type="varchar" name="reconciliation_code" nullable="true" length="64"
+                comment="Machine-readable reason code for requires_reconciliation"/>
+        <column xsi:type="smallint" name="recovery_attempts" padding="5" unsigned="true" nullable="false" default="0"
+                comment="Proactive lost-callback query attempts (bounded recovery worker)"/>
+        <column xsi:type="boolean" name="recovery_exhausted" nullable="false" default="false"
+                comment="Explicit marker: bounded recovery worker consumed its full proactive query budget (operational; NOT money-real evidence)"/>
         <column xsi:type="smallint" name="retry_count" padding="5" unsigned="true" nullable="false" default="0"
                 comment="Number of prior attempts for the same quote"/>
         <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" default="0"

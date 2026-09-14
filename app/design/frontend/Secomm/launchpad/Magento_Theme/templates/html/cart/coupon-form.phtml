@@ -1,0 +1,160 @@
+<?php
+/**
+ * TASK-QX93G3 (SLP-158): coupon form for the Hyvä cart drawer.
+ * Rendered into the vendor container `cart-drawer.totals.before` (theme layout default.xml).
+ * UI follows the Hyvä cart-page coupon pattern (php-cart/coupon.phtml):
+ * <details> + sparkles icon + rotating chevron, form-input, btn-secondary.
+ * POSTs to Launchpad_QuickCart `quickcart/coupon/post`. On success: full page
+ * reload on the shopping cart page (its fetch+replace is broken by pre-existing
+ * inline-script conflicts); everywhere else a customer-data section reload
+ * re-renders the drawer (subtotal/discount/coupon state) without page reload.
+ *
+ * Dedicated fetch (NOT hyvaAjaxFormMinicart — its error path is item-scoped),
+ * inline error display, applied state from the cart section (coupon_code).
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\ViewModel\LucideIcons;
+use Magento\Checkout\Block\Cart\Coupon;
+use Magento\Framework\Escaper;
+
+/** @var Coupon $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+
+/** @var LucideIcons $lucideIcons */
+$lucideIcons = $viewModels->require(LucideIcons::class);
+?>
+<details
+    class="coupon-form group mt-2"
+    x-data="initDrawerCoupon"
+    :open="applied || showForm"
+>
+    <summary
+        @click.prevent="showForm = applied ? showForm : !showForm"
+        class="list-none flex justify-between items-center gap-2 py-2 font-semibold cursor-pointer"
+    >
+        <span class="inline-flex items-center gap-2">
+            <?= $lucideIcons->sparklesHtml('text-primary', 20, 20, ['aria-hidden' => 'true']) ?>
+            <span><?= $escaper->escapeHtml(__('Apply Discount Code')) ?></span>
+        </span>
+        <?= $lucideIcons->chevronDownHtml('transform group-open:rotate-180', 20, 20, ['aria-hidden' => 'true']) ?>
+    </summary>
+    <form
+        class="mt-2 mb-4"
+        @submit.prevent="post(applied)"
+    >
+        <label for="drawer_coupon_code" class="label sr-only">
+            <?= $escaper->escapeHtml(__('Enter discount code')) ?>
+        </label>
+        <div class="fieldset coupon space-y-2">
+            <div class="control">
+                <input
+                    type="text"
+                    id="drawer_coupon_code"
+                    name="coupon_code"
+                    class="form-input w-full"
+                    x-bind:disabled="busy || applied"
+                    placeholder="<?= $escaper->escapeHtmlAttr(__('Enter discount code')) ?>"
+                    x-bind:value="applied ? cart.coupon_code : code"
+                    @input="code = $el.value"
+                >
+            </div>
+            <template x-if="!applied">
+                <button type="submit" class="btn btn-secondary w-full" x-bind:disabled="busy">
+                    <?= $escaper->escapeHtml(__('Apply Discount')) ?>
+                </button>
+            </template>
+            <template x-if="applied">
+                <button type="submit" class="btn btn-secondary w-full" x-bind:disabled="busy">
+                    <?= $escaper->escapeHtml(__('Cancel Coupon')) ?>
+                </button>
+            </template>
+            <p
+                class="message error"
+                x-show="error"
+                x-text="error"
+            ></p>
+        </div>
+    </form>
+</details>
+<script>
+    function initDrawerCoupon() {
+        return {
+            showForm: false,
+            code: '',
+            error: '',
+            busy: false,
+            get applied() {
+                return Boolean(this.cart && this.cart.coupon_code);
+            },
+            async post(remove) {
+                this.busy = true;
+                this.error = '';
+
+                const body = new URLSearchParams({ form_key: hyva.getFormKey() });
+                // Keep the POST in the store the drawer was rendered in (store switch
+                // via ?___store= request param has no cookie to fall back on).
+                const storeParam = new URLSearchParams(location.search).get('___store');
+                if (storeParam) {
+                    body.append('___store', storeParam);
+                }
+                if (remove) {
+                    body.append('remove', '1');
+                } else {
+                    body.append('coupon_code', this.code.trim());
+                }
+
+                try {
+                    const response = await fetch('<?= $escaper->escapeUrl($block->getUrl('quickcart/coupon/post')) ?>', {
+                        method: 'POST',
+                        body: body.toString(),
+                        mode: 'cors',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw '<?= $escaper->escapeJs(__("Something went wrong. Please try again.")) ?>';
+                    }
+
+                    const responseBody = await response.json();
+
+                    if (!responseBody.success) {
+                        throw responseBody.error_message || 'Error';
+                    }
+
+                    this.code = '';
+                    this.showForm = false;
+                    // On the shopping cart page a section refresh is not enough — the
+                    // cart page content (totals + coupon form) is server-rendered and
+                    // its fetch+replace mechanism is currently broken by pre-existing
+                    // inline-script conflicts, so reload for a deterministic sync.
+                    // On any other page the drawer updates via customer-data sections.
+                    if (document.querySelector('#maincontent .coupon-form')) {
+                        window.location.reload();
+                        return;
+                    }
+                    window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+                } catch (error) {
+                    this.error = error;
+                } finally {
+                    this.busy = false;
+                }
+            }
+        }
+    }
+
+    window.addEventListener('alpine:init', () => {
+        Alpine.data('initDrawerCoupon', initDrawerCoupon);
+    }, { once: true })
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
