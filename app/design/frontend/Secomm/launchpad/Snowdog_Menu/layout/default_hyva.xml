@@ -1,7 +1,18 @@
 <?xml version="1.0"?>
+<!--
+  TASK-SXW5RB (SLP-129): keep the native Hyvä top menu blocks rendered when
+  Snowdog Menu navigation is toggled off. `remove="false"` un-schedules the
+  removal performed by Snowdog_Menu's default_hyva.xml (layout Reader
+  unsetElementFromListToRemove) — theme files merge after module files, so the
+  restore always wins. Rendering itself is gated per config:
+  - Snowdog blocks return '' via Secomm_Base plugin NavigationToggle
+  - topmenu.phtml theme override picks native children vs the Snowdog mobile child
+-->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <referenceBlock name="topmenu_mobile" remove="false"/>
+        <referenceBlock name="topmenu_desktop" remove="false"/>
         <referenceBlock name="footer-static-links" remove="false"/>
         <referenceBlock name="menu-footer" remove="true"/>
     </body>

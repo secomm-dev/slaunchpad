@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+    Secomm Launchpad — Snowdog Menu toggle module (TASK-SXW5RB, SLP-129)
+    Default: Snowdog navigation disabled — native Hyvä navigation renders.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <snowdog_navigation>
+            <general>
+                <enabled>0</enabled>
+            </general>
+        </snowdog_navigation>
+    </default>
+</config>
