@@ -74,8 +74,8 @@
                     <label>Minimum Order Total</label>
                     <comment><![CDATA[Currency VND.<br />
                         Minimum price/1 order:<br />
-                        - ZaloPay QR Code: 1.000 vnđ <br />
-                        - Bank: 1.000 vnđ <br />]]>
+                        - ZaloPay QR Code: 1,000 VND <br />
+                        - Bank: 1,000 VND <br />]]>
                     </comment>
                     <frontend_class>validate-number</frontend_class>
                 </field>
@@ -84,8 +84,8 @@
                     <label>Maximum Order Total</label>
                     <comment><![CDATA[Currency VND.<br />
                         Maximum price/1 order:<br />
-                        - ZaloPay QR Code: 23.000.000 vnđ <br />
-                        - Bank: 10.000.000 vnđ <br />]]>
+                        - ZaloPay QR Code: 23,000,000 VND <br />
+                        - Bank: 10,000,000 VND <br />]]>
                     </comment>
                     <frontend_class>validate-number</frontend_class>
                 </field>

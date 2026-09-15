@@ -142,8 +142,10 @@ class RefundCommand implements CommandInterface
                 || $statusCode === AbstractResponseValidator::REFUND_PROCESSING
             ) {
                 $refundTransactionFactory->setIsProcessed(RefundInterface::PROCESSED);
-                $this->messageManager->addSuccessMessage(self::PREFIX_ZALO_PAY_MESSAGE .
-                    __($response[AbstractResponseValidator::RESPONSE_MESSAGE]));
+                $statusMessage = RefundProcessor::processRefundStatus(
+                    $response[AbstractResponseValidator::SUB_RETURN_CODE] ?? $statusCode
+                );
+                $this->messageManager->addSuccessMessage(self::PREFIX_ZALO_PAY_MESSAGE . __($statusMessage));
             } else {
                 if ($this->validator !== null) {
                     $result = $this->validator->validate(
