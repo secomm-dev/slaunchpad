@@ -420,6 +420,7 @@ return [
         'Mageplaza_Osc' => 1,
         'Mageplaza_OscUltimate' => 1,
         'Mageplaza_Smtp' => 1,
+        'Launchpad_MageplazaSocialLogin' => 1,
         'Secomm_AddressDropdown' => 1,
         'Mageplaza_OscPro' => 1,
         'Mageplaza_TableRateShipping' => 1,

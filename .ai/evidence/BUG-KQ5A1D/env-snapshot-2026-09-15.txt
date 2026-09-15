@@ -1,0 +1,6 @@
+67	default	0	sociallogin/google/is_enabled	1
+68	default	0	sociallogin/google/admin	0
+69	default	0	sociallogin/google/one_tap	0
+70	default	0	sociallogin/google/app_id	12***len9
+71	default	0	sociallogin/google/app_secret	12***len9
+72	default	0	sociallogin/google/sort_order	20
