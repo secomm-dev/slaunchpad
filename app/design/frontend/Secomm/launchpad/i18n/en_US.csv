@@ -56,6 +56,7 @@
 "%1 field must be at least 1 character long.","%1 field must be at least 1 character long."
 "%1 field must contain a valid email address (Ex: johndoe@domain.com).","%1 field must contain a valid email address (Ex: johndoe@domain.com)."
 "As low as","As low as"
+"Please enter a coupon code","Please enter a coupon code"
 "Please enter a number.","Please enter a number."
 "Please enter a valid email address (Ex: johndoe@domain.com).","Please enter a valid email address (Ex: johndoe@domain.com)."
 "%1 field must contain a value greater than or equal to ""%2"".","%1 field must contain a value greater than or equal to ""%2""."

@@ -56,6 +56,7 @@
 "%1 field must be at least 1 character long.","Trường %1 phải có ít nhất 1 ký tự."
 "%1 field must contain a valid email address (Ex: johndoe@domain.com).","Trường %1 phải chứa địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com)."
 "As low as","Thấp nhất là"
+"Please enter a coupon code","Vui lòng nhập mã giảm giá"
 "Please enter a number.","Vui lòng nhập một số."
 "Please enter a valid email address (Ex: johndoe@domain.com).","Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com)."
 "%1 field must contain a value greater than or equal to ""%2"".","Trường %1 phải chứa giá trị lớn hơn hoặc bằng ""%2""."
