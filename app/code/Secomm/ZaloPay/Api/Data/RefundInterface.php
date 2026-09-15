@@ -21,8 +21,8 @@ interface RefundInterface
     public const IS_PROCESSED = "is_processed";
     public const AMOUNT = "amount";
     public const CREDIT_MEMO_ID = "credit_memo_id";
-    public const PROCESSED = 1;
-    public const NOT_PROCESSED = 0;
+    public const PROCESSED = true;
+    public const NOT_PROCESSED = false;
 
 
     /**
