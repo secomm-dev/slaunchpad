@@ -1,0 +1,5 @@
+PASS | T1 card ATC via Monsoon AJAX (no nav, +1, success event) | count null→1, navAlive=true, successEvt=1
+PASS | T2 Quick View ATC (+1, no double, hands over to drawer) | count 1→2 (expected 2), monsoonEvt=0, modalClosed=true, drawerOpen=true
+form visible: true
+POSTs: ["http://slaunchpad.localhost/checkout/cart/add/uenc/aHR0cDovL -> 302"]
+PASS | T3 PDP ATC (native POST — selectors đã loại PDP khỏi Monsoon) | count=1 (single=true), posts=1
