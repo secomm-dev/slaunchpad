@@ -19,7 +19,7 @@ class Express extends GHN
     const SERVICE_NAME_SHORT = 'Hàng nặng';
     const MAX_HEIGHT = 200; //centimeter
     const MAX_WIDTH = 200; //centimeter
-    const MAX_LENGTH = 200; //centimeter
+    const MAX_LENGTH = 150; //centimeter — GHN create-order API limit (fee API allows 200)
     const MAX_WEIGHT = 50; //kilograms
     const MAX_CONVERTED_MASS = 200; //kilograms
 
@@ -36,10 +36,11 @@ class Express extends GHN
      */
     public function canDisplay($request): bool
     {
-        $length = ceil($request->getPackageLength());
-        $width = ceil($request->getPackageWidth());
-        $height = ceil($request->getPackageHeight());
-        //If not set value, that means no limit
+        // (float) cast: getPackage*() may be null on some collect-rates paths —
+        // PHP 8 ceil(null) throws TypeError.
+        $length = ceil((float)$request->getPackageLength());
+        $width = ceil((float)$request->getPackageWidth());
+        $height = ceil((float)$request->getPackageHeight());
 
         $maxWeight = $this->getMaxWeight() ?: self::MAX_WEIGHT;
         $maxWidth = $this->getMaxWidth() ?: self::MAX_WIDTH;
@@ -48,10 +49,11 @@ class Express extends GHN
         $weightKgMagento = $this->ghnHelperData->convertToKilograms($request->getPackageWeight());
         $ruleWeightKgGhn = ($length * $width * $height) / 5000;
         $maxConvertedMassOrder = $this->getMaxConvertedMassOrder() ?: self::MAX_CONVERTED_MASS;
-        if ($length <= $maxLength && $width <= $maxWidth && $height <= $maxHeight && $weightKgMagento <= $maxWeight && $ruleWeightKgGhn <= $maxConvertedMassOrder) {
-            return true;
-        } else {
-            return false;
-        }
+
+        return $length <= $maxLength
+            && $width <= $maxWidth
+            && $height <= $maxHeight
+            && $weightKgMagento <= $maxWeight
+            && $ruleWeightKgGhn <= $maxConvertedMassOrder;
     }
 }

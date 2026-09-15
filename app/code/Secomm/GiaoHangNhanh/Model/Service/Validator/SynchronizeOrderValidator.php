@@ -27,7 +27,7 @@ class SynchronizeOrderValidator extends AbstractResponseValidator
         $validationResult = $this->validateResponseMsg($response);
 
         if (!$validationResult) {
-            $errorMessages = [__('Something went wrong when synchronize order.')];
+            $errorMessages = [__('GHN sync failed: %1', $this->getGhnErrorMessage($response))];
         }
 
         return $this->createResult($validationResult, $errorMessages);

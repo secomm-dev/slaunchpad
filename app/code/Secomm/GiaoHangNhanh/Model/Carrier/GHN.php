@@ -141,6 +141,12 @@ abstract class GHN extends AbstractCarrier implements CarrierInterface
             return false;
         }
 
+        // Hide the service when the package (or any item) exceeds the
+        // configured GHN limits — GHN create-order API rejects those later.
+        if (!$this->canDisplay($request)) {
+            return false;
+        }
+
         if (!is_null($shippingCost = $this->estimateShippingCost($request))) {
             /** @var Result $result */
             $result = $this->rateResultFactory->create();
