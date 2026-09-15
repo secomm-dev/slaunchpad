@@ -1,0 +1,52 @@
+# SLP-225 — Verify command output (excerpt)
+
+Local env: slaunchpad.localhost (Apache vhost → pub/), MAGE_MODE=default, db fashion_launchpad
+Chạy CLI/HTTP as user `secomm` (BUG-SDZPCD). Date: 2026-09-15
+
+## 1. Static content deploy
+
+$ sudo -u secomm php bin/magento setup:static-content:deploy -f --area frontend vi_VN en_US
+    frontend/Magento/luma/en_US             4977/4977  100%   5 secs
+    frontend/Secomm/launchpad/en_US         4895/4895  100%   2 secs
+    frontend/Secomm/launchpad_fashion/vi_VN 4895/4895  100%   2 secs
+    frontend/Secomm/launchpad_fashion/en_US 4895/4895  100%   2 secs
+    Execution time: 44.979838132858
+
+## 2. js-translation.json — cụm client-side (validation email)
+
+python3 (json load) pub/static/frontend/Secomm/launchpad/vi_VN/js-translation.json:
+'Please enter a valid email address (Ex: johndoe@domain.com).' => 'Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).'
+
+Trước deploy: `find pub/static/frontend -name "js-translation.json"` → 0 file (root cause cụm 1).
+
+## 3. Theme dictionary lookup (server-side, explicit design theme + locale vi_VN)
+
+$ sudo -u secomm php /tmp/slp225-verify-translate-v2.php
+theme=Secomm/launchpad id=5
+locale=vi_VN dict=1944 entries
+dict=Chúng tôi đã nhận quá nhiều yêu cầu đặt lại mật khẩu. Vui lòng đợi và thử lại sau hoặc liên hệ %1.
+  Chúng tôi đã nhận quá nhiều yêu cầu đặt lại mật khẩu. Vui lòng đợi và thử lại sau hoặc liên hệ support@secomm.vn.
+dict=Vui lòng kiểm tra lại địa chỉ email.
+  Vui lòng kiểm tra lại địa chỉ email.
+
+## 4. HTTP end-to-end — POST /sociallogin/popup/forgot/ (store vi, 2 lần liên tiếp)
+
+--- POST #1:
+{"success":true,"message":["Nếu có tài khoản liên kết với test1@secomm.vn, bạn sẽ nhận được email chứa liên kết đặt lại mật khẩu."]}
+
+--- POST #2 (rate-limit, trong khoảng <10s):
+{"success":false,"message":["Chúng tôi đã nhận quá nhiều yêu cầu đặt lại mật khẩu. Vui lòng đợi và thử lại sau hoặc liên hệ hello@example.com."],"error":true}
+
+%1 trên local = hello@example.com (default trans_email/ident_support) — demo sẽ render support@secomm.vn theo config demo. Xác nhận endpoint/cấu trúc JSON đúng như popup render.
+
+## 5. Design theme config (loại trừ rủi ro LL-0011 — static scope của trang checkout)
+
+SELECT scope, scope_id, value FROM core_config_data WHERE path='design/theme/theme_id':
+websites/1 => theme 5
+default/0  => theme 5
+stores/1   => theme 5
+stores/2   => theme 5
+
+theme 5 = Secomm/launchpad → static baseUrl mọi trang storefront (gồm /onestepcheckout) =
+/static/frontend/Secomm/launchpad/<locale>/ → js-translation.json đã verify ở (2).
+Cơ chế load: requirejs `text!js-translation.json` (mage/translate.js) — resolve relative theo theme scope của trang.

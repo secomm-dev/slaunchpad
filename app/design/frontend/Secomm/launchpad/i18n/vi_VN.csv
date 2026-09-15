@@ -338,6 +338,8 @@
 "Please enter your email below and we will send you the confirmation link.","Vui lòng nhập email bên dưới và chúng tôi sẽ gửi cho bạn liên kết xác nhận."
 "We're unable to send the password reset email.","Chúng tôi không thể gửi email đặt lại mật khẩu."
 "Your password reset link has expired.","Liên kết đặt lại mật khẩu của bạn đã hết hạn."
+"We received too many requests for password resets. Please wait and try again later or contact %1.","Chúng tôi đã nhận quá nhiều yêu cầu đặt lại mật khẩu. Vui lòng đợi và thử lại sau hoặc liên hệ %1."
+"Please correct the email address.","Vui lòng kiểm tra lại địa chỉ email."
 "Please enter your email.","Vui lòng nhập email của bạn."
 "Please check your email for confirmation key.","Vui lòng kiểm tra email để nhận mã xác nhận."
 "This email does not require confirmation.","Email này không cần xác nhận."
