@@ -67,6 +67,8 @@ define([
             this.ensureVnSchema();
             this.cityVisible();
             this.bindCountryChange();
+            this.bindStreetChange();
+            this.bindAddressListChange();
 
             this.observeHashChange();
 
@@ -103,11 +105,80 @@ define([
             }, 500);
         },
 
+        clearRateCache: function () {
+            let shippingAddress = quote.shippingAddress();
+            if (shippingAddress) {
+                if (typeof shippingAddress.getKey === 'function') {
+                    rateRegistry.set(shippingAddress.getKey(), null);
+                }
+                if (typeof shippingAddress.getCacheKey === 'function') {
+                    rateRegistry.set(shippingAddress.getCacheKey(), null);
+                }
+                if (shippingAddress.customerAddressId) {
+                    rateRegistry.set('customer-address' + shippingAddress.customerAddressId, null);
+                }
+            }
+        },
+
+        bindStreetChange: function () {
+            let self = this;
+            const STREET_SELECTOR = '#co-shipping-form input[name*="street"]';
+
+            $(document)
+                .off('change.secommStreet input.secommStreet', STREET_SELECTOR)
+                .on('change.secommStreet', STREET_SELECTOR, function () {
+                    let $this = $(this);
+                    let currentVal = $this.val() ? $this.val().trim() : '';
+                    let lastVal = $this.data('secommLastStreetVal') || '';
+
+                    if (currentVal === lastVal) {
+                        return;
+                    }
+
+                    // 1. Verify Region / Province is selected
+                    let hasRegion = Boolean($(REGION_SELECTOR).val());
+
+                    // 2. Verify Ward / City:
+                    // For VN: selection of custom_city dropdown is strictly required (no fallback to hidden city input)
+                    // For international: validate against standard Magento city input
+                    let isVn = self.isVietnamCountry();
+                    let hasWard = isVn
+                        ? Boolean($(CUSTOM_CITY_SELECTOR).val())
+                        : Boolean($(CITY_SELECTOR).val());
+
+                    // Do not trigger recalculation if Region or Ward/City is not yet selected
+                    if (!hasRegion || !hasWard) {
+                        return;
+                    }
+
+                    // Update tracked value for this specific input
+                    $this.data('secommLastStreetVal', currentVal);
+
+                    // 3. Invalidate rate cache only after required address fields are satisfied
+                    self.clearRateCache();
+
+                    if (shippingRateService && typeof shippingRateService.estimateShippingMethod === 'function') {
+                        shippingRateService.isAddressChange = true;
+                        shippingRateService.estimateShippingMethod();
+                    }
+                });
+        },
+
+        bindAddressListChange: function () {
+            let self = this;
+            $(document)
+                .off('click.secommAddressSelect', '.shipping-address-item, .action-select-shipping-item')
+                .on('click.secommAddressSelect', '.shipping-address-item, .action-select-shipping-item', function () {
+                    self.clearRateCache();
+                });
+        },
+
         bindCountryChange: function () {
             let self = this;
             $(document)
                 .off('change.secommShippingCountry', COUNTRY_SELECTOR + ', ' + COUNTRY_SELECTOR_ALT)
                 .on('change.secommShippingCountry', COUNTRY_SELECTOR + ', ' + COUNTRY_SELECTOR_ALT, function () {
+                    self.clearRateCache();
                     let selectedCountryId = $(this).val();
                     let previousCountryId = self.lastCountryId;
 
@@ -340,14 +411,11 @@ define([
                     }
                 }
 
+                self.clearRateCache();
+
                 if (defaultName !== '') {
                     $(CITY_ERROR).hide();
                     $(CUSTOM_CITY_SELECTOR).removeClass('custom-error');
-
-                    if (shippingAddress) {
-                        rateRegistry.set(shippingAddress.getKey(), null);
-                        rateRegistry.set(shippingAddress.getCacheKey(), null);
-                    }
 
                     if (shippingRateService && typeof shippingRateService.estimateShippingMethod === 'function') {
                         shippingRateService.isAddressChange = true;
@@ -363,6 +431,7 @@ define([
         bindRegionChange: function (customCitySelect) {
             let self = this;
             $(document).on('change', REGION_SELECTOR, function () {
+                self.clearRateCache();
                 let currentCountryId = self.getCountryId();
                 if (self.lastCountryId === 'VN' && currentCountryId !== 'VN') {
                     let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
