@@ -179,7 +179,7 @@ class RefundData extends DataObject implements RefundInterface
     public function getAmount(): ?float
     {
         return $this->getData(self::AMOUNT) === null ? null
-            : (bool)$this->getData(self::AMOUNT);
+            : (float)$this->getData(self::AMOUNT);
     }
 
     /**
