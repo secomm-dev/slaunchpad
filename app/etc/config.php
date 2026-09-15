@@ -439,6 +439,7 @@ return [
         'Hyva_MirasvitSeoToolbar' => 1,
         'Mollie_Payment' => 1,
         'Mollie_HyvaCompatibility' => 1,
+        'Monsoon_HyvaAjaxAddToCart' => 1,
         'PayPal_Braintree' => 1,
         'PayPal_BraintreeCustomerBalance' => 1,
         'PayPal_BraintreeGiftCard' => 1,
