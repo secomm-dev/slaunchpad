@@ -6,6 +6,14 @@ All notable changes to this project layer module are documented here.
 
 ### Added
 
+- TASK-8TXS2P (SLP-203): `view/frontend/web/css/osc-checkout-ui.css` + head entry in
+  `onestepcheckout_index_index.xml` — checkout section UI alignment fixes (display-only,
+  measured root causes): payment radio baseline (`vertical-align: -1px`), Order Summary
+  qty stepper equal 24x24 frames (neutralize vendor absolute-positioned input), mobile
+  estimated-total bar no longer clipped by Luma's `-21px` top margin, mobile ≤480px
+  form fields full-width/no-float (vendor 98% + alternating floats misaligned left
+  edges once the grid stacks), mobile payment list restored into section padding
+  (Luma pulls it out by -15px). Same module-level CSS mechanism as BUG-2MK37V.
 - BUG-2MK37V (SLP-199): `view/frontend/web/css/osc-discount-code.css` + head entry in
   `onestepcheckout_index_index.xml` — align the apply-discount-code section on the OSC
   checkout (button landed +12px below the input; input collapsed to ~30px on narrow

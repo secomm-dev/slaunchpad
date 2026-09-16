@@ -20,6 +20,12 @@
             (same mechanism as BUG-NY0M3S / Launchpad_MageplazaExtraFeeFix).
         -->
         <css src="Launchpad_Osc::css/osc-discount-code.css"/>
+        <!--
+            TASK-8TXS2P (SLP-203) — checkout section UI alignment fixes
+            (radio baseline, qty stepper frames, estimated-bar clip,
+            mobile form alignment, payment list padding).
+        -->
+        <css src="Launchpad_Osc::css/osc-checkout-ui.css"/>
     </head>
     <body>
         <referenceBlock name="checkout.root">

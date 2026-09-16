@@ -1,0 +1,81 @@
+H1 desktop gutter: {"tenInputRight":305.2,"hoInputLeft":305.2,"gutter":0,"tenFieldPad":"0px","gapH":0}
+H2 mobile: [
+ {
+  "el": "header",
+  "x": 15
+ },
+ {
+  "el": "Tên",
+  "labelX": 30,
+  "labelPadL": "0px",
+  "inputX": 30
+ },
+ {
+  "el": "Họ",
+  "labelX": 30,
+  "labelPadL": "6.29688px",
+  "inputX": 30
+ },
+ {
+  "el": "Địa chỉ: Lin",
+  "labelX": 29,
+  "labelPadL": "0px",
+  "inputX": 30
+ },
+ {
+  "el": "Địa chỉ: Lin",
+  "labelX": 29,
+  "labelPadL": "0px",
+  "inputX": 30
+ },
+ {
+  "el": "Địa chỉ: Lin",
+  "labelX": 187,
+  "labelPadL": "0px",
+  "inputX": 30
+ },
+ {
+  "el": "Quốc gia",
+  "labelX": 30,
+  "labelPadL": "0px",
+  "inputX": 30
+ },
+ {
+  "el": "Tỉnh/Thành p",
+  "labelX": 30,
+  "labelPadL": "6.29688px",
+  "inputX": 30
+ },
+ {
+  "el": "Phường/Xã/Đặ",
+  "labelX": 30,
+  "labelPadL": "0px",
+  "inputX": 30
+ },
+ {
+  "el": "?",
+  "labelX": null,
+  "labelPadL": null,
+  "inputX": null
+ },
+ {
+  "el": "Mã bưu chính",
+  "labelX": 30,
+  "labelPadL": "0px",
+  "inputX": 30
+ },
+ {
+  "el": "Công ty",
+  "labelX": 30,
+  "labelPadL": "0px",
+  "inputX": 30
+ },
+ {
+  "el": "Số điện thoạ",
+  "labelX": 30,
+  "labelPadL": "6.29688px",
+  "inputX": 30
+ }
+]
+H3 discount btn: {"innerDisplay":"flex","innerAlign":"flex-start","gap":"12px","btn":{"x":218,"y":3087.7,"ml":"-2px","mar":"0px 0px 0px -2px"},"inputRight":208,"offsetFromInput":203}
+H4 extra fee: {"dt":{"x":30,"padL":"0px","marL":"0px"},"label":{"x":30,"padL":"2%","marL":"0px"},"rules":[{"x":30,"padL":"0px","marL":"0px"},{"x":30,"padL":"0px","marL":"0px"}],"checkboxes":[{"x":30,"padL":"0px","marL":"0px"},{"x":30,"padL":"0px","marL":"0px"}]}

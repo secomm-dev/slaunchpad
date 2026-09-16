@@ -126,3 +126,8 @@ nên CHROME localize theo ngôn ngữ UI trình duyệt, không theo store — u
 VI có thể thấy sẵn tiếng Việt; change set làm nó độc lập ngôn ngữ trình duyệt.
 
 Status: chờ TL review (Mode C).
+
+2026-09-16 — **Commit `a0865309`** (SLP-217, `dev/development/anhchong`) — 18 files/651
+insertions: cart-main.phtml + 2 CSV hunks (6 key/file) + record + evidence +
+estimation row (dòng riêng — row TASK-8TXS2P của session song song giữ unstaged
+bằng kỹ thuật hash-object HEAD+1-line, pattern BUG-KQ5A1D). Chưa push — chờ TL.

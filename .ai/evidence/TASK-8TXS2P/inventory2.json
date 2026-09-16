@@ -1,0 +1,177 @@
+{
+  "mobile": {
+    "estimation": {
+      "present": true,
+      "rect": {
+        "x": 0,
+        "y": 287.2,
+        "w": 375,
+        "h": 94.4
+      },
+      "margin": "-21px -15px 15px",
+      "position": "static",
+      "bg": "rgb(255, 255, 255)",
+      "borTop": "1px rgb(204, 204, 204)",
+      "parentCls": "checkout-container",
+      "prevSibling": "",
+      "subtitleRect": {
+        "x": 15,
+        "y": 158.5,
+        "w": 345,
+        "h": 68.6
+      }
+    },
+    "p4_grid": {
+      "fieldRect": {
+        "x": 30,
+        "y": 660.2,
+        "w": 315,
+        "h": 61
+      },
+      "fieldPad": "0px",
+      "inputX": 36.3,
+      "labelHTML": "<label class=\"label\" data-bind=\"attr: { for: element.uid }\" for=\"WVJQ0WY\"><!-- ko if: element.label --><span data-bind=\""
+    },
+    "p4_padSource": [
+      {
+        "sheet": "style.css",
+        "sel": ".col-mp",
+        "css": ".col-mp { padding: 0px !important; }"
+      },
+      {
+        "sheet": "style.css",
+        "sel": ".popup-authentication .block.col-mp.mp-12",
+        "css": ".popup-authentication .block.col-mp.mp-12 { width: 100%; padding: 0px 10px !important; }"
+      },
+      {
+        "sheet": "style.css",
+        "sel": ".gift-message label.label, #customer-email-fieldset label.label, .mp-clear label",
+        "css": ".gift-message label.label, #customer-email-fieldset label.label, .mp-clear label.label { padding-left: 0px; }"
+      },
+      {
+        "sheet": "style.css",
+        "sel": "#shipping-new-address-form .field.mp-clear.required, #checkout-step-billing .fie",
+        "css": "#shipping-new-address-form .field.mp-clear.required, #checkout-step-billing .field.mp-clear.required { padding-right: 0px !important; }"
+      },
+      {
+        "sheet": "grid-mageplaza.css",
+        "sel": ".col-mp",
+        "css": ".col-mp { box-sizing: border-box; float: left; padding: 0px 10px; background-clip: padding-box !important; }"
+      }
+    ],
+    "p5_chain": [
+      {
+        "el": "#checkmo.radio",
+        "rect": {
+          "x": 8,
+          "y": 3083.6,
+          "w": 13,
+          "h": 13
+        },
+        "padL": "0px",
+        "marL": "0px"
+      },
+      {
+        "el": ".payment-method-title.field.choice",
+        "rect": {
+          "x": 8,
+          "y": 3073.6,
+          "w": 202.5,
+          "h": 36
+        },
+        "padL": "0px",
+        "marL": "0px"
+      },
+      {
+        "el": ".payment-method",
+        "rect": {
+          "x": 8,
+          "y": 3073.6,
+          "w": 202.5,
+          "h": 36
+        },
+        "padL": "0px",
+        "marL": "0px"
+      },
+      {
+        "el": ".payment-group",
+        "rect": {
+          "x": 8,
+          "y": 3073.6,
+          "w": 202.5,
+          "h": 72
+        },
+        "padL": "0px",
+        "marL": "0px"
+      },
+      {
+        "el": ".items.payment-methods",
+        "rect": {
+          "x": 8,
+          "y": 3073.6,
+          "w": 202.5,
+          "h": 72
+        },
+        "padL": "0px",
+        "marL": "-15px"
+      },
+      {
+        "el": "#checkout-payment-method-load.opc-payment",
+        "rect": {
+          "x": 23,
+          "y": 3073.6,
+          "w": 172.5,
+          "h": 72
+        },
+        "padL": "0px",
+        "marL": "0px"
+      },
+      {
+        "el": ".fieldset",
+        "rect": {
+          "x": 23,
+          "y": 3073.6,
+          "w": 172.5,
+          "h": 72
+        },
+        "padL": "0px",
+        "marL": "0px"
+      },
+      {
+        "el": "#co-payment-form.form.payments",
+        "rect": {
+          "x": 23,
+          "y": 3065.6,
+          "w": 172.5,
+          "h": 80
+        },
+        "padL": "0px",
+        "marL": "0px"
+      }
+    ]
+  },
+  "desktop": {
+    "s6_btn": {
+      "outer": "<a class=\"btn btn-block btn-social btn-facebook\">\n                            <span class=\"fa fa-facebook\"></span>\n                            Đăng nhập với Facebook                        </a>",
+      "parentCls": "actions-toolbar social-btn facebook-login",
+      "parentOuter": "<div class=\"actions-toolbar social-btn facebook-login\">\n                        <a class=\"btn btn-block btn-social btn-facebook\">\n                            <span class=\"fa fa-facebook\"></span>\n                            Đăng nhập với Facebook     "
+    },
+    "s6_popupCls": "social-login block-container authentication",
+    "s6_modalWrap": {
+      "w": "600px",
+      "maxW": "none",
+      "bg": "rgb(255, 255, 255)",
+      "pad": "0px",
+      "radius": "8px"
+    },
+    "s6_header": "<header class=\"modal-header\">\n            \n            <h1 id=\"modal-title-10\" class=\"modal-title\" data-role=\"title\">\n                \n                    Đăng nhập\n                \n\n                \n            </h1>\n            \n            <button class=\"action-close\" data-role=\"closeBtn\" type=\"b",
+    "p2_chain": [
+      ".qty-wrapper",
+      ".a-center.details-qty",
+      ".product-item",
+      ".",
+      "#checkout-review-table.data-table",
+      ".minicart-items-wrapper.overflowed"
+    ]
+  }
+}

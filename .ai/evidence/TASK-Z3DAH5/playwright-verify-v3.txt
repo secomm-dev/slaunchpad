@@ -1,0 +1,10 @@
+PASS | T-A homepage widget quick view opens + SKU row | triggers=16, label="oust Duffle Bag", sku=0 ₫
+PASS | T-A2 description/More Information sections present | sections=2
+PASS | T-B1 swatch radio giống PDP (không select) | swatches=2, selects=0
+PASS | T-B2 legend shows selected label | "" → "4 Seat"
+PASS | T-B3 swatch ATC +1 handover drawer no reload | count null→1, drawer=true, modalClosed=true, navAlive=true, state={"isOpen":false,"status":"success","msg":"Bạn đã thêm Ovale Dining Table vào giỏ h","open":false}
+PASS | T-C swatch types visual + text (PDP parity) | visual=3, text=4, bg="rgb(250, 235, 215)"
+PASS | T-C2 color-swatch product ATC | count 1→2
+PASS | T-D console clean (non-ambient) | clean
+
+SUMMARY: 8/8 PASS

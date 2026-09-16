@@ -1,0 +1,423 @@
+{
+  "desktop": {
+    "stylesheets": [
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/mage/calendar.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/css/styles-m.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/jquery/uppy/dist/uppy-custom.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_SocialLoginPro/css/style.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/extra-fee.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Launchpad_MageplazaExtraFeeFix/css/extra-fee-checkout.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/disabled-place-order.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_DeliveryTime/css/style.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/font-awesome.min.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Secomm_AddressDropdown/css/styles.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_TableRateShipping/css/checkout.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mollie_Payment/css/styles.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_Osc/css/style.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/grid-mageplaza.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_OscUltimate/css/style.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Launchpad_Osc/css/osc-discount-code.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_SocialLogin/css/style.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/magnific-popup.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/css/styles-l.css",
+      "http://slaunchpad.localhost/static/version1789529110/frontend/Magento/luma/vi_VN/css/print.css"
+    ],
+    "bodyFont": "\"Open Sans\", \"Helvetica Neue\", Helvetica, Arial, sans-serif",
+    "p2_qtyStepper": {
+      "wrapper": {
+        "x": 1002,
+        "y": 1083.8,
+        "w": 83,
+        "h": 30
+      },
+      "minus": {
+        "x": 1006.5,
+        "y": 1080.8,
+        "w": 20,
+        "h": 20
+      },
+      "input": {
+        "x": 1030.5,
+        "y": 1080.6,
+        "w": 26,
+        "h": 19
+      },
+      "plus": {
+        "x": 1060.5,
+        "y": 1080.8,
+        "w": 20,
+        "h": 20
+      },
+      "cs": {
+        "minus": {
+          "w": "18px",
+          "h": "18px",
+          "pad": "0px",
+          "mar": "-3px 0px 0px",
+          "bor": "1px",
+          "fs": "14px",
+          "lh": "normal",
+          "box": "content-box"
+        },
+        "input": {
+          "w": "26px",
+          "h": "19px",
+          "pad": "1px 2px",
+          "mar": "0px",
+          "bor": "1px",
+          "fs": "13.3333px",
+          "lh": "normal",
+          "box": "border-box"
+        },
+        "plus": {
+          "w": "18px",
+          "h": "18px",
+          "pad": "0px",
+          "mar": "-3px 0px 0px",
+          "bor": "1px",
+          "fs": "14px",
+          "lh": "normal",
+          "box": "content-box"
+        }
+      }
+    },
+    "p3_subtitle": {
+      "text": "Một bước Thanh toán    \n    \n    Please enter your details below to complete you",
+      "rect": {
+        "x": 20,
+        "y": 139,
+        "w": 1251,
+        "h": 64
+      },
+      "cls": "page-title-wrapper",
+      "clientH": 64,
+      "scrollH": 64,
+      "lh": "20px",
+      "fs": "14px",
+      "ov": "visible",
+      "maxH": "none"
+    },
+    "s6_authLink": {
+      "present": true,
+      "visible": true,
+      "text": "Đã có tài khoản? Nhấp vào đây để đăng nhập",
+      "rect": {
+        "x": 20,
+        "y": 265.5,
+        "w": 1240,
+        "h": 20
+      }
+    },
+    "paymentSection": {
+      "present": true,
+      "vis": true
+    },
+    "p1_radios": [
+      {
+        "name": "payment[method]",
+        "rect": {
+          "x": 861.3,
+          "y": 372.1,
+          "w": 13,
+          "h": 13
+        },
+        "itemRect": {
+          "x": 861.3,
+          "y": 362.1,
+          "w": 398.7,
+          "h": 36
+        },
+        "labelText": "Check / Money order",
+        "labelRect": {
+          "x": 883.3,
+          "y": 370.1,
+          "w": 151,
+          "h": 19
+        },
+        "pos": "static",
+        "w": "13px",
+        "h": "13px",
+        "mar": "2px 5px 0px 0px"
+      },
+      {
+        "name": "payment[method]",
+        "rect": {
+          "x": 861.3,
+          "y": 408.1,
+          "w": 13,
+          "h": 13
+        },
+        "itemRect": {
+          "x": 861.3,
+          "y": 398.1,
+          "w": 398.7,
+          "h": 36
+        },
+        "labelText": "VNPAY",
+        "labelRect": {
+          "x": 883.3,
+          "y": 406.1,
+          "w": 54,
+          "h": 19
+        },
+        "pos": "static",
+        "w": "13px",
+        "h": "13px",
+        "mar": "2px 5px 0px 0px"
+      }
+    ]
+  },
+  "s6_modal": {
+    "found": {
+      "#social-login-popup": "<div id=\"social-login-popup\" class=\"white-popup mfp-with-anim mfp-hide\">\n        <div class=\"social-login block-container fake-email email\" style=\"display: none\">\n    <div class=\"social-login-title\">\n        <h2 class=\"forgot-pass-title\">Please complete your information below to login.</h2>\n    </div>\n    <div class=\"block col-mp mp-12\">\n        <div class=\"block-content\">\n            <form class=\"form-fake-email\" id=\"social-form-fake-email\" novalidate=\"novalidate\">\n                <fieldset class=\"fieldset\" data-hasrequired=\"* Các trường bắt buộc\">\n                    <div class=\"field note\">Vui lòng hoàn thiện thông tin bên dưới để tạo tài khoản.</div>\n                                                                            </fieldset>\n                <div class=\"actions-toolbar\">\n                    <div class=\"primary\">\n                        <button type=\"button\" id=\"bnt-social-login-fake-email\" class=\"action send primary\">\n                            <span>Gửi</span>\n                        </button>\n                    </div>\n                </div>\n            </form>\n        </div>\n    </div>\n</div>        <div class=\"mp-social-popup col-mp mp-7\" style=\"padding-top: 15px\">\n            <div class=\"social-login block-container authentication\">\n    <div class=\"social-login-title\">\n        <h2 class=\"login-title\">Đăng nhập</h2>\n    </div>\n    <div class=\"block social-login-customer-authentication col-mp mp-12\" id=\"social-login-authentication\">\n        <div class=\"block-title\">\n            <span id=\"block-customer-login-heading\" role=\"heading\" aria-level=\"2\">Khách hàng đăng ký</span>\n        </div>\n        <div class=\"block-content\" aria-labelledby=\"block-customer-login-heading\">\n            <form class=\"form-customer-login\" id=\"social-form-login\" novalidate=\"novalidate\">\n                <input name=\"form_key\" type=\"hidden\" value=\"SYgiSRGEmziQoWqH\" style=\"\">                <fieldset class=\"fieldset login\" data-hasrequired=\"* Các trường bắt buộc\">\n                                        <div class=\"field email required\">\n                        <label class=\"label\" for=\"social_login_email\"><span>Email</span></label>\n                        <div class=\"control\">\n                            <input name=\"username\" id=\"social_login_email\" type=\"email\" class=\"input-text\" value=\"\" autocomplete=\"off\" title=\"Email\" data-validate=\"{required:true, 'validate-email':true}\" aria-required=\"true\" style=\"\">\n                        </div>\n                    </div>\n                    <div class=\"field password required\">\n                        <label for=\"pass\" class=\"label\"><span>Mật khẩu</span></label>\n                        <div class=\"control\">\n                            <input name=\"password\" id=\"social_login_pass\" type=\"password\" class=\"input-text\" autocomplete=\"off\" title=\"Mật khẩu\" data-validate=\"{required:true, 'validate-password':true}\" aria-required=\"true\" style=\"\">\n                        </div>\n                    </div>\n                                        <div class=\"actions-toolbar\">\n                        <div class=\"primary\">\n                            <button type=\"button\" class=\"action login primary\" id=\"bnt-social-login-authentication\">\n                                <span>Đăng nhập</span>\n                            </button>\n                        </div>\n                        <div class=\"secondary\">\n                            <a class=\"action remind\" href=\"#\"><span>Quên mật khẩu?</span></a>\n                        </div>\n                    </div>\n                    <div class=\"actions-toolbar\">\n                        <div class=\"primary\">\n                            <a class=\"action create\" href=\"#\"><span>Tạo tài khoản mới?</span></a>\n                        </div>\n                    </div>\n                </fieldset>\n            </form>\n        </div>\n    </div>\n</div>\n\n            <div class=\"social-login block-container create\" style=\"display: none\">\n    <div class=\"social-login-title\">\n       ",
+      ".modal-popup": "<aside role=\"dialog\" class=\"modal-popup osc-social-login-popup modal-slide _inner-scroll _show\" aria-labelledby=\"modal-title-10\" aria-describedby=\"modal-content-10\" data-role=\"modal\" data-type=\"popup\" tabindex=\"0\" style=\"z-index: 900;\">\n    <div data-role=\"focusable-start\" tabindex=\"0\"></div>\n    <div class=\"modal-inner-wrap\" data-role=\"focusable-scope\">\n        <header class=\"modal-header\">\n            \n            <h1 id=\"modal-title-10\" class=\"modal-title\" data-role=\"title\">\n                \n                    Đăng nhập\n                \n\n                \n            </h1>\n            \n            <button class=\"action-close\" data-role=\"closeBtn\" type=\"button\">\n                <span>Close</span>\n            </button>\n        </header>\n        <div id=\"modal-content-10\" class=\"modal-content\" data-role=\"content\"><div id=\"social-login-popup\" class=\"white-popup mfp-with-anim mfp-hide\">\n        <div class=\"social-login block-container fake-email email\" style=\"display: none\">\n    <div class=\"social-login-title\">\n        <h2 class=\"forgot-pass-title\">Please complete your information below to login.</h2>\n    </div>\n    <div class=\"block col-mp mp-12\">\n        <div class=\"block-content\">\n            <form class=\"form-fake-email\" id=\"social-form-fake-email\" novalidate=\"novalidate\">\n                <fieldset class=\"fieldset\" data-hasrequired=\"* Các trường bắt buộc\">\n                    <div class=\"field note\">Vui lòng hoàn thiện thông tin bên dưới để tạo tài khoản.</div>\n                                                                            </fieldset>\n                <div class=\"actions-toolbar\">\n                    <div class=\"primary\">\n                        <button type=\"button\" id=\"bnt-social-login-fake-email\" class=\"action send primary\">\n                            <span>Gửi</span>\n                        </button>\n                    </div>\n                </div>\n            </form>\n        </div>\n    </div>\n</div>        <div class=\"mp-social-popup col-mp mp-7\" style=\"padding-top: 15px\">\n            <div class=\"social-login block-container authentication\">\n    <div class=\"social-login-title\">\n        <h2 class=\"login-title\">Đăng nhập</h2>\n    </div>\n    <div class=\"block social-login-customer-authentication col-mp mp-12\" id=\"social-login-authentication\">\n        <div class=\"block-title\">\n            <span id=\"block-customer-login-heading\" role=\"heading\" aria-level=\"2\">Khách hàng đăng ký</span>\n        </div>\n        <div class=\"block-content\" aria-labelledby=\"block-customer-login-heading\">\n            <form class=\"form-customer-login\" id=\"social-form-login\" novalidate=\"novalidate\">\n                <input name=\"form_key\" type=\"hidden\" value=\"SYgiSRGEmziQoWqH\" style=\"\">                <fieldset class=\"fieldset login\" data-hasrequired=\"* Các trường bắt buộc\">\n                                        <div class=\"field email required\">\n                        <label class=\"label\" for=\"social_login_email\"><span>Email</span></label>\n                        <div class=\"control\">\n                            <input name=\"username\" id=\"social_login_email\" type=\"email\" class=\"input-text\" value=\"\" autocomplete=\"off\" title=\"Email\" data-validate=\"{required:true, 'validate-email':true}\" aria-required=\"true\" style=\"\">\n                        </div>\n                    </div>\n                    <div class=\"field password required\">\n                        <label for=\"pass\" class=\"label\"><span>Mật khẩu</span></label>\n                        <div class=\"control\">\n                            <input name=\"password\" id=\"social_login_pass\" type=\"password\" class=\"input-text\" autocomplete=\"off\" title=\"Mật khẩu\" data-validate=\"{required:true, 'validate-password':true}\" aria-required=\"true\" style=\"\">\n                        </div>\n                    </div>\n                                        <div class=\"actions-toolbar\">\n                        <div class=\"primary\">\n                            <button type=\"button\" class=\"action login primary\""
+    },
+    "sig": {
+      "btnSocial": 2,
+      "faIcons": 7,
+      "svgInModal": 0
+    }
+  },
+  "mobile": {
+    "vw": 375,
+    "p3_subtitle": {
+      "text": "Một bước Thanh toán    \n    \n    Please enter your details below to complete you",
+      "rect": {
+        "x": 15,
+        "y": 158.5,
+        "w": 345,
+        "h": 68.6
+      },
+      "cls": "page-title-wrapper",
+      "clientH": 69,
+      "scrollH": 69,
+      "lh": "20px",
+      "fs": "14px",
+      "ov": "visible",
+      "maxH": "none",
+      "padBottom": "0px"
+    },
+    "p4_fields": [
+      {
+        "labelText": "Tên",
+        "labelRect": {
+          "x": 30,
+          "y": 591.2,
+          "w": 319,
+          "h": 20
+        },
+        "inputRect": {
+          "x": 30,
+          "y": 616.2,
+          "w": 308.7,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "9px",
+        "fieldCls": "field col-mp mp-6 mp-clear _required"
+      },
+      {
+        "labelText": "Họ",
+        "labelRect": {
+          "x": 30,
+          "y": 660.2,
+          "w": 325.3,
+          "h": 20
+        },
+        "inputRect": {
+          "x": 36.3,
+          "y": 685.2,
+          "w": 308.7,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "9px",
+        "fieldCls": "field col-mp mp-6 _required"
+      },
+      {
+        "labelText": "Địa chỉ: Line 1",
+        "labelRect": {
+          "x": 29,
+          "y": 748.2,
+          "w": 1,
+          "h": 1
+        },
+        "inputRect": {
+          "x": 30,
+          "y": 749.2,
+          "w": 315,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "9px",
+        "fieldCls": "field street col-mp mp-12 mp-clear admin"
+      },
+      {
+        "labelText": "Địa chỉ: Line 1",
+        "labelRect": {
+          "x": 29,
+          "y": 748.2,
+          "w": 1,
+          "h": 1
+        },
+        "inputRect": {
+          "x": 30,
+          "y": 749.2,
+          "w": 315,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "9px",
+        "fieldCls": "field _required"
+      },
+      {
+        "labelText": "Địa chỉ: Line 2",
+        "labelRect": {
+          "x": 187,
+          "y": 814.7,
+          "w": 1,
+          "h": 1
+        },
+        "inputRect": {
+          "x": 30,
+          "y": 797.2,
+          "w": 315,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "9px",
+        "fieldCls": "field additional"
+      },
+      {
+        "labelText": "Quốc gia",
+        "labelRect": {
+          "x": 30,
+          "y": 846.2,
+          "w": 319,
+          "h": 20
+        },
+        "inputRect": {
+          "x": 30,
+          "y": 871.2,
+          "w": 308.7,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "10px",
+        "fieldCls": "field col-mp mp-6 mp-clear _required"
+      },
+      {
+        "labelText": "Tỉnh/Thành phố",
+        "labelRect": {
+          "x": 30,
+          "y": 915.2,
+          "w": 325.3,
+          "h": 20
+        },
+        "inputRect": {
+          "x": 36.3,
+          "y": 940.2,
+          "w": 308.7,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "10px",
+        "fieldCls": "field col-mp mp-6"
+      },
+      {
+        "labelText": "Phường/Xã/Đặc khu",
+        "labelRect": {
+          "x": 30,
+          "y": 984.2,
+          "w": 319,
+          "h": 20
+        },
+        "inputRect": {
+          "x": 30,
+          "y": 1009.2,
+          "w": 315,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "10px",
+        "fieldCls": "field mp-clear col-mp mp-6 required sele"
+      },
+      {
+        "labelText": null,
+        "labelRect": null,
+        "inputRect": null,
+        "ctrlMarL": null,
+        "ctrlPadL": null,
+        "fieldCls": "field input"
+      },
+      {
+        "labelText": "Mã bưu chính",
+        "labelRect": {
+          "x": 30,
+          "y": 1053.2,
+          "w": 319,
+          "h": 20
+        },
+        "inputRect": {
+          "x": 30,
+          "y": 1078.2,
+          "w": 308.7,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "9px",
+        "fieldCls": "field col-mp mp-6 _required mp-clear"
+      },
+      {
+        "labelText": "Công ty",
+        "labelRect": {
+          "x": 30,
+          "y": 1122.2,
+          "w": 319,
+          "h": 20
+        },
+        "inputRect": {
+          "x": 30,
+          "y": 1147.2,
+          "w": 308.7,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "9px",
+        "fieldCls": "field col-mp mp-6 mp-clear"
+      },
+      {
+        "labelText": "Số điện thoại",
+        "labelRect": {
+          "x": 30,
+          "y": 1191.2,
+          "w": 325.3,
+          "h": 20
+        },
+        "inputRect": {
+          "x": 36.3,
+          "y": 1216.2,
+          "w": 308.7,
+          "h": 36
+        },
+        "ctrlMarL": "0px",
+        "ctrlPadL": "9px",
+        "fieldCls": "field col-mp mp-6 _required"
+      }
+    ],
+    "p5_payment": {
+      "containerRect": {
+        "x": 23,
+        "y": 2999.4,
+        "w": 172.5,
+        "h": 60.2
+      },
+      "containerPadL": "0px",
+      "containerMarL": "0px",
+      "radioXs": [
+        "8.0",
+        "8.0"
+      ]
+    }
+  }
+}

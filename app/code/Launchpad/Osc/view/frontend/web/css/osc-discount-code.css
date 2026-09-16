@@ -37,6 +37,10 @@
     gap: 12px;
 }
 
+.checkout-payment-method .payment-option-content .form-discount .actions-toolbar .primary .action {
+    width: 100%;
+}
+
 /* flex-basis 170px: wide column -> grows on one row beside the button;
    narrow column (OSC mobile keeps the payment column ~172px) -> the input
    wraps onto its own full-width row instead of collapsing to ~20px. */

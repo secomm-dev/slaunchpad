@@ -1,0 +1,343 @@
+/**
+ * Launchpad_MageplazaSocialLogin — restyle the OSC social-login modal to the
+ * Hyvä UI look (TASK-8TXS2P / SLP-203).
+ *
+ * The OSC checkout runs in the Magento/luma scope (LL-0011): the vendor
+ * hyva_default template swap and the child-theme overrides of SLP-160 never
+ * load here, so the auth-link modal renders the legacy luma popup
+ * (.btn-social + FontAwesome + the duplicated #3399cc title bars). This file
+ * is attached at module level on onestepcheckout_index_index only and
+ * restyles that legacy markup to the SLP-160 target — display-only, every
+ * JS/class hook the vendor widget relies on (#social-login-popup,
+ * #mp-popup-social-content, .actions-toolbar.social-btn, <provider>-login,
+ * .btn-social, .action.login.primary ...) is preserved 1:1.
+ *
+ * Selectors are id-anchored (#social-login-popup / .modal-popup.osc-social-
+ * login-popup): id specificity beats both the vendor stylesheet and the
+ * vendor css.phtml inline <style> that re-injects #3399cc after external
+ * stylesheets (same beat-injection problem SLP-160 solved with specificity).
+ *
+ * Colors follow the Hyvä modal as it ships today (SLP-160 round 9): the
+ * banner title and the primary buttons take the Mageplaza style_management
+ * config color via the vendor css.phtml inline <style> — this file only
+ * normalizes shape. Ink #020617, ink-muted #475569, border gray-300
+ * #d1d5db (hover #9ca3af).
+ */
+
+/* ---- card ---- */
+
+/* Vendor OSC css pins the wrap at `width: 600px !important`
+   ((0,3,0) Mageplaza_Osc style.css ~line 555) — body.checkout-index-index
+   climbs to (0,4,0); min() keeps 760px on desktop and fits small screens. */
+body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap {
+    width: min(760px, calc(100vw - 16px)) !important;
+    max-width: min(760px, calc(100vw - 16px)) !important;
+    margin: 8px auto !important;
+}
+
+.modal-popup.osc-social-login-popup .modal-header {
+    padding: 24px 24px 0;
+    border: none;
+    background: none;
+}
+
+/* The h1 is hidden below, so the header would collapse to its 24px padding
+   while the absolutely-positioned close button hangs ~30px lower and the
+   content paints over it — reserve the close button's row. */
+.modal-popup.osc-social-login-popup .modal-header {
+    min-height: 54px;
+}
+
+/* The panel title below is the real heading; the modal h1 duplicates it. */
+.modal-popup.osc-social-login-popup .modal-title {
+    display: none;
+}
+
+.modal-popup.osc-social-login-popup .modal-content {
+    padding: 0 16px 24px;
+}
+
+/* The vendor desktop block styles this very button with
+   `.checkout-index-index ... header .action-close { padding: 15px !important }`
+   ((0,5,1)) — the body prefix climbs to (0,6,1); without it the padding
+   squeezes the content box to 6px and the × collapses. */
+body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap header .action-close {
+    z-index: 5;
+    top: 12px;
+    right: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0 !important;
+    border: 1px solid #d1d5db;
+    border-radius: 9999px !important;
+    background: #fff;
+    line-height: 1;
+}
+
+.modal-popup.osc-social-login-popup .action-close:hover,
+.modal-popup.osc-social-login-popup .action-close:focus {
+    background: #fff;
+    border-color: #9ca3af;
+}
+
+/* the vendor glyph (font-icons) renders inconsistently here — the SVG on the
+   span above is the visible × */
+.modal-popup.osc-social-login-popup .action-close::before {
+    display: none;
+}
+
+/* luma keeps a visible "Close" label — the Hyvä modal shows only the ×.
+   Pure-CSS × (2 rotated bars): font-icons and the SVG data-URI both proved
+   unreliable on this page. */
+.modal-popup.osc-social-login-popup .action-close span {
+    display: block;
+    position: relative;
+    width: 14px;
+    height: 14px;
+    font-size: 0;
+    color: transparent;
+}
+
+.modal-popup.osc-social-login-popup .action-close span::before,
+.modal-popup.osc-social-login-popup .action-close span::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    border-radius: 1px;
+    background: #020617;
+}
+
+.modal-popup.osc-social-login-popup .action-close span::before {
+    transform: rotate(45deg);
+}
+
+.modal-popup.osc-social-login-popup .action-close span::after {
+    transform: rotate(-45deg);
+}
+
+body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#social-login-popup.white-popup {
+    max-width: 100%;
+}
+
+/* Vendor OSC css styles the X white for the removed blue bar
+   (`header .action-close:before { color: #fff !important }` — (0,5,1),
+   desktop block); on the white card it disappears — body prefix climbs to
+   (0,5,2). */
+body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap header .action-close::before {
+    color: #020617 !important;
+}
+
+/* ---- panel titles (banner with the Mageplaza config color, like the Hyvä
+   modal on theme pages — SLP-160 round 9 respects style_management) ---- */
+
+/* The vendor css.phtml inline <style> sets the banner background-color from
+   the style_management config — KEEP it (do not touch background) and only
+   normalize the shape/typography. The extra .social-login class wins the
+   shape rules over the vendor stylesheet. */
+#social-login-popup .social-login .social-login-title {
+    /* vendor stretches the title across both columns with
+       `#social-login-popup > div.mp-social-popup... div.social-login-title
+       { width: 200% }` (1,4,2) — !important is the reliable beat here
+       (SLP-160 F5 pattern) */
+    width: auto !important;
+    padding: 10px 0;
+    margin: 0 0 12px;
+    text-align: center;
+    border-radius: 8px;
+}
+
+/* the legacy per-panel PNG icon rides the h2 background (padding-left 40px);
+   the FontAwesome <i> glyph rides inside the h2 */
+#social-login-popup .social-login-title .fa,
+#social-login-popup .social-login-title i[class*="fa-"] {
+    display: none;
+}
+
+#social-login-popup .social-login-title h2 {
+    margin: 0;
+    padding-left: 0;
+    background: none;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+
+/* ---- forms ---- */
+
+#social-login-popup .mp-social-popup {
+    padding-top: 0 !important; /* vendor inline style="padding-top: 15px" */
+}
+
+#social-login-popup .block-title span {
+    font-size: 14px;
+    font-weight: 400;
+    color: #475569;
+}
+
+#social-login-popup label.label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #020617;
+}
+
+#social-login-popup .input-text {
+    height: auto;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+}
+
+#social-login-popup .input-text:focus {
+    border-color: #14532d;
+    box-shadow: none;
+}
+
+/* primary action — the color comes from the Mageplaza config via the vendor
+   css.phtml inline <style> (same as the Hyvä modal); only the shape is
+   normalized here. */
+#social-login-popup .action.login.primary,
+#social-login-popup .action.send.primary,
+#social-login-popup .action.create.primary,
+#social-login-popup .action.remind.primary {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+/* ---- social channel column ---- */
+
+/* "Or sign in with" divider with rules on both sides (SLP-160 look) */
+#mp-popup-social-content .block-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+}
+
+#mp-popup-social-content .block-title::before,
+#mp-popup-social-content .block-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+#mp-popup-social-content .actions-toolbar.social-btn {
+    margin: 0 0 12px;
+}
+
+.modal-content .secondary a.action {
+    margin-bottom: 0 !important;
+    margin-top: 6px !important;
+}
+
+#mp-popup-social-content a.btn.btn-social {
+    box-sizing: border-box;
+}
+
+/* white bordered brand button (SLP-160 Tailwind target:
+   w-full items-center justify-center gap-3 rounded-md border border-gray-300
+   bg-surface px-4 py-2.5 text-sm font-medium text-ink shadow-sm) */
+#mp-popup-social-content a.btn.btn-social {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    color: #020617;
+    font-size: 14px;
+    font-weight: 500;
+    text-shadow: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+#mp-popup-social-content a.btn.btn-social:hover,
+#mp-popup-social-content a.btn.btn-social:focus {
+    border-color: #9ca3af;
+    background: #fff;
+    color: #020617;
+}
+
+/* FontAwesome glyph out, inline-SVG-equivalent data URI in */
+#mp-popup-social-content a.btn.btn-social .fa {
+    display: none;
+}
+
+#mp-popup-social-content a.btn.btn-social::before {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: no-repeat center / contain;
+}
+
+#mp-popup-social-content a.btn-social.btn-google::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23EA4335' d='M12 5.04c1.62 0 3.06.56 4.2 1.64l3.12-3.12C17.46 1.8 14.86.75 12 .75 7.62.75 3.84 3.25 2.06 6.86l3.66 2.84C6.55 7.87 9.05 5.04 12 5.04z'/%3E%3Cpath fill='%234285F4' d='M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.6v3h3.86c2.26-2.09 3.56-5.17 3.56-8.84z'/%3E%3Cpath fill='%23FBBC05' d='M5.72 14.3c-.25-.74-.38-1.54-.38-2.3 0-.77.13-1.56.38-2.3L2.06 6.86C1.38 8.28 1 9.86 1 12s.38 3.72 1.06 5.14L5.72 14.3z'/%3E%3Cpath fill='%2334A853' d='M12 23.25c2.86 0 5.26-.94 7.02-2.56l-3.86-3c-1.02.7-2.33 1.11-3.16 1.11-2.95 0-5.45-2.83-6.28-4.99L2.06 17.14C3.84 20.75 7.62 23.25 12 23.25z'/%3E%3C/svg%3E");
+}
+
+#mp-popup-social-content a.btn-social.btn-facebook::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%231877F2'/%3E%3Cpath fill='%23ffffff' d='M16.67 15.47l.53-3.47h-3.33V9.75c0-.95.46-1.87 1.96-1.87h1.52V4.94s-1.38-.23-2.7-.23c-2.74 0-4.53 1.66-4.53 4.67v2.62H7.08v3.47h3.04v8.38a12.2 12.2 0 0 0 3.75 0v-8.38h2.48z'/%3E%3C/svg%3E");
+}
+
+/* ---- stack to one column on narrow screens (SLP-160 breakpoint 640px) ---- */
+
+@media (max-width: 639px) {
+    #social-login-popup .mp-social-popup.col-mp.mp-7,
+    #social-login-popup .mp-social-popup {
+        width: 100%;
+        float: none;
+    }
+
+    #mp-popup-social-content {
+        width: 100%;
+        float: none;
+        margin-top: 16px;
+    }
+
+    #mp-popup-social-content .social-login-authentication-channel.col-mp.mp-5,
+    #mp-popup-social-content .social-login-authentication-channel {
+        width: 100%;
+        float: none;
+    }
+
+    .modal-popup.modal-slide._inner-scroll._show {
+        left: 0 !important;
+    }
+
+    body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap {
+        position: fixed;
+        max-height: 90dvh;
+    }
+
+    #social-login-popup #social-login-authentication {
+        padding: 0 !important;
+    }
+
+    #social-login-popup .social-btn {
+        width: 100%;
+    }
+}

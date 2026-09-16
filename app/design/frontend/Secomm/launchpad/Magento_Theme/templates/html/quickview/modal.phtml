@@ -46,7 +46,7 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
         x-htmldialog.noscroll="close"
         @click.self="close()"
         aria-labelledby="quickview-modal-title"
-        class="m-auto rounded-xl p-0 shadow-xl w-[min(92vw,44rem)] max-h-[90dvh] overflow-y-auto"
+        class="m-auto rounded-xl p-0 shadow-xl w-[min(92vw,60rem)] max-h-[90dvh] overflow-y-auto"
     >
         <button
             type="button"
@@ -115,10 +115,20 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                 </p>
 
                 <p
-                    class="text-sm mb-4"
+                    class="text-sm mb-2"
                     :class="inStock ? 'text-green-700' : 'text-red-600'"
                     x-text="inStock ? '<?= $escaper->escapeJs(__('In stock')) ?>' : '<?= $escaper->escapeJs(__('Out of stock')) ?>'"
                 ></p>
+                <p class="text-sm text-gray-600 mb-3">
+                    <?= $escaper->escapeHtml(__('SKU')) ?>:
+                    <span class="font-medium text-gray-800" x-text="product?.sku"></span>
+                </p>
+                <?php /* Short description + More Information (description) — same content sources as the PDP tabs. */ ?>
+                <div x-show="product?.short_description?.html" class="prose-sm text-gray-700 mb-3 [&_p]:mb-2" x-html="product?.short_description?.html"></div>
+                <div x-show="product?.description?.html" class="border-t border-gray-200 pt-3 mb-3">
+                    <h3 class="text-sm font-semibold mb-1"><?= $escaper->escapeHtml(__('More Information')) ?></h3>
+                    <div class="prose-sm text-gray-700 [&_p]:mb-2" x-html="product?.description?.html"></div>
+                </div>
 
                 <form
                     action="<?= $escaper->escapeUrl($block->getUrl('checkout/cart/add')) ?>"
@@ -127,36 +137,53 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                 >
                     <?= $block->getBlockHtml('formkey') ?>
                     <input type="hidden" name="product" :value="product?.id" />
-                    <template x-for="option in configurableOptions" :key="'hidden-' + option.attribute_id">
-                        <input
-                            type="hidden"
-                            :name="'super_attribute[' + option.attribute_id + ']'"
-                            :value="selected[option.attribute_code] || ''"
-                        />
-                    </template>
-
+                    <?php /* Swatch options rendered like the PDP
+                           (Magento_Swatches::product/view/renderer.phtml pattern). */ ?>
                     <template x-for="option in configurableOptions" :key="option.attribute_id">
-                        <div class="mb-3">
-                            <label
-                                class="block text-sm font-medium mb-1"
-                                :for="'quickview-option-' + option.attribute_id"
-                                x-text="option.label"
-                            ></label>
-                            <select
-                                :id="'quickview-option-' + option.attribute_id"
-                                class="form-input w-full"
-                                x-model="selected[option.attribute_code]"
-                            >
-                                <option value=""><?= $escaper->escapeHtml(__('Choose an Option...')) ?></option>
+                        <fieldset class="mt-0 mb-4">
+                            <legend class="mb-1 text-base font-normal">
+                                <span x-text="option.label"></span>:
+                                <span class="font-medium" x-text="selectedLabel(option)"></span>
+                            </legend>
+                            <div class="flex flex-wrap gap-2">
                                 <template x-for="value in option.values" :key="value.value_index">
-                                    <option
-                                        :value="value.value_index"
-                                        x-text="value.label"
-                                        :disabled="!isValueAvailable(option, value.value_index)"
-                                    ></option>
+                                    <label
+                                        class="swatch-option my-0 cursor-pointer"
+                                        :class="!isValueAvailable(option, value.value_index) && 'opacity-40 pointer-events-none'"
+                                        :data-swatch-type="swatchType(value) === 'text' ? 'text' : 'visual'"
+                                    >
+                                        <span
+                                            x-show="swatchType(value) === 'text'"
+                                            x-text="value.label"
+                                        ></span>
+                                        <?php /* Visual swatch — same inline-size pattern as Magento_Swatches::swatch-item.phtml */ ?>
+                                        <span
+                                            class="block"
+                                            x-show="swatchType(value) === 'color'"
+                                            :style="'width:30px;height:30px;background-color:' + value.swatch_data.value"
+                                        ></span>
+                                        <img
+                                            class="block"
+                                            x-show="swatchType(value) === 'image'"
+                                            :src="value.swatch_data.value"
+                                            width="30"
+                                            height="30"
+                                            loading="lazy"
+                                            alt=""
+                                        />
+                                        <input
+                                            type="radio"
+                                            class="opacity-0 size-full m-0"
+                                            :name="'super_attribute[' + option.attribute_id + ']'"
+                                            :value="value.value_index"
+                                            x-model.number="selected[option.attribute_code]"
+                                            :disabled="!isValueAvailable(option, value.value_index)"
+                                            :data-option-label="value.label"
+                                        />
+                                    </label>
                                 </template>
-                            </select>
-                        </div>
+                            </div>
+                        </fieldset>
                     </template>
 
                     <div class="flex items-center gap-3 mb-4">
@@ -260,7 +287,10 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                     if (data.errors && data.errors.length) {
                         throw new Error(data.errors[0].message);
                     }
-                    const product = data.data.products.items[0];
+                    const items = data.data.products.items || [];
+                    // Magento may expand the result with the configurable/grouped PARENT
+                    // when the sku is a child variant — pick the exact sku first.
+                    const product = items.find(item => item.sku === sku) || items[0];
                     if (!product) {
                         throw new Error('Product not found');
                     }
@@ -354,6 +384,23 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                 return !!this.product && this.product.stock_status === 'IN_STOCK';
             },
 
+            selectedLabel(option) {
+                const chosen = this.selected[option.attribute_code];
+                if (chosen === '' || chosen === undefined || chosen === null) {
+                    return '';
+                }
+                const value = (option.values || []).find(v => String(v.value_index) === String(chosen));
+                return value ? value.label : '';
+            },
+
+            swatchType(value) {
+                const raw = value.swatch_data && value.swatch_data.value;
+                if (!raw) return 'text';
+                if (raw.startsWith('#')) return 'color';
+                if (raw.startsWith('/') || raw.startsWith('http')) return 'image';
+                return 'text';
+            },
+
             get missingSelection() {
                 return this.isConfigurable
                     && this.configurableOptions.some(option => !this.selected[option.attribute_code]);
@@ -428,12 +475,18 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
 
     const QUICKVIEW_GRAPHQL_QUERY = `
         query QuickViewProduct($filter: ProductAttributeFilterInput!) {
-            products(filter: $filter, pageSize: 1) {
+            products(filter: $filter, pageSize: 10) {
                 items {
                     id
                     name
                     sku
                     stock_status
+                    short_description {
+                        html
+                    }
+                    description {
+                        html
+                    }
                     media_gallery {
                         url
                         label
@@ -458,6 +511,9 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                             values {
                                 value_index
                                 label
+                                swatch_data {
+                                    value
+                                }
                             }
                         }
                         variants {
