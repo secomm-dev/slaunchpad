@@ -5,6 +5,27 @@ The module exists to keep `Mageplaza_ExtraFee` vendor code untouched.
 
 ## [Unreleased]
 
+### Fixed (2026-09-15) — Non-Refundable Extra Fee Order Lifecycle State & Credit Memo Fix
+
+- `Plugin/Model/Order/StateResolverPlugin.php`: add `afterGetStateForOrder` plugin on
+  `Magento\Sales\Model\Order\OrderStateResolverInterface` to resolve order state to `closed`
+  (instead of `complete`) when all items in the order have been fully refunded/canceled, even
+  if a non-refundable extra fee keeps `total_paid > total_refunded`.
+- `Plugin/Model/Order/CanCreditmemoPlugin.php`: add `afterCanCreditmemo` plugin on
+  `Magento\Sales\Model\Order` to disable further creditmemo creation once all items and shipping
+  have been fully refunded.
+- `Test/Unit/Plugin/Model/Order/StateResolverPluginTest.php`: unit tests for `StateResolverPlugin`.
+- `Test/Unit/Plugin/Model/Order/CanCreditmemoPluginTest.php`: unit tests for `CanCreditmemoPlugin`.
+
+### Fixed (2026-09-15) — Creditmemo Extra Fee Non-Numeric Formatting Fix
+
+- `Plugin/Model/Total/Creditmemo/ExtraFeePlugin.php`: add `aroundCollect` plugin on
+  `Mageplaza\ExtraFee\Model\Total\Creditmemo\ExtraFee` to sanitize thousand-separator commas
+  (e.g. `"10,000"`) from raw creditmemo fee inputs into clean floats before calculations.
+  Fixes PHP 8 `Warning: A non-numeric value encountered` and prevents creditmemo save failure.
+- `Test/Unit/Plugin/Model/Total/Creditmemo/ExtraFeePluginTest.php`: unit tests for sanitized
+  amount addition, max fee validation, and explicit zero refund.
+
 ### Added (2026-09-09) — TASK-EPJVGG (SLP-198)
 
 - `view/frontend/web/css/extra-fee-checkout.css`: extend the two SLP-139 rules
