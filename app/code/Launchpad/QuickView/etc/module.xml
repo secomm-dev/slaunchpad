@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!--
+    Secomm Launchpad — Quick View module (TASK-Z3DAH5, SLP-157)
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module:etc/module.xsd">
+    <module name="Launchpad_QuickView" setup_version="1.0.0"/>
+</config>
