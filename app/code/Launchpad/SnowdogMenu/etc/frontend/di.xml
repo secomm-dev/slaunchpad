@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+    Secomm Launchpad — Snowdog Menu toggle module (TASK-SXW5RB, SLP-129)
+    Plugin is frontend-scope only; when the Snowdog_Menu module is disabled its
+    target class does not exist and the plugin is never invoked.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager:etc/config.xsd">
+    <type name="Snowdog\Menu\Block\Menu">
+        <plugin name="launchpad_snowdog_navigation_toggle"
+                type="Launchpad\SnowdogMenu\Plugin\Snowdog\Menu\Block\Menu"
+                sortOrder="10"/>
+    </type>
+</config>

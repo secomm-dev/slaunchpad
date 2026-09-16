@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+    Secomm Launchpad — Quick View module (TASK-Z3DAH5, SLP-157)
+    Admin switch: Stores > Configuration > Hyvä Themes > Quick View.
+    Scope: default / website / store view (vi_VN and en_US can be toggled independently).
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="hyva_theme_quickview" translate="label" type="text" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Quick View</label>
+            <tab>hyva_themes</tab>
+            <resource>Magento_Config::config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Quick View</label>
+                    <comment>Shows the Quick View trigger on product cards and the lazy-load modal on category/search pages. Flush the block cache after changing this value.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,212 @@
+/**
+ * Launchpad_Osc — checkout section UI alignment fixes (TASK-8TXS2P / SLP-203).
+ *
+ * The OSC checkout runs in the Magento/luma scope (LL-0011), so this CSS must
+ * be attached at module level (onestepcheckout_index_index.xml) — a theme
+ * stylesheet never loads here (same mechanism as BUG-2MK37V
+ * osc-discount-code.css / BUG-NY0M3S). Display-only: every rule fixes a
+ * measured layout defect; no flow, markup or JS change.
+ *
+ * Fix list (root causes measured 2026-09-16, see record §Root causes):
+ *  P1  payment radio vs label baseline
+ *  P2  Order Summary qty stepper — minus/input/plus frames equal size
+ *  P3  mobile — .opc-estimated-wrapper negative top margin clipping the
+ *      checkout description (Luma _estimated-total.less margin: -21px -15px)
+ *  P4  mobile ≤480px — OSC 2-col grid float:left/right input rules misalign
+ *      left edges once the columns stack (Mageplaza_Osc style.css ~993)
+ *  P5  mobile — payment method list pulled to the viewport edge
+ *      (Luma _payments.less margin: 0 -15px)
+ */
+
+/* P1 — center the 13px radio on the 20px method-title text line. The vendor
+   bottom-margin-edge-baseline alignment leaves the radio center 1px above the
+   label center; lower the box 1px (margin has no effect on the measured
+   offset — baseline semantics). */
+.payment-method-title input[type="radio"] {
+    margin-top: 0;
+    vertical-align: -1px;
+}
+
+/* P2 — equal 24x24 frames, vertically centered, evenly gapped.
+   Vendor renders 18x18 content-box anchors (+border = 20) around a 26x19
+   input that is position:absolute inside .qty-wrap (top:-16%), so the flex
+   row cannot align it — neutralize the offsetting wrappers. */
+.opc-block-summary .qty-wrapper,
+#opc-sidebar .qty-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.onestepcheckout-index-index .page-title-wrapper {
+    padding-left: 0;
+}
+
+.osc-authentication-wrapper {
+    padding-left: 0;
+}
+
+.opc-block-summary .qty-wrapper .button-action,
+#opc-sidebar .qty-wrapper .button-action {
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    line-height: 22px;
+}
+
+.opc-block-summary .qty-wrapper .button-action i,
+#opc-sidebar .qty-wrapper .button-action i {
+    line-height: 22px;
+}
+
+.opc-block-summary .qty-wrapper .qty-wrap,
+#opc-sidebar .qty-wrapper .qty-wrap {
+    position: static;
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    vertical-align: top;
+}
+
+.opc-block-summary .qty-wrapper input.item_qty,
+#opc-sidebar .qty-wrapper input.item_qty {
+    position: static;
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    border: 1px solid #111;
+    border-radius: 4px;
+}
+
+.abs-field-tooltip input, .form.form-login .fieldset .field .control._with-tooltip input {
+    width: 98% !important;
+}
+
+.action-toggle-create-account {
+    padding-right: 10px;
+}
+
+/* P3 — keep the full-bleed side margins and the bottom spacing, drop only
+   the -21px top pull that rides the bar's border-top over the description
+   text (mobile only: ≥768px the bar is display:none in Luma). */
+@media (max-width: 767px) {
+    .opc-estimated-wrapper {
+        margin-top: 0;
+    }
+}
+
+/* P4 — the vendor width:98% + alternating float rules (float:right on
+   .mp-6, float:left !important on .mp-clear — Mageplaza_Osc style.css ~993)
+   zigzag the input left edges at EVERY breakpoint: on the 2-column desktop
+   the second column sits ~6px right of its label, and on stacked widths
+   (481–991px) every second field keeps the column-2 bias. No float at any
+   breakpoint; the width keeps a fixed 12px gutter between the two columns
+   (round-2 shipped width:100% and the columns touched). */
+.form-shipping-address .control input.input-text,
+.form-shipping-address .control select,
+.form-shipping-address .control textarea,
+.row-mp .control input.input-text,
+.row-mp .control select,
+.row-mp .control textarea,
+#checkout-step-billing .control input.input-text,
+#checkout-step-billing .control select,
+#checkout-step-billing .control textarea {
+    float: none !important; /* vendor .mp-clear block sets float:left !important */
+    width: calc(100% - 12px) !important;
+}
+
+/* P4b — vendor `label.label { padding-left: 2% }` exempts only .mp-clear,
+   so every second column's label text sits ~6px right of its neighbours
+   ("Họ"/"Tỉnh"/"Số điện thoại" vs "Tên"/"Quốc gia") — in the shipping AND
+   the billing form alike. */
+.form-shipping-address label.label,
+.row-mp label.label,
+#checkout-step-billing label.label {
+    padding-left: 0;
+}
+
+/* text inset: selects ship 10px while the text inputs use 9px — align the
+   text start, not just the box edge. The cascade dropdown (Phường/Xã) is
+   injected outside .control, hence the field-level selector. */
+.form-shipping-address .field select,
+.form-shipping-address .field .control select,
+.row-mp .field select {
+    padding-left: 9px;
+}
+
+/* P6 — the discount Apply button. Luma glues the button to the input with
+   `margin: 0 0 0 -2px` (.abs-discount-code → ...actions-toolbar .primary
+   .action, _checkout.less — combo pattern for the Luma checkout layout);
+   OSC renders the input and the button as separate flex rows, so the -2px
+   pulls the button left of the shared column edge. The vendor button carries
+   `.action.action-apply` (no `.primary`). */
+.opc-payment-additional.discount-code .payment-option-inner .actions-toolbar .action {
+    margin-left: 0 !important;
+}
+
+/* P7 — the extra-fee rule label shares the vendor 2% label padding, so the
+   rule name sits ~6px right of its own checkboxes ("rrrrrr" vs "20HKD"). */
+#mp-extra-fee label.label,
+#mp-extra-fee-billing label.label {
+    padding-left: 0;
+}
+
+.opc-payment-additional.discount-code .payment-option-inner .actions-toolbar > .primary {
+    width: 100%;
+}
+
+/* P5 — restore the payment method list into the section padding: the vendor
+   pulls it out by -15px on both sides on mobile, leaving the radio circles
+   ~8px from the viewport edge. */
+@media (max-width: 767px) {
+    .checkout-payment-method .payment-methods {
+        margin: 0;
+    }
+
+    .form-shipping-address .control input.input-text,
+    .form-shipping-address .control select,
+    .form-shipping-address .control textarea,
+    .row-mp .control input.input-text,
+    .row-mp .control select,
+    .row-mp .control textarea,
+    #checkout-step-billing .control input.input-text,
+    #checkout-step-billing .control select,
+    #checkout-step-billing .control textarea {
+        float: none !important; /* vendor .mp-clear block sets float:left !important */
+        width: 100% !important;
+    }
+
+    .abs-field-tooltip input, .form.form-login .fieldset .field .control._with-tooltip input {
+        width: 100% !important;
+    }
+}
+
+/* P8 — section padding sync (mobile). The shipping address form indents its
+   content 15px inside the section (.form-shipping-address padding 20px 15px)
+   so its fields sit at x=30; the billing form and the payment/discount areas
+   ship without that indent and sit at x=15 — match them to the shipping
+   standard (desktop is untouched). */
+@media (max-width: 767px) {
+    /* the discount section is full-bleed (margin 0 -15px) which cancels the
+       15px inset its .payment-option-content already carries — just stop the
+       bleed (adding padding double-indents to 45px) */
+    .checkout-payment-method .payment-option .payment-option-content {
+        padding: 0 0 20px;
+    }
+
+    .opc-payment-additional.discount-code {
+        margin: 0;
+    }
+
+    #mp-extra-fee {
+        padding: 0;
+    }
+
+    .opc-wrapper .form-login, .opc-wrapper .form-shipping-address, .opc-wrapper .methods-shipping {
+        padding: 20px 0;
+    }
+}

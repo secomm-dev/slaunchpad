@@ -18,4 +18,5 @@
 "The payment bank is under maintenance","Ngân hàng thanh toán đang bảo trì"
 "Transaction failed: incorrect payment password entered too many times","Giao dịch không thành công do: Khách hàng nhập sai mật khẩu thanh toán quá số lần quy định"
 "An error occurred during the transaction","Có lỗi xảy ra trong quá trình thực hiện giao dịch"
-"Invalid signature","Chữ ký không hợp lệ"
+"Invalid signature","Chữ ký không hợp lệ"
+"Your payment was received but the order could not be created. Please contact us for assistance.","Thanh toán đã được ghi nhận nhưng không thể tạo đơn hàng. Vui lòng liên hệ với chúng tôi để được hỗ trợ."

@@ -85,3 +85,36 @@ Screenshot sau fix: `evidence-qty-row-after-fix.png`.
 
 - Message session **"Khóa biểu mẫu không hợp lệ. Vui lòng tải lại trang."** trên PDP xuất hiện **kể khi không submit lần nào**: load PDP → AJAX `mpextrafee/product/extrafee` trả 302 → error message vào session → hiển thị ở lần load full-page kế tiếp (cả khi add-to-cart thành công, message chồng với message success). Chứng minh: context Playwright sạch, chỉ load 2 PDP liên tiếp không đụng form → message vẫn hiện. Cùng nhóm pre-existing với console error `extra-fee.phtml:53`.
 - Redirect sau add-to-cart về product page (uenc) — config redirect-after-add không set → Magento default; không phải regression.
+
+---
+
+# Addendum đợt 3 — upsell heading "We found other products you might like!" (2026-09-16, QC screenshot demo)
+
+## 12. Nguồn chuỗi + scope đợt 3
+
+- Screenshot QC demo (`slaunchpad-demo.secomm.vn/meridian-modular-sofa`): heading block upsell render EN **"We found other products you might like!"** — key chưa có trong theme dict (grep = 0).
+- Nguồn thật: Hyvä layout `vendor/hyva-themes/magento2-default-theme/Magento_Catalog/layout/catalog_product_view.xml:167` — **argument `title` `translate="true"`** của block `upsell` (template `Magento_Catalog::product/slider/product-slider.phtml`, title render qua `$block->getTitle()`). **KHÔNG phải** vendor `Magento_Catalog::product/list/items.phtml` (template Luma, section upsell/related kiểu cũ — không render PDP Hyvä).
+- Phrases cùng template lớp đã check: `Press to skip carousel`, `View more about %1` — có sẵn dict (grep = 1). `select all` / `Check items to add to the cart or` — chỉ tồn tại trong `items.phtml` (Luma, section `related` + `$canItemsAddToCart`) → **không render trên PDP Hyvä, out of scope**. `More Choices:` (crosssell, cart page) — out of scope PDP → flag follow-up, không tự thêm (quy tắc scope như TASK-0F96X5).
+
+## 13. Change set đợt 3
+
+- `vi_VN.csv` + `en_US.csv`: **+1 key/file** — `"We found other products you might like!"` → `"Chúng tôi tìm thấy một số sản phẩm khác bạn có thể thích!"` (en identity), chèn ngay sau `"Related Products"` (dòng 49 cả 2 file — cùng nhóm PDP-slider đợt 1).
+
+## 14. Verify đợt 3 (local, sau `cache:flush` as secomm)
+
+| Check | Kết quả |
+|---|---|
+| HTTP vi store pre-fix: heading EN render đúng vị trí `<h2 class="text-2xl font-medium">` ngay dưới "Sản phẩm liên quan" | ✓ (`pdp-vi-prefix-dot3.html`) |
+| HTTP vi store post-fix: heading VI ×1, 0× phrase EN | ✓ (`pdp-vi-post-dot3.html`) |
+| Regression: `Sản phẩm liên quan` (đợt 1) vẫn VI | ✓ |
+| `en_US.csv` parse (fgetcsv, 877 rows): key present, identity EXACT, **0 row VI-char leak** toàn file | ✓ |
+| `vi_VN.csv` parse (927 rows): key → VI đúng | ✓ |
+| CLI dict per pattern SLP-225 (explicit theme+locale, `verify-phrase-dot3.php`) vi_VN: dict **1952** entries, key → VI, render VI; control `Related Products` → VI | ✓ |
+| CLI dict en_US: dict chỉ **124** entries = module packs — **theme `en_US.csv` không load trong CLI** (observation, xem mục 15.3); key MISS → render fallback **identity EN** = output đúng; identity row present trong file (mục 14 trên) | ✓ (output-neutral) |
+
+## 15. Quan sát đợt 3 (pre-existing — không phải regression)
+
+1. **store 2 `launchpad_en` locale = vi_VN** (mất `general/locale/code=en_US`) → local "EN" render VI 100%; `?___store=` lẫn cookie `store=` đều không switch. **ĐÃ FLAG bởi TASK-K14RVZ (2026-09-16)**: cần khôi phục config store 2 — TL/DevOps, không thuộc scope CSV. Verify "en identity" đợt này = file-level parse (method đợt 1).
+2. Demo không curl được từ shell phiên này (http:000) — bằng chứng pre-deploy = **screenshot ticket** (demo = HEAD, render EN).
+3. **QC handoff sau commit + deploy demo**: PDP vi → heading `Chúng tôi tìm thấy một số sản phẩm khác bạn có thể thích!`; PDP en → identity EN; không regression khác.
+4. **Observation CLI dict en_US (pre-existing, output-neutral cho đợt này)**: `Translate::loadData` trong CLI với locale `en_US` + explicit theme cho dict **124 entries (chỉ module packs)** — theme `en_US.csv` (877 rows) không được load, trong khi theme `vi_VN.csv` load đủ (1952). Không ảnh hưởng output hiện tại: mọi row theme en đều identity (miss → fallback identity = cùng string); 2 row non-identity của en đến từ module `Secomm_VietNamAddress/i18n/en_US.csv` và resolve OK. **Cần investigate nếu sau này thêm row non-identity vào theme `en_US.csv`** — khi đó phải verify HTTP trên demo, không tin CLI dict.

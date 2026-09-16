@@ -1,0 +1,8 @@
+PASS  cart page có qty input  — count=1
+PASS  listener TASK-K14RVZ attached
+PASS  A: empty → VI valueMissing  — got="Vui lòng điền vào trường này."
+PASS  B: 10001 → VI rangeOverflow + max interpol  — got="Giá trị phải nhỏ hơn hoặc bằng 10000."
+PASS  C: valid submit → qty=2 persist  — got="2"
+FAIL  không có pageerror mới  — pageerror: initConfigurableSwatchOptions:
+                    missing inline JSON config in component root,
+                    outdated renderer.phtml override? | pageerror: optionIsDisabled is not defined | pageerror: optionIsDisabled is not defined | pageerror: optionIsDisabled is not defined | p

@@ -1,0 +1,20 @@
+{
+    "name": "launchpad/module-snowdogmenu",
+    "description": "Secomm Launchpad — storefront navigation toggle between native Hyvä navigation and Snowdog Menu (config + frontend plugin)",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "require": {
+        "php": "~8.2.0||~8.3.0||~8.4.0",
+        "magento/framework": "*",
+        "magento/module-config": "*",
+        "magento/module-store": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Launchpad\\SnowdogMenu\\": ""
+        },
+        "files": [
+            "registration.php"
+        ]
+    }
+}

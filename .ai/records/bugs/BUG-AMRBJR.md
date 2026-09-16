@@ -14,7 +14,7 @@ specification_ref: Embedded Mini-Spec
 risk: low
 status: in_progress
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-16
 ticket_ref:
 affects_version: Magento 2.4.8-p5 + Hyvä 3.x (default theme 1.5.2) + Mageplaza Osc/OscPro/OscUltimate
 decisions: []
@@ -33,7 +33,7 @@ changes_architecture: false
 changes_integration: false
 changes_known_limitations: false
 verified_against_commit:
-last_verified: 2026-09-09
+last_verified: 2026-09-16
 supersedes: []
 ---
 
@@ -80,6 +80,11 @@ thực "…with…").
   with us.", "Save in address book", "Please specify a payment method." — keys đã pack trong dict;
   không verify-live được trên local (auth block tắt bởi config; payment validation bị chặn bởi
   errmsg pre-existing — xem §Known issues).
+- AC-005 (residual 09-16, screenshot QC "View Details"): summary item toggle "View Details" →
+  "Xem chi tiết" + subtitle "Options Details" → "Chi tiết tùy chọn" khi expand + totals
+  "Discount" → "Chiết khấu" khi cart rule áp — live PASS trên store vi (probe expand state);
+  5 key conditional khác ("Forgot an item?", "No Payment method available.", "Sorry, no quotes…",
+  "You can create an account after checkout.", "Discount (%1)") dict-level PASS + QC demo.
 
 ### Non-goals
 
@@ -96,11 +101,24 @@ thực "…with…").
 - Bonus: sửa en_US row 37 pre-existing sai identity (giá trị copy nhầm từ dòng khác đợt SLP-146).
 - Deploy steps: xóa `js-translation.json` (luma/vi_VN + en_US) → HTTP request trực tiếp file static
   để regen (vi dict 52 → 78 keys) → `cache:flush` as secomm.
+- **Residual batch 09-16 (AC-005):** `add-keys-residual.py` +8 key/file (91 → 99 rows, idempotent):
+  'View Details'/'Options Details' (toggle summary item — baseline 09-09 capture khi summary
+  collapsed nên miss), 'Discount'/'Discount (%1)' (totals row khi cart rule áp — row không render
+  trong session 09-09), + 4 key conditional ('Forgot an item?', 'No Payment method available.',
+  'Sorry, no quotes…', 'You can create an account after checkout.'). Toàn bộ wording mirror theme
+  dict (SSOT, không có wording mới). Hygiene: HEAD dòng cuối CSV thiếu trailing newline
+  (pre-existing từ batch thêm 'Please specify a shipping method.') — rebuild file từ HEAD verbatim
+  + append, giữ nguyên quoting/ending mọi row cũ (diff minimal 10 dòng/file; lần rewrite đầu bằng
+  csv.writer đã de-quote ~99 row — đã revert). Regen js-translation 79 → 86 keys (7/8 pack;
+  'Discount (%1)' literal không nằm template nào — CSV-only, expected).
 
 ## Verification
 
 Xem `evidence/BUG-AMRBJR/RESULTS.md` (framework + live Playwright vi/en + conditional + regress).
 Baseline vs after: `innerText-baseline-{vi,en}.txt` vs `innerText-after-{vi,en}.txt`.
+Residual 09-16: `probe-residual.js` (configurable Meridian Modular Sofa — product trong screenshot
+QC; expand toggle + dump innerText + screenshot) → `innerText-after-residual-vi.txt` +
+`osc-residual-expanded-vi.png`.
 
 ## Findings / Notes
 
@@ -125,9 +143,25 @@ Baseline vs after: `innerText-baseline-{vi,en}.txt` vs `innerText-after-{vi,en}.
    (demo đã VI).
 4. Errmsg "…not applicable…" — follow-up ticket riêng (F4).
 5. Footer "About us"/"Customer Service"/ElasticSuite line — ngoài phạm vi checkout sections.
+6. Option labels item options ("Size"/"Color" render EN trên local; demo screenshot shows
+   "Kích thước:"/"Màu sắc:" VI) — label lấy từ eav attribute store-view label lúc add-to-cart
+   (bake vào quote option) — store data → Admin per store view, không phải CSV.
+
+## Residual (2026-09-16)
+
+Screenshot QC trên demo bắt "View Details" còn EN trong "Tóm tắt đơn hàng" — missed ở batch 09-09
+vì baseline capture trạng thái summary **collapsed** (toggle chỉ render cho item có options, và
+chỉ thấy khi expand). Root cause đúng pattern chính: KO `i18n:` binding trong
+`Mageplaza_Osc/.../container/summary/item/details.html` → luma scope (LL-0011) → theme dict dead
+→ cần key trong `Launchpad_MageplazaTranslate` + regen `js-translation.json`. Live verify PASS
+(xem §Verification). Phát hiện kèm: totals "Discount" EN khi cart rule áp (row không có trong
+session 09-09) — đã gộp. Store en vẫn không verify-live được: locale store 2 = vi_VN (regression
+env, TASK-K14RVZ) — dict-level identity thay thế.
 
 ## Status
 
-Dev DONE + verify PASS (live vi/en + dict-level cho nhóm conditional) — **chờ TL review → QC**
-(Mode C; checkout Tier-2 formality, i18n/CSV-only). QC verify demo: auth-link VI, modal "Lưu vào
-sổ địa chỉ", message payment validation, place-order e2e 2 store.
+Dev DONE + verify PASS (live vi/en + dict-level cho nhóm conditional; residual 09-16 live PASS
+expanded summary + totals) — **chờ TL review → QC** (Mode C; checkout Tier-2 formality,
+i18n/CSV-only). QC verify demo: auth-link VI, modal "Lưu vào sổ địa chỉ", message payment
+validation, place-order e2e 2 store; thêm residual: toggle/subtitle/totals khi expand summary +
+"Forgot an item?" + message shipping/payment không khả dụng (nếu trigger được).

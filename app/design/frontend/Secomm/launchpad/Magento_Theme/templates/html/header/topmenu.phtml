@@ -1,0 +1,29 @@
+<?php
+/**
+ * TASK-SXW5RB (SLP-129): storefront navigation toggle between the native Hyvä
+ * navigation and Snowdog Menu (config snowdog_navigation/general/enabled,
+ * Launchpad_SnowdogMenu ViewModel Config).
+ * Copied from vendor hyva-themes/magento2-default-theme
+ * Magento_Theme::html/header/topmenu.phtml — rendering branch added, cache-tags
+ * behaviour preserved.
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\BlockCache;
+use Launchpad\SnowdogMenu\ViewModel\Config;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var BlockCache $blockCacheViewModel */
+$blockCacheViewModel = $viewModels->require(BlockCache::class);
+$snowdogNavigation = $viewModels->require(Config::class);
+
+// Snowdog navigation: only the mobile menu block is a child of topmenu_generic;
+// the desktop block renders separately in header.container (Snowdog_Menu layout).
+echo $snowdogNavigation->isEnabled()
+    ? $block->getChildHtml('topmenu-mobile')
+    : $block->getChildHtml();
+
+// Copy child cache tags to this block so they are added to the block_html cache record
+$block->setData('cache_tags', $blockCacheViewModel->collectBlockChildrenCacheTags($block));

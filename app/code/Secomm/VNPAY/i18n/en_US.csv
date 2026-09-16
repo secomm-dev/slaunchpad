@@ -18,4 +18,5 @@
 "The payment bank is under maintenance","The payment bank is under maintenance"
 "Transaction failed: incorrect payment password entered too many times","Transaction failed: incorrect payment password entered too many times"
 "An error occurred during the transaction","An error occurred during the transaction"
-"Invalid signature","Invalid signature"
+"Invalid signature","Invalid signature"
+"Your payment was received but the order could not be created. Please contact us for assistance.","Your payment was received but the order could not be created. Please contact us for assistance."

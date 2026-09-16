@@ -1,0 +1,287 @@
+{
+  "tree": {
+    "el": "#social-login-popup.white-popup.mfp-with-anim.mfp-hide",
+    "rect": {
+      "x": 370,
+      "y": 70,
+      "w": 540,
+      "h": 443
+    },
+    "disp": "block",
+    "bg": "rgb(255, 255, 255)",
+    "kids": [
+      {
+        "el": ".social-login.block-container.fake-email.email",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "disp": "none",
+        "bg": null,
+        "kids": [
+          {
+            "el": ".social-login-title",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "disp": "block",
+            "bg": "rgb(51, 153, 204)",
+            "kids": [
+              {
+                "el": ".forgot-pass-title",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                },
+                "disp": "block",
+                "bg": null,
+                "txt": "Please complete your information below t",
+                "kids": []
+              }
+            ]
+          },
+          {
+            "el": ".block.col-mp.mp-12",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "disp": "block",
+            "bg": null,
+            "kids": [
+              {
+                "el": ".block-content",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                },
+                "disp": "block",
+                "bg": null,
+                "kids": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": ".mp-social-popup.col-mp.mp-7",
+        "rect": {
+          "x": 390,
+          "y": 90,
+          "w": 292,
+          "h": 403
+        },
+        "disp": "block",
+        "bg": null,
+        "kids": [
+          {
+            "el": ".social-login.block-container.authentication",
+            "rect": {
+              "x": 390,
+              "y": 90,
+              "w": 292,
+              "h": 403
+            },
+            "disp": "inline-block",
+            "bg": null,
+            "kids": [
+              {
+                "el": ".social-login-title",
+                "rect": {
+                  "x": 390,
+                  "y": 90,
+                  "w": 603,
+                  "h": 49
+                },
+                "disp": "block",
+                "bg": "rgb(51, 153, 204)",
+                "kids": []
+              },
+              {
+                "el": "#social-login-authentication.block.social-login-customer-authentication.col-mp.mp-12",
+                "rect": {
+                  "x": 390,
+                  "y": 139,
+                  "w": 292,
+                  "h": 354
+                },
+                "disp": "block",
+                "bg": null,
+                "kids": []
+              }
+            ]
+          },
+          {
+            "el": ".social-login.block-container.create",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "disp": "none",
+            "bg": null,
+            "kids": [
+              {
+                "el": ".social-login-title",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                },
+                "disp": "block",
+                "bg": "rgb(51, 153, 204)",
+                "kids": []
+              },
+              {
+                "el": ".block.col-mp.mp-12",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                },
+                "disp": "block",
+                "bg": null,
+                "kids": []
+              }
+            ]
+          },
+          {
+            "el": ".social-login.block-container.forgot",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "disp": "none",
+            "bg": null,
+            "kids": [
+              {
+                "el": ".social-login-title",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                },
+                "disp": "block",
+                "bg": "rgb(51, 153, 204)",
+                "kids": []
+              },
+              {
+                "el": ".block.col-mp.mp-12",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 0,
+                  "h": 0
+                },
+                "disp": "block",
+                "bg": null,
+                "kids": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "#mp-popup-social-content.",
+        "rect": {
+          "x": 390,
+          "y": 90,
+          "w": 500,
+          "h": 75
+        },
+        "disp": "block",
+        "bg": null,
+        "kids": [
+          {
+            "el": ".block.social-login-authentication-channel.col-mp.mp-5",
+            "rect": {
+              "x": 682,
+              "y": 165,
+              "w": 208,
+              "h": 150
+            },
+            "disp": "block",
+            "bg": null,
+            "kids": [
+              {
+                "el": ".block-title",
+                "rect": {
+                  "x": 682,
+                  "y": 165,
+                  "w": 208,
+                  "h": 20
+                },
+                "disp": "block",
+                "bg": null,
+                "txt": "Hoặc Đăng nhập bằng",
+                "kids": []
+              },
+              {
+                "el": ".block-content",
+                "rect": {
+                  "x": 682,
+                  "y": 192,
+                  "w": 208,
+                  "h": 123
+                },
+                "disp": "block",
+                "bg": null,
+                "kids": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": ".",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "disp": "none",
+        "bg": null,
+        "txt": "require(['jquery'], function ($) {\n     ",
+        "kids": []
+      },
+      {
+        "el": ".",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "disp": "none",
+        "bg": null,
+        "txt": "window.socialAuthenticationPopup = {\"fac",
+        "kids": []
+      }
+    ]
+  },
+  "headerBg": "rgb(255, 255, 255) none repeat scroll 0% 0% / auto padding-box border-box",
+  "titleStyle": {
+    "fs": "26px",
+    "fw": "300",
+    "color": "rgb(51, 51, 51)"
+  },
+  "sources": []
+}

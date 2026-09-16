@@ -200,6 +200,8 @@ Template cho entry kế tiếp — copy từ đây:
 - **Root cause / trigger**: static materialize khác chiến lược giữa các lần deploy/khởi tạo (symlink ở developer mode, copy khi deploy bằng copy strategy) + lần "xóa toàn bộ pub/static/frontend/" 09-04 chỉ tái tạo lại 1 phần.
 - **Action / prevention**: khi sửa asset (`css/js/template`) đã từng deploy mà "fix không ăn": `ls -la pub/static/frontend/<theme>/<locale>/<Vendor>_<Module>/...` — nếu là regular-file → `rm` bản copy (as secomm) rồi request lại (dev-mode serve on-demand), hoặc chạy `setup:static-content:deploy` ở env deploy. Không kết luận "CSS sai" trước khi kiểm tra bản serve thật (fetch CSS URL trong page, so sheet cssRules).
 - **Owner**: TL (review) — bổ sung deploy checklist như đề xuất BUG-MNEZ92
+- **Tái xác nhận (F3) 09-16 — BUG-ER121M**: sửa source `osc-discount-code.css` (module-layer, luma scope) mà verify đầu vẫn thấy rule cũ — bản materialized regular-file `pub/static/frontend/Magento/luma/vi_VN/Launchpad_Osc/css/` serve stale (`cache:flush` không ăn); `find pub/static -path "*Launchpad_Osc*" -name "osc-*.css" -delete` (11 file mọi area) → request sau re-materialize đúng. Bài học mở rộng: trap không chỉ giữa các store/strategy deploy — **cả trong 1 session dev**, file materialized từ lần request đầu trong session đã đủ để che fix.
+
 ## LL-0018 — Curl QC flow: form_key rotate sau loginPost + guest OAR 2.4.8 đổi field name & thiếu `oar_zip` → 500
 
 - **Date**: 2026-09-11
@@ -286,3 +288,18 @@ Template cho entry kế tiếp — copy từ đây:
 - **Context**: `bin/magento config:set payment/secomm_vietqr/logo default/test-logo.png` báo "Value was saved." nhưng row trong `core_config_data` = **NULL**. CLI save đi qua backend model của field: `File::beforeSave()` không thấy upload data (`getFileData()` rỗng, value là string không phải array) → rơi vào nhánh `else` → `unsValue()`. Field image/file chỉ set được qua (1) admin form (upload/keep/delete flows đều đúng) hoặc (2) SQL trực tiếp vào `core_config_data` + `cache:flush config`.
 - **Action / prevention**: (1) test/spect field image bằng SQL row với value format `<scope>[/<scopeId>]/<file>` (theo `_prependScopeInfo`) — URL frontend = media base + `upload_dir` + value; (2) đừng tin "Value was saved." của CLI trên field non-text — luôn SELECT lại row (liên hệ LL-0025: check trước khi set + revert bằng DELETE row); (3) mở rộng field image cho module khác: copy nguyên bộ `backend_model` + `upload_dir config="system/filesystem/media" scope_info="1"` + `base_url` — thiếu `base_url` thì admin mất preview.
 - **Owner**: dev/QC team
+
+
+## LL-0027 — Alpine trên theme này chạy với MutationObserver OFF: `x-data` phải đi kèm `x-defer`; `<template x-if>` không bind directives
+
+Phát hiện 09-15 (TASK-Z3DAH5 / SLP-157 Quick View): component `x-data` thuần render server-side trong product list KHÔNG được Alpine auto-init (chỉ `[x-data][x-defer]` được init qua defer plugin `view/base/templates/page/js/plugins/v3/defer.phtml` — nó add `x-ignore` tại `alpine:init` rồi `initTree` sau interact/intersect/idle); node clone/inject sau start không bao giờ tự init; **`<template x-if>` mount content mà directives bên trong KHÔNG được bind** (form `@submit.prevent` trong x-if submit native xuyên qua, navigation xảy ra). Alpine MutationObserver bị tắt nên mọi element thêm vào DOM sau start đều "chết" cho tới khi được `initTree` thủ công.
+
+- **Action / prevention**: (1) mọi component Alpine trong theme Secomm/launchpad đặt `x-data` + `x-defer` (idiom proven: price box + compare trên card đều `x-defer="intersect"`); (2) KHÔNG dùng `<template x-if>` cho vùng có directives cần binding (form) — dùng `x-show` + optional chaining (`product?.name`) để directives evaluate an toàn khi data lazy-load chưa về; (3) verify markup fresh bằng cách nhìn TỪ TRONG browser (Playwright evaluate outerHTML) chứ không chỉ curl — tầng page-cache theo URL trả stale markup sau template edit (cache-buster `?cb=` bypass được; `cache:flush` toàn bộ là bước bắt buộc, `cache:clean block_html` không đủ).
+- **Owner**: FE team
+
+## LL-0028 — Autoload app/code là PSR-0 fallback `"" → app/code/`: path class phải mirror đúng FQN
+
+- **Ngày / Task**: 2026-09-15 / TASK-SXW5RB (SLP-129)
+- **Root cause / trigger**: Plugin mới đặt `Plugin/Snowdog/Menu/NavigationToggle.php` với class `Secomm\Base\Plugin\Snowdog\Menu\Block\Menu\NavigationToggle` — composer.json autoload là psr-0 fallback (`"": ["app/code/", "generated/code/"]`), loader dùng FULL FQN làm path → 500 "Class not found" dù di.xml đúng. Đổi namespace giữa chừng cũng fatal setup:di:compile ("Cannot declare class ... name already in use") do scanner suy tên từ path.
+- **Action / prevention**: (1) File class trong app/code PHẢI nằm đúng tầng thư mục = namespace + tên class (vd class `...\Plugin\Snowdog\Menu\Block\Menu` → `Plugin/Snowdog/Menu/Block/Menu.php` — convention mirror-target của plugin Magento khớp tự nhiên); (2) sau khi thêm/đổi plugin class: `setup:di:compile` lại, không chỉ cache:flush; (3) verify nhanh class autoload bằng CLI bootstrap trước khi curl web.
+- **Owner**: TL (ghi nhận)

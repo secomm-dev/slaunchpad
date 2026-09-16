@@ -1,0 +1,20 @@
+{
+    "name": "launchpad/module-quickview",
+    "description": "Secomm Launchpad — Quick View feature switch (storefront config for the theme Quick View modal)",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "require": {
+        "php": "~8.2.0||~8.3.0||~8.4.0",
+        "magento/framework": "*",
+        "magento/module-config": "*",
+        "magento/module-store": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Launchpad\\QuickView\\": ""
+        },
+        "files": [
+            "registration.php"
+        ]
+    }
+}
