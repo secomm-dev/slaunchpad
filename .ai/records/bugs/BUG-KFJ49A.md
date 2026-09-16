@@ -14,7 +14,7 @@ specification_ref: Embedded Mini-Spec
 risk: low
 status: in_progress
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-16
 ticket_ref:
 affects_version: Magento 2.4.8-p5 + Hyvä 3.x (default theme 1.5.2) + Hyva Theme Module (hyva.formValidation)
 decisions: []
@@ -166,3 +166,35 @@ wrapper `<div class="field field-reserved">` quanh input NGAY TRONG flex row
 - **Quan sát pre-existing MỚI (chứng minh không do change set):** message session "Khóa biểu mẫu không hợp lệ. Vui lòng tải lại trang." xuất hiện trên PDP **kể khi không submit lần nào** (chỉ load PDP → AJAX `mpextrafee/product/extrafee` trả 302 → message lỗi vào session, hiển thị ở lần load full-page kế tiếp). Cùng nhóm pre-existing với console error extra-fee ở trên. Redirect sau add-to-cart về product page (uenc) = Magento default (config redirect không set), không phải regression.
 
 **Chuyển QC:** repro max-qty server message trên browser; cart configure popup; badInput bàn phím thật.
+
+---
+
+## Đợt 3 — upsell heading PDP "We found other products you might like!" (2026-09-16, QC screenshot demo)
+
+### Điều tra (chỉ định scope, không suy đoán)
+
+Screenshot QC demo chỉ 1 chuỗi EN trên PDP: heading block upsell. Trace nguồn: PDP Hyvä **không** dùng vendor `items.phtml` cho upsell — block `upsell` (Hyvä `Magento_Catalog/layout/catalog_product_view.xml:163`) render template `Magento_Catalog::product/slider/product-slider.phtml` với **title = layout argument `translate="true"`** (`:167`) — cùng mechanism với block `related` kề bên (`Related Products`, đợt 1 đã fix qua CSV). Vậy fix = **1 key dict, không override template/layout**.
+
+Phrases cùng khu vực đã inventory: `Press to skip carousel`, `View more about %1` (product-slider.phtml) — có sẵn dict. `select all` / `Check items to add to the cart or` — chỉ trong `items.phtml` Luma (section related) → không render PDP Hyvä → out. `More Choices:` (crosssell cart page) → out scope PDP, flag follow-up. Tên sản phẩm "Living Room Essentials Bundle" = store data (nhóm 3 cũ).
+
+### Mini-spec đợt 3
+
+- **Goal**: heading upsell PDP render VI/EN theo store qua theme dict (BR-001); 0 thay đổi template/layout/JS.
+- **AC-006**: PDP `meridian-modular-sofa.html` store vi — heading upsell = `Chúng tôi tìm thấy một số sản phẩm khác bạn có thể thích!` (không còn EN); store en — identity EN (sau khi khôi phục locale store 2 — flag TASK-K14RVZ); `Related Products` (đợt 1) không regression.
+- **Out of scope**: `More Choices:` (cart crosssell — cần chốt template Hyvä cart dùng gì, đề xuất tách ticket), `select all`/`Check items…` (Luma-only), store data.
+
+### Implementation (2026-09-16)
+
+- `i18n/vi_VN.csv` + `i18n/en_US.csv`: **+1 key/file** — `"We found other products you might like!"` → vi `Chúng tôi tìm thấy một số sản phẩm khác bạn có thể thích!` / en identity; chèn sau `"Related Products"` (dòng 49 — cùng nhóm PDP-slider đợt 1). Wording VI chờ TL duyệt như các đợt trước.
+
+### Verification (evidence: `.ai/evidence/BUG-KFJ49A/RESULTS.md` mục 12–15)
+
+- HTTP vi store (pre `pdp-vi-prefix-dot3.html` / post `pdp-vi-post-dot3.html`): pre = heading EN đúng vị trí; post = heading VI ×1 + 0×EN; regression `Sản phẩm liên quan` sạch. Sau `cache:flush` as secomm.
+- Dict file-level: `en_US.csv` 877 rows parse sạch — key present, identity EXACT, 0 VI-char leak toàn file; `vi_VN.csv` 927 rows — key → VI đúng (method "en identity" của đợt 1).
+- CLI dict per pattern SLP-225 (explicit theme `frontend/Secomm/launchpad` + `$translate->setLocale()`, script `verify-phrase-dot3.php`): vi_VN — dict **1952** entries, key → VI + Phrase render VI, control đợt 1 PASS; en_US — dict **124** entries (module packs; **theme `en_US.csv` không load trong CLI** — observation pre-existing, output-neutral với row identity vì fallback = identity) → render fallback identity EN đúng.
+- **Trap ghi nhận (tinh chỉnh memory `magento-cli-phrase-verify`)**: setLocale phải gọi trên **object Translate**, KHÔNG phải `Locale\ResolverInterface` (gọi nhải chỗ → dict vẫn theo locale cũ); emulation thuần không đủ — phải setDesignTheme explicit (SLP-225) nếu không dict rỗng (store 1 miss cả control key).
+
+### Ghi nhận (pre-existing, không thuộc change set)
+
+- store 2 `launchpad_en` locale = vi_VN — đã flag TASK-K14RVZ (2026-09-16) chờ khôi phục `general/locale/code` store 2 (TL/DevOps); vì vậy live-en identity chuyển QC demo sau deploy.
+- Demo = HEAD: bằng chứng pre-deploy = screenshot ticket; QC demo sau commit + deploy (vi + en).
