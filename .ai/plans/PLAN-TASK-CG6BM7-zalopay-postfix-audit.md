@@ -123,3 +123,7 @@ TL direct source review phát hiện 3 lỗ hổng của chính output round 1. 
     setup:di:compile PASS (/tmp/m2 re-stage); CodeGraph rebuild + anchor P15; commit
     `[Zalo]` + push CHỈ `task/zalopay-postfix-audit`; receipt theo mẫu round 3 (~35 field);
     STOP chờ TL.
+
+## Appendix 4 — Round 4 steps (27+)
+
+27. `db_schema.xml`: `credit_memo_id` nullable + 2 unique `<constraint>` (F17/F21) + whitelist tương ứng. 28. `BackfillRefundState` v2: 4 cohort + claim ownership MIN(entity_id) (F19/F20). 29. `PendingRefundManager`: `bindCreditMemo` guard `active_claim`, `isDuplicateKey` 1062-driver-only, `markProcessing` park CM, `EVIDENCE_ABANDONED` (F17/F22/F18). 30. Plugin bind-phase: save → bind → provider; fail-any → terminate abandoned (F17). 31. Cron step 0b abandoned-unbound + CANCELED-only drift + CM OPEN hợp lệ (F18). 32. Tests: 4 plugin + 3 cron + backfill rewrite + FK test → **306/1105 OK**. 33. PHPCS 0 errors. 34. Real-DB F21/F19: DEFER TL (P18, stack /tmp/m2b + zt-mariadb + zt-opensearch).

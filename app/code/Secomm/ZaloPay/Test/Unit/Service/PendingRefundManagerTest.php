@@ -267,7 +267,7 @@ class PendingRefundManagerTest extends TestCase
         $this->assertSame(
             [
                 RefundInterface::ORDER_ID => 77,
-                RefundInterface::CREDIT_MEMO_ID => 33,
+                RefundInterface::CREDIT_MEMO_ID => null,
                 RefundInterface::INCREMENT_ID => '000000123',
                 RefundInterface::M_REFUND_ID => '260916_1000_777_c1',
                 RefundInterface::ADDITIONAL_INFORMATION => '{"app_id":1}',
@@ -801,5 +801,79 @@ class PendingRefundManagerTest extends TestCase
         );
 
         $this->assertTrue($this->manager->finalizeSuccess($refund));
+    }
+
+    /**
+     * Round 4 F22: a FOREIGN-KEY violation (SQLSTATE 23000 / driver 1452)
+     * must NEVER surface as the misleading "another refund is active"
+     * claim conflict - it is a local persistence failure with the safe
+     * abort path (and the honest error log).
+     */
+    public function testAcquireClaimForeignKeyViolationIsNotClaimConflict(): void
+    {
+        $refund = $this->makeRefund(0, []);
+        $this->collection->method('getNewEmptyItem')->willReturn($refund);
+        $refund->method('setData')->willReturnSelf();
+        $fk = new \PDOException(
+            'SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row:'
+            . ' a foreign key constraint fails (`m2`.`zalo_pay_refund`, CONSTRAINT `ZALO_PAY_REFUND_CREDIT_MEMO_ID`)'
+        );
+        $fk->errorInfo = ['23000', 1452, 'Cannot add or update a child row: a foreign key constraint fails'];
+        $refund->expects($this->once())->method('save')->willThrowException($fk);
+        $this->logger->expects($this->once())->method('error');
+
+        $tracking = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_fk', 50000, null);
+        try {
+            $this->manager->acquireClaim($this->creditmemo, $tracking);
+            self::fail('FK violation must not pass as a duplicate-key claim conflict');
+        } catch (LocalizedException $exception) {
+            $this->assertStringNotContainsString('active or awaiting reconciliation', $exception->getMessage());
+            $this->assertStringContainsString('could not be recorded locally', $exception->getMessage());
+        }
+    }
+
+    /**
+     * Round 4 F17: bindCreditMemo writes the REAL credit memo entity_id on
+     * the row THAT STILL OWNS THE CLAIM (conditional UPDATE on
+     * entity_id + active_claim = 1) - the provider gate last step.
+     */
+    public function testBindCreditMemoGuardedByActiveClaim(): void
+    {
+        $refund = $this->makeRefund(9, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $captured = [];
+        $this->connection->expects($this->once())->method('update')
+            ->with(
+                'zalo_pay_refund',
+                [RefundInterface::CREDIT_MEMO_ID => 9012],
+                $this->callback(function (array $where) use (&$captured): bool {
+                    $captured = $where;
+
+                    return true;
+                })
+            )
+            ->willReturn(1);
+        $this->manager->bindCreditMemo($refund, 9012);
+        $this->assertSame(
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => 9,
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ],
+            $captured
+        );
+        $this->assertSame(9012, $refund->getData(RefundInterface::CREDIT_MEMO_ID));
+    }
+
+    /**
+     * Round 4 F17: when the claim slot was lost between acquire and bind
+     * (concurrent stale-claim release / terminal transition), the bind
+     * must fail (0 affected rows) - the plugin then NEVER calls the
+     * provider.
+     */
+    public function testBindCreditMemoReturnsFalseWhenClaimReleased(): void
+    {
+        $refund = $this->makeRefund(9, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $this->connection->expects($this->once())->method('update')->willReturn(0);
+        $this->assertFalse($this->manager->bindCreditMemo($refund, 9012));
+        $this->assertNull($refund->getData(RefundInterface::CREDIT_MEMO_ID));
     }
 }

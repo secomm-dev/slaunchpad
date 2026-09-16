@@ -18,13 +18,13 @@
   },
   "index": {
    "ZALO_PAY_REFUND_ENTITY_ID": true,
-   "ZALO_PAY_REFUND_CREDIT_MEMO_ID": true,
-   "ZALO_PAY_REFUND_ORDER_ACTIVE": true,
-   "ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE": true
+   "ZALO_PAY_REFUND_CREDIT_MEMO_ID": true
   },
   "constraint": {
    "PRIMARY": true,
-   "ZALO_PAY_REFUND_CREDIT_MEMO_ID_SALES_CREDITMEMO_ENTITY_ID": true
+   "ZALO_PAY_REFUND_CREDIT_MEMO_ID_SALES_CREDITMEMO_ENTITY_ID": true,
+   "ZALO_PAY_REFUND_ORDER_ACTIVE": true,
+   "ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE": true
   }
  },
  "secomm_zalopay_payment_attempt": {

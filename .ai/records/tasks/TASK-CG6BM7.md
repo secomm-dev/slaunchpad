@@ -201,3 +201,10 @@ crash-recovery), validation round 3.
   rebuild + call-chain anchor P15 (claim :176 < provider :179).
 - Receipt round 3 theo đúng mẫu TL đưa; nếu PASS → chỉ push `task/zalopay-postfix-audit`
   (GitHub origin), KHÔNG merge, STOP chờ TL review.
+
+## Round 4 (2026-09-16)
+
+- TL source review lần 4 (PRE_HEAD `60b0a4d4`): F17–F22.
+- Fix: claim/bind 2 pha cho CM chưa save (F17); state-driven cron + stale-claim policy (F18); backfill v2 + claim ownership (F19/F20); unique constraint declarative (F21); duplicate detect 1062-driver-only (F22).
+- Suite 306 tests / 1105 assertions OK; PHPCS 0 errors; real-DB F21/F19 DEFER TL (P18).
+- Decisions: DEC-TASKCG6BM7-006.

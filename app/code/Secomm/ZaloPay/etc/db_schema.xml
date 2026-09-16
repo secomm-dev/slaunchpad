@@ -12,8 +12,8 @@
                 comment="Entity Id Column"/>
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" identity="false"
                 comment="Order Id Column"/>
-        <column xsi:type="int" name="credit_memo_id" padding="10" unsigned="true" nullable="false" identity="false"
-                comment="Credit Memo Id Column"/>
+        <column xsi:type="int" name="credit_memo_id" padding="10" unsigned="true" nullable="true" identity="false"
+                comment="Credit Memo Id (NULL during the initiating claim; bound to the REAL entity_id before provider I/O - round 4 F17)"/>
         <column xsi:type="varchar" name="increment_id" nullable="false" length="45" comment="Increment Id Column"/>
         <column xsi:type="varchar" name="additional_information" nullable="false" length="255"
                 comment="Additional Information Column"/>
@@ -40,14 +40,14 @@
         <index referenceId="ZALO_PAY_REFUND_CREDIT_MEMO_ID" indexType="btree">
             <column name="credit_memo_id"/>
         </index>
-        <index xsi:type="unique" referenceId="ZALO_PAY_REFUND_ORDER_ACTIVE">
+        <constraint xsi:type="unique" referenceId="ZALO_PAY_REFUND_ORDER_ACTIVE">
             <column name="order_id"/>
             <column name="active_claim"/>
-        </index>
-        <index xsi:type="unique" referenceId="ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE">
+        </constraint>
+        <constraint xsi:type="unique" referenceId="ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE">
             <column name="m_refund_id"/>
             <column name="active_claim"/>
-        </index>
+        </constraint>
         <constraint xsi:type="foreign" referenceId="ZALO_PAY_REFUND_CREDIT_MEMO_ID" table="zalo_pay_refund"
                     column="credit_memo_id" referenceTable="sales_creditmemo" referenceColumn="entity_id"
                     onDelete="CASCADE"/>

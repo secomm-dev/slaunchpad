@@ -154,3 +154,13 @@ pre_correction_head: 70416b7aa6889276818b72e311a9955cbf5ed578
 - INTEGRATION runtime: vẫn **ENVIRONMENT_BLOCKED** (bất biến qua round) — bù lại round 3 có
   DB evidence THẬT dạng container throwaway riêng cho chính concurrency property bị thách
   thức (khác integration Magento suite).
+
+## Round 4
+
+- php -l: PASS toàn bộ file đổi (sandbox /tmp/zt, PHP 8.3.20).
+- Unit: **306 tests / 1105 assertions OK** — gồm 4 test plugin mới (F17 REQUIRED + persist-fail + lost-claim + pre-saved), 3 test cron mới (F18), `BackfillRefundStateTest` viết lại (F19/F20), test F22 FK-not-conflict.
+- PHPCS Magento2 (app + Test): 0 errors.
+- setup:di:compile round-4: DEFER cho TL chạy CLI (round-3 PASS trên /tmp/m2).
+- Real DB F21/F19: DEFER cho TL (P18). Stack sẵn sàng; lệnh gợi ý (trong container `slaunchpad-phpfpm-1`):
+  `php /tmp/m2b/bin/magento setup:install --base-url=http://zt-f21.local/ --db-host=zt-mariadb --db-name=magento --db-user=root --db-password=zt-f21-pw --admin-firstname=A --admin-lastname=B --admin-email=a@b.c --admin-user=admin --admin-password='Admin123!' --language=en_US --currency=USD --timezone=UTC --backend-frontname=admin --search-engine=opensearch --opensearch-host=zt-opensearch --opensearch-port=9200 --opensearch-enable-auth=0`
+  Verify: `SHOW CREATE TABLE zalo_pay_refund` (2 UNIQUE `ZALO_PAY_REFUND_ORDER_ACTIVE`/`ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE` + `credit_memo_id` NULL YES) ; `SELECT patch_name FROM patch_list WHERE patch_name LIKE '%BackfillRefundState%'` ; seed row legacy (`is_processed=0` và `is_processed=1`/`last_error` varied) → `DELETE FROM patch_list WHERE patch_name LIKE '%BackfillRefundState%'` → `setup:upgrade` lại → verify cohort v2 + F19 (order unresolved chặn claim mới, order resolved không chặn).

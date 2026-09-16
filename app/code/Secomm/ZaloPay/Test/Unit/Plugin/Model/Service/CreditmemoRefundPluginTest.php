@@ -50,6 +50,23 @@ class CreditmemoRefundPluginTest extends TestCase
 
     private CreditmemoRefundPlugin $plugin;
 
+    private \Magento\Sales\Api\CreditmemoRepositoryInterface|MockObject $creditmemoRepository;
+
+    /**
+     * Mutable test state: the credit memo entity_id (NULL = the REAL admin
+     * flow presents an UNSAVED credit memo; the repository save mock
+     * assigns the real id - tests must never pre-stub it, round 4 F17).
+     */
+    private ?int $creditmemoEntityId = null;
+
+    /**
+     * Mutable test state: the bindCreditMemo outcome (overridden by the
+     * bind-failure test - a mutable flag avoids double-config ambiguity
+     * between the setUp stub and a per-test stub, which PHPUnit 10.5 does
+     * NOT resolve in favor of the later configuration).
+     */
+    private bool $bindResult = true;
+
     private \Magento\Sales\Model\Order\Creditmemo|MockObject $creditmemo;
 
     private Order|MockObject $order;
@@ -75,6 +92,19 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->preflight = $this->createMock(CreditmemoRefundPreflight::class);
         $this->marker = new RefundOutcomeMarker();
         $this->messageManager = $this->createMock(ManagerInterface::class);
+        $this->creditmemoRepository = $this->createMock(\Magento\Sales\Api\CreditmemoRepositoryInterface::class);
+        $this->creditmemoRepository->method('save')->willReturnCallback(function ($cm) {
+            // Emulates the resource populating entity_id on first persist.
+            if ($this->creditmemoEntityId === null) {
+                $this->creditmemoEntityId = 9012;
+            }
+
+            return $cm;
+        });
+        // Round 4 F17: the default bind succeeds (the bind-failure test
+        // flips the mutable flag instead of re-configuring the mock).
+        $this->mockRefundManager->method('bindCreditMemo')
+            ->willReturnCallback(fn (): bool => $this->bindResult);
         $this->plugin = new CreditmemoRefundPlugin(
             $this->method,
             $this->paymentDataObjectFactory,
@@ -82,7 +112,8 @@ class CreditmemoRefundPluginTest extends TestCase
             $this->mockRefundManager,
             $this->marker,
             $this->messageManager,
-            $this->preflight
+            $this->preflight,
+            $this->creditmemoRepository
         );
 
         $this->payment = $this->createMock(\Magento\Sales\Model\Order\Payment::class);
@@ -93,6 +124,7 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->creditmemo = $this->createMock(\Magento\Sales\Model\Order\Creditmemo::class);
         $this->creditmemo->method('getOrder')->willReturn($this->order);
         $this->creditmemo->method('getBaseGrandTotal')->willReturn(25.0);
+        $this->creditmemo->method('getEntityId')->willReturnCallback(fn (): ?int => $this->creditmemoEntityId);
         $this->creditmemo->method('getInvoice')->willReturnCallback(fn () => $this->invoice);
         $this->invoice = $this->createMock(Invoice::class);
         $this->invoice->method('getTransactionId')->willReturnCallback(fn (): ?string => $this->invoiceTxnId);
@@ -244,7 +276,10 @@ class CreditmemoRefundPluginTest extends TestCase
             ->with($this->identicalTo($this->creditmemo));
         $this->payment->expects($this->once())->method('setParentTransactionId')->with('CAPTURE-19');
         $this->mockRefundManager->expects($this->once())->method('markProcessing')
-            ->with($this->identicalTo($claim));
+            ->with(
+                $this->identicalTo($claim),
+                $this->identicalTo($this->creditmemo)
+            );
         $this->messageManager->expects($this->once())->method('addSuccessMessage')
             ->with($this->callback(function ($msg): bool {
                 return str_contains((string)$msg, 'finalized automatically');
@@ -668,5 +703,163 @@ class CreditmemoRefundPluginTest extends TestCase
             $this->creditmemo
         );
         $this->assertSame(['preflight', 'prepare', 'claim', 'provider'], $order);
+    }
+    /**
+     * Round 4 F17 REQUIRED TEST: a credit memo representative of the REAL
+     * admin online refund - entity_id is NULL when the claim is acquired
+     * (CreditmemoFactory::createByInvoice/createByOrder semantics; the test
+     * does NOT pre-stub any entity id). Prove the full gate: atomic claim
+     * succeeds -> the credit memo is persisted and obtains a REAL id -> the
+     * claim binds that REAL id -> the provider is called EXACTLY once.
+     */
+    public function testRealAdminUnsavedCreditmemoBindBeforeProvider(): void
+    {
+        $request = $this->makePreparedRequest('260916_1000_777_r10');
+        $claim = $this->makeClaim();
+        // The REAL admin flow: NO pre-stubbed entity id at entry.
+        self::assertNull($this->creditmemoEntityId);
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
+        $order = [];
+        // 1. Persist: the repository save assigns the REAL entity_id.
+        $this->creditmemoRepository->expects($this->once())->method('save')
+            ->willReturnCallback(function ($cm) use (&$order) {
+                $order[] = 'save';
+                $this->creditmemoEntityId = 9012;
+
+                return $cm;
+            });
+        // 2. Bind: the REAL id (proves save ran first - 9012 only exists
+        //    after save) is bound to the claimed row before provider I/O.
+        $this->mockRefundManager->expects($this->once())->method('bindCreditMemo')
+            ->with($this->identicalTo($claim), 9012)
+            ->willReturnCallback(function () use (&$order) {
+                $order[] = 'bind';
+
+                return true;
+            });
+        // 3. Provider: EXACTLY once, only after the bind.
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->willReturnCallback(function () use (&$order) {
+                $order[] = 'provider';
+
+                return new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_r10', 25000, null);
+            });
+        $this->plugin->aroundRefund(
+            $this->createMock(CreditmemoService::class),
+            $this->proceedSpy()['callable'],
+            $this->creditmemo
+        );
+        $this->assertSame(['save', 'bind', 'provider'], $order);
+        self::assertSame(9012, $this->creditmemo->getEntityId());
+    }
+
+    /**
+     * Round 4 F17: a local creditmemo persist failure can NEVER reach the
+     * provider - the claim is terminated as abandoned-before-provider-I/O
+     * (confirmed_fail, claim released) and the operator is asked to retry.
+     */
+    public function testLocalPersistFailureAbandonsClaimBeforeProvider(): void
+    {
+        $request = $this->makePreparedRequest('260916_1000_777_r11');
+        $claim = $this->makeClaim();
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
+        $this->creditmemoRepository->expects($this->once())->method('save')
+            ->willThrowException(new \RuntimeException('write failed'));
+        $this->mockRefundManager->expects($this->once())->method('terminate')
+            ->with(
+                $this->identicalTo($claim),
+                $this->callback(function (string $evidence): bool {
+                    return str_starts_with($evidence, PendingRefundManager::EVIDENCE_ABANDONED)
+                        && str_contains($evidence, 'local creditmemo persist failed');
+                }),
+                $this->identicalTo(\Secomm\ZaloPay\Api\Data\RefundInterface::REFUND_STATE_CONFIRMED_FAIL)
+            );
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('persist failure must abort the refund');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString('could not be recorded locally', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * Round 4 F17: a claim lost between acquire and bind (concurrent
+     * stale-claim release / terminal transition) forbids provider I/O by
+     * construction - terminate abandoned-before-provider-I/O, never ask
+     * the provider.
+     */
+    public function testLostClaimBeforeBindNeverTouchesProvider(): void
+    {
+        $request = $this->makePreparedRequest('260916_1000_777_r12');
+        $claim = $this->makeClaim();
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
+        // The bind FAILS (claim slot lost): flip the mutable flag.
+        $this->bindResult = false;
+        $this->mockRefundManager->expects($this->once())->method('terminate')
+            ->with(
+                $this->identicalTo($claim),
+                $this->callback(function (string $evidence): bool {
+                    return str_starts_with($evidence, PendingRefundManager::EVIDENCE_ABANDONED)
+                        && str_contains($evidence, 'claim lost before bind');
+                }),
+                $this->identicalTo(\Secomm\ZaloPay\Api\Data\RefundInterface::REFUND_STATE_CONFIRMED_FAIL)
+            );
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('lost claim must abort the refund');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString('could not be bound locally', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * Round 4 F17: a PRE-SAVED credit memo (entity_id already present) is
+     * reused as-is - no re-save, the existing id is bound, provider runs.
+     */
+    public function testPreSavedCreditmemoReusedWithoutResave(): void
+    {
+        $request = $this->makePreparedRequest('260916_1000_777_r13');
+        $claim = $this->makeClaim();
+        $this->creditmemoEntityId = 9033;
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
+        $this->creditmemoRepository->expects($this->never())->method('save');
+        $this->mockRefundManager->expects($this->once())->method('bindCreditMemo')
+            ->with($this->identicalTo($claim), 9033)
+            ->willReturn(true);
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->willReturn(new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_127_r13', 25000, null));
+        $spy = $this->proceedSpy();
+        $result = $this->plugin->aroundRefund(
+            $this->createMock(CreditmemoService::class),
+            $spy['callable'],
+            $this->creditmemo
+        );
+        $this->assertSame($this->creditmemo, $result);
     }
 }

@@ -46,9 +46,16 @@ use Secomm\ZaloPay\Service\PendingRefundManager;
  *    safe evidence (BLOCKER 2 fix - every genuine attempt progresses state);
  *  - return_code 3 / protocol anomaly -> still pending: consumes one budget
  *    unit, retried until the cap, then explicitly exhausted;
- *  - malformed payload / missing creditmemo / creditmemo state drift
+ *  - malformed payload / missing creditmemo / manually-canceled creditmemo
  *    -> TERMINAL reconcile: budget saturated with safe evidence (never a
  *    silent loop).
+ *
+ * ROUND 4 F18: recovery is driven by the DURABLE refund state machine, not
+ * by the creditmemo state: INITIATING (bound), PROCESSING and UNKNOWN rows
+ * query the SAME m_refund_id regardless of the creditmemo sitting in OPEN
+ * (the legitimate pre-provider bind state, F17) or PROCESSING; an unbound
+ * INITIATING claim is abandoned-before-I/O (released, money provably never
+ * moved); PROVIDER_SUCCESS_LOCAL_PENDING finalizes locally only.
  *
  * Items are isolated: one broken row never blocks the batch. The finalize
  * step itself is guarded by SELECT ... FOR UPDATE + is_processed re-check
@@ -164,6 +171,34 @@ class RefundCronjob
             return;
         }
 
+        // 0b. STALE-CLAIM POLICY (round 4 F18): an INITIATING row with NO
+        //    bound credit memo can never have reached provider I/O - the
+        //    provider gate is claim + stable m_refund_id + BOUND real
+        //    credit_memo_id (bind UPDATE guarded by active_claim = 1). The
+        //    money provably did not move: land CONFIRMED_FAIL (truthful,
+        //    releases the atomic claim and the block). Exact crash boundary:
+        //    crash between claim-acquire and the local bind; a bind that
+        //    raced a concurrent release terminated its own row the same way.
+        if ((string)$refund->getData(RefundInterface::REFUND_STATE)
+            === RefundInterface::REFUND_STATE_INITIATING
+            && !(int)$refund->getData(RefundInterface::CREDIT_MEMO_ID)) {
+            $this->pendingRefundManager->terminate(
+                $refund,
+                PendingRefundManager::EVIDENCE_ABANDONED
+                . 'claim never bound to a credit memo - provider I/O impossible by construction',
+                RefundInterface::REFUND_STATE_CONFIRMED_FAIL
+            );
+            $this->logger->critical(
+                sprintf(
+                    'ZaloPay refund row #%d (order %d): unbound INITIATING claim abandoned before provider I/O - released.',
+                    (int)$refund->getId(),
+                    (int)$refund->getOrderId()
+                )
+            );
+
+            return;
+        }
+
         // 1. The credit memo must exist (missing = terminal reconcile).
         try {
             $creditMemo = $this->creditmemoRepository->get((int)$refund->getCreditMemoId());
@@ -201,18 +236,24 @@ class RefundCronjob
             return;
         }
 
-        // 2b. Only credit memos parked in the PROCESSING state are ours to
-        //    finalize: any other state means the refund was resolved outside
-        //    this lifecycle (e.g. manually) - never double-finalize.
-        if ((int)$creditMemo->getState() !== CreditmemoPlugin::STATE_PROCESSING) {
+        // 2b. STATE-DRIVEN RECOVERY (round 4 F18): the durable refund state
+        //    machine decides what may be queried - NOT the creditmemo
+        //    state. OPEN (1) is the legitimate pre-provider bind state
+        //    (round 4 F17) and PROCESSING (4) the parked outcome-open
+        //    state: INITIATING / PROCESSING / UNKNOWN rows carrying those
+        //    creditmemo states MUST query the SAME m_refund_id below
+        //    (crash recovery by identity). Only a CANCELED creditmemo (a
+        //    manual cancel outside this lifecycle) is drift - terminate
+        //    for manual reconciliation (never double-finalize).
+        if ((int)$creditMemo->getState() === Creditmemo::STATE_CANCELED) {
             $this->pendingRefundManager->terminate(
                 $refund,
                 PendingRefundManager::EVIDENCE_RECONCILE
-                . sprintf('credit memo state is %d (expected %d)', (int)$creditMemo->getState(), CreditmemoPlugin::STATE_PROCESSING)
+                . sprintf('credit memo state is %d (manual cancel - drift)', (int)$creditMemo->getState())
             );
             $this->logger->critical(
                 sprintf(
-                    'ZaloPay refund row #%d: credit memo #%d state drifted (%d) - row terminated for manual reconciliation.',
+                    'ZaloPay refund row #%d: credit memo #%d manually canceled (state %d) - row terminated for manual reconciliation.',
                     (int)$refund->getId(),
                     (int)$refund->getCreditMemoId(),
                     (int)$creditMemo->getState()

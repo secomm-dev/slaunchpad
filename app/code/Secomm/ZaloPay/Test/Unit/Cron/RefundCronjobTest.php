@@ -638,4 +638,78 @@ class RefundCronjobTest extends TestCase
 
         $this->cron->execute();
     }
+
+    /**
+     * Round 4 F18: an INITIATING row with NO bound credit memo can never
+     * have reached provider I/O (provider gate = claim + stable m_refund_id
+     * + bound credit_memo_id) - the stale claim is abandoned (confirmed_fail,
+     * claim released) and the provider is never asked.
+     */
+    public function testUnboundInitiatingClaimIsAbandonedBeforeProviderIo(): void
+    {
+        $row = $this->refundRow(
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::CREDIT_MEMO_ID => null,
+            ]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->once())->method('terminate')
+            ->with(
+                $this->identicalTo($row),
+                $this->stringStartsWith(PendingRefundManager::EVIDENCE_ABANDONED),
+                $this->identicalTo(RefundInterface::REFUND_STATE_CONFIRMED_FAIL)
+            );
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 4 F18: an INITIATING row WITH a bound credit memo queries the
+     * SAME m_refund_id regardless of the creditmemo sitting in OPEN (the
+     * legitimate pre-provider bind state) - recovery by identity, never a
+     * drift termination.
+     */
+    public function testInitiatingBoundWithOpenCreditmemoQueriesSameIdentity(): void
+    {
+        $row = $this->refundRow(
+            [RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING]
+        );
+        $this->stubCollection([$row]);
+
+        $this->cmState = Creditmemo::STATE_OPEN;
+        $this->refundQueryCommand->expects($this->once())->method('getRefundQuery')
+            ->willReturn(['return_code' => 3, 'return_message' => 'processing']);
+        $this->pendingRefundManager->expects($this->once())->method('consumeQueryBudget')
+            ->with($row, null);
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+        $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 4 F18: an UNKNOWN row with an OPEN creditmemo still queries the
+     * SAME m_refund_id (state-driven recovery) - OPEN is the legitimate
+     * pre-provider/parked state, NOT drift.
+     */
+    public function testUnknownRowWithOpenCreditmemoQueriesInsteadOfDrift(): void
+    {
+        $row = $this->refundRow(
+            [RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_UNKNOWN]
+        );
+        $this->stubCollection([$row]);
+
+        $this->cmState = Creditmemo::STATE_OPEN;
+        $this->refundQueryCommand->expects($this->once())->method('getRefundQuery')
+            ->willReturn(['return_code' => 3, 'return_message' => 'processing']);
+        $this->pendingRefundManager->expects($this->once())->method('consumeQueryBudget')
+            ->with($row, null);
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+
+        $this->cron->execute();
+    }
 }

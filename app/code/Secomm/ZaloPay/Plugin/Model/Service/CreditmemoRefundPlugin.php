@@ -13,8 +13,10 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
 use Magento\Payment\Model\MethodInterface;
+use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Model\Service\CreditmemoService;
+use Secomm\ZaloPay\Api\Data\RefundInterface;
 use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Command\RefundCommand;
 use Secomm\ZaloPay\Gateway\Command\RefundOutcome;
@@ -43,7 +45,16 @@ use Secomm\ZaloPay\Service\RefundOutcomeMarker;
  *                  (m_refund_id, active_claim) indexes) BEFORE the provider
  *                  call: two concurrent requesters race on the INSERT, the
  *                  loser never reaches the provider - no check-then-act
- *                  (round 3 F12);
+ *                  (round 3 F12). The real admin credit memo is UNSAVED at
+ *                  this point, so the claim row carries credit_memo_id NULL
+ *                  (round 4 F17);
+ *  4b. BIND      - the credit memo is PERSISTED (real entity_id) and its
+ *                  id is bound to the claimed row (UPDATE guarded by
+ *                  active_claim = 1). Provider HTTP runs ONLY when the
+ *                  claim, the stable m_refund_id AND the real
+ *                  credit_memo_id are all persisted; any bind-phase failure
+ *                  terminates the claim as abandoned-before-I/O and never
+ *                  touches the provider (round 4 F17);
  *  5. PROVIDER   - executePrepared() performs the ONE provider /refund for
  *                  the claimed identity;
  *  6a. SUCCESS   - the marker pins the known outcome and the NATIVE core
@@ -75,15 +86,19 @@ class CreditmemoRefundPlugin
      * @param ManagerInterface $messageManager
      * @param CreditmemoRefundPreflight $preflight Magento refund validation
      *        that runs BEFORE the provider call (corrective round 2).
+     * @param CreditmemoRepositoryInterface $creditmemoRepository Persists
+     *        the UNSAVED admin credit memo to obtain the REAL entity_id
+     *        before the provider is asked (round 4 F17).
      */
     public function __construct(
-        private readonly MethodInterface           $method,
-        private readonly PaymentDataObjectFactory  $paymentDataObjectFactory,
-        private readonly RefundCommand             $refundCommand,
-        private readonly PendingRefundManager      $pendingRefundManager,
-        private readonly RefundOutcomeMarker       $outcomeMarker,
-        private readonly ManagerInterface          $messageManager,
-        private readonly CreditmemoRefundPreflight $preflight
+        private readonly MethodInterface               $method,
+        private readonly PaymentDataObjectFactory      $paymentDataObjectFactory,
+        private readonly RefundCommand                 $refundCommand,
+        private readonly PendingRefundManager          $pendingRefundManager,
+        private readonly RefundOutcomeMarker           $outcomeMarker,
+        private readonly ManagerInterface              $messageManager,
+        private readonly CreditmemoRefundPreflight     $preflight,
+        private readonly CreditmemoRepositoryInterface $creditmemoRepository
     ) {
     }
 
@@ -172,8 +187,49 @@ class CreditmemoRefundPlugin
 
         // ATOMIC DURABLE CLAIM (round 3 F12): committed BEFORE any provider
         // I/O. The DB unique indexes decide the winner - a concurrent second
-        // requester fails HERE and never reaches the provider.
+        // requester fails HERE and never reaches the provider. The admin
+        // credit memo is UNSAVED at this point: credit_memo_id is NULL
+        // (round 4 F17) - the bind below completes the provider gate.
         $claim = $this->pendingRefundManager->acquireClaim($creditmemo, $request->getTracking());
+
+        // BIND PHASE (round 4 F17): persist the credit memo (real
+        // entity_id) and bind it to the claimed row. Provider HTTP is
+        // gated on claim + stable m_refund_id + BOUND real credit_memo_id;
+        // any failure here terminates the claim as
+        // abandoned_before_provider_io (money provably never moved) and
+        // never reaches the provider.
+        try {
+            if (!(int)$creditmemo->getEntityId()) {
+                $this->creditmemoRepository->save($creditmemo);
+            }
+        } catch (\Throwable $saveException) {
+            $this->pendingRefundManager->terminate(
+                $claim,
+                PendingRefundManager::EVIDENCE_ABANDONED
+                . 'local creditmemo persist failed: ' . $saveException->getMessage(),
+                RefundInterface::REFUND_STATE_CONFIRMED_FAIL
+            );
+
+            throw new LocalizedException(
+                __('Zalopay: The refund could not be recorded locally. Please try again.'),
+                $saveException
+            );
+        }
+
+        if (!$this->pendingRefundManager->bindCreditMemo($claim, (int)$creditmemo->getEntityId())) {
+            // The claim slot was lost between acquire and bind (concurrent
+            // stale-claim release / terminal transition): provider I/O is
+            // forbidden - the construction invariant.
+            $this->pendingRefundManager->terminate(
+                $claim,
+                PendingRefundManager::EVIDENCE_ABANDONED . 'claim lost before bind - provider I/O forbidden',
+                RefundInterface::REFUND_STATE_CONFIRMED_FAIL
+            );
+
+            throw new LocalizedException(
+                __('Zalopay: The refund attempt could not be bound locally. Please try again.')
+            );
+        }
 
         try {
             $outcome = $this->refundCommand->executePrepared($request, $commandSubject);
@@ -220,7 +276,9 @@ class CreditmemoRefundPlugin
             // Provider accepted, outcome open: durable PROCESSING and STOP -
             // the core refund accounting must NOT run (invariant:
             // PROCESSING != refunded; totals untouched; order cannot CLOSE).
-            $this->pendingRefundManager->markProcessing($claim);
+            // The persisted credit memo is parked in the custom PROCESSING
+            // state (round 4 state contract; park failure is swallowed).
+            $this->pendingRefundManager->markProcessing($claim, $creditmemo);
             $this->messageManager->addSuccessMessage(
                 __('Zalopay: Refund accepted by the provider and is being processed. The credit memo will be finalized automatically.')
             );

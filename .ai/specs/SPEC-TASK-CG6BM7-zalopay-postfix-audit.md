@@ -299,3 +299,10 @@ TL direct source review round 1 xác nhận 3 khiếm khuyết mà SPEC revision
   release STATE_OPEN + swallow.
 - BACKFILL (F14): `BackfillRefundStateTest` (2) — 3 cohort evidence-order.
 - REAL-DB CONCURRENCY (E1–E8): MariaDB 10.4 throwaway container — proofs.md P14.
+
+## Revision 5 — Round 4 (F17–F22)
+
+- Claim/bind 2 pha (DEC-006): claim INSERT `credit_memo_id NULL` → save CM (entity_id thật) → bind UPDATE guard `active_claim = 1` → mới provider. `credit_memo_id` nullable (FK giữ), REQUIRED trước provider I/O.
+- Stale-claim policy: INITIATING không bound CM = `abandoned_before_provider_io` (confirmed_fail, nhả claim); cron state-driven (OPEN = state bind hợp lệ; chỉ CANCELED = drift); CM park PROCESSING sau bind.
+- Backfill v2: 4 cohort evidence-ordered (fail giữ nguyên; success disjoint; ambiguity → UNKNOWN; unresolved → UNKNOWN) + claim ownership MIN(entity_id)/order (`active_claim=1` chặn claim mới qua unique).
+- Unique declarative chuẩn 2.4.8-p5 (`<constraint xsi:type="unique">`); duplicate detect chỉ nhận driver 1062 (FK/23000 khác không phải conflict).

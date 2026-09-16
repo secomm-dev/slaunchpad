@@ -67,6 +67,14 @@ class PendingRefundManager
     public const EVIDENCE_ANOMALY = 'protocol_anomaly: ';
 
     /**
+     * Prefix for claims abandoned BEFORE provider I/O (round 4 F18 stale
+     * policy): the provider was provably never asked (provider gate =
+     * claim + stable m_refund_id + BOUND real credit_memo_id), so the
+     * money did not move - truthfully terminal.
+     */
+    public const EVIDENCE_ABANDONED = 'abandoned_before_provider_io: ';
+
+    /**
      * @param RefundResource $refundResource Refund resource: connection, transaction, row lock.
      * @param RefundCollectionFactory $refundCollectionFactory
      * @param CreditmemoRepositoryInterface $creditmemoRepository
@@ -122,22 +130,32 @@ class PendingRefundManager
     }
 
     /**
-     * ATOMIC durable claim (round 3 BLOCKER F12): inserts THE active refund
-     * attempt row for the order BEFORE any provider I/O. The DB-level
-     * unique indexes (order_id, active_claim) and (m_refund_id,
-     * active_claim) guarantee exactly one active attempt per order and per
-     * request identity - two concurrent requesters race on the INSERT, the
-     * loser gets a duplicate-key failure and NEVER reaches the provider.
-     * No check-then-act. The single-row INSERT commits (autocommit) BEFORE
-     * the provider call, so a crash after the request left always leaves a
+     * ATOMIC durable claim (round 3 BLOCKER F12, round 4 F17): inserts THE
+     * active refund attempt row for the order BEFORE any provider I/O and
+     * BEFORE the credit memo is bound. The DB-level unique indexes
+     * (order_id, active_claim) and (m_refund_id, active_claim) guarantee
+     * exactly one active attempt per order and per request identity - two
+     * concurrent requesters race on the INSERT, the loser gets a
+     * duplicate-key failure and NEVER reaches the provider. No
+     * check-then-act. The single-row INSERT commits (autocommit) BEFORE the
+     * provider call, so a crash after the request left always leaves a
      * durable row the cron can reconcile by the SAME m_refund_id (never a
      * fresh /refund).
+     *
+     * ROUND 4 F17: the real admin flow (CreditmemoLoader ->
+     * CreditmemoFactory -> CreditmemoManagement::refund) presents an
+     * UNSAVED credit memo (no entity_id yet), so the claim INSERT carries
+     * credit_memo_id = NULL. The claim is ORDER-level; the credit memo is
+     * bound to the claimed row by bindCreditMemo() (guarded by
+     * active_claim = 1) BEFORE the provider may be asked - the provider
+     * gate is: claim persisted AND stable m_refund_id persisted AND real
+     * credit_memo_id bound.
      *
      * @param CreditmemoInterface|Creditmemo $creditmemo
      * @param RefundOutcome $tracking Prepared tracking outcome (stable
      *        m_refund_id + reconciliation payload from RefundCommand::prepare).
      * @return RefundModel The claimed row (refund_state = initiating,
-     *         active_claim = 1).
+     *         active_claim = 1, credit_memo_id still NULL).
      * @throws LocalizedException Another ACTIVE attempt exists for this
      *         order (or the same m_refund_id) - the provider must not be
      *         called; or the claim could not be recorded (abort pre-I/O).
@@ -147,7 +165,7 @@ class PendingRefundManager
         $refund = $this->refundCollectionFactory->create()->getNewEmptyItem();
         $refund->setData([
             RefundInterface::ORDER_ID => (int)$creditmemo->getOrderId(),
-            RefundInterface::CREDIT_MEMO_ID => (int)$creditmemo->getEntityId(),
+            RefundInterface::CREDIT_MEMO_ID => null,
             RefundInterface::INCREMENT_ID => (string)$creditmemo->getOrder()->getIncrementId(),
             RefundInterface::M_REFUND_ID => $tracking->getMRefundId(),
             RefundInterface::ADDITIONAL_INFORMATION => (string)$tracking->getQueryPayload(),
@@ -187,18 +205,77 @@ class PendingRefundManager
     }
 
     /**
+     * Bind the REAL credit memo entity_id to the claimed refund attempt
+     * (round 4 F17) - the last gate before provider I/O. The conditional
+     * UPDATE requires the row to STILL own the atomic claim
+     * (active_claim = 1): a concurrent cron stale-claim release or a
+     * terminal transition between claim and bind makes the bind fail and
+     * the plugin MUST then never call the provider.
+     *
+     * Provider HTTP runs only when: claim persisted AND stable m_refund_id
+     * persisted AND real credit_memo_id bound - and no DB transaction
+     * stays open across the provider call (the claim INSERT commits in
+     * autocommit, this bind is a single committed UPDATE).
+     *
+     * @param RefundModel $refund The claimed row (entity_id, active_claim=1).
+     * @param int $creditMemoId The REAL persisted credit memo entity_id.
+     * @return bool True when THIS row still owns the claim and is bound.
+     */
+    public function bindCreditMemo(RefundModel $refund, int $creditMemoId): bool
+    {
+        $connection = $this->refundResource->getConnection();
+        $affected = $connection->update(
+            $this->refundResource->getMainTable(),
+            [RefundInterface::CREDIT_MEMO_ID => $creditMemoId],
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ]
+        );
+        if ($affected === 1) {
+            $refund->setData(RefundInterface::CREDIT_MEMO_ID, $creditMemoId);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Provider accepted the refund (PROCESSING): outcome open, refund
-     * tracked durably, still blocking.
+     * tracked durably, still blocking. The persisted credit memo is parked
+     * in the custom PROCESSING state (round 4 state contract) - a park
+     * failure is critical-logged and swallowed: the durable row state
+     * drives the cron recovery (which accepts any non-canceled creditmemo
+     * state), never the display state.
      *
      * @param RefundModel $refund
+     * @param CreditmemoInterface|null $creditmemo Persisted credit memo to
+     *        park in the custom PROCESSING state (when resolvable).
      * @return void
      * @throws LocalizedException When the transition cannot persist (the
      *         initiating claim row keeps the order blocked regardless).
      */
-    public function markProcessing(RefundModel $refund): void
+    public function markProcessing(RefundModel $refund, ?CreditmemoInterface $creditmemo = null): void
     {
         $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_PROCESSING);
         $this->saveState($refund, 'processing');
+
+        if ($creditmemo !== null) {
+            try {
+                $creditmemo->setState(CreditmemoPlugin::STATE_PROCESSING);
+                $this->creditmemoRepository->save($creditmemo);
+            } catch (\Throwable $parkException) {
+                $this->logger->critical(
+                    sprintf(
+                        'ZaloPay refund row #%d: credit memo #%d could not be parked in PROCESSING: %s - the refund row stays durable and reconcilable.',
+                        (int)$refund->getId(),
+                        (int)$creditmemo->getEntityId(),
+                        $parkException->getMessage()
+                    )
+                );
+            }
+        }
     }
 
     /**
@@ -322,19 +399,32 @@ class PendingRefundManager
     }
 
     /**
-     * MySQL duplicate-key detection for the atomic claim INSERT (SQLSTATE
-     * 23000 / driver code 1062 through any wrapper exception).
+     * MySQL DUPLICATE-KEY detection for the atomic claim INSERT (round 4
+     * F22): ONLY the driver duplicate-entry error (1062) classifies as a
+     * claim conflict. SQLSTATE 23000 alone is NOT sufficient - foreign-key
+     * violations (driver 1452) share it - so an invalid credit_memo_id
+     * must surface as a local persistence failure, never as the misleading
+     * "another refund is active" message. Detection walks the exception
+     * chain for the PDOException and reads its driver code (errorInfo[1]);
+     * without a PDO in the chain, the MySQL-specific "Duplicate entry"
+     * text is the fallback (foreign keys produce different text).
      *
      * @param \Throwable $exception
      * @return bool
      */
     private function isDuplicateKey(\Throwable $exception): bool
     {
-        $message = $exception->getMessage();
+        for ($current = $exception; $current !== null; $current = $current->getPrevious()) {
+            if ($current instanceof \PDOException) {
+                $driverCode = is_array($current->errorInfo) && isset($current->errorInfo[1])
+                    ? (int)$current->errorInfo[1]
+                    : (int)$current->getCode();
 
-        return str_contains($message, '1062')
-            || str_contains($message, '23000')
-            || stripos($message, 'duplicate entry') !== false;
+                return $driverCode === 1062;
+            }
+        }
+
+        return stripos($exception->getMessage(), 'duplicate entry') !== false;
     }
 
     /**

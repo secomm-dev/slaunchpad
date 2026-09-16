@@ -256,3 +256,19 @@ autocommit không giữ lock xuyên HTTP).
 - Unit evidence: `testPslpRowFinalizesLocallyWithoutProviderQuery` (creditmemoRepository.get
   never, query never, finalizeSuccess once); `testUntrackableTransportStillMarksUnknownOnClaim`
   (outcome thiếu → unknown, không re-request); E3/E7 (DB: identity + quarantine slot).
+
+## P17 — Round 4 (F17–F22) unit + flow evidence
+
+- REQUIRED F17: `CreditmemoRefundPluginTest::testRealAdminUnsavedCreditmemoBindBeforeProvider` — CM `entity_id = NULL` lúc claim (không pre-stub); save-once gán 9012; `bindCreditMemo(claim, 9012)` đúng 1 lần; `executePrepared` đúng 1 lần; recorder `['save','bind','provider']` ⇒ PROVIDER_CALL_WITH_CREDITMEMO_ID_0 = NO.
+- Bind gate race-safe: `bindCreditMemo` UPDATE guard `entity_id = ? AND active_claim = 1` (`testBindCreditMemoGuardedByActiveClaim`); trả false khi claim đã bị cron nhả (`testBindCreditMemoReturnsFalseWhenClaimReleased`) ⇒ plugin terminate abandoned + KHÔNG gọi provider (`testLostClaimBeforeBindNeverTouchesProvider`).
+- Persist fail: `testLocalPersistFailureAbandonsClaimBeforeProvider` — evidence `abandoned_before_provider_io: local creditmemo persist failed: ...`, confirmed_fail, provider 0 lần, core 0 lần.
+- F18 cron: `testUnboundInitiatingClaimIsAbandonedBeforeProviderIo` (repo.get 0 lần, query 0 lần, terminate confirmed_fail); `testInitiatingBoundWithOpenCreditmemoQueriesSameIdentity` + `testUnknownRowWithOpenCreditmemoQueriesInsteadOfDrift` (CM OPEN vẫn query CÙNG m_refund_id, không drift); CANCELED vẫn terminal reconcile.
+- F19/F20: `BackfillRefundStateTest::testApplyBackfillsFourCohortsInEvidenceOrder` — 4 cohort WHERE pins + SQL claim ownership (MIN(entity_id) AS claim_id / WHERE refund_state = 'unknown' / GROUP BY order_id / ON r.entity_id = c.claim_id / SET r.active_claim = 1).
+- F22: `testAcquireClaimForeignKeyViolationIsNotClaimConflict` — PDOException driver 1452 KHÔNG bị classify thành claim conflict.
+- Suite: **306 tests / 1105 assertions OK** (container `slaunchpad-phpfpm-1`, PHP 8.3.20, PHPUnit 10.5.64).
+- PHPCS Magento2 (app + Test): **0 errors** (warnings line-length/docblock, không block).
+
+## P18 — F21 real setup:upgrade — DEFERRED cho TL (stack đã dựng sẵn)
+
+- Đã dựng trong container `slaunchpad-phpfpm-1`: tree `/tmp/m2b` (copy hardlink Magento 2.4.8-p5, code round-4 stage tại `app/code/Secomm/ZaloPay`), MariaDB 10.11.19 container `zt-mariadb` (db `magento`, root/zt-f21-pw), OpenSearch 2.19.1 container `zt-opensearch`, network `zt-f21-net`.
+- Các lần thử tự động: `setup:upgrade` trực tiếp trên DB trống lỗi data-phase core ("The default website isn't defined" — empty-DB cần setup:install); `setup:install` với cờ `--opensearch2-*` sai (option list 2.4.8-p5 chỉ có `--opensearch-*`, engine id `opensearch` theo `module-open-search/etc/search_engine.xml`). Chưa có lần chạy PASS ⇒ không bịa evidence; lệnh PASS dự kiến + các verify (SHOW CREATE TABLE, patch_list, seed legacy → re-run patch → F19 block/unblock) ghi ở validation.md round 4 cho TL chạy.
