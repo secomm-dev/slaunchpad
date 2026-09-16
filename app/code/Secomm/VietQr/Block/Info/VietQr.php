@@ -10,7 +10,9 @@ declare(strict_types=1);
 namespace Secomm\VietQr\Block\Info;
 
 use Magento\Framework\DataObject;
+use Magento\Framework\View\Element\Template\Context;
 use Magento\Payment\Block\Info;
+use Secomm\VietQr\Model\VndAmount;
 
 /**
  * Renders VietQR payment method information in Admin order view and emails/PDFs
@@ -22,6 +24,19 @@ class VietQr extends Info
      * @var string
      */
     protected $_template = 'Magento_Payment::info/default.phtml';
+
+    /**
+     * @param Context $context
+     * @param VndAmount $vndAmount
+     * @param array $data
+     */
+    public function __construct(
+        Context $context,
+        private readonly VndAmount $vndAmount,
+        array $data = []
+    ) {
+        parent::__construct($context, $data);
+    }
 
     /**
      * Prepare payment specific information.
@@ -53,15 +68,8 @@ class VietQr extends Info
             $data[(string)__('Account Holder')] = (string)$accountName;
         }
         if ($amount = $payment->getAdditionalInformation('vietqr_amount')) {
-            try {
-                $order = $payment->getOrder();
-                $formattedAmount = ($order && $order->getOrderCurrency())
-                    ? $order->getOrderCurrency()->formatTxt((float)$amount)
-                    : number_format((float)$amount, 0, ',', '.') . ' VND';
-            } catch (\Throwable) {
-                $formattedAmount = (string)$amount;
-            }
-            $data[(string)__('Amount')] = $formattedAmount;
+            // Always VND (BUG-4BX0CK) — bank transfers only accept VND
+            $data[(string)__('Amount')] = $this->vndAmount->format((float)$amount);
         }
         if ($content = $payment->getAdditionalInformation('vietqr_content')) {
             $data[(string)__('Transfer Content')] = (string)$content;

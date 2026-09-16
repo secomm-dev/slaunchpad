@@ -11,18 +11,20 @@ namespace Secomm\VietQr\Model\VietQr;
 
 use Magento\Sales\Api\Data\OrderInterface;
 use Secomm\VietQr\Model\Config;
+use Secomm\VietQr\Model\VndAmount;
 
 /**
  * Builds the request payload for the VietQR API from an order and config
  * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-008).
  *
- * Translates order data (increment ID, grand total) and bank configuration
- * into the array structure expected by the VietQR API.
+ * Translates order data (increment ID, grand total converted to VND) and
+ * bank configuration into the array structure expected by the VietQR API.
  */
 class RequestBuilder
 {
     public function __construct(
-        private readonly Config $config
+        private readonly Config $config,
+        private readonly VndAmount $vndAmount
     ) {
     }
 
@@ -42,7 +44,7 @@ class RequestBuilder
             'bankAccount' => $this->config->getBankAccount(),
             'userBankName' => $this->config->getAccountName(),
             'bankCode' => $this->config->getBankCode(),
-            'amount' => (float)$order->getGrandTotal(),
+            'amount' => $this->vndAmount->get($order),
             'content' => $content,
         ];
     }
