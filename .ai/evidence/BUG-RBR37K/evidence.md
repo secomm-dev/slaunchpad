@@ -1,11 +1,12 @@
 # Evidence — BUG-RBR37K (SLP-104)
 
-> Fix không tính lại giá shipping sau khi thay đổi address. Branch `dev/development/thangpham`, fix **staged** (chưa commit — AI không commit/push theo AGENTS.md).
+> Fix không tính lại giá shipping sau khi thay đổi address. Initial fix đã commit trong `92af2b325`; follow-up `Launchpad_Osc` ngày 2026-09-15 đang staged trên branch `dev/development/thangpham`.
 
 ## 1. Change Under Review
 
 | File | Change |
 |---|---|
+| `app/code/Launchpad/Osc/view/frontend/web/js/action/shipping-address-dropdown.js` | Follow-up: gom `clearRateCache()`; invalidation cho Street, Country, Region, Ward/City và saved-address selection; clear cả new-address/customer-address keys; Street change force `estimateShippingMethod()` khi address đã đủ |
 | `app/code/Secomm/AddressDropdown/view/frontend/web/js/action/shipping-address-dropdown.js` | City/sub-city handler: update `quote.shippingAddress()` + merge `extension_attributes` → clear `shipping-rate-registry` (`getKey()` + `getCacheKey()`) → `shippingRateService.isAddressChange = true` + `estimateShippingMethod()`; bỏ dead branch `location.hash === '#shipping'` |
 | `app/code/Secomm/Ahamove/view/frontend/web/js/model/shipping-rates-validation-rules/ahamove.js` | `postcode.required: true → false` (địa chỉ VN trống postcode) |
 
@@ -29,6 +30,17 @@ Developer (Victor Pham) đã kiểm tra code và xác nhận hành vi OK sau fix
 
 ## 4. Pending (còn lại trước khi close)
 
-- [ ] AC-005: place order end-to-end sau khi đổi address (Tier 2 checkout QC)
+- [ ] Guest checkout: đổi Ward/City, Street, Country/Region → request estimate lại, rate thay đổi đúng
+- [ ] Logged-in checkout: chọn saved address khác → customer-address cache không stale
+- [ ] Verify Street không request khi thiếu Region/Ward và không duplicate request khi giá trị không đổi
+- [ ] AC-005: place order end-to-end sau khi đổi address (Tier 2/L3 checkout QC)
 - [ ] TL/SA Tier 2 review (checkout OSC + Secomm_AddressDropdown — AGENTS.md §12)
-- [ ] Commit + PR (reference SLP-104 / BUG-RBR37K, kèm pre-review summary)
+- [ ] Commit follow-up + PR (reference SLP-104 / BUG-RBR37K, kèm pre-review summary)
+
+## 5. Static Verification — Follow-up 2026-09-15
+
+- ✅ `Mageplaza_Osc/js/model/shipping-rate-service::estimateShippingMethod()` dispatch theo `quote.shippingAddress().getType()` sang new-address/customer-address processor.
+- ✅ Magento new-address processor lookup/save cache bằng `address.getCacheKey()`; customer-address processor lookup/save bằng `address.getKey()`.
+- ✅ Magento customer address model trả `getKey() = 'customer-address' + customerAddressId`; explicit key trong follow-up khớp contract này.
+- ✅ Event Street và saved-address selection được namespace + `off(...).on(...)`, giảm nguy cơ duplicate binding khi component initialize lại.
+- ⚠️ Chưa có browser/network evidence cho follow-up; không coi static verification là QC sign-off.
