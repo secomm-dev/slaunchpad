@@ -4,62 +4,75 @@ work_item: TASK-CG6BM7
 spec: SPEC-TASK-CG6BM7-zalopay-postfix-audit
 kind: l3-validation
 created: 2026-09-16
-environment: container slaunchpad-phpfpm-1 (PHP 8.3.20, PHPUnit 10.5.64, PHPCS w/ Magento2 standard), harness /tmp/zlp-audit (isolated; container-only autoloader shim)
+updated: 2026-09-16 (corrective round)
+environment: container slaunchpad-phpfpm-1 (PHP 8.3.20, PHPUnit 10.5.x, PHPCS w/ Magento2 standard); unit harness /tmp/zt (worktree module copy + prepend spl_autoload_register — bắt buộc vì composer.json có PSR-0 fallback "": app/code làm main src thắng nếu append); di-compile tree /tmp/m2 (bản sao Magento đầy đủ trong container, share workspace không bị ghi)
+pre_correction_head: 70416b7aa6889276818b72e311a9955cbf5ed578
 ---
 
-# §12 L3 validation — kết quả trung thực
+# §12 L3 validation — corrective round (kết quả trung thực)
 
 ## PHP syntax (php -l)
-- PASS — toàn bộ 12 file sửa + 4 test file mới: `php -l` sạch (chạy trong container PHP 8.3.20).
+- PASS — 16/16 file PHP đã đổi lint sạch (PHP 8.3.20 trong container).
 
 ## Unit — ZaloPay (toàn bộ `Test/Unit`)
-- PASS — `phpunit -c phpunit-zlp-harness.xml app/code/Secomm/ZaloPay/Test/Unit`
-  **OK — 223 tests, 825 assertions** (bao gồm 34/34 test của ma trận §13:
-  EMAIL 1–7, RATE 8–15, REFUND CMD 16–23, REFUND CRON 24–30, RESPONSE 31–34).
-  4 suite mới: RateTest 5/43, OrderFinalizerTest 21/83, ResponseMessagesHandlerTest 5/6,
-  RefundCommandTest 7/30, RefundCronjobTest 8/38.
+- PASS — **OK, 260 tests / 937 assertions** (baseline corrective head của round 1: 223/825 →
+  corrective round thêm 37 test / 112 assertion, không test nào đỏ).
+  Suite corrective mới/đổi:
+  - `PendingRefundManagerTest` — 11 test / 42 assertions (lifecycle: registerPending không đụng
+    totals, finalize native exact-once + marker, race already-processed, recovery đã-REFUNDED,
+    rollback khi accounting fail, consume/terminate budget).
+  - `CreditmemoRefundPluginTest` — 11 test / 46 assertions (guard offline/in-flight/missing
+    invoice-txn, PROCESSING STOP trước core, SUCCESS mark + proceed, FAIL propagate nguyên vẹn,
+    TRANSPORT track-đúng-cách, pass-through non-ZaloPay/null outcome).
+  - `RefundCronjobTest` (rewrite) — 13 test / 33 assertions (SUCCESS finalize, duplicate no-op,
+    finalize-fail tiêu budget, FAIL terminal `refund_failed:`, PROCESSING budget, transport tiêu
+    budget, budget cap critical, malformed payload / thiếu m_refund_id / missing creditmemo /
+    state drift → terminal, batch sống sót).
+  - `RefundCommandTest` (rewrite) — 11 test / 45 assertions (provider-only: SUCCESS, PROCESSING +
+    query thành công/đang xử lý/transport-fail/FAIL, rc=2 message map `Zalopay: Refund failed.`,
+    raw provider text KHÔNG lọt UI, transport mang tracking outcome, marker skip, thiếu creditmemo).
+  - `OrderFinalizerTest` — 24 test / 92 assertions (giữ EMAIL 1–7 + mới EMAIL 8–10: thua claim ⇒
+    không gửi; send fail ⇒ release claim ⇒ retry được; send thành công ⇒ release).
+  - `PaymentAttemptResourceTest` — 3 test / 5 assertions (pin SQL: conditional UPDATE claim,
+    0-row ⇒ false, release token-guarded).
+- Hạn chế khai báo: đây là UNIT với mock ở biên DB/HTTP (connection, repository, gateway client).
+  Invariant CLOSED được chứng minh bằng unit + source-call-chain (proofs P7–P8), KHÔNG phải bằng
+  integration runtime.
 
 ## PHPCS (Magento2 standard, module-wide)
-- ERRORS: **0** (exit 0 với `-n`).
-- WARNINGS: 284 module-wide — đa số annotation-style pre-existing trên cả baseline.
-- So sánh per-file baseline `a48de3c` vs worktree cho 6 file source đã sửa:
-  +2 MethodAnnotationStructure (RefundCronjob), +1 (ResponseMessagesHandler), +1 (OrderFinalizer),
-  +2 VariableTranslation (RefundCommand — message động từ provider map, cố ý),
-  −1 LineLength (RefundCommand). Tổng +5 warnings style, 0 errors mới → xem findings.md M6.
+- ERRORS: **0** (`-n` exit 0 trên toàn module).
+- WARNINGS: 321 module-wide (round 1: 284) — style/annotation; các file đổi đều 0 error
+  (đếm per-file: RefundCommand W6, RefundCronjob W7, CreditmemoRefundPlugin W6,
+  PendingRefundManager W2, OrderFinalizer W0, các test file W1–W17 — annotation style, khớp
+  convention hiện có của module; xem M6 round 1).
 
 ## setup:di:compile
-- **PARTIAL (sandbox environment artifact — KHÔNG claim PASS)**:
-  - Sandbox `/tmp/di-check` (BP riêng, `generated/` là dir thật, vendor symlink read-only;
-    share workspace **không bị ghi** — xác minh `find ... -newermt` = 0 file/dir mới).
-  - Root cause block: Magento `CompilerPreparation::handleCompilerEnvironment()` cố ý
-    DELETE `generated/code` khi `setup:di:compile` chạy (hành vi chuẩn); trong sandbox,
-    generation-on-the-fly không ghi file (artifact của bản copy sandbox) → các step sau scan
-    path không tồn tại.
-  - Kết quả thật: **Proxies ✓, Repositories ✓, Service data attributes ✓, Application code
-    generator ✓ (3/9→4/9 — đã `class_exists()` toàn bộ app/code bao gồm ZaloPay worktree),
-    Interceptors ✓ (4/9→5/9)**; dừng ở **Area configuration aggregation (5/9)** với lỗi
-    `Preference "Magento\Framework\View\DesignInterface" → Magento\Theme\Model\View\Design\Proxy`
-    — lỗi **Magento core preference, không liên quan code ZaloPay**.
-- Bằng chứng bù (compile-equivalent, targeted):
-  - Class-load: 73 file PHP, **72/72 symbol load OK** với Magento framework thật + mọi
-    constructor param type resolve (script `/tmp/zlp-classload-check.php`).
-  - di.xml wiring: 58 class references resolve; 17 còn lại là tên virtualType tự tham chiếu
-    (hợp lệ); mọi plugin `type` tồn tại.
+- **PASS (thật, corrective round)** — chạy `setup:di:compile` trên BẢN SAO Magento đầy đủ trong
+  container (`/tmp/m2`: bin/app/vendor/generated/setup + module worktree thay cho module main),
+  không đụng workspace/DB chung: **9/9 step, exit 0** ("Generated code and dependency injection
+  configuration successfully").
+- Xác minh thêm: `CreditmemoRefundPlugin` xuất hiện trong compiled
+  `generated/metadata/*|plugin-list.php` cho mọi scope (global/frontend/webapi_rest/crontab).
 
-## Regression — toàn bộ `app/code/Secomm/*/Test/Unit` (23 module)
-- 1047 tests: 8 errors + 2 failures — TẤT CẢ ở `Secomm\FulfillmentCore` / `Secomm\Tracking`.
-- Chứng minh pre-existing: chạy lại 2 suite đó với **ZaloPay module baseline `a48de3c`**
-  → y hệt 8 errors + 2 failures. Thay đổi ZaloPay không gây ra lỗi nào.
-- ZaloPay suite sau khi khôi phục worktree: OK 223/825 (đã verify lại).
+## Regression
+- Scope: `git status` — mọi thay đổi nằm trong `app/code/Secomm/ZaloPay` (+ `.ai`); không file
+  nào ngoài ZaloPay bị đụng (auth.json modified pre-existing, KHÔNG commit — chứa token).
+- Cross-module proof: grep toàn `app/code` — KHÔNG có tham chiếu PHP class `Secomm\ZaloPay`
+  nào từ module khác (chỉ 1 mention chữ "ZaloPay" trong docblock GhtkConfig, không phải code),
+  ⇒ thay đổi nội bộ ZaloPay không thể regress module khác.
+- Round-1 regression evidence giữ nguyên tính hợp lệ (1047 tests, 8e+2f pre-existing ở
+  FulfillmentCore/Tracking, chứng minh pre-existing bằng baseline rerun — không liên quan ZaloPay).
 
 ## Integration runtime
-- **INTEGRATION = ENVIRONMENT_BLOCKED** (không claim PASS).
-- Lý do: DB `magento_integration_tests` ĐÃ TỒN TẠI trên MySQL dev (`db` reachable, root/magento).
-  Chạy integration suite sẽ DROP/đè DB dev chung và build sandbox ghi vào share `dev/` —
-  vi phạm ràng buộc SHARED_WORKSPACE_MODIFIED=NO. Không chạy chủ động.
+- **INTEGRATION = ENVIRONMENT_BLOCKED** (không claim PASS) — bất đổi round 1: DB
+  `magento_integration_tests` đã tồn tại trên MySQL dev chung; chạy integration suite sẽ DROP/đè
+  DB dev chung và ghi vào share — vi phạm SHARED_WORKSPACE_MODIFIED=NO.
 
 ## §9 SMTP/staging (READ-ONLY)
-- KHÔNG đụng bất kỳ env/system config/credentials/Mailpit/Mageplaza SMTP nào.
-- `ENVIRONMENT_MAIL_CONFIG_BLOCKED/MISCONFIGURED`: không có evidence mail config trong
-  phạm vi audit này (email flow chỉ phụ thuộc `OrderSender` Magento-native; khuyến nghị
-  `sales_email/general/async_sending` cho retry-native — xem DEC-TASKCG6BM7-002).
+- KHÔNG đụng bất kỳ env/system config/credentials/Mailpit/Mageplaza SMTP nào (bất biến qua round).
+
+## Ghi chú harness (lesson cho session sau)
+- `phpunit.xml` của module không tự chạy được ngoài Magento root; harness sandbox phải
+  `spl_autoload_register(..., throw=true, prepend=true)` — nếu KHÔNG prepend, Composer ClassLoader
+  của Magento (PSR-0 fallback `"": app/code/, generated/code/`) thắng và resolve class module từ
+  MAIN src (khác branch) → kết quả test sai lặng lẽ. Đã từng gây 16 failure "phantom" trước khi fix.

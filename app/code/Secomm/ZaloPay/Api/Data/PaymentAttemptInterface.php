@@ -38,6 +38,14 @@ interface PaymentAttemptInterface
     public const RECOVERY_EXHAUSTED = 'recovery_exhausted';
     public const RETRY_COUNT = 'retry_count';
     public const STORE_ID = 'store_id';
+    /**
+     * In-flight claim token (unix ts) for the order confirmation email
+     * dispatch: the attempt row is FOR UPDATE-locked during finalization, so
+     * a conditional claim update inside that transaction serializes
+     * concurrent finalizers; a claim older than the reclaim grace may be
+     * taken over by a later finalize driver (crashed sender recovery).
+     */
+    public const EMAIL_DISPATCH = 'email_dispatch';
     public const CREATED_AT = 'created_at';
     public const UPDATED_AT = 'updated_at';
     public const EXPIRES_AT = 'expires_at';

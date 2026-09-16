@@ -1,0 +1,473 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+declare(strict_types=1);
+
+namespace Secomm\ZaloPay\Test\Unit\Service;
+
+use Magento\Framework\DB\Select;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Creditmemo;
+use Magento\Sales\Model\Order\Invoice;
+use Magento\Sales\Model\Order\Creditmemo\RefundOperation;
+use Secomm\ZaloPay\Api\Data\RefundInterface;
+use Secomm\ZaloPay\Gateway\Command\RefundOutcome;
+use Secomm\ZaloPay\Logger\Logger;
+use Secomm\ZaloPay\Model\RefundModel;
+use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollectionFactory;
+use Secomm\ZaloPay\Model\ResourceModel\RefundResource;
+use Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin;
+use Secomm\ZaloPay\Service\PendingRefundManager;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * TASK-CG6BM7 BLOCKER 1: async refund lifecycle unit matrix.
+ *
+ * Pins the PendingRefundManager contract the lifecycle correctness rests
+ * on: the pending track persists WITHOUT mutating order refund totals, the
+ * finalize runs the NATIVE core accounting exactly once under the row lock
+ * (race + already-refunded recovery never re-run accounting), and local
+ * failures roll back cleanly with a customer-safe LocalizedException.
+ *
+ * Complements RefundCronjobTest (retry/reconciliation matrix) and
+ * CreditmemoRefundPluginTest (admin entry-point guards).
+ */
+class PendingRefundManagerTest extends TestCase
+{
+    private PendingRefundManager $manager;
+
+    private RefundResource|MockObject $refundResource;
+
+    /**
+     * @var \Magento\Framework\DB\Adapter\AdapterInterface|MockObject
+     */
+    private $connection;
+
+    private Select|MockObject $select;
+
+    private RefundCollectionFactory|MockObject $refundCollectionFactory;
+
+    /**
+     * @var \Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollection|MockObject
+     */
+    private $collection;
+
+    /**
+     * @var \Magento\Sales\Api\CreditmemoRepositoryInterface|MockObject
+     */
+    private $creditmemoRepository;
+
+    /**
+     * @var \Magento\Sales\Api\InvoiceRepositoryInterface|MockObject
+     */
+    private $invoiceRepository;
+
+    /**
+     * @var \Magento\Sales\Api\OrderRepositoryInterface|MockObject
+     */
+    private $orderRepository;
+
+    private RefundOperation|MockObject $refundOperation;
+
+    private Logger|MockObject $logger;
+
+    /**
+     * Real marker: the finalize marks it, the test asserts the gateway skip
+     * flag the no-second-provider-refund guarantee relies on.
+     */
+    private \Secomm\ZaloPay\Service\RefundOutcomeMarker $outcomeMarker;
+
+    private Creditmemo|MockObject $creditmemo;
+
+    private Order|MockObject $order;
+
+    private Invoice|MockObject $invoice;
+
+    /**
+     * Mutable test state: the creditmemo state (PHPUnit stubs on the same
+     * method do not override each other, so tests flip this instead).
+     */
+    private int $cmState = 1;
+
+    /**
+     * @inheritdoc
+     */
+    protected function setUp(): void
+    {
+        $this->refundResource = $this->getMockBuilder(RefundResource::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getConnection', 'getMainTable'])
+            ->getMock();
+        $this->refundResource->method('getMainTable')->willReturn('zalo_pay_refund');
+
+        $this->connection = $this->createMock(\Magento\Framework\DB\Adapter\AdapterInterface::class);
+        $this->refundResource->method('getConnection')->willReturn($this->connection);
+
+        $this->select = $this->createMock(Select::class);
+        $this->select->method('from')->willReturnSelf();
+        $this->select->method('where')->willReturnSelf();
+        $this->select->method('forUpdate')->willReturnSelf();
+        $this->connection->method('select')->willReturn($this->select);
+
+        $this->collection = $this->createMock(\Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollection::class);
+        $this->collection->method('addFieldToFilter')->willReturnSelf();
+        $this->refundCollectionFactory = $this->createMock(RefundCollectionFactory::class);
+        $this->refundCollectionFactory->method('create')->willReturn($this->collection);
+
+        $this->creditmemoRepository = $this->createMock(\Magento\Sales\Api\CreditmemoRepositoryInterface::class);
+        $this->invoiceRepository = $this->createMock(\Magento\Sales\Api\InvoiceRepositoryInterface::class);
+        $this->orderRepository = $this->createMock(\Magento\Sales\Api\OrderRepositoryInterface::class);
+        $this->refundOperation = $this->createMock(RefundOperation::class);
+        $this->logger = $this->createMock(Logger::class);
+
+        $this->outcomeMarker = new \Secomm\ZaloPay\Service\RefundOutcomeMarker();
+
+        $this->creditmemo = $this->createMock(Creditmemo::class);
+        $this->cmState = 1;
+        $this->creditmemo->method('getState')->willReturnCallback(fn (): int => $this->cmState);
+        $this->creditmemo->method('getOrderId')->willReturn(77);
+        $this->creditmemo->method('getEntityId')->willReturn(33);
+        $this->creditmemo->method('getOrder')->willReturn($this->order = $this->createMock(Order::class));
+        $this->order->method('getId')->willReturn(77);
+        $this->order->method('getIncrementId')->willReturn('000000123');
+        $this->creditmemo->method('getInvoiceId')->willReturn(12);
+        $this->creditmemo->method('getBaseGrandTotal')->willReturn(25.0);
+
+        $this->invoice = $this->createMock(Invoice::class);
+        $this->invoice->method('getBaseTotalRefunded')->willReturn(100.0);
+
+        $this->manager = new PendingRefundManager(
+            $this->refundResource,
+            $this->refundCollectionFactory,
+            $this->creditmemoRepository,
+            $this->invoiceRepository,
+            $this->orderRepository,
+            $this->refundOperation,
+            $this->outcomeMarker,
+            $this->logger
+        );
+    }
+
+    /**
+     * A data-backed refund row mock (setData/getData/getId/save mocked
+     * against a mutable backing array).
+     */
+    private function makeRefund(int $id, array $data): RefundModel|MockObject
+    {
+        $refund = $this->createMock(RefundModel::class);
+        $holder = ['data' => $data];
+        $refund->method('getId')->willReturn($id);
+        $refund->method('getData')->willReturnCallback(
+            function (string $key) use (&$holder) {
+                return $holder['data'][$key] ?? null;
+            }
+        );
+        $refund->method('setData')->willReturnCallback(
+            function (...$args) use ($refund, &$holder) {
+                $first = $args[0] ?? null;
+                if (is_array($first)) {
+                    $holder['data'] = array_merge($holder['data'], $first);
+                } elseif (is_string($first)) {
+                    $holder['data'][$first] = $args[1] ?? null;
+                }
+
+                return $refund;
+            }
+        );
+
+        return $refund;
+    }
+
+    /**
+     * GATE 1: in-flight = NOT_PROCESSED row within the bounded query budget.
+     */
+    public function testHasInFlightTrueWhenUnprocessedRowWithinBudget(): void
+    {
+        $filters = [];
+        $this->collection->method('addFieldToFilter')->willReturnCallback(
+            function (string $field, $cond) use (&$filters) {
+                $filters[] = [$field, $cond];
+
+                return $this->collection;
+            }
+        );
+        $this->collection->method('getSize')->willReturn(2);
+
+        $this->assertTrue($this->manager->hasInFlight(77));
+        $this->assertSame(
+            [
+                [RefundInterface::ORDER_ID, ['eq' => 77]],
+                [RefundInterface::IS_PROCESSED, ['eq' => RefundInterface::NOT_PROCESSED]],
+                [RefundInterface::QUERY_ATTEMPTS, ['lt' => PendingRefundManager::MAX_QUERY_ATTEMPTS]],
+            ],
+            $filters
+        );
+    }
+
+    /**
+     * GATE 1: no unresolved row (or budget exhausted) -> not in flight.
+     */
+    public function testHasInFlightFalseWhenNoUnprocessedRow(): void
+    {
+        $this->collection->method('getSize')->willReturn(0);
+
+        $this->assertFalse($this->manager->hasInFlight(77));
+    }
+
+    /**
+     * BLOCKER 1: registering the pending track flips the creditmemo to the
+     * module PROCESSING state and persists the reconciliation row - order
+     * refund totals are NOT touched anywhere in this path.
+     */
+    public function testRegisterPendingPersistsProcessingTrackWithoutTotalMutation(): void
+    {
+        $refund = $this->makeRefund(5, []);
+        $this->collection->method('getNewEmptyItem')->willReturn($refund);
+
+        $captured = [];
+        $refund->expects($this->once())->method('setData')
+            ->willReturnCallback(function (array $data) use (&$captured, $refund) {
+                $captured = $data;
+
+                return $refund;
+            });
+        $refund->expects($this->once())->method('save');
+        $this->connection->expects($this->once())->method('commit');
+        $this->creditmemo->expects($this->once())->method('setState')->with(CreditmemoPlugin::STATE_PROCESSING);
+
+        $outcome = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_r1', 50000, '{"app_id":1}');
+        $result = $this->manager->registerPending($this->creditmemo, $outcome);
+
+        $this->assertSame($refund, $result);
+        $this->assertSame(
+            [
+                RefundInterface::ORDER_ID => 77,
+                RefundInterface::CREDIT_MEMO_ID => 33,
+                RefundInterface::INCREMENT_ID => '000000123',
+                RefundInterface::M_REFUND_ID => '260916_1000_777_r1',
+                RefundInterface::ADDITIONAL_INFORMATION => '{"app_id":1}',
+                RefundInterface::AMOUNT => 50000.0,
+                RefundInterface::IS_PROCESSED => RefundInterface::NOT_PROCESSED,
+                RefundInterface::QUERY_ATTEMPTS => 0,
+                RefundInterface::LAST_ERROR => null,
+            ],
+            $captured
+        );
+    }
+
+    /**
+     * BLOCKER 1: transport-tracked registrations carry the safe initial
+     * evidence into last_error.
+     */
+    public function testRegisterPendingCarriesTransportEvidence(): void
+    {
+        $refund = $this->makeRefund(5, []);
+        $this->collection->method('getNewEmptyItem')->willReturn($refund);
+
+        $captured = [];
+        $refund->method('setData')->willReturnCallback(function (array $data) use (&$captured, $refund) {
+            $captured = $data;
+
+            return $refund;
+        });
+
+        $outcome = new RefundOutcome(
+            RefundOutcome::STATUS_PROCESSING,
+            '260916_1000_777_r2',
+            50000,
+            '{"app_id":1}'
+        );
+        $this->manager->registerPending($this->creditmemo, $outcome, PendingRefundManager::EVIDENCE_TRANSPORT . 'initial refund outcome unknown');
+
+        $this->assertSame(
+            PendingRefundManager::EVIDENCE_TRANSPORT . 'initial refund outcome unknown',
+            $captured[RefundInterface::LAST_ERROR]
+        );
+    }
+
+    /**
+     * BLOCKER 1 honesty gate: if the durable track cannot be persisted the
+     * failure is never swallowed - rollback, critical log, customer-safe
+     * exception (the refund MAY already be accepted at the provider).
+     */
+    public function testRegisterPendingFailureRollsBackAndThrows(): void
+    {
+        $refund = $this->makeRefund(5, []);
+        $this->collection->method('getNewEmptyItem')->willReturn($refund);
+        $refund->method('setData')->willReturnSelf();
+        $refund->expects($this->once())->method('save')
+            ->willThrowException(new \RuntimeException('db connection lost'));
+        $this->connection->expects($this->once())->method('rollBack');
+        $this->connection->expects($this->never())->method('commit');
+        $this->logger->expects($this->once())->method('critical');
+
+        $outcome = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_r3', 50000, null);
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('could not be tracked locally');
+        $this->manager->registerPending($this->creditmemo, $outcome);
+    }
+
+    /**
+     * BLOCKER 2: consuming the query budget is observable state progression.
+     */
+    public function testConsumeQueryBudgetIncrementsAndRecordsEvidence(): void
+    {
+        $refund = $this->makeRefund(5, [RefundInterface::QUERY_ATTEMPTS => 3]);
+        $refund->expects($this->once())->method('save');
+
+        $attempts = $this->manager->consumeQueryBudget($refund, 'transport_error: timeout');
+
+        $this->assertSame(4, $attempts);
+        $this->assertSame(4, $refund->getData(RefundInterface::QUERY_ATTEMPTS));
+        $this->assertSame('transport_error: timeout', $refund->getData(RefundInterface::LAST_ERROR));
+    }
+
+    /**
+     * BLOCKER 2: terminal outcomes saturate the budget (row drops out of
+     * the cron selection) and keep the safe evidence.
+     */
+    public function testTerminateSaturatesBudgetAndKeepsEvidence(): void
+    {
+        $refund = $this->makeRefund(5, [RefundInterface::QUERY_ATTEMPTS => 10]);
+        $refund->expects($this->once())->method('save');
+
+        $this->manager->terminate($refund, 'refund_failed: Refund time has expired.');
+
+        $this->assertSame(PendingRefundManager::MAX_QUERY_ATTEMPTS, $refund->getData(RefundInterface::QUERY_ATTEMPTS));
+        $this->assertSame('refund_failed: Refund time has expired.', $refund->getData(RefundInterface::LAST_ERROR));
+    }
+
+    /**
+     * BLOCKER 1 core: provider-confirmed SUCCESS finalizes through the
+     * NATIVE core accounting (invoice + RefundOperation + saves) inside one
+     * locked transaction, marks the outcome marker (gateway provider call
+     * skipped), and flips the row to PROCESSED.
+     */
+    public function testFinalizeSuccessRunsNativeAccountingOnce(): void
+    {
+        $refund = $this->makeRefund(5, []);
+        $this->connection->method('fetchRow')->willReturn(
+            [
+                RefundInterface::ENTITY_ID => 5,
+                RefundInterface::IS_PROCESSED => 0,
+                RefundInterface::CREDIT_MEMO_ID => 33,
+            ]
+        );
+        $this->creditmemoRepository->method('get')->with(33)->willReturn($this->creditmemo);
+        $this->invoiceRepository->method('get')->with(12)->willReturn($this->invoice);
+
+        $this->invoice->expects($this->once())->method('setIsUsedForRefund')->with(true);
+        $this->invoice->expects($this->once())->method('setBaseTotalRefunded')->with(125.0);
+        $this->invoiceRepository->expects($this->once())->method('save')->with($this->invoice);
+        $this->creditmemo->expects($this->once())->method('setState')->with(Creditmemo::STATE_REFUNDED);
+        $this->refundOperation->expects($this->once())->method('execute')->with(
+            $this->identicalTo($this->creditmemo),
+            $this->identicalTo($this->order),
+            true
+        );
+        $this->creditmemoRepository->expects($this->once())->method('save')->with($this->creditmemo);
+        $this->orderRepository->expects($this->once())->method('save')->with($this->order);
+        $this->connection->expects($this->once())->method('update')->with(
+            'zalo_pay_refund',
+            [
+                RefundInterface::IS_PROCESSED => 1,
+                RefundInterface::LAST_ERROR => null,
+            ],
+            [RefundInterface::ENTITY_ID . ' = ?' => 5]
+        );
+        $this->connection->expects($this->once())->method('commit');
+        $this->connection->expects($this->never())->method('rollBack');
+
+        $this->assertTrue($this->manager->finalizeSuccess($refund));
+        $this->assertTrue($this->outcomeMarker->isProviderAlreadyAsked(77));
+    }
+
+    /**
+     * Exact-once: a run that loses the row-lock race (row already
+     * PROCESSED) re-checks under the lock and never re-runs accounting.
+     */
+    public function testFinalizeSuccessSkipsAccountingWhenRowAlreadyProcessed(): void
+    {
+        $refund = $this->makeRefund(5, []);
+        $this->connection->method('fetchRow')->willReturn(
+            [
+                RefundInterface::ENTITY_ID => 5,
+                RefundInterface::IS_PROCESSED => 1,
+                RefundInterface::CREDIT_MEMO_ID => 33,
+            ]
+        );
+        $this->connection->expects($this->once())->method('commit');
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundOperation->expects($this->never())->method('execute');
+
+        $this->assertFalse($this->manager->finalizeSuccess($refund));
+    }
+
+    /**
+     * Recovery: the creditmemo is ALREADY REFUNDED (crash between the
+     * creditmemo save and the row update) - complete only the bookkeeping,
+     * never re-run the accounting.
+     */
+    public function testFinalizeSuccessRecoversWhenCreditmemoAlreadyRefunded(): void
+    {
+        $refund = $this->makeRefund(5, []);
+        $this->connection->method('fetchRow')->willReturn(
+            [
+                RefundInterface::ENTITY_ID => 5,
+                RefundInterface::IS_PROCESSED => 0,
+                RefundInterface::CREDIT_MEMO_ID => 33,
+            ]
+        );
+        $this->creditmemoRepository->method('get')->with(33)->willReturn($this->creditmemo);
+        $this->cmState = Creditmemo::STATE_REFUNDED;
+
+        $this->refundOperation->expects($this->never())->method('execute');
+        $this->invoiceRepository->expects($this->never())->method('get');
+        $this->connection->expects($this->once())->method('update')->with(
+            'zalo_pay_refund',
+            [
+                RefundInterface::IS_PROCESSED => 1,
+                RefundInterface::LAST_ERROR => null,
+            ],
+            [RefundInterface::ENTITY_ID . ' = ?' => 5]
+        );
+        $this->connection->expects($this->once())->method('commit');
+
+        $this->assertFalse($this->manager->finalizeSuccess($refund));
+    }
+
+    /**
+     * Local accounting failure: rollback, remaining budget preserved, and a
+     * customer-safe LocalizedException - the money is out at the provider,
+     * local accounting is not; evidence + budget survive for the next cron.
+     */
+    public function testFinalizeSuccessRollsBackOnAccountingFailure(): void
+    {
+        $refund = $this->makeRefund(5, []);
+        $this->connection->method('fetchRow')->willReturn(
+            [
+                RefundInterface::ENTITY_ID => 5,
+                RefundInterface::IS_PROCESSED => 0,
+                RefundInterface::CREDIT_MEMO_ID => 33,
+            ]
+        );
+        $this->creditmemoRepository->method('get')->with(33)->willReturn($this->creditmemo);
+        $this->invoiceRepository->method('get')->with(12)->willReturn($this->invoice);
+        $this->refundOperation->expects($this->once())->method('execute')
+            ->willThrowException(new \RuntimeException('accounting boom'));
+
+        $this->connection->expects($this->once())->method('rollBack');
+        $this->connection->expects($this->never())->method('commit');
+        $this->connection->expects($this->never())->method('update');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('refund finalization failed locally: accounting boom');
+        $this->manager->finalizeSuccess($refund);
+    }
+
+}

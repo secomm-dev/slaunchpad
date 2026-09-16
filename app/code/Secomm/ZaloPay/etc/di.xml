@@ -299,4 +299,20 @@
     <type name="Magento\Sales\Model\Order\Creditmemo">
         <plugin name="zalopay_creditmemo_states" type="Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin" sortOrder="10" disabled="false"/>
     </type>
+
+    <!-- TASK-CG6BM7: ZaloPay async refund lifecycle around the core refund
+         flow. The plugin asks the provider ONCE (before core mutates any
+         totals), then either lets the native core accounting run (confirmed
+         SUCCESS) or registers the durable pending refund (PROCESSING /
+         unknown transport outcome) for the RefundCronjob to finalize. -->
+    <type name="Magento\Sales\Model\Service\CreditmemoService">
+        <plugin name="zalopay_creditmemo_refund_lifecycle" type="Secomm\ZaloPay\Plugin\Model\Service\CreditmemoRefundPlugin" sortOrder="10" disabled="false"/>
+    </type>
+
+    <type name="Secomm\ZaloPay\Plugin\Model\Service\CreditmemoRefundPlugin">
+        <arguments>
+            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
+        </arguments>
+    </type>
+
 </config>

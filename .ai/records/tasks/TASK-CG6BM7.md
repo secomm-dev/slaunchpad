@@ -13,7 +13,7 @@ status: in_progress
 created: 2026-09-16
 updated: 2026-09-16
 legacy_ids: []
-decisions: [DEC-TASKCG6BM7-001, DEC-TASKCG6BM7-002]
+decisions: [DEC-TASKCG6BM7-001, DEC-TASKCG6BM7-002, DEC-TASKCG6BM7-003]
 decision_assessment: architecture-material
 components:
   - Secomm_ZaloPay
@@ -30,7 +30,7 @@ changes_project_state: true
 changes_architecture: false
 changes_integration: false
 changes_known_limitations: false
-verified_against_commit: a48de3cac477cada0882974151db7765c554aa25
+verified_against_commit: 70416b7aa6889276818b72e311a9955cbf5ed578
 last_verified: 2026-09-16
 supersedes: []
 ---
@@ -86,9 +86,35 @@ Nguồn chính thức: docs.zalopay.vn `docs/specs/order-refund/`, `docs/specs/o
 ExtraFee / MoMo / LLMS / Mageplaza SMTP / staging config / shared workspace; merge; git history rewrite;
 sửa ExtraFee `CanCreditmemoPlugin`; đổi `async_sending` store config (chỉ ghi nhận khuyến nghị cho TL).
 
+## Corrective round 2026-09-16 (TL direct source review)
+
+TL review round 1 và chỉ ra ba vấn đề, đã xử lý trong đúng task này (KHÔNG tạo task mới):
+
+1. **BLOCKER — async refund lifecycle sai invariant** ("ZaloPay PROCESSING ≠ Magento refund
+   completed"): flow cũ vẫn để core finalize `total_refunded`/`qty_refunded` khi provider chỉ mới
+   PROCESSING ⇒ full refund có thể đẩy order CLOSED sớm. Fix theo DEC-TASKCG6BM7-003
+   (plugin-orchestrated: provider hỏi ĐÚNG 1 LẦN trước core; PROCESSING → durable pending +
+   STOP trước core accounting; cron finalize exact-once qua NATIVE core accounting khi SUCCESS).
+   **Ghi nhận trung thực: audit round 1 đã bỏ lỡ tương tác giữa refund gateway flow với
+   kế toán/order-state của Magento core** (`CreditmemoService::refund` set `STATE_REFUNDED` trước
+   gateway + `RefundOperation` mutate mọi order refund totals) — xem findings.md.
+2. **BLOCKER — retry chưa bounded đúng nghĩa**: bằng chứng F4 round 1 CHƯA ĐỦ — transport exception
+   trước nay KHÔNG tiêu query budget (loop vô hạn tiềm ẩn cho transport failure). Đã fix:
+   mọi attempt thật tiêu budget có evidence (`transport_error:`/`reconcile_error:`/
+   `protocol_anomaly:`/`refund_failed:`), non-retryable → terminal. Xem findings.md.
+3. **HIGH — race email trùng lặp**: `email_sent`-guard-only không chống được hai finalizer đồng
+   thời. Nâng cấp lên atomic dispatch claim `email_dispatch` (DEC-TASKCG6BM7-002 bổ sung).
+
+Scope giữ nguyên: KHÔNG merge, KHÔNG đụng ExtraFee/MoMo/LLMS/Mageplaza vendor/Bitbucket/SMTP/
+icon-upload config; mọi thay đổi nằm trong `app/code/Secomm/ZaloPay` + `.ai`.
+
 ## Acceptance Criteria
 
-- 34 test matrix (EMAIL 1–7, RATE 8–15, REFUND COMMAND 16–22, REFUND CRON 23–30, RESPONSE 31–34) pass.
+- 34 test matrix round 1 (EMAIL 1–7, RATE 8–15, REFUND COMMAND 16–23, REFUND CRON 24–30,
+  RESPONSE 31–34) + ma trận corrective (refund lifecycle 11, retry 13, plugin decision 11,
+  email claim 6 test mới) — toàn bộ pass (full suite 260 tests / 937 assertions).
+- Receipt đầy đủ, trung thực theo mẫu corrective round; nếu PASS → KHÔNG merge, chỉ push branch
+  task lên GitHub, dừng chờ TL review.
 - L3 validation: php -l, PHPCS module-wide, full ZaloPay unit suite, setup:di:compile, Secomm
   regression — PASS; integration runtime không khả dụng → ghi `INTEGRATION=ENVIRONMENT_BLOCKED`.
 - Receipt §15 đầy đủ, trung thực; nếu PASS → KHÔNG merge, chỉ push branch task lên GitHub, dừng chờ TL.

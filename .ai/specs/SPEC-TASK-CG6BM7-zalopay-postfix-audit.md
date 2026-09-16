@@ -177,3 +177,49 @@ php -l toàn bộ file đổi; PHPCS module-wide; full ZaloPay unit suite; `setu
 Secomm regression suite; CodeGraph structural proofs + git grep proofs (email no-pre-commit;
 RefundCronjob ownership; ResponseMessagesHandler consumers). Integration runtime không khả dụng →
 `INTEGRATION=ENVIRONMENT_BLOCKED`, không tuyên bố PASS cho integration.
+
+---
+
+# Revision 2 — 2026-09-16 (corrective round; cùng work item, cùng baseline corrective head `70416b7a`)
+
+## Lý do
+
+TL direct source review round 1 xác nhận 3 khiếm khuyết mà SPEC revision 1 đã không bao phủ:
+
+1. **BLOCKER — async refund lifecycle vi phạm invariant "ZaloPay PROCESSING ≠ Magento refund
+   completed"**: revision 1 chỉ đặc tả retry/cron trên row `zalo_pay_refund`, không đặc tả ràng
+   buộc với kế toán Magento core (tổng refund, order state). Với return_code 3, flow cũ vẫn để core
+   finalize `total_refunded`/`qty_refunded` ⇒ full refund có thể đẩy order CLOSED khi tiền chưa
+   xác nhận. Audit round 1 (evidence F4) cũng chưa đủ: transport exception không tiêu query budget.
+2. **BLOCKER — retry chưa bounded đúng nghĩa**: mọi genuine attempt phải có state progression đo
+   được; non-retryable (malformed payload/thiếu identity/thiếu creditmemo) phải terminal có evidence.
+3. **HIGH — race trùng mail**: `email_sent`-guard-only không chống được hai finalizer đồng thời.
+
+## Yêu cầu bổ sung (tóm tắt normative)
+
+- **FR-R2.1**: Provider refund được hỏi ĐÚNG MỘT LẦN cho một yêu cầu refund, TRƯỚC khi bất kỳ
+  order/creditmemo total nào bị mutate; SUCCESS → kế toán Magento do NATIVE core flow nắm
+  (exactly once); PROCESSING → không total thay đổi, không CLOSED; FAIL/transport → totals bất biến.
+- **FR-R2.2**: Refund đang pending (PROCESSING/outcome unknown) chặn yêu cầu refund thứ hai cho
+  cùng order; reconcile theo `m_refund_id`, KHÔNG BAO GIỜ re-request (chống double refund).
+- **FR-R2.3**: Cron finalize chỉ khi provider SUCCESS, trong MỘT transaction có row lock
+  (`FOR UPDATE`) + re-check `is_processed`; recovery branch khi creditmemo đã REFUNDED;
+  KHÔNG tự set order CLOSED (core tự xác định theo accounting).
+- **FR-R2.4**: Retry classification bắt buộc: transport → tiêu budget + `transport_error:`;
+  provider FAIL → terminal + `refund_failed:` (message từ provider map an toàn); malformed/
+  missing identity/missing creditmemo/state drift → terminal + `reconcile_error:`; mã lạ →
+  `protocol_anomaly:`. `last_error` không chứa secret/raw provider internals.
+- **FR-R2.5**: Email xác nhận order: atomic dispatch claim (`email_dispatch`) bên trong tx
+  finalize (row FOR UPDATE serialize); claim loss ⇒ KHÔNG gửi; send fail ⇒ release claim,
+  KHÔNG rollback payment/order; "sent" bền vững = `email_sent=1` (Magento); grace reclaim 900s.
+- **NFR-R2.6**: Bằng chứng call-chain phải đọc source core (vendor) vì CodeGraph không index
+  vendor; unit mocks phải khai báo giới hạn một cách trung thực; integration không khả dụng ⇒
+  `INTEGRATION=ENVIRONMENT_BLOCKED`.
+
+## Ma trận test bổ sung (bổ sung vào §13)
+
+- REFUND LIFECYCLE (11): PendingRefundManagerTest.
+- PLUGIN DECISION (11): CreditmemoRefundPluginTest.
+- RETRY/RECONCILIATION mở rộng (13): RefundCronjobTest (rewrite).
+- PROVIDER-ONLY COMMAND (11): RefundCommandTest (rewrite).
+- EMAIL CONCURRENCY (3 + resource 3): OrderFinalizerTest EMAIL 8–10 + PaymentAttemptResourceTest.

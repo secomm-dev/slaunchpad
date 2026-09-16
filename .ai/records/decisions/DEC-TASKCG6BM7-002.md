@@ -55,3 +55,27 @@ từ `email_sent` (sync thành công persist `email_sent = 1` qua `saveAttribute
 - Tests EMAIL 1–7 trong matrix chứng minh: fresh → 1 lần; duplicate + email_sent=1 → 0; duplicate +
   email_sent!=1 → đúng 1; capture-fail/mismatch → 0; send-throw → order giữ FINALIZED.
 - Khuyến nghị cho TL (config-level, không code): cân nhắc bật `sales_email/general/async_sending`.
+
+## Bổ sung 2026-09-16 (corrective round — TL review)
+
+TL review chỉ ra **race trùng lặp mail** trong thiết kế "email_sent-guard-only": hai finalizer chạy
+đồng thời (duplicate IPN + recovery) đều đọc `email_sent != 1` rồi đều gọi `OrderSender::send()` —
+`email_sent` chỉ được persist SAU khi send thành công, nên guard này KHÔNG loại trừ đồng thời.
+
+Thiết kế được nâng cấp (giữ mọi nguyên tắc cũ): **atomic dispatch claim** trên cột mới
+`secomm_zalopay_payment_attempt.email_dispatch` (unix ts của claim đang bay, NULL = không có):
+
+- Claim = một UPDATE có điều kiện ATOMIC (`email_dispatch IS NULL OR email_dispatch <= token-grace`)
+  bên trong transaction finalize (row đã bị `FOR UPDATE` khoá ⇒ hai finalizer serialize; đúng một
+  bên thắng claim).
+- Bên thua claim KHÔNG gửi mail. Grace 900s cho phép reclaim khi sender crash sau claim trước send.
+- Release token-guarded (`WHERE ... email_dispatch = <token>`) trong `finally` — cả khi send fail:
+  send fail KHÔNG rollback payment/order (nguyên tắc cũ #3 giữ nguyên); claim release ⇒ driver
+  finalize kế tiếp retry ngay. "Sent" bền vững vẫn là `email_sent = 1` của Magento.
+- Retry semantics định nghĩa tường minh: at-least-once, guard idempotent kép
+  (atomic claim chống đồng thời + `email_sent` chống lặp sau thành công).
+
+Chi tiết + tests: EMAIL A–C (`PaymentAttemptResourceTest`), EMAIL 8–10
+(`OrderFinalizerTest::testConcurrentFinalizerLosingClaimDoesNotSend`,
+`testEmailFailureReleasesDispatchClaim`, `testSuccessfulSendReleasesDispatchClaim`).
+Schema: `etc/db_schema.xml` + whitelist (cột `email_dispatch`) — cần `setup:upgrade` khi deploy.

@@ -116,6 +116,15 @@ class OrderFinalizerTest extends TestCase
     private $fingerprint;
 
     /**
+     * Mutable test state: whether the next claimEmailDispatch call grants
+     * the dispatch claim (PHPUnit stubs on the same method do not override
+     * each other, so tests flip this flag instead).
+     *
+     * @var bool
+     */
+    private $emailClaimGranted = true;
+
+    /**
      * @var AdapterInterface|MockObject
      */
     private $connection;
@@ -145,6 +154,11 @@ class OrderFinalizerTest extends TestCase
      */
     private $orderSender;
 
+    /**
+     * @var \Magento\Framework\Stdlib\DateTime\DateTime|MockObject
+     */
+    private $dateTime;
+
     protected function setUp(): void
     {
         $this->repository = $this->createMock(PaymentAttemptRepositoryInterface::class);
@@ -170,6 +184,16 @@ class OrderFinalizerTest extends TestCase
         $this->lifecycle = $this->createMock(PaymentAttemptLifecycle::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->orderSender = $this->createMock(\Magento\Sales\Model\Order\Email\Sender\OrderSender::class);
+        $this->dateTime = $this->createMock(\Magento\Framework\Stdlib\DateTime\DateTime::class);
+        $this->dateTime->method('timestamp')->willReturn(1690000000);
+        // Default: THIS finalizer wins the email dispatch claim (the
+        // claim-granting conditional UPDATE lives in PaymentAttemptResource,
+        // proven separately by PaymentAttemptResourceTest).
+        $this->repository->method('claimEmailDispatch')->willReturnCallback(
+            function (): bool {
+                return $this->emailClaimGranted;
+            }
+        );
 
                 $this->finalizer = new OrderFinalizer(
             $this->repository,
@@ -185,7 +209,8 @@ class OrderFinalizerTest extends TestCase
             $this->placementAuthorization,
             $this->lifecycle,
             $this->logger,
-            $this->orderSender
+            $this->orderSender,
+            $this->dateTime
         );
     }
 
@@ -735,6 +760,93 @@ class OrderFinalizerTest extends TestCase
 
         $this->assertSame($order, $result);
         $this->assertSame(PaymentAttemptInterface::STATUS_FINALIZED, $this->saved->getPaymentStatus());
+    }
+
+    /**
+     * EMAIL 8 (TASK-CG6BM7 concurrency): two concurrent finalizers serialize
+     * on the attempt row lock; the one LOSING the conditional dispatch claim
+     * (the resource-level atomic UPDATE grants it to exactly one caller)
+     * must NOT send — no duplicate dispatch is possible.
+     */
+    public function testConcurrentFinalizerLosingClaimDoesNotSend(): void
+    {
+        $attempt = $this->newPaidAttempt();
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+        $this->stubSave();
+        $this->stubMatchingQuote();
+
+        $payment = $this->createMock(OrderPayment::class);
+        $payment->method('getMethod')->willReturn('zalopay');
+        $payment->method('capture');
+        $payment->method('prependMessage');
+        $order = $this->newOrder(88, Order::STATE_PENDING_PAYMENT, '000000123', $payment);
+        $this->cartManagement->method('placeOrder')->willReturn(88);
+        $this->orderRepository->method('get')->with(88)->willReturn($order);
+
+        // The concurrent winner already claimed the dispatch.
+        $this->emailClaimGranted = false;
+        $this->orderSender->expects($this->never())->method('send');
+        $this->repository->expects($this->never())->method('releaseEmailDispatch');
+
+        $this->connection->expects($this->once())->method('commit');
+
+        $result = $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+
+        $this->assertSame($order, $result);
+    }
+
+    /**
+     * EMAIL 9 (TASK-CG6BM7 retry semantics): a failed send releases the
+     * dispatch claim (token-guarded) so the next finalizeOrRecover driver
+     * retries immediately — the failed send stays non-fatal.
+     */
+    public function testEmailFailureReleasesDispatchClaim(): void
+    {
+        $attempt = $this->newPaidAttempt();
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+        $this->stubSave();
+        $this->stubMatchingQuote();
+
+        $payment = $this->createMock(OrderPayment::class);
+        $payment->method('getMethod')->willReturn('zalopay');
+        $payment->method('capture');
+        $payment->method('prependMessage');
+        $order = $this->newOrder(88, Order::STATE_PENDING_PAYMENT, '000000123', $payment);
+        $this->cartManagement->method('placeOrder')->willReturn(88);
+        $this->orderRepository->method('get')->with(88)->willReturn($order);
+
+        $this->orderSender->expects($this->once())->method('send')
+            ->willThrowException(new \RuntimeException('SMTP transport error.'));
+        $this->logger->expects($this->atLeastOnce())->method('critical');
+        $this->repository->expects($this->once())->method('releaseEmailDispatch');
+
+        $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+    }
+
+    /**
+     * EMAIL 10 (TASK-CG6BM7): the claim marks the in-flight dispatch only —
+     * after a SUCCESSFUL send it is released again (the durable "sent"
+     * record is the order's email_sent, kept by OrderSender).
+     */
+    public function testSuccessfulSendReleasesDispatchClaim(): void
+    {
+        $attempt = $this->newPaidAttempt();
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+        $this->stubSave();
+        $this->stubMatchingQuote();
+
+        $payment = $this->createMock(OrderPayment::class);
+        $payment->method('getMethod')->willReturn('zalopay');
+        $payment->method('capture');
+        $payment->method('prependMessage');
+        $order = $this->newOrder(88, Order::STATE_PENDING_PAYMENT, '000000123', $payment);
+        $this->cartManagement->method('placeOrder')->willReturn(88);
+        $this->orderRepository->method('get')->with(88)->willReturn($order);
+
+        $this->orderSender->expects($this->once())->method('send');
+        $this->repository->expects($this->once())->method('releaseEmailDispatch');
+
+        $this->finalizer->finalizeOrRecover($attempt, '240801000001');
     }
 
     // ---- helpers ----

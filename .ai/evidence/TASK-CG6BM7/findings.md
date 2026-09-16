@@ -38,3 +38,39 @@ Phạm vi: `app/code/Secomm/ZaloPay` trên baseline `a48de3c` (đã chứa commi
 ## Validator .ai
 
 - `.ai` validator: **26 FAIL pre-existing trên baseline `a48de3c`** (liên quan records/audit khác, ngoài scope). Các record của TASK-CG6BM7 (TASK/SPEC/PLAN/DEC-001/DEC-002) không tạo FAIL mới.
+
+---
+
+# Corrective round 2026-09-16 (TL direct source review)
+
+## Ghi nhận trung thực về giới hạn của audit round 1
+
+- **F4 round 1 CHƯA ĐỦ.** Bằng chứng "bounded retry" của round 1 chỉ bao phủ provider FAIL/PROCESSING
+  từ góc nhìn cron; **transport exception KHÔNG tiêu query budget** — row với provider timeout kéo
+  dài được chọn lại mãi mãi (loop vô hạn tiềm ẩn), đối chiếu đúng nghĩa "retry bounded" của TL thì
+  F4 khi đó chỉ chứng minh được một nửa. Đã fix: mọi genuine attempt tiêu budget (transport,
+  protocol anomaly, finalize failure đều +1 attempt với safe evidence); non-retryable
+  (FAIL/malformed payload/thiếu m_refund_id/missing creditmemo/state drift) → terminal saturate 96.
+- **Audit round 1 đã BỎ LỠ tương tác refund-gateway với kế toán/order-state của Magento core.**
+  Round 1 audit RefundCommand như một unit đóng (messaging, guard, finally-persist) mà không truy
+  tiếp chuyện gì xảy ra SAU khi command trả về trong flow core: `CreditmemoService::refund` set
+  `STATE_REFUNDED` TRƯỚC khi gọi gateway, rồi `RefundOperation` mutate TOÀN BỘ order refund totals
+  ⇒ với return_code 3 (PROCESSING) flow cũ vẫn finalize kế toán Magento khi tiền chưa xác nhận, và
+  full refund đẩy order CLOSED trong khi ZaloPay vẫn xử lý. Đây là BLOCKER thật của baseline
+  (chính code của round 1 cũng vẫn chứa nó) — được TL bắt qua direct source review.
+
+## Fix corrective (BLOCKER/HIGH mới)
+
+| # | Vấn đề | Mức | Fix + bằng chứng |
+|---|--------|-----|------------------|
+| F7 | PROCESSING vẫn để core finalize totals/order-state (order CLOSED sớm) | BLOCKER | Kiến trúc plugin-orchestrated (DEC-TASKCG6BM7-003): RefundCommand provider-only, `CreditmemoRefundPlugin` hỏi provider TRƯỚC core; PROCESSING → `registerPending` + STOP trước `$proceed()`; cron `finalizeSuccess` exact-once qua native accounting trong 1 tx khoá row. Tests: `PendingRefundManagerTest` (11), `CreditmemoRefundPluginTest` (11), `RefundCommandTest` (11) |
+| F8 | Transport exception không tiêu query budget (retry không bounded thật) | BLOCKER | `RefundQueryCommand` ném `RefundTransportException`; cron/plugin classify transport → `consumeQueryBudget('transport_error: …')`; non-retryable → `terminate('reconcile_error:'/'refund_failed:')`. Tests: `RefundCronjobTest` (13) |
+| F9 | Race email trùng: email_sent-guard-only không chống 2 finalizer đồng thời | HIGH | Atomic claim `email_dispatch` (conditional UPDATE trong tx khoá row, token-guarded release, grace 900s). Tests: `PaymentAttemptResourceTest` (3) + EMAIL 8–10 trong `OrderFinalizerTest` (24 test) |
+
+## Ghi nhận không đổi
+
+- Các M1–M6 round 1 giữ nguyên trạng thái (out of scope theo §10, chờ TL).
+- `RefundOutcomeMarker` là process-scoped (DI share theo scope): đủ cho invariant "no second
+  provider refund" vì provider chỉ được hỏi trong request của plugin; cron KHÔNG BAO GIỜ gọi
+  provider refund (chỉ query_refund). Ghi rõ để TL đánh giá: nếu sau này cron cần gọi refund lại,
+  marker phải đổi sang durable.

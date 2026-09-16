@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Secomm\ZaloPay\Service;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -81,6 +82,15 @@ use Secomm\ZaloPay\Model\QuoteContractFingerprint;
 class OrderFinalizer
 {
     /**
+     * Age (seconds) at which an unreleased email dispatch claim becomes
+     * reclaimable by a later finalize driver: a sender that claimed the
+     * dispatch and then crashed (process death between commit and send)
+     * must not block the retry forever, while a live send in progress is
+     * never double-claimed.
+     */
+    public const EMAIL_CLAIM_GRACE = 900;
+
+    /**
      * OrderFinalizer constructor.
      *
      * @param PaymentAttemptRepositoryInterface $repository
@@ -97,6 +107,7 @@ class OrderFinalizer
      * @param PaymentAttemptLifecycle $lifecycle
      * @param LoggerInterface $logger
      * @param OrderSender $orderSender
+     * @param DateTime $dateTime
      */
     public function __construct(
         private readonly PaymentAttemptRepositoryInterface $repository,
@@ -112,7 +123,8 @@ class OrderFinalizer
         private readonly OrderPlacementAuthorization       $placementAuthorization,
         private readonly PaymentAttemptLifecycle           $lifecycle,
         private readonly LoggerInterface                   $logger,
-        private readonly OrderSender                       $orderSender
+        private readonly OrderSender                       $orderSender,
+        private readonly DateTime                          $dateTime
     ) {
     }
 
@@ -133,6 +145,7 @@ class OrderFinalizer
         $connection = $this->resourceConnection->getConnection();
         $connection->beginTransaction();
         $locked = null;
+        $emailClaimToken = null;
         try {
             $locked = $this->repository->lockByAppTransId($appTransId);
             if ($locked === null) {
@@ -160,13 +173,27 @@ class OrderFinalizer
                 // binding. Session rebuild is the caller's (Return path)
                 // concern via SuccessSessionPreparer — never done here.
                 $existing = $this->recoverBoundOrder($locked, $appTransId);
+                // Claim the email dispatch INSIDE the transaction: the FOR
+                // UPDATE row lock serializes concurrent finalizers, so two
+                // concurrent senders can never both claim (no duplicate
+                // dispatch - TASK-CG6BM7 email race fix).
+                $emailClaimToken = $this->claimEmailDispatch($locked);
                 $connection->commit();
 
                 // TASK-CG6BM7: a duplicate Return/IPN/recovery on a FINALIZED
                 // attempt is also the retry driver for a confirmation email
                 // that was never successfully sent (crash between commit and
-                // send, or a previous send failure). Idempotent via email_sent.
-                $this->sendConfirmationEmail($existing, $appTransId);
+                // send, or a previous send failure). The dispatch claim makes
+                // concurrent drivers mutually exclusive; email_sent keeps the
+                // driver sequence idempotent.
+                if ($emailClaimToken !== null) {
+                    $this->sendConfirmationEmail(
+                        $existing,
+                        $appTransId,
+                        (int)$locked->getEntityId(),
+                        $emailClaimToken
+                    );
+                }
 
                 return $existing;
             }
@@ -195,6 +222,10 @@ class OrderFinalizer
 
             $this->captureOrder($order, $appTransId, $providerTransactionId);
 
+            // Claim the confirmation email dispatch INSIDE the transaction
+            // (row lock held): the placing finalizer is the single sender.
+            $emailClaimToken = $this->claimEmailDispatch($locked);
+
             $connection->commit();
         } catch (ContractMismatchException $exception) {
             $connection->rollBack();
@@ -213,31 +244,53 @@ class OrderFinalizer
         // InitializeCommand intentionally sets canSendNewEmailFlag = false so
         // SubmitObserver skips the email on initial order placement (order is
         // still pending_payment at that point). Now that the order is captured
-        // and fully finalized we send it ourselves.
-        $this->sendConfirmationEmail($order, $appTransId);
+        // and fully finalized we send it ourselves - only when THIS finalizer
+        // holds the dispatch claim (concurrent drivers skip, never duplicate).
+        if ($emailClaimToken !== null) {
+            $this->sendConfirmationEmail(
+                $order,
+                $appTransId,
+                (int)$locked->getEntityId(),
+                $emailClaimToken
+            );
+        }
 
         return $order;
     }
 
     /**
      * Send the order confirmation email AFTER the DB transaction commits —
-     * never inside it, never before the payment is verified and captured.
+     * never inside it, never before the payment is verified and captured,
+     * and ONLY when the caller holds the dispatch claim (claimed inside the
+     * locked finalize transaction - concurrent finalizers can never both
+     * send, TASK-CG6BM7 email race fix).
      *
-     * Idempotent (TASK-CG6BM7): OrderSender persists email_sent = 1 on a
-     * successful synchronous send, so an already-emailed order is NEVER
-     * re-emailed (duplicate IPN/Return/recovery calls land here and skip);
-     * a not-yet-emailed order (crash between commit and send, a previous
-     * send failure, async mode) IS retried on the next finalizeOrRecover
-     * call. A failed send is non-fatal: it must never roll back a
-     * successful payment — the order stays FINALIZED.
+     * Retry semantics: the claim marks the in-flight dispatch only and is
+     * released after the send attempt (success or failure) — the durable
+     * "sent" record is the order's email_sent (OrderSender persists it on a
+     * successful synchronous send). A claimed-but-crashed sender's claim is
+     * reclaimable by a later finalize driver after EMAIL_CLAIM_GRACE; a
+     * failed send releases immediately so the next finalizeOrRecover driver
+     * (duplicate Return/IPN/recovery) retries right away. A failed send is
+     * non-fatal: it must never roll back a successful payment — the order
+     * stays FINALIZED.
      *
      * @param OrderInterface $order
      * @param string $appTransId
+     * @param int $attemptEntityId
+     * @param int $claimToken
      * @return void
      */
-    private function sendConfirmationEmail(OrderInterface $order, string $appTransId): void
-    {
+    private function sendConfirmationEmail(
+        OrderInterface $order,
+        string         $appTransId,
+        int            $attemptEntityId,
+        int            $claimToken
+    ): void {
         if ((int)$order->getEmailSent() === 1) {
+            // Already emailed by an earlier driver: drop our redundant claim.
+            $this->repository->releaseEmailDispatch($attemptEntityId, $claimToken);
+
             return;
         }
         try {
@@ -248,7 +301,31 @@ class OrderFinalizer
                 'ZaloPay OrderFinalizer: failed to send order confirmation email.',
                 ['app_trans_id' => $appTransId, 'exception' => $e->getMessage()]
             );
+        } finally {
+            // Release in every path so a failed/crashed send can be retried
+            // by the next driver (immediately on failure, after the reclaim
+            // grace for a crashed sender).
+            $this->repository->releaseEmailDispatch($attemptEntityId, $claimToken);
         }
+    }
+
+    /**
+     * Claim the confirmation email dispatch for the locked attempt row
+     * (must be called inside the finalize transaction while the FOR UPDATE
+     * row lock is held - the row lock serializes concurrent claimers).
+     *
+     * @param PaymentAttemptInterface $locked The FOR UPDATE-locked attempt.
+     * @return int|null The claim token when THIS finalizer holds the dispatch, null otherwise.
+     */
+    private function claimEmailDispatch(PaymentAttemptInterface $locked): ?int
+    {
+        $token = $this->dateTime->timestamp();
+
+        return $this->repository->claimEmailDispatch(
+            (int)$locked->getEntityId(),
+            $token,
+            self::EMAIL_CLAIM_GRACE
+        ) ? $token : null;
     }
 
     /**

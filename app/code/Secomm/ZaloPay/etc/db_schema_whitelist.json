@@ -1,64 +1,65 @@
 {
-    "zalo_pay_refund": {
-        "column": {
-            "entity_id": true,
-            "order_id": true,
-            "increment_id": true,
-            "additional_information": true,
-            "m_refund_id": true,
-            "is_processed": true,
-            "credit_memo_id": true,
-            "amount": true,
-            "query_attempts": true,
-            "last_error": true,
-            "created_at": true,
-            "updated_at": true
-        },
-        "index": {
-            "ZALO_PAY_REFUND_ENTITY_ID": true,
-            "ZALO_PAY_REFUND_CREDIT_MEMO_ID": true
-        },
-        "constraint": {
-            "PRIMARY": true,
-            "ZALO_PAY_REFUND_CREDIT_MEMO_ID_SALES_CREDITMEMO_ENTITY_ID": true
-        }
-    },
-    "secomm_zalopay_payment_attempt": {
-        "column": {
-            "entity_id": true,
-            "quote_id": true,
-            "reserved_order_id": true,
-            "app_trans_id": true,
-            "provider_transaction_id": true,
-            "pay_url": true,
-            "provider_status": true,
-            "payment_status": true,
-            "amount": true,
-            "currency": true,
-            "contract_hash": true,
-            "order_id": true,
-            "last_error": true,
-            "requires_reconciliation": true,
-            "reconciliation_code": true,
-            "recovery_attempts": true,
-            "recovery_exhausted": true,
-            "retry_count": true,
-            "store_id": true,
-            "created_at": true,
-            "updated_at": true,
-            "expires_at": true
-        },
-        "index": {
-            "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_QUOTE_ID": true,
-            "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_RESERVED_ORDER_ID": true,
-            "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_PAYMENT_STATUS": true
-        },
-        "constraint": {
-            "PRIMARY": true,
-            "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_APP_TRANS_ID": true,
-            "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_ORDER_ID": true,
-            "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_QUOTE_ID_QUOTE_ENTITY_ID": true,
-            "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_ORDER_ID_SALES_ORDER_ENTITY_ID": true
-        }
-    }
+ "zalo_pay_refund": {
+  "column": {
+   "entity_id": true,
+   "order_id": true,
+   "increment_id": true,
+   "additional_information": true,
+   "m_refund_id": true,
+   "is_processed": true,
+   "credit_memo_id": true,
+   "amount": true,
+   "query_attempts": true,
+   "last_error": true,
+   "created_at": true,
+   "updated_at": true
+  },
+  "index": {
+   "ZALO_PAY_REFUND_ENTITY_ID": true,
+   "ZALO_PAY_REFUND_CREDIT_MEMO_ID": true
+  },
+  "constraint": {
+   "PRIMARY": true,
+   "ZALO_PAY_REFUND_CREDIT_MEMO_ID_SALES_CREDITMEMO_ENTITY_ID": true
+  }
+ },
+ "secomm_zalopay_payment_attempt": {
+  "column": {
+   "entity_id": true,
+   "quote_id": true,
+   "reserved_order_id": true,
+   "app_trans_id": true,
+   "provider_transaction_id": true,
+   "pay_url": true,
+   "provider_status": true,
+   "payment_status": true,
+   "amount": true,
+   "currency": true,
+   "contract_hash": true,
+   "order_id": true,
+   "last_error": true,
+   "requires_reconciliation": true,
+   "reconciliation_code": true,
+   "recovery_attempts": true,
+   "recovery_exhausted": true,
+   "retry_count": true,
+   "store_id": true,
+   "created_at": true,
+   "updated_at": true,
+   "expires_at": true,
+   "email_dispatch": true
+  },
+  "index": {
+   "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_QUOTE_ID": true,
+   "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_RESERVED_ORDER_ID": true,
+   "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_PAYMENT_STATUS": true
+  },
+  "constraint": {
+   "PRIMARY": true,
+   "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_APP_TRANS_ID": true,
+   "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_ORDER_ID": true,
+   "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_QUOTE_ID_QUOTE_ENTITY_ID": true,
+   "SECOMM_ZALOPAY_PAYMENT_ATTEMPT_ORDER_ID_SALES_ORDER_ENTITY_ID": true
+  }
+ }
 }

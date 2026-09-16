@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Secomm\ZaloPay\Test\Unit\Cron;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
@@ -17,22 +18,28 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\ZaloPay\Api\Data\RefundInterface;
 use Secomm\ZaloPay\Cron\RefundCronjob;
+use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Command\RefundQueryCommand;
 use Secomm\ZaloPay\Gateway\Helper\Authorization;
 use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Model\RefundModel;
 use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollection;
 use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollectionFactory;
+use Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin;
+use Secomm\ZaloPay\Service\PendingRefundManager;
 
 /**
- * REFUND CRON 24-30 (TASK-CG6BM7): the bounded, terminal-explicit refund
- * query loop:
+ * REFUND CRON 24-30 (TASK-CG6BM7 corrective round): the bounded,
+ * terminal-explicit refund query loop:
  *
  *  - per-item isolation: a broken item never blocks the batch;
- *  - SUCCESS (1)  -> creditmemo REFUNDED + row PROCESSED + last_error NULL;
- *  - FAIL (2)     -> TERMINAL: budget saturated (query_attempts = 96) + safe
- *    mapped last_error, never queried again, no false success;
- *  - PROCESSING/unknown -> budget consumed by one;
+ *  - SUCCESS (1)  -> PendingRefundManager::finalizeSuccess (native core
+ *    accounting, exactly once via the row lock);
+ *  - FAIL (2)     -> TERMINAL: budget saturated + safe mapped evidence;
+ *  - transport    -> RETRYABLE: consumes exactly one budget unit (BLOCKER 2
+ *    fix - every genuine attempt progresses observable state);
+ *  - malformed payload / missing creditmemo / state drift -> TERMINAL
+ *    reconcile (budget saturated with safe evidence, never queried again);
  *  - cap reached  -> explicit exhaustion (critical log);
  *  - selection filter: NOT_PROCESSED AND query_attempts < 96.
  */
@@ -52,7 +59,20 @@ class RefundCronjobTest extends TestCase
 
     private ScopeConfigInterface|MockObject $scopeConfig;
 
+    private PendingRefundManager|MockObject $pendingRefundManager;
+
     private Creditmemo|MockObject $creditmemo;
+
+    /**
+     * Mutable test state: the creditmemo state served by the repository mock
+     * (a second ->method() config would not override the first stub).
+     */
+    private int $cmState = CreditmemoPlugin::STATE_PROCESSING;
+
+    /**
+     * Mutable test state: creditmemo id -> resolved mock (null = missing).
+     */
+    private array $cmMap = [];
 
     private RefundCronjob $cron;
 
@@ -64,12 +84,28 @@ class RefundCronjobTest extends TestCase
         $this->refundQueryCommand = $this->createMock(RefundQueryCommand::class);
         $this->authorization = $this->createMock(Authorization::class);
         $this->scopeConfig = $this->createMock(ScopeConfigInterface::class);
+        $this->pendingRefundManager = $this->createMock(PendingRefundManager::class);
 
         $this->scopeConfig->method('isSetFlag')->willReturn(true);
         $this->authorization->method('getMac')->willReturn('STUBBED-MAC');
 
+        $this->cmState = CreditmemoPlugin::STATE_PROCESSING;
+        $this->cmMap = [];
         $this->creditmemo = $this->createMock(Creditmemo::class);
-        $this->creditmemoRepository->method('get')->willReturn($this->creditmemo);
+        $this->creditmemo->method('getState')->willReturnCallback(
+            function (): int {
+                return $this->cmState;
+            }
+        );
+        $this->creditmemoRepository->method('get')->willReturnCallback(
+            function (int $creditmemoId) {
+                if (array_key_exists($creditmemoId, $this->cmMap) && $this->cmMap[$creditmemoId] === null) {
+                    throw NoSuchEntityException::singleField('entity_id', $creditmemoId);
+                }
+
+                return $this->cmMap[$creditmemoId] ?? $this->creditmemo;
+            }
+        );
 
         $this->cron = new RefundCronjob(
             $this->collectionFactory,
@@ -79,7 +115,8 @@ class RefundCronjobTest extends TestCase
             $this->createMock(DateTime::class),
             $this->authorization,
             $this->scopeConfig,
-            new Json()
+            new Json(),
+            $this->pendingRefundManager
         );
     }
 
@@ -181,25 +218,32 @@ class RefundCronjobTest extends TestCase
             ->willReturnCallback(
                 function () use (&$callIndex) {
                     if (++$callIndex === 1) {
-                        throw new \RuntimeException('CURL transport error 28');
+                        throw new RefundTransportException(__('Zalopay: Refund status could not be confirmed.'));
                     }
 
                     return ['return_code' => 1, 'return_message' => 'Refund successful.'];
                 }
             );
 
-        $this->creditmemo->expects($this->once())->method('setState')->with(Creditmemo::STATE_REFUNDED);
-        $this->creditmemoRepository->expects($this->once())->method('save');
+        // The broken row consumes one budget unit (observable progression).
+        $this->pendingRefundManager->expects($this->once())
+            ->method('consumeQueryBudget')
+            ->with($broken, $this->stringStartsWith('transport_error: '))
+            ->willReturn(1);
+        // The healthy row finalizes through the native accounting manager.
+        $this->pendingRefundManager->expects($this->once())
+            ->method('finalizeSuccess')
+            ->with($healthy)
+            ->willReturn(true);
 
         $this->cron->execute();
-        $this->assertTrue((bool)$healthy->getIsProcessed());
     }
 
     /**
-     * REFUND CRON 25: SUCCESS -> creditmemo REFUNDED, row PROCESSED,
-     * last_error cleared.
+     * REFUND CRON 25: SUCCESS delegates to the finalize manager exactly once
+     * (native core accounting, row-lock exact-once inside the manager).
      */
-    public function testSuccessFlipsCreditmemoAndMarksRowProcessed(): void
+    public function testSuccessFinalizesThroughTheManager(): void
     {
         $row = $this->refundRow(
             [RefundInterface::QUERY_ATTEMPTS => 4, RefundInterface::LAST_ERROR => 'stale evidence']
@@ -210,20 +254,69 @@ class RefundCronjobTest extends TestCase
             ['return_code' => 1, 'return_message' => 'Refund successful.']
         );
 
-        $this->creditmemo->expects($this->once())->method('setState')->with(Creditmemo::STATE_REFUNDED);
-        $this->creditmemoRepository->expects($this->once())->method('save');
-        $row->expects($this->once())->method('save');
+        $this->pendingRefundManager->expects($this->once())
+            ->method('finalizeSuccess')
+            ->with($row)
+            ->willReturn(true);
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+
+        $this->logger->expects($this->atLeastOnce())->method('info');
 
         $this->cron->execute();
+    }
 
-        $this->assertTrue((bool)$row->getIsProcessed());
-        $this->assertNull($row->getData(RefundInterface::LAST_ERROR));
+    /**
+     * REFUND CRON 25b: a duplicate SUCCESS (another run finalized it first —
+     * the manager's row-lock re-check returns false) is a no-op, never a
+     * second Magento or provider refund.
+     */
+    public function testDuplicateSuccessIsANoOp(): void
+    {
+        $row = $this->refundRow();
+        $this->stubCollection([$row]);
+
+        $this->refundQueryCommand->method('getRefundQuery')->willReturn(
+            ['return_code' => 1, 'return_message' => 'Refund successful.']
+        );
+
+        $this->pendingRefundManager->expects($this->once())
+            ->method('finalizeSuccess')
+            ->with($row)
+            ->willReturn(false);
+        $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * REFUND CRON 25c: a finalize failure consumes one budget unit with safe
+     * reconcile evidence (observable progression, bounded retry).
+     */
+    public function testFinalizeFailureConsumesBudgetWithEvidence(): void
+    {
+        $row = $this->refundRow([RefundInterface::QUERY_ATTEMPTS => 10]);
+        $this->stubCollection([$row]);
+
+        $this->refundQueryCommand->method('getRefundQuery')->willReturn(
+            ['return_code' => 1, 'return_message' => 'Refund successful.']
+        );
+
+        $this->pendingRefundManager->expects($this->once())
+            ->method('finalizeSuccess')
+            ->willThrowException(new \RuntimeException('lock timeout'));
+        $this->pendingRefundManager->expects($this->once())
+            ->method('consumeQueryBudget')
+            ->with($row, $this->stringStartsWith('reconcile_error: '))
+            ->willReturn(11);
+        $this->logger->expects($this->once())->method('critical');
+
+        $this->cron->execute();
     }
 
     /**
      * REFUND CRON 26: provider FAIL is TERMINAL — the budget saturates, a
-     * safe mapped message lands in last_error, the row keeps
-     * NOT_PROCESSED (evidence), and the creditmemo is NEVER flipped.
+     * safe mapped message lands in evidence, the row keeps NOT_PROCESSED
+     * (evidence), and NO accounting manager call ever happens.
      */
     public function testProviderFailIsTerminalWithEvidence(): void
     {
@@ -234,24 +327,23 @@ class RefundCronjobTest extends TestCase
             ['return_code' => 2, 'sub_return_code' => -13, 'return_message' => 'RAW-PROVIDER-DETAIL']
         );
 
-        $this->creditmemo->expects($this->never())->method('setState');
-        $this->creditmemoRepository->expects($this->never())->method('save');
+        $evidence = [];
+        $this->pendingRefundManager->expects($this->once())
+            ->method('terminate')
+            ->willReturnCallback(function ($rowArg, string $evidenceArg) use (&$evidence) {
+                $evidence[] = $evidenceArg;
+            });
+        $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
         $this->logger->expects($this->once())->method('critical');
-        $row->expects($this->once())->method('save');
 
         $this->cron->execute();
 
-        $this->assertSame(
-            RefundCronjob::MAX_QUERY_ATTEMPTS,
-            (int)$row->getData(RefundInterface::QUERY_ATTEMPTS)
-        );
-        $this->assertSame('Refund time has expired.', $row->getData(RefundInterface::LAST_ERROR));
-        $this->assertFalse((bool)$row->getIsProcessed());
+        $this->assertSame('refund_failed: Refund time has expired.', $evidence[0] ?? 'NONE');
     }
 
     /**
      * REFUND CRON 27: PROCESSING consumes exactly one budget unit and keeps
-     * the row pending.
+     * the row pending with cleared evidence.
      */
     public function testProcessingConsumesOneBudgetUnit(): void
     {
@@ -262,15 +354,37 @@ class RefundCronjobTest extends TestCase
             ['return_code' => 3, 'return_message' => 'processing']
         );
 
-        $this->creditmemo->expects($this->never())->method('setState');
+        $this->pendingRefundManager->expects($this->once())
+            ->method('consumeQueryBudget')
+            ->with($row, null)
+            ->willReturn(4);
         $this->logger->expects($this->never())->method('critical');
-        $row->expects($this->once())->method('save');
 
         $this->cron->execute();
+    }
 
-        $this->assertSame(4, (int)$row->getData(RefundInterface::QUERY_ATTEMPTS));
-        $this->assertNull($row->getData(RefundInterface::LAST_ERROR));
-        $this->assertFalse((bool)$row->getIsProcessed());
+    /**
+     * REFUND CRON 27b: a query transport failure consumes exactly one budget
+     * unit with safe transport evidence (BLOCKER 2: the row can no longer
+     * sit selected-forever without state progression).
+     */
+    public function testQueryTransportFailureConsumesOneBudgetUnit(): void
+    {
+        $row = $this->refundRow([RefundInterface::QUERY_ATTEMPTS => 2]);
+        $this->stubCollection([$row]);
+
+        $this->refundQueryCommand->method('getRefundQuery')->willThrowException(
+            new RefundTransportException(__('Zalopay: Refund status could not be confirmed.'))
+        );
+
+        $this->pendingRefundManager->expects($this->once())
+            ->method('consumeQueryBudget')
+            ->with($row, 'transport_error: Zalopay: Refund status could not be confirmed.')
+            ->willReturn(3);
+        $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+
+        $this->cron->execute();
     }
 
     /**
@@ -286,22 +400,21 @@ class RefundCronjobTest extends TestCase
             ['return_code' => 3, 'return_message' => 'processing']
         );
 
+        $this->pendingRefundManager->expects($this->once())
+            ->method('consumeQueryBudget')
+            ->with($row, null)
+            ->willReturn(RefundCronjob::MAX_QUERY_ATTEMPTS);
         $this->logger->expects($this->once())->method('critical');
-        $row->expects($this->once())->method('save');
 
         $this->cron->execute();
-
-        $this->assertSame(
-            RefundCronjob::MAX_QUERY_ATTEMPTS,
-            (int)$row->getData(RefundInterface::QUERY_ATTEMPTS)
-        );
     }
 
     /**
-     * REFUND CRON 30: a malformed stored payload is isolated — the item is
-     * logged and skipped, the batch survives.
+     * REFUND CRON 30: a malformed stored payload is TERMINAL reconcile (the
+     * row can never be resolved without it) — budget saturated with safe
+     * evidence, never queried, batch survives.
      */
-    public function testMalformedPayloadIsSkippedAndBatchSurvives(): void
+    public function testMalformedPayloadIsTerminalAndBatchSurvives(): void
     {
         $malformed = $this->refundRow(
             ['entity_id' => 1, RefundInterface::ADDITIONAL_INFORMATION => 'not-json{{{']
@@ -313,31 +426,92 @@ class RefundCronjobTest extends TestCase
         $this->refundQueryCommand->expects($this->once())->method('getRefundQuery')->willReturn(
             ['return_code' => 1, 'return_message' => 'Refund successful.']
         );
-        $this->creditmemo->expects($this->once())->method('setState');
-        $this->creditmemoRepository->expects($this->once())->method('save');
+        $this->pendingRefundManager->expects($this->once())
+            ->method('terminate')
+            ->with($malformed, 'reconcile_error: malformed stored query payload');
+        $this->pendingRefundManager->expects($this->once())->method('finalizeSuccess')->willReturn(true);
+        $this->logger->expects($this->atLeastOnce())->method('critical');
 
         $this->cron->execute();
-
-        $this->assertTrue((bool)$healthy->getIsProcessed());
     }
 
     /**
-     * REFUND CRON 30b: a scalar JSON payload (valid JSON, not an array) is
-     * rejected explicitly — no undefined-key access downstream.
+     * REFUND CRON 30b: a payload without m_refund_id is malformed too —
+     * terminal reconcile (missing identity is non-retryable).
      */
-    public function testScalarPayloadIsRejectedExplicitly(): void
+    public function testPayloadWithoutRefundIdIsTerminal(): void
     {
         $row = $this->refundRow(
-            ['entity_id' => 1, RefundInterface::ADDITIONAL_INFORMATION => '"just-a-string"']
+            [
+                RefundInterface::ADDITIONAL_INFORMATION => (string)json_encode(
+                    ['app_id' => '1000', 'timestamp' => 1690000000000]
+                ),
+            ]
         );
         $this->stubCollection([$row]);
 
         $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
-        $this->creditmemo->expects($this->never())->method('setState');
-        $this->logger->expects($this->once())->method('error');
+        $this->pendingRefundManager->expects($this->once())
+            ->method('terminate')
+            ->with($row, 'reconcile_error: malformed stored query payload');
+        $this->logger->expects($this->once())->method('critical');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * REFUND CRON 30c: a missing creditmemo is TERMINAL reconcile — the row
+     * is saturated with evidence and never blocks the batch.
+     */
+    public function testMissingCreditmemoIsTerminal(): void
+    {
+        $row = $this->refundRow(
+            ['entity_id' => 1, RefundInterface::CREDIT_MEMO_ID => 999]
+        );
+        $healthy = $this->refundRow(['entity_id' => 2]);
+        $this->stubCollection([$row, $healthy]);
+
+        $this->cmMap[999] = null;
+
+        $this->refundQueryCommand->expects($this->once())->method('getRefundQuery')->willReturn(
+            ['return_code' => 1, 'return_message' => 'Refund successful.']
+        );
+        $this->pendingRefundManager->expects($this->once())
+            ->method('terminate')
+            ->with($row, 'reconcile_error: credit memo missing');
+        $this->pendingRefundManager->expects($this->once())->method('finalizeSuccess')->willReturn(true);
+        $this->logger->expects($this->atLeastOnce())->method('critical');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * REFUND CRON 30d: a creditmemo whose state drifted away from PROCESSING
+     * is TERMINAL reconcile — never double-finalize a refund resolved
+     * outside this lifecycle.
+     */
+    public function testStateDriftIsTerminal(): void
+    {
+        $row = $this->refundRow();
+        $this->stubCollection([$row]);
+
+        $this->cmState = Creditmemo::STATE_REFUNDED;
+
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $evidence = [];
+        $this->pendingRefundManager->expects($this->once())
+            ->method('terminate')
+            ->willReturnCallback(function ($rowArg, string $evidenceArg) use (&$evidence) {
+                $evidence[] = $evidenceArg;
+            });
+        $this->logger->expects($this->once())->method('critical');
 
         $this->cron->execute();
 
-        $this->assertSame(0, (int)$row->getData(RefundInterface::QUERY_ATTEMPTS));
+        $this->assertSame(
+            'reconcile_error: credit memo state is ' . Creditmemo::STATE_REFUNDED
+            . ' (expected ' . CreditmemoPlugin::STATE_PROCESSING . ')',
+            $evidence[0] ?? 'NONE'
+        );
     }
 }
