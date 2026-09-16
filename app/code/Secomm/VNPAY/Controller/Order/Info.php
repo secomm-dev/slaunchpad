@@ -8,6 +8,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Quote\Model\QuoteRepository;
+use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use Secomm\VNPAY\Helper\Rate;
 
@@ -26,7 +27,8 @@ class Info extends Action
         private readonly \Magento\Checkout\Model\Session $checkoutSession,
         private readonly Rate $helperRate,
         private readonly QuoteRepository $quoteRepository,
-        private readonly RemoteAddress $remoteAddress
+        private readonly RemoteAddress $remoteAddress,
+        private readonly Order $order
     ) {
         parent::__construct($context);
     }
@@ -34,11 +36,22 @@ class Info extends Action
     public function execute()
     {
         $quote = $this->checkoutSession->getQuote();
+        if ($quote->getId() && !$quote->getIsActive()) {
+            // Stale quote from a previous VNPAY attempt (consumed by Ipn/Pay) —
+            // start a fresh cart so the customer is not stuck on the old quote.
+            $this->checkoutSession->clearQuote();
+            $quote = $this->checkoutSession->getQuote();
+        }
         $url = $this->scopeConfig->getValue('payment/vnpay/payment_url');
         $vnp_Url = '';
         if ($quote->getId() && $quote->getIsActive()) {
             $quote->getPayment()->setMethod('vnpay');
-            if (!$quote->getReservedOrderId()) {
+            if (!$quote->getReservedOrderId()
+                || $this->order->loadByIncrementId((string)$quote->getReservedOrderId())->getId()
+            ) {
+                // Re-reserve when the reserved id already belongs to a placed
+                // order — VNPAY rejects duplicate vnp_TxnRef values.
+                $quote->setReservedOrderId(null);
                 $quote->reserveOrderId();
             }
             $quote->collectTotals();
