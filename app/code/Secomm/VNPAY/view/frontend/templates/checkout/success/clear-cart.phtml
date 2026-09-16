@@ -1,0 +1,20 @@
+<script>
+    require(['Magento_Customer/js/customer-data'], function (customerData) {
+        var storageKey = 'mage-cache-storage';
+        try {
+            var storage = JSON.parse(localStorage.getItem(storageKey)) || {};
+            if (storage.cart) {
+                storage.cart = {
+                    data_id: 0,
+                    items: [],
+                    summary_count: 0,
+                    subtotal: '0',
+                    subtotalAmount: 0
+                };
+                localStorage.setItem(storageKey, JSON.stringify(storage));
+            }
+        } catch (e) {}
+        customerData.invalidate(['cart']);
+        customerData.reload(['cart'], true);
+    });
+</script>
