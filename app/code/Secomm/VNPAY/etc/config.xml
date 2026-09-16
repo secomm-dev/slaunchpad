@@ -10,6 +10,7 @@
                 <title>VNPAY</title>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
+                <min_order_total>5000</min_order_total>
             </vnpay>
           
         </payment>

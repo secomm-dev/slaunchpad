@@ -8,7 +8,6 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Quote\Model\QuoteRepository;
-use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use Secomm\VNPAY\Helper\Rate;
 
@@ -27,8 +26,7 @@ class Info extends Action
         private readonly \Magento\Checkout\Model\Session $checkoutSession,
         private readonly Rate $helperRate,
         private readonly QuoteRepository $quoteRepository,
-        private readonly RemoteAddress $remoteAddress,
-        private readonly Order $order
+        private readonly RemoteAddress $remoteAddress
     ) {
         parent::__construct($context);
     }
@@ -46,14 +44,12 @@ class Info extends Action
         $vnp_Url = '';
         if ($quote->getId() && $quote->getIsActive()) {
             $quote->getPayment()->setMethod('vnpay');
-            if (!$quote->getReservedOrderId()
-                || $this->order->loadByIncrementId((string)$quote->getReservedOrderId())->getId()
-            ) {
-                // Re-reserve when the reserved id already belongs to a placed
-                // order — VNPAY rejects duplicate vnp_TxnRef values.
-                $quote->setReservedOrderId(null);
-                $quote->reserveOrderId();
-            }
+            // ALWAYS reserve a FRESH order id for every payment attempt —
+            // VNPAY locks a vnp_TxnRef after repeated failures (code 79 after
+            // wrong OTP attempts), so a retry must never reuse the previous
+            // attempt's reference.
+            $quote->setReservedOrderId(null);
+            $quote->reserveOrderId();
             $quote->collectTotals();
             $this->quoteRepository->save($quote);
 

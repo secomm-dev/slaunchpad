@@ -122,7 +122,7 @@ Mỗi lần Place Order tạo 1 order `pending` + email xác nhận; abandon đ�
 3. Nhánh fail IPN vẫn `setTotalPaid()` trên order bị cancel — dữ liệu tài chính sai.
 4. `echo` không `exit` ở nhánh cuối Ipn — response có thể lẫn output khác (`catch (\Exception)` đã fix ở A13).
 5. Race IPN vs return: Magento 2.4.8 bọc `placeOrder` bằng `CartMutex` (`cart_lock_<quoteId>`, timeout 0) — luồng thua lock nhận `CartLockedException`. **Đã xử lý (A14)**: Pay catch `CartLockedException` → `sleep(2)` + re-check order 1 lần; guard session stale ở Info. QC T6 bắt buộc.
-6. Retry trên cùng quote dùng lại cùng `reserved_order_id` (Info chỉ reserve khi chưa có) — có thể bị VNPAY từ chối trùng `vnp_TxnRef` khi attempt trước đã tạo giao dịch.
+6. ~~Retry trên cùng quote dùng lại cùng `reserved_order_id`~~ — **ĐÃ FIX (A17)**: Info luôn re-reserve order id mới cho mỗi attempt.
 
 Rollback: `git checkout` 5 file + `app/etc/config.php`.
 
