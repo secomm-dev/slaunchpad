@@ -11,19 +11,27 @@ namespace Secomm\VietQr\Model;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Escaper;
+use Magento\Framework\UrlInterface;
 use Magento\Payment\Helper\Data as PaymentHelper;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
- * Exposes VietQR payment instructions to the checkout JS config
+ * Exposes VietQR payment instructions and logo to the checkout JS config
  * (TASK-N35E28 / SPEC-FEAT-ZKD4VA §3 AC-005).
  *
- * Populates window.checkoutConfig.payment.instructions.secomm_vietqr.
+ * Populates window.checkoutConfig.payment.instructions.secomm_vietqr and
+ * window.checkoutConfig.payment.secomm_vietqr.logoSrc.
  */
 class InstructionsConfigProvider implements ConfigProviderInterface
 {
+    /** Media subdirectory configured as upload_dir of the logo field. */
+    private const MEDIA_LOGO_DIR = 'vietqr/';
+
     public function __construct(
         private readonly PaymentHelper $paymentHelper,
-        private readonly Escaper $escaper
+        private readonly Escaper $escaper,
+        private readonly Config $config,
+        private readonly StoreManagerInterface $storeManager
     ) {
     }
 
@@ -38,17 +46,37 @@ class InstructionsConfigProvider implements ConfigProviderInterface
             return [];
         }
 
+        $paymentConfig = [
+            Payment::CODE => [
+                'logoSrc' => $this->getLogoSrc(),
+            ],
+        ];
+
         $instructions = trim((string)$method->getInstructions());
-        if ($instructions === '') {
-            return [];
+        if ($instructions !== '') {
+            $paymentConfig['instructions'] = [
+                Payment::CODE => nl2br($this->escaper->escapeHtml($instructions)),
+            ];
         }
 
         return [
-            'payment' => [
-                'instructions' => [
-                    Payment::CODE => nl2br($this->escaper->escapeHtml($instructions)),
-                ],
-            ],
+            'payment' => $paymentConfig,
         ];
+    }
+
+    /**
+     * Uploaded logo URL; empty string when no logo is configured (no logo is shown).
+     *
+     * @return string
+     */
+    private function getLogoSrc(): string
+    {
+        $logo = $this->config->getLogo();
+        if ($logo === '') {
+            return '';
+        }
+
+        return $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_MEDIA)
+            . self::MEDIA_LOGO_DIR . $logo;
     }
 }

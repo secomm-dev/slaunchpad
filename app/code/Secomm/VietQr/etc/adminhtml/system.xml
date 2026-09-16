@@ -18,6 +18,14 @@
                        showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Title</label>
                 </field>
+                <field id="logo" translate="label" type="image" sortOrder="25"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Logo</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
+                    <upload_dir config="system/filesystem/media" scope_info="1">vietqr</upload_dir>
+                    <base_url type="media" scope_info="1">vietqr</base_url>
+                    <comment>Shown next to the payment method title at checkout. Leave empty to show no logo.</comment>
+                </field>
                 <field id="sort_order" translate="label" type="text" sortOrder="30"
                        showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Sort Order</label>
