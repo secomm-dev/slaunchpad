@@ -1,0 +1,31 @@
+theme=Secomm/launchpad id=5
+
+=== locale=vi_VN dict=1951 entries ===
+PASS  [Please fill out this field.] dict=Vui lòng điền vào trường này.
+      render=Vui lòng điền vào trường này.
+PASS  [Value must be less than or equal to %1.] dict=Giá trị phải nhỏ hơn hoặc bằng %1.
+      render=Giá trị phải nhỏ hơn hoặc bằng %1.
+PASS  [Value must be greater than or equal to %1.] dict=Giá trị phải lớn hơn hoặc bằng %1.
+      render=Giá trị phải lớn hơn hoặc bằng %1.
+PASS  [Please match the format requested.] dict=Vui lòng nhập đúng định dạng.
+      render=Vui lòng nhập đúng định dạng.
+PASS  [Please enter a valid value.] dict=Vui lòng nhập một giá trị hợp lệ.
+      render=Vui lòng nhập một giá trị hợp lệ.
+PASS  [Please enter a valid number.] dict=Vui lòng nhập một số hợp lệ.
+      render=Vui lòng nhập một số hợp lệ.
+
+=== locale=en_US dict=124 entries ===
+PASS  [Please fill out this field.] dict=(MISSING)
+      render=Please fill out this field.
+PASS  [Value must be less than or equal to %1.] dict=(MISSING)
+      render=Value must be less than or equal to %1.
+PASS  [Value must be greater than or equal to %1.] dict=(MISSING)
+      render=Value must be greater than or equal to %1.
+PASS  [Please match the format requested.] dict=(MISSING)
+      render=Please match the format requested.
+PASS  [Please enter a valid value.] dict=(MISSING)
+      render=Please enter a valid value.
+PASS  [Please enter a valid number.] dict=(MISSING)
+      render=Please enter a valid number.
+
+TOTAL: 12 PASS, 0 FAIL

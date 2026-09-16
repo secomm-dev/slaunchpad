@@ -200,6 +200,8 @@ Template cho entry kế tiếp — copy từ đây:
 - **Root cause / trigger**: static materialize khác chiến lược giữa các lần deploy/khởi tạo (symlink ở developer mode, copy khi deploy bằng copy strategy) + lần "xóa toàn bộ pub/static/frontend/" 09-04 chỉ tái tạo lại 1 phần.
 - **Action / prevention**: khi sửa asset (`css/js/template`) đã từng deploy mà "fix không ăn": `ls -la pub/static/frontend/<theme>/<locale>/<Vendor>_<Module>/...` — nếu là regular-file → `rm` bản copy (as secomm) rồi request lại (dev-mode serve on-demand), hoặc chạy `setup:static-content:deploy` ở env deploy. Không kết luận "CSS sai" trước khi kiểm tra bản serve thật (fetch CSS URL trong page, so sheet cssRules).
 - **Owner**: TL (review) — bổ sung deploy checklist như đề xuất BUG-MNEZ92
+- **Tái xác nhận (F3) 09-16 — BUG-ER121M**: sửa source `osc-discount-code.css` (module-layer, luma scope) mà verify đầu vẫn thấy rule cũ — bản materialized regular-file `pub/static/frontend/Magento/luma/vi_VN/Launchpad_Osc/css/` serve stale (`cache:flush` không ăn); `find pub/static -path "*Launchpad_Osc*" -name "osc-*.css" -delete` (11 file mọi area) → request sau re-materialize đúng. Bài học mở rộng: trap không chỉ giữa các store/strategy deploy — **cả trong 1 session dev**, file materialized từ lần request đầu trong session đã đủ để che fix.
+
 ## LL-0018 — Curl QC flow: form_key rotate sau loginPost + guest OAR 2.4.8 đổi field name & thiếu `oar_zip` → 500
 
 - **Date**: 2026-09-11

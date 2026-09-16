@@ -33,3 +33,18 @@
 2. **GraphQL `products(filter:{sku})` với sku của child variant trả về PARENT** (configurable/grouped) — card variant (vd "Terra Mug") mở modal ở parent (vd "Terra Stoneware Collection") — behavior Magento 2.4.8, chấp nhận cho UX Quick View (parent luôn ATC được).
 3. Tầng page-cache theo URL (cache-buster bypass được) trả stale markup sau khi sửa template — `cache:flush` toàn bộ bắt buộc trước verify.
 4. Fallback paths đã handle nhưng không trigger được trong test (OK — defensive): HTTP error → native form submit; JSON `backUrl` → navigate (server-side rejection).
+
+## Update v3 (2026-09-16) — swatch PDP-parity + thông tin sản phẩm + homepage + Monsoon
+
+- **Swatch như PDP**: radio `.swatch-option` (`data-swatch-type` text/visual), visual span 20×20 `background-color` / `<img>` (pattern `Magento_Swatches::swatch-item.phtml`); GraphQL `swatch_data { value }`; input ẩn `opacity-0 size-full m-0`. Bỏ `<select>` hoàn toàn.
+- **Thông tin modal**: SKU + short description + "More Information" (description HTML — cùng nguồn PDP).
+- **Homepage widget**: layout mới `Magento_Cms/layout/cms_index_index.xml` + `cms_page_view.xml` (modal block + `ifconfig`).
+- **Monsoon_HyvaAjaxAddToCart tương thích** (chốt user, module source-committed `app/code/Monsoon/`): card AJAX qua Monsoon; Quick View modal không bị intercept (không double-add); handover — sau ATC modal đóng + drawer mở theo `ajax_cart_open_after_add_to_cart`; **PDP loại khỏi Monsoon selectors** (`ajax_add_to_cart_selectors=".product_addtocart_form"`) vì `hyva.formValidation.onSubmit` luôn preventDefault + `form.submit()` → double-POST ×2 nếu intercept (record Traps #9).
+- **Modal width** 44rem → **60rem** (960px).
+- **Fix visual**: color swatch trắng do thiếu `data-swatch-type="visual"` + span không có kích thước; class width mới phải build tailwind **và cp tay styles.css sang pub/static** (gotcha F3 TASK-7P5RJP: static deploy quick bỏ qua styles.css ở mode default).
+
+## Verify v3: v2 suite 8/8 · main suite 20/20 (T5 live EN SKIP) · compat 4/4
+
+- `playwright-verify-v3.txt` (v2 8/8), `playwright-verify-v2.txt` (main 20/20), `monsoon-compat.txt` (4/4)
+- Screenshots: `qv-v2-swatch-info.png` (text swatch + SKU + Thông tin thêm), `qv-v2-color-swatch.png` (color swatch Meridian — Cream/Sage/Charcoal đúng màu, width 960px), `qv-v2-homepage.png` (homepage widget)
+- ENV: store-switch local hỏng (pre-existing — `?___store` lẫn cookie); T5 live EN SKIP (identity đã verify dict 10/10 + live từ phiên trước)

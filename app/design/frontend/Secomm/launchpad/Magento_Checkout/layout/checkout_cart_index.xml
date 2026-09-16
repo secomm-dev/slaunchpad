@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+    Secomm Launchpad — Quick View modal (TASK-Z3DAH5, SLP-157)
+    Reusable modal container for the cross-sell slider on the shopping cart page.
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block
+                class="Magento\Framework\View\Element\Template"
+                name="quickview.modal"
+                template="Magento_Theme::html/quickview/modal.phtml"
+                after="-"
+                ifconfig="hyva_theme_quickview/general/enabled"
+            />
+        </referenceContainer>
+    </body>
+</page>

@@ -1,0 +1,15 @@
+POST → /rest/V1/elasticsuite-tracker/hit | data: {"eventData":{"page":{"store_id":"1","type":{"identifier":"catalog_product_view","label":"Catalog Product View (Any)"},"locale":"vi_VN","product":{"id":"2041","
+POST → /mpextrafee/product/extrafee/ | data: product=2041&selected_configurable_option=&related_product=&item=2041&form_key=KLdyfCfUROcLOFgx&qty=1
+POST → /checkout/cart/add/uenc/aHR0cDovL3NsYXVuY2hwYWQubG9jYWxob3N0L2F0bGFzLXBvdWYuaHRtbA~~/product/2041/ | data: product=2041&selected_configurable_option=&related_product=&item=2041&form_key=GCRIPaxD8MlNecf6&qty=1
+POST → /rest/V1/elasticsuite-tracker/hit | data: {"eventData":{"page":{"store_id":"1","type":{"identifier":"catalog_product_view","label":"Catalog Product View (Any)"},"locale":"vi_VN","product":{"id":"2041","
+POST → /mpextrafee/product/extrafee/ | data: product=2041&selected_configurable_option=&related_product=&item=2041&form_key=KLdyfCfUROcLOFgx&qty=1
+POST → /rest/V1/elasticsuite-tracker/hit | data: {"eventData":{"page":{"store_id":"1","type":{"identifier":"checkout_cart_index","label":"Giỏ hàng"},"locale":"vi_VN","site":"slaunchpad.localhost","url":"/check
+POST → /rest/default/V1/guest-carts/CfTL8n3zYJzm9JLO9V8OYSx1THGqYUUv/mpextrafee | data: {"area":"3","addressInformation":{"shipping_address":{"countryId":"US","regionId":null,"postcode":null},"billing_address":{"street":[""]},"shipping_method_code"
+--- case A
+value sau fill A: 
+msgA: Vui lòng điền vào trường này.
+value sau A: 
+--- case B
+value sau fill B: 10001
+msgB: Giá trị phải nhỏ hơn hoặc bằng 10000.
+value sau B: 10001
