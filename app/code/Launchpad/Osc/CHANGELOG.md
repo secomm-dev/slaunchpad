@@ -23,6 +23,15 @@ All notable changes to this project layer module are documented here.
   Ward even before a region is selected; fixes the "Please fill out this field."
   bubble on the empty native City field.
 
+### Fixed
+
+- BUG-ER121M (SLP-199 follow-up): the discount section's Apply button dropped ~12px
+  below the input whenever the required-entry validation message showed — mage/validation
+  inserts `div.mage-error` inside `.control` (36px -> 60px) and the row's
+  `align-items: center` centered the button against the taller control. Switched to
+  `flex-start` (identical rendering in every non-error state, where control/input/button
+  are all 36px). CSS-only, scoped under `.opc-payment-additional.discount-code`.
+
 ### Changed
 
 - Round-4 quick fix on the copies (user direction 2026-09-03): VN row layout is now
