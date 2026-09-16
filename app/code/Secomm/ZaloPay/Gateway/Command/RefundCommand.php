@@ -142,9 +142,9 @@ class RefundCommand implements CommandInterface
                 || $statusCode === AbstractResponseValidator::REFUND_PROCESSING
             ) {
                 $refundTransactionFactory->setIsProcessed(RefundInterface::PROCESSED);
-                $statusMessage = RefundProcessor::processRefundStatus(
-                    $response[AbstractResponseValidator::SUB_RETURN_CODE] ?? $statusCode
-                );
+                $statusMessage = $statusCode === AbstractResponseValidator::RETURN_CODE_ACCEPT
+                    ? RefundProcessor::processRefundStatus(AbstractResponseValidator::RETURN_CODE_ACCEPT)
+                    : RefundProcessor::processRefundStatus(AbstractResponseValidator::REFUND_PROCESSING);
                 $this->messageManager->addSuccessMessage(self::PREFIX_ZALO_PAY_MESSAGE . __($statusMessage));
             } else {
                 if ($this->validator !== null) {
@@ -163,20 +163,14 @@ class RefundCommand implements CommandInterface
             );
         } catch (Exception $exception) {
             $this->logger->error($exception->getMessage());
-            if (!$isThrowException && isset($response[AbstractResponseValidator::RESPONSE_MESSAGE])) {
-                $this->messageManager->addErrorMessage(self::PREFIX_ZALO_PAY_MESSAGE .
-                    __(RefundProcessor::processRefundStatus($response[AbstractResponseValidator::SUB_RETURN_CODE])));
+            $subCode = $response[AbstractResponseValidator::SUB_RETURN_CODE] ?? null;
+            $statusMessage = $subCode !== null
+                ? RefundProcessor::processRefundStatus($subCode)
+                : $exception->getMessage();
+            if ($isThrowException) {
+                throw new Exception(self::PREFIX_ZALO_PAY_MESSAGE . __($statusMessage));
             } else {
-                if ($isThrowException) {
-                    if (isset($response[AbstractResponseValidator::RESPONSE_MESSAGE])) {
-                        throw new Exception(self::PREFIX_ZALO_PAY_MESSAGE .
-                            __(RefundProcessor::processRefundStatus($response[AbstractResponseValidator::SUB_RETURN_CODE])));
-                    } else {
-                        $this->messageManager->addErrorMessage(__($exception->getMessage()));
-                    }
-                } else {
-                    $this->messageManager->addErrorMessage(__($exception->getMessage()));
-                }
+                $this->messageManager->addErrorMessage(self::PREFIX_ZALO_PAY_MESSAGE . __($statusMessage));
             }
         } finally {
             //TODO change condition

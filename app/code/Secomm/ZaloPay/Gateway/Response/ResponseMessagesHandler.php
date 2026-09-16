@@ -54,9 +54,6 @@ class ResponseMessagesHandler implements HandlerInterface
      */
     protected function getState(int $responseCode): bool
     {
-        if ((string)$responseCode === '1' || (string)$responseCode === '2') {
-            return false;
-        }
-        return true;
+        return $responseCode === AbstractResponseValidator::RETURN_CODE_ACCEPT;
     }
 }

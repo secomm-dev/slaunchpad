@@ -42,12 +42,13 @@ class Rate
      */
     public function getVndAmount(Order $order, $amount): float
     {
+        $numericAmount = is_numeric($amount) ? (float)$amount : (float)str_replace(',', '', (string)$amount);
         if ($this->isVietnamDong($order)) {
-            return round($amount);
+            return round($numericAmount);
         } else {
             try {
                 return round($this->helperData->currencyConvert(
-                    $amount,
+                    $numericAmount,
                     $order->getOrderCurrencyCode(),
                     self::CURRENCY_CODE
                 ));
@@ -67,12 +68,13 @@ class Rate
      */
     public function getVndAmountByCurrency($currency, $amount): float
     {
+        $numericAmount = is_numeric($amount) ? (float)$amount : (float)str_replace(',', '', (string)$amount);
         if ($currency === self::CURRENCY_CODE) {
-            return round($amount);
+            return round($numericAmount);
         } else {
             try {
                 return round($this->helperData->currencyConvert(
-                    $amount,
+                    $numericAmount,
                     $currency,
                     self::CURRENCY_CODE
                 ));

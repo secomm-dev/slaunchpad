@@ -172,7 +172,8 @@ class OrderFinalizerTest extends TestCase
             $resourceConnection,
             $this->placementAuthorization,
             $this->lifecycle,
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(\Magento\Sales\Model\Order\Email\Sender\OrderSender::class)
         );
     }
 

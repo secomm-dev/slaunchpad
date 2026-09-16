@@ -19,6 +19,7 @@ use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Psr\Log\LoggerInterface;
 use Secomm\ZaloPay\Api\Data\PaymentAttemptInterface;
 use Secomm\ZaloPay\Api\PaymentAttemptRepositoryInterface;
@@ -95,6 +96,7 @@ class OrderFinalizer
      * @param OrderPlacementAuthorization $placementAuthorization
      * @param PaymentAttemptLifecycle $lifecycle
      * @param LoggerInterface $logger
+     * @param OrderSender $orderSender
      */
     public function __construct(
         private readonly PaymentAttemptRepositoryInterface $repository,
@@ -109,7 +111,8 @@ class OrderFinalizer
         private readonly ResourceConnection                $resourceConnection,
         private readonly OrderPlacementAuthorization       $placementAuthorization,
         private readonly PaymentAttemptLifecycle           $lifecycle,
-        private readonly LoggerInterface                   $logger
+        private readonly LoggerInterface                   $logger,
+        private readonly OrderSender                       $orderSender
     ) {
     }
 
@@ -198,6 +201,21 @@ class OrderFinalizer
         } catch (\Exception $e) {
             $connection->rollBack();
             throw $e;
+        }
+
+        // Send order confirmation email AFTER the DB transaction commits.
+        // InitializeCommand intentionally sets canSendNewEmailFlag = false so
+        // SubmitObserver skips the email on initial order placement (order is
+        // still pending_payment at that point). Now that the order is captured
+        // and fully finalized we send it ourselves.
+        try {
+            $this->orderSender->send($order);
+        } catch (\Throwable $e) {
+            // Non-fatal: a failed email must not roll back a successful payment.
+            $this->logger->critical(
+                'ZaloPay OrderFinalizer: failed to send order confirmation email.',
+                ['app_trans_id' => $appTransId, 'exception' => $e->getMessage()]
+            );
         }
 
         return $order;
