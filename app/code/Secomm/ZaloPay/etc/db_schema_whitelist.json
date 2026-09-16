@@ -13,11 +13,14 @@
    "last_error": true,
    "created_at": true,
    "updated_at": true,
-   "refund_state": true
+   "refund_state": true,
+   "active_claim": true
   },
   "index": {
    "ZALO_PAY_REFUND_ENTITY_ID": true,
-   "ZALO_PAY_REFUND_CREDIT_MEMO_ID": true
+   "ZALO_PAY_REFUND_CREDIT_MEMO_ID": true,
+   "ZALO_PAY_REFUND_ORDER_ACTIVE": true,
+   "ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE": true
   },
   "constraint": {
    "PRIMARY": true,

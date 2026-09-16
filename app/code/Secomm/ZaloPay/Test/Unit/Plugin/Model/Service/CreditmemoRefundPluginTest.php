@@ -19,6 +19,7 @@ use Magento\Sales\Model\Service\CreditmemoService;
 use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Command\RefundCommand;
 use Secomm\ZaloPay\Gateway\Command\RefundOutcome;
+use Secomm\ZaloPay\Gateway\Command\RefundRequest;
 use Magento\Framework\Exception\LocalizedException;
 use Secomm\ZaloPay\Plugin\Model\Service\CreditmemoRefundPlugin;
 use Secomm\ZaloPay\Service\CreditmemoRefundPreflight;
@@ -111,6 +112,25 @@ class CreditmemoRefundPluginTest extends TestCase
         ];
     }
     /**
+     * Round 3 seams: a prepared provider request identity (stable
+     * m_refund_id, NO network I/O) for the plugin's prepare/claim/
+     * executePrepared flow.
+     */
+    private function makePreparedRequest(string $mRefundId): RefundRequest
+    {
+        $tracking = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, $mRefundId, 25000, '{"app_id":1}');
+
+        return new RefundRequest(['payload' => 1], $mRefundId, '{"app_id":1}', $tracking);
+    }
+
+    /**
+     * @return \Secomm\ZaloPay\Model\RefundModel|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private function makeClaim()
+    {
+        return $this->createMock(\Secomm\ZaloPay\Model\RefundModel::class);
+    }
+    /**
      * GATE: non-ZaloPay refunds flow through the core untouched.
      */
     public function testNonZaloPayPassesThrough(): void
@@ -130,8 +150,9 @@ class CreditmemoRefundPluginTest extends TestCase
      */
     public function testOfflineRefundRefused(): void
     {
-        $this->mockRefundCommand->expects($this->never())->method('execute');
-        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $this->mockRefundCommand->expects($this->never())->method('prepare');
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $this->mockRefundManager->expects($this->never())->method('acquireClaim');
         $spy = $this->proceedSpy();
         try {
             $this->plugin->aroundRefund(
@@ -148,34 +169,13 @@ class CreditmemoRefundPluginTest extends TestCase
     }
 
     /**
-     * GATE: a second refund while one is still being reconciled is blocked
-     * (the refundable balance does not yet reflect the pending refund).
-     */
-    public function testInFlightRefundBlocked(): void
-    {
-        $this->mockRefundManager->method('hasInFlight')->willReturn(true);
-        $this->mockRefundCommand->expects($this->never())->method('execute');
-        $this->mockRefundManager->expects($this->never())->method('registerPending');
-        $spy = $this->proceedSpy();
-        try {
-            $this->plugin->aroundRefund(
-                $this->createMock(CreditmemoService::class),
-                $spy['callable'],
-                $this->creditmemo
-            );
-            self::fail('in-flight refund must block');
-        } catch (LocalizedException $exception) {
-            $this->assertStringContainsString('still being reconciled', $exception->getMessage());
-        }
-        $this->assertSame([], $spy['calls']);
-    }
-    /**
      * GATE: refund without an invoice (no capture transaction) is refused.
      */
     public function testMissingInvoiceRefused(): void
     {
         $this->invoice = null;
-        $this->mockRefundCommand->expects($this->never())->method('execute');
+        $this->mockRefundCommand->expects($this->never())->method('prepare');
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
         $spy = $this->proceedSpy();
         try {
             $this->plugin->aroundRefund(
@@ -196,7 +196,8 @@ class CreditmemoRefundPluginTest extends TestCase
     public function testInvoiceWithoutTransactionIdRefused(): void
     {
         $this->invoiceTxnId = '';
-        $this->mockRefundCommand->expects($this->never())->method('execute');
+        $this->mockRefundCommand->expects($this->never())->method('prepare');
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
         $spy = $this->proceedSpy();
         try {
             $this->plugin->aroundRefund(
@@ -211,35 +212,39 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->assertSame([], $spy['calls']);
     }
     /**
-     * BLOCKER 1 lifecycle: PROCESSING registers the durable pending track
-     * and STOPS before the core refund accounting - total_refunded and
-     * qty_refunded stay untouched, the order cannot become CLOSED.
+     * Round 3 BLOCKER 1 lifecycle (F12): the ATOMIC durable claim is
+     * acquired BETWEEN the prepared identity and the provider call; a
+     * PROCESSING outcome marks the claim durable and STOPS before the core
+     * refund accounting - total_refunded/qty_refunded stay untouched, the
+     * order cannot become CLOSED.
      */
     public function testProcessingRegistersPendingAndStopsBeforeCore(): void
     {
-        $outcome = new RefundOutcome(
-            RefundOutcome::STATUS_PROCESSING,
-            '260916_1000_777_r1',
-            25000,
-            '{"app_id":1}'
-        );
+        $request = $this->makePreparedRequest('260916_1000_777_r1');
+        $claim = $this->makeClaim();
         $this->paymentDataObjectFactory->expects($this->once())->method('create')
             ->with($this->identicalTo($this->payment))
             ->willReturn($this->createMock(PaymentDataObjectInterface::class));
-        $this->mockRefundCommand->expects($this->once())->method('execute')
+        $this->mockRefundCommand->expects($this->once())->method('prepare')
             ->with($this->callback(function (array $subject): bool {
                 return ($subject['amount'] ?? null) === 25.0
                     && isset($subject['payment']);
             }))
-            ->willReturn($outcome);
+            ->willReturn($request);
+        $this->mockRefundManager->expects($this->once())->method('acquireClaim')
+            ->with(
+                $this->identicalTo($this->creditmemo),
+                $this->identicalTo($request->getTracking())
+            )
+            ->willReturn($claim);
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->with($this->identicalTo($request))
+            ->willReturn(new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_r1', 25000, null));
         $this->payment->expects($this->once())->method('setCreditmemo')
             ->with($this->identicalTo($this->creditmemo));
         $this->payment->expects($this->once())->method('setParentTransactionId')->with('CAPTURE-19');
-        $this->mockRefundManager->expects($this->once())->method('registerPending')
-            ->with(
-                $this->identicalTo($this->creditmemo),
-                $this->identicalTo($outcome)
-            );
+        $this->mockRefundManager->expects($this->once())->method('markProcessing')
+            ->with($this->identicalTo($claim));
         $this->messageManager->expects($this->once())->method('addSuccessMessage')
             ->with($this->callback(function ($msg): bool {
                 return str_contains((string)$msg, 'finalized automatically');
@@ -252,20 +257,24 @@ class CreditmemoRefundPluginTest extends TestCase
         );
         $this->assertSame($this->creditmemo, $result);
         $this->assertSame([], $spy['calls']);
-    }
-    /**
-     * BLOCKER 1 lifecycle: confirmed SUCCESS marks the known outcome and
-     * lets the NATIVE core accounting run exactly once (the gateway refund
-     * command skips its provider call via the marker).
+    }    /**
+     * Round 3 BLOCKER 1 lifecycle: confirmed SUCCESS marks the known
+     * outcome, lets the NATIVE core accounting run exactly once and lands
+     * the terminal bookkeeping on the claim (confirmed_success, slot
+     * released - F12/F13).
      */
     public function testSuccessMarksOutcomeAndRunsCoreFlow(): void
     {
-        $outcome = new RefundOutcome(RefundOutcome::STATUS_SUCCESS, '260916_1000_777_r2', 25000, null);
-        $this->paymentDataObjectFactory->expects($this->once())->method('create')
-            ->with($this->identicalTo($this->payment))
+        $request = $this->makePreparedRequest('260916_1000_777_r2');
+        $claim = $this->makeClaim();
+        $this->paymentDataObjectFactory->method('create')
             ->willReturn($this->createMock(PaymentDataObjectInterface::class));
-        $this->mockRefundCommand->expects($this->once())->method('execute')->willReturn($outcome);
-        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->willReturn(new RefundOutcome(RefundOutcome::STATUS_SUCCESS, '260916_1000_777_r2', 25000, null));
+        $this->mockRefundManager->expects($this->once())->method('markConfirmedSuccess')
+            ->with($this->identicalTo($claim));
         $spy = $this->proceedSpy('CORE-RESULT-SUCCESS');
         $result = $this->plugin->aroundRefund(
             $this->createMock(CreditmemoService::class),
@@ -276,14 +285,15 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->assertSame([[$this->creditmemo, false]], $spy['calls']);
         $this->assertTrue($this->marker->isProviderAlreadyAsked(77));
     }
-
     /**
-     * Defensive: null outcome (marker already claimed) hands over to the
-     * core flow unchanged.
+     * Defensive: a null prepared request (marker already claimed) hands
+     * over to the core flow unchanged - no claim, no provider call.
      */
     public function testNullOutcomePassesThroughToCore(): void
     {
-        $this->mockRefundCommand->expects($this->once())->method('execute')->willReturn(null);
+        $this->mockRefundCommand->expects($this->once())->method('prepare')->willReturn(null);
+        $this->mockRefundManager->expects($this->never())->method('acquireClaim');
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
         $spy = $this->proceedSpy('CORE-RESULT-NULL');
         $result = $this->plugin->aroundRefund(
             $this->createMock(CreditmemoService::class),
@@ -293,25 +303,30 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->assertSame('CORE-RESULT-NULL', $result);
         $this->assertSame([[$this->creditmemo, false]], $spy['calls']);
         $this->assertFalse($this->marker->isProviderAlreadyAsked(77));
-    }
-    /**
-     * BLOCKER 1 lifecycle: transport failure WITH a tracking outcome
-     * registers the durable pending track (reconciled by m_refund_id -
-     * never re-requested) and surfaces an honest, retryable error.
+    }    /**
+     * Round 3 BLOCKER 1 lifecycle (F16): transport failure WITH a tracking
+     * outcome lands the SEMANTIC UNKNOWN state on the durable claim
+     * (explicitly NOT processing) - reconciled by m_refund_id, never
+     * re-requested - and surfaces an honest, non-technical error.
      */
     public function testTransportWithOutcomeRegistersPendingAndThrows(): void
     {
-        $tracking = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_r3', 25000, '{"app_id":1}');
+        $request = $this->makePreparedRequest('260916_1000_777_r3');
+        $claim = $this->makeClaim();
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
         $transport = new RefundTransportException(
             new \Magento\Framework\Phrase('Zalopay: Refund failed. Please try again later.'),
             null,
-            $tracking
+            $request->getTracking()
         );
-        $this->mockRefundCommand->expects($this->once())->method('execute')->willThrowException($transport);
-        $this->mockRefundManager->expects($this->once())->method('registerPending')
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->willThrowException($transport);
+        $this->mockRefundManager->expects($this->once())->method('markUnknown')
             ->with(
-                $this->identicalTo($this->creditmemo),
-                $this->identicalTo($tracking),
+                $this->identicalTo($claim),
                 'transport_error: initial refund outcome unknown - reconciliation pending'
             );
         $spy = $this->proceedSpy();
@@ -328,19 +343,29 @@ class CreditmemoRefundPluginTest extends TestCase
         }
         $this->assertSame([], $spy['calls']);
     }
-
     /**
-     * BLOCKER 2 classification: transport failure WITHOUT a tracking
-     * outcome (request identity never built) is retryable - nothing is
-     * durably tracked, a customer-safe retryable error is surfaced.
+     * Round 3: a transport failure WITHOUT a carried outcome still happens
+     * AFTER the atomic claim exists - the claim row lands UNKNOWN with
+     * explicit missing-identity evidence (never left in initiating limbo).
      */
-    public function testUntrackableTransportThrowsRetryableError(): void
+    public function testUntrackableTransportStillMarksUnknownOnClaim(): void
     {
+        $request = $this->makePreparedRequest('260916_1000_777_r4');
+        $claim = $this->makeClaim();
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
         $transport = new RefundTransportException(
             new \Magento\Framework\Phrase('Zalopay: Refund failed. Please try again later.')
         );
-        $this->mockRefundCommand->expects($this->once())->method('execute')->willThrowException($transport);
-        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->willThrowException($transport);
+        $this->mockRefundManager->expects($this->once())->method('markUnknown')
+            ->with(
+                $this->identicalTo($claim),
+                'transport_error: tracking outcome missing'
+            );
         $spy = $this->proceedSpy();
         try {
             $this->plugin->aroundRefund(
@@ -354,16 +379,28 @@ class CreditmemoRefundPluginTest extends TestCase
         }
         $this->assertSame([], $spy['calls']);
     }
-
     /**
-     * BLOCKER 1 lifecycle: provider FAIL propagates untouched - nothing is
-     * persisted, totals untouched, the core accounting never runs.
+     * Round 3 BLOCKER 1 lifecycle: a provider-CONFIRMED refusal lands
+     * CONFIRMED_FAIL on the claim (releases the claim slot - the money
+     * provably never left) and the ORIGINAL safe message propagates
+     * untouched - the core accounting never runs.
      */
     public function testProviderFailPropagatesUntouched(): void
     {
+        $request = $this->makePreparedRequest('260916_1000_777_r5');
+        $claim = $this->makeClaim();
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
         $refusal = new LocalizedException(new \Magento\Framework\Phrase('Zalopay: Refund failed.'));
-        $this->mockRefundCommand->expects($this->once())->method('execute')->willThrowException($refusal);
-        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->willThrowException($refusal);
+        $this->mockRefundManager->expects($this->once())->method('markConfirmedFail')
+            ->with(
+                $this->identicalTo($claim),
+                'refund_failed: Zalopay: Refund failed.'
+            );
         $spy = $this->proceedSpy();
         $caught = null;
         try {
@@ -378,8 +415,7 @@ class CreditmemoRefundPluginTest extends TestCase
         }
         $this->assertSame($refusal, $caught);
         $this->assertSame([], $spy['calls']);
-    }
-    /**
+    }    /**
      * BLOCKER round 2: Magento validation BEFORE provider. An over-refund
      * (core mirror check 3) rejects INSIDE the preflight - the provider is
      * NEVER called, nothing is registered pending, core never runs.
@@ -390,8 +426,9 @@ class CreditmemoRefundPluginTest extends TestCase
             ->willThrowException(new LocalizedException(
                 new \Magento\Framework\Phrase('The most money available to refund is 0.00.')
             ));
-        $this->mockRefundCommand->expects($this->never())->method('execute');
-        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $this->mockRefundCommand->expects($this->never())->method('prepare');
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $this->mockRefundManager->expects($this->never())->method('acquireClaim');
         $this->paymentDataObjectFactory->expects($this->never())->method('create');
         $spy = $this->proceedSpy();
         try {
@@ -417,8 +454,9 @@ class CreditmemoRefundPluginTest extends TestCase
             ->willThrowException(new LocalizedException(
                 new \Magento\Framework\Phrase('We cannot register an existing credit memo.')
             ));
-        $this->mockRefundCommand->expects($this->never())->method('execute');
-        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $this->mockRefundCommand->expects($this->never())->method('prepare');
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $this->mockRefundManager->expects($this->never())->method('acquireClaim');
         $spy = $this->proceedSpy();
         try {
             $this->plugin->aroundRefund(
@@ -443,8 +481,9 @@ class CreditmemoRefundPluginTest extends TestCase
             ->willThrowException(new NoSuchEntityException(
                 new \Magento\Framework\Phrase('We found an invalid order to refund.')
             ));
-        $this->mockRefundCommand->expects($this->never())->method('execute');
-        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $this->mockRefundCommand->expects($this->never())->method('prepare');
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $this->mockRefundManager->expects($this->never())->method('acquireClaim');
         $spy = $this->proceedSpy();
         try {
             $this->plugin->aroundRefund(
@@ -469,8 +508,9 @@ class CreditmemoRefundPluginTest extends TestCase
             ->willThrowException(new LocalizedException(
                 new \Magento\Framework\Phrase('Zalopay: The online refund amount must be greater than zero.')
             ));
-        $this->mockRefundCommand->expects($this->never())->method('execute');
-        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $this->mockRefundCommand->expects($this->never())->method('prepare');
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $this->mockRefundManager->expects($this->never())->method('acquireClaim');
         $spy = $this->proceedSpy();
         try {
             $this->plugin->aroundRefund(
@@ -486,13 +526,115 @@ class CreditmemoRefundPluginTest extends TestCase
     }
 
     /**
-     * BLOCKER round 2 ordering guarantee: the preflight runs BEFORE the
-     * provider call on the happy path too - a valid refund asks the provider
-     * exactly once, after validation passed.
+     * Round 3 F12: the LOSER of the atomic claim race NEVER reaches the
+     * provider - the duplicate-claim exception propagates untouched, the
+     * core flow never runs.
+     */
+    public function testClaimConflictPropagatesWithoutProviderCall(): void
+    {
+        $request = $this->makePreparedRequest('260916_1000_777_r6');
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->expects($this->once())->method('acquireClaim')
+            ->willThrowException(new LocalizedException(
+                new \Magento\Framework\Phrase(
+                    'Zalopay: Another refund for this order is active or awaiting reconciliation.'
+                )
+            ));
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('claim conflict must propagate');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString('active or awaiting reconciliation', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * Round 3 BLOCKER 2 (F13): provider SUCCESS + core-finalize failure =
+     * durable PROVIDER_SUCCESS_LOCAL_PENDING - the provider was asked
+     * EXACTLY once and is never re-asked; the cron finalizes locally only.
+     */
+    public function testProviderSuccessWithLocalFailureLandsPendingState(): void
+    {
+        $request = $this->makePreparedRequest('260916_1000_777_r7');
+        $claim = $this->makeClaim();
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->willReturn(new RefundOutcome(RefundOutcome::STATUS_SUCCESS, '260916_1000_777_r7', 25000, null));
+        $this->mockRefundManager->expects($this->never())->method('markConfirmedSuccess');
+        $this->mockRefundManager->expects($this->once())->method('markProviderSuccessLocalPending')
+            ->with(
+                $this->identicalTo($claim),
+                $this->stringStartsWith('reconcile_error: core finalize failed:')
+            );
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                function () {
+                    throw new \RuntimeException('accounting boom');
+                },
+                $this->creditmemo
+            );
+            self::fail('local finalize failure must surface an error');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString(
+                'succeeded at the provider but the local accounting is incomplete',
+                $exception->getMessage()
+            );
+        }
+        $this->assertSame([], $spy['calls']);
+        $this->assertTrue($this->marker->isProviderAlreadyAsked(77));
+    }
+
+    /**
+     * Round 3 ROBUSTNESS: an unresolvable order surfaces the
+     * Magento-compatible NoSuchEntityException BEFORE preflight/claim/
+     * provider - provider call 0, persistence 0.
+     */
+    public function testInvalidOrderSurfacesNoSuchEntityBeforeAnything(): void
+    {
+        $broken = $this->createMock(\Magento\Sales\Model\Order\Creditmemo::class);
+        $broken->method('getOrder')->willThrowException(new \RuntimeException('orphan entity'));
+        $this->preflight->expects($this->never())->method('validateRefundable');
+        $this->mockRefundCommand->expects($this->never())->method('prepare');
+        $this->mockRefundManager->expects($this->never())->method('acquireClaim');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $broken
+            );
+            self::fail('invalid order must surface the Magento-compatible exception');
+        } catch (NoSuchEntityException $exception) {
+            $this->assertStringContainsString('invalid order', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * Round 3 ordering guarantee: preflight (Magento validation) ->
+     * prepare (identity, no I/O) -> acquireClaim (durable claim) ->
+     * executePrepared (the ONE provider call) - validation and the claim
+     * both happen BEFORE any provider I/O.
      */
     public function testValidRefundValidatedBeforeProviderOnce(): void
     {
         $order = [];
+        $request = $this->makePreparedRequest('260916_1000_777_r9');
+        $claim = $this->makeClaim();
         $this->preflight->expects($this->once())->method('validateRefundable')
             ->willReturnCallback(function () use (&$order) {
                 $order[] = 'preflight';
@@ -501,18 +643,30 @@ class CreditmemoRefundPluginTest extends TestCase
             });
         $this->paymentDataObjectFactory->method('create')
             ->willReturn($this->createMock(PaymentDataObjectInterface::class));
-        $this->mockRefundCommand->expects($this->once())->method('execute')
+        $this->mockRefundCommand->method('prepare')
+            ->willReturnCallback(function () use (&$order, $request) {
+                $order[] = 'prepare';
+
+                return $request;
+            });
+        $this->mockRefundManager->method('acquireClaim')
+            ->willReturnCallback(function () use (&$order, $claim) {
+                $order[] = 'claim';
+
+                return $claim;
+            });
+        $this->mockRefundCommand->method('executePrepared')
             ->willReturnCallback(function () use (&$order) {
                 $order[] = 'provider';
 
                 return new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_r9', 25000, null);
             });
-        $this->mockRefundManager->method('registerPending');
+        $this->mockRefundManager->method('markProcessing');
         $this->plugin->aroundRefund(
             $this->createMock(CreditmemoService::class),
             $this->proceedSpy()['callable'],
             $this->creditmemo
         );
-        $this->assertSame(['preflight', 'provider'], $order);
+        $this->assertSame(['preflight', 'prepare', 'claim', 'provider'], $order);
     }
 }

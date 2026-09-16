@@ -87,3 +87,39 @@ TL direct source review phát hiện 3 lỗ hổng của chính output round 1. 
 18. **Validation + receipt round 2** — php -l; PHPCS 0 errors; full suite 279/988;
     setup:di:compile chạy lại trên code cuối (9/9 exit 0); CodeGraph P13 (worktree index, ghi
     rõ giới hạn callers nhiễu dev/tests); commit `[Zalo]` + push CHỈ task branch; STOP chờ TL.
+
+## Appendix 3 — Corrective round 3 (2026-09-16, TL direct source review lần 3)
+
+19. **Atomic claim (F12, DEC-TASKCG6BM7-005 D1)** — `etc/db_schema.xml`: cột
+    `active_claim` smallint NULL + 2 unique index `ZALO_PAY_REFUND_ORDER_ACTIVE (order_id,
+    active_claim)` / `ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE (m_refund_id, active_claim)`
+    (NULL-trick cho row lịch sử) + whitelist; `Api/Data/RefundInterface.php` constants +
+    accessor; `Service/PendingRefundManager::acquireClaim` INSERT đơn autocommit (KHÔNG
+    transaction xuyên HTTP), duplicate-key ↦ "active or awaiting reconciliation", lỗi khác ↦
+    abort safe.
+20. **RefundCommand split (F12 + crash/recovery, D2)** — `prepare()` (identity `m_refund_id`
+    + reconciliation payload, KHÔNG I/O, `null` khi marker-skip; VO mới
+    `Gateway/Command/RefundRequest`) + `executePrepared()` (provider DUY NHẤT);
+    `execute()` = prepare + executePrepared (contract public giữ nguyên).
+21. **State machine v3 (F13/F16, D3)** — 6 state `initiating/processing/unknown/
+    confirmed_fail/confirmed_success/provider_success_local_pending`; manager mark×5 +
+    `hasInFlight` 3 filter (`is_processed=0` + 4-state IN + budget); plugin transport ↦
+    `unknown` semantic; SUCCESS + `$proceed()` throw ↦ PSLP.
+22. **Cron v3 (F13/F15)** — step 0 PSLP shortcut (finalize local only, KHÔNG query);
+    step 2a CM REFUNDED ↦ markConfirmedSuccess; step 2b drift ↦ terminate unknown; FAIL ↦
+    terminate(confirmed_fail) + `releaseCreditmemoAfterFail` (STATE_PROCESSING → STATE_OPEN,
+    save-fail critical swallow).
+23. **Backfill (F14, D4)** — `Setup/Patch/Data/BackfillRefundState.php`: 3 UPDATE theo
+    evidence order (refund_failed → confirmed_fail; còn lại is_processed=1 →
+    confirmed_success; is_processed=0 → unknown).
+24. **Test matrix round 3** — rewrite PendingRefundManagerTest (24), CreditmemoRefundPluginTest
+    (18), RefundCronjobTest (18); new BackfillRefundStateTest (2); full suite 296/1057.
+25. **Real-DB concurrency evidence** — MariaDB 10.4 container throwaway riêng (KHÔNG đụng DB
+    dev chung, đã xoá sau thu evidence): E1–E8 (first-claim commits; same-order duplicate-key
+    reject; same-m_refund_id reject; historical NULL rows coexist; release-reclaim;
+    exactly-one-active; UNKNOWN quarantine giữ slot; 2 session song song 1 winner) — proofs
+    P14.
+26. **Validation + receipt round 3** — php -l; PHPCS 0 errors; full suite 296/1057;
+    setup:di:compile PASS (/tmp/m2 re-stage); CodeGraph rebuild + anchor P15; commit
+    `[Zalo]` + push CHỈ `task/zalopay-postfix-audit`; receipt theo mẫu round 3 (~35 field);
+    STOP chờ TL.

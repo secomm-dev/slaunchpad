@@ -263,4 +263,28 @@ class RefundData extends DataObject implements RefundInterface
     {
         $this->setData(self::REFUND_STATE, $refundState);
     }
+
+    /**
+     * Getter for ActiveClaim (1 = THE atomic active attempt for the order).
+     *
+     * @return int|null
+     */
+    public function getActiveClaim(): ?int
+    {
+        $v = $this->getData(self::ACTIVE_CLAIM);
+
+        return $v === null ? null : (int)$v;
+    }
+
+    /**
+     * Setter for ActiveClaim.
+     *
+     * @param int|null $activeClaim
+     *
+     * @return void
+     */
+    public function setActiveClaim(?int $activeClaim): void
+    {
+        $this->setData(self::ACTIVE_CLAIM, $activeClaim);
+    }
 }

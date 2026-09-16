@@ -90,6 +90,10 @@ class RefundCommand implements CommandInterface
     /**
      * Run ONE provider refund interaction and report the outcome.
      *
+     * Round 3: execute() = prepare() + executePrepared(). The public
+     * contract for the core Payment::refund path is unchanged (returns
+     * null on the marker skip path, LocalizedException on refusal).
+     *
      * @param array $commandSubject
      * @return RefundOutcome|null Null on the skip path (provider already asked).
      * @throws ClientException
@@ -99,6 +103,29 @@ class RefundCommand implements CommandInterface
      *         the exception carries the tracking outcome.
      */
     public function execute(array $commandSubject): ?RefundOutcome
+    {
+        $request = $this->prepare($commandSubject);
+        if ($request === null) {
+            return null;
+        }
+
+        return $this->executePrepared($request, $commandSubject);
+    }
+
+    /**
+     * Prepare the provider refund request identity WITHOUT any provider
+     * I/O (TASK-CG6BM7 corrective round 3): the request body, the stable
+     * m_refund_id and the v2/query_refund reconciliation payload are built
+     * here so the orchestrating plugin can persist a durable claim BEFORE
+     * executePrepared touches the network. Identity stability: the exact
+     * request body built here is reused by executePrepared - never rebuilt.
+     *
+     * @param array $commandSubject
+     * @return RefundRequest|null Null on the skip path (provider already
+     *         asked for this order - core is finalizing a tracked refund).
+     * @throws LocalizedException Missing credit memo on the payment.
+     */
+    public function prepare(array $commandSubject): ?RefundRequest
     {
         $paymentDO = SubjectReader::readPayment($commandSubject);
         $payment = $paymentDO->getPayment();
@@ -111,13 +138,13 @@ class RefundCommand implements CommandInterface
         if ($this->outcomeMarker->isProviderAlreadyAsked($orderId)) {
             // Core accounting is finalizing a locally tracked refund: the
             // provider outcome is already known - NEVER re-ask the provider
-            // (no second provider refund for the same money).
+            // (no second provider refund for any money).
             return null;
         }
 
         $requestData = $this->buildRequestData($commandSubject);
         $mRefundId = (string)$requestData[RefundInterface::M_REFUND_ID];
-        $this->logger->info('ZaloPay refund request sent.', ['m_refund_id' => $mRefundId]);
+        $this->logger->info('ZaloPay refund request prepared.', ['m_refund_id' => $mRefundId]);
 
         // The durable reconciliation payload is built BEFORE the provider
         // call: if the transport fails after the request reached ZaloPay the
@@ -138,6 +165,30 @@ class RefundCommand implements CommandInterface
             $this->readVndAmount($commandSubject),
             $queryPayload
         );
+
+        return new RefundRequest($requestData, $mRefundId, $queryPayload, $tracking);
+    }
+
+    /**
+     * Perform the provider I/O for a PREPARED request (stable identity).
+     * NEVER call this without a durable claim for the same m_refund_id -
+     * the claim is what makes recovery query the SAME identity instead of
+     * issuing a fresh /refund after a lost response.
+     *
+     * @param RefundRequest $request Prepared request identity.
+     * @param array $commandSubject
+     * @return RefundOutcome
+     * @throws ClientException
+     * @throws ConverterException
+     * @throws LocalizedException Provider refusal (safe mapped message).
+     * @throws RefundTransportException Transport failure: outcome UNKNOWN,
+     *         the exception carries the tracking outcome.
+     */
+    public function executePrepared(RefundRequest $request, array $commandSubject): RefundOutcome
+    {
+        $requestData = $request->getRequestData();
+        $mRefundId = $request->getMRefundId();
+        $tracking = $request->getTracking();
 
         try {
             $transferO = $this->transferFactory->create($requestData);

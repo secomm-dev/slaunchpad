@@ -109,3 +109,48 @@ pre_correction_head: 70416b7aa6889276818b72e311a9955cbf5ed578
   auth.json modified pre-existing KHÔNG commit (chứa token Hyvä Packagist).
 - INTEGRATION: vẫn **ENVIRONMENT_BLOCKED** (bất biến qua round — DB integration test không khả
   dụng trên workspace chung).
+
+---
+
+# Round 3 validation (2026-09-16, corrective round 3)
+
+- Full unit suite: **296 tests / 1057 assertions — OK** (sandbox /tmp/zt, prepend-autoloader
+  bootstrap; tăng từ 279/988 round 2).
+  - `PendingRefundManagerTest` (rewrite): **24 test / 89 assertions** — acquireClaim×4 (persist
+    initiating+claim exact binds, KHÔNG transaction, duplicate-key ↦ "active or awaiting
+    reconciliation", lỗi khác ↦ abort safe KHÔNG gọi provider), hasInFlight 3 filter (pin
+    `is_processed=0` + 4-state IN), mark×5 state v3 (unknown/confirmed_fail nhả claim/PSLP/
+    confirmed_success nhả claim), blocking-rethrow vs terminal-swallow, quarantine giữ slot,
+    consumeQueryBudget PSLP không đụng state.
+  - `CreditmemoRefundPluginTest` (rewrite): **18 test / 75 assertions** — order-assertion
+    `['preflight','prepare','claim','provider']`; claim conflict propagate KHÔNG provider;
+    provider SUCCESS + `$proceed()` throw ↦ PSLP + executePrepared exactly once; invalid order
+    ↦ NoSuchEntityException TRƯỚC mọi thứ (fresh Creditmemo getOrder throw); transport không
+    trackable ↦ unknown; PROCESSING/SUCCESS/FAIL paths giữ nguyên contract round 2.
+  - `RefundCronjobTest`: **18 test / 52 assertions** — MỚI: PSLP finalize-local-only (query
+    never) + PSLP finalize fail consume budget; CM REFUNDED ↦ markConfirmedSuccess bookkeeping
+    only; drift 3 ↦ terminate unknown; FAIL release STATE_OPEN + save-fail swallowed.
+  - MỚI `BackfillRefundStateTest`: **2 test / 10 assertions** — 3 cohort đúng evidence order
+    (`is_processed=1 AND last_error LIKE 'refund_failed:%'` → confirmed_fail; `is_processed=1`
+    → confirmed_success; `is_processed=0` → unknown) + không dependency.
+- php -l: clean toàn bộ file PHP round 3 (PHP 8.3.20 container).
+- PHPCS Magento2 module-wide: **0 ERRORS**, 6 warnings (giảm từ 345 — các file round 3 được
+  viết clean; warning còn lại là legacy round 1, gate 0 error).
+- setup:di:compile THẬT trên bản sao Magento 2.4.8-p5 (/tmp/m2, re-stage module round 3):
+  **PASS, exit 0** ("Generated code and dependency injection configuration successfully.").
+- **Real-DB concurrency evidence (MỚI round 3)**: MariaDB 10.4 container throwaway riêng
+  (`zt-mariadb-evidence`, KHÔNG đụng DB dev chung; đã xoá) — E1–E8 PASS: first-claim commits;
+  second-claim same order rejected duplicate-key `ZALO_PAY_REFUND_ORDER_ACTIVE`; same
+  m_refund_id (order khác) rejected `ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE`; 3 row lịch sử
+  NULL-active cùng order cùng tồn tại (NULL-trick); release-then-reclaim OK; exactly-one
+  active; UNKNOWN quarantine giữ DB slot; 2 session song song → 1 COMMITTED / 1 REJECTED.
+  Chi tiết proofs.md P14.
+- CodeGraph: worktree index rebuild đầy đủ (`codegraph index -q`); edges tĩnh resolve
+  `executePrepared ← execute (RefundCommand.php:105)`; dynamic edges qua injected property
+  không resolve đầy đủ (trung thực) ⇒ supplement bằng anchor file:line P15 (plugin chain
+  :111→:142→:165→:176→:179; cron :140→:143); `registerPending` remnant = 0 trong production.
+- Regression scope: `git status` — mọi thay đổi trong `app/code/Secomm/ZaloPay` + `.ai`;
+  `auth.json` modified pre-existing KHÔNG commit (chứa token Hyvä Packagist).
+- INTEGRATION runtime: vẫn **ENVIRONMENT_BLOCKED** (bất biến qua round) — bù lại round 3 có
+  DB evidence THẬT dạng container throwaway riêng cho chính concurrency property bị thách
+  thức (khác integration Magento suite).

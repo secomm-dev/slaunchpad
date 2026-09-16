@@ -325,6 +325,10 @@ class RefundCronjobTest extends TestCase
         $row = $this->refundRow();
         $this->stubCollection([$row]);
 
+        $this->creditmemo->expects($this->once())->method('setState')->with(Creditmemo::STATE_OPEN);
+        $this->creditmemoRepository->expects($this->once())->method('save')
+            ->with($this->identicalTo($this->creditmemo));
+
         $this->refundQueryCommand->method('getRefundQuery')->willReturn(
             ['return_code' => 2, 'sub_return_code' => -13, 'return_message' => 'RAW-PROVIDER-DETAIL']
         );
@@ -490,11 +494,12 @@ class RefundCronjobTest extends TestCase
     }
 
     /**
-     * REFUND CRON 30d: a creditmemo whose state drifted away from PROCESSING
-     * is TERMINAL reconcile — never double-finalize a refund resolved
-     * outside this lifecycle.
+     * Round 3 (step 2a): creditmemo already REFUNDED in Magento (e.g. crash
+     * between the core accounting and the local row update after a sync
+     * SUCCESS) - the row lands confirmed_success WITHOUT any provider
+     * interaction: accounting was already applied, bookkeeping only.
      */
-    public function testStateDriftIsTerminal(): void
+    public function testCreditmemoRefundedResolvesRowAsSuccess(): void
     {
         $row = $this->refundRow();
         $this->stubCollection([$row]);
@@ -502,23 +507,135 @@ class RefundCronjobTest extends TestCase
         $this->cmState = Creditmemo::STATE_REFUNDED;
 
         $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
-        $calls = [];
+        $this->pendingRefundManager->expects($this->once())
+            ->method('markConfirmedSuccess')
+            ->with($this->identicalTo($row));
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+        $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 3 (step 2b): a creditmemo state drift to CANCELED is TERMINAL
+     * reconcile (resolved outside this lifecycle) - terminate defaults to
+     * the UNKNOWN quarantine (outcome never confirmed, keeps blocking).
+     */
+    public function testCreditmemoStateDriftToCanceledIsTerminalUnknown(): void
+    {
+        $row = $this->refundRow();
+        $this->stubCollection([$row]);
+
+        $this->cmState = Creditmemo::STATE_CANCELED;
+
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
         $this->pendingRefundManager->expects($this->once())
             ->method('terminate')
-            ->willReturnCallback(function ($rowArg, string $evidenceArg, ?string $stateArg = null) use (&$calls) {
-                $calls[] = [$evidenceArg, $stateArg];
-            });
+            ->with($row, $this->stringStartsWith('reconcile_error: credit memo state is 3'));
+        $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 3 F13 (cron step 0): a PROVIDER_SUCCESS_LOCAL_PENDING row
+     * finalizes LOCALLY ONLY - the provider is never contacted (no /refund,
+     * no query_refund): the provider money is already out.
+     */
+    public function testPslpRowFinalizesLocallyWithoutProviderQuery(): void
+    {
+        $row = $this->refundRow(
+            [RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->once())
+            ->method('finalizeSuccess')
+            ->with($this->identicalTo($row));
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+        $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 3 F13: a PSLP finalize failure consumes one budget unit with
+     * reconcile evidence - bounded, retried next run (provider money is
+     * already out; never re-asked).
+     */
+    public function testPslpFinalizeFailureConsumesBudget(): void
+    {
+        $row = $this->refundRow(
+            [RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->once())
+            ->method('finalizeSuccess')
+            ->willThrowException(new \Magento\Framework\Exception\LocalizedException(
+                new \Magento\Framework\Phrase('Zalopay: The refund finalization failed locally.')
+            ));
+        $this->pendingRefundManager->expects($this->once())
+            ->method('consumeQueryBudget')
+            ->with($row, $this->stringStartsWith('reconcile_error: '))
+            ->willReturn(5);
         $this->logger->expects($this->once())->method('critical');
 
         $this->cron->execute();
+    }
 
-        $this->assertSame(
-            'reconcile_error: credit memo state is ' . Creditmemo::STATE_REFUNDED
-            . ' (expected ' . CreditmemoPlugin::STATE_PROCESSING . ')',
-            $calls[0][0] ?? 'NONE'
+    /**
+     * Round 3 (F15): the FAIL release failing to SAVE (repository down)
+     * must never mask the terminal confirmed_fail - swallowed with a
+     * critical log, manual fix path documented.
+     */
+    public function testProviderFailReleaseSaveFailureIsSwallowed(): void
+    {
+        $row = $this->refundRow();
+        $this->stubCollection([$row]);
+
+        $this->refundQueryCommand->method('getRefundQuery')->willReturn(
+            ['return_code' => 2, 'sub_return_code' => -13, 'return_message' => 'RAW-PROVIDER-DETAIL']
         );
-        // Round 2: state drift never confirms an outcome - the default
-        // UNKNOWN quarantine keeps blocking until deliberately resolved.
-        $this->assertSame(RefundInterface::REFUND_STATE_UNKNOWN, $calls[0][1] ?? 'NONE');
+
+        $this->pendingRefundManager->expects($this->once())
+            ->method('terminate')
+            ->willReturnCallback(function ($rowArg, string $evidenceArg, ?string $stateArg = null): void {
+                self::assertSame('refund_failed: Refund time has expired.', $evidenceArg);
+                self::assertSame(RefundInterface::REFUND_STATE_CONFIRMED_FAIL, $stateArg);
+            });
+        $this->creditmemo->expects($this->once())->method('setState')->with(Creditmemo::STATE_OPEN);
+        $this->creditmemoRepository->expects($this->once())->method('save')
+            ->willThrowException(new \RuntimeException('repo down'));
+        $this->logger->expects($this->atLeastOnce())->method('critical');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 3 (F15): a provider-CONFIRMED FAIL releases the parked
+     * credit memo back to OPEN (Magento-compatible: core validateForRefund
+     * requires OPEN for a follow-up refund) - order/invoice totals are
+     * never touched by this release.
+     */
+    public function testProviderFailReleasesCreditmemoToOpen(): void
+    {
+        $row = $this->refundRow();
+        $this->stubCollection([$row]);
+
+        $this->refundQueryCommand->method('getRefundQuery')->willReturn(
+            ['return_code' => 2, 'sub_return_code' => -13, 'return_message' => 'RAW-PROVIDER-DETAIL']
+        );
+
+        $this->pendingRefundManager->expects($this->once())->method('terminate');
+        $this->creditmemo->expects($this->once())->method('setState')->with(Creditmemo::STATE_OPEN);
+        $this->creditmemoRepository->expects($this->once())->method('save')
+            ->with($this->identicalTo($this->creditmemo));
+
+        $this->cron->execute();
     }
 }

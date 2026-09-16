@@ -153,3 +153,51 @@ Evidence: findings F10–F11, proofs P11–P13, validation round 2.
   trên code cuối; CodeGraph call-chain P13.
 - Receipt round 2 theo đúng mẫu TL đưa; nếu PASS → chỉ push `task/zalopay-postfix-audit`
   (GitHub origin), KHÔNG merge, STOP chờ TL review.
+
+---
+
+# Corrective round 3 (2026-09-16) — TL direct source review lần 3
+
+TL review source trực tiếp lần 3 và chỉ ra HAI BLOCKER + BA HIGH còn tồn tại trong chính code
+corrective round 2; xử lý trong đúng task này (KHÔNG tạo task mới, KHÔNG merge, KHÔNG đụng
+icon upload):
+
+1. **BLOCKER — F12: check-then-act race có thể DOUBLE REFUND.** `hasInFlight()==false →
+   preflight → gọi ZaloPay → persist` không concurrency-safe. Fix theo DEC-TASKCG6BM7-005 D1:
+   atomic durable claim `active_claim` + unique index NULL-trick
+   (`ZALO_PAY_REFUND_ORDER_ACTIVE`, `ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE`); `acquireClaim`
+   INSERT autocommit commit TRƯỚC provider HTTP I/O; KHÔNG transaction/row lock xuyên qua
+   request ZaloPay; claim mang `m_refund_id` ổn định (RefundCommand tách
+   prepare/executePrepared); thua cuộc chết ở DB TRƯỚC HTTP.
+2. **BLOCKER — F13: provider SUCCESS + local Magento failure = tiền ra không durable state.**
+   Fix theo DEC-005 D3: state mới `provider_success_local_pending`; identity tồn tại TRƯỚC
+   provider I/O; cron step 0 CHỈ finalize Magento accounting (KHÔNG query, KHÔNG /refund lần
+   nữa); state machine 6 giá trị phân biệt tường minh — không gộp UNKNOWN.
+   CRASH/RECOVERY: crash sau `/refund` ⇒ cron query ĐÚNG m_refund_id đã claim, không tạo
+   refund mới.
+3. **HIGH — F14: row lịch sử bị schema default `processing` chặn.** `hasInFlight` thêm
+   `is_processed=0` + blocking-state filter; data patch `BackfillRefundState` backfill 3
+   cohort theo bằng chứng; `is_processed=0` chưa resolve → unknown bảo thủ (block).
+4. **HIGH — F15: confirmed FAIL để credit memo kẹt PROCESSING.** Cron FAIL → CM
+   STATE_PROCESSING → STATE_OPEN (Magento-compatible per core validateForRefund); kế toán
+   không đổi; KHÔNG bịa REFUNDED; refund sau thực hiện được.
+5. **HIGH — F16: transport UNKNOWN lưu thành `processing`.** State `unknown` semantic riêng,
+   cả hai đều block.
+
+Scope bất biến: KHÔNG merge; KHÔNG đụng icon upload, ExtraFee/MoMo/LLMS/Bitbucket/SMTP;
+không regress 11 mục DO-NOT-REGRESS; thay đổi chỉ trong `app/code/Secomm/ZaloPay` + `.ai`.
+
+Decisions: thêm DEC-TASKCG6BM7-005 (001–004 giữ nguyên). Spec: Revision 4. Plan: appendix 3
+(steps 19–26). Evidence: findings F12–F16, proofs P14–P16 (real-DB E1–E8, call-chain anchor,
+crash-recovery), validation round 3.
+
+## Acceptance criteria round 3
+
+- Ma trận mới: atomic-claim manager 24 test / plugin 18 test / cron 18 test + backfill 2 test;
+  full suite **296 tests / 1057 assertions OK**.
+- Real-DB concurrency evidence: MariaDB 10.4 container throwaway riêng E1–E8 PASS (không đụng
+  DB dev chung; container đã xoá).
+- Validation L3: php -l clean; PHPCS 0 errors; setup:di:compile PASS (exit 0); CodeGraph
+  rebuild + call-chain anchor P15 (claim :176 < provider :179).
+- Receipt round 3 theo đúng mẫu TL đưa; nếu PASS → chỉ push `task/zalopay-postfix-audit`
+  (GitHub origin), KHÔNG merge, STOP chờ TL review.

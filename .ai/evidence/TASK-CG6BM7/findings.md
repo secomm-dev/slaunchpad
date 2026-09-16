@@ -115,3 +115,59 @@ Phạm vi: `app/code/Secomm/ZaloPay` trên baseline `a48de3c` (đã chứa commi
   transport retry tiêu budget; email claim atomic; email fail không rollback payment; không có
   provider refund thứ hai trong local finalization — toàn bộ vẫn được pin bởi test matrix
   (full suite **279 tests / 988 assertions**, green).
+
+---
+
+# Corrective round 3 2026-09-16 (TL direct source review lần 3)
+
+## Ghi nhận trung thực về giới hạn của fix round 2
+
+- **F12 — Blocking guard round 2 vẫn là check-then-act.** `hasInFlight()==false → preflight →
+  gọi ZaloPay → persist` KHÔNG concurrency-safe: hai request đồng thời cùng đọc
+  `hasInFlight()==false` (chưa ai kịp insert) và CẢ HAI đều đi tới provider /refund. Guard
+  SELECT-then-INSERT không bao giờ đủ; DEC-TASKCG6BM7-004 D2 chỉ đúng về semantic state, sai về
+  atomicity của việc chiếm quyền. Fix: atomic claim DB-level (D1 DEC-005) — unique index
+  NULL-trick trọng tài, thua cuộc chết TRƯỚC HTTP.
+- **F13 — Provider SUCCESS + local fail rơi vào hư vô.** Round 2: `$proceed()` throw sau
+  provider SUCCESS ⇒ exception propagates mà KHÔNG có durable state nào nói "tiền đã ra" —
+  cron không có gì để finalize; hành vi thực tế khiến admin thử lại và cron/in-flight guard
+  đều mở đường ⇒ double refund. Đây là blind spot của chính kiến trúc round 1+2: mọi state
+  đều gắn với "provider chưa chắc SUCCESS".
+- **F14 — Schema default `processing` nuốt dữ liệu lịch sử.** Cột `refund_state` default
+  `processing` (DEC-004 D2) áp cho row CŨ khi ALTER: mọi refund đã hoàn tất từ trước
+  (`is_processed=1`) bỗng nằm trong blocking set ⇒ order từng refund thành công không thể
+  refund tiếp. Round 2 không có data patch — thiếu sót thật.
+- **F15 — Confirmed FAIL để credit memo kẹt PROCESSING.** Provider từ chối tường minh (tiền
+  KHÔNG ra) nhưng credit memo vẫn parked STATE_PROCESSING: hiển thị sai "đang xử lý", và
+  (tùy version core) chặn refund sau đó. Round 2 chỉ mở khóa row, quên đối tượng Magento
+  phía trên.
+- **F16 — Transport UNKNOWN mượn nghĩa PROCESSING.** `markProcessing`-style persistence cho
+  outcome không xác nhận làm nhiễu semantic: PROCESSING nghĩa là "provider đang xử lý, có
+  query path"; UNKNOWN nghĩa là "không biết gì" — hai nghĩa phải là hai state.
+
+## Fix corrective round 3
+
+| # | Vấn đề | Mức | Fix + bằng chứng |
+|---|--------|-----|------------------|
+| F12 | check-then-act race ⇒ DOUBLE REFUND | BLOCKER | Atomic durable claim (DEC-005 D1): `active_claim` smallint NULL + 2 unique index `(order_id, active_claim)`/`(m_refund_id, active_claim)` (NULL-trick: row lịch sử không xung đột, tối đa 1 active/order + 1 active/m_refund_id); `acquireClaim` = 1 INSERT autocommit KHÔNG transaction (commit TRƯỚC provider I/O, không row lock xuyên HTTP); duplicate-key → thua cuộc chết TRƯỚC HTTP với "active or awaiting reconciliation"; `RefundCommand` tách `prepare()` (identity không I/O, :128) / `executePrepared()` (provider DUY NHẤT, :187). Chuỗi anchor plugin: guard :111 → preflight :142 → prepare :165 → **claim :176** → **provider :179**. DB evidence E1–E8 (MariaDB throwaway). Tests: `PendingRefundManagerTest` acquireClaim×4 (24 test), `CreditmemoRefundPluginTest` testClaimConflictPropagatesWithoutProviderCall |
+| F13 | provider SUCCESS + local finalize fail = tiền ra, không durable state | BLOCKER | State mới `provider_success_local_pending` (PSLP): plugin bắt `\Throwable` quanh `$proceed()` SAU provider SUCCESS (:236-251) → `markProviderSuccessLocalPending` + message "succeeded at the provider but the local accounting is incomplete" (KHÔNG fail như refund thất bại); cron step 0 PSLP shortcut (:136-165) → `finalizeSuccess` CHỈ local, KHÔNG query_refund, KHÔNG /refund; finalize fail → consumeQueryBudget bounded. `RefundOutcomeMarker` mark TRƯỚC `$proceed()` nên finalize-lại không bao giờ hỏi provider lần hai. Tests: `testProviderSuccessWithLocalFailureLandsPendingState`, `testPslpRowFinalizesLocallyWithoutProviderQuery`, `testPslpFinalizeFailureConsumesBudget` |
+| F14 | row lịch sử (is_processed=1) bị default `processing` chặn | HIGH | `hasInFlight` thêm filter `is_processed = 0` (:106-118, 3 filter); data patch `Setup/Patch/Data/BackfillRefundState.php` backfill theo evidence: `is_processed=1 AND last_error LIKE 'refund_failed:%'` → confirmed_fail; còn lại `is_processed=1` → confirmed_success; `is_processed=0` → unknown (bảo thủ, block). Tests: `BackfillRefundStateTest` (3 cohort + evidence order), `testHasInFlightThreeFiltersBlockingStates` |
+| F15 | confirmed FAIL để CM kẹt PROCESSING mãi | HIGH | Cron FAIL branch → `releaseCreditmemoAfterFail` (:332-350): CM đang `STATE_PROCESSING`(4) → `setState(STATE_OPEN)` + save (STATE_OPEN = state core validateForRefund chấp nhận); kế toán KHÔNG đụng; KHÔNG bịa REFUNDED; release fail → critical swallow (row đã non-blocking). Tests: `testProviderFailReleasesCreditmemoToOpen`, `testProviderFailReleaseSaveFailureIsSwallowed`, `testProviderFailIsTerminalWithEvidence` (assert STATE_OPEN + save) |
+| F16 | transport UNKNOWN lưu thành `processing` | HIGH | `markUnknown` semantic riêng (:214); plugin transport path (:180-206) land `unknown` với evidence `transport_error:`; blocking set v3 = initiating + processing + unknown + PSLP. Tests: `testMarkUnknownLandsSemanticUnknown`, `testUntrackableTransportStillMarksUnknownOnClaim`, quarantine tests giữ nguyên |
+
+## Crash/recovery (bắt buộc TL, chứng minh riêng)
+
+- Identity ổn định: claim INSERT mang `m_refund_id` mà `prepare()` đã build TRƯỚC I/O ⇒ crash
+  bất kỳ đâu sau `/refund` để lại row chứa ĐÚNG identity provider đã thấy; cron query bằng
+  m_refund_id đó (payload tái-sign từ row, `buildQuerySubject`), KHÔNG tạo refund mới.
+- Kịch bản: crash giữa provider I/O và persist → plugin exception path không chạy → row ở
+  `initiating` (claim đã commit) → cron step 2b/4 xử lý theo query outcome; nếu CM chưa tồn
+  tại → step 1 terminate unknown (manual reconcile, không bao giờ refund lại).
+
+## Không đổi (regression matrix giữ nguyên qua round 3)
+
+- 11 mục DO-NOT-REGRESS của TL: Magento validation trước provider (preflight, round 2 giữ
+  nguyên ở :142); PROCESSING ≠ completed refund (không mutate totals, không CLOSE); SUCCESS
+  finalize exact-once native; full SUCCESS → Magento tự CLOSED; FAIL không đụng kế toán;
+  unknown/exhausted block; transport retry bounded; email claim atomic; email fail không
+  rollback payment. Full suite **296 tests / 1057 assertions OK**.

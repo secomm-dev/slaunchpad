@@ -187,3 +187,72 @@ Hệ quả thiết kế (DEC-TASKCG6BM7-003): plugin PHẢI tự `setCreditmemo`
    file:line từng hop ở trên. Giới hạn trung thực: callers/callees tràn sang Magento dev/tests
    trong worktree index — chain được chứng minh bằng anchor file:line + unit tests, không chỉ
    graph edges.
+
+---
+
+# Corrective round 3 proofs (2026-09-16)
+
+## P14 — Real-DB concurrency evidence: atomic claim (MariaDB 10.4, container throwaway)
+
+Container `zt-mariadb-evidence` (MariaDB 10.4, riêng biệt — KHÔNG đụng DB dev chung; đã xoá
+sau khi thu evidence). Schema mirror ĐÚNG schema round 3: bảng `zt_concurrency.zalo_pay_refund`
+với `active_claim` smallint NULL + 2 unique index `ZALO_PAY_REFUND_ORDER_ACTIVE (order_id,
+active_claim)` / `ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE (m_refund_id, active_claim)`.
+
+| # | Kịch bản | Kết quả |
+|---|----------|---------|
+| E1 | claim đầu tiên `INSERT (order 1, m_refund_id R1, active_claim=1)` | COMMITTED ✓ |
+| E2 | claim thứ hai CÙNG order 1 (R2) | rejected: `Duplicate entry ... for key 'ZALO_PAY_REFUND_ORDER_ACTIVE'` ✓ |
+| E3 | claim cùng `m_refund_id` R1, order KHÁC (78) | rejected: `ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE` ✓ (đúng một active attempt cho một refund identity) |
+| E4 | 3 row lịch sử NULL-active cùng order (confirmed_success/confirmed_fail/unknown, is_processed=1) | cùng tồn tại ✓ — NULL-trick không bao giờ chặn dữ liệu lịch sử (đối xứng với F14) |
+| E5 | release (`active_claim=NULL`) rồi claim mới cùng order | thành công ✓ (terminal nhả slot ⇒ refund sau FAIL/SUCCESS được) |
+| E6 | đếm active row sau chuỗi E1–E5 | ĐÚNG 1 active row cho order ✓ |
+| E7 | quarantine `unknown` giữ `active_claim=1` | INSERT thứ hai cùng order vẫn rejected ✓ — UNKNOWN block cả ở DB-level slot, không chỉ ở SELECT guard |
+| E8 | 2 session song song thật (`INSERT ... ; SELECT ...` chạy đồng thời từ 2 connection) | session-A COMMITTED, session-B REJECTED duplicate-key ✓ — đúng MỘT winner, không cần application lock |
+
+Hạn chế khai báo trung thực: container dùng MariaDB 10.4 image riêng (dev stack dùng MariaDB
+khác version đang được share) — semantics unique-index-with-NULL là thuộc tính ANSI/InnoDB
+ổn định; evidence không bao phủ deadlock/lock-waittimeout (không có trong design: INSERT đơn
+autocommit không giữ lock xuyên HTTP).
+
+## P15 — Call-chain round 3: claim TRƯỚC provider I/O (CodeGraph + anchor file:line)
+
+- CodeGraph worktree index rebuild (`codegraph index -q`, sau khi toàn bộ file round 3 ổn):
+  `executePrepared` có indexed caller duy nhất `RefundCommand::execute`
+  (`Gateway/Command/RefundCommand.php:105` — contract public giữ nguyên);
+  `acquireClaim` index tại `Service/PendingRefundManager.php:145`.
+- Giới hạn index (giữ nguyên từ P13): dynamic dispatch qua injected property
+  (`$this->pendingRefundManager->…`, `$this->refundCommand->…`) không resolve callers đầy đủ
+  (`codegraph_callers markProcessing/finalizeSuccess` → rỗng) ⇒ chain được chốt bằng anchor
+  file:line đọc trực tiếp, đối chiếu từng hop:
+  - `Plugin/Model/Service/CreditmemoRefundPlugin.php`: guard :111-118 → pass-through :121-124
+    → offline guard :126-132 → **preflight :142** → pin invoice txn :148-153 →
+    **prepare (identity, NO I/O) :165** → **acquireClaim (ATOMIC, commit TRƯỚC I/O) :176** →
+    **executePrepared (provider DUY NHẤT) :179** → markUnknown :184/:197 → markConfirmedFail
+    :211 → markProcessing :223 → markProviderSuccessLocalPending :241 → markConfirmedSuccess :256.
+    Thứ tự dòng: claim (176) < provider (179) — invariant `CLAIM_PERSISTED_BEFORE_PROVIDER_IO`
+    + `STABLE_M_REFUND_ID_BEFORE_PROVIDER_IO` (identity do prepare :165 build trước claim).
+  - `Cron/RefundCronjob.php`: PSLP shortcut :140-141 → `finalizeSuccess` :143 (KHÔNG có
+    `refundQueryCommand` call nào phía trước trong nhánh này — bằng chứng
+    `LOCAL_RETRY_RECALLS_PROVIDER_REFUND=NO`); REFUNDED bookkeeping :191-192; drift terminate
+    :207-211; FAIL → terminate :294-298 + `releaseCreditmemoAfterFail` :299 (:332, STATE_OPEN
+    :339).
+  - `grep -rn registerPending app/code/Secomm/ZaloPay --include=*.php | grep -v Test` → 0
+    (không còn remnant round 2).
+- Tests pin thứ tự: `testValidRefundValidatedBeforeProviderOnce` order-assertion
+  `['preflight','prepare','claim','provider']` (plugin test).
+
+## P16 — Crash-recovery property (crash sau /refund KHÔNG tạo refund mới)
+
+- Property: `prepare()` build `m_refund_id` ổn định TRƯỚC I/O (:165) → claim INSERT mang
+  ĐÚNG identity đó (:176, manager :145-160 persist `m_refund_id` vào row) → provider (:179).
+  Tại mọi điểm crash sau `/refund`, row tồn tại với `m_refund_id` provider đã thấy.
+- Cron khôi phục theo row, KHÔNG theo request mới: `buildQuerySubject`
+  (`RefundCronjob.php:361-383`) unserialize payload từ row + re-sign
+  `app_id|m_refund_id|timestamp`; toàn bộ cron chỉ gọi `RefundQueryCommand` (query_refund) —
+  `grep -n "refundCommand\|/refund"` trên RefundCronjob → không có path gọi provider refund.
+- PSLP (`provider_success_local_pending`): row giữ m_refund_id + cron step 0 chỉ finalize
+  local (:136-165) ⇒ provider SUCCESS + crash/trước-kịp-persist cũng không rơi vào "thử lại".
+- Unit evidence: `testPslpRowFinalizesLocallyWithoutProviderQuery` (creditmemoRepository.get
+  never, query never, finalizeSuccess once); `testUntrackableTransportStillMarksUnknownOnClaim`
+  (outcome thiếu → unknown, không re-request); E3/E7 (DB: identity + quarantine slot).

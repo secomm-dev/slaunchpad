@@ -17,7 +17,8 @@
         <column xsi:type="varchar" name="increment_id" nullable="false" length="45" comment="Increment Id Column"/>
         <column xsi:type="varchar" name="additional_information" nullable="false" length="255"
                 comment="Additional Information Column"/>
-        <column xsi:type="text" name="m_refund_id" nullable="false" comment="M Refund Id Column"/>
+        <column xsi:type="varchar" name="m_refund_id" nullable="false" length="64"
+                comment="Stable provider request identity (m_refund_id) - identical value re-queried on recovery, never re-requested"/>
         <column xsi:type="boolean" name="is_processed" nullable="false" comment="Is Processed Column"/>
         <column xsi:type="float" name="amount" scale="0" precision="0" unsigned="false" nullable="false" comment="Amount"/>
         <column xsi:type="smallint" name="query_attempts" padding="5" unsigned="true" nullable="false" default="0"
@@ -25,7 +26,9 @@
         <column xsi:type="text" name="last_error" nullable="true"
                 comment="Terminal-failure evidence (provider FAIL) - safe text only; NULL when none"/>
         <column xsi:type="varchar" name="refund_state" nullable="false" length="32" default="processing"
-                comment="Semantic outcome state: processing | confirmed_success | confirmed_fail | unknown (unknown keeps blocking new refunds until deliberately resolved)"/>
+                comment="Semantic outcome state: initiating | processing | unknown | provider_success_local_pending | confirmed_success | confirmed_fail (unknown and provider_success_local_pending keep blocking until resolved)"/>
+        <column xsi:type="smallint" name="active_claim" padding="5" unsigned="true" nullable="true"
+                comment="1 = THE atomic active refund attempt for the order (DB-level guard: unique with order_id and m_refund_id); NULL = resolved/inactive"/>
         <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false"/>
         <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
@@ -36,6 +39,14 @@
         </index>
         <index referenceId="ZALO_PAY_REFUND_CREDIT_MEMO_ID" indexType="btree">
             <column name="credit_memo_id"/>
+        </index>
+        <index xsi:type="unique" referenceId="ZALO_PAY_REFUND_ORDER_ACTIVE">
+            <column name="order_id"/>
+            <column name="active_claim"/>
+        </index>
+        <index xsi:type="unique" referenceId="ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE">
+            <column name="m_refund_id"/>
+            <column name="active_claim"/>
         </index>
         <constraint xsi:type="foreign" referenceId="ZALO_PAY_REFUND_CREDIT_MEMO_ID" table="zalo_pay_refund"
                     column="credit_memo_id" referenceTable="sales_creditmemo" referenceColumn="entity_id"

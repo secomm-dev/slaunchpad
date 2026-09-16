@@ -252,3 +252,50 @@ TL direct source review round 1 xác nhận 3 khiếm khuyết mà SPEC revision
 - UNKNOWN-QUARANTINE (manager 16 / cron 13 tổng): `PendingRefundManagerTest`,
   `RefundCronjobTest` — processing blocks; transport/protocol/finalize-exhausted blocks
   (unknown); confirmed FAIL không block; processed SUCCESS không block.
+
+---
+
+# Revision 4 — Corrective round 3 (2026-09-16, TL direct source review lần 3)
+
+## Invariants bổ sung (không thay thế Revision 2–3)
+
+- **INV-R4.1 (atomic claim, F12):** với một order, đúng MỘT refund attempt nắm quyền thực
+  hiện provider refund I/O tại một thời điểm; claim durable PHẢI commit TRƯỚC provider HTTP
+  I/O; KHÔNG DB transaction/row lock nào được giữ xuyên qua request ZaloPay; claim mang sẵn
+  `m_refund_id` ổn định; requester thua cuộc fail nguyên tử ở DB (unique index
+  `(order_id, active_claim)` + `(m_refund_id, active_claim)`, NULL-trick cho row lịch sử)
+  TRƯỚC khi chạm provider; KHÔNG check-then-act.
+- **INV-R4.2 (provider SUCCESS + local failure, F13):** identity refund attempt ổn định tồn
+  tại locally TRƯỚC provider I/O bắt đầu; provider SUCCESS + local finalize failure = durable
+  state `provider_success_local_pending`; retry/cron CHỈ finalize Magento accounting và
+  KHÔNG BAO GIỜ gọi /refund lần nữa; state machine phân biệt tường minh `unknown` /
+  `provider_success_local_pending` / `confirmed_fail` / `confirmed_success` — không gộp.
+- **INV-R4.3 (crash/recovery):** crash sau `/refund` ⇒ cron/recovery query bằng ĐÚNG
+  `m_refund_id` đã claim, KHÔNG BAO GIỜ tạo refund request mới.
+- **INV-R4.4 (historical rows, F14):** blocking guard thêm `is_processed = 0`; data patch
+  backfill theo bằng chứng (`is_processed=1 AND last_error LIKE 'refund_failed:%'` →
+  confirmed_fail; còn lại `is_processed=1` → confirmed_success; `is_processed=0` → unknown
+  bảo thủ); migration evidence bắt buộc.
+- **INV-R4.5 (confirmed FAIL, F15):** sau confirmed FAIL — tiền KHÔNG refund, kế toán
+  không đổi, credit memo pending không còn present as PROCESSING (về `STATE_OPEN` per core
+  validateForRefund), refund sau đó thực hiện được; KHÔNG bịa REFUNDED.
+- **INV-R4.6 (semantic UNKNOWN, F16):** outcome transport không xác nhận được lưu state
+  `unknown` (cũng block), KHÔNG mượn `processing`.
+- **NFR-R4.1:** không regress 11 mục DO-NOT-REGRESS (validation trước provider; PROCESSING
+  ≠ completed; PROCESSING không mutate totals/không CLOSE; SUCCESS finalize exactly once;
+  full SUCCESS → CLOSED qua Magento; FAIL không đụng kế toán; unknown/exhausted block;
+  transport retry bounded; email atomic; email fail không rollback payment). Robustness:
+  invalid order không fatal trước preflight (Magento-compatible exception, provider call 0,
+  persistence 0).
+
+## Ma trận test bổ sung (bổ sung vào §13)
+
+- ATOMIC CLAIM (manager 24 tổng; plugin 18 tổng): `PendingRefundManagerTest`,
+  `CreditmemoRefundPluginTest` — two-concurrent → one durable claim → one provider call;
+  same m_refund_id no two active attempts; claim trước provider (order-assertion).
+- PSLP (F13): plugin `testProviderSuccessWithLocalFailureLandsPendingState`; cron
+  `testPslpRowFinalizesLocallyWithoutProviderQuery` + `testPslpFinalizeFailureConsumesBudget`.
+- CRON v3 (18 tổng): `RefundCronjobTest` — REFUNDED bookkeeping; drift terminate; FAIL
+  release STATE_OPEN + swallow.
+- BACKFILL (F14): `BackfillRefundStateTest` (2) — 3 cohort evidence-order.
+- REAL-DB CONCURRENCY (E1–E8): MariaDB 10.4 throwaway container — proofs.md P14.

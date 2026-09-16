@@ -184,11 +184,12 @@ class PendingRefundManagerTest extends TestCase
     }
 
     /**
-     * BLOCKER 2 round 2 (semantic blocking): in-flight = a row in the
-     * durable blocking states PROCESSING or UNKNOWN. The filter carries NO
-     * query_attempts / is_processed condition - budget saturation alone
-     * NEVER implies "safe to refund again": the exhausted UNKNOWN
-     * quarantine keeps blocking until deliberately resolved.
+     * Round 3 F14 (semantic blocking + historical safety): in-flight = an
+     * UNPROCESSED row (is_processed = 0 - HISTORICAL RESOLVED rows can
+     * never block) in a blocking state: initiating / processing / unknown /
+     * provider_success_local_pending. Budget saturation alone still NEVER
+     * implies "safe to refund again": the exhausted UNKNOWN quarantine
+     * keeps blocking until deliberately resolved.
      * CONFIRMED_FAIL / CONFIRMED_SUCCESS rows fall OUTSIDE this filter
      * set: a provider-confirmed FAIL releases the block (money provably
      * not refunded), a confirmed SUCCESS hands control to the normal
@@ -210,11 +211,14 @@ class PendingRefundManagerTest extends TestCase
         $this->assertSame(
             [
                 [RefundInterface::ORDER_ID, ['eq' => 77]],
+                [RefundInterface::IS_PROCESSED, ['eq' => RefundInterface::NOT_PROCESSED]],
                 [
                     RefundInterface::REFUND_STATE,
                     ['in' => [
+                        RefundInterface::REFUND_STATE_INITIATING,
                         RefundInterface::REFUND_STATE_PROCESSING,
                         RefundInterface::REFUND_STATE_UNKNOWN,
+                        RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
                     ]],
                 ],
             ],
@@ -233,13 +237,15 @@ class PendingRefundManagerTest extends TestCase
     }
 
     /**
-     * BLOCKER 1: registering the pending track flips the creditmemo to the
-     * module PROCESSING state and persists the reconciliation row - order
-     * refund totals are NOT touched anywhere in this path.
+     * Round 3 F12: acquireClaim persists THE atomic durable claim in ONE
+     * save (autocommit - no explicit transaction, the row commits BEFORE
+     * any provider I/O) with refund_state = initiating, active_claim = 1
+     * and the stable m_refund_id. The credit memo is NEVER mutated here
+     * (no creditmemo parking - the cron owns that).
      */
-    public function testRegisterPendingPersistsProcessingTrackWithoutTotalMutation(): void
+    public function testAcquireClaimPersistsInitiatingClaim(): void
     {
-        $refund = $this->makeRefund(5, []);
+        $refund = $this->makeRefund(0, []);
         $this->collection->method('getNewEmptyItem')->willReturn($refund);
 
         $captured = [];
@@ -250,11 +256,12 @@ class PendingRefundManagerTest extends TestCase
                 return $refund;
             });
         $refund->expects($this->once())->method('save');
-        $this->connection->expects($this->once())->method('commit');
-        $this->creditmemo->expects($this->once())->method('setState')->with(CreditmemoPlugin::STATE_PROCESSING);
+        $this->connection->expects($this->never())->method('beginTransaction');
+        $this->connection->expects($this->never())->method('commit');
+        $this->creditmemo->expects($this->never())->method('setState');
 
-        $outcome = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_r1', 50000, '{"app_id":1}');
-        $result = $this->manager->registerPending($this->creditmemo, $outcome);
+        $tracking = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_c1', 50000, '{"app_id":1}');
+        $result = $this->manager->acquireClaim($this->creditmemo, $tracking);
 
         $this->assertSame($refund, $result);
         $this->assertSame(
@@ -262,68 +269,227 @@ class PendingRefundManagerTest extends TestCase
                 RefundInterface::ORDER_ID => 77,
                 RefundInterface::CREDIT_MEMO_ID => 33,
                 RefundInterface::INCREMENT_ID => '000000123',
-                RefundInterface::M_REFUND_ID => '260916_1000_777_r1',
+                RefundInterface::M_REFUND_ID => '260916_1000_777_c1',
                 RefundInterface::ADDITIONAL_INFORMATION => '{"app_id":1}',
                 RefundInterface::AMOUNT => 50000.0,
                 RefundInterface::IS_PROCESSED => RefundInterface::NOT_PROCESSED,
                 RefundInterface::QUERY_ATTEMPTS => 0,
                 RefundInterface::LAST_ERROR => null,
-                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::ACTIVE_CLAIM => 1,
             ],
             $captured
         );
     }
 
     /**
-     * BLOCKER 1: transport-tracked registrations carry the safe initial
-     * evidence into last_error.
+     * Round 3 F12: a concurrent/duplicate ACTIVE claim (unique index
+     * violation: SQLSTATE 23000 / driver 1062) surfaces the customer-safe
+     * in-flight exception - the provider is NEVER asked for the loser of
+     * the INSERT race.
      */
-    public function testRegisterPendingCarriesTransportEvidence(): void
+    public function testAcquireClaimDuplicateKeyThrowsInFlightException(): void
     {
-        $refund = $this->makeRefund(5, []);
+        $refund = $this->makeRefund(0, []);
         $this->collection->method('getNewEmptyItem')->willReturn($refund);
+        $refund->method('setData')->willReturnSelf();
+        $refund->expects($this->once())->method('save')
+            ->willThrowException(new \RuntimeException(
+                'SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry \'77-1\' for key \'ZALO_PAY_REFUND_ORDER_ACTIVE\''
+            ));
 
-        $captured = [];
-        $refund->method('setData')->willReturnCallback(function (array $data) use (&$captured, $refund) {
-            $captured = $data;
-
-            return $refund;
-        });
-
-        $outcome = new RefundOutcome(
-            RefundOutcome::STATUS_PROCESSING,
-            '260916_1000_777_r2',
-            50000,
-            '{"app_id":1}'
-        );
-        $this->manager->registerPending($this->creditmemo, $outcome, PendingRefundManager::EVIDENCE_TRANSPORT . 'initial refund outcome unknown');
-
-        $this->assertSame(
-            PendingRefundManager::EVIDENCE_TRANSPORT . 'initial refund outcome unknown',
-            $captured[RefundInterface::LAST_ERROR]
-        );
+        $tracking = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_c2', 50000, null);
+        try {
+            $this->manager->acquireClaim($this->creditmemo, $tracking);
+            self::fail('duplicate active claim must be refused');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString('active or awaiting reconciliation', $exception->getMessage());
+        }
+        $this->logger->expects($this->never())->method('error');
     }
 
     /**
-     * BLOCKER 1 honesty gate: if the durable track cannot be persisted the
-     * failure is never swallowed - rollback, critical log, customer-safe
-     * exception (the refund MAY already be accepted at the provider).
+     * Round 3 F12: a NON-duplicate persistence failure aborts SAFE (the
+     * provider was NOT asked - the claim commits before I/O) with an error
+     * log + retryable customer message.
      */
-    public function testRegisterPendingFailureRollsBackAndThrows(): void
+    public function testAcquireClaimOtherFailureAbortsSafe(): void
     {
-        $refund = $this->makeRefund(5, []);
+        $refund = $this->makeRefund(0, []);
         $this->collection->method('getNewEmptyItem')->willReturn($refund);
         $refund->method('setData')->willReturnSelf();
         $refund->expects($this->once())->method('save')
             ->willThrowException(new \RuntimeException('db connection lost'));
-        $this->connection->expects($this->once())->method('rollBack');
-        $this->connection->expects($this->never())->method('commit');
+
+        $tracking = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_c3', 50000, null);
+        $this->logger->expects($this->once())->method('error');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('could not be recorded locally');
+        $this->manager->acquireClaim($this->creditmemo, $tracking);
+    }
+
+    /**
+     * markProcessing: durable PROCESSING (blocking), claim slot intact.
+     */
+    public function testMarkProcessingPersistsBlockingState(): void
+    {
+        $refund = $this->makeRefund(5, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $refund->expects($this->once())->method('save');
+
+        $this->manager->markProcessing($refund);
+
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_PROCESSING,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+        $this->assertSame(1, $refund->getData(RefundInterface::ACTIVE_CLAIM));
+    }
+
+    /**
+     * Round 3 F16: markUnknown lands the SEMANTIC UNKNOWN state -
+     * explicitly NOT processing - with safe evidence; UNKNOWN keeps BOTH
+     * the block and the atomic claim slot (quarantine).
+     */
+    public function testMarkUnknownLandsSemanticUnknown(): void
+    {
+        $refund = $this->makeRefund(5, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $refund->expects($this->once())->method('save');
+
+        $this->manager->markUnknown($refund, 'transport_error: cURL timeout 28');
+
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_UNKNOWN,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+        $this->assertSame('transport_error: cURL timeout 28', $refund->getData(RefundInterface::LAST_ERROR));
+        $this->assertSame(1, $refund->getData(RefundInterface::ACTIVE_CLAIM));
+    }
+
+    /**
+     * Provider-confirmed refusal: CONFIRMED_FAIL releases the atomic claim
+     * slot (the money provably never left - a corrected retry may proceed).
+     */
+    public function testMarkConfirmedFailReleasesClaimSlot(): void
+    {
+        $refund = $this->makeRefund(5, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $refund->expects($this->once())->method('save');
+
+        $this->manager->markConfirmedFail($refund, 'refund_failed: Refund time has expired.');
+
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_CONFIRMED_FAIL,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+        $this->assertNull($refund->getData(RefundInterface::ACTIVE_CLAIM));
+    }
+
+    /**
+     * Round 3 F13: PSLP persists the durable CONFIRMED-PROVIDER-SUCCESS /
+     * LOCAL-PENDING state (blocking; slot intact until finalize lands).
+     */
+    public function testMarkProviderSuccessLocalPendingPersistsBlockingState(): void
+    {
+        $refund = $this->makeRefund(5, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $refund->expects($this->once())->method('save');
+
+        $this->manager->markProviderSuccessLocalPending(
+            $refund,
+            'reconcile_error: core finalize failed: accounting boom'
+        );
+
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+        $this->assertStringStartsWith(
+            'reconcile_error: core finalize failed:',
+            (string)$refund->getData(RefundInterface::LAST_ERROR)
+        );
+        $this->assertSame(1, $refund->getData(RefundInterface::ACTIVE_CLAIM));
+    }
+
+    /**
+     * Fully finalized SUCCESS: CONFIRMED_SUCCESS + PROCESSED + claim slot
+     * released (never blocks a future refund).
+     */
+    public function testMarkConfirmedSuccessResolvesRowReleasingClaim(): void
+    {
+        $refund = $this->makeRefund(5, [
+            RefundInterface::ACTIVE_CLAIM => 1,
+            RefundInterface::LAST_ERROR => 'stale evidence',
+        ]);
+        $refund->expects($this->once())->method('save');
+
+        $this->manager->markConfirmedSuccess($refund);
+
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+        $this->assertSame(RefundInterface::PROCESSED, $refund->getData(RefundInterface::IS_PROCESSED));
+        $this->assertNull($refund->getData(RefundInterface::LAST_ERROR));
+        $this->assertNull($refund->getData(RefundInterface::ACTIVE_CLAIM));
+    }
+
+    /**
+     * A persistence failure on a BLOCKING transition is rethrown as a
+     * customer-safe LocalizedException (the claim row keeps the order
+     * blocked either way) with a critical log.
+     */
+    public function testBlockingTransitionPersistFailureRethrows(): void
+    {
+        $refund = $this->makeRefund(5, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $refund->expects($this->once())->method('save')
+            ->willThrowException(new \RuntimeException('db down'));
+
         $this->logger->expects($this->once())->method('critical');
 
-        $outcome = new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_r3', 50000, null);
         $this->expectException(LocalizedException::class);
-        $this->expectExceptionMessage('could not be tracked locally');
-        $this->manager->registerPending($this->creditmemo, $outcome);
+        $this->expectExceptionMessage('could not be recorded locally. The refund is tracked');
+        $this->manager->markProcessing($refund);
+    }
+
+    /**
+     * A persistence failure on a TERMINAL transition is critical-logged and
+     * swallowed: a completed refund is never failed on bookkeeping - the
+     * blocking row self-heals via the cron (creditmemo REFUNDED -> resolve).
+     */
+    public function testTerminalTransitionPersistFailureSwallowed(): void
+    {
+        $refund = $this->makeRefund(5, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $refund->expects($this->once())->method('save')
+            ->willThrowException(new \RuntimeException('db down'));
+
+        $this->logger->expects($this->once())->method('critical');
+        $this->manager->markConfirmedSuccess($refund);
+    }
+
+    /**
+     * Round 3 F13: a PSLP-row budget consumption BELOW the cap keeps the
+     * PSLP state (never demoted toward a fresh provider ask - the provider
+     * money is out, only local finalize remains).
+     */
+    public function testConsumeQueryBudgetKeepsPslpStateBelowCap(): void
+    {
+        $refund = $this->makeRefund(5, [
+            RefundInterface::QUERY_ATTEMPTS => 0,
+            RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
+            RefundInterface::ACTIVE_CLAIM => 1,
+        ]);
+        $refund->expects($this->once())->method('save');
+
+        $attempts = $this->manager->consumeQueryBudget(
+            $refund,
+            PendingRefundManager::EVIDENCE_RECONCILE . 'finalization failed locally: boom'
+        );
+
+        $this->assertSame(1, $attempts);
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+        $this->assertSame(1, $refund->getData(RefundInterface::ACTIVE_CLAIM));
     }
 
     /**
@@ -392,6 +558,7 @@ class PendingRefundManagerTest extends TestCase
                 RefundInterface::IS_PROCESSED => 1,
                 RefundInterface::LAST_ERROR => null,
                 RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
+                RefundInterface::ACTIVE_CLAIM => null,
             ],
             [RefundInterface::ENTITY_ID . ' = ?' => 5]
         );
@@ -449,6 +616,7 @@ class PendingRefundManagerTest extends TestCase
                 RefundInterface::IS_PROCESSED => 1,
                 RefundInterface::LAST_ERROR => null,
                 RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
+                RefundInterface::ACTIVE_CLAIM => null,
             ],
             [RefundInterface::ENTITY_ID . ' = ?' => 5]
         );
@@ -498,6 +666,7 @@ class PendingRefundManagerTest extends TestCase
         $refund = $this->makeRefund(5, [
             RefundInterface::QUERY_ATTEMPTS => PendingRefundManager::MAX_QUERY_ATTEMPTS - 1,
             RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+            RefundInterface::ACTIVE_CLAIM => 1,
         ]);
         $refund->expects($this->once())->method('save');
 
@@ -511,6 +680,7 @@ class PendingRefundManagerTest extends TestCase
             RefundInterface::REFUND_STATE_UNKNOWN,
             $refund->getData(RefundInterface::REFUND_STATE)
         );
+        $this->assertSame(1, $refund->getData(RefundInterface::ACTIVE_CLAIM), 'quarantine keeps the claim slot');
     }
 
     /**
@@ -547,6 +717,7 @@ class PendingRefundManagerTest extends TestCase
         $refund = $this->makeRefund(5, [
             RefundInterface::QUERY_ATTEMPTS => 4,
             RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+            RefundInterface::ACTIVE_CLAIM => 1,
         ]);
         $refund->expects($this->once())->method('save');
 
@@ -564,6 +735,7 @@ class PendingRefundManagerTest extends TestCase
             'reconcile_error:',
             (string)$refund->getData(RefundInterface::LAST_ERROR)
         );
+        $this->assertSame(1, $refund->getData(RefundInterface::ACTIVE_CLAIM), 'UNKNOWN keeps the claim slot');
     }
 
     /**
@@ -576,6 +748,7 @@ class PendingRefundManagerTest extends TestCase
         $refund = $this->makeRefund(5, [
             RefundInterface::QUERY_ATTEMPTS => 4,
             RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+            RefundInterface::ACTIVE_CLAIM => 1,
         ]);
         $refund->expects($this->once())->method('save');
 
@@ -589,6 +762,7 @@ class PendingRefundManagerTest extends TestCase
             RefundInterface::REFUND_STATE_CONFIRMED_FAIL,
             $refund->getData(RefundInterface::REFUND_STATE)
         );
+        $this->assertNull($refund->getData(RefundInterface::ACTIVE_CLAIM), 'confirmed fail releases the claim slot');
         $this->assertSame(
             PendingRefundManager::MAX_QUERY_ATTEMPTS,
             $refund->getData(RefundInterface::QUERY_ATTEMPTS)
@@ -618,7 +792,9 @@ class PendingRefundManagerTest extends TestCase
             $this->callback(
                 function (array $bind): bool {
                     return ($bind[RefundInterface::REFUND_STATE] ?? null)
-                        === RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS;
+                        === RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS
+                        && array_key_exists(RefundInterface::ACTIVE_CLAIM, $bind)
+                        && $bind[RefundInterface::ACTIVE_CLAIM] === null;
                 }
             ),
             [RefundInterface::ENTITY_ID . ' = ?' => 5]

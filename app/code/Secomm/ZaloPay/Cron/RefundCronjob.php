@@ -133,6 +133,37 @@ class RefundCronjob
      */
     private function processRefund($refund): void
     {
+        // 0. PROVIDER-SUCCESS/LOCAL-PENDING (round 3 F13): the provider
+        //    money is out (CONFIRMED SUCCESS) but the Magento accounting is
+        //    incomplete - finalize LOCALLY ONLY. No provider interaction
+        //    (neither /refund nor query_refund) may ever run for this row.
+        if ((string)$refund->getData(RefundInterface::REFUND_STATE)
+            === RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING) {
+            try {
+                $this->pendingRefundManager->finalizeSuccess($refund);
+                $this->logger->info(
+                    sprintf('ZaloPay locally-pending refund finalized for credit memo ID %d.', (int)$refund->getCreditMemoId())
+                );
+            } catch (LocalizedException $exception) {
+                // Accounting still pending (rolled back): consume one budget
+                // unit with safe evidence - bounded, retried next run.
+                $attempts = $this->pendingRefundManager->consumeQueryBudget(
+                    $refund,
+                    PendingRefundManager::EVIDENCE_RECONCILE . $exception->getMessage()
+                );
+                $this->logger->critical(
+                    sprintf(
+                        'ZaloPay refund row #%d: local finalize still pending (%s) - provider money is refunded.',
+                        (int)$refund->getId(),
+                        $exception->getMessage()
+                    )
+                );
+                $this->logBudgetIfExhausted($refund, $attempts);
+            }
+
+            return;
+        }
+
         // 1. The credit memo must exist (missing = terminal reconcile).
         try {
             $creditMemo = $this->creditmemoRepository->get((int)$refund->getCreditMemoId());
@@ -152,7 +183,25 @@ class RefundCronjob
             return;
         }
 
-        // 2. Only credit memos parked in the PROCESSING state are ours to
+        // 2a. Magento already REFUNDED the creditmemo (e.g. crash between
+        //     the core accounting and the local row update after a sync
+        //     SUCCESS): the refund is DONE in Magento - land the row
+        //     bookkeeping (confirmed_success, claim released). Accounting is
+        //     never re-run and the row never blocks a future refund.
+        if ((int)$creditMemo->getState() === Creditmemo::STATE_REFUNDED) {
+            $this->pendingRefundManager->markConfirmedSuccess($refund);
+            $this->logger->info(
+                sprintf(
+                    'ZaloPay refund row #%d: credit memo #%d already REFUNDED in Magento - row resolved as success.',
+                    (int)$refund->getId(),
+                    (int)$refund->getCreditMemoId()
+                )
+            );
+
+            return;
+        }
+
+        // 2b. Only credit memos parked in the PROCESSING state are ours to
         //    finalize: any other state means the refund was resolved outside
         //    this lifecycle (e.g. manually) - never double-finalize.
         if ((int)$creditMemo->getState() !== CreditmemoPlugin::STATE_PROCESSING) {
@@ -247,6 +296,7 @@ class RefundCronjob
                 PendingRefundManager::EVIDENCE_REFUND_FAILED . $failMessage,
                 RefundInterface::REFUND_STATE_CONFIRMED_FAIL
             );
+            $this->releaseCreditmemoAfterFail($creditMemo);
             $this->logger->critical(
                 sprintf(
                     'ZaloPay refund FAILED terminally for credit memo ID %d: %s',
@@ -266,6 +316,37 @@ class RefundCronjob
             : PendingRefundManager::EVIDENCE_ANOMALY . 'missing or invalid provider return_code';
         $attempts = $this->pendingRefundManager->consumeQueryBudget($refund, $evidence);
         $this->logBudgetIfExhausted($refund, $attempts);
+    }
+
+    /**
+     * Provider CONFIRMED FAIL: the parked creditmemo must no longer present
+     * as PROCESSING (money was NOT refunded) - return it to the safe OPEN
+     * state so a corrected future refund can proceed (round 3 F15). Magento
+     * refund accounting stays untouched (nothing was applied). A release
+     * failure is critical-logged: the refund row is already confirmed_fail
+     * (non-blocking), but the creditmemo state needs manual follow-up.
+     *
+     * @param \Magento\Sales\Model\Order\Creditmemo $creditMemo
+     * @return void
+     */
+    private function releaseCreditmemoAfterFail($creditMemo): void
+    {
+        if ((int)$creditMemo->getState() !== CreditmemoPlugin::STATE_PROCESSING) {
+            return;
+        }
+
+        try {
+            $creditMemo->setState(Creditmemo::STATE_OPEN);
+            $this->creditmemoRepository->save($creditMemo);
+        } catch (\Throwable $exception) {
+            $this->logger->critical(
+                sprintf(
+                    'ZaloPay refund: credit memo #%d confirmed FAIL but could not be released back to OPEN: %s - manual state fix required.',
+                    (int)$creditMemo->getEntityId(),
+                    $exception->getMessage()
+                )
+            );
+        }
     }
 
     /**
