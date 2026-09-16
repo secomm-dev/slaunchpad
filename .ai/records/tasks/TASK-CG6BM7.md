@@ -118,3 +118,38 @@ icon-upload config; mọi thay đổi nằm trong `app/code/Secomm/ZaloPay` + `.
 - L3 validation: php -l, PHPCS module-wide, full ZaloPay unit suite, setup:di:compile, Secomm
   regression — PASS; integration runtime không khả dụng → ghi `INTEGRATION=ENVIRONMENT_BLOCKED`.
 - Receipt §15 đầy đủ, trung thực; nếu PASS → KHÔNG merge, chỉ push branch task lên GitHub, dừng chờ TL.
+
+---
+
+# Corrective round 2 (2026-09-16) — TL direct source review lần 2
+
+TL review lại source trực tiếp và chỉ ra HAI khiếm khuyết BLOCKER còn tồn tại trong chính code
+corrective round 1; xử lý trong đúng task này (KHÔNG tạo task mới, KHÔNG merge):
+
+1. **BLOCKER — Magento refund validation PHẢI pass trước khi hỏi provider** (F10): round 1 gọi
+   `RefundCommand::execute()` trước `$proceed()` (nơi core chạy `validateForRefund` protected).
+   Fix theo DEC-TASKCG6BM7-004 D1: preflight mirror 1:1 toàn bộ core validation
+   (`Service/CreditmemoRefundPreflight`, anchor 2.4.8-p5 `CreditmemoService.php:189-219`,
+   upgrade coupling + parity tests ghi rõ) + supplementary online-amount > 0; plugin gọi
+   preflight trước mọi provider I/O và mọi persistence; pending Credit Memo KHÔNG persist khi
+   preflight chưa pass.
+2. **BLOCKER — UNKNOWN cạn ngân sách query phải TIẾP TỤC blocking** (F11): fix theo
+   DEC-TASKCG6BM7-004 D2: durable semantic state `refund_state` thay cho việc suy "safe" từ
+   `query_attempts == MAX`; quarantine at-cap; chỉ `confirmed_fail` mở khóa;
+   `confirmed_success` về số dư refundable chuẩn; exhausted unknown giữ nguyên visible + block
+   đến khi resolve chủ đích.
+
+Scope bất biến: KHÔNG merge; KHÔNG đụng icon upload, ExtraFee/MoMo/LLMS/Bitbucket/SMTP;
+thay đổi chỉ trong `app/code/Secomm/ZaloPay` + `.ai`.
+
+Decisions: thêm DEC-TASKCG6BM7-004. Spec: Revision 3. Plan: appendix 2 (bước 16–18).
+Evidence: findings F10–F11, proofs P11–P13, validation round 2.
+
+## Acceptance criteria round 2
+
+- Matrix mới: preflight parity 9 test + plugin provider-never 5 test + unknown-quarantine
+  matrix (manager 16 / cron 13 tổng) — full suite **279 tests / 988 assertions OK**.
+- Validation L3: php -l clean; PHPCS module-wide 0 errors; setup:di:compile 9/9 exit 0 chạy lại
+  trên code cuối; CodeGraph call-chain P13.
+- Receipt round 2 theo đúng mẫu TL đưa; nếu PASS → chỉ push `task/zalopay-postfix-audit`
+  (GitHub origin), KHÔNG merge, STOP chờ TL review.

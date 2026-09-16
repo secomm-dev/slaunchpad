@@ -23,9 +23,19 @@ interface RefundInterface
     public const CREDIT_MEMO_ID = "credit_memo_id";
     public const QUERY_ATTEMPTS = "query_attempts";
     public const LAST_ERROR = "last_error";
+    public const REFUND_STATE = "refund_state";
+
+    /**
+     * Semantic refund outcome states (TASK-CG6BM7 corrective round 2).
+     * query_attempts saturation alone must NEVER imply "safe to refund
+     * again": blocking a new refund request is decided by refund_state.
+     */
+    public const REFUND_STATE_PROCESSING = "processing";
+    public const REFUND_STATE_CONFIRMED_SUCCESS = "confirmed_success";
+    public const REFUND_STATE_CONFIRMED_FAIL = "confirmed_fail";
+    public const REFUND_STATE_UNKNOWN = "unknown";
     public const PROCESSED = true;
     public const NOT_PROCESSED = false;
-
 
     /**
      * Getter for EntityId.

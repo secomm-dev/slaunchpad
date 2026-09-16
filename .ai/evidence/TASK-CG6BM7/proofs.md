@@ -120,3 +120,70 @@ Hệ quả thiết kế (DEC-TASKCG6BM7-003): plugin PHẢI tự `setCreditmemo`
 - Tests: `RefundCommandTest::testMarkerSkipReturnsNullWithoutProviderCall`;
   `PendingRefundManagerTest::testFinalizeSuccessRunsNativeAccountingOnce` (marker set;
   RefundOperation chạy qua Payment::refund mock boundary).
+
+---
+
+# Corrective round 2 proofs (2026-09-16)
+
+## P11 — Magento refund validation PASS trước provider (BLOCKER F10)
+
+- Mirror source: `Service/CreditmemoRefundPreflight.php:69-108` — 3 checks 1:1
+  `CreditmemoService::validateForRefund` (2.4.8-p5, protected, `CreditmemoService.php:189-219`):
+  existing-non-open CM (:192-197) → invalid order (:199-203) → rounded over-refund với message
+  `formatTxt` (:205-218); supplementary `baseGrandTotal <= 0` (:104-108).
+- Call site: `Plugin/Model/Service/CreditmemoRefundPlugin.php:121-127` — preflight chạy SAU
+  in-flight guard, TRƯỚC pin transaction context (:133-141), TRƯỚC `RefundCommand::execute`
+  (:148), TRƯỚC mọi `registerPending` (:161/:185) và TRƯỚC `$proceed()` (:178/:198) ⇒ không có
+  provider I/O lẫn persistence trước khi validation pass.
+- Core `refund()` gọi `validateForRefund()` bên trong `$proceed()` (CreditmemoService.php
+  :147-180) — preflight không thay thế mà ĐI TRƯỚC; core vẫn re-validate trong `$proceed()` trên
+  nhánh SUCCESS (defense in depth).
+- Tests: `CreditmemoRefundPreflightTest` (9 — từng check parity + boundary
+  refund-up-to-remaining-balance PASS) + `CreditmemoRefundPluginTest` matrix provider-never:
+  `testOverRefundProviderNeverCalled`, `testNonOpenCreditmemoProviderNeverCalled`,
+  `testInvalidOrderProviderNeverCalled`, `testZeroOnlineAmountProviderNeverCalled`
+  (`RefundCommand::execute` + `registerPending` + `$proceed` NEVER),
+  `testValidRefundValidatedBeforeProviderOnce` (order assertion: preflight → provider).
+
+## P12 — Blocking semantic theo refund_state (BLOCKER F11)
+
+- `Service/PendingRefundManager.php:108-118` — `hasInFlight` = `refund_state IN (processing,
+  unknown)`, KHÔNG còn `is_processed`/`query_attempts` ⇒ `attempts == MAX` không tự mang nghĩa
+  "safe to refund"; chỉ `confirmed_fail` và `confirmed_success` nằm ngoài filter.
+- `consumeQueryBudget` (:199-206) — quarantine → `unknown` khi attempts chạm MAX (mọi path tiêu
+  budget đều unconfirmed). `terminate` (:228-238) — state tường minh, default `unknown`.
+  `finalizeSuccess` — cả hai bind update (:275-283 recovery, :318-326 fresh) set
+  `confirmed_success`. `registerPending` set `processing` (:158).
+- `Cron/RefundCronjob.php:245-249` — provider FAIL truyền `confirmed_fail` (tiền chưa ra ⇒ mở
+  khóa); 3 terminate còn lại (missing CM :140, state drift :159, malformed payload :181) giữ
+  default `unknown`.
+- Tests: `PendingRefundManagerTest` — `testHasInFlightBlocksProcessingAndUnknownStatesOnly`
+  (pin filter, không điều kiện attempts), `testConsumeQueryBudgetQuarantinesToUnknownAtCap`
+  (transport-exhausted → unknown), `testConsumeQueryBudgetBelowCapKeepsProcessing`,
+  `testTerminateDefaultsToUnknownQuarantine`, `testTerminateConfirmedFailReleasesBlockingState`,
+  `testFinalizeSuccessLandsConfirmedSuccessState`; `RefundCronjobTest` — FAIL ↦ `confirmed_fail`,
+  state-drift ↦ `unknown`. Ma trận kịch bản của TL: processing blocks; transport-exhausted
+  blocks (unknown); protocol-anomaly-exhausted blocks (cùng path quarantine); local-finalize-
+  exhausted blocks (cùng path quarantine); confirmed FAIL không block; SUCCESS không block.
+
+## P13 — Call-chain proof (source-backed, CodeGraph worktree index 116.367 nodes)
+
+1. Guard + validation: `CreditmemoRefundPlugin::aroundRefund` (:115 hasInFlight → :127
+   `CreditmemoRefundPreflight::validateRefundable` — mirror `CreditmemoService.php:189-219`).
+2. Provider (MỘT lần): `:148 RefundCommand::execute` → v2/refund; PROCESSING → immediate
+   v2/query_refund (`RefundCommand::resolveProcessing:213`).
+3. PROCESSING/UNKNOWN pending: `:161/:185 PendingRefundManager::registerPending` — creditmemo →
+   `STATE_PROCESSING`, row `refund_state=processing`, KHÔNG mutate totals, KHÔNG `$proceed()`.
+4. Cron query: `Cron/RefundCronjob.php:199 RefundQueryCommand::getRefundQuery` (re-sign payload
+   từ row) — budget tiêu trên transport (:201), terminate terminal (:140/:159/:181/:245).
+5. SUCCESS → finalize: `RefundCronjob.php:215 PendingRefundManager::finalizeSuccess` →
+   `lockRefundRow` FOR UPDATE (:262) → NATIVE accounting (:297-316: invoice setIsUsedForRefund +
+   baseTotalRefunded, `RefundOperation::execute` với marker skip, creditmemo `STATE_REFUNDED`,
+   order save) → row `confirmed_success`. Full refund → Magento core tự đẩy order CLOSED (sau
+   khi `total_refunded` đầy — ref RefundOperation/Payment::refund core).
+6. CodeGraph evidence: `codegraph_search CreditmemoRefundPreflight` → class + validateRefundable
+   (:69); `codegraph_trace CreditmemoRefundPreflight → RefundCommand` — dừng ở dynamic dispatch
+   như kì vọng (plugin orchestration qua injected properties); bodies kèm anchor đã đối chiếu
+   file:line từng hop ở trên. Giới hạn trung thực: callers/callees tràn sang Magento dev/tests
+   trong worktree index — chain được chứng minh bằng anchor file:line + unit tests, không chỉ
+   graph edges.

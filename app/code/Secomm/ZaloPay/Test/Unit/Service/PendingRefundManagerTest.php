@@ -184,9 +184,17 @@ class PendingRefundManagerTest extends TestCase
     }
 
     /**
-     * GATE 1: in-flight = NOT_PROCESSED row within the bounded query budget.
+     * BLOCKER 2 round 2 (semantic blocking): in-flight = a row in the
+     * durable blocking states PROCESSING or UNKNOWN. The filter carries NO
+     * query_attempts / is_processed condition - budget saturation alone
+     * NEVER implies "safe to refund again": the exhausted UNKNOWN
+     * quarantine keeps blocking until deliberately resolved.
+     * CONFIRMED_FAIL / CONFIRMED_SUCCESS rows fall OUTSIDE this filter
+     * set: a provider-confirmed FAIL releases the block (money provably
+     * not refunded), a confirmed SUCCESS hands control to the normal
+     * refundable-balance checks.
      */
-    public function testHasInFlightTrueWhenUnprocessedRowWithinBudget(): void
+    public function testHasInFlightBlocksProcessingAndUnknownStatesOnly(): void
     {
         $filters = [];
         $this->collection->method('addFieldToFilter')->willReturnCallback(
@@ -196,21 +204,26 @@ class PendingRefundManagerTest extends TestCase
                 return $this->collection;
             }
         );
-        $this->collection->method('getSize')->willReturn(2);
+        $this->collection->method('getSize')->willReturn(1);
 
         $this->assertTrue($this->manager->hasInFlight(77));
         $this->assertSame(
             [
                 [RefundInterface::ORDER_ID, ['eq' => 77]],
-                [RefundInterface::IS_PROCESSED, ['eq' => RefundInterface::NOT_PROCESSED]],
-                [RefundInterface::QUERY_ATTEMPTS, ['lt' => PendingRefundManager::MAX_QUERY_ATTEMPTS]],
+                [
+                    RefundInterface::REFUND_STATE,
+                    ['in' => [
+                        RefundInterface::REFUND_STATE_PROCESSING,
+                        RefundInterface::REFUND_STATE_UNKNOWN,
+                    ]],
+                ],
             ],
             $filters
         );
     }
 
     /**
-     * GATE 1: no unresolved row (or budget exhausted) -> not in flight.
+     * GATE 1 (round 2): no row in a blocking SEMANTIC state -> not in flight.
      */
     public function testHasInFlightFalseWhenNoUnprocessedRow(): void
     {
@@ -255,6 +268,7 @@ class PendingRefundManagerTest extends TestCase
                 RefundInterface::IS_PROCESSED => RefundInterface::NOT_PROCESSED,
                 RefundInterface::QUERY_ATTEMPTS => 0,
                 RefundInterface::LAST_ERROR => null,
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
             ],
             $captured
         );
@@ -377,6 +391,7 @@ class PendingRefundManagerTest extends TestCase
             [
                 RefundInterface::IS_PROCESSED => 1,
                 RefundInterface::LAST_ERROR => null,
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
             ],
             [RefundInterface::ENTITY_ID . ' = ?' => 5]
         );
@@ -433,6 +448,7 @@ class PendingRefundManagerTest extends TestCase
             [
                 RefundInterface::IS_PROCESSED => 1,
                 RefundInterface::LAST_ERROR => null,
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
             ],
             [RefundInterface::ENTITY_ID . ' = ?' => 5]
         );
@@ -470,4 +486,144 @@ class PendingRefundManagerTest extends TestCase
         $this->manager->finalizeSuccess($refund);
     }
 
+    /**
+     * BLOCKER 2 round 2: budget exhaustion QUARANTINES the row as UNKNOWN -
+     * it must KEEP blocking new refunds (exhaustion is never "safe to
+     * refund"). Transport-exhausted case shown; the quarantine is
+     * evidence-agnostic (protocol anomaly / finalize-failure exhaustion
+     * land UNKNOWN identically - same code path, attempts >= MAX).
+     */
+    public function testConsumeQueryBudgetQuarantinesToUnknownAtCap(): void
+    {
+        $refund = $this->makeRefund(5, [
+            RefundInterface::QUERY_ATTEMPTS => PendingRefundManager::MAX_QUERY_ATTEMPTS - 1,
+            RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+        ]);
+        $refund->expects($this->once())->method('save');
+
+        $attempts = $this->manager->consumeQueryBudget(
+            $refund,
+            PendingRefundManager::EVIDENCE_TRANSPORT . 'cURL timeout 28'
+        );
+
+        $this->assertSame(PendingRefundManager::MAX_QUERY_ATTEMPTS, $attempts);
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_UNKNOWN,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+    }
+
+    /**
+     * BLOCKER 2 round 2: below the cap the row stays PROCESSING (provider
+     * accepted the refund - the outcome is still open, still blocking).
+     */
+    public function testConsumeQueryBudgetBelowCapKeepsProcessing(): void
+    {
+        $refund = $this->makeRefund(5, [
+            RefundInterface::QUERY_ATTEMPTS => 0,
+            RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+        ]);
+
+        $attempts = $this->manager->consumeQueryBudget(
+            $refund,
+            PendingRefundManager::EVIDENCE_ANOMALY . 'missing return_code'
+        );
+
+        $this->assertSame(1, $attempts);
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_PROCESSING,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+    }
+
+    /**
+     * BLOCKER 2 round 2: terminate WITHOUT an explicit semantic state
+     * defaults to UNKNOWN quarantine (malformed payload / missing
+     * creditmemo / state drift - an unconfirmed outcome is never assumed
+     * safe to refund over).
+     */
+    public function testTerminateDefaultsToUnknownQuarantine(): void
+    {
+        $refund = $this->makeRefund(5, [
+            RefundInterface::QUERY_ATTEMPTS => 4,
+            RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+        ]);
+        $refund->expects($this->once())->method('save');
+
+        $this->manager->terminate($refund, 'reconcile_error: malformed stored query payload');
+
+        $this->assertSame(
+            PendingRefundManager::MAX_QUERY_ATTEMPTS,
+            $refund->getData(RefundInterface::QUERY_ATTEMPTS)
+        );
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_UNKNOWN,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+        $this->assertStringStartsWith(
+            'reconcile_error:',
+            (string)$refund->getData(RefundInterface::LAST_ERROR)
+        );
+    }
+
+    /**
+     * BLOCKER 2 round 2: a provider-CONFIRMED FAIL terminates as
+     * CONFIRMED_FAIL - the money provably never left the provider, so the
+     * row does NOT keep blocking a corrected refund attempt.
+     */
+    public function testTerminateConfirmedFailReleasesBlockingState(): void
+    {
+        $refund = $this->makeRefund(5, [
+            RefundInterface::QUERY_ATTEMPTS => 4,
+            RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+        ]);
+        $refund->expects($this->once())->method('save');
+
+        $this->manager->terminate(
+            $refund,
+            PendingRefundManager::EVIDENCE_REFUND_FAILED . 'Refund time has expired.',
+            RefundInterface::REFUND_STATE_CONFIRMED_FAIL
+        );
+
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_CONFIRMED_FAIL,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+        $this->assertSame(
+            PendingRefundManager::MAX_QUERY_ATTEMPTS,
+            $refund->getData(RefundInterface::QUERY_ATTEMPTS)
+        );
+    }
+
+    /**
+     * BLOCKER 2 round 2: a confirmed SUCCESS finalization flips the row to
+     * CONFIRMED_SUCCESS in BOTH update binds (fresh finalize + recovery) -
+     * outside the blocking filter set, control hands to the normal
+     * refundable-balance checks.
+     */
+    public function testFinalizeSuccessLandsConfirmedSuccessState(): void
+    {
+        $refund = $this->makeRefund(5, []);
+        $this->connection->method('fetchRow')->willReturn(
+            [
+                RefundInterface::ENTITY_ID => 5,
+                RefundInterface::IS_PROCESSED => 0,
+                RefundInterface::CREDIT_MEMO_ID => 33,
+            ]
+        );
+        $this->creditmemoRepository->method('get')->with(33)->willReturn($this->creditmemo);
+        $this->invoiceRepository->method('get')->with(12)->willReturn($this->invoice);
+        $this->connection->expects($this->once())->method('update')->with(
+            'zalo_pay_refund',
+            $this->callback(
+                function (array $bind): bool {
+                    return ($bind[RefundInterface::REFUND_STATE] ?? null)
+                        === RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS;
+                }
+            ),
+            [RefundInterface::ENTITY_ID . ' = ?' => 5]
+        );
+
+        $this->assertTrue($this->manager->finalizeSuccess($refund));
+    }
 }

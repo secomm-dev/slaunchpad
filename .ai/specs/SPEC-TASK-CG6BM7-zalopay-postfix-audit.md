@@ -223,3 +223,32 @@ TL direct source review round 1 xác nhận 3 khiếm khuyết mà SPEC revision
 - RETRY/RECONCILIATION mở rộng (13): RefundCronjobTest (rewrite).
 - PROVIDER-ONLY COMMAND (11): RefundCommandTest (rewrite).
 - EMAIL CONCURRENCY (3 + resource 3): OrderFinalizerTest EMAIL 8–10 + PaymentAttemptResourceTest.
+
+---
+
+# Revision 3 — Corrective round 2 (2026-09-16)
+
+## Invariants bổ sung (không thay thế Revision 2)
+
+- **INV-R3.1 (Magento validation trước provider):** `Magento refund validation PASS → provider
+  refund mới được yêu cầu`. Plugin gọi preflight mirror (`CreditmemoRefundPreflight`,
+  anchor `CreditmemoService.php:189-219` 2.4.8-p5) trước MỌI provider I/O và MỌI persistence;
+  pending Credit Memo KHÔNG persist khi preflight chưa pass. Over-refund / creditmemo đã
+  processed / invalid order / online amount <= 0 ⇒ provider NEVER called. Mirror là option 3
+  (core method protected): parity tests pin từng check; upgrade Magento phải re-diff mirror.
+- **INV-R3.2 (blocking là semantic state):** cột `zalo_pay_refund.refund_state` quyết định
+  blocking — `processing` + `unknown` BLOCK; `confirmed_fail` mở khóa (provider từ chối tường
+  minh); `confirmed_success` về số dư refundable chuẩn. `query_attempts == MAX` KHÔNG tự mang
+  nghĩa "safe to refund"; budget exhaustion tự quarantine → `unknown`; row unknown giữ nguyên
+  visible + block đến khi được resolve chủ đích (thao tác vận hành tường minh).
+- **NFR-R3.1:** mọi thay đổi round 2 nội bộ `app/code/Secomm/ZaloPay`; không regress các
+  invariant Revision 2 (PROCESSING không mutate totals/không đóng order; SUCCESS native
+  accounting; FAIL không đụng kế toán; email claim atomic; retry bounded).
+
+## Ma trận test bổ sung (bổ sung vào §13)
+
+- PREFLIGHT PARITY (9): `CreditmemoRefundPreflightTest`.
+- PROVIDER-NEVER PLUGIN MATRIX (5 mới; tổng plugin 16): `CreditmemoRefundPluginTest`.
+- UNKNOWN-QUARANTINE (manager 16 / cron 13 tổng): `PendingRefundManagerTest`,
+  `RefundCronjobTest` — processing blocks; transport/protocol/finalize-exhausted blocks
+  (unknown); confirmed FAIL không block; processed SUCCESS không block.

@@ -239,4 +239,28 @@ class RefundData extends DataObject implements RefundInterface
     {
         $this->setData(self::LAST_ERROR, $lastError);
     }
+
+    /**
+     * Getter for RefundState.
+     *
+     * @return string|null
+     */
+    public function getRefundState(): ?string
+    {
+        $v = $this->getData(self::REFUND_STATE);
+
+        return $v === null ? null : (string)$v;
+    }
+
+    /**
+     * Setter for RefundState.
+     *
+     * @param string|null $refundState
+     *
+     * @return void
+     */
+    public function setRefundState(?string $refundState): void
+    {
+        $this->setData(self::REFUND_STATE, $refundState);
+    }
 }

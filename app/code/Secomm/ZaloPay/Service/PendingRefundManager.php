@@ -90,10 +90,17 @@ class PendingRefundManager
 
     /**
      * Whether an un-resolved provider refund is being tracked for the order:
-     * a NOT_PROCESSED row within the bounded query budget. While in flight,
-     * a NEW refund request for the same order is refused: the local
-     * refundable balance does not yet reflect the pending provider refund,
-     * so allowing a second request could refund the same money twice.
+     * a row in the SEMANTIC blocking states - PROCESSING (provider accepted,
+     * outcome pending) or UNKNOWN (outcome not confirmed: quarantine keeps
+     * blocking until deliberately resolved). While in flight, a NEW refund
+     * request for the same order is refused: the local refundable balance
+     * does not yet reflect the pending provider refund, so allowing a second
+     * request could refund the same money twice.
+     *
+     * Corrective round 2: query_attempts saturation alone must NEVER imply
+     * "safe to refund again" - an exhausted UNKNOWN row keeps blocking
+     * (double-refund guard); only CONFIRMED_FAIL releases the block, and
+     * CONFIRMED_SUCCESS hands control back to the normal refundable balance.
      *
      * @param int $orderId
      * @return bool
@@ -102,8 +109,10 @@ class PendingRefundManager
     {
         $collection = $this->refundCollectionFactory->create();
         $collection->addFieldToFilter(RefundInterface::ORDER_ID, ['eq' => $orderId]);
-        $collection->addFieldToFilter(RefundInterface::IS_PROCESSED, ['eq' => RefundInterface::NOT_PROCESSED]);
-        $collection->addFieldToFilter(RefundInterface::QUERY_ATTEMPTS, ['lt' => self::MAX_QUERY_ATTEMPTS]);
+        $collection->addFieldToFilter(
+            RefundInterface::REFUND_STATE,
+            ['in' => [RefundInterface::REFUND_STATE_PROCESSING, RefundInterface::REFUND_STATE_UNKNOWN]]
+        );
 
         return (int)$collection->getSize() > 0;
     }
@@ -146,6 +155,7 @@ class PendingRefundManager
                     RefundInterface::IS_PROCESSED => RefundInterface::NOT_PROCESSED,
                     RefundInterface::QUERY_ATTEMPTS => 0,
                     RefundInterface::LAST_ERROR => $lastError,
+                    RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
                 ]
             );
             $refund->save();
@@ -186,6 +196,13 @@ class PendingRefundManager
         $attempts = (int)$refund->getData(RefundInterface::QUERY_ATTEMPTS) + 1;
         $refund->setData(RefundInterface::QUERY_ATTEMPTS, $attempts);
         $refund->setData(RefundInterface::LAST_ERROR, $evidence);
+        if ($attempts >= self::MAX_QUERY_ATTEMPTS
+            && $refund->getData(RefundInterface::REFUND_STATE) !== RefundInterface::REFUND_STATE_UNKNOWN) {
+            // Budget exhausted without a confirmed outcome: quarantine as
+            // UNKNOWN - the row keeps blocking new refund requests until
+            // deliberately resolved (exhaustion is never "safe to refund").
+            $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_UNKNOWN);
+        }
         $refund->save();
 
         return $attempts;
@@ -196,16 +213,26 @@ class PendingRefundManager
      * drops out of the cron selection, evidence retained - RefundCleanup
      * only deletes PROCESSED rows) and record safe evidence. Used for
      * non-retryable classifications: provider FAIL, malformed stored payload,
-     * missing creditmemo, creditmemo state drift.
+     * missing creditmemo, creditmemo state drift. The EXPLICIT semantic
+     * terminal state decides blocking: CONFIRMED_FAIL (provider refused -
+     * money provably NOT refunded) releases the block on future refund
+     * requests; UNKNOWN (malformed payload, missing creditmemo, state drift -
+     * outcome never confirmed) keeps blocking until deliberately resolved.
      *
      * @param RefundModel $refund
      * @param string $evidence Safe evidence text.
+     * @param string $refundState Semantic terminal state (default UNKNOWN -
+     *        an unconfirmed outcome is never assumed safe).
      * @return void
      */
-    public function terminate(RefundModel $refund, string $evidence): void
-    {
+    public function terminate(
+        RefundModel $refund,
+        string $evidence,
+        string $refundState = RefundInterface::REFUND_STATE_UNKNOWN
+    ): void {
         $refund->setData(RefundInterface::QUERY_ATTEMPTS, self::MAX_QUERY_ATTEMPTS);
         $refund->setData(RefundInterface::LAST_ERROR, $evidence);
+        $refund->setData(RefundInterface::REFUND_STATE, $refundState);
         $refund->save();
     }
 
@@ -246,7 +273,11 @@ class PendingRefundManager
                 // complete only the bookkeeping, never re-run accounting.
                 $connection->update(
                     $this->refundResource->getMainTable(),
-                    [RefundInterface::IS_PROCESSED => 1, RefundInterface::LAST_ERROR => null],
+                    [
+                        RefundInterface::IS_PROCESSED => 1,
+                        RefundInterface::LAST_ERROR => null,
+                        RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
+                    ],
                     [RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId()]
                 );
                 $connection->commit();
@@ -285,7 +316,11 @@ class PendingRefundManager
 
             $connection->update(
                 $this->refundResource->getMainTable(),
-                [RefundInterface::IS_PROCESSED => 1, RefundInterface::LAST_ERROR => null],
+                [
+                    RefundInterface::IS_PROCESSED => 1,
+                    RefundInterface::LAST_ERROR => null,
+                    RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
+                ],
                 [RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId()]
             );
             $connection->commit();

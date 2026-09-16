@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Test\Unit\Plugin\Model\Service;
 
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
@@ -20,6 +21,7 @@ use Secomm\ZaloPay\Gateway\Command\RefundCommand;
 use Secomm\ZaloPay\Gateway\Command\RefundOutcome;
 use Magento\Framework\Exception\LocalizedException;
 use Secomm\ZaloPay\Plugin\Model\Service\CreditmemoRefundPlugin;
+use Secomm\ZaloPay\Service\CreditmemoRefundPreflight;
 use Secomm\ZaloPay\Service\PendingRefundManager;
 use Secomm\ZaloPay\Service\RefundOutcomeMarker;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -38,6 +40,8 @@ class CreditmemoRefundPluginTest extends TestCase
     private RefundCommand|MockObject $mockRefundCommand;
 
     private PendingRefundManager|MockObject $mockRefundManager;
+
+    private CreditmemoRefundPreflight|MockObject $preflight;
 
     private RefundOutcomeMarker $marker;
 
@@ -67,6 +71,7 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->paymentDataObjectFactory = $this->createMock(PaymentDataObjectFactory::class);
         $this->mockRefundCommand = $this->createMock(RefundCommand::class);
         $this->mockRefundManager = $this->createMock(PendingRefundManager::class);
+        $this->preflight = $this->createMock(CreditmemoRefundPreflight::class);
         $this->marker = new RefundOutcomeMarker();
         $this->messageManager = $this->createMock(ManagerInterface::class);
         $this->plugin = new CreditmemoRefundPlugin(
@@ -75,7 +80,8 @@ class CreditmemoRefundPluginTest extends TestCase
             $this->mockRefundCommand,
             $this->mockRefundManager,
             $this->marker,
-            $this->messageManager
+            $this->messageManager,
+            $this->preflight
         );
 
         $this->payment = $this->createMock(\Magento\Sales\Model\Order\Payment::class);
@@ -372,5 +378,141 @@ class CreditmemoRefundPluginTest extends TestCase
         }
         $this->assertSame($refusal, $caught);
         $this->assertSame([], $spy['calls']);
+    }
+    /**
+     * BLOCKER round 2: Magento validation BEFORE provider. An over-refund
+     * (core mirror check 3) rejects INSIDE the preflight - the provider is
+     * NEVER called, nothing is registered pending, core never runs.
+     */
+    public function testOverRefundProviderNeverCalled(): void
+    {
+        $this->preflight->method('validateRefundable')
+            ->willThrowException(new LocalizedException(
+                new \Magento\Framework\Phrase('The most money available to refund is 0.00.')
+            ));
+        $this->mockRefundCommand->expects($this->never())->method('execute');
+        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $this->paymentDataObjectFactory->expects($this->never())->method('create');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('over-refund must be rejected before the provider');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString('most money available to refund', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * BLOCKER round 2: an already-processed (non-open) EXISTING credit memo
+     * is rejected by the core-mirror check - provider NEVER called.
+     */
+    public function testNonOpenCreditmemoProviderNeverCalled(): void
+    {
+        $this->preflight->method('validateRefundable')
+            ->willThrowException(new LocalizedException(
+                new \Magento\Framework\Phrase('We cannot register an existing credit memo.')
+            ));
+        $this->mockRefundCommand->expects($this->never())->method('execute');
+        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('non-open creditmemo must be rejected before the provider');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString('existing credit memo', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * BLOCKER round 2: an invalid order reference is rejected by the
+     * core-mirror check - provider NEVER called.
+     */
+    public function testInvalidOrderProviderNeverCalled(): void
+    {
+        $this->preflight->method('validateRefundable')
+            ->willThrowException(new NoSuchEntityException(
+                new \Magento\Framework\Phrase('We found an invalid order to refund.')
+            ));
+        $this->mockRefundCommand->expects($this->never())->method('execute');
+        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('invalid order must be rejected before the provider');
+        } catch (NoSuchEntityException $exception) {
+            $this->assertStringContainsString('invalid order', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * BLOCKER round 2: a zero/negative online refund amount is rejected by
+     * the supplementary preflight check - provider NEVER called.
+     */
+    public function testZeroOnlineAmountProviderNeverCalled(): void
+    {
+        $this->preflight->method('validateRefundable')
+            ->willThrowException(new LocalizedException(
+                new \Magento\Framework\Phrase('Zalopay: The online refund amount must be greater than zero.')
+            ));
+        $this->mockRefundCommand->expects($this->never())->method('execute');
+        $this->mockRefundManager->expects($this->never())->method('registerPending');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('zero amount must be rejected before the provider');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString('greater than zero', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * BLOCKER round 2 ordering guarantee: the preflight runs BEFORE the
+     * provider call on the happy path too - a valid refund asks the provider
+     * exactly once, after validation passed.
+     */
+    public function testValidRefundValidatedBeforeProviderOnce(): void
+    {
+        $order = [];
+        $this->preflight->expects($this->once())->method('validateRefundable')
+            ->willReturnCallback(function () use (&$order) {
+                $order[] = 'preflight';
+
+                return null;
+            });
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->expects($this->once())->method('execute')
+            ->willReturnCallback(function () use (&$order) {
+                $order[] = 'provider';
+
+                return new RefundOutcome(RefundOutcome::STATUS_PROCESSING, '260916_1000_777_r9', 25000, null);
+            });
+        $this->mockRefundManager->method('registerPending');
+        $this->plugin->aroundRefund(
+            $this->createMock(CreditmemoService::class),
+            $this->proceedSpy()['callable'],
+            $this->creditmemo
+        );
+        $this->assertSame(['preflight', 'provider'], $order);
     }
 }

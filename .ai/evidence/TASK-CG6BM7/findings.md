@@ -74,3 +74,44 @@ Phạm vi: `app/code/Secomm/ZaloPay` trên baseline `a48de3c` (đã chứa commi
   provider refund" vì provider chỉ được hỏi trong request của plugin; cron KHÔNG BAO GIỜ gọi
   provider refund (chỉ query_refund). Ghi rõ để TL đánh giá: nếu sau này cron cần gọi refund lại,
   marker phải đổi sang durable.
+
+---
+
+# Corrective round 2 2026-09-16 (TL direct source review lần 2)
+
+## Ghi nhận trung thực về hai khiếm khuyết còn sót trong chính code corrective round 1
+
+- **F10 — Round 1 đặt provider I/O TRƯỚC Magento core validation.** `CreditmemoRefundPlugin::
+  aroundRefund` gọi `refundCommand->execute()` TRƯỚC `$proceed()`, mà validation hợp lệ của
+  refund Magento (`CreditmemoService::validateForRefund`, protected) nằm BÊN TRONG `$proceed()`
+  ⇒ một refund Magento KHÔNG hợp lệ (over-refund; credit memo đã processed; order reference
+  hỏng; amount <= 0) vẫn chạm ZaloPay trước khi bị chặn. Fix: `CreditmemoRefundPreflight` mirror
+  1:1 toàn bộ `validateForRefund` (3 checks, cùng thứ tự, cùng message contract, cùng rounding
+  qua PriceCurrencyInterface) + check bổ sung số tiền online > 0; plugin gọi preflight TRƯỚC mọi
+  provider I/O và TRƯỚC mọi persistence — pending Credit Memo KHÔNG được persist khi preflight
+  chưa pass. Nguồn mirror: vendor/magento/module-sales/Model/Service/CreditmemoService.php
+  2.4.8-p5 :189-219 (refund :147-180) — upgrade coupling trong DEC-TASKCG6BM7-004.
+- **F11 — Row UNKNOWN cạn ngân sách query rơi KHỎI blocking.** `hasInFlight` round 1 =
+  `is_processed = 0 AND query_attempts < MAX`: transport/protocol exhaustion đẩy row khỏi guard
+  trong khi outcome tại provider có thể là SUCCESS ⇒ admin refund lại được ⇒ DOUBLE REFUND.
+  Fix: cột `refund_state` (processing | confirmed_success | confirmed_fail | unknown) là nguồn
+  quyết định blocking; `hasInFlight` = state IN (processing, unknown); `consumeQueryBudget` tự
+  quarantine → unknown khi cạn budget; `terminate` nhận state tường minh (mặc định unknown —
+  outcome chưa xác nhận KHÔNG bao giờ được coi là an toàn); chỉ `confirmed_fail` mở khóa;
+  `confirmed_success` chuyển quyền kiểm soát về số dư refundable chuẩn. `query_attempts == MAX`
+  KHÔNG còn tự nó mang nghĩa "safe to refund".
+
+## Fix corrective round 2
+
+| # | Vấn đề | Mức | Fix + bằng chứng |
+|---|--------|-----|------------------|
+| F10 | Provider được hỏi trước khi Magento refund validation pass | BLOCKER | `Service/CreditmemoRefundPreflight.php` (mirror CreditmemoService.php:189-219) + plugin gọi tại `CreditmemoRefundPlugin.php:121-127` trước provider call :148. Tests: `CreditmemoRefundPreflightTest` (9) + plugin matrix "provider NEVER called" (over-refund / non-open CM / invalid order / zero amount → `RefundCommand::execute` never; valid → exactly once, preflight trước provider) |
+| F11 | UNKNOWN cạn budget ngừng blocking → double refund | BLOCKER | `refund_state` (db_schema + whitelist + `RefundInterface` constants); `PendingRefundManager` hasInFlight theo state (:108-118), consumeQueryBudget quarantine (:199-206), terminate state tường minh (:228-238), finalizeSuccess → confirmed_success; cron FAIL → confirmed_fail. Tests: `PendingRefundManagerTest` (16), `RefundCronjobTest` (13 — FAIL ↦ confirmed_fail, state-drift ↦ unknown mặc định) |
+
+## Không đổi (regression matrix giữ lại qua round 2)
+
+- PROCESSING không mutate refunded totals, không đóng order; SUCCESS finalize qua native
+  accounting; full SUCCESS → Magento tự xử lý CLOSED; provider FAIL không đụng kế toán;
+  transport retry tiêu budget; email claim atomic; email fail không rollback payment; không có
+  provider refund thứ hai trong local finalization — toàn bộ vẫn được pin bởi test matrix
+  (full suite **279 tests / 988 assertions**, green).

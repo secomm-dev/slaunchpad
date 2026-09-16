@@ -317,6 +317,8 @@ class RefundCronjobTest extends TestCase
      * REFUND CRON 26: provider FAIL is TERMINAL — the budget saturates, a
      * safe mapped message lands in evidence, the row keeps NOT_PROCESSED
      * (evidence), and NO accounting manager call ever happens.
+     * Round 2: the refusal carries the EXPLICIT semantic state
+     * CONFIRMED_FAIL - the block on future refunds is RELEASED.
      */
     public function testProviderFailIsTerminalWithEvidence(): void
     {
@@ -327,18 +329,20 @@ class RefundCronjobTest extends TestCase
             ['return_code' => 2, 'sub_return_code' => -13, 'return_message' => 'RAW-PROVIDER-DETAIL']
         );
 
-        $evidence = [];
+        $calls = [];
         $this->pendingRefundManager->expects($this->once())
             ->method('terminate')
-            ->willReturnCallback(function ($rowArg, string $evidenceArg) use (&$evidence) {
-                $evidence[] = $evidenceArg;
+            ->willReturnCallback(function ($rowArg, string $evidenceArg, ?string $stateArg = null) use (&$calls) {
+                $calls[] = [$evidenceArg, $stateArg];
             });
         $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
         $this->logger->expects($this->once())->method('critical');
 
         $this->cron->execute();
 
-        $this->assertSame('refund_failed: Refund time has expired.', $evidence[0] ?? 'NONE');
+        $this->assertSame('refund_failed: Refund time has expired.', $calls[0][0] ?? 'NONE');
+        // Round 2: CONFIRMED_FAIL - the money provably never left.
+        $this->assertSame(RefundInterface::REFUND_STATE_CONFIRMED_FAIL, $calls[0][1] ?? 'NONE');
     }
 
     /**
@@ -498,11 +502,11 @@ class RefundCronjobTest extends TestCase
         $this->cmState = Creditmemo::STATE_REFUNDED;
 
         $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
-        $evidence = [];
+        $calls = [];
         $this->pendingRefundManager->expects($this->once())
             ->method('terminate')
-            ->willReturnCallback(function ($rowArg, string $evidenceArg) use (&$evidence) {
-                $evidence[] = $evidenceArg;
+            ->willReturnCallback(function ($rowArg, string $evidenceArg, ?string $stateArg = null) use (&$calls) {
+                $calls[] = [$evidenceArg, $stateArg];
             });
         $this->logger->expects($this->once())->method('critical');
 
@@ -511,7 +515,10 @@ class RefundCronjobTest extends TestCase
         $this->assertSame(
             'reconcile_error: credit memo state is ' . Creditmemo::STATE_REFUNDED
             . ' (expected ' . CreditmemoPlugin::STATE_PROCESSING . ')',
-            $evidence[0] ?? 'NONE'
+            $calls[0][0] ?? 'NONE'
         );
+        // Round 2: state drift never confirms an outcome - the default
+        // UNKNOWN quarantine keeps blocking until deliberately resolved.
+        $this->assertSame(RefundInterface::REFUND_STATE_UNKNOWN, $calls[0][1] ?? 'NONE');
     }
 }

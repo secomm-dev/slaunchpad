@@ -71,3 +71,19 @@ TL direct source review phát hiện 3 lỗ hổng của chính output round 1. 
     CreditmemoRefundPlugin); regression scope-proof.
 15. **Commit + push + receipt corrective** — chỉ `task/zalopay-postfix-audit`; receipt theo mẫu
     corrective (27 field); STOP chờ TL.
+
+## Appendix 2 — Corrective round 2 (2026-09-16, TL direct source review lần 2)
+
+16. **Preflight Magento validation trước provider (F10)** — `Service/CreditmemoRefundPreflight`
+    mirror 1:1 `CreditmemoService::validateForRefund` (protected ⇒ option 3; anchor 2.4.8-p5
+    :189-219; upgrade coupling trong docblock; supplementary online-amount > 0); plugin gọi
+    preflight sau in-flight guard, trước mọi provider I/O và mọi persistence; parity tests
+    (`CreditmemoRefundPreflightTest` 9) + plugin provider-never matrix (5 test mới).
+17. **Blocking semantic `refund_state` thay budget-implied safety (F11)** — cột + whitelist +
+    constants `RefundInterface`; `hasInFlight` theo state (processing+unknown);
+    `consumeQueryBudget` quarantine at-cap; `terminate` state tường minh (default unknown);
+    cron FAIL ↦ `confirmed_fail`; `finalizeSuccess` ↦ `confirmed_success`; test matrix
+    quarantine (manager 16 / cron 13).
+18. **Validation + receipt round 2** — php -l; PHPCS 0 errors; full suite 279/988;
+    setup:di:compile chạy lại trên code cuối (9/9 exit 0); CodeGraph P13 (worktree index, ghi
+    rõ giới hạn callers nhiễu dev/tests); commit `[Zalo]` + push CHỈ task branch; STOP chờ TL.

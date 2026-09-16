@@ -76,3 +76,36 @@ pre_correction_head: 70416b7aa6889276818b72e311a9955cbf5ed578
   `spl_autoload_register(..., throw=true, prepend=true)` — nếu KHÔNG prepend, Composer ClassLoader
   của Magento (PSR-0 fallback `"": app/code/, generated/code/`) thắng và resolve class module từ
   MAIN src (khác branch) → kết quả test sai lặng lẽ. Đã từng gây 16 failure "phantom" trước khi fix.
+
+---
+
+# Round 2 validation (2026-09-16, corrective round 2)
+
+- Full unit suite: **279 tests / 988 assertions — OK** (sandbox /tmp/zt, prepend-autoloader
+  bootstrap; tăng từ 260/937 của round 1).
+  - MỚI `CreditmemoRefundPreflightTest`: 9 test / 15 assertions — parity từng check với
+    `validateForRefund` + boundary "refund đúng phần còn lại" PASS + supplementary amount <= 0.
+  - MỚI plugin matrix provider-never (5 test): over-refund / non-open creditmemo / invalid
+    order / zero amount → `RefundCommand::execute` NEVER, `registerPending` NEVER, `$proceed`
+    NEVER; valid → provider exactly once với order-assertion preflight → provider.
+    `CreditmemoRefundPluginTest`: 16 test / 66 assertions.
+  - MỚI unknown-quarantine matrix: filter pin hasInFlight (state IN processing+unknown, KHÔNG
+    attempts), quarantine-at-cap, below-cap processing, terminate default unknown +
+    confirmed_fail, finalizeSuccess bind confirmed_success; cron FAIL ↦ confirmed_fail,
+    state-drift ↦ unknown mặc định. `PendingRefundManagerTest`: 16 test / 56 assertions;
+    `RefundCronjobTest`: 13 test / 35 assertions.
+- php -l: clean toàn bộ file thay đổi round 2.
+- PHPCS Magento2 module-wide: **0 ERRORS**, 345 warnings / 68 files (baseline tồn tại từ trước;
+  round 2 đã GIẢM 2 warning — wrap chữ ký terminate, dồn blank-line RefundInterface; các warning
+  còn lại ở file round 2 là message strings dài của round 1 + property PHPDoc style test, đã
+  tolerance từ round 1).
+- setup:di:compile THẬT trên bản sao Magento 2.4.8-p5 trong container (/tmp/m2, module thay bằng
+  code round 2): **9/9 OK, exit 0 — chạy LẠI trên bản code cuối cùng** (sau khi gỡ một dòng
+  trùng lặp trong `PendingRefundManager::terminate` mà bản explore CodeGraph surface được; dòng
+  trùng idempotent, không ảnh hưởng DI nhưng compile lại cho bằng chứng sạch).
+- CodeGraph call-chain: index build riêng trên worktree (116.367 nodes / 224.313 edges); proof
+  P13 với anchor file:line từng hop; giới hạn index (dev/tests nhiễu callers) ghi trung thực.
+- Regression scope: `git status` — mọi thay đổi trong `app/code/Secomm/ZaloPay` + `.ai`;
+  auth.json modified pre-existing KHÔNG commit (chứa token Hyvä Packagist).
+- INTEGRATION: vẫn **ENVIRONMENT_BLOCKED** (bất biến qua round — DB integration test không khả
+  dụng trên workspace chung).

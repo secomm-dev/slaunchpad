@@ -17,6 +17,7 @@ use Magento\Sales\Model\Service\CreditmemoService;
 use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Command\RefundCommand;
 use Secomm\ZaloPay\Gateway\Command\RefundOutcome;
+use Secomm\ZaloPay\Service\CreditmemoRefundPreflight;
 use Secomm\ZaloPay\Service\PendingRefundManager;
 use Secomm\ZaloPay\Service\RefundOutcomeMarker;
 
@@ -65,14 +66,17 @@ class CreditmemoRefundPlugin
      * @param PendingRefundManager $pendingRefundManager
      * @param RefundOutcomeMarker $outcomeMarker
      * @param ManagerInterface $messageManager
+     * @param CreditmemoRefundPreflight $preflight Magento refund validation
+     *        that runs BEFORE the provider call (corrective round 2).
      */
     public function __construct(
-        private readonly MethodInterface          $method,
-        private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
-        private readonly RefundCommand            $refundCommand,
-        private readonly PendingRefundManager     $pendingRefundManager,
-        private readonly RefundOutcomeMarker      $outcomeMarker,
-        private readonly ManagerInterface         $messageManager
+        private readonly MethodInterface           $method,
+        private readonly PaymentDataObjectFactory  $paymentDataObjectFactory,
+        private readonly RefundCommand             $refundCommand,
+        private readonly PendingRefundManager      $pendingRefundManager,
+        private readonly RefundOutcomeMarker       $outcomeMarker,
+        private readonly ManagerInterface          $messageManager,
+        private readonly CreditmemoRefundPreflight $preflight
     ) {
     }
 
@@ -113,6 +117,14 @@ class CreditmemoRefundPlugin
                 __('Zalopay: A previous refund for this order is still being reconciled with the provider. Please wait until it is finalized before requesting another refund.')
             );
         }
+
+        // MAGENTO VALIDATION BEFORE PROVIDER (corrective round 2): the core
+        // refund validation (CreditmemoService::validateForRefund - protected,
+        // mirrored by the preflight service) must PASS before any provider
+        // I/O. An invalid Magento refund (over-refund, already-processed
+        // credit memo, missing order, non-positive amount) is rejected here
+        // - the provider is never asked, and nothing is persisted.
+        $this->preflight->validateRefundable($creditmemo);
 
         // The capture (invoice) transaction identifies the provider payment:
         // Payment::refund sets parentTransactionId only inside its own flow,

@@ -244,7 +244,8 @@ class RefundCronjob
             $failMessage = $this->safeFailMessage($response);
             $this->pendingRefundManager->terminate(
                 $refund,
-                PendingRefundManager::EVIDENCE_REFUND_FAILED . $failMessage
+                PendingRefundManager::EVIDENCE_REFUND_FAILED . $failMessage,
+                RefundInterface::REFUND_STATE_CONFIRMED_FAIL
             );
             $this->logger->critical(
                 sprintf(
