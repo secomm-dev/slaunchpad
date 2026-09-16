@@ -162,6 +162,12 @@ class OrderFinalizer
                 $existing = $this->recoverBoundOrder($locked, $appTransId);
                 $connection->commit();
 
+                // TASK-CG6BM7: a duplicate Return/IPN/recovery on a FINALIZED
+                // attempt is also the retry driver for a confirmation email
+                // that was never successfully sent (crash between commit and
+                // send, or a previous send failure). Idempotent via email_sent.
+                $this->sendConfirmationEmail($existing, $appTransId);
+
                 return $existing;
             }
 
@@ -208,6 +214,32 @@ class OrderFinalizer
         // SubmitObserver skips the email on initial order placement (order is
         // still pending_payment at that point). Now that the order is captured
         // and fully finalized we send it ourselves.
+        $this->sendConfirmationEmail($order, $appTransId);
+
+        return $order;
+    }
+
+    /**
+     * Send the order confirmation email AFTER the DB transaction commits —
+     * never inside it, never before the payment is verified and captured.
+     *
+     * Idempotent (TASK-CG6BM7): OrderSender persists email_sent = 1 on a
+     * successful synchronous send, so an already-emailed order is NEVER
+     * re-emailed (duplicate IPN/Return/recovery calls land here and skip);
+     * a not-yet-emailed order (crash between commit and send, a previous
+     * send failure, async mode) IS retried on the next finalizeOrRecover
+     * call. A failed send is non-fatal: it must never roll back a
+     * successful payment — the order stays FINALIZED.
+     *
+     * @param OrderInterface $order
+     * @param string $appTransId
+     * @return void
+     */
+    private function sendConfirmationEmail(OrderInterface $order, string $appTransId): void
+    {
+        if ((int)$order->getEmailSent() === 1) {
+            return;
+        }
         try {
             $this->orderSender->send($order);
         } catch (\Throwable $e) {
@@ -217,8 +249,6 @@ class OrderFinalizer
                 ['app_trans_id' => $appTransId, 'exception' => $e->getMessage()]
             );
         }
-
-        return $order;
     }
 
     /**

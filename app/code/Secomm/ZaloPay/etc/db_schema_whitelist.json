@@ -9,6 +9,8 @@
             "is_processed": true,
             "credit_memo_id": true,
             "amount": true,
+            "query_attempts": true,
+            "last_error": true,
             "created_at": true,
             "updated_at": true
         },

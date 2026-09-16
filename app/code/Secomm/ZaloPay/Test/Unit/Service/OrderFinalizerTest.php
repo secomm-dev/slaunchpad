@@ -135,6 +135,16 @@ class OrderFinalizerTest extends TestCase
      */
     private ?PaymentAttempt $saved = null;
 
+    /**
+     * @var LoggerInterface|MockObject
+     */
+    private $logger;
+
+    /**
+     * @var \Magento\Sales\Model\Order\Email\Sender\OrderSender|MockObject
+     */
+    private $orderSender;
+
     protected function setUp(): void
     {
         $this->repository = $this->createMock(PaymentAttemptRepositoryInterface::class);
@@ -158,8 +168,10 @@ class OrderFinalizerTest extends TestCase
         $resourceConnection->method('getConnection')->willReturn($this->connection);
         $this->placementAuthorization = $this->createMock(OrderPlacementAuthorization::class);
         $this->lifecycle = $this->createMock(PaymentAttemptLifecycle::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->orderSender = $this->createMock(\Magento\Sales\Model\Order\Email\Sender\OrderSender::class);
 
-        $this->finalizer = new OrderFinalizer(
+                $this->finalizer = new OrderFinalizer(
             $this->repository,
             $this->cartManagement,
             $this->cartRepository,
@@ -172,8 +184,8 @@ class OrderFinalizerTest extends TestCase
             $resourceConnection,
             $this->placementAuthorization,
             $this->lifecycle,
-            $this->createMock(LoggerInterface::class),
-            $this->createMock(\Magento\Sales\Model\Order\Email\Sender\OrderSender::class)
+            $this->logger,
+            $this->orderSender
         );
     }
 
@@ -576,6 +588,153 @@ class OrderFinalizerTest extends TestCase
         $this->expectException(LocalizedException::class);
         $this->expectExceptionMessage('Capture failed');
         $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+    }
+
+    // ---- TASK-CG6BM7: email idempotency + post-commit semantics (EMAIL 1-7) ----
+
+    /**
+     * EMAIL 1: a fresh finalize sends the confirmation exactly once, AFTER
+     * the DB transaction commits (send happens on the success path only —
+     * capture/contract failures never reach it).
+     */
+    public function testFreshFinalizeSendsConfirmationEmailOnce(): void
+    {
+        $attempt = $this->newPaidAttempt();
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+        $this->stubSave();
+        $this->stubMatchingQuote();
+
+        $payment = $this->createMock(OrderPayment::class);
+        $payment->method('getMethod')->willReturn('zalopay');
+        $payment->method('capture');
+        $payment->method('prependMessage');
+        $order = $this->newOrder(88, Order::STATE_PENDING_PAYMENT, '000000123', $payment);
+        $this->cartManagement->method('placeOrder')->willReturn(88);
+        $this->orderRepository->method('get')->with(88)->willReturn($order);
+
+        $this->connection->expects($this->once())->method('commit');
+        $this->orderSender->expects($this->once())->method('send')->with($order);
+
+        $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+    }
+
+    /**
+     * EMAIL 2/6: a FINALIZED duplicate (Return revisit, duplicate IPN or
+     * recovery) on an already-emailed order NEVER re-emails.
+     */
+    public function testDuplicateFinalizeOnEmailedOrderDoesNotResend(): void
+    {
+        $attempt = $this->newPaidAttempt()->markFinalized(77);
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+
+        $payment = $this->createMock(OrderPayment::class);
+        $payment->method('getMethod')->willReturn('zalopay');
+        $existing = $this->newOrder(77, Order::STATE_PROCESSING, '000000123', $payment);
+        $existing->method('getEmailSent')->willReturn(1);
+        $this->orderRepository->method('get')->with(77)->willReturn($existing);
+        $this->cartManagement->expects($this->never())->method('placeOrder');
+
+        $this->orderSender->expects($this->never())->method('send');
+
+        $order = $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+
+        $this->assertSame($existing, $order);
+    }
+
+    /**
+     * EMAIL 7: a FINALIZED duplicate on a NOT-yet-emailed order backfills
+     * exactly one confirmation send (crash between commit and send, or a
+     * previous send failure) — the finalizeOrRecover retry driver.
+     */
+    public function testDuplicateFinalizeBackfillsMissingEmail(): void
+    {
+        $attempt = $this->newPaidAttempt()->markFinalized(77);
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+
+        $payment = $this->createMock(OrderPayment::class);
+        $payment->method('getMethod')->willReturn('zalopay');
+        $existing = $this->newOrder(77, Order::STATE_PROCESSING, '000000123', $payment);
+        $existing->method('getEmailSent')->willReturn(null);
+        $this->orderRepository->method('get')->with(77)->willReturn($existing);
+
+        $this->orderSender->expects($this->once())->method('send');
+
+        $order = $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+
+        $this->assertSame($existing, $order);
+    }
+
+    /**
+     * EMAIL 3: a capture failure rolls the whole unit back — the email is
+     * NEVER sent for an order that was not committed.
+     */
+    public function testCaptureFailureNeverSendsEmail(): void
+    {
+        $attempt = $this->newPaidAttempt();
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+        $this->stubMatchingQuote();
+
+        $payment = $this->createMock(OrderPayment::class);
+        $payment->method('getMethod')->willReturn('zalopay');
+        $payment->method('capture')->willThrowException(new LocalizedException(__('Capture failed.')));
+        $order = $this->newOrder(88, Order::STATE_PENDING_PAYMENT, '000000123', $payment);
+        $this->cartManagement->method('placeOrder')->willReturn(88);
+        $this->orderRepository->method('get')->with(88)->willReturn($order);
+
+        $this->connection->expects($this->once())->method('rollBack');
+        $this->orderSender->expects($this->never())->method('send');
+
+        $this->expectException(LocalizedException::class);
+        $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+    }
+
+    /**
+     * EMAIL 4: a contract mismatch refuses placement and sends NO email —
+     * no order was created and the unit rolled back.
+     */
+    public function testContractMismatchNeverSendsEmail(): void
+    {
+        $attempt = $this->newPaidAttempt();
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+        $this->stubMatchingQuote(currentVndAmount: 700000);
+        $this->lifecycle->expects($this->once())->method('recordContractMismatch');
+
+        $this->orderSender->expects($this->never())->method('send');
+
+        $this->expectException(ContractMismatchException::class);
+        $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+    }
+
+    /**
+     * EMAIL 5: a failed email send is non-fatal — the order is still
+     * returned FINALIZED, the transaction is NOT rolled back (a payment must
+     * never be rolled back because of mail), and the failure is logged.
+     */
+    public function testEmailFailureKeepsOrderFinalized(): void
+    {
+        $attempt = $this->newPaidAttempt();
+        $this->repository->method('lockByAppTransId')->willReturn($attempt);
+        $this->stubSave();
+        $this->stubMatchingQuote();
+
+        $payment = $this->createMock(OrderPayment::class);
+        $payment->method('getMethod')->willReturn('zalopay');
+        $payment->method('capture');
+        $payment->method('prependMessage');
+        $order = $this->newOrder(88, Order::STATE_PENDING_PAYMENT, '000000123', $payment);
+        $this->cartManagement->method('placeOrder')->willReturn(88);
+        $this->orderRepository->method('get')->with(88)->willReturn($order);
+
+        $this->connection->expects($this->once())->method('commit');
+        $this->connection->expects($this->never())->method('rollBack');
+        $this->orderSender->expects($this->once())->method('send')
+            ->willThrowException(new \RuntimeException('SMTP transport error.'));
+        $this->logger->expects($this->once())->method('critical');
+
+        $result = $this->finalizer->finalizeOrRecover($attempt, '240801000001');
+
+        $this->assertSame($order, $result);
+        $this->assertSame(PaymentAttemptInterface::STATUS_FINALIZED, $this->saved->getPaymentStatus());
     }
 
     // ---- helpers ----

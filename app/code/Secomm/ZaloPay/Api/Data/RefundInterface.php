@@ -21,6 +21,8 @@ interface RefundInterface
     public const IS_PROCESSED = "is_processed";
     public const AMOUNT = "amount";
     public const CREDIT_MEMO_ID = "credit_memo_id";
+    public const QUERY_ATTEMPTS = "query_attempts";
+    public const LAST_ERROR = "last_error";
     public const PROCESSED = true;
     public const NOT_PROCESSED = false;
 
@@ -147,4 +149,36 @@ interface RefundInterface
      * @return float|null
      */
     public function getAmount(): ?float;
+
+    /**
+     * Getter for QueryAttempts.
+     *
+     * @return int
+     */
+    public function getQueryAttempts(): int;
+
+    /**
+     * Setter for QueryAttempts.
+     *
+     * @param int $queryAttempts
+     *
+     * @return void
+     */
+    public function setQueryAttempts(int $queryAttempts): void;
+
+    /**
+     * Getter for LastError.
+     *
+     * @return string|null
+     */
+    public function getLastError(): ?string;
+
+    /**
+     * Setter for LastError.
+     *
+     * @param string|null $lastError
+     *
+     * @return void
+     */
+    public function setLastError(?string $lastError): void;
 }

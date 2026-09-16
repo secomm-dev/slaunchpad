@@ -11,10 +11,9 @@ declare(strict_types=1);
 
 namespace Secomm\ZaloPay\Gateway\Command;
 
-use Exception;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
-use Magento\Payment\Gateway\Command\CommandException;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\ErrorMapper\ErrorMessageMapperInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
@@ -24,7 +23,6 @@ use Magento\Payment\Gateway\Http\ConverterException;
 use Magento\Payment\Gateway\Http\TransferFactoryInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Gateway\Response\HandlerInterface;
-use Magento\Payment\Gateway\Validator\ResultInterface;
 use Magento\Payment\Gateway\Validator\ValidatorInterface;
 use Secomm\ZaloPay\Api\Data\RefundInterface;
 use Secomm\ZaloPay\Api\Data\RefundInterfaceFactory;
@@ -88,17 +86,23 @@ class RefundCommand implements CommandInterface
      * Zalo Pay's response Status PROCESSING and SUCCESS will create Credit Memos Refund item with status Refunded
      * Zalo Pay's refund is processed asynchronously, so you need to call the api to check the refund status through query_refund api.
      *
+     * TASK-CG6BM7: only LocalizedException is ever thrown (Payment::refund
+     * catches exactly that type — a generic Exception used to escape raw).
+     * Customer-facing messages come ONLY from the provider-status map
+     * (RefundProcessor) or a generic fallback — raw transport/internal
+     * exception text is never surfaced, only logged.
+     *
      * @param array $commandSubject
      * @return void
      * @throws CommandException
      * @throws ClientException
-     * @throws ConverterException|Exception
+     * @throws ConverterException
+     * @throws LocalizedException
      */
     public function execute(array $commandSubject): void
     {
         $refundTransactionFactory = $this->refundTransactionInterfaceFactory->create();
         $response = null;
-        $isThrowException = false;
         $statusCode = null;
         $paymentDO = SubjectReader::readPayment($commandSubject);
         $payment = $paymentDO->getPayment();
@@ -121,21 +125,12 @@ class RefundCommand implements CommandInterface
 
             $response = $this->client->placeRequest($transferO);
             $responseRefund = $response;
-            $statusCode = $response[AbstractResponseValidator::RETURN_CODE];
+            $statusCode = $this->readReturnCode($response);
             if ($statusCode === AbstractResponseValidator::REFUND_PROCESSING) {
                 $requestDataQuery = $this->refundQueryCommand->setZaloRefundId($this->mRefundId)
                     ->buildRequestData($commandSubject);
                 $response = $this->refundQueryCommand->getRefundQuery($requestDataQuery);
-                $statusCode = $response[AbstractResponseValidator::RETURN_CODE];
-            }
-
-            /**
-             * Status processing and success will create Credit Memos Refund item with status refunded
-             * If isThrowException = true that cannot create Credit Memos Refund item and the zalo_pay_refund table also
-             */
-            if ($statusCode < AbstractResponseValidator::RETURN_CODE_ACCEPT
-                || $statusCode === AbstractResponseValidator::REFUND_FAIL) {
-                $isThrowException = true;
+                $statusCode = $this->readReturnCode($response);
             }
 
             if ($statusCode === AbstractResponseValidator::RETURN_CODE_ACCEPT
@@ -147,33 +142,41 @@ class RefundCommand implements CommandInterface
                     : RefundProcessor::processRefundStatus(AbstractResponseValidator::REFUND_PROCESSING);
                 $this->messageManager->addSuccessMessage(self::PREFIX_ZALO_PAY_MESSAGE . __($statusMessage));
             } else {
-                if ($this->validator !== null) {
-                    $result = $this->validator->validate(
-                        array_merge($commandSubject, ['response' => $response])
-                    );
-                    if (!$result->isValid()) {
-                        $this->processErrors($result);
-                    }
-                }
+                // FAIL (2) or protocol anomaly (missing/unknown return_code):
+                // explicit, provider-map-based failure — never a false success.
+                $this->throwProviderFailure($response, $statusCode);
             }
 
             $this->handler?->handle(
                 $commandSubject,
                 $responseRefund
             );
-        } catch (Exception $exception) {
-            $this->logger->error($exception->getMessage());
-            $subCode = $response[AbstractResponseValidator::SUB_RETURN_CODE] ?? null;
+        } catch (LocalizedException $exception) {
+            // Validation/protocol failures already carry a customer-safe
+            // message — preserve it (logged for evidence).
+            $this->logger->error(
+                'ZaloPay refund failed: ' . $exception->getMessage(),
+                ['m_refund_id' => $this->mRefundId]
+            );
+            throw $exception;
+        } catch (\Exception $exception) {
+            // Transport/internal failure: the raw message is internal-only.
+            $this->logger->error(
+                'ZaloPay refund transport failure: ' . $exception->getMessage(),
+                ['m_refund_id' => $this->mRefundId]
+            );
+            $subCode = $this->readSubReturnCode($response);
             $statusMessage = $subCode !== null
                 ? RefundProcessor::processRefundStatus($subCode)
-                : $exception->getMessage();
-            if ($isThrowException) {
-                throw new Exception(self::PREFIX_ZALO_PAY_MESSAGE . __($statusMessage));
-            } else {
-                $this->messageManager->addErrorMessage(self::PREFIX_ZALO_PAY_MESSAGE . __($statusMessage));
-            }
+                : (string)__('Refund failed. Please try again later.');
+            throw new LocalizedException(__(self::PREFIX_ZALO_PAY_MESSAGE . $statusMessage));
         } finally {
-            //TODO change condition
+            // PROCESSING is the only state that persists the pending refund
+            // row (driving the bounded RefundCronjob queries) and moves the
+            // creditmemo to PROCESSING. The direct $creditMemo->save() is
+            // load-bearing: it assigns the creditmemo entity_id the refund
+            // row's FK needs — the creditmemo has not been persisted yet at
+            // this point in the CreditmemoService::refund flow.
             if ($statusCode === AbstractResponseValidator::REFUND_PROCESSING) {
                 //status is processing
                 $creditMemo->setState(CreditmemoPlugin::STATE_PROCESSING);
@@ -187,41 +190,76 @@ class RefundCommand implements CommandInterface
     }
 
     /**
+     * Safe read of the provider return_code: a missing or non-numeric code
+     * is a protocol anomaly, never silently coerced.
+     *
+     * @param array|null $response
+     * @return int|null
+     */
+    private function readReturnCode(?array $response): ?int
+    {
+        if ($response === null) {
+            return null;
+        }
+        $code = $response[AbstractResponseValidator::RETURN_CODE] ?? null;
+
+        return is_numeric($code) ? (int)$code : null;
+    }
+
+    /**
+     * Safe read of the provider sub_return_code (fail detail).
+     *
+     * @param array|null $response
+     * @return int|null
+     */
+    private function readSubReturnCode(?array $response): ?int
+    {
+        if ($response === null) {
+            return null;
+        }
+        $code = $response[AbstractResponseValidator::SUB_RETURN_CODE] ?? null;
+
+        return is_numeric($code) ? (int)$code : null;
+    }
+
+    /**
+     * Explicit provider-side failure: map the CURRENT response's
+     * sub_return_code through the safe status map (never the stale
+     * pre-query response, never raw provider/transport text) and throw a
+     * LocalizedException — the exception type Payment::refund catches.
+     *
+     * @param array|null $response
+     * @param int|null $statusCode
+     * @return void
+     * @throws LocalizedException
+     */
+    private function throwProviderFailure(?array $response, ?int $statusCode): void
+    {
+        $subCode = $this->readSubReturnCode($response);
+        if ($subCode !== null) {
+            $statusMessage = RefundProcessor::processRefundStatus($subCode);
+        } elseif ($statusCode === AbstractResponseValidator::REFUND_FAIL) {
+            $statusMessage = RefundProcessor::processRefundStatus(AbstractResponseValidator::REFUND_FAIL);
+        } else {
+            $statusMessage = (string)__('Refund failed. Please try again later.');
+        }
+        $this->logger->error(
+            sprintf(
+                'ZaloPay refund refused by provider: return_code=%s sub_return_code=%s',
+                var_export($statusCode, true),
+                var_export($subCode, true)
+            ),
+            ['m_refund_id' => $this->mRefundId]
+        );
+        throw new LocalizedException(__(self::PREFIX_ZALO_PAY_MESSAGE . $statusMessage));
+    }
+
+    /**
      * @param array $commandSubject
      * @return array
      */
     public function buildRequestData(array $commandSubject): array
     {
         return $this->requestBuilder->build($commandSubject);
-    }
-
-    /**
-     * Tries to map error messages from validation result and logs processed message.
-     * Throws an exception with mapped message or default error.
-     *
-     * @param ResultInterface $result
-     * @throws CommandException
-     */
-    private function processErrors(ResultInterface $result)
-    {
-        $messages = [];
-        $errorsSource = array_merge($result->getErrorCodes(), $result->getFailsDescription());
-        foreach ($errorsSource as $errorCodeOrMessage) {
-            $errorCodeOrMessage = (string)$errorCodeOrMessage;
-
-            // error messages mapper can be not configured if payment method doesn't have custom error messages.
-            if ($this->errorMessageMapper !== null) {
-                $mapped = (string)$this->errorMessageMapper->getMessage($errorCodeOrMessage);
-                if (!empty($mapped)) {
-                    $messages[] = $mapped;
-                    $errorCodeOrMessage = $mapped;
-                }
-            }
-            $this->logger->critical('Payment Error: ' . $errorCodeOrMessage);
-        }
-
-        throw new CommandException(
-            !empty($messages) ? __(implode(PHP_EOL, $messages)) : __('Transaction has been declined. Please try again later.')
-        );
     }
 }

@@ -193,4 +193,50 @@ class RefundData extends DataObject implements RefundInterface
     {
         $this->setData(self::AMOUNT, $amount);
     }
+
+    /**
+     * Getter for QueryAttempts.
+     *
+     * @return int
+     */
+    public function getQueryAttempts(): int
+    {
+        return (int)$this->getData(self::QUERY_ATTEMPTS);
+    }
+
+    /**
+     * Setter for QueryAttempts.
+     *
+     * @param int $queryAttempts
+     *
+     * @return void
+     */
+    public function setQueryAttempts(int $queryAttempts): void
+    {
+        $this->setData(self::QUERY_ATTEMPTS, $queryAttempts);
+    }
+
+    /**
+     * Getter for LastError.
+     *
+     * @return string|null
+     */
+    public function getLastError(): ?string
+    {
+        $v = $this->getData(self::LAST_ERROR);
+
+        return $v === null ? null : (string)$v;
+    }
+
+    /**
+     * Setter for LastError.
+     *
+     * @param string|null $lastError
+     *
+     * @return void
+     */
+    public function setLastError(?string $lastError): void
+    {
+        $this->setData(self::LAST_ERROR, $lastError);
+    }
 }

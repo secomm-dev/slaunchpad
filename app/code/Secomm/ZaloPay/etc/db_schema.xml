@@ -20,6 +20,10 @@
         <column xsi:type="text" name="m_refund_id" nullable="false" comment="M Refund Id Column"/>
         <column xsi:type="boolean" name="is_processed" nullable="false" comment="Is Processed Column"/>
         <column xsi:type="float" name="amount" scale="0" precision="0" unsigned="false" nullable="false" comment="Amount"/>
+        <column xsi:type="smallint" name="query_attempts" padding="5" unsigned="true" nullable="false" default="0"
+                comment="Bounded v2/query_refund attempts budget (96 = ~24h at 15-min cron)"/>
+        <column xsi:type="text" name="last_error" nullable="true"
+                comment="Terminal-failure evidence (provider FAIL) - safe text only; NULL when none"/>
         <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false"/>
         <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
