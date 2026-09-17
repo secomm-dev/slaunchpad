@@ -16,11 +16,13 @@ use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Service\CreditmemoService;
+use Secomm\ZaloPay\Exception\RefundProtocolException;
 use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Command\RefundCommand;
 use Secomm\ZaloPay\Gateway\Command\RefundOutcome;
 use Secomm\ZaloPay\Gateway\Command\RefundRequest;
 use Magento\Framework\Exception\LocalizedException;
+use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Plugin\Model\Service\CreditmemoRefundPlugin;
 use Secomm\ZaloPay\Service\CreditmemoRefundPreflight;
 use Secomm\ZaloPay\Service\PendingRefundManager;
@@ -30,7 +32,9 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * TASK-CG6BM7 BLOCKER 1: admin entry-point guard + lifecycle decision
- * matrix for the refund lifecycle orchestrator.
+ * matrix for the refund lifecycle orchestrator (round 7: F27 pre-provider
+ * STATE_OPEN + F31 invoice_id pinning + F28 one-shot fail-closed marker +
+ * F30 protocol anomaly classification + F34 no custom credit memo state).
  */
 class CreditmemoRefundPluginTest extends TestCase
 {
@@ -52,12 +56,26 @@ class CreditmemoRefundPluginTest extends TestCase
 
     private \Magento\Sales\Api\CreditmemoRepositoryInterface|MockObject $creditmemoRepository;
 
+    private Logger|MockObject $logger;
+
     /**
      * Mutable test state: the credit memo entity_id (NULL = the REAL admin
      * flow presents an UNSAVED credit memo; the repository save mock
      * assigns the real id - tests must never pre-stub it, round 4 F17).
      */
     private ?int $creditmemoEntityId = null;
+
+    /**
+     * Mutable test state: the credit memo state as observed at the moment
+     * of the pre-provider repository save (round 7 F27 pin).
+     */
+    private ?int $stateAtSave = null;
+
+    /**
+     * Mutable test state: the credit memo invoice_id as observed at the
+     * moment of the pre-provider repository save (round 7 F31 pin).
+     */
+    private ?int $invoiceIdAtSave = null;
 
     /**
      * Mutable test state: the bindCreditMemo outcome (overridden by the
@@ -85,6 +103,8 @@ class CreditmemoRefundPluginTest extends TestCase
 
     private ?string $invoiceTxnId = 'CAPTURE-19';
 
+    private ?int $invoiceEntityId = 501;
+
     /**
      * @inheritdoc
      */
@@ -98,8 +118,13 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->preflight = $this->createMock(CreditmemoRefundPreflight::class);
         $this->marker = new RefundOutcomeMarker();
         $this->messageManager = $this->createMock(ManagerInterface::class);
+        $this->logger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $this->creditmemoRepository = $this->createMock(\Magento\Sales\Api\CreditmemoRepositoryInterface::class);
         $this->creditmemoRepository->method('save')->willReturnCallback(function ($cm) {
+            // Round 7 F27/F31: pin what the PERSISTED credit memo looked
+            // like at the exact moment of the pre-provider save.
+            $this->stateAtSave = $cm->getState();
+            $this->invoiceIdAtSave = (int)$cm->getInvoiceId();
             // Emulates the resource populating entity_id on first persist.
             if ($this->creditmemoEntityId === null) {
                 $this->creditmemoEntityId = 9012;
@@ -124,7 +149,8 @@ class CreditmemoRefundPluginTest extends TestCase
             $this->marker,
             $this->messageManager,
             $this->preflight,
-            $this->creditmemoRepository
+            $this->creditmemoRepository,
+            $this->logger
         );
 
         $this->payment = $this->createMock(\Magento\Sales\Model\Order\Payment::class);
@@ -137,8 +163,21 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->creditmemo->method('getBaseGrandTotal')->willReturn(25.0);
         $this->creditmemo->method('getEntityId')->willReturnCallback(fn (): ?int => $this->creditmemoEntityId);
         $this->creditmemo->method('getInvoice')->willReturnCallback(fn () => $this->invoice);
+        $this->creditmemo->method('getState')->willReturnCallback(fn (): ?int => $this->stateAtSave);
+        $this->creditmemo->method('setState')->willReturnCallback(function ($state) {
+            $this->stateAtSave = $state;
+
+            return $this->creditmemo;
+        });
+        $this->creditmemo->method('setInvoiceId')->willReturnCallback(function ($invoiceId) {
+            $this->invoiceIdAtSave = (int)$invoiceId;
+
+            return $this->creditmemo;
+        });
+        $this->creditmemo->method('getInvoiceId')->willReturnCallback(fn (): ?int => $this->invoiceIdAtSave);
         $this->invoice = $this->createMock(Invoice::class);
         $this->invoice->method('getTransactionId')->willReturnCallback(fn (): ?string => $this->invoiceTxnId);
+        $this->invoice->method('getEntityId')->willReturnCallback(fn (): ?int => $this->invoiceEntityId);
     }
 
     private function proceedSpy(string $sentinel = 'CORE-RESULT', bool $offline = false): array
@@ -212,13 +251,14 @@ class CreditmemoRefundPluginTest extends TestCase
     }
 
     /**
-     * GATE: refund without an invoice (no capture transaction) is refused.
+     * GATE (round 7 F31): refund without an invoice (no capture) is refused.
      */
     public function testMissingInvoiceRefused(): void
     {
         $this->invoice = null;
         $this->mockRefundCommand->expects($this->never())->method('prepare');
         $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $this->creditmemoRepository->expects($this->never())->method('save');
         $spy = $this->proceedSpy();
         try {
             $this->plugin->aroundRefund(
@@ -228,7 +268,33 @@ class CreditmemoRefundPluginTest extends TestCase
             );
             self::fail('missing invoice must be refused');
         } catch (LocalizedException $exception) {
-            $this->assertStringContainsString('original invoice transaction', $exception->getMessage());
+            $this->assertStringContainsString('original invoice for this refund cannot be found', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * GATE (round 7 F31): an invoice without a REAL entity id is refused
+     * too - the credit memo must link a persisted invoice, or a
+     * cron-reloaded credit memo would finalize as OFFLINE.
+     */
+    public function testInvoiceWithoutEntityIdRefused(): void
+    {
+        $this->invoiceEntityId = null;
+        $this->mockRefundCommand->expects($this->never())->method('prepare');
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $this->mockRefundManager->expects($this->never())->method('acquireClaim');
+        $this->creditmemoRepository->expects($this->never())->method('save');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('invoice without entity id must be refused');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString('original invoice for this refund cannot be found', $exception->getMessage());
         }
         $this->assertSame([], $spy['calls']);
     }
@@ -241,6 +307,7 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->invoiceTxnId = '';
         $this->mockRefundCommand->expects($this->never())->method('prepare');
         $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $this->creditmemoRepository->expects($this->never())->method('save');
         $spy = $this->proceedSpy();
         try {
             $this->plugin->aroundRefund(
@@ -286,11 +353,15 @@ class CreditmemoRefundPluginTest extends TestCase
         $this->payment->expects($this->once())->method('setCreditmemo')
             ->with($this->identicalTo($this->creditmemo));
         $this->payment->expects($this->once())->method('setParentTransactionId')->with('CAPTURE-19');
+        // Round 7 F34: markProcessing carries ONLY the claim - the credit
+        // memo STAYS STATE_OPEN (no custom parking state, no re-save).
+        $processingArgs = null;
         $this->mockRefundManager->expects($this->once())->method('markProcessing')
-            ->with(
-                $this->identicalTo($claim),
-                $this->identicalTo($this->creditmemo)
-            );
+            ->willReturnCallback(function (...$args) use (&$processingArgs, $claim) {
+                $processingArgs = $args;
+
+                return $claim;
+            });
         $this->messageManager->expects($this->once())->method('addSuccessMessage')
             ->with($this->callback(function ($msg): bool {
                 return str_contains((string)$msg, 'finalized automatically');
@@ -303,11 +374,13 @@ class CreditmemoRefundPluginTest extends TestCase
         );
         $this->assertSame($this->creditmemo, $result);
         $this->assertSame([], $spy['calls']);
+        $this->assertCount(1, $processingArgs, 'markProcessing must receive ONLY the claim (F34)');
+        $this->assertSame($claim, $processingArgs[0]);
     }    /**
-     * Round 3 BLOCKER 1 lifecycle: confirmed SUCCESS marks the known
-     * outcome, lets the NATIVE core accounting run exactly once and lands
-     * the terminal bookkeeping on the claim (confirmed_success, slot
-     * released - F12/F13).
+     * Round 7 F28: confirmed SUCCESS grants the ONE-SHOT provider-skip for
+     * THIS credit memo id, the NATIVE core flow consumes it (exactly once),
+     * the finally always drops the pin, and the terminal bookkeeping lands
+     * on the claim (confirmed_success, slot released - F12/F13).
      */
     public function testSuccessMarksOutcomeAndRunsCoreFlow(): void
     {
@@ -321,34 +394,56 @@ class CreditmemoRefundPluginTest extends TestCase
             ->willReturn(new RefundOutcome(RefundOutcome::STATUS_SUCCESS, '260916_1000_777_r2', 25000, null));
         $this->mockRefundManager->expects($this->once())->method('markConfirmedSuccess')
             ->with($this->identicalTo($claim));
+
+        $markerConsumedInsideCore = null;
         $spy = $this->proceedSpy('CORE-RESULT-SUCCESS');
+        $coreCallable = function ($cm, $off = null) use (&$markerConsumedInsideCore, $spy) {
+            // Inside the core flow, the gateway refund command consumes the
+            // one-shot authorization (provider skip, exactly once).
+            $markerConsumedInsideCore = $this->marker->consume((int)$cm->getEntityId());
+            $spy['calls'][] = [$cm, $off];
+
+            return 'CORE-RESULT-SUCCESS';
+        };
         $result = $this->plugin->aroundRefund(
             $this->createMock(CreditmemoService::class),
-            $spy['callable'],
+            $coreCallable,
             $this->creditmemo
         );
         $this->assertSame('CORE-RESULT-SUCCESS', $result);
         $this->assertSame([[$this->creditmemo, false]], $spy['calls']);
-        $this->assertTrue($this->marker->isProviderAlreadyAsked(77));
+        $this->assertTrue($markerConsumedInsideCore, 'authorization live and consumed inside the core flow');
+        $this->assertFalse($this->marker->consume(9012), 'finally clear: nothing leaks past the success path');
     }
     /**
-     * Defensive: a null prepared request (marker already claimed) hands
-     * over to the core flow unchanged - no claim, no provider call.
+     * Round 7 F28 FAIL-CLOSED: prepare() returning null (a stray one-shot
+     * provider-skip authorization for THIS credit memo) must NOT hand over
+     * to the core flow - provider call 0, accounting 0, claim 0, safe
+     * LocalizedException, safe log evidence.
      */
-    public function testNullOutcomePassesThroughToCore(): void
+    public function testNullPrepareFailsClosed(): void
     {
         $this->mockRefundCommand->expects($this->once())->method('prepare')->willReturn(null);
         $this->mockRefundManager->expects($this->never())->method('acquireClaim');
         $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $this->creditmemoRepository->expects($this->never())->method('save');
+        $this->logger->expects($this->once())->method('error')
+            ->with($this->stringContains('fail-closed'));
         $spy = $this->proceedSpy('CORE-RESULT-NULL');
-        $result = $this->plugin->aroundRefund(
-            $this->createMock(CreditmemoService::class),
-            $spy['callable'],
-            $this->creditmemo
-        );
-        $this->assertSame('CORE-RESULT-NULL', $result);
-        $this->assertSame([[$this->creditmemo, false]], $spy['calls']);
-        $this->assertFalse($this->marker->isProviderAlreadyAsked(77));
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('stray provider-skip authorization must fail closed');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString(
+                'local tracking state is inconsistent',
+                $exception->getMessage()
+            );
+        }
+        $this->assertSame([], $spy['calls'], 'the core flow must never run on an inconsistent marker state');
     }    /**
      * Round 3 BLOCKER 1 lifecycle (F16): transport failure WITH a tracking
      * outcome lands the SEMANTIC UNKNOWN state on the durable claim
@@ -460,6 +555,54 @@ class CreditmemoRefundPluginTest extends TestCase
             $caught = $exception;
         }
         $this->assertSame($refusal, $caught);
+        $this->assertSame([], $spy['calls']);
+    }
+
+    /**
+     * Round 7 F30: a provider PROTOCOL ANOMALY (return_code missing /
+     * non-numeric / unexpected) is NOT a confirmed refusal: the claim lands
+     * durable UNKNOWN with anomaly evidence (claim NOT released - the same
+     * m_refund_id is reconciled via v2/query_refund, never re-requested
+     * fresh) and the safe exception propagates untouched.
+     */
+    public function testProtocolAnomalyMarksUnknownAndKeepsClaim(): void
+    {
+        $request = $this->makePreparedRequest('260916_1000_777_f30');
+        $claim = $this->makeClaim();
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
+        $anomaly = new RefundProtocolException(
+            new \Magento\Framework\Phrase(
+                'Zalopay: Refund status could not be confirmed. The refund is tracked and will be reconciled automatically.'
+            )
+        );
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->willThrowException($anomaly);
+        $this->mockRefundManager->expects($this->once())->method('markUnknown')
+            ->with(
+                $this->identicalTo($claim),
+                $this->callback(function (string $evidence): bool {
+                    return str_starts_with($evidence, PendingRefundManager::EVIDENCE_ANOMALY)
+                        && str_contains($evidence, 'refund status not confirmable');
+                })
+            );
+        // UNKNOWN must never release the claim: confirmed_fail is FORBIDDEN.
+        $this->mockRefundManager->expects($this->never())->method('markConfirmedFail');
+        $spy = $this->proceedSpy();
+        $caught = null;
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('protocol anomaly must surface an error');
+        } catch (LocalizedException $exception) {
+            $caught = $exception;
+        }
+        $this->assertSame($anomaly, $caught, 'the safe, already-typed protocol exception propagates untouched');
         $this->assertSame([], $spy['calls']);
     }    /**
      * BLOCKER round 2: Magento validation BEFORE provider. An over-refund
@@ -641,7 +784,99 @@ class CreditmemoRefundPluginTest extends TestCase
             );
         }
         $this->assertSame([], $spy['calls']);
-        $this->assertTrue($this->marker->isProviderAlreadyAsked(77));
+        // Round 7 F28: the finally dropped the pin - the failed finalize
+        // can never leak the provider-skip into any later refund.
+        $this->assertFalse($this->marker->consume(9012));
+        $this->assertFalse($this->marker->consume(77));
+    }
+
+    /**
+     * Round 7 F27/F31 REQUIRED TEST: the pre-provider persistence pins the
+     * credit memo to the NATIVE STATE_OPEN with its invoice_id bound, and
+     * the save happens BEFORE the provider I/O (F27) - so the synchronous
+     * SUCCESS path can complete the NATIVE core flow (core
+     * validateForRefund accepts an EXISTING credit memo only in OPEN).
+     */
+    public function testPreProviderPersistenceSetsOpenStateAndInvoiceIdBeforeProvider(): void
+    {
+        $request = $this->makePreparedRequest('260916_1000_777_f27');
+        $claim = $this->makeClaim();
+        self::assertNull($this->creditmemoEntityId, 'the REAL admin flow presents an UNSAVED credit memo');
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
+        $order = [];
+        $this->creditmemoRepository->expects($this->once())->method('save')
+            ->willReturnCallback(function ($cm) use (&$order) {
+                $order[] = 'save';
+                $this->creditmemoEntityId = 9012;
+
+                return $cm;
+            });
+        $this->mockRefundManager->method('bindCreditMemo')->willReturnCallback(function () use (&$order) {
+            $order[] = 'bind';
+
+            return true;
+        });
+        $this->mockRefundManager->method('markProviderRequestStarted')->willReturnCallback(function () use (&$order) {
+            $order[] = 'start';
+
+            return true;
+        });
+        $this->mockRefundCommand->expects($this->once())->method('executePrepared')
+            ->willReturnCallback(function () use (&$order) {
+                $order[] = 'provider';
+
+                return new RefundOutcome(RefundOutcome::STATUS_SUCCESS, '260916_1000_777_f27', 25000, null);
+            });
+        $this->plugin->aroundRefund(
+            $this->createMock(CreditmemoService::class),
+            $this->proceedSpy('CORE-RESULT-F27')['callable'],
+            $this->creditmemo
+        );
+        // (a) save called with CM state OPEN + invoice_id set ...
+        $this->assertSame(
+            \Magento\Sales\Model\Order\Creditmemo::STATE_OPEN,
+            $this->stateAtSave,
+            'F27: the persisted credit memo must be STATE_OPEN before the provider is asked'
+        );
+        $this->assertSame(501, $this->invoiceIdAtSave, 'F31: invoice_id must be pinned before the save');
+        // (b) ... and the save happens BEFORE executePrepared.
+        $this->assertSame(['save', 'bind', 'start', 'provider'], $order);
+    }
+
+    /**
+     * Round 7 F27 REQUIRED TEST: the pre-provider persistence touches ONLY
+     * the credit memo repository - orderRepository/invoiceRepository are
+     * never involved before (or after) the provider I/O: no refund
+     * accounting mutation can come from this plugin (order.total_refunded,
+     * invoice.is_used_for_refund and friends are exclusively the native
+     * core flow's / the cron finalize's business).
+     */
+    public function testPreProviderPersistenceTouchesOnlyCreditmemoRepository(): void
+    {
+        $reflection = new \ReflectionClass(CreditmemoRefundPlugin::class);
+        $repositoryDeps = [];
+        foreach ($reflection->getConstructor()->getParameters() as $parameter) {
+            $type = $parameter->getType();
+            if (!$type instanceof \ReflectionNamedType) {
+                continue;
+            }
+            $typeName = $type->getName();
+            if (is_a($typeName, \Magento\Sales\Api\OrderRepositoryInterface::class, true)
+                || is_a($typeName, \Magento\Sales\Api\InvoiceRepositoryInterface::class, true)
+                || is_a($typeName, \Magento\Sales\Api\OrderPaymentRepositoryInterface::class, true)
+            ) {
+                $repositoryDeps[] = $typeName;
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $repositoryDeps,
+            'F27: the plugin must not carry any order/invoice/payment repository dependency'
+        );
     }
 
     /**

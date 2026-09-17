@@ -23,6 +23,7 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Gateway\Response\HandlerInterface;
 use Magento\Payment\Gateway\Validator\ValidatorInterface;
 use Secomm\ZaloPay\Api\Data\RefundInterface;
+use Secomm\ZaloPay\Exception\RefundProtocolException;
 use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Helper\Rate;
 use Secomm\ZaloPay\Gateway\Validator\AbstractResponseValidator;
@@ -43,10 +44,15 @@ use Secomm\ZaloPay\Service\RefundOutcomeMarker;
  *  - throws LocalizedException (provider refusal, safe provider-map message)
  *    or RefundTransportException (timeout/network: outcome UNKNOWN - the
  *    caller tracks the refund durably from the carried outcome) on failure;
- *  - SKIPS the provider call entirely when RefundOutcomeMarker says the
- *    provider was already asked for this order - the "no second provider
- *    refund" guarantee while Magento core accounting (which routes through
- *    this command via Payment::refund) finalizes a locally tracked refund.
+ *  - throws RefundProtocolException when the response violates the provider
+ *    protocol (return_code missing / non-numeric / outside {1,2,3}) - the
+ *    outcome is NOT confirmable and explicitly NOT a confirmed refusal
+ *    (round 7 F30);
+ *  - SKIPS the provider call exactly once when RefundOutcomeMarker carries
+ *    a consumed one-shot authorization for THIS credit memo id - the "no
+ *    second provider refund" guarantee while Magento core accounting (which
+ *    routes through this command via Payment::refund) finalizes a locally
+ *    tracked refund (round 7 F28: exact-refund one-shot, fail-closed).
  *
  * Only a LocalizedException is ever thrown to Magento (Payment::refund
  * catches exactly that type); raw provider/transport text never reaches the
@@ -95,10 +101,12 @@ class RefundCommand implements CommandInterface
      * null on the marker skip path, LocalizedException on refusal).
      *
      * @param array $commandSubject
-     * @return RefundOutcome|null Null on the skip path (provider already asked).
+     * @return RefundOutcome|null Null on the skip path (one-shot provider-
+     *         skip authorization consumed for this credit memo).
      * @throws ClientException
      * @throws ConverterException
      * @throws LocalizedException Provider refusal (safe mapped message).
+     * @throws RefundProtocolException Protocol anomaly (round 7 F30).
      * @throws RefundTransportException Transport failure: outcome UNKNOWN,
      *         the exception carries the tracking outcome.
      */
@@ -120,9 +128,17 @@ class RefundCommand implements CommandInterface
      * executePrepared touches the network. Identity stability: the exact
      * request body built here is reused by executePrepared - never rebuilt.
      *
+     * Round 7 F28: the provider-skip is a ONE-SHOT authorization keyed by
+     * THIS credit memo's entity id (a credit memo exists for exactly one
+     * refund attempt). consume() removes the pin - core accounting (via
+     * Payment::refund) reaches this command exactly once per finalize, the
+     * provider is skipped exactly once, and a second refund on the same
+     * order (a different credit memo) can never inherit the skip.
+     *
      * @param array $commandSubject
-     * @return RefundRequest|null Null on the skip path (provider already
-     *         asked for this order - core is finalizing a tracked refund).
+     * @return RefundRequest|null Null on the skip path (a one-shot
+     *         provider-skip authorization was consumed for this credit
+     *         memo - core is finalizing a tracked refund).
      * @throws LocalizedException Missing credit memo on the payment.
      */
     public function prepare(array $commandSubject): ?RefundRequest
@@ -133,12 +149,12 @@ class RefundCommand implements CommandInterface
         if ($creditMemo === null) {
             throw new LocalizedException(__('Zalopay: The credit memo for this refund cannot be found.'));
         }
-        $orderId = (int)$creditMemo->getOrder()->getId();
 
-        if ($this->outcomeMarker->isProviderAlreadyAsked($orderId)) {
-            // Core accounting is finalizing a locally tracked refund: the
-            // provider outcome is already known - NEVER re-ask the provider
-            // (no second provider refund for any money).
+        if ($this->outcomeMarker->consume((int)$creditMemo->getEntityId())) {
+            // One-shot authorization consumed: core accounting is finalizing
+            // a locally tracked refund for THIS credit memo - the provider
+            // outcome is already known. NEVER re-ask the provider (no second
+            // provider refund for any money).
             return null;
         }
 
@@ -180,7 +196,11 @@ class RefundCommand implements CommandInterface
      * @return RefundOutcome
      * @throws ClientException
      * @throws ConverterException
-     * @throws LocalizedException Provider refusal (safe mapped message).
+     * @throws LocalizedException Provider refusal (return_code=2 only - the
+     *         ONE confirmed-refusal path, safe mapped message).
+     * @throws RefundProtocolException Protocol anomaly (round 7 F30):
+     *         return_code missing / non-numeric / outside {1,2,3} - the
+     *         provider state is NOT confirmable, which is NOT a refusal.
      * @throws RefundTransportException Transport failure: outcome UNKNOWN,
      *         the exception carries the tracking outcome.
      */
@@ -211,16 +231,39 @@ class RefundCommand implements CommandInterface
             );
         }
 
+        // Round 7 F30 - typed provider classification. Official v2/refund
+        // return_code: 1=SUCCESS, 2=FAIL, 3=PROCESSING. Anything else is a
+        // protocol anomaly: the provider state is NOT confirmable, so it is
+        // NEVER folded into the confirmed-refusal path (that is return_code
+        // = 2 only) - the caller lands durable UNKNOWN and reconciles by
+        // m_refund_id instead of ever re-asking /refund.
         $statusCode = $this->readReturnCode($response);
         if ($statusCode === null) {
-            $this->throwProviderFailure($statusCode, $mRefundId);
+            $this->logger->error(
+                'ZaloPay refund protocol anomaly: missing or non-numeric return_code.',
+                ['m_refund_id' => $mRefundId]
+            );
+
+            throw new RefundProtocolException($this->notConfirmableMessage());
         }
 
         if ($statusCode === AbstractResponseValidator::REFUND_PROCESSING) {
             return $this->resolveProcessing($commandSubject, $response, $tracking);
         }
 
-        if ($statusCode !== AbstractResponseValidator::RETURN_CODE_ACCEPT) {
+        if ($statusCode !== AbstractResponseValidator::RETURN_CODE_ACCEPT
+            && $statusCode !== AbstractResponseValidator::REFUND_FAIL
+        ) {
+            // Numeric but outside the documented set (e.g. 999): anomaly.
+            $this->logger->error(
+                sprintf('ZaloPay refund protocol anomaly: unexpected provider return_code=%d.', $statusCode),
+                ['m_refund_id' => $mRefundId]
+            );
+
+            throw new RefundProtocolException($this->notConfirmableMessage());
+        }
+
+        if ($statusCode === AbstractResponseValidator::REFUND_FAIL) {
             $this->throwProviderFailure($statusCode, $mRefundId);
         }
 
@@ -345,6 +388,21 @@ class RefundCommand implements CommandInterface
         $code = $response[AbstractResponseValidator::RETURN_CODE] ?? null;
 
         return is_numeric($code) ? (int)$code : null;
+    }
+
+    /**
+     * The safe, provider-agnostic message for a refund whose provider
+     * state is not confirmable (protocol anomaly - round 7 F30). Raw
+     * provider text never reaches the user.
+     *
+     * @return \Magento\Framework\Phrase
+     */
+    private function notConfirmableMessage(): \Magento\Framework\Phrase
+    {
+        return __(
+            'Zalopay: Refund status could not be confirmed. The refund is'
+            . ' tracked and will be reconciled automatically.'
+        );
     }
 
     /**

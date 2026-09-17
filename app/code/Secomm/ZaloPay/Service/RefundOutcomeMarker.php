@@ -9,49 +9,84 @@ declare(strict_types=1);
 namespace Secomm\ZaloPay\Service;
 
 /**
- * Process-scoped marker that a provider refund for an order was ALREADY
- * requested and its outcome is already known, so the Magento core refund
- * accounting (RefundOperation -> Payment::refund -> gateway "refund"
- * command) must NOT talk to the provider a second time.
+ * Process-scoped, EXACT-REFUND, ONE-SHOT authorization for the gateway
+ * refund command to SKIP the provider call (TASK-CG6BM7 corrective round
+ * 7, F28 redesign).
  *
- * TASK-CG6BM7 corrective round: with the pending-refund lifecycle the
- * provider interaction runs exactly ONCE per refund request — in the
- * CreditmemoRefundPlugin before the core flow (PROCESSING case) or by the
- * plugin before proceeding (SUCCESS case) — and the RefundCronjob finalize
- * runs the core accounting with the provider outcome already resolved.
- * Magento DI shares one instance per scope, so admin request AND cron worker
- * each get their own isolated marker: no state leaks between refunds.
+ * Why keyed by credit memo id: a credit memo entity is created for exactly
+ * one refund attempt (two refunds on one order = two credit memos), so the
+ * id identifies THIS refund precisely - an order key would let a second
+ * refund inherit the first one's skip and run core accounting with the
+ * provider never asked for ITS money.
  *
- * Keyed by order entity id — stable across the plugin and the gateway
- * command within one refund flow; different orders never collide.
+ * Contract (fail-closed):
+ *  - authorize($cmId)   the plugin pins "provider outcome already known"
+ *                       immediately BEFORE invoking the core flow;
+ *  - consume($cmId)     one-shot: RefundCommand::prepare() consumes the
+ *                       authorization when the core accounting (via
+ *                       Payment::refund) reaches the gateway command - the
+ *                       provider is skipped exactly once; a second consume
+ *                       for the same credit memo returns false;
+ *  - clear($cmId)       idempotent cleanup in the plugin's finally: if the
+ *                       core flow threw BEFORE the gateway command consumed
+ *                       the authorization (or the skip was never consumed),
+ *                       the pin is dropped - nothing leaks to the next
+ *                       refund attempt. Fail-closed: without an
+ *                       authorization, prepare() builds a normal provider
+ *                       request and the caller (plugin) aborts.
+ *
+ * Magento DI shares one instance per scope, so admin request AND cron
+ * worker each get their own isolated marker: authorizations never leak
+ * across refunds or processes.
+ *
+ * API CONTRACT (FROZEN): the method names, signatures and one-shot
+ * semantics below are the cross-lane contract - do not rename.
  */
 class RefundOutcomeMarker
 {
     /**
+     * Authorized credit memo ids (consumed entries removed).
+     *
      * @var array<int, true>
      */
-    private array $skipProviderOrderIds = [];
+    private array $authorizations = [];
 
     /**
-     * Mark that the provider was already asked for this order's refund.
+     * Authorize a one-shot provider-skip for THIS exact credit memo id.
      *
-     * @param int $orderId
+     * @param int $creditMemoId
      * @return void
      */
-    public function markProviderAlreadyAsked(int $orderId): void
+    public function authorize(int $creditMemoId): void
     {
-        $this->skipProviderOrderIds[$orderId] = true;
+        $this->authorizations[$creditMemoId] = true;
     }
 
     /**
-     * Whether the gateway refund command must skip the provider call for
-     * this order (provider already asked, outcome already known).
+     * Consume the authorization. One-shot: true only the first time.
      *
-     * @param int $orderId
+     * @param int $creditMemoId
      * @return bool
      */
-    public function isProviderAlreadyAsked(int $orderId): bool
+    public function consume(int $creditMemoId): bool
     {
-        return isset($this->skipProviderOrderIds[$orderId]);
+        if (!isset($this->authorizations[$creditMemoId])) {
+            return false;
+        }
+
+        unset($this->authorizations[$creditMemoId]);
+
+        return true;
+    }
+
+    /**
+     * Idempotent explicit cleanup (failure paths; try/finally).
+     *
+     * @param int $creditMemoId
+     * @return void
+     */
+    public function clear(int $creditMemoId): void
+    {
+        unset($this->authorizations[$creditMemoId]);
     }
 }

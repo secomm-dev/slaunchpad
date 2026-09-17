@@ -25,7 +25,6 @@ use Secomm\ZaloPay\Logger\Logger as LoggerInterface;
 use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollection;
 use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollectionFactory;
 use Secomm\ZaloPay\Helper\RefundProcessor;
-use Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin;
 use Secomm\ZaloPay\Service\PendingRefundManager;
 
 /**
@@ -62,6 +61,20 @@ use Secomm\ZaloPay\Service\PendingRefundManager;
  * timeout) and queried by the SAME m_refund_id after it; PROCESSING and
  * UNKNOWN rows query the SAME m_refund_id regardless of the creditmemo
  * state; PROVIDER_SUCCESS_LOCAL_PENDING finalizes locally only.
+ *
+ * ROUND 7: the selection is state-explicit (F32) - only the five
+ * unresolved states are picked, budget-exhausted rows drop out EXCEPT
+ * provider_success_local_pending, which stays selectable FOREVER (its
+ * local finalize must never be starved by the query budget; the provider
+ * is never contacted for it). Budget exhaustion NEVER mutates
+ * refund_state (F32) and terminal rows (confirmed_success /
+ * confirmed_fail) are skipped defensively at the top of processRefund
+ * (F33) - they are never re-queried and never re-finalized even if a
+ * stale selection or manual query hands one to the loop. On a
+ * provider-confirmed FAIL the row is terminated confirmed_fail and the
+ * credit memo is NOT touched (F34): no custom PROCESSING parking exists
+ * anymore, the credit memo is OPEN until a successful finalize refunds
+ * it natively; the money provably never left, accounting untouched.
  *
  * Items are isolated: one broken row never blocks the batch. The finalize
  * step itself is guarded by SELECT ... FOR UPDATE + is_processed re-check
@@ -146,6 +159,27 @@ class RefundCronjob
      */
     private function processRefund($refund): void
     {
+        // -1. TERMINAL rows (round 7 F33 defense-in-depth): a row that
+        //     already landed confirmed_success / confirmed_fail must NEVER
+        //     re-enter the provider query flow - not queried, not
+        //     finalized, not terminated again, no budget consumed. The
+        //     explicit selection filter already excludes them; this guard
+        //     holds even when a stale selection snapshot or a manual call
+        //     hands a terminal row to the loop.
+        $refundState = (string)$refund->getData(RefundInterface::REFUND_STATE);
+        if ($refundState === RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS
+            || $refundState === RefundInterface::REFUND_STATE_CONFIRMED_FAIL) {
+            $this->logger->info(
+                sprintf(
+                    'ZaloPay refund row #%d: terminal state %s - skipped, never re-queried or re-finalized.',
+                    (int)$refund->getId(),
+                    $refundState
+                )
+            );
+
+            return;
+        }
+
         // 0. PROVIDER-SUCCESS/LOCAL-PENDING (round 3 F13): the provider
         //    money is out (CONFIRMED SUCCESS) but the Magento accounting is
         //    incomplete - finalize LOCALLY ONLY. No provider interaction
@@ -324,13 +358,15 @@ class RefundCronjob
 
         // 2b. STATE-DRIVEN RECOVERY (round 4 F18): the durable refund state
         //    machine decides what may be queried - NOT the creditmemo
-        //    state. OPEN (1) is the legitimate pre-provider bind state
-        //    (round 4 F17) and PROCESSING (4) the parked outcome-open
-        //    state: INITIATING / PROCESSING / UNKNOWN rows carrying those
-        //    creditmemo states MUST query the SAME m_refund_id below
-        //    (crash recovery by identity). Only a CANCELED creditmemo (a
-        //    manual cancel outside this lifecycle) is drift - terminate
-        //    for manual reconciliation (never double-finalize).
+        //    state. OPEN (1) is the only legitimate parked state now
+        //    (round 7 F34: no custom PROCESSING creditmemo state exists
+        //    anymore - the credit memo stays OPEN until a confirmed
+        //    SUCCESS refunds it natively): INITIATING / PROCESSING /
+        //    UNKNOWN rows carrying an OPEN creditmemo MUST query the SAME
+        //    m_refund_id below (crash recovery by identity). Only a
+        //    CANCELED creditmemo (a manual cancel outside this lifecycle)
+        //    is drift - terminate for manual reconciliation (never
+        //    double-finalize).
         if ((int)$creditMemo->getState() === Creditmemo::STATE_CANCELED) {
             $this->pendingRefundManager->terminate(
                 $refund,
@@ -415,7 +451,13 @@ class RefundCronjob
         }
 
         // 6. Explicit provider FAIL: terminal (budget saturated, evidence kept,
-        //    Magento accounting untouched).
+        //    Magento accounting untouched). The credit memo is deliberately
+        //    NOT mutated (round 7 F34): no custom PROCESSING parking exists
+        //    anymore, the credit memo was never parked by this lifecycle, so
+        //    there is nothing to release - it stays OPEN and a corrected
+        //    future refund can proceed; the row is terminated confirmed_fail
+        //    via the CAS transition (a lost CAS - a newer owner moved on -
+        //    is swallowed inside the manager).
         if ($statusCode === AbstractResponseValidator::REFUND_FAIL) {
             $failMessage = $this->safeFailMessage($response);
             $this->pendingRefundManager->terminate(
@@ -423,7 +465,6 @@ class RefundCronjob
                 PendingRefundManager::EVIDENCE_REFUND_FAILED . $failMessage,
                 RefundInterface::REFUND_STATE_CONFIRMED_FAIL
             );
-            $this->releaseCreditmemoAfterFail($creditMemo);
             $this->logger->critical(
                 sprintf(
                     'ZaloPay refund FAILED terminally for credit memo ID %d: %s',
@@ -443,37 +484,6 @@ class RefundCronjob
             : PendingRefundManager::EVIDENCE_ANOMALY . 'missing or invalid provider return_code';
         $attempts = $this->pendingRefundManager->consumeQueryBudget($refund, $evidence);
         $this->logBudgetIfExhausted($refund, $attempts);
-    }
-
-    /**
-     * Provider CONFIRMED FAIL: the parked creditmemo must no longer present
-     * as PROCESSING (money was NOT refunded) - return it to the safe OPEN
-     * state so a corrected future refund can proceed (round 3 F15). Magento
-     * refund accounting stays untouched (nothing was applied). A release
-     * failure is critical-logged: the refund row is already confirmed_fail
-     * (non-blocking), but the creditmemo state needs manual follow-up.
-     *
-     * @param \Magento\Sales\Model\Order\Creditmemo $creditMemo
-     * @return void
-     */
-    private function releaseCreditmemoAfterFail($creditMemo): void
-    {
-        if ((int)$creditMemo->getState() !== CreditmemoPlugin::STATE_PROCESSING) {
-            return;
-        }
-
-        try {
-            $creditMemo->setState(Creditmemo::STATE_OPEN);
-            $this->creditmemoRepository->save($creditMemo);
-        } catch (\Throwable $exception) {
-            $this->logger->critical(
-                sprintf(
-                    'ZaloPay refund: credit memo #%d confirmed FAIL but could not be released back to OPEN: %s - manual state fix required.',
-                    (int)$creditMemo->getEntityId(),
-                    $exception->getMessage()
-                )
-            );
-        }
     }
 
     /**
@@ -560,18 +570,42 @@ class RefundCronjob
     }
 
     /**
-     * Get unprocessed refund collection
+     * Get the refund rows the cron must work on (round 7 F32): an explicit
+     * STATE selection of the five unresolved states only -
+     * initiating / provider_request_started / processing / unknown /
+     * provider_success_local_pending - AND not processed AND (budget not
+     * exhausted OR provider_success_local_pending). Terminal states
+     * (confirmed_success / confirmed_fail) are excluded BY THE STATE
+     * FILTER, not by budget saturation; a budget-exhausted row keeps its
+     * semantic state (F32: PSLP is never demoted to unknown at the cap)
+     * and drops out of selection unless it is PSLP - a PSLP row stays
+     * selectable FOREVER so its local-only finalize is never starved.
      *
      * @return RefundCollection
      */
     public function getUnprocessedRefunds(): RefundCollection
     {
-        // Get a collection of refunds where 'is_processed' is false AND the
-        // bounded query budget is not exhausted (terminal rows saturate
-        // query_attempts, so they drop out of selection by design).
         $refundCollection = $this->refundCollectionFactory->create();
-        $refundCollection->addFieldToFilter('is_processed', ['eq' => RefundInterface::NOT_PROCESSED]);
-        $refundCollection->addFieldToFilter(RefundInterface::QUERY_ATTEMPTS, ['lt' => self::MAX_QUERY_ATTEMPTS]);
+        $refundCollection->addFieldToFilter(RefundInterface::IS_PROCESSED, ['eq' => RefundInterface::NOT_PROCESSED]);
+        $refundCollection->addFieldToFilter(
+            RefundInterface::REFUND_STATE,
+            ['in' => [
+                RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                RefundInterface::REFUND_STATE_PROCESSING,
+                RefundInterface::REFUND_STATE_UNKNOWN,
+                RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
+            ]]
+        );
+        // The two-array form ORs the two conditions (Magento
+        // AbstractCollection semantics): budget left, OR PSLP (uncapped).
+        $refundCollection->addFieldToFilter(
+            [RefundInterface::QUERY_ATTEMPTS, RefundInterface::REFUND_STATE],
+            [
+                [['lt' => self::MAX_QUERY_ATTEMPTS]],
+                [['eq' => RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING]],
+            ]
+        );
 
         return $refundCollection;
     }

@@ -216,3 +216,15 @@ pre_correction_head: 70416b7aa6889276818b72e311a9955cbf5ed578
 - Scope: chỉ `app/code/Secomm/ZaloPay/**` (RefundInterface +1 const; PendingRefundManager
   +1 const; RefundCronjob 0b + docblock; RefundCronjobTest) + `.ai/**`; icon/logo, ExtraFee,
   MoMo, LLMS, Bitbucket: KHÔNG đụng; `auth.json` pre-existing KHÔNG commit.
+
+## Round 7 (2026-09-17, DEADLINE MODE — minimum release gate)
+
+- Unit: **364 tests / 1299 assertions OK** (suite đầy đủ Secomm_ZaloPay trên merged tree; plugin 27/121, RefundCommand 17/67, marker 6/18, cron + manager + cleanup matrix; PASSED 2 lần — trước và sau fix Rate/manager). Không còn test stale tham chiếu `CreditmemoPlugin` (chỉ còn legacy-state-4 compat test có chủ đích).
+- php -l: **121/121 file clean** (PHP 8.3.20).
+- PHPCS Magento2: **0 ERRORS** toàn module và trên toàn bộ 14 file PHP changed (round scope); warnings còn lại = style/docblock (391 module-wide, phần lớn pre-existing) ⇒ POST-DEADLINE HARDENING.
+- setup:di:compile: **PASS** (generated code + plugin list 9/9). Ghi minh bạch: compile chạy lại 2 lần NỮA chỉ do cấu hình env disposable (bật module env-only `Secomm_ZaloPayTestEnv` + override di argument fake transport) — KHÔNG do code repo.
+- setup:upgrade: **PASS** (schema đổi: FK NO ACTION) + `SHOW CREATE TABLE zalo_pay_refund` xác minh `ON DELETE NO ACTION`.
+- REAL smokes (P21): REAL_SYNC_SUCCESS / ASYNC_RECOVERY / EXPLICIT_FAIL / MARKER_ISOLATION / CAS_FOCUSED — **5/5 PASS** trên REAL Magento 2.4.8-p5 (seam duy nhất = transport; verify đúng các field accounting cốt lõi: CM state, invoice_id, invoice/order/payment refunded totals, online refunded, refund row state, provider call counts).
+- Payment-first: KHÔNG có thay đổi order-creation path; refund path giữ payment-first invariant (no Sales Order tạo từ refund).
+- Scope: chỉ `app/code/Secomm/ZaloPay/**` + `.ai/**`; KHÔNG đụng icon/logo, ExtraFee, MoMo, LLMS, Debug Mode config, New Order Status, Bitbucket; `auth.json` pre-existing KHÔNG commit.
+- CodeGraph: chờ re-index sau commit (workspace `slaunchpad-workspaces/zalopay-postfix-audit` @ corrective head).

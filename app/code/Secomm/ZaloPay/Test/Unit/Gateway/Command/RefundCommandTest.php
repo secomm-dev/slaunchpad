@@ -22,6 +22,7 @@ use Magento\Sales\Model\Order\Payment as OrderPayment;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\ZaloPay\Api\Data\RefundInterface;
+use Secomm\ZaloPay\Exception\RefundProtocolException;
 use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Command\RefundCommand;
 use Secomm\ZaloPay\Gateway\Command\RefundOutcome;
@@ -32,17 +33,23 @@ use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Service\RefundOutcomeMarker;
 
 /**
- * REFUND CMD 16-23 (TASK-CG6BM7 corrective round): the provider-only
+ * REFUND CMD 16-23 (TASK-CG6BM7 corrective round 7): the provider-only
  * RefundCommand contract:
  *
- *  - marker set for the order  -> provider NEVER asked (null, skip path);
+ *  - one-shot marker authorization for THIS credit memo -> provider NEVER
+ *    asked (null, skip path, consumed exactly once; another credit memo on
+ *    the same order still builds a request - F28);
  *  - rc 1                      -> SUCCESS outcome + response handler runs;
  *  - rc 3 -> query 1           -> SUCCESS outcome, handler sees the ORIGINAL
  *    v2/refund response;
- *  - rc 3 -> query 3/unknown/transport -> PROCESSING outcome carrying the
- *    serialized v2/query_refund payload (durable track, no throw);
+ *  - rc 3 -> query 3/unknown/anomaly/transport -> PROCESSING outcome
+ *    carrying the serialized v2/query_refund payload (durable track, no
+ *    throw - the refund IS accepted by rc=3);
  *  - rc 3 -> query 2           -> LocalizedException, safe provider-map message;
- *  - rc 2 / protocol anomaly   -> LocalizedException, safe provider-map message;
+ *  - rc 2                      -> LocalizedException (the ONLY confirmed-
+ *    refusal path), safe provider-map message;
+ *  - return_code missing / non-numeric / outside {1,2,3} -> RefundProtocolException
+ *    (NOT a refusal - F30);
  *  - transport failure         -> RefundTransportException carrying the
  *    PROCESSING tracking outcome (m_refund_id + payload) so the caller can
  *    track the refund durably and never re-request it;
@@ -53,6 +60,8 @@ class RefundCommandTest extends TestCase
     private const M_REFUND_ID = '260916_1000_777';
 
     private const ORDER_ID = 7;
+
+    private const CREDIT_MEMO_ID = 555;
 
     private BuilderInterface|MockObject $requestBuilder;
 
@@ -78,6 +87,12 @@ class RefundCommandTest extends TestCase
 
     private RefundCommand $command;
 
+    /**
+     * Mutable test state: the credit memo entity id the payment currently
+     * carries (the marker is keyed by THIS id - round 7 F28).
+     */
+    private int $creditmemoEntityId = self::CREDIT_MEMO_ID;
+
     protected function setUp(): void
     {
         $this->requestBuilder = $this->createMock(BuilderInterface::class);
@@ -94,6 +109,7 @@ class RefundCommandTest extends TestCase
 
         $this->payment->method('getCreditmemo')->willReturn($this->creditmemo);
         $this->creditmemo->method('getOrder')->willReturn($this->order);
+        $this->creditmemo->method('getEntityId')->willReturnCallback(fn (): int => $this->creditmemoEntityId);
         $this->order->method('getId')->willReturn(self::ORDER_ID);
 
         $this->rate->method('getVndAmount')->willReturn(50000.0);
@@ -277,19 +293,103 @@ class RefundCommandTest extends TestCase
     }
 
     /**
-     * REFUND CMD 21: a missing/non-numeric return_code is a protocol
-     * anomaly -> LocalizedException (never a crash, never a false success).
+     * REFUND CMD 21 (round 7 F30): a MISSING return_code is a protocol
+     * anomaly -> RefundProtocolException (never a crash, never a false
+     * success, never folded into the confirmed-refusal path) with the safe
+     * "not confirmable" message, and the anomaly is logged.
      */
-    public function testMissingReturnCodeThrowsLocalizedException(): void
+    public function testMissingReturnCodeThrowsProtocolException(): void
     {
         $this->client->expects($this->once())->method('placeRequest')->willReturn(
             ['unexpected' => 'payload']
         );
+        $this->logger->expects($this->once())->method('error')
+            ->with($this->stringContains('missing or non-numeric return_code'));
 
-        $this->expectException(LocalizedException::class);
+        try {
+            $this->command->execute($this->commandSubject());
+            $this->fail('Expected RefundProtocolException');
+        } catch (RefundProtocolException $exception) {
+            $this->assertStringContainsString('Refund status could not be confirmed', $exception->getMessage());
+        }
+    }
+
+    /**
+     * Round 7 F30: a NON-NUMERIC return_code is a protocol anomaly too.
+     */
+    public function testNonNumericReturnCodeThrowsProtocolException(): void
+    {
+        $this->client->expects($this->once())->method('placeRequest')->willReturn(
+            ['return_code' => 'abc', 'return_message' => 'garbled envelope']
+        );
+        $this->logger->expects($this->once())->method('error')
+            ->with($this->stringContains('missing or non-numeric return_code'));
+
+        $this->expectException(RefundProtocolException::class);
         $this->expectExceptionMessage('Zalopay: ');
 
         $this->command->execute($this->commandSubject());
+    }
+
+    /**
+     * Round 7 F30: a numeric return_code OUTSIDE {1,2,3} (e.g. 999) is an
+     * unexpected-provider-code anomaly -> RefundProtocolException - NOT a
+     * confirmed refusal, so the caller must land UNKNOWN (never
+     * confirmed_fail) and reconcile by m_refund_id.
+     */
+    public function testUnexpectedReturnCodeThrowsProtocolException(): void
+    {
+        $this->client->expects($this->once())->method('placeRequest')->willReturn(
+            ['return_code' => 999, 'return_message' => 'unknown provider state']
+        );
+        $this->logger->expects($this->once())->method('error')
+            ->with($this->stringContains('unexpected provider return_code=999'));
+
+        try {
+            $this->command->execute($this->commandSubject());
+            $this->fail('Expected RefundProtocolException');
+        } catch (RefundProtocolException $exception) {
+            $this->assertStringContainsString('Refund status could not be confirmed', $exception->getMessage());
+            $this->assertStringNotContainsString('999', $exception->getMessage());
+        }
+    }
+
+    /**
+     * REFUND CMD 20b (round 7 F30): rc 2 IS the ONE confirmed-refusal path
+     * and stays a PLAIN LocalizedException (provider-map message) - never a
+     * RefundProtocolException, so the caller lands confirmed_fail.
+     */
+    public function testRefusedReturnCodeIsNotAProtocolAnomaly(): void
+    {
+        $this->client->expects($this->once())->method('placeRequest')->willReturn(
+            ['return_code' => 2, 'sub_return_code' => -13, 'return_message' => 'RAW-PROVIDER-DETAIL']
+        );
+
+        try {
+            $this->command->execute($this->commandSubject());
+            $this->fail('Expected LocalizedException');
+        } catch (RefundProtocolException $exception) {
+            $this->fail('rc=2 is a confirmed refusal, not a protocol anomaly');
+        } catch (LocalizedException $exception) {
+            $this->assertSame('Zalopay: Refund failed.', (string)$exception->getMessage());
+        }
+    }
+
+    /**
+     * Round 7 F30: rc 3 + immediate query with an ANOMALOUS (missing)
+     * return_code stays PROCESSING - the refund IS accepted by rc=3, so the
+     * anomaly in the query response must never downgrade it to a refusal.
+     */
+    public function testProcessingThenQueryAnomalyStaysTracked(): void
+    {
+        $this->client->method('placeRequest')->willReturn(['return_code' => 3, 'return_message' => 'processing']);
+        $this->refundQueryCommand->method('getRefundQuery')->willReturn(['garbled' => 'query envelope']);
+
+        $outcome = $this->command->execute($this->commandSubject());
+
+        $this->assertNotNull($outcome);
+        $this->assertSame(RefundOutcome::STATUS_PROCESSING, $outcome->getStatus());
+        $this->handler->expects($this->never())->method('handle');
     }
 
     /**
@@ -344,20 +444,67 @@ class RefundCommandTest extends TestCase
     }
 
     /**
-     * REFUND CMD 23: when the marker says the provider was already asked for
-     * this order (core accounting finalizing a locally tracked refund), the
-     * provider is NEVER asked again - the command returns null and no
-     * request is built or sent.
+     * REFUND CMD 23 (round 7 F28): a consumed one-shot authorization for
+     * THIS credit memo means core accounting is finalizing a locally
+     * tracked refund - the provider is NEVER asked (null, no request
+     * built or sent) EXACTLY once; a second attempt for the same credit
+     * memo is no longer authorized (fail-closed: the caller aborts, the
+     * provider would be asked).
      */
-    public function testProviderAlreadyAskedSkipsProviderCall(): void
+    public function testProviderSkipAuthorizationIsConsumedExactlyOnce(): void
     {
-        $this->outcomeMarker->markProviderAlreadyAsked(self::ORDER_ID);
+        $this->outcomeMarker->authorize(self::CREDIT_MEMO_ID);
 
+        // First finalize pass: the authorization is consumed, provider skip.
         $this->requestBuilder->expects($this->never())->method('build');
         $this->client->expects($this->never())->method('placeRequest');
         $this->handler->expects($this->never())->method('handle');
 
         $this->assertNull($this->command->execute($this->commandSubject()));
+
+        // The one-shot pin is gone: a second run for the SAME credit memo is
+        // NOT authorized any more (fail-closed).
+        $this->assertFalse($this->outcomeMarker->consume(self::CREDIT_MEMO_ID));
+    }
+
+    /**
+     * REFUND CMD 23 (round 7 F28): the marker is keyed by CREDIT MEMO id -
+     * after refund A's authorization was consumed, a refund B on the SAME
+     * order (different credit memo) still builds a normal provider request.
+     */
+    public function testSkipAuthorizationDoesNotLeakToAnotherCreditMemoOnSameOrder(): void
+    {
+        $this->outcomeMarker->authorize(self::CREDIT_MEMO_ID);
+        $this->assertNull($this->command->execute($this->commandSubject()));
+
+        // Refund B: same order 7, DIFFERENT credit memo 556.
+        $this->creditmemoEntityId = 556;
+        $this->requestBuilder->expects($this->once())->method('build');
+        $this->client->expects($this->once())->method('placeRequest')->willReturn(
+            ['return_code' => 1, 'return_message' => 'Refund successful.']
+        );
+
+        $outcome = $this->command->execute($this->commandSubject());
+
+        $this->assertNotNull($outcome);
+        $this->assertSame(RefundOutcome::STATUS_SUCCESS, $outcome->getStatus());
+    }
+
+    /**
+     * REFUND CMD 23c (round 7 F28): at the prepare() level - the first
+     * prepare for an authorized credit memo returns null (authorized skip),
+     * the second prepare for ANOTHER credit memo builds a request.
+     */
+    public function testPrepareAuthorizedSkipThenAnotherCreditmemoBuildsRequest(): void
+    {
+        $this->outcomeMarker->authorize(self::CREDIT_MEMO_ID);
+        $this->assertNull($this->command->prepare($this->commandSubject()));
+
+        $this->creditmemoEntityId = 557;
+        $request = $this->command->prepare($this->commandSubject());
+
+        $this->assertNotNull($request);
+        $this->assertSame(self::M_REFUND_ID, $request->getMRefundId());
     }
 
     /**

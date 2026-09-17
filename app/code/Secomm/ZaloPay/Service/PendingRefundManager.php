@@ -15,6 +15,7 @@ use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\InvoiceRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Framework\DB\Sql\Expression;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Creditmemo\RefundOperation;
 use Secomm\ZaloPay\Api\Data\RefundInterface;
@@ -23,7 +24,6 @@ use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Model\RefundModel;
 use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollectionFactory;
 use Secomm\ZaloPay\Model\ResourceModel\RefundResource;
-use Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin;
 
 /**
  * Durable pending-refund lifecycle for async ZaloPay refunds
@@ -35,6 +35,16 @@ use Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin;
  * runs exactly once, only on confirmed provider SUCCESS, through the NATIVE
  * core accounting (RefundOperation + Payment::refund with the gateway
  * provider call skipped via RefundOutcomeMarker).
+ *
+ * ROUND 7 (F29): every post-claim transition is an ATOMIC conditional
+ * UPDATE (compare-and-set) on the connection - expected refund_state +
+ * active_claim guards in the WHERE, new values in the SET. A stale cron
+ * snapshot can NEVER overwrite a newer owner transition: the loser of the
+ * CAS reloads the row, critical-logs the loss and (blocking forward
+ * transitions) throws a customer-safe LocalizedException, while terminal
+ * transitions (confirmed_fail / confirmed_success / terminate) swallow -
+ * the winner owns the row. No read-modify-write `$model->save()` remains
+ * in these transitions.
  */
 class PendingRefundManager
 {
@@ -138,6 +148,9 @@ class PendingRefundManager
      * check-then-act query - the plugin acquires the ATOMIC durable claim
      * (unique (order_id, active_claim) index) instead; this method remains
      * the semantic view used by reporting/tests.
+     *
+     * @param int $orderId
+     * @return bool
      */
     public function hasInFlight(int $orderId): bool
     {
@@ -210,7 +223,11 @@ class PendingRefundManager
         } catch (\Throwable $exception) {
             if ($this->isDuplicateKey($exception)) {
                 throw new LocalizedException(
-                    __('Zalopay: Another refund for this order is active or awaiting reconciliation. Please wait until it is resolved before requesting another refund.')
+                    __(
+                        'Zalopay: Another refund for this order is active or awaiting'
+                        . ' reconciliation. Please wait until it is resolved before'
+                        . ' requesting another refund.'
+                    )
                 );
             }
 
@@ -218,7 +235,8 @@ class PendingRefundManager
             // before the network call) - safe abort with honest evidence.
             $this->logger->error(
                 sprintf(
-                    'ZaloPay refund claim %s (order %s) could not be recorded: %s - refund NOT requested at the provider.',
+                    'ZaloPay refund claim %s (order %s) could not be recorded:'
+                    . ' %s - refund NOT requested at the provider.',
                     $tracking->getMRefundId(),
                     (string)$creditmemo->getOrder()->getIncrementId(),
                     $exception->getMessage()
@@ -276,11 +294,13 @@ class PendingRefundManager
      * (UTC) BEFORE the provider HTTP may run. This is the last gate: the
      * provider gate is now claim + stable m_refund_id + real bound
      * credit_memo_id + THIS persisted provider-start state. The UPDATE is
-     * guarded by active_claim = 1: if the claim slot was lost between the
-     * bind and this mark (concurrent cron stale-claim release / terminal
-     * transition), the mark fails and the plugin MUST never reach the
-     * provider. No DB transaction stays open across the provider HTTP
-     * (single committed autocommit UPDATE).
+     * CAS (round 7 F29): guarded by refund_state = initiating (the
+     * LOCAL_READY state this transition must start from) AND
+     * active_claim = 1 - if the claim slot or the state was moved between
+     * the bind and this mark (concurrent cron stale-claim release /
+     * terminal transition), the mark fails and the plugin MUST never
+     * reach the provider. No DB transaction stays open across the
+     * provider HTTP (single committed autocommit UPDATE).
      *
      * @param RefundModel $refund The claimed, bound row.
      * @return bool True when THIS row still owns the claim and the
@@ -298,6 +318,7 @@ class PendingRefundManager
             ],
             [
                 RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::REFUND_STATE . ' = ?' => RefundInterface::REFUND_STATE_INITIATING,
                 RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
             ]
         );
@@ -313,75 +334,141 @@ class PendingRefundManager
 
     /**
      * Provider accepted the refund (PROCESSING): outcome open, refund
-     * tracked durably, still blocking. The persisted credit memo is parked
-     * in the custom PROCESSING state (round 4 state contract) - a park
-     * failure is critical-logged and swallowed: the durable row state
-     * drives the cron recovery (which accepts any non-canceled creditmemo
-     * state), never the display state.
+     * tracked durably, still blocking. CAS (round 7 F29): the atomic
+     * UPDATE requires the row to still sit in provider_request_started or
+     * processing AND still own the claim - a stale owner can never
+     * overwrite a newer transition (a cron snapshot holding an old
+     * initiating row loses this CAS by construction). The credit memo is
+     * deliberately NOT touched here (round 7 F34): it stays OPEN until
+     * the finalize lands; no custom PROCESSING parking exists anymore.
      *
      * @param RefundModel $refund
-     * @param CreditmemoInterface|null $creditmemo Persisted credit memo to
-     *        park in the custom PROCESSING state (when resolvable).
      * @return void
-     * @throws LocalizedException When the transition cannot persist (the
-     *         initiating claim row keeps the order blocked regardless).
+     * @throws LocalizedException When the CAS is lost (another owner/state
+     *         transition won) - customer-safe, the row stays tracked and
+     *         the cron reconciles it.
      */
-    public function markProcessing(RefundModel $refund, ?CreditmemoInterface $creditmemo = null): void
+    public function markProcessing(RefundModel $refund): void
     {
-        $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_PROCESSING);
-        $this->saveState($refund, 'processing');
+        $affected = $this->refundResource->getConnection()->update(
+            $this->refundResource->getMainTable(),
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+                RefundInterface::LAST_ERROR => null,
+            ],
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::REFUND_STATE . ' IN (?)' => [
+                    RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                    RefundInterface::REFUND_STATE_PROCESSING,
+                ],
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ]
+        );
+        if ($affected === 1) {
+            $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_PROCESSING);
+            $refund->setData(RefundInterface::LAST_ERROR, null);
 
-        if ($creditmemo !== null) {
-            try {
-                $creditmemo->setState(CreditmemoPlugin::STATE_PROCESSING);
-                $this->creditmemoRepository->save($creditmemo);
-            } catch (\Throwable $parkException) {
-                $this->logger->critical(
-                    sprintf(
-                        'ZaloPay refund row #%d: credit memo #%d could not be parked in PROCESSING: %s - the refund row stays durable and reconcilable.',
-                        (int)$refund->getId(),
-                        (int)$creditmemo->getEntityId(),
-                        $parkException->getMessage()
-                    )
-                );
-            }
+            return;
         }
+
+        $this->handleLostTransition($refund, 'processing');
+        throw new LocalizedException(
+            __(
+                'Zalopay: The refund state could not be recorded locally.'
+                . ' The refund is tracked and will be reconciled automatically.'
+            )
+        );
     }
 
     /**
      * Outcome UNKNOWN (transport failure on the initial request): the
      * semantic state stored is UNKNOWN - explicitly NOT processing
-     * (round 3 F16). Still blocking.
+     * (round 3 F16). Still blocking. CAS (round 7 F29): guarded by the
+     * provider-started / processing / unknown source states AND the live
+     * claim - a stale snapshot can never drag a terminal row back.
      *
      * @param RefundModel $refund
-     * @param string|null $evidence
+     * @param string|null $evidence Safe evidence text.
      * @return void
-     * @throws LocalizedException When the transition cannot persist.
+     * @throws LocalizedException When the CAS is lost (another owner won).
      */
     public function markUnknown(RefundModel $refund, ?string $evidence): void
     {
-        $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_UNKNOWN);
-        $refund->setData(RefundInterface::LAST_ERROR, $evidence);
-        $this->saveState($refund, 'unknown');
+        $affected = $this->refundResource->getConnection()->update(
+            $this->refundResource->getMainTable(),
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_UNKNOWN,
+                RefundInterface::LAST_ERROR => $evidence,
+            ],
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::REFUND_STATE . ' IN (?)' => [
+                    RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                    RefundInterface::REFUND_STATE_PROCESSING,
+                    RefundInterface::REFUND_STATE_UNKNOWN,
+                ],
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ]
+        );
+        if ($affected === 1) {
+            $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_UNKNOWN);
+            $refund->setData(RefundInterface::LAST_ERROR, $evidence);
+
+            return;
+        }
+
+        $this->handleLostTransition($refund, 'unknown');
+        throw new LocalizedException(
+            __(
+                'Zalopay: The refund state could not be recorded locally.'
+                . ' The refund is tracked and will be reconciled automatically.'
+            )
+        );
     }
 
     /**
      * Provider CONFIRMED refusal (money provably NOT refunded): land
      * confirmed_fail - releases the block AND the atomic claim slot - with
-     * safe evidence. The synchronous creditmemo was never parked by this
-     * lifecycle on this path; the parked (async) case is released back to
-     * OPEN by RefundCronjob.
+     * safe evidence. CAS (round 7 F29): guarded by the pre-provider-I/O or
+     * open-outcome source states AND the live claim. A LOST CAS is
+     * SWALLOWED (round 7 F29): another owner (e.g. a newer transition)
+     * owns the row - logged only, never overwritten, never thrown into
+     * the caller's flow.
      *
      * @param RefundModel $refund
-     * @param string $evidence
+     * @param string $evidence Safe evidence text.
      * @return void
      */
     public function markConfirmedFail(RefundModel $refund, string $evidence): void
     {
-        $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_CONFIRMED_FAIL);
-        $refund->setData(RefundInterface::LAST_ERROR, $evidence);
-        $refund->setData(RefundInterface::ACTIVE_CLAIM, null);
-        $this->saveState($refund, 'confirmed_fail');
+        $affected = $this->refundResource->getConnection()->update(
+            $this->refundResource->getMainTable(),
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_FAIL,
+                RefundInterface::LAST_ERROR => $evidence,
+                RefundInterface::ACTIVE_CLAIM => null,
+            ],
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::REFUND_STATE . ' IN (?)' => [
+                    RefundInterface::REFUND_STATE_INITIATING,
+                    RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                    RefundInterface::REFUND_STATE_PROCESSING,
+                    RefundInterface::REFUND_STATE_UNKNOWN,
+                ],
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ]
+        );
+        if ($affected === 1) {
+            $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_CONFIRMED_FAIL);
+            $refund->setData(RefundInterface::LAST_ERROR, $evidence);
+            $refund->setData(RefundInterface::ACTIVE_CLAIM, null);
+
+            return;
+        }
+
+        $this->handleLostTransition($refund, 'confirmed_fail');
     }
 
     /**
@@ -389,84 +476,134 @@ class PendingRefundManager
      * durable CONFIRMED-PROVIDER-SUCCESS / LOCAL-PENDING state (round 3
      * F13). The cron finalizes the Magento accounting ONLY - it must NEVER
      * re-ask the provider /refund for this row. Still blocking until the
-     * finalize lands confirmed_success.
+     * finalize lands confirmed_success. CAS (round 7 F29): guarded by the
+     * open-outcome source states AND the live claim.
      *
      * @param RefundModel $refund
      * @param string $evidence Safe evidence text (local failure reason).
      * @return void
-     * @throws LocalizedException When the transition cannot persist.
+     * @throws LocalizedException When the CAS is lost (another owner won).
      */
     public function markProviderSuccessLocalPending(RefundModel $refund, string $evidence): void
     {
-        $refund->setData(
-            RefundInterface::REFUND_STATE,
-            RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING
+        $affected = $this->refundResource->getConnection()->update(
+            $this->refundResource->getMainTable(),
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
+                RefundInterface::LAST_ERROR => $evidence,
+            ],
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::REFUND_STATE . ' IN (?)' => [
+                    RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                    RefundInterface::REFUND_STATE_PROCESSING,
+                    RefundInterface::REFUND_STATE_UNKNOWN,
+                ],
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ]
         );
-        $refund->setData(RefundInterface::LAST_ERROR, $evidence);
-        $this->saveState($refund, 'provider_success_local_pending');
+        if ($affected === 1) {
+            $refund->setData(
+                RefundInterface::REFUND_STATE,
+                RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING
+            );
+            $refund->setData(RefundInterface::LAST_ERROR, $evidence);
+
+            return;
+        }
+
+        $this->handleLostTransition($refund, 'provider_success_local_pending');
+        throw new LocalizedException(
+            __(
+                'Zalopay: The refund state could not be recorded locally.'
+                . ' The refund is tracked and will be reconciled automatically.'
+            )
+        );
     }
 
     /**
      * Fully finalized SUCCESS (native accounting applied with the gateway
      * provider call skipped): terminal non-blocking bookkeeping - releases
-     * the atomic claim slot. A persistence failure here is critical-logged,
-     * NEVER thrown into an already-completed refund: the row stays
-     * blocking (initiating) and the cron self-heals (creditmemo REFUNDED ->
-     * row resolve, never a second provider refund).
+     * the atomic claim slot. CAS (round 7 F29): guarded by is_processed = 0
+     * - exactly one writer lands the terminal bookkeeping; a LOST CAS is
+     * SWALLOWED (another run already finalized it - logged only), never
+     * thrown into an already-completed refund.
      *
      * @param RefundModel $refund
      * @return void
      */
     public function markConfirmedSuccess(RefundModel $refund): void
     {
-        $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS);
-        $refund->setData(RefundInterface::IS_PROCESSED, RefundInterface::PROCESSED);
-        $refund->setData(RefundInterface::LAST_ERROR, null);
-        $refund->setData(RefundInterface::ACTIVE_CLAIM, null);
-        $this->saveState($refund, 'confirmed_success');
+        $affected = $this->refundResource->getConnection()->update(
+            $this->refundResource->getMainTable(),
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
+                RefundInterface::IS_PROCESSED => 1,
+                RefundInterface::LAST_ERROR => null,
+                RefundInterface::ACTIVE_CLAIM => null,
+            ],
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::IS_PROCESSED . ' = ?' => 0,
+            ]
+        );
+        if ($affected === 1) {
+            $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS);
+            $refund->setData(RefundInterface::IS_PROCESSED, RefundInterface::PROCESSED);
+            $refund->setData(RefundInterface::LAST_ERROR, null);
+            $refund->setData(RefundInterface::ACTIVE_CLAIM, null);
+
+            return;
+        }
+
+        $this->handleLostTransition($refund, 'confirmed_success');
     }
 
     /**
-     * Persist one state transition. A persistence failure on a TERMINAL
-     * transition (confirmed_*) is critical-logged and swallowed (the money
-     * side is already resolved; the row recovers via the cron); on a
-     * BLOCKING transition it is rethrown as a customer-safe
-     * LocalizedException - the initiating claim row keeps the order blocked
-     * either way, so nothing is lost.
+     * A LOST state-transition race (round 7 F29): another owner's
+     * transition matched the conditional UPDATE first. Reload the row
+     * fresh and critical-log the loss (safe text only: internal state
+     * constants, never provider payload). The caller must NOT overwrite,
+     * NOT release the claim and NOT downgrade the state - the winning
+     * owner keeps the row exactly as it persisted it.
      *
-     * @param RefundModel $refund
-     * @param string $transition Log label.
+     * @param RefundModel $refund The stale snapshot row (left untouched).
+     * @param string $transition Log label of the intended transition.
      * @return void
-     * @throws LocalizedException When a BLOCKING transition cannot persist.
      */
-    private function saveState(RefundModel $refund, string $transition): void
+    private function handleLostTransition(RefundModel $refund, string $transition): void
     {
-        try {
-            $refund->save();
-        } catch (\Throwable $exception) {
-            $state = (string)$refund->getData(RefundInterface::REFUND_STATE);
-            $blocking = in_array($state, [
-                RefundInterface::REFUND_STATE_INITIATING,
-                RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
-                RefundInterface::REFUND_STATE_PROCESSING,
-                RefundInterface::REFUND_STATE_UNKNOWN,
-                RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
-            ], true);
-            $this->logger->critical(
-                sprintf(
-                    'ZaloPay refund row #%d: state transition to %s could not be persisted (%s)%s.',
-                    (int)$refund->getId(),
-                    $transition,
-                    $exception->getMessage(),
-                    $blocking ? ' - row remains unresolved, the cron will retry' : ''
-                )
-            );
-            if ($blocking) {
-                throw new LocalizedException(
-                    __('Zalopay: The refund state could not be recorded locally. The refund is tracked and will be reconciled automatically.')
-                );
-            }
-        }
+        $current = $this->reloadRefundRow((int)$refund->getId());
+        $persistedState = $current === null
+            ? 'row-gone'
+            : (string)($current[RefundInterface::REFUND_STATE] ?? 'unknown');
+        $this->logger->critical(
+            sprintf(
+                'ZaloPay refund row #%d: state transition to %s was not applied - another owner already moved the row (persisted state: %s). No overwrite, claim ownership unchanged.',
+                (int)$refund->getId(),
+                $transition,
+                $persistedState
+            )
+        );
+    }
+
+    /**
+     * Fresh read of one refund row by entity_id (no lock, no cache) - used
+     * ONLY for evidence after a lost CAS, never as a write basis.
+     *
+     * @param int $refundId
+     * @return array|null
+     */
+    private function reloadRefundRow(int $refundId): ?array
+    {
+        $connection = $this->refundResource->getConnection();
+        $select = $connection->select()
+            ->from($this->refundResource->getMainTable())
+            ->where(RefundInterface::ENTITY_ID . ' = ?', $refundId);
+
+        $row = $connection->fetchRow($select);
+
+        return $row ?: null;
     }
 
     /**
@@ -500,28 +637,44 @@ class PendingRefundManager
 
     /**
      * Consume one unit of the bounded query budget with observable state
-     * progression: increments query_attempts and records safe evidence.
-     * Used by RefundCronjob so EVERY genuine attempt (query transport
-     * failure, protocol anomaly, finalize failure) is measurable - rows
-     * never sit selected-forever (BLOCKER 2 fix).
+     * progression: an ATOMIC server-side increment (round 7 F29/F32) -
+     * `query_attempts = query_attempts + 1` guarded by is_processed = 0 -
+     * plus safe evidence. The refund_state is NEVER mutated here (F32): a
+     * provider_success_local_pending row must never be demoted to unknown
+     * at the cap - budget exhaustion only drops the row out of the cron
+     * selection (see RefundCronjob::getUnprocessedRefunds), never mutates
+     * its semantic state.
      *
      * @param RefundModel $refund
      * @param string|null $evidence Safe evidence text (null clears a stale error).
-     * @return int The new attempts value.
+     * @return int The new attempts value (read back from the row).
      */
     public function consumeQueryBudget(RefundModel $refund, ?string $evidence): int
     {
-        $attempts = (int)$refund->getData(RefundInterface::QUERY_ATTEMPTS) + 1;
+        $connection = $this->refundResource->getConnection();
+        $connection->update(
+            $this->refundResource->getMainTable(),
+            [
+                RefundInterface::QUERY_ATTEMPTS => new Expression(
+                    RefundInterface::QUERY_ATTEMPTS . ' + 1'
+                ),
+                RefundInterface::LAST_ERROR => $evidence,
+            ],
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::IS_PROCESSED . ' = ?' => 0,
+            ]
+        );
+        $attempts = (int)$connection->fetchOne(
+            $connection->select()
+                ->from($this->refundResource->getMainTable(), [RefundInterface::QUERY_ATTEMPTS])
+                ->where(RefundInterface::ENTITY_ID . ' = ?', (int)$refund->getId())
+        );
+        // Mirror the persisted values into the in-memory model (never the
+        // refund_state - F32). No blind model save: the UPDATE above IS
+        // the transition.
         $refund->setData(RefundInterface::QUERY_ATTEMPTS, $attempts);
         $refund->setData(RefundInterface::LAST_ERROR, $evidence);
-        if ($attempts >= self::MAX_QUERY_ATTEMPTS
-            && $refund->getData(RefundInterface::REFUND_STATE) !== RefundInterface::REFUND_STATE_UNKNOWN) {
-            // Budget exhausted without a confirmed outcome: quarantine as
-            // UNKNOWN - the row keeps blocking new refund requests until
-            // deliberately resolved (exhaustion is never "safe to refund").
-            $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_UNKNOWN);
-        }
-        $refund->save();
 
         return $attempts;
     }
@@ -529,13 +682,20 @@ class PendingRefundManager
     /**
      * Terminate a row without finalizing: saturate the query budget (the row
      * drops out of the cron selection, evidence retained - RefundCleanup
-     * only deletes PROCESSED rows) and record safe evidence. Used for
-     * non-retryable classifications: provider FAIL, malformed stored payload,
-     * missing creditmemo, creditmemo state drift. The EXPLICIT semantic
-     * terminal state decides blocking: CONFIRMED_FAIL (provider refused -
-     * money provably NOT refunded) releases the block on future refund
-     * requests; UNKNOWN (malformed payload, missing creditmemo, state drift -
-     * outcome never confirmed) keeps blocking until deliberately resolved.
+     * only deletes processed confirmed_success rows, round 7 F36) and
+     * record safe evidence. Used for non-retryable classifications:
+     * provider FAIL, malformed stored payload, missing creditmemo,
+     * creditmemo state drift, stale LOCAL_READY claims. The EXPLICIT
+     * semantic terminal state decides blocking: CONFIRMED_FAIL (provider
+     * refused - money provably NOT refunded) releases the block on future
+     * refund requests; UNKNOWN (malformed payload, missing creditmemo,
+     * state drift - outcome never confirmed) keeps blocking until
+     * deliberately resolved.
+     *
+     * CAS (round 7 F29): the conditional UPDATE requires the row to STILL
+     * own the atomic claim (active_claim = 1) - a cron holding a stale
+     * snapshot can never overwrite a newer owner transition; a LOST CAS
+     * is SWALLOWED (logged only - the winner owns the row).
      *
      * @param RefundModel $refund
      * @param string $evidence Safe evidence text.
@@ -548,15 +708,36 @@ class PendingRefundManager
         string $evidence,
         string $refundState = RefundInterface::REFUND_STATE_UNKNOWN
     ): void {
-        $refund->setData(RefundInterface::QUERY_ATTEMPTS, self::MAX_QUERY_ATTEMPTS);
-        $refund->setData(RefundInterface::LAST_ERROR, $evidence);
-        $refund->setData(RefundInterface::REFUND_STATE, $refundState);
+        $bind = [
+            RefundInterface::QUERY_ATTEMPTS => self::MAX_QUERY_ATTEMPTS,
+            RefundInterface::LAST_ERROR => $evidence,
+            RefundInterface::REFUND_STATE => $refundState,
+        ];
         if ($refundState === RefundInterface::REFUND_STATE_CONFIRMED_FAIL) {
             // Provider-confirmed refusal: release the atomic claim slot.
             // UNKNOWN keeps BOTH the slot and the block (quarantine).
-            $refund->setData(RefundInterface::ACTIVE_CLAIM, null);
+            $bind[RefundInterface::ACTIVE_CLAIM] = null;
         }
-        $refund->save();
+        $affected = $this->refundResource->getConnection()->update(
+            $this->refundResource->getMainTable(),
+            $bind,
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ]
+        );
+        if ($affected === 1) {
+            foreach ($bind as $field => $value) {
+                $refund->setData($field, $value);
+            }
+
+            return;
+        }
+
+        // Lost the row to another owner: swallow - the winning transition
+        // (e.g. a newer provider_request_started or a finalize) owns the
+        // row; never overwrite, never release its claim.
+        $this->handleLostTransition($refund, 'terminate:' . $refundState);
     }
 
     /**
@@ -593,16 +774,20 @@ class PendingRefundManager
             if ((int)$creditmemo->getState() === Creditmemo::STATE_REFUNDED) {
                 // Recovery: the local accounting already happened (e.g. a
                 // crash between the creditmemo save and the row update) -
-                // complete only the bookkeeping, never re-run accounting.
+                // complete only the bookkeeping, only the row owner (the
+                // CAS AND is_processed = 0 guard) lands it.
                 $connection->update(
                     $this->refundResource->getMainTable(),
                     [
                         RefundInterface::IS_PROCESSED => 1,
                         RefundInterface::LAST_ERROR => null,
                         RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
-                    RefundInterface::ACTIVE_CLAIM => null,
+                        RefundInterface::ACTIVE_CLAIM => null,
                     ],
-                    [RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId()]
+                    [
+                        RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                        RefundInterface::IS_PROCESSED . ' = ?' => 0,
+                    ]
                 );
                 $connection->commit();
 
@@ -632,12 +817,22 @@ class PendingRefundManager
             // One provider interaction per refund: the outcome is already
             // known (SUCCESS) - the gateway refund command must NOT re-ask
             // the provider while Payment::refund runs the gateway command.
-            $this->outcomeMarker->markProviderAlreadyAsked((int)$order->getId());
-            $this->refundOperation->execute($creditmemo, $order, true);
+            // Round 7 marker contract: the authorization is credit-memo
+            // scoped and one-shot (consume), cleared in a finally so a
+            // failed accounting run can never leave stale skip-state.
+            $creditMemoId = (int)$locked[RefundInterface::CREDIT_MEMO_ID];
+            $this->outcomeMarker->authorize($creditMemoId);
+            try {
+                $this->refundOperation->execute($creditmemo, $order, true);
+            } finally {
+                $this->outcomeMarker->clear($creditMemoId);
+            }
 
             $this->creditmemoRepository->save($creditmemo);
             $this->orderRepository->save($order);
 
+            // Terminal bookkeeping, CAS-guarded (F29): AND is_processed = 0
+            // - exactly one writer lands confirmed_success.
             $connection->update(
                 $this->refundResource->getMainTable(),
                 [
@@ -646,7 +841,10 @@ class PendingRefundManager
                     RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS,
                     RefundInterface::ACTIVE_CLAIM => null,
                 ],
-                [RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId()]
+                [
+                    RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                    RefundInterface::IS_PROCESSED . ' = ?' => 0,
+                ]
             );
             $connection->commit();
         } catch (NoSuchEntityException $exception) {

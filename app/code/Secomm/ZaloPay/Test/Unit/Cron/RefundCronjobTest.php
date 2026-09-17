@@ -25,7 +25,6 @@ use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Model\RefundModel;
 use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollection;
 use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollectionFactory;
-use Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin;
 use Secomm\ZaloPay\Service\PendingRefundManager;
 
 /**
@@ -40,8 +39,16 @@ use Secomm\ZaloPay\Service\PendingRefundManager;
  *    fix - every genuine attempt progresses observable state);
  *  - malformed payload / missing creditmemo / state drift -> TERMINAL
  *    reconcile (budget saturated with safe evidence, never queried again);
- *  - cap reached  -> explicit exhaustion (critical log);
- *  - selection filter: NOT_PROCESSED AND query_attempts < 96.
+ *  - cap reached  -> explicit exhaustion (critical log, state NEVER mutated
+ *    - F32);
+ *  - selection filter (F32): NOT_PROCESSED AND the five unresolved states
+ *    AND (query_attempts < 96 OR provider_success_local_pending) - a PSLP
+ *    row stays selectable at/after the cap, terminal rows are excluded by
+ *    STATE;
+ *  - terminal rows (confirmed_success / confirmed_fail) never re-enter
+ *    the query flow even when handed to processRefund directly (F33);
+ *  - provider FAIL never touches the credit memo (F34 - no custom
+ *    PROCESSING parking exists anymore; the CM is OPEN pre-success).
  */
 class RefundCronjobTest extends TestCase
 {
@@ -65,9 +72,10 @@ class RefundCronjobTest extends TestCase
 
     /**
      * Mutable test state: the creditmemo state served by the repository mock
-     * (a second ->method() config would not override the first stub).
+     * (a second ->method() config would not override the first stub). OPEN
+     * (1) is the only legitimate parked creditmemo state now (round 7 F34).
      */
-    private int $cmState = CreditmemoPlugin::STATE_PROCESSING;
+    private int $cmState = Creditmemo::STATE_OPEN;
 
     /**
      * Mutable test state: creditmemo id -> resolved mock (null = missing).
@@ -97,7 +105,7 @@ class RefundCronjobTest extends TestCase
         $this->scopeConfig->method('isSetFlag')->willReturn(true);
         $this->authorization->method('getMac')->willReturn('STUBBED-MAC');
 
-        $this->cmState = CreditmemoPlugin::STATE_PROCESSING;
+        $this->cmState = Creditmemo::STATE_OPEN;
         $this->cmMap = [];
         $this->creditmemo = $this->createMock(Creditmemo::class);
         $this->dateTime = $this->createMock(DateTime::class);
@@ -187,15 +195,110 @@ class RefundCronjobTest extends TestCase
     }
 
     /**
-     * REFUND CRON 29: selection is bounded — only NOT_PROCESSED rows with a
-     * non-exhausted query budget are picked up.
+     * Capture the getUnprocessedRefunds() filters and evaluate them with
+     * Magento collection semantics against synthetic rows: addFieldToFilter
+     * calls AND together; the two-array form
+     * ([f1, f2], [[c1], [c2]]) ORs f1-matches-c1 against f2-matches-c2.
+     *
+     * @param array $row Synthetic row fields (field => value).
+     * @return bool Whether a row with these fields would be selected.
+     */
+    private function rowIsSelected(array $row): bool
+    {
+        $filters = [];
+        $collection = $this->createMock(RefundCollection::class);
+        $collection->method('addFieldToFilter')->willReturnCallback(
+            function ($field, $condition) use (&$filters, $collection) {
+                $filters[] = [$field, $condition];
+
+                return $collection;
+            }
+        );
+        $this->collectionFactory->method('create')->willReturn($collection);
+        $this->cron->getUnprocessedRefunds();
+
+        foreach ($filters as [$field, $condition]) {
+            if (!$this->filterMatches($field, $condition, $row)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Evaluate ONE addFieldToFilter call against a synthetic row.
+     *
+     * @param string|array $field
+     * @param array $condition
+     * @param array $row
+     * @return bool
+     */
+    private function filterMatches(string|array $field, array $condition, array $row): bool
+    {
+        if (is_array($field)) {
+            // Two-array form: OR across the field/condition pairs.
+            foreach ($field as $i => $singleField) {
+                if ($this->filterMatches($singleField, $condition[$i], $row)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // A condition may be an operator map (['eq' => x]) or a LIST of
+        // operator maps ([['lt' => x]] - the two-array form wraps each
+        // field's condition); a list ORs its groups.
+        if (isset($condition[0]) && is_array($condition[0])) {
+            foreach ($condition as $group) {
+                if ($this->matchesOperators($field, $group, $row)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return $this->matchesOperators($field, $condition, $row);
+    }
+
+    /**
+     * Evaluate one operator map (eq / in / lt) against a synthetic row.
+     *
+     * @param string $field
+     * @param array $condition
+     * @param array $row
+     * @return bool
+     */
+    private function matchesOperators(string $field, array $condition, array $row): bool
+    {
+        if (array_key_exists('in', $condition)) {
+            return in_array($row[$field] ?? null, $condition['in'], true);
+        }
+        if (array_key_exists('eq', $condition)) {
+            return ($row[$field] ?? null) === $condition['eq'];
+        }
+        if (array_key_exists('lt', $condition)) {
+            return ($row[$field] ?? null) < $condition['lt'];
+        }
+
+        return false;
+    }
+
+    /**
+     * REFUND CRON 29 (round 7 F32): selection is explicit AND bounded -
+     * NOT_PROCESSED, the five unresolved states only, and (budget left OR
+     * provider_success_local_pending). Terminal rows are excluded by the
+     * STATE filter (never by budget saturation), and budget exhaustion
+     * never implies a state change.
      */
     public function testSelectionFiltersUnprocessedRowsWithinBudget(): void
     {
         $collection = $this->stubCollection([]);
         $calls = [];
         $collection->method('addFieldToFilter')->willReturnCallback(
-            function (string $field, array $condition) use (&$calls, $collection) {
+            function ($field, $condition) use (&$calls, $collection) {
                 $calls[] = [$field, $condition];
 
                 return $collection;
@@ -204,11 +307,158 @@ class RefundCronjobTest extends TestCase
 
         $this->cron->execute();
 
-        $this->assertCount(2, $calls);
-        $this->assertSame('is_processed', $calls[0][0]);
+        $this->assertCount(3, $calls);
+        $this->assertSame(RefundInterface::IS_PROCESSED, $calls[0][0]);
         $this->assertSame(['eq' => RefundInterface::NOT_PROCESSED], $calls[0][1]);
-        $this->assertSame(RefundInterface::QUERY_ATTEMPTS, $calls[1][0]);
-        $this->assertSame(['lt' => RefundCronjob::MAX_QUERY_ATTEMPTS], $calls[1][1]);
+        $this->assertSame(
+            [
+                RefundInterface::REFUND_STATE,
+                ['in' => [
+                    RefundInterface::REFUND_STATE_INITIATING,
+                    RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                    RefundInterface::REFUND_STATE_PROCESSING,
+                    RefundInterface::REFUND_STATE_UNKNOWN,
+                    RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
+                ]],
+            ],
+            $calls[1]
+        );
+        // The two-array form ORs budget-left against the uncapped PSLP.
+        $this->assertSame(
+            [RefundInterface::QUERY_ATTEMPTS, RefundInterface::REFUND_STATE],
+            $calls[2][0]
+        );
+        $this->assertSame(
+            [[['lt' => RefundCronjob::MAX_QUERY_ATTEMPTS]], [['eq' => RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING]]],
+            $calls[2][1]
+        );
+    }
+
+    /**
+     * Round 7 F32 selection matrix, row level: PSLP at the cap is STILL
+     * selected; a non-PSLP row at the cap is NOT; terminal rows are NOT
+     * (regardless of budget); every unresolved state below the cap IS.
+     *
+     * @dataProvider selectionMatrixProvider
+     * @param array $row
+     * @param bool $expectedSelected
+     */
+    public function testSelectionMatrix(array $row, bool $expectedSelected): void
+    {
+        $this->assertSame(
+            $expectedSelected,
+            $this->rowIsSelected($row),
+            'Selection mismatch for row: ' . json_encode($row)
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public static function selectionMatrixProvider(): array
+    {
+        $unresolved = [
+            RefundInterface::REFUND_STATE_INITIATING,
+            RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+            RefundInterface::REFUND_STATE_PROCESSING,
+            RefundInterface::REFUND_STATE_UNKNOWN,
+        ];
+
+        $cases = [];
+        foreach ($unresolved as $state) {
+            $cases['below cap selected ' . $state] = [
+                ['is_processed' => false, 'refund_state' => $state, 'query_attempts' => 0],
+                true,
+            ];
+            $cases['at cap dropped ' . $state] = [
+                ['is_processed' => false, 'refund_state' => $state, 'query_attempts' => RefundCronjob::MAX_QUERY_ATTEMPTS],
+                false,
+            ];
+        }
+        $cases['PSLP at cap STILL selected'] = [
+            ['is_processed' => false, 'refund_state' => RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING, 'query_attempts' => RefundCronjob::MAX_QUERY_ATTEMPTS],
+            true,
+        ];
+        $cases['PSLP below cap selected'] = [
+            ['is_processed' => false, 'refund_state' => RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING, 'query_attempts' => 95],
+            true,
+        ];
+        $cases['confirmed_fail never selected'] = [
+            ['is_processed' => false, 'refund_state' => RefundInterface::REFUND_STATE_CONFIRMED_FAIL, 'query_attempts' => 0],
+            false,
+        ];
+        $cases['confirmed_success never selected'] = [
+            ['is_processed' => true, 'refund_state' => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS, 'query_attempts' => 0],
+            false,
+        ];
+
+        return $cases;
+    }
+
+    /**
+     * Round 7 F32: a PSLP row AT the cap still runs the cron loop - and the
+     * loop finalizes LOCALLY ONLY: no provider query (/query_refund) and no
+     * credit memo load. The provider is never re-asked for PSLP money.
+     */
+    public function testPslpRowAtCapIsStillFinalizedWithoutProviderQuery(): void
+    {
+        $row = $this->refundRow(
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
+                RefundInterface::QUERY_ATTEMPTS => RefundCronjob::MAX_QUERY_ATTEMPTS,
+            ]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->once())
+            ->method('finalizeSuccess')
+            ->with($this->identicalTo($row))
+            ->willReturn(true);
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 7 F33 defense-in-depth: a CONFIRMED_FAIL row handed to the loop
+     * returns immediately - never queried, never finalized, never
+     * re-terminated, no credit memo load, no budget consumed.
+     */
+    public function testConfirmedFailRowIsSkippedBeforeAnyProviderQuery(): void
+    {
+        $row = $this->refundRow(
+            [RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_FAIL]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+        $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 7 F33 defense-in-depth: a CONFIRMED_SUCCESS row handed to the
+     * loop returns immediately with the same guarantees.
+     */
+    public function testConfirmedSuccessRowIsSkippedBeforeAnyProviderQuery(): void
+    {
+        $row = $this->refundRow(
+            [RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_CONFIRMED_SUCCESS]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+        $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
+
+        $this->cron->execute();
     }
 
     /**
@@ -329,15 +579,17 @@ class RefundCronjobTest extends TestCase
      * (evidence), and NO accounting manager call ever happens.
      * Round 2: the refusal carries the EXPLICIT semantic state
      * CONFIRMED_FAIL - the block on future refunds is RELEASED.
+     * Round 7 F34: the credit memo is NEVER touched on a FAIL (no custom
+     * PROCESSING parking exists anymore; the CM stays OPEN, accounting
+     * untouched).
      */
     public function testProviderFailIsTerminalWithEvidence(): void
     {
         $row = $this->refundRow();
         $this->stubCollection([$row]);
 
-        $this->creditmemo->expects($this->once())->method('setState')->with(Creditmemo::STATE_OPEN);
-        $this->creditmemoRepository->expects($this->once())->method('save')
-            ->with($this->identicalTo($this->creditmemo));
+        $this->creditmemo->expects($this->never())->method('setState');
+        $this->creditmemoRepository->expects($this->never())->method('save');
 
         $this->refundQueryCommand->method('getRefundQuery')->willReturn(
             ['return_code' => 2, 'sub_return_code' => -13, 'return_message' => 'RAW-PROVIDER-DETAIL']
@@ -599,14 +851,19 @@ class RefundCronjobTest extends TestCase
     }
 
     /**
-     * Round 3 (F15): the FAIL release failing to SAVE (repository down)
-     * must never mask the terminal confirmed_fail - swallowed with a
-     * critical log, manual fix path documented.
+     * Round 7 F34 (replaces the round 3 F15 release test): even a credit
+     * memo sitting in the LEGACY parked display state 4 (custom PROCESSING,
+     * written by the removed CreditmemoPlugin) is left completely untouched
+     * by a provider-CONFIRMED FAIL - no setState, no save, no exception
+     * masking: the row lands confirmed_fail and the CM needs manual
+     * follow-up ONLY through its own lifecycle, never this cron.
      */
-    public function testProviderFailReleaseSaveFailureIsSwallowed(): void
+    public function testProviderFailLeavesLegacyParkedCreditmemoUntouched(): void
     {
         $row = $this->refundRow();
         $this->stubCollection([$row]);
+
+        $this->cmState = 4; // legacy CreditmemoPlugin::STATE_PROCESSING display state
 
         $this->refundQueryCommand->method('getRefundQuery')->willReturn(
             ['return_code' => 2, 'sub_return_code' => -13, 'return_message' => 'RAW-PROVIDER-DETAIL']
@@ -618,33 +875,33 @@ class RefundCronjobTest extends TestCase
                 self::assertSame('refund_failed: Refund time has expired.', $evidenceArg);
                 self::assertSame(RefundInterface::REFUND_STATE_CONFIRMED_FAIL, $stateArg);
             });
-        $this->creditmemo->expects($this->once())->method('setState')->with(Creditmemo::STATE_OPEN);
-        $this->creditmemoRepository->expects($this->once())->method('save')
-            ->willThrowException(new \RuntimeException('repo down'));
-        $this->logger->expects($this->atLeastOnce())->method('critical');
+        $this->creditmemo->expects($this->never())->method('setState');
+        $this->creditmemoRepository->expects($this->never())->method('save');
+        $this->logger->expects($this->once())->method('critical');
 
         $this->cron->execute();
     }
 
     /**
-     * Round 3 (F15): a provider-CONFIRMED FAIL releases the parked
-     * credit memo back to OPEN (Magento-compatible: core validateForRefund
-     * requires OPEN for a follow-up refund) - order/invoice totals are
-     * never touched by this release.
+     * Round 7 F34 (replaces the round 3 F15 release test): a
+     * provider-CONFIRMED FAIL never mutates the credit memo in any state -
+     * order/invoice/Magento accounting stays untouched (the money provably
+     * never left) and a corrected future refund sees the natural OPEN CM.
      */
-    public function testProviderFailReleasesCreditmemoToOpen(): void
+    public function testProviderFailNeverTouchesCreditmemo(): void
     {
         $row = $this->refundRow();
         $this->stubCollection([$row]);
+
+        $this->cmState = Creditmemo::STATE_OPEN;
 
         $this->refundQueryCommand->method('getRefundQuery')->willReturn(
             ['return_code' => 2, 'sub_return_code' => -13, 'return_message' => 'RAW-PROVIDER-DETAIL']
         );
 
         $this->pendingRefundManager->expects($this->once())->method('terminate');
-        $this->creditmemo->expects($this->once())->method('setState')->with(Creditmemo::STATE_OPEN);
-        $this->creditmemoRepository->expects($this->once())->method('save')
-            ->with($this->identicalTo($this->creditmemo));
+        $this->creditmemo->expects($this->never())->method('setState');
+        $this->creditmemoRepository->expects($this->never())->method('save');
 
         $this->cron->execute();
     }

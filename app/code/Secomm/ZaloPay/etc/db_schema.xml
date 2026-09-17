@@ -50,9 +50,13 @@
             <column name="m_refund_id"/>
             <column name="active_claim"/>
         </constraint>
+        <!-- F35 (round 7): NO ACTION (RESTRICT on MariaDB) - the refund row is
+             FINANCIAL EVIDENCE and must never be cascade-deleted with its
+             credit memo while unresolved. Retention is owned exclusively by
+             RefundCleanupCronjob (F36: confirmed_success only, 90 days). -->
         <constraint xsi:type="foreign" referenceId="ZALO_PAY_REFUND_CREDIT_MEMO_ID" table="zalo_pay_refund"
                     column="credit_memo_id" referenceTable="sales_creditmemo" referenceColumn="entity_id"
-                    onDelete="CASCADE"/>
+                    onDelete="NO ACTION"/>
     </table>
     <!--
         Payment-first initiation attempts (ZALOPAY-PAYMENT-FIRST Phase 1).

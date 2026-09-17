@@ -14,6 +14,7 @@ namespace Secomm\ZaloPay\Gateway\Helper;
 use Magento\Directory\Helper\Data;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Payment\Gateway\Data\OrderAdapterInterface;
 use Magento\Sales\Model\Order;
 
 class Rate
@@ -34,13 +35,20 @@ class Rate
     }
 
     /**
-     * @param Order $order
-     * @param $amount
+     * VND amount (VND is zero-decimal in the provider protocol). Accepts
+     * both a native Sales Order and the gateway OrderAdapter: the gateway
+     * command path (RefundCommand::readVndAmount) passes the OrderAdapter,
+     * which is NOT a Sales Order subclass — type-hinting the native Order
+     * made every synchronous refund die on a TypeError before the provider
+     * was ever asked (round 7, REAL-Magento smoke).
+     *
+     * @param Order|OrderAdapterInterface $order
+     * @param mixed $amount
      * @return float
      * @throws NoSuchEntityException
      * @throws LocalizedException
      */
-    public function getVndAmount(Order $order, $amount): float
+    public function getVndAmount($order, $amount): float
     {
         $numericAmount = $this->toNumericAmount($amount);
         if ($this->isVietnamDong($order)) {
@@ -49,7 +57,7 @@ class Rate
             try {
                 return round($this->helperData->currencyConvert(
                     $numericAmount,
-                    $order->getOrderCurrencyCode(),
+                    $this->resolveOrderCurrencyCode($order),
                     self::CURRENCY_CODE
                 ));
             } catch (\Exception $e) {
@@ -122,11 +130,29 @@ class Rate
     }
 
     /**
-     * @param Order $order
+     * Currency of the order as presented to the gateway. The native Sales
+     * Order exposes getOrderCurrencyCode(); the gateway OrderAdapter
+     * (module-payment) exposes getCurrencyCode() — they differ, and both
+     * shapes reach this helper from the refund path (round 7 REAL smoke).
+     *
+     * @param Order|OrderAdapterInterface $order
+     * @return string|null
+     */
+    private function resolveOrderCurrencyCode($order): ?string
+    {
+        if ($order instanceof OrderAdapterInterface) {
+            return $order->getCurrencyCode();
+        }
+
+        return $order->getOrderCurrencyCode();
+    }
+
+    /**
+     * @param Order|OrderAdapterInterface $order
      * @return boolean
      */
-    private function isVietnamDong(Order $order): bool
+    private function isVietnamDong($order): bool
     {
-        return $order->getOrderCurrencyCode() === self::CURRENCY_CODE;
+        return $this->resolveOrderCurrencyCode($order) === self::CURRENCY_CODE;
     }
 }

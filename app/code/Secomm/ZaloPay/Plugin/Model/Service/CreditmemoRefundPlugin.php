@@ -15,11 +15,14 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\CreditmemoInterface;
+use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Service\CreditmemoService;
 use Secomm\ZaloPay\Api\Data\RefundInterface;
+use Secomm\ZaloPay\Exception\RefundProtocolException;
 use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Command\RefundCommand;
 use Secomm\ZaloPay\Gateway\Command\RefundOutcome;
+use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Service\CreditmemoRefundPreflight;
 use Secomm\ZaloPay\Service\PendingRefundManager;
 use Secomm\ZaloPay\Service\RefundOutcomeMarker;
@@ -48,8 +51,10 @@ use Secomm\ZaloPay\Service\RefundOutcomeMarker;
  *                  (round 3 F12). The real admin credit memo is UNSAVED at
  *                  this point, so the claim row carries credit_memo_id NULL
  *                  (round 4 F17);
- *  4b. BIND      - the credit memo is PERSISTED (real entity_id) and its
- *                  id is bound to the claimed row (UPDATE guarded by
+ *  4b. BIND      - the credit memo is PERSISTED (real entity_id) in the
+ *                  NATIVE STATE_OPEN with its invoice_id pinned (round 7
+ *                  F27/F31 - metadata only, never refund accounting) and
+ *                  its id is bound to the claimed row (UPDATE guarded by
  *                  active_claim = 1). Provider HTTP runs ONLY when the
  *                  claim, the stable m_refund_id AND the real
  *                  credit_memo_id are all persisted; any bind-phase failure
@@ -64,18 +69,25 @@ use Secomm\ZaloPay\Service\RefundOutcomeMarker;
  *                  (grace > HTTP timeout);
  *  5. PROVIDER   - executePrepared() performs the ONE provider /refund for
  *                  the claimed identity;
- *  6a. SUCCESS   - the marker pins the known outcome and the NATIVE core
- *                  flow runs (proceed()); if the local finalize fails the
- *                  durable PROVIDER_SUCCESS_LOCAL_PENDING state keeps the
- *                  money reconcilable and the cron finalizes the Magento
+ *  6a. SUCCESS   - a ONE-SHOT provider-skip authorization (round 7 F28,
+ *                  keyed by THIS credit memo id) is granted and the NATIVE
+ *                  core flow runs (proceed()); the gateway command consumes
+ *                  it exactly once, the finally always drops the pin; if
+ *                  the local finalize fails the durable
+ *                  PROVIDER_SUCCESS_LOCAL_PENDING state keeps the money
+ *                  reconcilable and the cron finalizes the Magento
  *                  accounting ONLY (never /refund again) (round 3 F13);
  *  6b. PROCESSING- durable PROCESSING, core does NOT run: totals untouched,
- *                  order cannot CLOSE; the cron finalizes on confirmed
- *                  provider SUCCESS;
- *  6c. FAIL      - provider-confirmed refusal: durable CONFIRMED_FAIL
- *                  (releases the claim) and the safe mapped message
- *                  propagates - accounting untouched;
- *  6d. TRANSPORT - outcome UNKNOWN: durable UNKNOWN (not processing -
+ *                  order cannot CLOSE; the credit memo STAYS STATE_OPEN
+ *                  (round 7 F34); the cron finalizes on confirmed provider
+ *                  SUCCESS;
+ *  6c. FAIL      - provider-confirmed refusal (return_code = 2 only):
+ *                  durable CONFIRMED_FAIL (releases the claim) and the safe
+ *                  mapped message propagates - accounting untouched;
+ *  6d. ANOMALY   - protocol violation (round 7 F30): return_code missing /
+ *                  non-numeric / outside {1,2,3} is NOT a refusal - durable
+ *                  UNKNOWN, claim NOT released, reconciled by m_refund_id;
+ *  6e. TRANSPORT - outcome UNKNOWN: durable UNKNOWN (not processing -
  *                  round 3 F16), reconciled by m_refund_id, never
  *                  re-requested.
  *
@@ -95,7 +107,12 @@ class CreditmemoRefundPlugin
      *        that runs BEFORE the provider call (corrective round 2).
      * @param CreditmemoRepositoryInterface $creditmemoRepository Persists
      *        the UNSAVED admin credit memo to obtain the REAL entity_id
-     *        before the provider is asked (round 4 F17).
+     *        before the provider is asked (round 4 F17). NOTE (round 7
+     *        F27): this is the ONLY repository the plugin persists
+     *        through pre-provider - order/invoice accounting stays
+     *        exclusively with the native core flow / the cron finalize.
+     * @param Logger $logger Safe-evidence logging (never key material,
+     *        never raw provider payloads).
      */
     public function __construct(
         private readonly MethodInterface               $method,
@@ -105,7 +122,8 @@ class CreditmemoRefundPlugin
         private readonly RefundOutcomeMarker           $outcomeMarker,
         private readonly ManagerInterface              $messageManager,
         private readonly CreditmemoRefundPreflight     $preflight,
-        private readonly CreditmemoRepositoryInterface $creditmemoRepository
+        private readonly CreditmemoRepositoryInterface $creditmemoRepository,
+        private readonly Logger                        $logger
     ) {
     }
 
@@ -117,7 +135,10 @@ class CreditmemoRefundPlugin
      * @return CreditmemoInterface
      * @throws LocalizedException On every path that must NOT run the core
      *         refund accounting (offline, claim conflict, provider refusal,
-     *         untrackable transport failure, local finalize failure).
+     *         untrackable transport failure, inconsistent local tracking
+     *         state, local finalize failure).
+     * @throws RefundProtocolException Provider protocol anomaly (round 7
+     *         F30) - rethrown as-is after landing durable UNKNOWN.
      * @throws NoSuchEntityException Invalid/unresolvable order reference.
      */
     public function aroundRefund(
@@ -153,8 +174,6 @@ class CreditmemoRefundPlugin
             );
         }
 
-        $orderId = (int)$order->getId();
-
         // MAGENTO VALIDATION BEFORE PROVIDER (round 2): the core refund
         // validation (CreditmemoService::validateForRefund - protected,
         // mirrored by the preflight service) must PASS before any provider
@@ -163,16 +182,39 @@ class CreditmemoRefundPlugin
         // - the provider is never asked, and nothing is persisted.
         $this->preflight->validateRefundable($creditmemo);
 
+        // INVOICE IDENTITY (round 7 F31): an online ZaloPay refund must
+        // carry the ORIGINAL capture invoice with a REAL entity id. Guard
+        // order: invoice object first (the transaction id below lives on
+        // it), then the capture transaction id. Without a persisted
+        // invoice_id a cron-reloaded credit memo would finalize as OFFLINE
+        // (Payment::refund classifies online only when the credit memo's
+        // invoice carries a transaction id) - corrupting accounting
+        // semantics. Metadata linkage ONLY: is_used_for_refund /
+        // base_total_refunded stay untouched here (the native core flow or
+        // the cron finalize owns refund accounting, never this plugin).
+        $invoice = $creditmemo->getInvoice();
+        if ($invoice === null || !(int)$invoice->getEntityId()) {
+            throw new LocalizedException(
+                __('Zalopay: The original invoice for this refund cannot be found. The credit memo cannot be refunded.')
+            );
+        }
+
         // The capture (invoice) transaction identifies the provider payment:
         // Payment::refund sets parentTransactionId only inside its own flow,
         // which we preempt - pin it here so the request builder can resolve
         // zp_trans_id. An online ZaloPay refund always has an invoice.
-        $parentTxnId = (string)($creditmemo->getInvoice()?->getTransactionId() ?? '');
+        $parentTxnId = (string)($invoice->getTransactionId() ?? '');
         if ($parentTxnId === '') {
             throw new LocalizedException(
                 __('Zalopay: The original invoice transaction for this refund cannot be found. The credit memo cannot be refunded.')
             );
         }
+
+        // Pin the invoice linkage on the credit memo BEFORE the pre-provider
+        // persistence: creditmemoRepository->save() does NOT persist the
+        // in-memory invoice association, so without this the reloaded credit
+        // memo would carry invoice_id NULL (F31).
+        $creditmemo->setInvoiceId((int)$invoice->getEntityId());
 
         $payment->setCreditmemo($creditmemo);
         $payment->setParentTransactionId($parentTxnId);
@@ -186,10 +228,27 @@ class CreditmemoRefundPlugin
         // claim below carries the exact identity the provider will see.
         $request = $this->refundCommand->prepare($commandSubject);
         if ($request === null) {
-            // Defensive: the marker claims the provider was already asked for
-            // this order but this plugin did not ask - hand over to the core
-            // flow unchanged.
-            return $proceed($creditmemo, false);
+            // FAIL-CLOSED (round 7 F28): prepare() returning null now means
+            // a one-shot provider-skip was consumed for THIS credit memo -
+            // an authorization only the success path below grants. Reaching
+            // it here means the local tracking state is inconsistent; running
+            // the core flow would finalize accounting with the provider
+            // never asked for this money. Provider call 0, accounting 0 -
+            // abort with a safe message and safe log evidence (no secrets,
+            // no payloads).
+            $this->logger->error(
+                sprintf(
+                    'ZaloPay refund aborted fail-closed: provider-skip authorization present for credit memo #%d '
+                    . 'before the provider was asked (order #%s).',
+                    (int)$creditmemo->getEntityId(),
+                    (string)$order->getIncrementId()
+                )
+            );
+
+            throw new LocalizedException(
+                __('Zalopay: The refund could not be started because its local'
+                    . ' tracking state is inconsistent. Please try again.')
+            );
         }
 
         // ATOMIC DURABLE CLAIM (round 3 F12): committed BEFORE any provider
@@ -205,6 +264,19 @@ class CreditmemoRefundPlugin
         // any failure here terminates the claim as
         // abandoned_before_provider_io (money provably never moved) and
         // never reaches the provider.
+        //
+        // STATE CONTRACT (round 7 F27): the credit memo is persisted in the
+        // NATIVE STATE_OPEN. Semantics of the pre-provider persisted credit
+        // memo: it exists locally, the refund accounting is NOT applied and
+        // the provider result is NOT final. The synchronous SUCCESS path
+        // needs OPEN: the core validateForRefund() refuses an EXISTING
+        // credit memo (id > 0) whose state is not OPEN - without this the
+        // native flow could never complete. Persistence is metadata-only:
+        // order.total_refunded / base_total_refunded, item qty_refunded,
+        // invoice.is_used_for_refund / base_total_refunded and the payment
+        // refunded amounts are NEVER touched here (the native core flow or
+        // the cron finalize owns refund accounting exclusively).
+        $creditmemo->setState(Creditmemo::STATE_OPEN);
         try {
             if (!(int)$creditmemo->getEntityId()) {
                 $this->creditmemoRepository->save($creditmemo);
@@ -286,6 +358,21 @@ class CreditmemoRefundPlugin
                 __('Zalopay: Refund status could not be confirmed. The refund is tracked and will be reconciled automatically.'),
                 $exception
             );
+        } catch (RefundProtocolException $exception) {
+            // Round 7 F30: provider protocol anomaly (return_code missing /
+            // non-numeric / outside {1,2,3}) - the provider state is NOT
+            // confirmable, which is NOT a confirmed refusal: land durable
+            // UNKNOWN. The claim row keeps its atomic slot AND the same
+            // m_refund_id - never released, never re-requested fresh; the
+            // cron reconciles via v2/query_refund. The exception message is
+            // already our own customer-safe text - rethrow as-is.
+            $this->pendingRefundManager->markUnknown(
+                $claim,
+                PendingRefundManager::EVIDENCE_ANOMALY
+                . 'refund status not confirmable: ' . $exception->getMessage()
+            );
+
+            throw $exception;
         } catch (LocalizedException $exception) {
             // Provider CONFIRMED refusal (money provably NOT refunded): land
             // confirmed_fail - releases the claim and the block - and let the
@@ -302,9 +389,11 @@ class CreditmemoRefundPlugin
             // Provider accepted, outcome open: durable PROCESSING and STOP -
             // the core refund accounting must NOT run (invariant:
             // PROCESSING != refunded; totals untouched; order cannot CLOSE).
-            // The persisted credit memo is parked in the custom PROCESSING
-            // state (round 4 state contract; park failure is swallowed).
-            $this->pendingRefundManager->markProcessing($claim, $creditmemo);
+            // The credit memo STAYS in the native STATE_OPEN for every
+            // non-success outcome (round 7 F34: the invalid custom
+            // PROCESSING credit memo state is gone - the durable refund row
+            // state, not the display state, drives the cron recovery).
+            $this->pendingRefundManager->markProcessing($claim);
             $this->messageManager->addSuccessMessage(
                 __('Zalopay: Refund accepted by the provider and is being processed. The credit memo will be finalized automatically.')
             );
@@ -313,9 +402,14 @@ class CreditmemoRefundPlugin
         }
 
         // Confirmed SUCCESS: the money is refunded at the provider - the
-        // native core flow owns the Magento accounting (exactly once: the
-        // gateway refund command skips its provider call via the marker).
-        $this->outcomeMarker->markProviderAlreadyAsked($orderId);
+        // native core flow owns the Magento accounting. Round 7 F28: grant
+        // the ONE-SHOT provider-skip for THIS exact credit memo id, then let
+        // the core flow consume it inside the gateway refund command
+        // (Payment::refund). The finally drops the pin on EVERY exit path:
+        // a core finalize that throws before the gateway command consumed
+        // the authorization can never leak the skip into a later refund.
+        $creditMemoId = (int)$creditmemo->getEntityId();
+        $this->outcomeMarker->authorize($creditMemoId);
         try {
             $result = $proceed($creditmemo, false);
         } catch (\Throwable $finalizeException) {
@@ -332,6 +426,8 @@ class CreditmemoRefundPlugin
                 __('Zalopay: Refund succeeded at the provider but the local accounting is incomplete. It will be completed automatically.'),
                 $finalizeException
             );
+        } finally {
+            $this->outcomeMarker->clear($creditMemoId);
         }
 
         // Terminal bookkeeping (a persistence failure is critical-logged and
