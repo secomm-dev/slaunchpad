@@ -193,4 +193,98 @@ class RefundData extends DataObject implements RefundInterface
     {
         $this->setData(self::AMOUNT, $amount);
     }
+
+    /**
+     * Getter for QueryAttempts.
+     *
+     * @return int
+     */
+    public function getQueryAttempts(): int
+    {
+        return (int)$this->getData(self::QUERY_ATTEMPTS);
+    }
+
+    /**
+     * Setter for QueryAttempts.
+     *
+     * @param int $queryAttempts
+     *
+     * @return void
+     */
+    public function setQueryAttempts(int $queryAttempts): void
+    {
+        $this->setData(self::QUERY_ATTEMPTS, $queryAttempts);
+    }
+
+    /**
+     * Getter for LastError.
+     *
+     * @return string|null
+     */
+    public function getLastError(): ?string
+    {
+        $v = $this->getData(self::LAST_ERROR);
+
+        return $v === null ? null : (string)$v;
+    }
+
+    /**
+     * Setter for LastError.
+     *
+     * @param string|null $lastError
+     *
+     * @return void
+     */
+    public function setLastError(?string $lastError): void
+    {
+        $this->setData(self::LAST_ERROR, $lastError);
+    }
+
+    /**
+     * Getter for RefundState.
+     *
+     * @return string|null
+     */
+    public function getRefundState(): ?string
+    {
+        $v = $this->getData(self::REFUND_STATE);
+
+        return $v === null ? null : (string)$v;
+    }
+
+    /**
+     * Setter for RefundState.
+     *
+     * @param string|null $refundState
+     *
+     * @return void
+     */
+    public function setRefundState(?string $refundState): void
+    {
+        $this->setData(self::REFUND_STATE, $refundState);
+    }
+
+    /**
+     * Getter for ActiveClaim (1 = THE atomic active attempt for the order).
+     *
+     * @return int|null
+     */
+    public function getActiveClaim(): ?int
+    {
+        $v = $this->getData(self::ACTIVE_CLAIM);
+
+        return $v === null ? null : (int)$v;
+    }
+
+    /**
+     * Setter for ActiveClaim.
+     *
+     * @param int|null $activeClaim
+     *
+     * @return void
+     */
+    public function setActiveClaim(?int $activeClaim): void
+    {
+        $this->setData(self::ACTIVE_CLAIM, $activeClaim);
+    }
 }

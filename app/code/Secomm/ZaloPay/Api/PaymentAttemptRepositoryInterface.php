@@ -83,4 +83,26 @@ interface PaymentAttemptRepositoryInterface
      * @return PaymentAttemptInterface|null
      */
     public function lockByAppTransId(string $appTransId): ?PaymentAttemptInterface;
+
+    /**
+     * Atomically claim the order confirmation email dispatch for one attempt
+     * (see PaymentAttemptResource::claimEmailDispatch). Must be called while
+     * the attempt row is locked inside the caller's transaction so
+     * concurrent finalizers serialize on the row lock.
+     *
+     * @param int $entityId
+     * @param int $token Claim token (current unix ts).
+     * @param int $graceSeconds Age at which an existing claim is reclaimable.
+     * @return bool True if THIS call now holds the claim.
+     */
+    public function claimEmailDispatch(int $entityId, int $token, int $graceSeconds): bool;
+
+    /**
+     * Release THIS caller's email dispatch claim (token-guarded, non-fatal).
+     *
+     * @param int $entityId
+     * @param int $token
+     * @return void
+     */
+    public function releaseEmailDispatch(int $entityId, int $token): void;
 }

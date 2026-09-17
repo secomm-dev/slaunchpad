@@ -295,8 +295,27 @@
         <plugin name="zalopay_total_min_max" type="Secomm\ZaloPay\Plugin\Model\Checks\TotalMinMaxPlugin" sortOrder="10" disabled="false"/>
     </type>
 
-    <!-- Plugin for Creditmemo to add PROCESSING state -->
-    <type name="Magento\Sales\Model\Order\Creditmemo">
-        <plugin name="zalopay_creditmemo_states" type="Secomm\ZaloPay\Plugin\Model\Order\CreditmemoPlugin" sortOrder="10" disabled="false"/>
+    <!-- TASK-CG6BM7 round 7 F34: the custom Creditmemo PROCESSING state
+         plugin (state id 4 + aroundGetStates) was REMOVED -
+         Creditmemo::getStates() is static in 2.4.8-p5 so the around plugin
+         could never intercept it, and the custom state id was invalid.
+         Credit memos stay in the native STATE_OPEN until the confirmed
+         provider SUCCESS finalizes them REFUNDED. -->
+
+    <!-- TASK-CG6BM7: ZaloPay async refund lifecycle around the core refund
+         flow. The plugin asks the provider ONCE (before core mutates any
+         totals), then either lets the native core accounting run (confirmed
+         SUCCESS) or registers the durable pending refund (PROCESSING /
+         unknown transport or protocol outcome) for the RefundCronjob to
+         finalize. -->
+    <type name="Magento\Sales\Model\Service\CreditmemoService">
+        <plugin name="zalopay_creditmemo_refund_lifecycle" type="Secomm\ZaloPay\Plugin\Model\Service\CreditmemoRefundPlugin" sortOrder="10" disabled="false"/>
     </type>
+
+    <type name="Secomm\ZaloPay\Plugin\Model\Service\CreditmemoRefundPlugin">
+        <arguments>
+            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
+        </arguments>
+    </type>
+
 </config>
