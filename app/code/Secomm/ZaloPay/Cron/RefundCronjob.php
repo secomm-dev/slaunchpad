@@ -50,10 +50,14 @@ use Secomm\ZaloPay\Service\PendingRefundManager;
  *    -> TERMINAL reconcile: budget saturated with safe evidence (never a
  *    silent loop).
  *
- * ROUND 5 F23: the LOCAL_READY -> PROVIDER_REQUEST_STARTED boundary makes
- * provider I/O provable from the durable state: an INITIATING row has by
- * construction NOT reached the provider - it is abandoned (released,
- * CONFIRMED_FAIL), never queried, bound or not; a PROVIDER_REQUEST_STARTED
+ * ROUND 6 F26: the LOCAL_READY -> PROVIDER_REQUEST_STARTED boundary makes
+ * provider I/O provable from the durable state: a FRESH INITIATING row
+ * (created_at within LOCAL_READY_GRACE_SECONDS) may still be owned by a
+ * live request inside the local bind phase - the cron leaves it COMPLETELY
+ * untouched (no query, no terminate, no release). A STALE INITIATING row
+ * (age >= grace) proves the owner crashed before provider-start - provider
+ * I/O was impossible by construction, so it is released CONFIRMED_FAIL,
+ * never queried, bound or not; a PROVIDER_REQUEST_STARTED
  * row is left untouched during the reconciliation grace (grace > HTTP
  * timeout) and queried by the SAME m_refund_id after it; PROCESSING and
  * UNKNOWN rows query the SAME m_refund_id regardless of the creditmemo
@@ -173,28 +177,65 @@ class RefundCronjob
             return;
         }
 
-        // 0b. STALE-CLAIM POLICY (round 5 F23): LOCAL_READY (initiating) =
-        //    the provider has DEFINITELY not been contacted - the
-        //    provider-start boundary (provider_request_started + timestamp)
-        //    is the explicit pre-HTTP gate. Provider I/O is impossible by
-        //    construction: the money provably did not move. Land
-        //    CONFIRMED_FAIL (truthful: releases the atomic claim and the
-        //    block). Exact crash boundary: any crash between claim-acquire
-        //    and the provider-start mark; a bind/mark that raced a
-        //    concurrent release terminated its own row the same way.
+        // 0b. LOCAL_READY GRACE (round 6 F26): LOCAL_READY (initiating) =
+        //    the provider has DEFINITELY not been contacted. A FRESH
+        //    claim may be live: request A is inside the local bind phase
+        //    (acquireClaim -> save Credit Memo -> bindCreditMemo ->
+        //    markProviderRequestStarted) - a purely local, DB-only path.
+        //    Terminating on sight would KILL that request's claim and
+        //    persist an unnecessary OPEN Credit Memo. So the cron is
+        //    patient first: age < LOCAL_READY_GRACE_SECONDS (300s,
+        //    anchored on the persisted created_at UTC of the claim row -
+        //    never in-memory time) -> complete no-op (no query, no
+        //    terminate, no release). A STALE row (age >= grace) proves
+        //    the owner crashed before provider-start; there provider I/O
+        //    was impossible by construction, so CONFIRMED_FAIL release
+        //    is truthful and safe. A missing created_at cannot be
+        //    age-checked: consume one budget unit (bounded, never
+        //    queries, never releases a live claim on a data glitch).
         if ((string)$refund->getData(RefundInterface::REFUND_STATE)
             === RefundInterface::REFUND_STATE_INITIATING) {
+            $readyAt = (string)$refund->getData(RefundInterface::CREATED_AT);
+            if ($readyAt === '') {
+                $this->pendingRefundManager->consumeQueryBudget(
+                    $refund,
+                    PendingRefundManager::EVIDENCE_RECONCILE . 'local-ready timestamp missing'
+                );
+                $this->logger->critical(
+                    sprintf(
+                        'ZaloPay refund row #%d: LOCAL_READY without created_at - budget consumed, no query, claim NOT released (manual check advised).',
+                        (int)$refund->getId()
+                    )
+                );
+
+                return;
+            }
+
+            $readyTs = (int)(new \DateTime($readyAt, new \DateTimeZone('UTC')))->format('U');
+            if ($this->dateTime->timestamp() < $readyTs + PendingRefundManager::LOCAL_READY_GRACE_SECONDS) {
+                $this->logger->info(
+                    sprintf(
+                        'ZaloPay refund row #%d: LOCAL_READY claim fresh (created %s) - inside local-ready grace, untouched.',
+                        (int)$refund->getId(),
+                        $readyAt
+                    )
+                );
+
+                return;
+            }
+
             $this->pendingRefundManager->terminate(
                 $refund,
                 PendingRefundManager::EVIDENCE_ABANDONED
-                . 'claim never reached provider I/O (LOCAL_READY) → provider I/O impossible by construction',
+                . 'stale LOCAL_READY claim - provider I/O impossible by construction',
                 RefundInterface::REFUND_STATE_CONFIRMED_FAIL
             );
             $this->logger->critical(
                 sprintf(
-                    'ZaloPay refund row #%d (order %d): LOCAL_READY claim abandoned before provider I/O - released.',
+                    'ZaloPay refund row #%d (order %d): stale LOCAL_READY claim (created %s) - released before provider I/O.',
                     (int)$refund->getId(),
-                    (int)$refund->getOrderId()
+                    (int)$refund->getOrderId(),
+                    $readyAt
                 )
             );
 

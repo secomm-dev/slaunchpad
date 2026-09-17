@@ -218,3 +218,13 @@ crash-recovery), validation round 3.
 - Suite 312 tests / 1126 assertions OK; PHPCS 0 errors; .ai: findings/proofs P19/validation round 5, SPEC Rev 6, PLAN Appendix 5, DEC-007.
 - Không đụng: icon/logo, ExtraFee, MoMo, LLMS, Bitbucket, `auth.json` (pre-existing).
 - Receipt round 5 theo mẫu TL; push chỉ `task/zalopay-postfix-audit`; STOP chờ TL review.
+
+## Round 6 (2026-09-17)
+
+- TL source review lần 6 (PRE_HEAD `ba930d77`): F26.
+- Fix F26: cron không còn nhả claim `LOCAL_READY` ngay lập tức (giết request A hợp lệ trong pha bind cục bộ). Chính sách grace/staleness theo DEC-008: fresh `initiating` (tuổi `created_at` < `LOCAL_READY_GRACE_SECONDS = 300`) ⇒ cron no-op hoàn toàn; stale ⇒ `confirmed_fail` + nhả (provider I/O bất khả thi theo cấu trúc); missing `created_at` ⇒ consume budget bounded, không nhả. Anchor bền = `created_at` (set lúc INSERT claim, không đổi) ⇒ SCHEMA_CHANGED=NO.
+- Grace tách bạch: LOCAL_READY 300s (pha cục bộ) ≠ reconciliation 120s (HTTP in-flight, timeout 10s).
+- Suite 316 tests / 1145 assertions OK; PHPCS 0 errors; setup:di:compile PASS; real-DB race proof P20 21/21 PASS (cron thật qua DI trên MariaDB 10.6 disposable); CodeGraph re-index.
+- .ai: findings F26, proofs P20, validation round 6, DEC-TASKCG6BM7-008, SPEC Rev 7, PLAN Appendix 6.
+- Không đụng: icon/logo, ExtraFee, MoMo, LLMS, Bitbucket, `auth.json` (pre-existing).
+- Receipt round 6 theo mẫu TL; push chỉ `task/zalopay-postfix-audit`; STOP chờ TL review.

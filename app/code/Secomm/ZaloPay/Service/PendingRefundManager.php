@@ -86,6 +86,23 @@ class PendingRefundManager
     public const RECONCILIATION_GRACE_SECONDS = 120;
 
     /**
+     * LOCAL_READY grace (round 6 F26): an initiating row is LOCAL_READY
+     * (provider provably not contacted), so the cron must not release a
+     * FRESH claim whose owner may still be inside the local bind phase
+     * (acquireClaim -> save Credit Memo -> bindCreditMemo ->
+     * markProviderRequestStarted). That path is local DB-only (NO
+     * provider I/O) and completes in well under a second; 300s gives
+     * >300x headroom for any realistic local stall. Only a STALE row
+     * (age >= grace) proves the owner crashed before provider-start,
+     * and there provider I/O was impossible by construction, so release
+     * is safe. Anchored on the persisted created_at (UTC) of the claim
+     * row - never in-memory time. DISTINCT from RECONCILIATION_GRACE_
+     * SECONDS above: that grace bounds an in-flight provider HTTP (10s
+     * timeout); this grace bounds a purely local phase (no network).
+     */
+    public const LOCAL_READY_GRACE_SECONDS = 300;
+
+    /**
      * @param RefundResource $refundResource Refund resource: connection, transaction, row lock.
      * @param RefundCollectionFactory $refundCollectionFactory
      * @param CreditmemoRepositoryInterface $creditmemoRepository

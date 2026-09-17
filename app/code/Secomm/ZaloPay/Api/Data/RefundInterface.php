@@ -26,6 +26,7 @@ interface RefundInterface
     public const REFUND_STATE = "refund_state";
     public const ACTIVE_CLAIM = "active_claim";
     public const PROVIDER_REQUEST_STARTED_AT = "provider_request_started_at";
+    public const CREATED_AT = "created_at";
 
     /**
      * Semantic refund outcome states (TASK-CG6BM7 corrective round 2/3).

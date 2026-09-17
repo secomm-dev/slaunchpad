@@ -650,43 +650,47 @@ class RefundCronjobTest extends TestCase
     }
 
     /**
-     * Round 4 F18: an INITIATING row with NO bound credit memo can never
-     * have reached provider I/O (provider gate = claim + stable m_refund_id
-     * + bound credit_memo_id) - the stale claim is abandoned (confirmed_fail,
-     * claim released) and the provider is never asked.
+     * Round 6 F26: a FRESH UNBOUND LOCAL_READY row (created_at within
+     * LOCAL_READY_GRACE_SECONDS) may still be owned by a live request
+     * inside the local bind phase - the cron does NOTHING: no query, no
+     * terminate, no budget consumption, no release. The claim is
+     * retained for its owner.
      */
-    public function testUnboundInitiatingClaimIsAbandonedBeforeProviderIo(): void
+    public function testFreshUnboundLocalReadyIsNeverTouched(): void
     {
         $row = $this->refundRow(
             [
                 RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING,
                 RefundInterface::CREDIT_MEMO_ID => null,
+                RefundInterface::CREATED_AT => gmdate('Y-m-d H:i:s', $this->nowTs - 30),
             ]
         );
         $this->stubCollection([$row]);
 
         $this->creditmemoRepository->expects($this->never())->method('get');
         $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
-        $this->pendingRefundManager->expects($this->once())->method('terminate')
-            ->with(
-                $this->identicalTo($row),
-                $this->stringStartsWith(PendingRefundManager::EVIDENCE_ABANDONED),
-                $this->identicalTo(RefundInterface::REFUND_STATE_CONFIRMED_FAIL)
-            );
+        $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
 
         $this->cron->execute();
+
+        $this->assertSame(RefundInterface::REFUND_STATE_INITIATING, (string)$row->getData(RefundInterface::REFUND_STATE));
     }
 
     /**
-     * Round 5 F23: a BOUND initiating row is still LOCAL_READY - the
-     * provider-start boundary has NOT been crossed, so the provider has
-     * DEFINITELY not been contacted. The cron NEVER queries it and NEVER
-     * races the owner: it is abandoned (confirmed_fail, claim released).
+     * Round 6 F26: a FRESH BOUND LOCAL_READY row is likewise untouched -
+     * even with a Credit Memo bound, the provider-start boundary has NOT
+     * been crossed, so the local bind phase may still be mid-flight.
      */
-    public function testBoundInitiatingLocalReadyIsAbandonedNeverQueried(): void
+    public function testFreshBoundLocalReadyIsNeverTouched(): void
     {
         $row = $this->refundRow(
-            [RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING]
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::CREDIT_MEMO_ID => 55,
+                RefundInterface::ACTIVE_CLAIM => 1,
+                RefundInterface::CREATED_AT => gmdate('Y-m-d H:i:s', $this->nowTs - 30),
+            ]
         );
         $this->stubCollection([$row]);
 
@@ -694,14 +698,146 @@ class RefundCronjobTest extends TestCase
         $this->creditmemoRepository->expects($this->never())->method('get');
         $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
         $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+
+        $this->cron->execute();
+
+        $this->assertSame(RefundInterface::REFUND_STATE_INITIATING, (string)$row->getData(RefundInterface::REFUND_STATE));
+        $this->assertSame(1, (int)$row->getData(RefundInterface::ACTIVE_CLAIM));
+        $this->assertSame(55, (int)$row->getData(RefundInterface::CREDIT_MEMO_ID));
+    }
+
+    /**
+     * Round 6 F26: a STALE UNBOUND LOCAL_READY row (age >= grace) proves
+     * the owner crashed BEFORE provider-start - provider I/O was
+     * impossible by construction, so the release is truthful: terminate
+     * confirmed_fail + claim released, provider never asked.
+     */
+    public function testStaleUnboundLocalReadyIsReleasedWithoutQuery(): void
+    {
+        $row = $this->refundRow(
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::CREDIT_MEMO_ID => null,
+                RefundInterface::CREATED_AT => gmdate('Y-m-d H:i:s', $this->nowTs - 301),
+            ]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
         $this->pendingRefundManager->expects($this->once())->method('terminate')
             ->with(
                 $this->identicalTo($row),
-                $this->stringStartsWith(PendingRefundManager::EVIDENCE_ABANDONED),
+                $this->identicalTo(
+                    PendingRefundManager::EVIDENCE_ABANDONED
+                    . 'stale LOCAL_READY claim - provider I/O impossible by construction'
+                ),
                 $this->identicalTo(RefundInterface::REFUND_STATE_CONFIRMED_FAIL)
             );
 
         $this->cron->execute();
+    }
+
+    /**
+     * Round 6 F26: a STALE BOUND LOCAL_READY row releases exactly the
+     * same way, BEFORE the step-1 Credit Memo lookup: the CM is never
+     * loaded, the provider never asked.
+     */
+    public function testStaleBoundLocalReadyIsReleasedWithoutQuery(): void
+    {
+        $row = $this->refundRow(
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::CREDIT_MEMO_ID => 55,
+                RefundInterface::CREATED_AT => gmdate('Y-m-d H:i:s', $this->nowTs - 301),
+            ]
+        );
+        $this->stubCollection([$row]);
+
+        $this->cmState = Creditmemo::STATE_OPEN;
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->once())->method('terminate')
+            ->with(
+                $this->identicalTo($row),
+                $this->identicalTo(
+                    PendingRefundManager::EVIDENCE_ABANDONED
+                    . 'stale LOCAL_READY claim - provider I/O impossible by construction'
+                ),
+                $this->identicalTo(RefundInterface::REFUND_STATE_CONFIRMED_FAIL)
+            );
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 6 F26: a LOCAL_READY row whose created_at is missing cannot
+     * be age-checked - the cron consumes one bounded budget unit with
+     * reconcile evidence and NEVER releases a possibly-live claim on a
+     * data glitch, never queries.
+     */
+    public function testLocalReadyMissingTimestampConsumesBudgetNeverReleases(): void
+    {
+        $row = $this->refundRow(
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::CREDIT_MEMO_ID => null,
+                RefundInterface::CREATED_AT => null,
+            ]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+        $this->pendingRefundManager->expects($this->once())->method('consumeQueryBudget')
+            ->with(
+                $this->identicalTo($row),
+                $this->identicalTo(
+                    PendingRefundManager::EVIDENCE_RECONCILE . 'local-ready timestamp missing'
+                )
+            );
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 6 F26 race proof (unit half): while request A is inside the
+     * local bind phase (claim acquired, LOCAL_READY, fresh created_at),
+     * a cron run leaves the row COMPLETELY untouched; afterwards A's
+     * markProviderRequestStarted still succeeds on the SAME row (claim
+     * retained). The continuation ordering ['save','bind','start',
+     * 'provider'] + provider-exactly-once is pinned by the plugin
+     * REQUIRED test testRealAdminUnsavedCreditmemoBindBeforeProvider.
+     */
+    public function testRaceCronDuringLocalBindLeavesOwnerFullContinuation(): void
+    {
+        $row = $this->refundRow(
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::CREDIT_MEMO_ID => 55,
+                RefundInterface::ACTIVE_CLAIM => 1,
+                RefundInterface::CREATED_AT => gmdate('Y-m-d H:i:s', $this->nowTs - 30),
+            ]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+
+        $this->cron->execute();
+
+        $this->assertSame(RefundInterface::REFUND_STATE_INITIATING, (string)$row->getData(RefundInterface::REFUND_STATE));
+        $this->assertSame(1, (int)$row->getData(RefundInterface::ACTIVE_CLAIM));
+
+        $this->pendingRefundManager->expects($this->once())->method('markProviderRequestStarted')
+            ->with($this->identicalTo($row))
+            ->willReturn(true);
+        static::assertTrue($this->pendingRefundManager->markProviderRequestStarted($row));
     }
 
     /**

@@ -189,3 +189,30 @@ pre_correction_head: 70416b7aa6889276818b72e311a9955cbf5ed578
   (steps 0/0b/0c/1/2a/2b/3-7).
 - Scope: chỉ `app/code/Secomm/ZaloPay/**` + `.ai/**`; icon/logo, ExtraFee, MoMo, LLMS,
   Bitbucket: KHÔNG đụng; `auth.json` pre-existing KHÔNG commit.
+
+## Round 6
+
+- php -l: PASS từng file đổi (RefundCronjob, PendingRefundManager, RefundInterface,
+  RefundCronjobTest — lint qua container `slaunchpad-phpfpm-1` PHP 8.3.20) + grep
+  pattern-corruption sau mỗi lần ghi.
+- Unit: **316 tests / 1145 assertions OK** (round 5: 312/1126; −2 test round-5 initiating,
+  +6 test F26): fresh unbound/bound LOCAL_READY no-op hoàn toàn, stale unbound/bound
+  released-CONFIRMED_FAIL không query, missing created_at consume-budget-never-release,
+  race composition cron-untouched-then-mark-succeeds. 3 test F23 provider-start giữ nguyên
+  (verify bằng danh sách test + suite xanh).
+- PHPCS Magento2 (app + Test): **0 errors**.
+- setup:di:compile THẬT trên /tmp/m2b (module re-stage code round-6): **PASS exit 0**
+  ("Generated code and dependency injection configuration successfully.", 9/9 steps).
+- Real-DB F26 race proof (P20): **ALL_CHECKS_PASSED 21/21** trên MariaDB 10.6 disposable —
+  cron thật qua DI (scopeConfig override `isSetFlag`): fresh unbound/bound untouched + mark
+  thành công; stale unbound/bound nhả confirmed_fail với evidence `abandoned_before_provider_io:
+  stale...` (provider call count 0); row provider_request_started trong grace vẫn untouched trong
+  cùng cron run (F23 giữ nguyên). Side-proof atomic claim: duplicate (order_id, active_claim) →
+  1062 thật. Schema/migration KHÔNG đổi ⇒ SCHEMA_CHANGED=NO, REAL_DB_RERUN_REQUIRED=NO
+  (bằng chứng round-5 P19 còn hiệu lực).
+- CodeGraph: re-index worktree sau thay đổi cuối; anchors: `RefundCronjob::processRefund`
+  (0b fresh/missing-ts/stale, 0c grace), `PendingRefundManager::LOCAL_READY_GRACE_SECONDS`,
+  `markProviderRequestStarted`, `bindCreditMemo`.
+- Scope: chỉ `app/code/Secomm/ZaloPay/**` (RefundInterface +1 const; PendingRefundManager
+  +1 const; RefundCronjob 0b + docblock; RefundCronjobTest) + `.ai/**`; icon/logo, ExtraFee,
+  MoMo, LLMS, Bitbucket: KHÔNG đụng; `auth.json` pre-existing KHÔNG commit.
