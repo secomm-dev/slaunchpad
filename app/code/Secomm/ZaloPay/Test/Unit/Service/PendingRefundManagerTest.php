@@ -1026,6 +1026,7 @@ class PendingRefundManagerTest extends TestCase
         $this->assertSame(
             [
                 RefundInterface::ENTITY_ID . ' = ?' => 5,
+                RefundInterface::REFUND_STATE . ' = ?' => RefundInterface::REFUND_STATE_PROCESSING,
                 RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
             ],
             $where
@@ -1109,6 +1110,141 @@ class PendingRefundManagerTest extends TestCase
             'the stale snapshot stays untouched (persisted row remains provider_request_started)'
         );
         $this->assertSame(1, $refund->getData(RefundInterface::ACTIVE_CLAIM), 'claim NOT released by the loser');
+    }
+
+    /**
+     * Deadline micro-correction Test 1 (exact blocker): the cron snapshot
+     * holds initiating + active_claim=1, but the owner has ALREADY crossed
+     * the provider-start boundary (persisted provider_request_started,
+     * active_claim STILL 1). The claim-only CAS would pass and flip the
+     * money-out row to confirmed_fail behind the owner's back; the state
+     * guard makes the CAS affect 0 rows.
+     */
+    public function testStaleInitiatingCannotKillProviderRequestStarted(): void
+    {
+        $refund = $this->makeRefund(5, [
+            RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING,
+            RefundInterface::ACTIVE_CLAIM => 1,
+        ]);
+        $updates = [];
+        $this->connection->expects($this->once())->method('update')
+            ->willReturnCallback(function (string $table, array $bind, array $where) use (&$updates): int {
+                $updates[] = [$table, $bind, $where];
+
+                return 0; // DB holds provider_request_started - no row matches.
+            });
+        $this->logger->expects($this->once())->method('critical')
+            ->with($this->stringContains('was not applied - another owner already moved the row'));
+
+        $this->manager->terminate(
+            $refund,
+            PendingRefundManager::EVIDENCE_ABANDONED . 'stale LOCAL_READY claim',
+            RefundInterface::REFUND_STATE_CONFIRMED_FAIL
+        );
+
+        $this->assertCount(1, $updates, 'exactly ONE CAS attempt - no reload, no retry against the newer state');
+        list(, , $where) = $updates[0];
+        // Confirmed-fail termination STILL tries to release the claim in its
+        // own bind - but the state guard makes it affect 0 rows, so nothing
+        // is overwritten and no claim is released.
+        $this->assertSame(
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => 5,
+                RefundInterface::REFUND_STATE . ' = ?' => RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ],
+            $where,
+            'CAS WHERE must require the SNAPSHOT state (initiating), not just claim ownership'
+        );
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_INITIATING,
+            $refund->getData(RefundInterface::REFUND_STATE),
+            'no overwrite - the persisted row stays provider_request_started'
+        );
+        $this->assertSame(1, $refund->getData(RefundInterface::ACTIVE_CLAIM), 'claim NOT released by the loser');
+    }
+
+    /**
+     * Deadline micro-correction Test 2: a stale snapshot in processing
+     * must not overwrite a newer unknown state.
+     */
+    public function testStaleProcessingCannotOverwriteNewerUnknownState(): void
+    {
+        $refund = $this->makeRefund(7, [
+            RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+            RefundInterface::ACTIVE_CLAIM => 1,
+        ]);
+        $updates = [];
+        $this->connection->expects($this->once())->method('update')
+            ->willReturnCallback(function (string $table, array $bind, array $where) use (&$updates): int {
+                $updates[] = [$table, $bind, $where];
+
+                return 0; // DB moved on to unknown - no row matches.
+            });
+        $this->logger->expects($this->once())->method('critical')
+            ->with($this->stringContains('was not applied - another owner already moved the row'));
+
+        $this->manager->terminate($refund, PendingRefundManager::EVIDENCE_RECONCILE . 'credit memo missing');
+
+        $this->assertCount(1, $updates, 'exactly ONE CAS attempt - the newer DB state wins');
+        list(, , $where) = $updates[0];
+        $this->assertSame(
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => 7,
+                RefundInterface::REFUND_STATE . ' = ?' => RefundInterface::REFUND_STATE_PROCESSING,
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ],
+            $where
+        );
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_PROCESSING,
+            $refund->getData(RefundInterface::REFUND_STATE),
+            'no downgrade to unknown - the persisted row stays unknown'
+        );
+    }
+
+    /**
+     * Deadline micro-correction Test 3: when the snapshot state still
+     * matches the DB state and the claim is held, the normal termination
+     * persists (affected rows = 1).
+     */
+    public function testNormalTerminatePersistsWhenSnapshotMatchesDb(): void
+    {
+        $refund = $this->makeRefund(9, [
+            RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROCESSING,
+            RefundInterface::ACTIVE_CLAIM => 1,
+        ]);
+        $captured = [];
+        $this->connection->expects($this->once())->method('update')
+            ->willReturnCallback(function (string $table, array $bind, array $where) use (&$captured): int {
+                $captured = [$bind, $where];
+
+                return 1;
+            });
+
+        $this->manager->terminate(
+            $refund,
+            PendingRefundManager::EVIDENCE_REFUND_FAILED . 'Refund time has expired.',
+            RefundInterface::REFUND_STATE_CONFIRMED_FAIL
+        );
+
+        list($bind, $where) = $captured;
+        $this->assertSame(RefundInterface::REFUND_STATE_CONFIRMED_FAIL, $bind[RefundInterface::REFUND_STATE]);
+        $this->assertNull($bind[RefundInterface::ACTIVE_CLAIM], 'confirmed_fail releases the claim');
+        $this->assertSame(
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => 9,
+                RefundInterface::REFUND_STATE . ' = ?' => RefundInterface::REFUND_STATE_PROCESSING,
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ],
+            $where
+        );
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_CONFIRMED_FAIL,
+            $refund->getData(RefundInterface::REFUND_STATE),
+            'the intended terminal transition persists in memory too'
+        );
+        $this->assertNull($refund->getData(RefundInterface::ACTIVE_CLAIM));
     }
 
     /**

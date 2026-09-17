@@ -692,10 +692,17 @@ class PendingRefundManager
      * state drift - outcome never confirmed) keeps blocking until
      * deliberately resolved.
      *
-     * CAS (round 7 F29): the conditional UPDATE requires the row to STILL
-     * own the atomic claim (active_claim = 1) - a cron holding a stale
-     * snapshot can never overwrite a newer owner transition; a LOST CAS
-     * is SWALLOWED (logged only - the winner owns the row).
+     * CAS (round 7 F29, tightened by the deadline micro-correction): the
+     * conditional UPDATE requires the row to STILL be in the state the
+     * caller's snapshot observed (refund_state = snapshot state) AND to
+     * STILL own the atomic claim (active_claim = 1). A cron holding a
+     * stale initiating snapshot can therefore never terminate a row the
+     * owner already moved to provider_request_started (claim alone is not
+     * enough - the owner keeps active_claim = 1 across the provider-start
+     * boundary), so money-out rows can never be flipped to confirmed_fail
+     * behind the owner's back. A LOST CAS is SWALLOWED (logged only - the
+     * newer owner/state wins; no overwrite, no claim release, NO reload
+     * and retry against the newer state).
      *
      * @param RefundModel $refund
      * @param string $evidence Safe evidence text.
@@ -723,6 +730,7 @@ class PendingRefundManager
             $bind,
             [
                 RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::REFUND_STATE . ' = ?' => (string)$refund->getData(RefundInterface::REFUND_STATE),
                 RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
             ]
         );

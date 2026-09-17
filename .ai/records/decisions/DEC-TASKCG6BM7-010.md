@@ -25,3 +25,7 @@ Reload row + critical-log + KHÔNG ghi đè / KHÔNG nhả claim / KHÔNG hạ s
 ## D4 — Bằng chứng
 
 Unit: mỗi transition assert đúng WHERE; affected=0 ⇒ không overwrite/không nhả/không hạ + reload + đúng hành vi throw/nuốt. Real MariaDB: Scenario A (cron snapshot `initiating`, owner đẩy `provider_request_started`, stale `terminate` ⇒ 0 rows, final `provider_request_started`); Scenario B (cron snapshot `processing`, owner đẩy `confirmed_success`, stale fail-transition ⇒ 0 rows, final `confirmed_success`) — chạy qua 2 process thật (`cas_race.php load` → owner đổi DB → `cas_race.php fire-*`) trên `zalo_pay_refund` thật.
+
+## Amendment (2026-09-17, deadline micro-correction) — terminate() là state-CAS thật
+
+`terminate()` gốc chỉ guard `entity_id + active_claim=1` — KHÔNG đủ: owner giữ `active_claim=1` khi vượt provider-start (initiating → provider_request_started), nên cron stale-snapshot `initiating` vẫn CAS thành công, flip row money-out thành `confirmed_fail` + nhả claim sau lưng owner (cửa sổ provider hoàn tiền trong khi DB bảo FAIL ⇒ refund kế tiếp có thể được phép). Sửa: WHERE thêm `refund_state = <snapshot state của caller>`; affected=0 ⇒ lost-transition giữ nguyên (log critical, KHÔNG overwrite, KHÔNG nhả claim, KHÔNG reload-retry — state mới của owner thắng). Cả 8 call sites (5 cron, 3 plugin) đều giữ snapshot state khớp DB tại thời điểm quyết định nên hợp đồng tương thích; snapshot thiếu state ⇒ guard không match ⇒ an toàn theo hướng skip.
