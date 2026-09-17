@@ -164,3 +164,28 @@ pre_correction_head: 70416b7aa6889276818b72e311a9955cbf5ed578
 - Real DB F21/F19: DEFER cho TL (P18). Stack sẵn sàng; lệnh gợi ý (trong container `slaunchpad-phpfpm-1`):
   `php /tmp/m2b/bin/magento setup:install --base-url=http://zt-f21.local/ --db-host=zt-mariadb --db-name=magento --db-user=root --db-password=zt-f21-pw --admin-firstname=A --admin-lastname=B --admin-email=a@b.c --admin-user=admin --admin-password='Admin123!' --language=en_US --currency=USD --timezone=UTC --backend-frontname=admin --search-engine=opensearch --opensearch-host=zt-opensearch --opensearch-port=9200 --opensearch-enable-auth=0`
   Verify: `SHOW CREATE TABLE zalo_pay_refund` (2 UNIQUE `ZALO_PAY_REFUND_ORDER_ACTIVE`/`ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE` + `credit_memo_id` NULL YES) ; `SELECT patch_name FROM patch_list WHERE patch_name LIKE '%BackfillRefundState%'` ; seed row legacy (`is_processed=0` và `is_processed=1`/`last_error` varied) → `DELETE FROM patch_list WHERE patch_name LIKE '%BackfillRefundState%'` → `setup:upgrade` lại → verify cohort v2 + F19 (order unresolved chặn claim mới, order resolved không chặn).
+
+## Round 5
+
+- php -l: PASS từng file đổi ngay sau MỖI edit (RefundCronjob, PendingRefundManagerTest,
+  RefundCronjobTest, CreditmemoRefundPluginTest, BackfillRefundState + Test; lint qua container
+  `slaunchpad-phpfpm-1` PHP 8.3.20) + grep pattern-corruption sau mỗi lần ghi.
+- Unit: **312 tests / 1126 assertions OK** (round 4: 306/1105). Thêm: 4 cron F23 (fresh-grace /
+  stale-same-identity / missing-timestamp / bound-initiating REWRITE), 2 manager
+  markProviderRequestStarted, 1 plugin provider-start-fail, REQUIRED order-recorder
+  `['save','bind','start','provider']`, backfill test pin 2 quoteInto + exact WHERE.
+- PHPCS Magento2 (app + Test): **0 errors** (1 warning duy nhất: template KO pre-existing
+  `zalopay.html`, ngoài scope round 5).
+- REAL DB (NO-DEFER, đền P18/F25): `setup:install` PASS (MariaDB 10.6.28 `zt-mariadb106` —
+  10.11 bị Magento 2.4.8 từ chối; 358 module core+Secomm_ZaloPay; `--cache-backend=default`
+  là flag SAI — bỏ); `SHOW CREATE TABLE zalo_pay_refund` PASS đủ 4 điều kiện + cột mới;
+  `setup:upgrade` PASS (drop-cột → tái tạo + patch re-run); legacy cohorts A/B/C/D +
+  multi-row-per-order PASS; migration claim proof `acquireClaim` thật PASS (unresolved
+  REJECTED / resolved ALLOWED); F24 cohort-3 WHERE PASS trên MariaDB thật;
+  `setup:di:compile` PASS (exit 0) trên /tmp/m2b code round-5.
+- CodeGraph: index workspace active; anchor: `CreditmemoRefundPlugin::aroundRefund`
+  (claim → save → bind → markProviderRequestStarted → executePrepared),
+  `PendingRefundManager::markProviderRequestStarted`, `RefundCronjob::processRefund`
+  (steps 0/0b/0c/1/2a/2b/3-7).
+- Scope: chỉ `app/code/Secomm/ZaloPay/**` + `.ai/**`; icon/logo, ExtraFee, MoMo, LLMS,
+  Bitbucket: KHÔNG đụng; `auth.json` pre-existing KHÔNG commit.

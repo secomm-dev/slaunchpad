@@ -100,14 +100,21 @@ class BackfillRefundState implements DataPatchInterface
         // 3. Resolved rows carrying OTHER error evidence (transport /
         //    reconcile prefixes) are AMBIGUOUS history - conservative
         //    UNKNOWN quarantine, never inferred success (round 4 F20).
+        //    F24 (round 5): Zend quoteInto does NOT bind array elements
+        //    sequentially (it str_replace's ONE quoted value into EVERY
+        //    placeholder) - each placeholder gets its OWN one-value
+        //    quoteInto call.
         $connection->update(
             $table,
             [RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_UNKNOWN],
             $connection->quoteInto(
-                RefundInterface::IS_PROCESSED . ' = ?'
-                . ' AND ' . RefundInterface::LAST_ERROR . ' IS NOT NULL'
-                . ' AND ' . RefundInterface::LAST_ERROR . ' NOT LIKE ?',
-                [1, RefundInterface::STATE_EVIDENCE_REFUND_FAILED . '%']
+                RefundInterface::IS_PROCESSED . ' = ?', 1
+            )
+            . ' AND ' . RefundInterface::LAST_ERROR . ' IS NOT NULL'
+            . ' AND ' . RefundInterface::LAST_ERROR . ' NOT LIKE '
+            . $connection->quoteInto(
+                '?',
+                RefundInterface::STATE_EVIDENCE_REFUND_FAILED . '%'
             )
         );
 

@@ -216,6 +216,7 @@ class PendingRefundManagerTest extends TestCase
                     RefundInterface::REFUND_STATE,
                     ['in' => [
                         RefundInterface::REFUND_STATE_INITIATING,
+                        RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
                         RefundInterface::REFUND_STATE_PROCESSING,
                         RefundInterface::REFUND_STATE_UNKNOWN,
                         RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
@@ -875,5 +876,50 @@ class PendingRefundManagerTest extends TestCase
         $this->connection->expects($this->once())->method('update')->willReturn(0);
         $this->assertFalse($this->manager->bindCreditMemo($refund, 9012));
         $this->assertNull($refund->getData(RefundInterface::CREDIT_MEMO_ID));
+    }
+
+    /**
+     * Round 5 F23: markProviderRequestStarted is the explicit LOCAL_READY
+     * -> PROVIDER_REQUEST_STARTED boundary: ONE conditional UPDATE (entity
+     * + active_claim = 1) that pins the durable state AND the UTC start
+     * timestamp. It must NOT be writable on a released row.
+     */
+    public function testMarkProviderRequestStartedPinsStateAndTimestamp(): void
+    {
+        $refund = $this->makeRefund(9, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $captured = [];
+        $this->connection->expects($this->once())->method('update')
+            ->with(
+                'zalo_pay_refund',
+                $this->callback(function (array $data) use (&$captured): bool {
+                    $captured = $data;
+
+                    return isset($data[RefundInterface::REFUND_STATE])
+                        && $data[RefundInterface::REFUND_STATE]
+                            === RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED
+                        && is_string($data[RefundInterface::PROVIDER_REQUEST_STARTED_AT]);
+                })
+            )
+            ->willReturn(1);
+        $this->assertTrue($this->manager->markProviderRequestStarted($refund));
+        $this->assertSame(
+            RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+            $refund->getData(RefundInterface::REFUND_STATE)
+        );
+        $this->assertNotEmpty($refund->getData(RefundInterface::PROVIDER_REQUEST_STARTED_AT));
+    }
+
+    /**
+     * A released/lost claim (0 affected rows) can NEVER cross the
+     * provider-start boundary - the plugin then terminates before any
+     * provider I/O (F23 construction invariant).
+     */
+    public function testMarkProviderRequestStartedFailsWhenClaimReleased(): void
+    {
+        $refund = $this->makeRefund(9, [RefundInterface::ACTIVE_CLAIM => 1]);
+        $this->connection->expects($this->once())->method('update')->willReturn(0);
+        $this->assertFalse($this->manager->markProviderRequestStarted($refund));
+        $this->assertNull($refund->getData(RefundInterface::REFUND_STATE));
+        $this->assertNull($refund->getData(RefundInterface::PROVIDER_REQUEST_STARTED_AT));
     }
 }

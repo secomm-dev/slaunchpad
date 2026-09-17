@@ -67,6 +67,12 @@ class CreditmemoRefundPluginTest extends TestCase
      */
     private bool $bindResult = true;
 
+    /**
+     * Mutable test state: the markProviderRequestStarted outcome (round 5
+     * F23) - same double-config discipline as bindResult.
+     */
+    private bool $providerStartResult = true;
+
     private \Magento\Sales\Model\Order\Creditmemo|MockObject $creditmemo;
 
     private Order|MockObject $order;
@@ -105,6 +111,11 @@ class CreditmemoRefundPluginTest extends TestCase
         // flips the mutable flag instead of re-configuring the mock).
         $this->mockRefundManager->method('bindCreditMemo')
             ->willReturnCallback(fn (): bool => $this->bindResult);
+        // Round 5 F23: the default provider-start mark succeeds (the
+        // start-failure test flips the mutable flag instead of
+        // re-configuring the mock).
+        $this->mockRefundManager->method('markProviderRequestStarted')
+            ->willReturnCallback(fn (): bool => $this->providerStartResult);
         $this->plugin = new CreditmemoRefundPlugin(
             $this->method,
             $this->paymentDataObjectFactory,
@@ -740,7 +751,15 @@ class CreditmemoRefundPluginTest extends TestCase
 
                 return true;
             });
-        // 3. Provider: EXACTLY once, only after the bind.
+        // 3. START (round 5 F23): the provider-start boundary is persisted
+        //    after the bind and BEFORE any provider I/O.
+        $this->mockRefundManager->expects($this->once())->method('markProviderRequestStarted')
+            ->willReturnCallback(function () use (&$order) {
+                $order[] = 'start';
+
+                return true;
+            });
+        // 4. Provider: EXACTLY once, only after the bind + start.
         $this->mockRefundCommand->expects($this->once())->method('executePrepared')
             ->willReturnCallback(function () use (&$order) {
                 $order[] = 'provider';
@@ -752,8 +771,47 @@ class CreditmemoRefundPluginTest extends TestCase
             $this->proceedSpy()['callable'],
             $this->creditmemo
         );
-        $this->assertSame(['save', 'bind', 'provider'], $order);
+        $this->assertSame(['save', 'bind', 'start', 'provider'], $order);
         self::assertSame(9012, $this->creditmemo->getEntityId());
+    }
+
+    /**
+     * Round 5 F23: the provider-start mark failing (claim slot lost between
+     * bind and start) forbids provider I/O BY CONSTRUCTION - the claim is
+     * terminated as abandoned-before-provider-I/O and the operator is asked
+     * to retry. The provider is never asked.
+     */
+    public function testProviderStartMarkFailureNeverTouchesProvider(): void
+    {
+        $request = $this->makePreparedRequest('260916_1000_777_r13');
+        $claim = $this->makeClaim();
+        $this->paymentDataObjectFactory->method('create')
+            ->willReturn($this->createMock(PaymentDataObjectInterface::class));
+        $this->mockRefundCommand->method('prepare')->willReturn($request);
+        $this->mockRefundManager->method('acquireClaim')->willReturn($claim);
+        $this->providerStartResult = false;
+        $this->mockRefundManager->expects($this->once())->method('terminate')
+            ->with(
+                $this->identicalTo($claim),
+                $this->callback(function (string $evidence): bool {
+                    return str_starts_with($evidence, PendingRefundManager::EVIDENCE_ABANDONED)
+                        && str_contains($evidence, 'provider-start state could not be persisted');
+                }),
+                $this->identicalTo(\Secomm\ZaloPay\Api\Data\RefundInterface::REFUND_STATE_CONFIRMED_FAIL)
+            );
+        $this->mockRefundCommand->expects($this->never())->method('executePrepared');
+        $spy = $this->proceedSpy();
+        try {
+            $this->plugin->aroundRefund(
+                $this->createMock(CreditmemoService::class),
+                $spy['callable'],
+                $this->creditmemo
+            );
+            self::fail('provider-start failure must abort the refund');
+        } catch (LocalizedException $exception) {
+            $this->assertStringContainsString('could not be started', $exception->getMessage());
+        }
+        $this->assertSame([], $spy['calls']);
     }
 
     /**

@@ -45,6 +45,7 @@ class BackfillRefundStateTest extends TestCase
 
         $updates = [];
         $queries = [];
+        $quoted = [];
         $connection->expects($this->exactly(4))->method('update')
             ->willReturnCallback(function (string $table, array $bind, array|string $where) use (&$updates): int {
                 $updates[] = [$table, $bind, $where];
@@ -56,10 +57,15 @@ class BackfillRefundStateTest extends TestCase
                 $queries[] = $sql;
             });
         $connection->method('quoteInto')->willReturnCallback(
-            function (string $text, mixed $value): string {
+            function (string $text, mixed $value) use (&$quoted): string {
+                $quoted[] = $text;
                 $values = is_array($value) ? array_map('strval', array_values($value)) : [(string)$value];
                 foreach ($values as $v) {
-                    $text = preg_replace('/\?/', $v, $text, 1);
+                    // Faithful to Zend: quoteInto QUOTES each substituted
+                    // value (integers bare, strings single-quoted) - F24
+                    // relies on it.
+                    $sub = is_numeric($v) ? $v : "'" . $v . "'";
+                    $text = preg_replace('/\?/', $sub, $text, 1);
                 }
 
                 return $text;
@@ -107,8 +113,17 @@ class BackfillRefundStateTest extends TestCase
             $updates[2][1]
         );
         $this->assertIsString($updates[2][2]);
-        $this->assertStringContainsString(RefundInterface::IS_PROCESSED . ' = 1', $updates[2][2]);
-        $this->assertStringContainsString(RefundInterface::LAST_ERROR . ' IS NOT NULL', $updates[2][2]);
+        // F24 (round 5): Zend quoteInto does NOT bind array elements
+        // sequentially - the WHERE is built from TWO separate one-value
+        // quoteInto calls (the ONLY quoteInto calls in the patch).
+        $this->assertCount(2, $quoted, 'each placeholder gets its own quoteInto call');
+        $this->assertSame(
+            RefundInterface::IS_PROCESSED . ' = 1'
+            . ' AND ' . RefundInterface::LAST_ERROR . ' IS NOT NULL'
+            . ' AND ' . RefundInterface::LAST_ERROR . " NOT LIKE '"
+            . RefundInterface::STATE_EVIDENCE_REFUND_FAILED . "%'",
+            $updates[2][2]
+        );
         $this->assertStringContainsString(RefundInterface::LAST_ERROR . ' NOT LIKE', $updates[2][2]);
 
         // Cohort 4: unresolved -> UNKNOWN (conservative blocking).

@@ -50,12 +50,14 @@ use Secomm\ZaloPay\Service\PendingRefundManager;
  *    -> TERMINAL reconcile: budget saturated with safe evidence (never a
  *    silent loop).
  *
- * ROUND 4 F18: recovery is driven by the DURABLE refund state machine, not
- * by the creditmemo state: INITIATING (bound), PROCESSING and UNKNOWN rows
- * query the SAME m_refund_id regardless of the creditmemo sitting in OPEN
- * (the legitimate pre-provider bind state, F17) or PROCESSING; an unbound
- * INITIATING claim is abandoned-before-I/O (released, money provably never
- * moved); PROVIDER_SUCCESS_LOCAL_PENDING finalizes locally only.
+ * ROUND 5 F23: the LOCAL_READY -> PROVIDER_REQUEST_STARTED boundary makes
+ * provider I/O provable from the durable state: an INITIATING row has by
+ * construction NOT reached the provider - it is abandoned (released,
+ * CONFIRMED_FAIL), never queried, bound or not; a PROVIDER_REQUEST_STARTED
+ * row is left untouched during the reconciliation grace (grace > HTTP
+ * timeout) and queried by the SAME m_refund_id after it; PROCESSING and
+ * UNKNOWN rows query the SAME m_refund_id regardless of the creditmemo
+ * state; PROVIDER_SUCCESS_LOCAL_PENDING finalizes locally only.
  *
  * Items are isolated: one broken row never blocks the batch. The finalize
  * step itself is guarded by SELECT ... FOR UPDATE + is_processed re-check
@@ -171,32 +173,75 @@ class RefundCronjob
             return;
         }
 
-        // 0b. STALE-CLAIM POLICY (round 4 F18): an INITIATING row with NO
-        //    bound credit memo can never have reached provider I/O - the
-        //    provider gate is claim + stable m_refund_id + BOUND real
-        //    credit_memo_id (bind UPDATE guarded by active_claim = 1). The
-        //    money provably did not move: land CONFIRMED_FAIL (truthful,
-        //    releases the atomic claim and the block). Exact crash boundary:
-        //    crash between claim-acquire and the local bind; a bind that
-        //    raced a concurrent release terminated its own row the same way.
+        // 0b. STALE-CLAIM POLICY (round 5 F23): LOCAL_READY (initiating) =
+        //    the provider has DEFINITELY not been contacted - the
+        //    provider-start boundary (provider_request_started + timestamp)
+        //    is the explicit pre-HTTP gate. Provider I/O is impossible by
+        //    construction: the money provably did not move. Land
+        //    CONFIRMED_FAIL (truthful: releases the atomic claim and the
+        //    block). Exact crash boundary: any crash between claim-acquire
+        //    and the provider-start mark; a bind/mark that raced a
+        //    concurrent release terminated its own row the same way.
         if ((string)$refund->getData(RefundInterface::REFUND_STATE)
-            === RefundInterface::REFUND_STATE_INITIATING
-            && !(int)$refund->getData(RefundInterface::CREDIT_MEMO_ID)) {
+            === RefundInterface::REFUND_STATE_INITIATING) {
             $this->pendingRefundManager->terminate(
                 $refund,
                 PendingRefundManager::EVIDENCE_ABANDONED
-                . 'claim never bound to a credit memo - provider I/O impossible by construction',
+                . 'claim never reached provider I/O (LOCAL_READY) → provider I/O impossible by construction',
                 RefundInterface::REFUND_STATE_CONFIRMED_FAIL
             );
             $this->logger->critical(
                 sprintf(
-                    'ZaloPay refund row #%d (order %d): unbound INITIATING claim abandoned before provider I/O - released.',
+                    'ZaloPay refund row #%d (order %d): LOCAL_READY claim abandoned before provider I/O - released.',
                     (int)$refund->getId(),
                     (int)$refund->getOrderId()
                 )
             );
 
             return;
+        }
+
+        // 0c. PROVIDER-START GRACE (round 5 F23): the row crossed the
+        //    LOCAL_READY → PROVIDER_REQUEST_STARTED boundary, so provider
+        //    HTTP may run (or have run). While the request may STILL be in
+        //    flight (now < started_at + grace; grace 120s > the 10s HTTP
+        //    timeout), the cron does NOTHING to the row: no query, no
+        //    budget consumption, no release (request A owns its claim
+        //    until its provider request completed/timed out). After the
+        //    grace: recovery queries the SAME m_refund_id. A missing
+        //    timestamp cannot be grace-checked: consume one budget unit
+        //    with reconcile evidence (bounded, never queries, never
+        //    releases).
+        if ((string)$refund->getData(RefundInterface::REFUND_STATE)
+            === RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED) {
+            $startedAt = (string)$refund->getData(RefundInterface::PROVIDER_REQUEST_STARTED_AT);
+            if ($startedAt === '') {
+                $this->pendingRefundManager->consumeQueryBudget(
+                    $refund,
+                    PendingRefundManager::EVIDENCE_RECONCILE . 'provider request start timestamp missing'
+                );
+                $this->logger->critical(
+                    sprintf(
+                        'ZaloPay refund row #%d: provider-start without timestamp - budget consumed, no query (manual check advised).',
+                        (int)$refund->getId()
+                    )
+                );
+
+                return;
+            }
+
+            $startedTs = (int)(new \DateTime($startedAt, new \DateTimeZone('UTC')))->format('U');
+            if ($this->dateTime->timestamp() < $startedTs + PendingRefundManager::RECONCILIATION_GRACE_SECONDS) {
+                $this->logger->info(
+                    sprintf(
+                        'ZaloPay refund row #%d: provider request started %s - within reconciliation grace, not queried.',
+                        (int)$refund->getId(),
+                        $startedAt
+                    )
+                );
+
+                return;
+            }
         }
 
         // 1. The credit memo must exist (missing = terminal reconcile).

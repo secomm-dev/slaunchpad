@@ -208,3 +208,13 @@ crash-recovery), validation round 3.
 - Fix: claim/bind 2 pha cho CM chưa save (F17); state-driven cron + stale-claim policy (F18); backfill v2 + claim ownership (F19/F20); unique constraint declarative (F21); duplicate detect 1062-driver-only (F22).
 - Suite 306 tests / 1105 assertions OK; PHPCS 0 errors; real-DB F21/F19 DEFER TL (P18).
 - Decisions: DEC-TASKCG6BM7-006.
+
+## Round 5 (2026-09-17)
+
+- TL source review lần 5 (PRE_HEAD `afe1d2ce`): F23–F25.
+- Fix F23: LOCAL_READY (`initiating` — cron không bao giờ query, step 0b abandon có chủ đích) vs state mới `provider_request_started` + `provider_request_started_at` pin bằng UPDATE claim-guarded làm gate CUỐI trước provider HTTP; reconciliation grace 120s > HTTP timeout 10s (Laminas default, TransferFactory không override); cron trong grace no-op, hết grace identity-query cùng m_refund_id.
+- Fix F24: cohort-3 WHERE của `BackfillRefundState` build bằng hai lời gọi quoteInto một-placeholder riêng.
+- Fix F25 (no-defer): real setup:install + setup:upgrade + SHOW CREATE TABLE + legacy cohorts + migration claim proof (`acquireClaim` thật: unresolved REJECTED / resolved ALLOWED / multi-row một owner MIN) + F24 WHERE thật trên MariaDB 10.6 disposable + setup:di:compile PASS — xóa mọi DEFER của round 4.
+- Suite 312 tests / 1126 assertions OK; PHPCS 0 errors; .ai: findings/proofs P19/validation round 5, SPEC Rev 6, PLAN Appendix 5, DEC-007.
+- Không đụng: icon/logo, ExtraFee, MoMo, LLMS, Bitbucket, `auth.json` (pre-existing).
+- Receipt round 5 theo mẫu TL; push chỉ `task/zalopay-postfix-audit`; STOP chờ TL review.

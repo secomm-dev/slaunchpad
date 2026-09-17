@@ -14,7 +14,8 @@
    "created_at": true,
    "updated_at": true,
    "refund_state": true,
-   "active_claim": true
+   "active_claim": true,
+   "provider_request_started_at": true
   },
   "index": {
    "ZALO_PAY_REFUND_ENTITY_ID": true,

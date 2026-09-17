@@ -55,6 +55,13 @@ use Secomm\ZaloPay\Service\RefundOutcomeMarker;
  *                  credit_memo_id are all persisted; any bind-phase failure
  *                  terminates the claim as abandoned-before-I/O and never
  *                  touches the provider (round 4 F17);
+ *  4c. START     - the durable provider_request_started state + UTC
+ *                  timestamp is persisted (UPDATE guarded by
+ *                  active_claim = 1): the explicit LOCAL_READY ->
+ *                  PROVIDER_REQUEST_STARTED boundary (round 5 F23). The
+ *                  cron never queries before this boundary and never
+ *                  queries within the reconciliation grace after it
+ *                  (grace > HTTP timeout);
  *  5. PROVIDER   - executePrepared() performs the ONE provider /refund for
  *                  the claimed identity;
  *  6a. SUCCESS   - the marker pins the known outcome and the NATIVE core
@@ -228,6 +235,25 @@ class CreditmemoRefundPlugin
 
             throw new LocalizedException(
                 __('Zalopay: The refund attempt could not be bound locally. Please try again.')
+            );
+        }
+
+        // PROVIDER-START BOUNDARY (round 5 F23): persist the durable,
+        // timestamped provider-start state BEFORE the provider HTTP may
+        // run. The cron can then never query/release a row whose provider
+        // request may still be in flight: it honors the reconciliation
+        // grace (grace > HTTP timeout). Guarded by active_claim = 1 - a
+        // lost slot means provider I/O is forbidden.
+        if (!$this->pendingRefundManager->markProviderRequestStarted($claim)) {
+            $this->pendingRefundManager->terminate(
+                $claim,
+                PendingRefundManager::EVIDENCE_ABANDONED
+                . 'provider-start state could not be persisted - provider I/O forbidden',
+                RefundInterface::REFUND_STATE_CONFIRMED_FAIL
+            );
+
+            throw new LocalizedException(
+                __('Zalopay: The refund attempt could not be started. Please try again.')
             );
         }
 

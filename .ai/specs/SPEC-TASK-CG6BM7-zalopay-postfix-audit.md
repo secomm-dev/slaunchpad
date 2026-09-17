@@ -306,3 +306,11 @@ TL direct source review round 1 xác nhận 3 khiếm khuyết mà SPEC revision
 - Stale-claim policy: INITIATING không bound CM = `abandoned_before_provider_io` (confirmed_fail, nhả claim); cron state-driven (OPEN = state bind hợp lệ; chỉ CANCELED = drift); CM park PROCESSING sau bind.
 - Backfill v2: 4 cohort evidence-ordered (fail giữ nguyên; success disjoint; ambiguity → UNKNOWN; unresolved → UNKNOWN) + claim ownership MIN(entity_id)/order (`active_claim=1` chặn claim mới qua unique).
 - Unique declarative chuẩn 2.4.8-p5 (`<constraint xsi:type="unique">`); duplicate detect chỉ nhận driver 1062 (FK/23000 khác không phải conflict).
+
+## Revision 6 — Round 5 (F23–F25)
+
+- State machine v5 (DEC-007): `initiating` siết thành **LOCAL_READY** (provider chắc chắn chưa contact — cron KHÔNG bao giờ query, step 0b terminate `abandoned_before_provider_io` → confirmed_fail cho mọi initiating); state mới **`provider_request_started`** + cột **`provider_request_started_at`** (datetime nullable, UTC) pin bằng MỘT UPDATE claim-guarded (`entity_id = ? AND active_claim = 1`) — gate CUỐI trước `executePrepared`; mark fail ⇒ terminate + "could not be started", không bao giờ HTTP.
+- Reconciliation grace: `RECONCILIATION_GRACE_SECONDS = 120` — quan hệ cứng HTTP timeout (Laminas default 10s, TransferFactory không override) < grace. Cron step 0c: thiếu timestamp ⇒ `consumeQueryBudget(reconcile)` (không query, không nhả); trong grace ⇒ no-op toàn phần; hết grace ⇒ identity-query CÙNG m_refund_id. Blocking sets 5 state (thêm `provider_request_started`).
+- F24: cohort-3 WHERE của `BackfillRefundState` build bằng HAI lời gọi `quoteInto` một-placeholder riêng (Zend quoteInto không bind tuần tự array) — cohort semantics F20 giữ nguyên.
+- F25 (no-defer): real `setup:install` + `setup:upgrade` + `SHOW CREATE TABLE zalo_pay_refund` (credit_memo_id NULL YES, FK CASCADE, UNIQUE (order_id, active_claim), UNIQUE (m_refund_id, active_claim), cột mới) + legacy cohorts A/B/C/D + multi-row/one-owner + claim proof `acquireClaim` thật (unresolved REJECTED / resolved ALLOWED) + F24 WHERE thật trên MariaDB 10.6 disposable + `setup:di:compile` PASS — không còn mục DEFER nào.
+- Suite **312 tests / 1126 assertions OK**; PHPCS 0 errors.

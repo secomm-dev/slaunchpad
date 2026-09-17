@@ -74,6 +74,14 @@ class RefundCronjobTest extends TestCase
      */
     private array $cmMap = [];
 
+    /**
+     * Mutable test state: the cron clock (DateTime::timestamp stub), so the
+     * reconciliation-grace tests control "now" (round 5 F23).
+     */
+    private int $nowTs = 1800000000;
+
+    private DateTime|MockObject $dateTime;
+
     private RefundCronjob $cron;
 
     protected function setUp(): void
@@ -92,6 +100,8 @@ class RefundCronjobTest extends TestCase
         $this->cmState = CreditmemoPlugin::STATE_PROCESSING;
         $this->cmMap = [];
         $this->creditmemo = $this->createMock(Creditmemo::class);
+        $this->dateTime = $this->createMock(DateTime::class);
+        $this->dateTime->method('timestamp')->willReturnCallback(fn (): int => $this->nowTs);
         $this->creditmemo->method('getState')->willReturnCallback(
             function (): int {
                 return $this->cmState;
@@ -112,7 +122,7 @@ class RefundCronjobTest extends TestCase
             $this->creditmemoRepository,
             $this->logger,
             $this->refundQueryCommand,
-            $this->createMock(DateTime::class),
+            $this->dateTime,
             $this->authorization,
             $this->scopeConfig,
             new Json(),
@@ -668,15 +678,69 @@ class RefundCronjobTest extends TestCase
     }
 
     /**
-     * Round 4 F18: an INITIATING row WITH a bound credit memo queries the
-     * SAME m_refund_id regardless of the creditmemo sitting in OPEN (the
-     * legitimate pre-provider bind state) - recovery by identity, never a
-     * drift termination.
+     * Round 5 F23: a BOUND initiating row is still LOCAL_READY - the
+     * provider-start boundary has NOT been crossed, so the provider has
+     * DEFINITELY not been contacted. The cron NEVER queries it and NEVER
+     * races the owner: it is abandoned (confirmed_fail, claim released).
      */
-    public function testInitiatingBoundWithOpenCreditmemoQueriesSameIdentity(): void
+    public function testBoundInitiatingLocalReadyIsAbandonedNeverQueried(): void
     {
         $row = $this->refundRow(
             [RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_INITIATING]
+        );
+        $this->stubCollection([$row]);
+
+        $this->cmState = Creditmemo::STATE_OPEN;
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
+        $this->pendingRefundManager->expects($this->once())->method('terminate')
+            ->with(
+                $this->identicalTo($row),
+                $this->stringStartsWith(PendingRefundManager::EVIDENCE_ABANDONED),
+                $this->identicalTo(RefundInterface::REFUND_STATE_CONFIRMED_FAIL)
+            );
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 5 F23: a freshly-started provider request (started_at within
+     * the reconciliation grace, grace 120s > HTTP timeout 10s) is NEVER
+     * queried - request A owns its claim until its provider request has
+     * completed/timed out. The cron does nothing to the row at all.
+     */
+    public function testFreshProviderStartWithinGraceIsNeverQueried(): void
+    {
+        $row = $this->refundRow(
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                RefundInterface::PROVIDER_REQUEST_STARTED_AT => gmdate('Y-m-d H:i:s', $this->nowTs - 30),
+            ]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->never())->method('consumeQueryBudget');
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+        $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 5 F23: after the grace elapsed, crash recovery queries the SAME
+     * m_refund_id (the stale provider-start row takes the identity query
+     * path).
+     */
+    public function testStaleProviderStartQueriesSameMRefundId(): void
+    {
+        $row = $this->refundRow(
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                RefundInterface::PROVIDER_REQUEST_STARTED_AT => gmdate('Y-m-d H:i:s', $this->nowTs - 400),
+            ]
         );
         $this->stubCollection([$row]);
 
@@ -685,6 +749,33 @@ class RefundCronjobTest extends TestCase
             ->willReturn(['return_code' => 3, 'return_message' => 'processing']);
         $this->pendingRefundManager->expects($this->once())->method('consumeQueryBudget')
             ->with($row, null);
+        $this->pendingRefundManager->expects($this->never())->method('terminate');
+
+        $this->cron->execute();
+    }
+
+    /**
+     * Round 5 F23: a provider-start row with a MISSING timestamp cannot be
+     * grace-checked - bounded budget consumption with reconcile evidence,
+     * never a query and never a release.
+     */
+    public function testProviderStartMissingTimestampConsumesBudget(): void
+    {
+        $row = $this->refundRow(
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                RefundInterface::PROVIDER_REQUEST_STARTED_AT => null,
+            ]
+        );
+        $this->stubCollection([$row]);
+
+        $this->creditmemoRepository->expects($this->never())->method('get');
+        $this->refundQueryCommand->expects($this->never())->method('getRefundQuery');
+        $this->pendingRefundManager->expects($this->once())->method('consumeQueryBudget')
+            ->with(
+                $this->identicalTo($row),
+                $this->stringStartsWith(PendingRefundManager::EVIDENCE_RECONCILE)
+            );
         $this->pendingRefundManager->expects($this->never())->method('terminate');
         $this->pendingRefundManager->expects($this->never())->method('finalizeSuccess');
 

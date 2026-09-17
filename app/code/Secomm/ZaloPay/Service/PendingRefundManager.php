@@ -75,6 +75,17 @@ class PendingRefundManager
     public const EVIDENCE_ABANDONED = 'abandoned_before_provider_io: ';
 
     /**
+     * Reconciliation grace (round 5 F23): the cron must NEVER query a row
+     * while its provider HTTP may still be in flight. The gateway transfer
+     * factory sets NO client timeout override, so the provider HTTP is
+     * bounded by the Laminas client default timeout = 10s. The grace
+     * (120s) is >= 12x that hard ceiling: a query can only ever run after
+     * the request must have completed or timed out. Persisted as
+     * provider_request_started_at (UTC).
+     */
+    public const RECONCILIATION_GRACE_SECONDS = 120;
+
+    /**
      * @param RefundResource $refundResource Refund resource: connection, transaction, row lock.
      * @param RefundCollectionFactory $refundCollectionFactory
      * @param CreditmemoRepositoryInterface $creditmemoRepository
@@ -120,6 +131,7 @@ class PendingRefundManager
             RefundInterface::REFUND_STATE,
             ['in' => [
                 RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
                 RefundInterface::REFUND_STATE_PROCESSING,
                 RefundInterface::REFUND_STATE_UNKNOWN,
                 RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,
@@ -234,6 +246,47 @@ class PendingRefundManager
         );
         if ($affected === 1) {
             $refund->setData(RefundInterface::CREDIT_MEMO_ID, $creditMemoId);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * The durable, timestamped PROVIDER-START boundary (round 5 F23):
+     * persists `provider_request_started` + provider_request_started_at
+     * (UTC) BEFORE the provider HTTP may run. This is the last gate: the
+     * provider gate is now claim + stable m_refund_id + real bound
+     * credit_memo_id + THIS persisted provider-start state. The UPDATE is
+     * guarded by active_claim = 1: if the claim slot was lost between the
+     * bind and this mark (concurrent cron stale-claim release / terminal
+     * transition), the mark fails and the plugin MUST never reach the
+     * provider. No DB transaction stays open across the provider HTTP
+     * (single committed autocommit UPDATE).
+     *
+     * @param RefundModel $refund The claimed, bound row.
+     * @return bool True when THIS row still owns the claim and the
+     *         provider-start boundary is persisted.
+     */
+    public function markProviderRequestStarted(RefundModel $refund): bool
+    {
+        $connection = $this->refundResource->getConnection();
+        $startedAt = (new \DateTime('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+        $affected = $connection->update(
+            $this->refundResource->getMainTable(),
+            [
+                RefundInterface::REFUND_STATE => RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
+                RefundInterface::PROVIDER_REQUEST_STARTED_AT => $startedAt,
+            ],
+            [
+                RefundInterface::ENTITY_ID . ' = ?' => (int)$refund->getId(),
+                RefundInterface::ACTIVE_CLAIM . ' = ?' => 1,
+            ]
+        );
+        if ($affected === 1) {
+            $refund->setData(RefundInterface::REFUND_STATE, RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED);
+            $refund->setData(RefundInterface::PROVIDER_REQUEST_STARTED_AT, $startedAt);
 
             return true;
         }
@@ -377,6 +430,7 @@ class PendingRefundManager
             $state = (string)$refund->getData(RefundInterface::REFUND_STATE);
             $blocking = in_array($state, [
                 RefundInterface::REFUND_STATE_INITIATING,
+                RefundInterface::REFUND_STATE_PROVIDER_REQUEST_STARTED,
                 RefundInterface::REFUND_STATE_PROCESSING,
                 RefundInterface::REFUND_STATE_UNKNOWN,
                 RefundInterface::REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING,

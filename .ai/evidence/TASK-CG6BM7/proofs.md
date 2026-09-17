@@ -272,3 +272,33 @@ autocommit không giữ lock xuyên HTTP).
 
 - Đã dựng trong container `slaunchpad-phpfpm-1`: tree `/tmp/m2b` (copy hardlink Magento 2.4.8-p5, code round-4 stage tại `app/code/Secomm/ZaloPay`), MariaDB 10.11.19 container `zt-mariadb` (db `magento`, root/zt-f21-pw), OpenSearch 2.19.1 container `zt-opensearch`, network `zt-f21-net`.
 - Các lần thử tự động: `setup:upgrade` trực tiếp trên DB trống lỗi data-phase core ("The default website isn't defined" — empty-DB cần setup:install); `setup:install` với cờ `--opensearch2-*` sai (option list 2.4.8-p5 chỉ có `--opensearch-*`, engine id `opensearch` theo `module-open-search/etc/search_engine.xml`). Chưa có lần chạy PASS ⇒ không bịa evidence; lệnh PASS dự kiến + các verify (SHOW CREATE TABLE, patch_list, seed legacy → re-run patch → F19 block/unblock) ghi ở validation.md round 4 cho TL chạy.
+
+## P19 — Round 5 (F23/F24/F25): unit + REAL-DB evidence (MariaDB 10.6 disposable, NO-DEFER)
+
+### F23 — LOCAL_READY / PROVIDER_REQUEST_STARTED boundary
+
+- Unit (cron, clock mock `DateTime::timestamp` điều khiển được):
+  - `testBoundInitiatingLocalReadyIsAbandonedNeverQueried` — row initiating CÓ bound CM (CM OPEN): `creditmemoRepository->get` 0 lần, `getRefundQuery` 0 lần, `consumeQueryBudget` 0 lần, terminate `abandoned_before_provider_io` + confirmed_fail đúng 1 lần ⇒ cron KHÔNG query LOCAL_READY, KHÔNG nhả qua query-fail (nhả qua terminate có chủ đích).
+  - `testFreshProviderStartWithinGraceIsNeverQueried` — `provider_request_started_at` = now−30s (grace 120): query 0, budget 0, terminate 0, finalize 0 — request A giữ claim tới khi HTTP của nó xong/timeout.
+  - `testStaleProviderStartQueriesSameMRefundId` — started_at = now−400s: `getRefundQuery` đúng 1 lần (CÙNG m_refund_id từ payload row), `consumeQueryBudget($row, null)` 1 lần, không terminate.
+  - `testProviderStartMissingTimestampConsumesBudget` — started_at NULL: `consumeQueryBudget` 1 lần với evidence `reconcile:...`, query 0, terminate 0.
+  - PROCESSING/UNKNOWN query như cũ (giữ round 4); PSLP local-only (giữ round 3).
+- Unit (manager): `testMarkProviderRequestStartedPinsStateAndTimestamp` — UPDATE `zalo_pay_refund` SET state=`provider_request_started` + timestamp string UTC, WHERE `entity_id = ? AND active_claim = ? = 1`; affected 1 ⇒ true + data set trên model. `testMarkProviderRequestStartedFailsWhenClaimReleased` — affected 0 ⇒ false, model KHÔNG bị đổi.
+- Unit (plugin): REQUIRED `testRealAdminUnsavedCreditmemoBindBeforeProvider` — recorder giờ là `['save','bind','start','provider']` (mark provider-start giữa bind và executePrepared). `testProviderStartMarkFailureNeverTouchesProvider` — mark false ⇒ terminate `provider-start state could not be persisted - provider I/O forbidden` + confirmed_fail + "could not be started", `executePrepared` 0 lần, core 0 lần.
+- Blocking sets: `testHasInFlightBlocksProcessingAndUnknownStatesOnly` pin bộ `in` 5 state (initiating, provider_request_started, processing, unknown, provider_success_local_pending).
+- Real DB (bootstrap script trên Magento thật + MariaDB 10.6, bảng `zalo_pay_refund` thật): CASE2 `acquireClaim` tạo row#9; CASE3 `markProviderRequestStarted` ⇒ true, DB row `refund_state=provider_request_started`, `provider_request_started_at` UTC persisted **trước** mọi provider HTTP (PROVIDER_START_DURABLE_BEFORE_HTTP); CASE4 simulate stale-release (`UPDATE active_claim=NULL`) rồi mark lại ⇒ **false** (claim-guarded UPDATE ảnh hưởng 0 row) ⇒ CLAIM_RELEASE_BEFORE_PROVIDER_COMPLETES = NO (cron không nhả claim trong grace; nếu nhả thì mark fail ⇒ plugin tự chặn HTTP).
+
+### F24 — quoteInto một-placeholder-một-lời-gọi
+
+- Unit: mock `quoteInto` trung thực Zend (int ⇒ bare, string ⇒ single-quoted) + `assertCount(2, $quoted)` (chỉ cohort 3 dùng quoteInto) + assertSame exact WHERE: `is_processed = 1 AND last_error IS NOT NULL AND last_error NOT LIKE 'refund_failed:%'`.
+- Real SQL (MariaDB 10.6): cohort-3 WHERE chạy trực tiếp chọn DUY NHẤT entity 6 (`transport_error: cURL timeout`); entity 5 (`refund_failed: Insufficient balance`) chỉ match cohort-fail WHERE và giữ `refund_state=confirmed_fail` SAU khi cohort-success đã chạy ⇒ FAIL_COHORT giữ nguyên, không bị SUCCESS cohort đè.
+
+### F25 — REAL setup:install / setup:upgrade / SHOW CREATE TABLE / migration claim proof
+
+- Stack: container `slaunchpad-phpfpm-1` (PHP 8.3.20), tree `/tmp/m2b` (Magento 2.4.8-p5, module round-5 stage tại `app/code/Secomm/ZaloPay`), MariaDB **10.6.28** `zt-mariadb106` (10.11 bị 2.4.8 từ chối), OpenSearch 2.19.1 `zt-opensearch`, network `zt-f21-net`.
+- `setup:install` PASS (exit 0): 358 module enabled (core + Secomm_ZaloPay; bên thứ 3 disabled tạm trong config.php throwaway — cli command list của chúng kéo `Session\Config` đọc default website trên DB rỗng ⇒ crash; nguyên nhân gốc ở tree test, KHÔNG phải code module).
+- `SHOW CREATE TABLE zalo_pay_refund` (sau install thật): `credit_memo_id int(10) unsigned DEFAULT NULL`; `UNIQUE KEY ZALO_PAY_REFUND_ORDER_ID_ACTIVE_CLAIM (order_id, active_claim)`; `UNIQUE KEY ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE_CLAIM (m_refund_id, active_claim)`; `CONSTRAINT ZALO_PAY_REFUND_CREDIT_MEMO_ID_SALES_CREDITMEMO_ENTITY_ID FOREIGN KEY (credit_memo_id) REFERENCES sales_creditmemo(entity_id) ON DELETE CASCADE`; `provider_request_started_at datetime DEFAULT NULL` (tên index do MariaDB normalize, khớp referenceId).
+- `setup:upgrade` PASS (exit 0) sau khi DROP cột `provider_request_started_at` + xóa patch entry: cột được tái tạo qua declarative delta (col_restored=1) + patch `BackfillRefundState` re-run (có lại trong patch_list).
+- Legacy cohorts seed 7 row (5001×3 unresolved, 5002 resolved success, 5003 refund_failed, 5004 transport_error, 5005 unresolved): sau upgrade — 5001-A/B/C all `unknown`, **đúng 1** `active_claim=1` (entity 1 = MIN); 5002 `confirmed_success`; 5003 `confirmed_fail` (không bị đè); 5004 `unknown`; 5005 `unknown` (owner riêng) ⇒ FAIL/SUCCESS/AMBIGUOUS/UNRESOLVED cohorts + MULTIPLE_LEGACY_ROWS_ONE_CLAIM.
+- Migration claim proof qua `acquireClaim` THẬT (Magento bootstrap, real DI): legacy unresolved order 5001 → REJECTED (`Zalopay: Another refund for this order is active or awaiting reconciliation.` — 1062 thật qua unique index thật); legacy resolved order 5002 → ALLOWED (row#9) ⇒ LEGACY_UNRESOLVED_BLOCKS_NEW_CLAIM=YES.
+- `setup:di:compile` PASS (exit 0, "Generated code and dependency injection configuration successfully.") trên /tmp/m2b với đúng code round-5.
