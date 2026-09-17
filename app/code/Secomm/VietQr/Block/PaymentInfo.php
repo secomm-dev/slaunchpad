@@ -24,6 +24,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Secomm\VietQr\Api\QrGeneratorInterface;
 use Secomm\VietQr\Model\Config;
+use Secomm\VietQr\Model\VndAmount;
 
 /**
  * Renders the VietQR payment information page with QR code, bank details,
@@ -46,6 +47,7 @@ class PaymentInfo extends \Magento\Framework\View\Element\Template
         private readonly CheckoutSession $checkoutSession,
         private readonly UrlInterface $urlBuilder,
         private readonly Config $config,
+        private readonly VndAmount $vndAmount,
         private readonly QrGeneratorInterface $qrGenerator,
         private readonly TimezoneInterface $timezone,
         private readonly LoggerInterface $logger,
@@ -233,7 +235,7 @@ class PaymentInfo extends \Magento\Framework\View\Element\Template
      */
     public function getAmount(): float
     {
-        return (float)($this->paymentInfo['vietqr_amount'] ?? $this->order?->getGrandTotal() ?? 0);
+        return (float)($this->paymentInfo['vietqr_amount'] ?? ($this->order ? $this->vndAmount->get($this->order) : 0));
     }
 
     /**
@@ -241,10 +243,10 @@ class PaymentInfo extends \Magento\Framework\View\Element\Template
      */
     public function getFormattedAmount(): string
     {
-        if (!$this->order || !$this->order->getOrderCurrency()) {
+        if (!$this->order) {
             return '';
         }
-        return $this->order->getOrderCurrency()->formatTxt($this->getAmount());
+        return $this->vndAmount->format($this->getAmount());
     }
 
     /**
@@ -391,7 +393,7 @@ class PaymentInfo extends \Magento\Framework\View\Element\Template
                     'vietqr_bank_name' => $this->config->getBankCode(),
                     'vietqr_bank_account' => $this->config->getBankAccount(),
                     'vietqr_account_name' => $this->config->getAccountName(),
-                    'vietqr_amount' => (float)$this->order->getGrandTotal(),
+                    'vietqr_amount' => $this->vndAmount->get($this->order),
                     'vietqr_content' => $content,
                     'vietqr_generated_at' => $now,
                 ]);

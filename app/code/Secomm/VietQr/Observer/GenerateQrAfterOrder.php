@@ -15,6 +15,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Psr\Log\LoggerInterface;
 use Secomm\VietQr\Api\QrGeneratorInterface;
 use Secomm\VietQr\Model\Config;
+use Secomm\VietQr\Model\VndAmount;
 
 /**
  * Generates a VietQR code after an order is placed with the VietQR payment
@@ -29,6 +30,7 @@ class GenerateQrAfterOrder implements ObserverInterface
     public function __construct(
         private readonly QrGeneratorInterface $qrGenerator,
         private readonly Config $config,
+        private readonly VndAmount $vndAmount,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -72,7 +74,7 @@ class GenerateQrAfterOrder implements ObserverInterface
                     'vietqr_bank_name' => $this->config->getBankCode(),
                     'vietqr_bank_account' => $this->config->getBankAccount(),
                     'vietqr_account_name' => $this->config->getAccountName(),
-                    'vietqr_amount' => (float)$order->getGrandTotal(),
+                    'vietqr_amount' => $this->vndAmount->get($order),
                     'vietqr_content' => $content,
                     'vietqr_generated_at' => $now,
                 ]

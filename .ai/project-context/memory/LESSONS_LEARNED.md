@@ -280,6 +280,15 @@ Template cho entry kế tiếp — copy từ đây:
 - **Action / prevention**: (1) login curl: tự cấp `form_key` (Hyvä sinh client-side — cookie + POST param cùng giá trị), parse `PHPSESSID`/`X-Magento-Vary` từ `-D header-file` rồi gửi `-b "PHPSESSID=…; X-Magento-Vary=…"` thủ công cho các request sau; Location phải ra `/customer/account/` (ra `/login` = sai credentials). (2) working pattern hoàn chỉnh: `.ai/runtime/evidence/BUG-PWP31X/verify-live.sh` + `e2e-edit-save.js` (playwright as root, `NODE_PATH=/tmp/pw-cal/node_modules`, `--host-resolver-rules=MAP slaunchpad.localhost 127.0.0.1`).
 - **Owner**: dev/QC team
 
+## LL-0027 — `config:set` trên field type `image` ghi NULL: backend model nuốt value khi không có upload data
+
+- **Date**: 2026-09-16
+- **Source**: TASK-T63QVQ (SLP-237) verify session — test nhánh uploaded-logo của field `payment/secomm_vietqr/logo` (type `image`, backend `Magento\Config\Model\Config\Backend\Image`)
+- **Type**: avoid
+- **Context**: `bin/magento config:set payment/secomm_vietqr/logo default/test-logo.png` báo "Value was saved." nhưng row trong `core_config_data` = **NULL**. CLI save đi qua backend model của field: `File::beforeSave()` không thấy upload data (`getFileData()` rỗng, value là string không phải array) → rơi vào nhánh `else` → `unsValue()`. Field image/file chỉ set được qua (1) admin form (upload/keep/delete flows đều đúng) hoặc (2) SQL trực tiếp vào `core_config_data` + `cache:flush config`.
+- **Action / prevention**: (1) test/spect field image bằng SQL row với value format `<scope>[/<scopeId>]/<file>` (theo `_prependScopeInfo`) — URL frontend = media base + `upload_dir` + value; (2) đừng tin "Value was saved." của CLI trên field non-text — luôn SELECT lại row (liên hệ LL-0025: check trước khi set + revert bằng DELETE row); (3) mở rộng field image cho module khác: copy nguyên bộ `backend_model` + `upload_dir config="system/filesystem/media" scope_info="1"` + `base_url` — thiếu `base_url` thì admin mất preview.
+- **Owner**: dev/QC team
+
 
 ## LL-0027 — Alpine trên theme này chạy với MutationObserver OFF: `x-data` phải đi kèm `x-defer`; `<template x-if>` không bind directives
 
