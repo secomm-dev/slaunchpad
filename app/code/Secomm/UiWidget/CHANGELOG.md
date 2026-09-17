@@ -5,6 +5,9 @@
 - Fixed all schema-driven `media-image` controls to persist storefront media URLs instead of temporary Admin directive URLs.
 - Resolved portable widget media paths to the current store's absolute media base URL during storefront rendering.
 - Added schema-driven Admin validation for required fields, conditional required fields and minimum repeater item counts before widget insertion.
+- Added a scoped Mirasvit SEO Autolink compatibility fallback so a failed regex pass cannot erase rendered Secomm UI CMS content.
+- Made the Video Embed provider explicitly required and normalized scalar, media, collection and conditional required validation across all Admin widget component forms.
+- Fixed Magento Media Gallery target resolution for Secomm UI image fields when the WYSIWYG adapter returns a non-jQuery target.
 
 ## 1.4.0 - 2026-08-28
 

@@ -30,6 +30,7 @@ class EmbedADefinitionTest extends TestCase
         $fields = array_column((new EmbedADefinition())->getFields(), null, 'name');
 
         self::assertSame(['youtube', 'vimeo'], array_column($fields['provider']['options'], 'value'));
+        self::assertTrue($fields['provider']['required']);
         self::assertSame('video-url', $fields['video_url']['type']);
         self::assertSame('provider', $fields['video_url']['provider_field']);
         self::assertTrue($fields['video_url']['required']);

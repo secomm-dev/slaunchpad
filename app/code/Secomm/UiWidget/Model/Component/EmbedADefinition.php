@@ -37,6 +37,7 @@ class EmbedADefinition extends Definition
         return [
             [
                 'name' => 'provider', 'type' => 'select', 'label' => 'Video Provider', 'default' => 'youtube',
+                'required' => true,
                 'options' => $this->options(['youtube' => 'YouTube', 'vimeo' => 'Vimeo']),
             ],
             [
