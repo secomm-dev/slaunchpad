@@ -8,7 +8,12 @@ if (!$payment || $payment->getMethod() !== 'secomm_vietqr') {
 $info = $payment->getAdditionalInformation() ?: [];
 $bankCode = $info['vietqr_bank_code'] ?? '';
 $bankAccount = $info['vietqr_bank_account'] ?? '';
-$amount = (int)round((float)($info['vietqr_amount'] ?? $order->getGrandTotal()));
+// Always VND (BUG-4BX0CK) — bank transfers only accept VND
+$vndAmount = $block->getData('vietqr_vnd_amount');
+$amount = isset($info['vietqr_amount'])
+    ? (int)round((float)$info['vietqr_amount'])
+    : ($vndAmount?->get($order) ?? 0);
+$amountDisplay = $vndAmount ? $vndAmount->format($amount) : '';
 $content = $info['vietqr_content'] ?? '';
 $accountName = $info['vietqr_account_name'] ?? '';
 
@@ -88,11 +93,7 @@ if ($vietqrConfig
             <?= $block->escapeHtml(__('Amount')) ?>
         </td>
         <td style="padding:8px 10px;border-bottom:1px solid #e0e0e0;font-weight:bold;">
-            <?= $block->escapeHtml(
-                $order->getOrderCurrency()->formatTxt(
-                    (float)($info['vietqr_amount'] ?? $order->getGrandTotal())
-                )
-            ) ?>
+            <?= $block->escapeHtml($amountDisplay) ?>
         </td>
     </tr>
     <tr>

@@ -6,6 +6,7 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Quote\Api\CartManagementInterface;
+use Magento\Quote\Model\CartLockedException;
 use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -77,16 +78,36 @@ class Pay extends Action
                         try {
                             $orderId = $this->cartManagement->placeOrder($quote->getId());
                             $order = $this->orderRepository->get($orderId);
+                        } catch (CartLockedException $e) {
+                            // The IPN callback is placing the same order
+                            // concurrently (CartMutex serializes placeOrder per
+                            // quote with timeout 0). Wait for the IPN to finish
+                            // and re-check once before giving up.
+                            $this->logger->info('VNPAY: place order locked by the concurrent IPN process, re-checking: ' . $e->getMessage());
+                            sleep(2);
+                            $order = $this->order->loadByIncrementId($txnRef);
                         } catch (\Exception $e) {
                             $this->logger->error('VNPAY place order error: ' . $e->getMessage());
                         }
                     }
                 }
                 if ($order->getId()) {
+                    // The order was placed outside the checkout session
+                    // lifecycle (Ipn/Pay) — reset the stale quote binding
+                    // before populating success session data.
+                    $this->checkoutSession->clearQuote();
+                    $this->checkoutSession->clearHelperData();
                     $this->checkoutSession->setLastQuoteId($order->getQuoteId());
                     $this->checkoutSession->setLastSuccessQuoteId($order->getQuoteId());
                     $this->checkoutSession->setLastOrderId($order->getId());
                     $this->checkoutSession->setLastRealOrderId($order->getIncrementId());
+                } else {
+                    // Payment succeeded at VNPAY but the order could not be
+                    // placed — manual reconciliation required.
+                    $this->logger->critical('VNPAY: payment successful but no order was created (ref ' . $txnRef . ') — manual reconciliation required');
+                    $this->messageManager->addErrorMessage(__('Your payment was received but the order could not be created. Please contact us for assistance.'));
+                    $this->clearStaleOrderSession();
+                    return $this->resultRedirectFactory->create()->setPath('checkout/cart');
                 }
                 $this->messageManager->addSuccessMessage(__('Payment successful'));
                 return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success');

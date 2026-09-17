@@ -11,6 +11,9 @@
  *
  * Dedicated fetch (NOT hyvaAjaxFormMinicart — its error path is item-scoped),
  * inline error display, applied state from the cart section (coupon_code).
+ * SLP-224 (TASK-WXBQYZ): empty code no longer POSTs — the core CouponManagement
+ * treats coupon_code='' as a silent no-op success — instead an inline warning
+ * (message warning) renders right below the Apply button and clears on input.
  */
 
 declare(strict_types=1);
@@ -62,7 +65,7 @@ $lucideIcons = $viewModels->require(LucideIcons::class);
                     x-bind:disabled="busy || applied"
                     placeholder="<?= $escaper->escapeHtmlAttr(__('Enter discount code')) ?>"
                     x-bind:value="applied ? cart.coupon_code : code"
-                    @input="code = $el.value"
+                    @input="code = $el.value; warning = false; error = ''"
                 >
             </div>
             <template x-if="!applied">
@@ -76,7 +79,8 @@ $lucideIcons = $viewModels->require(LucideIcons::class);
                 </button>
             </template>
             <p
-                class="message error"
+                class="message"
+                :class="warning ? 'warning' : 'error'"
                 x-show="error"
                 x-text="error"
             ></p>
@@ -89,12 +93,21 @@ $lucideIcons = $viewModels->require(LucideIcons::class);
             showForm: false,
             code: '',
             error: '',
+            warning: false,
             busy: false,
             get applied() {
                 return Boolean(this.cart && this.cart.coupon_code);
             },
             async post(remove) {
+                // SLP-224: guard the empty submit client-side so the POST (and the
+                // core no-op success it produces) never happens for a blank code.
+                if (!remove && !this.code.trim()) {
+                    this.warning = true;
+                    this.error = '<?= $escaper->escapeJs(__('Please enter a coupon code')) ?>';
+                    return;
+                }
                 this.busy = true;
+                this.warning = false;
                 this.error = '';
 
                 const body = new URLSearchParams({ form_key: hyva.getFormKey() });

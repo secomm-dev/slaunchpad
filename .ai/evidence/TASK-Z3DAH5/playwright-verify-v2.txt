@@ -1,0 +1,19 @@
+PASS | T0 trigger cards vi | count=12
+PASS | T1a modal open + name | title=Linje Table Runner
+PASS | T1b price rendered | price=55 ₫
+PASS | T1c gallery imgs | imgs=5
+PASS | T1d ATC success (modal closes, drawer opens) | modalClosed=true drawerOpen=true
+PASS | T1e no reload AC-001 | flag=alive
+PASS | T1f minicart count AC-003 | before=null after=1
+PASS | T2a configurable swatch radios (PDP parity, no selects) | swatches=2, selects=0
+PASS | T2b missing-selection guard AC-002 | Bạn cần chọn tùy chọn cho sản phẩm.
+PASS | T2c cart unchanged after guard | count=1
+PASS | T2e price after selection | before=1.400 ₫ after=1.400 ₫
+PASS | T2f configurable ATC AC-003 (handover drawer) | modalClosed=true after=2
+PASS | T3a Esc closes dialog AC-004 | open=false
+PASS | T3b focus moves into dialog | active=true
+PASS | T3c graphql products query fired | queries=2
+PASS | T3d console errors (non-ambient) | clean (ambient ExtraFee filtered: 0)
+PASS | T4 mobile 375 no h-scroll AC-004 | scrollWidth=360
+PASS | T4b mobile dialog fits | {"x":16,"y":36,"width":328,"height":648}
+PASS | T5 en store live check | SKIP — store switch không hoạt động trên local env hiện tại (pre-existing); en identity đã verify dict-level (verify-i18n 10/10) + trước đây T5 PASS

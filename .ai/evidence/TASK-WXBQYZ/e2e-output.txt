@@ -1,0 +1,20 @@
+PASS vi/T1 empty → warning visible
+PASS vi/T1 text đúng "Vui lòng nhập mã giảm giá"
+PASS vi/T1 class = message warning message warning
+PASS vi/T1 không có POST posts=0
+PASS vi/position message ngay dưới button gap=8px
+PASS vi/T2 whitespace → warning giữ nguyên "Vui lòng nhập mã giảm giá"
+PASS vi/T2 không có POST posts=0
+PASS vi/T3 gõ chữ → message ẩn
+PASS vi/T4 mã sai → error hiển thị Mã giảm giá không hợp lệ. Vui lòng kiểm tra lại mã và thử lại.
+PASS vi/T4 class = message error (không warning) message error
+PASS vi/T4 đúng 1 POST posts=1
+PASS vi/console errors (không tính baseline noise) = 0
+PASS en/lang=en trên page render lang=en
+PASS en/string bake trong page source
+PASS en/ATC fetch 200 status=200
+PASS en/empty → warning EN đúng (runtime) "Please enter a coupon code"
+PASS en/không có POST posts=0
+PASS mobile/empty → warning visible "Vui lòng nhập mã giảm giá"
+PASS mobile/message dưới button, không tràn viewport {"below":true,"inView":true}
+PASS mobile/không có POST posts=0

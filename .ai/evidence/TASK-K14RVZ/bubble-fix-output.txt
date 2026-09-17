@@ -1,0 +1,10 @@
+PASS  A: đúng 1 invalid event/round  — count=1
+PASS  A: defaultPrevented=false → browser sẽ render bubble  — [{"target":"cart[508][qty]","dp":false}]
+PASS  A: validationMessage VI  — got="Vui lòng điền vào trường này."
+PASS  A: submit bị chặn (0 POST updatePost)  — posts=0
+PASS  B: defaultPrevented=false + 1 event  — [{"target":"cart[508][qty]","dp":false}]
+PASS  B: validationMessage VI + interpolate  — got="Giá trị phải nhỏ hơn hoặc bằng 10000."
+PASS  B: vẫn chưa có POST updatePost  — posts=0
+PASS  C: valid submit → qty=2 persist  — got="2"
+PASS  C: POST updatePost đã đi qua  — posts=1
+PASS  không có pageerror mới từ change set  — initConfigurableSwatchOptions: | optionIsDisabled is not defined | optionIsDisabled is not defined | optionIsDisabled is not defined | optionIsDisabled is not defined | isTooltipVisible is not defined

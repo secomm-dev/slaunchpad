@@ -390,7 +390,7 @@ $miniCartOptionShowSku = $block->getShowSku() !== null ? (bool) $block->getShowS
                                         min="1"
                                         step="1"
                                         inputmode="numeric"
-                                        class="w-18 border border-slate-300 rounded text-center"
+                                        class="w-14 md:w-18 border border-slate-300 rounded text-center"
                                         x-bind:value="item.qty"
                                         @input.debounce.1500ms="normalizeQty($el.closest('form'))"
                                         @change="normalizeQty($el.closest('form'))"

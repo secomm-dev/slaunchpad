@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Launchpad_MageplazaSocialLogin — OSC page wiring (TASK-8TXS2P / SLP-203).
+ *
+ * The checkout runs in the Magento/luma scope (LL-0011): the vendor
+ * hyva_default template swap and the child-theme overrides of SLP-160 never
+ * load here, so the social-login modal renders the legacy luma markup. This
+ * handle exists only when OSC is enabled and attaches the restyle CSS at
+ * module level — a theme stylesheet never loads on this page.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Launchpad_MageplazaSocialLogin::css/social-login-checkout.css"/>
+    </head>
+</page>

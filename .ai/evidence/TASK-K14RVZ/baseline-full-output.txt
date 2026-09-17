@@ -1,0 +1,7 @@
+baseline-full pageerrors: 6
+  - initConfigurableSwatchOptions:
+  - optionIsDisabled is not defined
+  - optionIsDisabled is not defined
+  - optionIsDisabled is not defined
+  - optionIsDisabled is not defined
+  - isTooltipVisible is not defined

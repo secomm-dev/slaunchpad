@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.4 (2026-09-16)
+
+- Fixed VietQR amount not converted to VND when the order is placed in another display currency (e.g. EN store view) — the QR amount, `vietqr_amount` snapshot, and all displays (payment page, admin order view, email) now always use VND (BUG-4BX0CK / SLP-234)
+- Added `Model/VndAmount` — resolves the order amount in VND (order currency VND → grand total; base currency VND → base grand total; otherwise convert via directory currency rate, throws when no VND rate is configured so QR generation falls back to manual transfer instructions instead of a wrong amount)
+- Amount formatting is now integer VND (`1.250.000 VND`) instead of the order-currency format (VND has no subunit)
+- Note: orders placed before this fix keep their stored `vietqr_amount`/QR — regenerate manually if needed
+
 ## 1.0.3 (2026-09-03)
 
 - Added `Block/Info/VietQr` to render payment additional information (Bank, Account Number, Account Holder, Amount, Transfer Content, Customer Confirmed, Confirmed At, Transaction Reference, Customer Notes) in Admin Order View and invoices/PDFs (BUG-63CVS3 / SLP-149)

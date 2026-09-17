@@ -1,0 +1,26 @@
+PASS | T0 trigger cards vi | count=12
+PASS | T1a modal open + name | title=Linje Table Runner
+PASS | T1b price rendered | price=77,83 $
+PASS | T1c gallery imgs | imgs=5
+PASS | T1d ATC success message | Bạn đã thêm Linje Table Runner vào giỏ hàng.
+PASS | T1e no reload AC-001 | flag=alive
+PASS | T1f minicart count AC-003 | before=null after=1
+PASS | T1g close button | open=false
+PASS | T2a configurable selects | selects=1
+PASS | T2b missing-selection guard AC-002 | Bạn cần chọn tùy chọn cho sản phẩm.
+PASS | T2c cart unchanged after guard | count=1
+PASS | T2d oos option disabling (info) | disabledOptions=0
+PASS | T2e price after selection | before=1.981,00 $ after=1.981,00 $
+PASS | T2f configurable ATC AC-003 | after=2
+PASS | T3a Esc closes dialog AC-004 | open=false
+PASS | T3b focus moves into dialog | active=true
+PASS | T3c graphql products query fired | queries=2
+PASS | T3d console errors (non-ambient) | clean (ambient ExtraFee filtered: 0)
+PASS | T4 mobile 375 no h-scroll AC-004 | scrollWidth=360
+PASS | T4b mobile dialog fits | {"x":16,"y":36,"width":328,"height":648}
+PASS | T5a en trigger labels | count=12
+PASS | T5b en modal labels identity | submit=Add to Cart
+PASS | T5c en ATC no reload + identity | You added Linje Table Runner to your shopping cart.
+PASS | T6 card ATC form POST regression | before=null after=1 url=http://slaunchpad.localhost/dining.html
+
+SUMMARY: 24/24 PASS

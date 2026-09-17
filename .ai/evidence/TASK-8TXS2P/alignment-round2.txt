@@ -1,0 +1,20 @@
+TASK-8TXS2P — Round 2 (user feedback: "input chưa thẳng hàng do có padding left") — 2026-09-16
+
+Root cause bổ sung (P4 scope hẹp): vendor width:98% + float xen kẽ (float:right trên .mp-6,
+float:left !important trên .mp-clear — Mageplaza_Osc style.css ~993) gây lệch ở MỌI breakpoint,
+không chỉ ≤480px như fix round 1:
+  - 1280px (2 cột): input cột 2 x=310.9 vs field x=305.2 → lệch +5.7px so nhãn
+  - 768px: fields đã stack nhưng cột 2 vẫn float:right → +6.7px
+  - 600px: +10.8px
+  - 375px: sót select Quốc gia/Tỉnh (float left/right, w=308.7 ≠ 315)
+
+Fix: rule all-widths scoped .form-shipping-address/.row-mp — float:none !important + width:100%
+!important (gutter do .col-mp padding 10px quản lý) + normalize padding-left select 10→9px
+(text inset đồng nhất input; cascade dropdown Phường/Xã inject ngoài .control → selector
+.field-level).
+
+Verify (probe-align2.js, 4 viewports):
+  - boxOffset (input.x − field.x): 0 ở 100% field, mọi viewport (trước: 5.7–10.8px)
+  - textStart uniform: 1280 = [30, 315.2] (2 cột — theo track); 768/600/375 = 1 giá trị
+  - float:left còn lại trên 4 field mp-clear = vô hại (box trùng field edge, textStart chứng minh)
+  - Full suite verify.js vi: 30/30 PASS (không regression)

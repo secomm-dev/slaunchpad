@@ -61,6 +61,19 @@ class Config
     }
 
     /**
+     * Uploaded logo filename relative to media/vietqr/ (empty when not uploaded).
+     *
+     * @return string
+     */
+    public function getLogo(): string
+    {
+        return (string)$this->scopeConfig->getValue(
+            self::XML_PATH_PREFIX . 'logo',
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
      * @return string
      */
     public function getBankCode(): string

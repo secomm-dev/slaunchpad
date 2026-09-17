@@ -1,0 +1,133 @@
+=== vi-1280-fresh ===
+{
+ "state": {
+  "errorVisible": false,
+  "errorText": null,
+  "inputValue": "",
+  "inputDisabled": false,
+  "btnClass": "action action-apply"
+ },
+ "inner": {
+  "rect": {
+   "top": 434.1,
+   "bottom": 470.1,
+   "h": 36,
+   "w": 570.4
+  },
+  "alignItems": "center",
+  "flexWrap": "wrap"
+ },
+ "control": {
+  "rect": {
+   "top": 434.1,
+   "bottom": 470.1,
+   "h": 36,
+   "w": 418.4
+  },
+  "height": "36px"
+ },
+ "input": {
+  "rect": {
+   "top": 434.1,
+   "bottom": 470.1,
+   "h": 36,
+   "w": 418.4
+  },
+  "height": "36px"
+ },
+ "toolbar": {
+  "rect": {
+   "top": 434.1,
+   "bottom": 470.1,
+   "h": 36,
+   "w": 140
+  },
+  "height": "36px"
+ },
+ "btn": {
+  "rect": {
+   "top": 434.1,
+   "bottom": 470.1,
+   "h": 36,
+   "w": 88
+  },
+  "height": "36px"
+ },
+ "error": null,
+ "misalign": {
+  "dTop": 0,
+  "dBottom": 0
+ }
+}
+=== vi-1280-error ===
+{
+ "state": {
+  "errorVisible": true,
+  "errorText": "Đây là một trường bắt buộc.",
+  "inputValue": "",
+  "inputDisabled": false,
+  "btnClass": "action action-apply"
+ },
+ "inner": {
+  "rect": {
+   "top": 434.1,
+   "bottom": 494.3,
+   "h": 60.1,
+   "w": 570.4
+  },
+  "alignItems": "center",
+  "flexWrap": "wrap"
+ },
+ "control": {
+  "rect": {
+   "top": 434.1,
+   "bottom": 494.3,
+   "h": 60.1,
+   "w": 418.4
+  },
+  "height": "60.1406px"
+ },
+ "input": {
+  "rect": {
+   "top": 434.1,
+   "bottom": 470.1,
+   "h": 36,
+   "w": 418.4
+  },
+  "height": "36px"
+ },
+ "toolbar": {
+  "rect": {
+   "top": 446.2,
+   "bottom": 482.2,
+   "h": 36,
+   "w": 140
+  },
+  "height": "36px"
+ },
+ "btn": {
+  "rect": {
+   "top": 446.2,
+   "bottom": 482.2,
+   "h": 36,
+   "w": 88
+  },
+  "height": "36px"
+ },
+ "error": {
+  "rect": {
+   "top": 477.1,
+   "bottom": 494.3,
+   "h": 17.1,
+   "w": 418.4
+  },
+  "marginTop": "7px",
+  "marginBottom": "0px",
+  "fontSize": "12px",
+  "lineHeight": "17.1429px"
+ },
+ "misalign": {
+  "dTop": 12.1,
+  "dBottom": 12.1
+ }
+}

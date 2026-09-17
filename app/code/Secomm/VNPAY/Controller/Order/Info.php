@@ -34,13 +34,22 @@ class Info extends Action
     public function execute()
     {
         $quote = $this->checkoutSession->getQuote();
+        if ($quote->getId() && !$quote->getIsActive()) {
+            // Stale quote from a previous VNPAY attempt (consumed by Ipn/Pay) —
+            // start a fresh cart so the customer is not stuck on the old quote.
+            $this->checkoutSession->clearQuote();
+            $quote = $this->checkoutSession->getQuote();
+        }
         $url = $this->scopeConfig->getValue('payment/vnpay/payment_url');
         $vnp_Url = '';
         if ($quote->getId() && $quote->getIsActive()) {
             $quote->getPayment()->setMethod('vnpay');
-            if (!$quote->getReservedOrderId()) {
-                $quote->reserveOrderId();
-            }
+            // ALWAYS reserve a FRESH order id for every payment attempt —
+            // VNPAY locks a vnp_TxnRef after repeated failures (code 79 after
+            // wrong OTP attempts), so a retry must never reuse the previous
+            // attempt's reference.
+            $quote->setReservedOrderId(null);
+            $quote->reserveOrderId();
             $quote->collectTotals();
             $this->quoteRepository->save($quote);
 

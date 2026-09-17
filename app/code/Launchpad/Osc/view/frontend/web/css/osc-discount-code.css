@@ -1,5 +1,7 @@
 /**
  * BUG-2MK37V (SLP-199) — align the apply-discount-code section on the OSC checkout.
+ * BUG-ER121M (SLP-199 follow-up) — keep the button aligned with the input while
+ * the required-entry validation message (.mage-error) is visible.
  *
  * The section (Knockout template Mageplaza_Osc/.../container/payment/discount.html)
  * is rendered in the Magento/luma scope and was never purpose-styled there:
@@ -22,11 +24,21 @@
     width: 100%;
 }
 
+/* BUG-ER121M: align-items must stay flex-start. mage/validation inserts the
+   required-entry message (div.mage-error) inside .control, growing it to ~60px;
+   with center the 36px button row then centers against the taller control and
+   drops ~12px below the input. With flex-start the button shares the input's
+   top edge in every state — and since control/input/button are all 36px
+   outside the error state, flex-start renders identically to center there. */
 .opc-payment-additional.discount-code .payment-option-inner {
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-start;
     flex-wrap: wrap;
     gap: 12px;
+}
+
+.checkout-payment-method .payment-option-content .form-discount .actions-toolbar .primary .action {
+    width: 100%;
 }
 
 /* flex-basis 170px: wide column -> grows on one row beside the button;
