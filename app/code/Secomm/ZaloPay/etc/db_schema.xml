@@ -54,7 +54,8 @@
              FINANCIAL EVIDENCE and must never be cascade-deleted with its
              credit memo while unresolved. Retention is owned exclusively by
              RefundCleanupCronjob (F36: confirmed_success only, 90 days). -->
-        <constraint xsi:type="foreign" referenceId="ZALO_PAY_REFUND_CREDIT_MEMO_ID" table="zalo_pay_refund"
+        <constraint xsi:type="foreign" referenceId="ZALO_PAY_REFUND_CREDIT_MEMO_ID_SALES_CREDITMEMO_ENTITY_ID"
+                    table="zalo_pay_refund"
                     column="credit_memo_id" referenceTable="sales_creditmemo" referenceColumn="entity_id"
                     onDelete="NO ACTION"/>
     </table>
