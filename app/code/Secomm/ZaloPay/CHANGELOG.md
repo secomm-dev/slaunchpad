@@ -33,6 +33,17 @@
   the CLI reuses it instead of duplicating signing logic. Cron semantics
   are unchanged.
 
+### Fixed (correction round 1 — coordinator review)
+- `zalopay:diagnose` now reports the CANONICAL return route
+  `zalopay/payment/returnaction` (per `OrderAdditionalInformationDataBuilder`)
+  instead of the stale `zalopay/payment/return` path.
+- `app_user` is part of the required config health check: ZaloPay's v2
+  create contract requires it (`ZaloAppInfoDataBuilder` always emits it), so
+  an empty `app_user` is reported missing and fails the report (exit 1).
+- Debug logging masks the merchant-side user identifier `app_user`
+  (flat request pre-mask AND the recursive response mask) — no unnecessary
+  PII in provider debug output.
+
 ## [1.3.0] - 2026-09-10 (TASK-EDS9T5 corrective round 4 — strict callback payment identity + double-payment guard + sticky conflicts + explicit recovery exhaustion)
 
 ### Fixed (review blockers)

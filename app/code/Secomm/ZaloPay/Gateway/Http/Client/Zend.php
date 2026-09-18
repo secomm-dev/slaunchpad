@@ -105,10 +105,19 @@ class Zend implements ClientInterface
     /**
      * Sensitive key names that must never appear unmasked in debug output.
      *
+     * TASK-MCHN2T correction round: `app_user` is included - ZaloPay defines
+     * it as the merchant-side user identifier (id/username/name/phone/email),
+     * so the no-unnecessary-PII logging contract requires it masked in the
+     * provider debug output (flat request pre-mask AND the recursive
+     * response mask handed to the core payment method logger).
+     *
      * @return array
      */
     private function sensitiveKeys(): array
     {
-        return ['mac', 'signature', 'hmac', 'secret', 'secretkey', 'key1', 'key2', 'access_key', 'secret_key'];
+        return [
+            'mac', 'signature', 'hmac', 'secret', 'secretkey', 'key1', 'key2',
+            'access_key', 'secret_key', 'app_user',
+        ];
     }
 }

@@ -77,6 +77,9 @@ class ZendTest extends TestCase
     /**
      * AC7 - with Debug Mode ON the core logger writes ONE masked record and
      * the maskKeys handed over by Zend scrub the nested response payload too.
+     * Correction round 1: the merchant-side user identifier `app_user`
+     * (id/username/name/phone/email per ZaloPay contract) must never reach
+     * the logger output in raw form - no unnecessary PII in debug logs.
      */
     public function testDebugModeOnWritesMaskedRecord(): void
     {
@@ -93,15 +96,20 @@ class ZendTest extends TestCase
         $logger = new PaymentMethodLogger($monolog, $config);
         $logger->debug(
             [
-                'request' => ['app_id' => '1', 'key1' => 'RAW-KEY1'],
-                'response' => ['return_code' => 1, 'data' => ['key1' => 'RAW-KEY1', 'mac' => 'RAW-MAC']],
+                'request' => ['app_id' => '1', 'key1' => 'RAW-KEY1', 'app_user' => 'RAW-PII-USER'],
+                'response' => [
+                    'return_code' => 1,
+                    'data' => ['key1' => 'RAW-KEY1', 'mac' => 'RAW-MAC', 'app_user' => 'RAW-PII-USER'],
+                ],
             ],
-            ['key1', 'mac']
+            ['key1', 'mac', 'app_user']
         );
 
         $this->assertIsString($written);
         $this->assertStringNotContainsString('RAW-KEY1', $written);
         $this->assertStringNotContainsString('RAW-MAC', $written);
+        // PII regression proof: the raw app_user value never reaches output.
+        $this->assertStringNotContainsString('RAW-PII-USER', $written);
         $this->assertStringContainsString("'app_id' => '1'", $written);
     }
 
@@ -139,13 +147,18 @@ class ZendTest extends TestCase
         // The core logger masks recursively with THESE keys (incl. response).
         $this->assertNotNull($capturedMaskKeys);
         $this->assertEqualsCanonicalizing(
-            ['mac', 'signature', 'hmac', 'secret', 'secretkey', 'key1', 'key2', 'access_key', 'secret_key'],
+            [
+                'mac', 'signature', 'hmac', 'secret', 'secretkey', 'key1', 'key2',
+                'access_key', 'secret_key', 'app_user',
+            ],
             $capturedMaskKeys
         );
         // Request body is pre-masked (defense in depth).
         $this->assertSame('****', $capturedLog['request']['key1']);
         $this->assertSame('****', $capturedLog['request']['key2']);
         $this->assertSame('****', $capturedLog['request']['mac']);
+        // Correction round 1: the user identifier is pre-masked too.
+        $this->assertSame('****', $capturedLog['request']['app_user']);
         $this->assertSame('1004', $capturedLog['request']['app_id']);
         $this->assertStringContainsString('zalopay', $capturedLog['request_uri']);
     }
@@ -157,7 +170,13 @@ class ZendTest extends TestCase
     {
         $transfer = $this->createMock(TransferInterface::class);
         $transfer->method('getBody')->willReturn(
-            ['app_id' => '1004', 'key1' => 'SECRET-KEY1', 'key2' => 'SECRET-KEY2', 'mac' => 'SECRET-MAC']
+            [
+                'app_id' => '1004',
+                'app_user' => 'PII-USER-VALUE',
+                'key1' => 'SECRET-KEY1',
+                'key2' => 'SECRET-KEY2',
+                'mac' => 'SECRET-MAC',
+            ]
         );
         $transfer->method('getUri')->willReturn('https://sb-openapi.zalopay.vn/v2/query');
         $transfer->method('getClientConfig')->willReturn(['timeout' => 15]);

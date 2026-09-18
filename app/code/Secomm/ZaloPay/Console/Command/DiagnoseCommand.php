@@ -260,12 +260,17 @@ class DiagnoseCommand extends ConsoleCommand
             'credentials' => $credentials,
             'endpoints' => [
                 'start' => $baseUrl !== '' ? $baseUrl . 'zalopay/payment/start' : '/zalopay/payment/start',
-                'return' => $baseUrl !== '' ? $baseUrl . 'zalopay/payment/return' : '/zalopay/payment/return',
+                // Canonical return route of the current payment-first flow
+                // (OrderAdditionalInformationDataBuilder::$controllerAction).
+                'return' => $baseUrl !== '' ? $baseUrl . 'zalopay/payment/returnaction' : '/zalopay/payment/returnaction',
                 'ipn' => $baseUrl !== '' ? $baseUrl . 'zalopay/payment/ipn' : '/zalopay/payment/ipn',
             ],
         ];
 
-        $required = ['app_id', 'key1', 'key2'];
+        // app_user is required by the ZaloPay v2 create contract and is always
+        // emitted into the provider request (ZaloAppInfoDataBuilder) - an
+        // empty value must not be reported as a healthy configuration.
+        $required = ['app_id', 'key1', 'key2', 'app_user'];
         $missing = array_filter(
             $required,
             static fn (string $field): bool => $credentials[$field] === 'missing'

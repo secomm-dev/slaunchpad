@@ -107,3 +107,13 @@ Plan: [TASK-MCHN2T-implementation-plan](../../plans/TASK-MCHN2T-implementation-p
 - `DiagnoseCommand` đăng ký qua `CommandListInterface` trong di.xml; deps được wire tường minh (`ZaloPayConfig`, `ZaloPayCommandPool`, `RefundQueryCommand`); còn lại autowire. Response projection whitelist: `return_code`, `sub_return_code`, `return_message`, `zp_trans_id`, `refund_id`, `m_refund_id` — không bao gồm MAC/signature/secrets.
 - Logo: backend model `Secomm\ZaloPay\Model\System\Config\Backend\Logo` (allow-list png/jpg/jpeg/webp, thay gif của core Image backend); URL custom = media base + `zalopay/` + giá trị lưu (prefix scope `websites/<id>/` nhúng sẵn trong giá trị); đọc website scope trước rồi default scope; fallback asset module. `ZaloPayConfigProvider` giữ contract `logoSrc` duy nhất; đồng thời dọn dep không dùng (`PaymentHelper`, `ResolverInterface`).
 - KHÔNG commit/push; không comment issue #8 (chờ user/TL). Record chuyển `in_review` chờ TL review theo Mode B.
+
+## Correction Round 1 (coordinator verdict CORRECTION_REQUIRED, 2026-09-18)
+
+Ba material findings đã sửa (bounded: same issue/branch/workspace, không đụng state machine):
+
+1. **Return endpoint sai** — report giờ nêu route canonical `zalopay/payment/returnaction` (khớp `OrderAdditionalInformationDataBuilder::$controllerAction`, `Controller/Payment/ReturnAction.php`); kèm assertion test chặn path stale `payment/return(?!action)`.
+2. **`app_user` thiếu khỏi required set** — thêm vào `$required` của config health check (contract v2 create bắt buộc; `ZaloAppInfoDataBuilder` luôn emit) → `app_user` rỗng giờ fail report (exit 1) và được nêu tên; test text + JSON projection.
+3. **PII leak trong debug log** — `app_user` (user identifier merchant-side: id/username/name/phone/email) được thêm vào `Zend::sensitiveKeys()` → masked '****' cả pre-mask request lẫn maskKeys đệ quy response; regression test chứng minh giá trị raw không bao giờ tới Monolog output. Không mở rộng sang mismatch `appuser`/`app_user` merchant_info (out of scope theo chỉ định).
+
+Re-validation: focused tests 16/16; ZaloPay suite 391 tests / 1407 assertions green; PHPCS severity 10 = 0 errors; `setup:di:compile` OK; CLI smoke xác nhận cả 3 fix; validators 0 nhắc TASK-MCHN2T. Commit mới + non-force push cùng branch, handoff READY_FOR_REVIEW mới với TIP_SHA chính xác.

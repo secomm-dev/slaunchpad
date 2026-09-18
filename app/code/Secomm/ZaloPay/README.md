@@ -115,8 +115,9 @@ the refund query re-signs the stored payload exactly like the refund cron.
 
 **STORES > Configurations > SALES > Payment Methods > Zalopay > Debug**.
 When ON, provider request/response payloads are written masked to
-`var/log/zalo-pay.log`. Keys (key1/key2), MAC and signatures are never
-logged. Real error/critical incident logging is independent of this flag
+`var/log/zalo-pay.log`. Keys (key1/key2), MAC, signatures and the
+merchant-side user identifier (`app_user`) are never logged. Real
+error/critical incident logging is independent of this flag
 and always stays on. Keep OFF outside an active investigation.
 
 ### Configurable checkout logo

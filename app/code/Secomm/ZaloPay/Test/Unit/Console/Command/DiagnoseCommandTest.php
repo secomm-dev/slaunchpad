@@ -90,6 +90,14 @@ class DiagnoseCommandTest extends TestCase
         $this->assertStringContainsString('key1: set', $output);
         $this->assertStringContainsString('key2: set', $output);
         $this->assertStringContainsString('zalopay/payment/ipn', $output);
+        // Correction round 1: the report must name the CANONICAL return
+        // route of the current flow (zalopay/payment/returnaction, per
+        // OrderAdditionalInformationDataBuilder), never a stale path.
+        $this->assertStringContainsString('zalopay/payment/returnaction', $output);
+        $this->assertDoesNotMatchRegularExpression(
+            '#zalopay/payment/return(?!action)#',
+            $output
+        );
         // AC4 - presence only, never values.
         $this->assertStringNotContainsString('KEY1-SECRET-VALUE', $output);
         $this->assertStringNotContainsString('KEY2-SECRET-VALUE', $output);
@@ -123,6 +131,32 @@ class DiagnoseCommandTest extends TestCase
 
         $this->assertSame(Cli::RETURN_FAILURE, $exit);
         $this->assertStringContainsString('Enabled: no', $output);
+    }
+
+    /**
+     * Correction round 1: `app_user` is provider-required (ZaloPay v2 create
+     * contract; ZaloAppInfoDataBuilder always emits it) - an empty app_user
+     * must fail the config health check and be named, never reported as
+     * healthy.
+     */
+    public function testMissingAppUserExitsNonZeroAndNamesIt(): void
+    {
+        $this->stubCompleteConfig(['app_user' => '']);
+        $this->scopeConfig->method('getValue')->willReturn('https://store.example.com/');
+
+        [$exit, $output] = $this->runCommand([]);
+
+        $this->assertSame(Cli::RETURN_FAILURE, $exit);
+        $this->assertStringContainsString('app_user', $output);
+        $this->assertStringContainsString('missing', $output);
+
+        // The JSON projection carries the same verdict for automation
+        // (same config stub still in effect).
+        [$exitJson, $jsonOutput] = $this->runCommand(['--json' => true]);
+        $this->assertSame(Cli::RETURN_FAILURE, $exitJson);
+        $decoded = json_decode($jsonOutput, true, 512, JSON_THROW_ON_ERROR);
+        $this->assertFalse($decoded['configuration_complete']);
+        $this->assertContains('app_user', $decoded['missing_required_credentials']);
     }
 
     /**
