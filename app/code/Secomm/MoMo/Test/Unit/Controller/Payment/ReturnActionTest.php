@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit test for the MoMo ReturnAction controller.
+ * Unit test for the MoMo Return controller (MOMO-01).
  *
  * @author    Secomm Teams
  * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
@@ -16,47 +16,26 @@ use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Secomm\MoMo\Controller\Payment\ReturnAction;
 use Secomm\MoMo\Service\ReturnProcessor;
 
 /**
- * Verifies the controller delegates to ReturnProcessor and maps its outcome
- * (success path / cart path / customer-safe exception) to a Redirect result,
- * adding the failure message only on the non-success paths.
+ * Verifies the thin controller contract: the ReturnProcessor owns every
+ * payment decision, the customer only ever sees customer-safe messages and
+ * every failure lands on the cart page (AC7 UX surface).
  */
 class ReturnActionTest extends TestCase
 {
-    /**
-     * @var RequestInterface|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private RequestInterface $request;
+    private RequestInterface&\PHPUnit\Framework\MockObject\MockObject $request;
 
-    /**
-     * @var ManagerInterface|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private ManagerInterface $messageManager;
+    private ManagerInterface&\PHPUnit\Framework\MockObject\MockObject $messageManager;
 
-    /**
-     * @var RedirectFactory|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private RedirectFactory $redirectFactory;
+    private Redirect&\PHPUnit\Framework\MockObject\MockObject $redirect;
 
-    /**
-     * @var Redirect|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private Redirect $redirect;
+    private ReturnProcessor&\PHPUnit\Framework\MockObject\MockObject $returnProcessor;
 
-    /**
-     * @var ReturnProcessor|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private ReturnProcessor $returnProcessor;
-
-    /**
-     * Path captured from the Redirect result.
-     *
-     * @var string|null
-     */
-    private ?string $redirectPath = null;
+    private ReturnAction $controller;
 
     /**
      * @return void
@@ -65,83 +44,90 @@ class ReturnActionTest extends TestCase
     {
         $this->request = $this->createMock(RequestInterface::class);
         $this->messageManager = $this->createMock(ManagerInterface::class);
+        $redirectFactory = $this->createMock(RedirectFactory::class);
+        $this->redirect = $this->createMock(Redirect::class);
+        $redirectFactory->method('create')->willReturn($this->redirect);
         $this->returnProcessor = $this->createMock(ReturnProcessor::class);
 
-        $this->redirect = $this->createMock(Redirect::class);
-        $that = $this;
-        $this->redirect->method('setPath')->willReturnCallback(
-            function (string $path) use ($that) {
-                $that->redirectPath = $path;
-
-                return $this->redirect;
-            }
-        );
-
-        $this->redirectFactory = $this->createMock(RedirectFactory::class);
-        $this->redirectFactory->method('create')->willReturn($this->redirect);
-    }
-
-    /**
-     * @return ReturnAction
-     */
-    private function createAction(): ReturnAction
-    {
-        return new ReturnAction(
+        $this->controller = new ReturnAction(
             $this->request,
             $this->messageManager,
-            $this->redirectFactory,
+            $redirectFactory,
+            $this->createMock(LoggerInterface::class),
             $this->returnProcessor
         );
+
+        $this->redirect->method('setPath')->willReturnSelf();
     }
 
     /**
-     * Success path: Redirect result to the success page, no error message.
+     * A return without an order reference is a customer-safe cart bounce.
      *
      * @return void
      */
-    public function testSuccessResultRedirectsToSuccessPageWithoutError(): void
+    public function testMissingOrderRefRedirectsToCart(): void
     {
-        $this->request->method('getParams')->willReturn(['resultCode' => 0, 'orderId' => '000000012']);
-        $this->returnProcessor->method('process')->willReturn(ReturnProcessor::PATH_SUCCESS);
+        $this->request->method('getParams')->willReturn([]);
+        $this->returnProcessor->expects($this->never())->method('process');
+        $this->messageManager->expects($this->once())->method('addErrorMessage');
+
+        $this->redirect->expects($this->once())->method('setPath')->with('checkout/cart/index');
+
+        $this->assertSame($this->redirect, $this->controller->execute());
+    }
+
+    /**
+     * The processor's path (the success page after an authoritative
+     * finalization) is where the customer is redirected.
+     *
+     * @return void
+     */
+    public function testSuccessPathRedirectsToSuccessPage(): void
+    {
+        $this->request->method('getParams')->willReturn(['orderId' => 'MOMOREF']);
+        $this->returnProcessor->method('process')->willReturn('checkout/onepage/success');
         $this->messageManager->expects($this->never())->method('addErrorMessage');
 
-        $result = $this->createAction()->execute();
+        $this->redirect->expects($this->once())->method('setPath')->with('checkout/onepage/success');
 
-        $this->assertSame($this->redirect, $result);
-        $this->assertSame(ReturnProcessor::PATH_SUCCESS, $this->redirectPath);
+        $this->assertSame($this->redirect, $this->controller->execute());
     }
 
     /**
-     * Non-success path (non-zero resultCode): cart Redirect + error message.
+     * A customer-safe LocalizedException surfaces its message on the cart
+     * page — never a stack trace, never a success page.
      *
      * @return void
      */
-    public function testFailureResultRedirectsToCartWithMessage(): void
+    public function testLocalizedExceptionRedirectsToCartWithMessage(): void
     {
-        $this->request->method('getParams')->willReturn(['resultCode' => 7000]);
-        $this->returnProcessor->method('process')->willReturn(ReturnProcessor::PATH_CART);
-        $this->messageManager->expects($this->once())->method('addErrorMessage');
+        $this->request->method('getParams')->willReturn(['orderId' => 'MOMOREF']);
+        $this->returnProcessor->method('process')->willThrowException(
+            new LocalizedException(__('Your MoMo payment was not completed.'))
+        );
+        $this->messageManager->expects($this->once())->method('addErrorMessage')
+            ->with('Your MoMo payment was not completed.');
 
-        $this->createAction()->execute();
+        $this->redirect->expects($this->once())->method('setPath')->with('checkout/cart/index');
 
-        $this->assertSame(ReturnProcessor::PATH_CART, $this->redirectPath);
+        $this->assertSame($this->redirect, $this->controller->execute());
     }
 
     /**
-     * Processor exception (order not resolvable / not a MoMo order): the
-     * customer-safe message is surfaced and the customer lands on the cart.
+     * Any technical failure is logged and downgraded to a generic customer
+     * message on the cart page.
      *
      * @return void
      */
-    public function testProcessorExceptionRedirectsToCartWithMessage(): void
+    public function testTechnicalFailureRedirectsToCartWithGenericMessage(): void
     {
-        $this->request->method('getParams')->willReturn(['resultCode' => 0]);
-        $this->returnProcessor->method('process')
-            ->willThrowException(new LocalizedException(__('MoMo payment could not be matched to an order.')));
-        $this->messageManager->expects($this->once())->method('addErrorMessage');
+        $this->request->method('getParams')->willReturn(['orderId' => 'MOMOREF']);
+        $this->returnProcessor->method('process')->willThrowException(new \RuntimeException('DB gone'));
+        $this->messageManager->expects($this->once())->method('addErrorMessage')
+            ->with('Transaction has been declined. Please try again later.');
 
-        $this->createAction()->execute();
+        $this->redirect->expects($this->once())->method('setPath')->with('checkout/cart/index');
 
-        $this->assertSame(ReturnProcessor::PATH_CART, $this->redirectPath);
+        $this->assertSame($this->redirect, $this->controller->execute());
     }
 }

@@ -20,6 +20,7 @@
                 <sort_order>100</sort_order>
                 <payment_action>authorize_capture</payment_action>
                 <order_status>pending_payment</order_status>
+                <attempt_ttl>15</attempt_ttl>
                 <can_initialize>1</can_initialize>
                 <can_authorize>0</can_authorize>
                 <can_capture>0</can_capture>
