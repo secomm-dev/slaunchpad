@@ -100,6 +100,7 @@ define([
             if (type === 'media-image') {
                 // Magento's media chooser otherwise returns a temporary Admin directive URL.
                 input.data('force_static_path', true);
+                input.attr('data-secomm-ui-media-target', 'true');
             }
         }
         if (type !== 'media-image') {

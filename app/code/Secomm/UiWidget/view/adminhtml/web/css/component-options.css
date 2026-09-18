@@ -50,6 +50,21 @@
     margin-bottom: 8px !important;
 }
 
+.popup-window .secomm-ui-component-options label.mage-error,
+.ui-dialog .secomm-ui-component-options label.mage-error {
+    margin: 5px 0 0 !important;
+}
+
+.secomm-ui-collection-validation {
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 1px;
+}
+
 .secomm-ui-repeater [data-role="items"] > .admin__fieldset {
     background: #f8f8f8;
     border: 1px solid #d6d6d6;
