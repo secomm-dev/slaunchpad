@@ -1,0 +1,4 @@
+Time: 00:00.391, Memory: 56.00 MB
+
+OK, but there were issues!
+Tests: 390, Assertions: 1397, PHPUnit Deprecations: 5.
