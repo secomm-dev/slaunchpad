@@ -18,6 +18,7 @@ use Magento\Payment\Gateway\Http\TransferFactoryInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Gateway\Response\HandlerInterface;
 use Magento\Payment\Gateway\Validator\ValidatorInterface;
+use Secomm\ZaloPay\Exception\RefundTransportException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -64,13 +65,17 @@ class RefundQueryCommand implements CommandInterface
         return $this;
     }
     /**
-     * @param $requestData
-     * @param string $mRefundId
-     * @param bool $isCron
-     * @return array
-     * @throws \Exception
+     * Query the provider for one refund's current status. Transport-level
+     * failures (timeout/network/malformed envelope) are retryable - they
+     * are surfaced as RefundTransportException so every caller (the
+     * gateway RefundCommand, the RefundCronjob) can classify them and
+     * consume the bounded query budget explicitly (TASK-CG6BM7).
+     *
+     * @param array $requestData The v2/query_refund request body.
+     * @return array The provider response.
+     * @throws RefundTransportException On transport failure (retryable).
      */
-    public function getRefundQuery($requestData): array
+    public function getRefundQuery(array $requestData): array
     {
         try {
             $transferO = $this->transferFactory->create(
@@ -79,8 +84,10 @@ class RefundQueryCommand implements CommandInterface
 
             return $this->client->placeRequest($transferO);
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
-            throw new \Exception(__($exception->getMessage()));
+            $this->logger->error('ZaloPay refund query transport failure: ' . $exception->getMessage());
+            throw new RefundTransportException(
+                __('Zalopay: Refund status could not be confirmed. Please try again later.')
+            );
         }
     }
 

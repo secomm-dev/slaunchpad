@@ -177,4 +177,20 @@ class PaymentAttemptRepository implements PaymentAttemptRepositoryInterface
 
         return $attempt;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function claimEmailDispatch(int $entityId, int $token, int $graceSeconds): bool
+    {
+        return $this->resource->claimEmailDispatch($entityId, $token, $graceSeconds);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function releaseEmailDispatch(int $entityId, int $token): void
+    {
+        $this->resource->releaseEmailDispatch($entityId, $token);
+    }
 }

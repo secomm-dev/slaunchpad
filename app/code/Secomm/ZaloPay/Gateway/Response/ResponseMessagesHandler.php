@@ -17,6 +17,7 @@ use Magento\Payment\Gateway\Helper\ContextHelper;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Response\HandlerInterface;
 use Magento\Sales\Model\Order\Payment;
+use Secomm\ZaloPay\Helper\RefundProcessor;
 
 class ResponseMessagesHandler implements HandlerInterface
 {
@@ -32,8 +33,13 @@ class ResponseMessagesHandler implements HandlerInterface
         $payment = $paymentDO->getPayment();
         ContextHelper::assertOrderPayment($payment);
 
-        $responseCode = $response[AbstractResponseValidator::RETURN_CODE];
-        $messages = $response[AbstractResponseValidator::RESPONSE_MESSAGE];
+        $responseCode = $this->readReturnCode($response);
+        if ($responseCode === null) {
+            // Protocol anomaly: without a code, no fatal and no payment-state mutation.
+            return;
+        }
+        $messages = $response[AbstractResponseValidator::RESPONSE_MESSAGE]
+            ?? RefundProcessor::processRefundStatus($responseCode);
         $state = $this->getState($responseCode);
 
         if ($state) {
@@ -43,9 +49,26 @@ class ResponseMessagesHandler implements HandlerInterface
             );
         } else {
             $payment->setIsTransactionPending(false);
-            $payment->setIsFraudDetected(true);
+            // TASK-CG6BM7: PROCESSING (return_code 3) is a normal provider state, not fraud/error.
+            if ($responseCode !== AbstractResponseValidator::REFUND_PROCESSING) {
+                $payment->setIsFraudDetected(true);
+            }
             $payment->setAdditionalInformation('error_messages', $messages);
         }
+    }
+
+    /**
+     * Safe read of the provider return_code (TASK-CG6BM7): missing or
+     * non-numeric codes are protocol anomalies — no fatal, no coercion.
+     *
+     * @param array $response
+     * @return int|null
+     */
+    private function readReturnCode(array $response): ?int
+    {
+        $code = $response[AbstractResponseValidator::RETURN_CODE] ?? null;
+
+        return is_numeric($code) ? (int)$code : null;
     }
 
     /**
@@ -54,9 +77,6 @@ class ResponseMessagesHandler implements HandlerInterface
      */
     protected function getState(int $responseCode): bool
     {
-        if ((string)$responseCode === '1' || (string)$responseCode === '2') {
-            return false;
-        }
-        return true;
+        return $responseCode === AbstractResponseValidator::RETURN_CODE_ACCEPT;
     }
 }
