@@ -11,8 +11,17 @@
 - Authoritative verification boundary: only a signature-valid MoMo callback
   whose `partnerCode`, `orderId`, `requestId`, `extraData` and `amount` match
   the attempt can move the attempt to `PAID` (money-real). The browser Return
-  re-verifies server-side via `v2/query` (7002 = non-terminal) — browser
-  parameters never create an order.
+  re-verifies server-side via `v2/query` — MoMo signs the query REQUEST; the
+  response carries no signature, so identity = the `partnerCode`/`orderId`/
+  `requestId` echoes against the exact request just sent (fresh per-query
+  requestId; the create-time `request_id` stays create/IPN-only) — browser
+  parameters never create an order. Result codes 7000 AND 7002 are
+  non-terminal (zero mutation).
+- Query-path correction (review fix): QueryValidator no longer requires an
+  undocumented query-response signature (MoMo's query API returns none) —
+  identity is the echo-of-exact-request + attempt check; QueryDataBuilder
+  mints a fresh per-query `requestId` instead of reusing the create-time
+  attempt `request_id`.
 - Canonical finalizer: attempt-row `FOR UPDATE` lock → single-use order
   placement grant (verified via a `QuoteManagement::placeOrder` plugin) →
   exactly one order → invoice/capture per `payment_action` → attempt bound to
@@ -33,9 +42,10 @@
   checkout success keys), `OrderRefBuilder`, `QuoteContractFingerprint`,
   `CartManagementPlaceOrderGuard` plugin, `InitializeCommand` /
   `QueryDataBuilder` / `QueryTransactionCommand` / `QueryValidator`.
-- Unit tests: 105 tests / 278 assertions green (state machine, IPN/Return
+- Unit tests: 115 tests / 305 assertions green (state machine, IPN/Return
   verification chains, finalizer placement+recovery, initiation, guard
-  plugin, fingerprint, signature validators).
+  plugin, fingerprint, signature validators, query request-builder/validator/
+  command incl. 7000/7002 non-terminal regressions).
 
 ### Removed
 - Order-first remnants: `Gateway/Command/NotifyCommand`,

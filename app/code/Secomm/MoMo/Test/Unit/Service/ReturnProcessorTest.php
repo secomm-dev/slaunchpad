@@ -144,6 +144,26 @@ class ReturnProcessorTest extends TestCase
     }
 
     /**
+     * 7000 (transaction not yet paid) is ALSO non-terminal (same class as
+     * 7002 in MoMo's result-code table): no lifecycle mutation, no failure
+     * recorded, the customer is asked to check back.
+     *
+     * @return void
+     */
+    public function testNotYetPaidIsNonTerminal(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn($this->queryResult(['resultCode' => 7000]));
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('still being processed');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
      * An authoritative PAID with a mismatching amount quarantines and
      * refuses the customer success path (AC4).
      *

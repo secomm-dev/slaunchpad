@@ -78,9 +78,10 @@
     </virtualType>
 
     <!-- v2/query command (server-side authoritative status for the Return
-         path). Response signature + identity echoes validated INSIDE the
-         command (QueryValidator) — a signature-invalid response fails the
-         command before any caller sees it. -->
+         path). QueryValidator validates merchant identity + orderId/
+         requestId echoes against the EXACT request just sent (MoMo signs
+         the query request; the response carries no signature) — a
+         mismatch fails the command before any caller sees it. -->
     <virtualType name="MoMoQueryTransferFactory" type="Secomm\MoMo\Gateway\Http\TransferFactory">
         <arguments>
             <argument name="urlPath" xsi:type="const">Secomm\MoMo\Model\Config::PATH_QUERY</argument>

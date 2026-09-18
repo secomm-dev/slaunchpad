@@ -18,6 +18,12 @@ use Secomm\MoMo\Model\Config;
  * v2/query request: partnerCode, orderId, requestId + signature over
  * accessKey&orderId&partnerCode&requestId (MoMo's documented query field
  * order). orderId = the attempt's order_ref.
+ *
+ * MoMo documents the query `requestId` as the unique ID OF EACH REQUEST
+ * (POST idempotency key). It is minted fresh per invocation — the attempt's
+ * persisted create-time request_id is NEVER reused here (it belongs to the
+ * create order / IPN identity contract); the response requestId echo is
+ * validated against THIS minted value (QueryValidator).
  */
 class QueryDataBuilder implements BuilderInterface
 {
@@ -46,7 +52,9 @@ class QueryDataBuilder implements BuilderInterface
         if ($orderRef === '') {
             throw new \InvalidArgumentException('order_ref should be provided');
         }
-        $requestId = (string)($buildSubject['request_id'] ?? '');
+
+        // Unique per invocation: order_ref-scoped + cryptographic suffix.
+        $requestId = $orderRef . '-Q' . bin2hex(random_bytes(8));
 
         $rawParams = [
             'accessKey' => $this->config->getAccessKey(),

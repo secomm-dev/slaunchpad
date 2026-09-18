@@ -28,11 +28,11 @@ use Secomm\MoMo\Exception\ContractMismatchException;
  *     customer's browser carries — are NEVER payment proof; they are not
  *     even parsed. The authoritative server-side v2/query ALWAYS runs and
  *     owns EVERY payment-state decision (spec §4.3.3);
- *  3. the query response is signature-validated inside the command
- *     (QueryValidator: signature + merchant identity + echo) — a
- *     signature-invalid response throws before any mutation;
- *  4. resultCode 7002 (unpaid/still processing): non-terminal — no
- *     mutation, the attempt keeps its current state (the IPN, a later
+ *  3. the query response identity is validated inside the command
+ *     (QueryValidator: merchant identity + echoes against the exact query
+ *     request just sent) — a mismatch throws before any mutation;
+ *  4. resultCode 7000/7002 (not-yet-paid / still processing): non-terminal
+ *     — no mutation, the attempt keeps its current state (the IPN, a later
  *     return hit or MoMo's IPN retry resolves it);
  *  5. authoritative non-paid: FAILED transition ONLY where the persisted
  *     state permits, via PaymentAttemptLifecycle (locked, short
@@ -50,10 +50,11 @@ use Secomm\MoMo\Exception\ContractMismatchException;
 class ReturnProcessor
 {
     /**
-     * MoMo v2/query resultCode: the transaction exists but is not paid yet
-     * (processing) — per MoMo's query API documentation.
+     * MoMo v2/query result codes that are NON-FINAL (per MoMo's result-code
+     * table): 7000 = transaction not yet paid, 7002 = still processing.
+     * Neither may terminally fail an attempt from a browser return.
      */
-    private const QUERY_PROCESSING = 7002;
+    private const QUERY_PENDING = [7000, 7002];
 
     /**
      * ReturnProcessor constructor.
@@ -101,18 +102,19 @@ class ReturnProcessor
 
         // Authoritative server-side verification — EVERY payment-state
         // decision below is derived from THIS result, never from the
-        // browser params. Signature validation happens inside the command
-        // (QueryValidator); a signature-invalid response throws here with
-        // ZERO mutation.
-        $query = $this->queryTransaction($orderRef, (string)$attempt->getRequestId(), $attempt);
+        // browser params. Response-identity validation happens inside the
+        // command (QueryValidator); a mismatch throws here with ZERO
+        // mutation.
+        $query = $this->queryTransaction($orderRef, $attempt);
         $resultCode = isset($query['resultCode']) ? (int)$query['resultCode'] : -1;
         $paidAmount = isset($query['amount']) ? (int)$query['amount'] : 0;
         $transId = (string)($query['transId'] ?? '');
 
-        if ($resultCode === self::QUERY_PROCESSING) {
-            // Non-terminal: the provider has not concluded. The attempt
-            // keeps its current state — the IPN, a later return hit or the
-            // attempt TTL resolves it. No mutation here.
+        if (in_array($resultCode, self::QUERY_PENDING, true)) {
+            // Non-terminal: the provider has not concluded (7000 = not yet
+            // paid, 7002 = processing). The attempt keeps its current state
+            // — the IPN, a later return hit or the attempt TTL resolves it.
+            // No mutation here.
             throw new LocalizedException(
                 __('Your MoMo payment is still being processed. Please check back shortly.')
             );
@@ -174,7 +176,11 @@ class ReturnProcessor
             $this->lifecycle->recordProviderIdentityUnavailable($orderRef, 'Return-query');
 
             throw new LocalizedException(
-                __('We could not match your payment to your current cart. Please contact support with reference %1.', $orderRef)
+                __(
+                    'We could not match your payment to your current cart. '
+                    . 'Please contact support with reference %1.',
+                    $orderRef
+                )
             );
         }
 
@@ -298,20 +304,21 @@ class ReturnProcessor
 
     /**
      * Run the authoritative v2/query for the attempt (OUTSIDE any DB
-     * transaction — verification never holds row locks).
+     * transaction — verification never holds row locks). The query
+     * requestId is minted fresh inside the builder (never the attempt's
+     * create-time request_id).
      *
      * @param string $orderRef
-     * @param string $requestId
      * @param PaymentAttemptInterface $attempt Carried for the response
      *        validator's echo checks.
      * @return array
      * @throws LocalizedException
      */
-    private function queryTransaction(string $orderRef, string $requestId, PaymentAttemptInterface $attempt): array
+    private function queryTransaction(string $orderRef, PaymentAttemptInterface $attempt): array
     {
         try {
             $result = $this->commandPool->get('query_transaction')->execute(
-                ['order_ref' => $orderRef, 'request_id' => $requestId, 'attempt' => $attempt]
+                ['order_ref' => $orderRef, 'attempt' => $attempt]
             );
         } catch (\Exception $e) {
             $this->logger->error(

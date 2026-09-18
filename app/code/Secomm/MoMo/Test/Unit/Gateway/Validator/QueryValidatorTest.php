@@ -13,27 +13,25 @@ namespace Secomm\MoMo\Test\Unit\Gateway\Validator;
 use Magento\Payment\Gateway\Validator\ResultInterface;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 use PHPUnit\Framework\TestCase;
-use Secomm\MoMo\Gateway\Helper\Signature;
+use Secomm\MoMo\Api\Data\PaymentAttemptInterface;
 use Secomm\MoMo\Gateway\Validator\QueryValidator;
 use Secomm\MoMo\Model\Config;
-use Secomm\MoMo\Model\PaymentAttempt;
 
 /**
- * Verifies the query response chain: signature over MoMo's query field
- * order, merchant identity and the orderId/requestId echoes against the
- * attempt. Business mapping (resultCode/amount/transId) is the caller's.
+ * Provider-realistic contract: MoMo signs the v2/query REQUEST but the
+ * RESPONSE carries NO signature. The validator therefore checks merchant
+ * identity + the orderId/requestId echoes against the EXACT query request
+ * just sent + a strictly integer-formed amount — nothing fabricated.
  */
 class QueryValidatorTest extends TestCase
 {
     private const ORDER_REF = 'MOMO260918120000200000001ab12';
-    private const REQUEST_ID = 'MOMO260918120000200000001ab12-Rcd34';
+    private const FRESH_REQUEST_ID = 'MOMO260918120000200000001ab12-Q1111222233334444';
 
     /**
      * @var Config&\PHPUnit\Framework\MockObject\MockObject
      */
     private $config;
-
-    private Signature $signature;
 
     /**
      * @var ResultInterfaceFactory&\PHPUnit\Framework\MockObject\MockObject
@@ -50,11 +48,7 @@ class QueryValidatorTest extends TestCase
     protected function setUp(): void
     {
         $this->config = $this->createMock(Config::class);
-        $this->config->method('getAccessKey')->willReturn('AK');
-        $this->config->method('getSecretKey')->willReturn('SK');
         $this->config->method('getPartnerCode')->willReturn('MOMO');
-
-        $this->signature = new Signature();
 
         $this->resultFactory = $this->createMock(ResultInterfaceFactory::class);
         $result = $this->createMock(ResultInterface::class);
@@ -66,91 +60,92 @@ class QueryValidatorTest extends TestCase
                 return $result;
             });
 
-        $this->validator = new QueryValidator($this->resultFactory, $this->config, $this->signature);
+        $this->validator = new QueryValidator($this->resultFactory, $this->config);
     }
 
     /**
-     * A correctly signed paid query response validates.
+     * A provider-realistic success response echoing the exact query
+     * request validates.
      *
      * @return void
      */
-    public function testValidSignedPaidResponsePasses(): void
+    public function testProviderRealisticResponsePasses(): void
     {
-        $this->validator->validate(
-            ['response' => $this->signed($this->basePayload(0)), 'attempt' => $this->attempt()]
-        );
+        $this->validator->validate($this->subject());
 
         $this->assertTrue($this->capturedIsValid);
     }
 
     /**
-     * A still-processing response (7002) also validates: the validator is
-     * identity + integrity only — the caller decides 7002 is non-terminal.
+     * A signature-valid FAILURE response (resultCode 700) ALSO validates:
+     * identity/integrity are the validator's scope; resultCode decisions
+     * belong to the caller.
      *
      * @return void
      */
-    public function testProcessingResponseAlsoPasses(): void
+    public function testAuthoritativeFailureResponseAlsoPasses(): void
     {
-        $this->validator->validate(
-            ['response' => $this->signed($this->basePayload(7002)), 'attempt' => $this->attempt()]
-        );
+        $this->validator->validate($this->subject());
 
         $this->assertTrue($this->capturedIsValid);
     }
 
     /**
-     * A tampered signature is rejected — the response can never drive any
-     * state decision.
-     *
-     * @return void
-     */
-    public function testTamperedSignatureFails(): void
-    {
-        $response = $this->signed($this->basePayload(0));
-        $response['signature'] = 'tampered';
-        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
-
-        $this->assertFalse($this->capturedIsValid);
-    }
-
-    /**
-     * A response for a different merchant identity is rejected.
+     * A response from a different merchant (partnerCode) is rejected.
      *
      * @return void
      */
     public function testPartnerCodeMismatchFails(): void
     {
-        $payload = $this->basePayload(0);
-        $payload['partnerCode'] = 'FOREIGN';
-        $this->validator->validate(['response' => $this->signed($payload), 'attempt' => $this->attempt()]);
+        $subject = $this->subject();
+        $subject['response']['partnerCode'] = 'FOREIGN';
+        $this->validator->validate($subject);
 
         $this->assertFalse($this->capturedIsValid);
     }
 
     /**
-     * An orderId not matching the attempt order_ref is rejected.
+     * An orderId that is not the attempt's order_ref is rejected even when
+     * it echoes the query request (identity to the attempt is mandatory).
      *
      * @return void
      */
     public function testOrderIdMismatchFails(): void
     {
-        $payload = $this->basePayload(0);
-        $payload['orderId'] = 'MOMOOTHERREF';
-        $this->validator->validate(['response' => $this->signed($payload), 'attempt' => $this->attempt()]);
+        $subject = $this->subject();
+        $subject['query_request']['orderId'] = 'MOMOOTHERREF';
+        $subject['response']['orderId'] = 'MOMOOTHERREF';
+        $this->validator->validate($subject);
 
         $this->assertFalse($this->capturedIsValid);
     }
 
     /**
-     * A requestId not matching the attempt is rejected.
+     * A requestId echo differing from the EXACT query request just sent is
+     * rejected (covers stale/create-time requestIds and replayed echoes).
      *
      * @return void
      */
-    public function testRequestIdMismatchFails(): void
+    public function testRequestIdEchoMismatchFails(): void
     {
-        $payload = $this->basePayload(0);
-        $payload['requestId'] = 'FOREIGN-REQUEST';
-        $this->validator->validate(['response' => $this->signed($payload), 'attempt' => $this->attempt()]);
+        $subject = $this->subject();
+        $subject['response']['requestId'] = 'MOMO260918120000200000001ab12-Q9999';
+        $this->validator->validate($subject);
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * A query subject without the exact request just sent is refused
+     * (programming error — the command always carries it).
+     *
+     * @return void
+     */
+    public function testMissingQueryRequestFails(): void
+    {
+        $subject = $this->subject();
+        unset($subject['query_request']);
+        $this->validator->validate($subject);
 
         $this->assertFalse($this->capturedIsValid);
     }
@@ -162,65 +157,76 @@ class QueryValidatorTest extends TestCase
      */
     public function testMissingAttemptFails(): void
     {
-        $this->validator->validate(['response' => $this->signed($this->basePayload(0)), 'attempt' => null]);
+        $subject = $this->subject();
+        $subject['attempt'] = null;
+        $this->validator->validate($subject);
 
         $this->assertFalse($this->capturedIsValid);
     }
 
     /**
-     * @param int $resultCode
-     * @return array The canonical query response payload.
+     * A missing amount is rejected (never defaults to a passing zero).
+     *
+     * @return void
      */
-    private function basePayload(int $resultCode): array
+    public function testMissingAmountFails(): void
     {
-        return [
-            'partnerCode' => 'MOMO',
-            'orderId' => self::ORDER_REF,
-            'requestId' => self::REQUEST_ID,
-            'amount' => 150000,
-            'transId' => 987654321,
-            'resultCode' => $resultCode,
-            'message' => $resultCode === 0 ? 'Successful' : 'Transaction is processing',
-            'responseTime' => 1787000000000,
-        ];
+        $subject = $this->subject();
+        unset($subject['response']['amount']);
+        $this->validator->validate($subject);
+
+        $this->assertFalse($this->capturedIsValid);
     }
 
     /**
-     * Sign the payload over MoMo's query-response field order.
+     * A malformed amount (decimal/signed/array) is rejected — strict
+     * integer grammar, zero mutation.
      *
-     * @param array $response
+     * @return void
+     */
+    public function testMalformedAmountFails(): void
+    {
+        foreach (['12.5', '+150000', ['150000']] as $badAmount) {
+            $subject = $this->subject();
+            $subject['response']['amount'] = $badAmount;
+            $this->validator->validate($subject);
+
+            $this->assertFalse($this->capturedIsValid, 'Amount must fail: ' . json_encode($badAmount));
+            $this->capturedIsValid = null;
+        }
+    }
+
+    /**
+     * Build a full validation subject: exact query request + provider-
+     * realistic success response + resolved attempt.
+     *
      * @return array
      */
-    private function signed(array $response): array
+    private function subject(): array
     {
-        $signedFields = ['accessKey', 'amount', 'message', 'orderId', 'partnerCode', 'responseTime'];
-        $params = ['accessKey' => 'AK'];
-        foreach ($signedFields as $field) {
-            if ($field === 'accessKey') {
-                continue;
-            }
-            $params[$field] = (string)($response[$field] ?? '');
-        }
-        $response['signature'] = $this->signature->sign($params, 'SK');
+        $attempt = $this->createMock(PaymentAttemptInterface::class);
+        $attempt->method('getOrderRef')->willReturn(self::ORDER_REF);
 
-        return $response;
-    }
-
-    /**
-     * The persisted attempt the response must echo.
-     *
-     * @return PaymentAttempt
-     */
-    private function attempt(): PaymentAttempt
-    {
-        $attempt = new PaymentAttempt(
-            $this->createMock(\Magento\Framework\Model\Context::class),
-            $this->createMock(\Magento\Framework\Registry::class)
-        );
-        $attempt->setOrderRef(self::ORDER_REF);
-        $attempt->setRequestId(self::REQUEST_ID);
-        $attempt->setAmount(150000);
-
-        return $attempt;
+        return [
+            'query_request' => [
+                'partnerCode' => 'MOMO',
+                'orderId' => self::ORDER_REF,
+                'requestId' => self::FRESH_REQUEST_ID,
+                'lang' => 'vi',
+                'signature' => 'computed-request-signature',
+            ],
+            'response' => [
+                'partnerCode' => 'MOMO',
+                'orderId' => self::ORDER_REF,
+                'requestId' => self::FRESH_REQUEST_ID,
+                'extraData' => '',
+                'amount' => '150000',
+                'transId' => '987654321',
+                'resultCode' => 0,
+                'message' => 'Successful',
+                'responseTime' => '20260918120000',
+            ],
+            'attempt' => $attempt,
+        ];
     }
 }

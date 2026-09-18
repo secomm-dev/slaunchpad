@@ -26,11 +26,13 @@ use Magento\Payment\Gateway\Validator\ValidatorInterface;
  *
  * Unlike GetPayUrlCommand this returns the FULL provider response (resultCode,
  * amount, transId, ...) so the caller can verify the payment server-side
- * without trusting the browser redirect. The query response signature is
- * verified (QueryValidator: signature + merchant identity + orderId/
- * requestId echoes against the attempt) INSIDE the command — a signature-
- * invalid response throws CommandException: NO mutation, treated as a
- * verification failure (customer-safe exception, attempt state untouched).
+ * without trusting the browser redirect. The response identity is validated
+ * (QueryValidator: merchant identity + orderId/requestId echoes against the
+ * EXACT query request this command just sent + the persisted attempt) INSIDE
+ * the command — a mismatch throws CommandException: NO mutation, treated as
+ * a verification failure (customer-safe exception, attempt state untouched).
+ * MoMo signs the query REQUEST; the query RESPONSE carries no signature —
+ * the merchant-initiated HTTPS call IS the server-side verification.
  */
 class QueryTransactionCommand implements CommandInterface
 {
@@ -53,10 +55,10 @@ class QueryTransactionCommand implements CommandInterface
     }
 
     /**
-     * Run the v2/query request and validate the response against the
-     * attempt carried in the subject.
+     * Run the v2/query request and validate the response against the exact
+     * request just sent + the attempt carried in the subject.
      *
-     * @param array $commandSubject expects: order_ref, request_id, attempt
+     * @param array $commandSubject expects: order_ref, attempt
      *        (PaymentAttemptInterface).
      * @return ArrayResult|ResultInterface|null
      * @throws CommandException When the response fails validation — NO
@@ -66,9 +68,12 @@ class QueryTransactionCommand implements CommandInterface
      */
     public function execute(array $commandSubject): ResultInterface|ArrayResult|null
     {
-        $transfer = $this->transferFactory->create($this->requestBuilder->build($commandSubject));
+        $queryRequest = $this->requestBuilder->build($commandSubject);
+        $transfer = $this->transferFactory->create($queryRequest);
         $response = $this->client->placeRequest($transfer);
-        $result = $this->validator->validate(array_merge($commandSubject, ['response' => $response]));
+        $result = $this->validator->validate(
+            array_merge($commandSubject, ['response' => $response, 'query_request' => $queryRequest])
+        );
 
         if (!$result->isValid()) {
             throw new CommandException(__('MoMo payment verification failed.'));

@@ -12,8 +12,10 @@ before an authoritative, signature-verified MoMo success.
    MoMo `create` → redirect to `payUrl`. **No Sales Order.**
 2. **Verify** — every callback is verified server-side: HMAC signature +
    partner/order/request identity + frozen amount. Return additionally
-   re-queries `v2/query` (browser params never trusted). Verified success
-   moves the attempt to `paid` (money-real).
+   re-queries `v2/query` (browser params never trusted; MoMo signs the query
+   REQUEST — the unsigned response is identity-checked by its echoes against
+   the exact request just sent). Verified success moves the attempt to
+   `paid` (money-real).
 3. **Finalize** — canonical `OrderFinalizer`: attempt row `FOR UPDATE` →
    single-use placement grant (enforced by a `QuoteManagement::placeOrder`
    plugin) → exactly one order → invoice/capture per `payment_action` →
@@ -31,7 +33,8 @@ CommandPool — **not** the deprecated `AbstractMethod`. Mirrors `Secomm_ZaloPay
 
 - **Create order** → POST `/v2/gateway/api/create` → redirect browser to returned `payUrl`.
 - **Return** (`momo/payment/returnaction`, GET) — UX/recovery only; resolves the attempt
-  by the `orderId` echo (= `order_ref`), re-verifies via `v2/query`, finalizes, then
+  by the `orderId` echo (= `order_ref`), re-verifies via `v2/query` (7000/7002 stay
+  non-terminal), finalizes, then
   rebuilds the 5 checkout success-session keys (like core `Onepage::saveOrder`).
 - **Notify / IPN** (`momo/payment/notify`, POST) — **authoritative**; strict signed-value
   parsing + 13-field signature + identity/amount echo checks against the attempt.
