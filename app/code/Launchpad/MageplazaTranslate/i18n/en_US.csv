@@ -97,3 +97,6 @@ No Payment method available.,No Payment method available.
 You can create an account after checkout.,You can create an account after checkout.
 Discount,Discount
 Discount (%1),Discount (%1)
+"Please enter a valid email address (Ex: johndoe@domain.com).","Please enter a valid email address (Ex: johndoe@domain.com)."
+"Please enter 6 or more characters. Leading and trailing spaces will be ignored.","Please enter 6 or more characters. Leading and trailing spaces will be ignored."
+"Please enter the same value again.","Please enter the same value again."

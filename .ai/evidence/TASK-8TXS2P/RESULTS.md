@@ -67,3 +67,17 @@ Ngày verify: 2026-09-16 · Env: local (slaunchpad.localhost, MAGE_MODE=develope
 - **Round 3**: gutter 2 cột `calc(100% - 12px)` (width 100% làm 2 cột chạm); `label.label` padL 2%→0 (Họ/SĐT lệch 6.3px); nút Áp dụng margin-left −2px→0 (Luma `_checkout.less:96`); extra-fee label 2%→0. `round3-after2.txt`.
 - **Round 4**: sync padding mobile — billing form/payment radios/discount x=15→30 như shipping (`probe-round4c.js`: mọi content x=30; desktop untouched).
 - **Round 5**: modal social login khớp modal home hiện hành — banner title + primary dùng màu config Mageplaza (`style_management` #3399cc, như SLP-160 round 9), bỏ hardcode xanh lá; banner hết tràn 2 cột (vendor width 200%); close = vòng tròn 36px + X pure-CSS (vendor padding 15px !important cần beat bằng (0,6,1)); icon PNG/FA legacy ẩn. Suite vi **34/34 PASS** (spec mới + 30 check cũ). Ảnh so sánh: `final-home-{1280,375}.png` / `final-checkout-{1280,375}.png`.
+
+## Round 6 (2026-09-18 — social login popup: gap nút↔link + validation message VI)
+
+**Feedback**: nút "Tạo tài khoản"/"Gửi" dính link "Quay lại" (create/forgot); 3 validation message `$.mage.__` EN; message đè label (create).
+
+**Đo before** (`r6-before-probe.json`): gap=0 create/forgot (vendor nest `.secondary` trong `.primary` → luma float không apply), gap=10 login (chỉ whitespace); OSC load `Magento/luma/vi_VN/js-translation.json` (probe bắt URL — **scope static thật của trang OSC**), file 5507 bytes / 0 key "Please enter"; `Secomm/launchpad` scope có key email (SLP-225) nhưng dead. Overlap: KHÔNG tái hiện local (`div.mage-error` static in-flow, gap 8px, ×3 viewport).
+
+**Fix**: `social-login-checkout.css` +2 rules (flex `.primary` gap 12 mọi width — nested case; toolbar flex ≥768 + margin `.secondary` = 0 — sibling case, breakpoint khớp luma mobile stack, 640 gây squeeze nút tại 745); `Launchpad_MageplazaTranslate` +3 key/file (99→102); regen js-translation **luma** vi 5507→6039 bytes (+3 key), en = `{}` (identity không vào dict — by design). rm stale materialized CSS → symlink dev.
+
+**After** (`r6-final-results.txt`, `r6-final-report.json`): **24/24 PASS ×3 viewport 1280/745/375** — gap 12px mọi view desktop; luma stack <768 intact; 4 message VI; 0 overlap; social-btn stack intact. Regression `verify.js` **30/30 PASS** (`r6reg2-vi-results.txt`; 3 assertion stale round-1 đã update → spec round-5). Console: 2× "Error fetching data" = ambient pre-existing.
+
+**Flags TL**: (1) SLP-225 note sai scope js-translation trên OSC — probe chứng minh Magento/luma; QC handoff của nó giờ PASS nhờ Round 6; (2) wording VI 2 key mới chờ duyệt; (3) overlap screenshot-4 không tái hiện local → QC demo; (4) en live block store-switch (TASK-K14RVZ).
+
+Ảnh: `r6-before-{create,forgot}.png` (EN + gap 0) vs `r6-final-{1280,745,375}-{create,forgot}.png` (VI + gap 12).

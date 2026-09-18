@@ -1,0 +1,30 @@
+PASS | desktop P1 radio baseline (delta≈0) | delta=0 marginTop=0px
+PASS | desktop P2 stepper frames equal+aligned | frames=[[24,24],[24,24],[24,24]]
+PASS | desktop S6 modal-title hidden | display=none
+PASS | desktop S6 banner keeps config color (round-5) | bg=rgb(51, 153, 204)
+PASS | desktop S6 panel h2 semibold (round-5) | weight=600
+PASS | desktop S6 social btn white+border+radius | bg=rgb(255, 255, 255) border=rgb(209, 213, 219) radius=6px
+PASS | desktop S6 FontAwesome hidden + SVG icon | fa=none
+PASS | desktop S6 primary keeps config color (round-5) | bg=rgb(51, 153, 204)
+PASS | desktop S6 card widened 760 | wrapW=760
+PASS | desktop S6 modal closes
+PASS | mobile P1 radio baseline (delta≈0) | delta=0 marginTop=0px
+PASS | mobile P2 stepper frames equal+aligned | frames=[[24,24],[24,24],[24,24]]
+PASS | mobile P3 estimation margin-top=0 | marginTop=0px
+PASS | mobile P3 no overlap with description | estTop=308.2 subBottom=227.1
+PASS | mobile P4 all input x aligned (1 value) | xs=[15]
+PASS | mobile P5 radio inside section padding | radioX=15 containerX=15
+PASS | mobile S6 modal-title hidden | display=none
+PASS | mobile S6 banner keeps config color (round-5) | bg=rgb(51, 153, 204)
+PASS | mobile S6 panel h2 semibold (round-5) | weight=600
+PASS | mobile S6 social btn white+border+radius | bg=rgb(255, 255, 255) border=rgb(209, 213, 219) radius=6px
+PASS | mobile S6 FontAwesome hidden + SVG icon | fa=none
+PASS | mobile S6 primary keeps config color (round-5) | bg=rgb(51, 153, 204)
+PASS | mobile S6 columns stacked | wrapW=359
+PASS | mobile S6 modal closes
+PASS | R1 osc-checkout-ui.css loaded
+PASS | R2 social-login-checkout.css loaded
+PASS | R3 SLP-199 discount CSS not regressed
+PASS | R4 SLP-139 extra-fee CSS not regressed
+PASS | R5 coupon input present
+PASS | R6 place-order control present
