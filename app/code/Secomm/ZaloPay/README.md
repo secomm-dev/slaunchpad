@@ -89,6 +89,44 @@ Configuration info to integrate with MoMo API.
     ZaloPay quotes: no verified payment, no order. Admin order creation is
     unaffected. Abandoned/cancelled payments create no order.
 
+## Operator toolkit (ZLP-OPS-01)
+
+### CLI diagnostics (`zalopay:diagnose`)
+
+Read-only health report and status queries — no transaction is created, no
+refund is initiated, and refund rows are never mutated:
+
+```
+bin/magento zalopay:diagnose                              # configuration report
+bin/magento zalopay:diagnose --json                       # machine-readable
+bin/magento zalopay:diagnose --query-payment=<app_trans_id>   # payment status
+bin/magento zalopay:diagnose --query-refund=<m_refund_id>     # refund status
+```
+
+The report shows sandbox/live mode, gateway URL, enabled state, debug
+logging state, credential PRESENCE only (values are never printed) and the
+derived start/return/IPN endpoint paths. Exit codes: `0` = valid
+configuration / successful query, `1` = invalid or incomplete configuration,
+failed query, or the two query options used together (mutually exclusive).
+Queries reuse the canonical gateway commands (v2/query, v2/query_refund) —
+the refund query re-signs the stored payload exactly like the refund cron.
+
+### Debug Mode (`payment/zalopay/debug`, default OFF)
+
+**STORES > Configurations > SALES > Payment Methods > Zalopay > Debug**.
+When ON, provider request/response payloads are written masked to
+`var/log/zalo-pay.log`. Keys (key1/key2), MAC and signatures are never
+logged. Real error/critical incident logging is independent of this flag
+and always stays on. Keep OFF outside an active investigation.
+
+### Configurable checkout logo
+
+**STORES > Configurations > SALES > Payment Methods > Zalopay > Checkout
+Logo**: upload PNG/JPG/JPEG/WEBP (SVG is not allowed). The upload is stored
+in media storage (`media/zalopay/...`) so it survives static content
+deploys; per-website uploads are supported. Leave empty to use the bundled
+module logo (`Secomm_ZaloPay::images/logo.png`).
+
 Contribution
 ---
 Want to contribute to this extension? The quickest way is to open a [pull request on GitHub](https://help.github.com/articles/using-pull-requests)
