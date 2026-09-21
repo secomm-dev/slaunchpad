@@ -106,10 +106,6 @@ define([
         if (type !== 'media-image') {
             input.addClass('admin__control-' + (input.is('select') ? 'select' : input.is('textarea') ? 'textarea' : 'text'));
         }
-        if (field.required && type !== 'media-image') {
-            input.attr('required', true).addClass('required-entry');
-        }
-
         return input;
     }
 
@@ -284,12 +280,18 @@ define([
         function addFieldError(path, message) {
             var row = fieldsRoot.find('[data-path="' + path + '"]').first();
             var control = row.children('.admin__field-control').first();
-
-            row.addClass('_error');
-            control.append($('<div/>', {
+            var inputId = control.find('input, select, textarea').first().attr('id');
+            var error = $('<label/>', {
                 class: 'mage-error secomm-ui-field-error',
                 text: message
-            }));
+            });
+
+            if (inputId) {
+                error.attr('for', inputId);
+            }
+
+            row.addClass('_error');
+            control.append(error);
         }
 
         function validateFields(fields, rowData, pathPrefix) {
