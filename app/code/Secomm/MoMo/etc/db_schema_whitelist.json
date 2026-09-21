@@ -19,6 +19,8 @@
             "requires_reconciliation",
             "reconciliation_code",
             "retry_count",
+            "recovery_attempts",
+            "recovery_exhausted",
             "store_id",
             "email_dispatch",
             "created_at",

@@ -21,6 +21,12 @@
                 <payment_action>authorize_capture</payment_action>
                 <order_status>pending_payment</order_status>
                 <attempt_ttl>15</attempt_ttl>
+                <!-- Lost/delayed-IPN recovery worker (MOMO-03): proactively
+                     v2/query outstanding attempts past the callback window,
+                     bounded batch + per-row query budget. -->
+                <recovery_window>15</recovery_window>
+                <recovery_batch_size>25</recovery_batch_size>
+                <recovery_max_attempts>5</recovery_max_attempts>
                 <can_initialize>1</can_initialize>
                 <can_authorize>0</can_authorize>
                 <can_capture>0</can_capture>

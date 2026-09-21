@@ -1,0 +1,13 @@
+php -l (container m2r-php, PHP 8.3.20) — all new/changed PHP files, 2026-09-21
+-- app/code/Secomm/MoMo/Service/PaymentRecovery.php
+No syntax errors detected in /var/www/html/app/code/Secomm/MoMo/Service/PaymentRecovery.php
+-- app/code/Secomm/MoMo/Cron/PaymentRecoveryCronjob.php
+No syntax errors detected in /var/www/html/app/code/Secomm/MoMo/Cron/PaymentRecoveryCronjob.php
+-- app/code/Secomm/MoMo/Model/PaymentAttempt.php
+No syntax errors detected in /var/www/html/app/code/Secomm/MoMo/Model/PaymentAttempt.php
+-- app/code/Secomm/MoMo/Api/Data/PaymentAttemptInterface.php
+No syntax errors detected in /var/www/html/app/code/Secomm/MoMo/Api/Data/PaymentAttemptInterface.php
+-- app/code/Secomm/MoMo/Test/Unit/Service/PaymentRecoveryTest.php
+No syntax errors detected in /var/www/html/app/code/Secomm/MoMo/Test/Unit/Service/PaymentRecoveryTest.php
+-- app/code/Secomm/MoMo/Test/Unit/Cron/PaymentRecoveryCronjobTest.php
+No syntax errors detected in /var/www/html/app/code/Secomm/MoMo/Test/Unit/Cron/PaymentRecoveryCronjobTest.php

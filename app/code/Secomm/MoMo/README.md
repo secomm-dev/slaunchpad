@@ -94,6 +94,54 @@ Resolve outcomes: `SUCCESS` (issue an **offline credit memo** for the amount
 if Magento still shows it unrefunded), `FAILED` (slot released — refund again
 normally), `UNKNOWN` (leave open, re-query later or contact MoMo support).
 
+## Lost-IPN recovery (MOMO-03): bounded proactive reconciliation
+
+If MoMo accepted the money but the authoritative IPN is lost or delayed, the
+attempt row stays unpaid-looking while the customer's wallet was charged.
+Cron `secomm_momo_payment_recovery_cronjob` (`Secomm\MoMo\Cron\
+PaymentRecoveryCronjob`, every 5 minutes, group `default`) runs a **bounded**
+recovery pass (`Service\PaymentRecovery`):
+
+- **Selection** — only `active`/`paid` attempts with NO bound order, not
+  quarantined, older than the callback window (`recovery_window`, default
+  15 min), under the per-row query budget, oldest first, max
+  `recovery_batch_size` rows per pass (default 25).
+- **Claim before HTTP** — one atomic conditional UPDATE per row increments
+  `recovery_attempts` (and flips `recovery_exhausted` on the last permitted
+  query, default budget `recovery_max_attempts` = 5). A lost race (IPN/Return
+  beat the cron) skips the row; no DB lock is held across the MoMo HTTP call.
+- **Verification** — the authoritative `v2/query` runs with the attempt's
+  ORIGINAL identity (`order_ref` as MoMo orderId; fresh query requestId per
+  MoMo contract), outside any transaction.
+- **Outcomes** — always through the SAME canonical services as IPN/Return,
+  never a second order-placement implementation. Result codes classify ONLY
+  through explicit, provider-documented allowlists (developers.momo.vn
+  result-code table, verified 2026-09-21) — an unknown code NEVER defaults
+  to FAILED:
+  - paid code (`0`, or `9000` — authorized — for the module's 1-step
+    `captureWallet`/default autoCapture contract) + exact amount + positive
+    `transId` → `PaymentAttemptLifecycle::recordVerifiedPaid` →
+    `OrderFinalizer::finalizeOrRecover` (exactly one order);
+  - paid + wrong amount → `recordAmountMismatch` (quarantine, no order);
+  - paid + missing/bad `transId` → `recordProviderIdentityUnavailable`
+    (quarantine, no order);
+  - `1000`/`7000`/`7002` (non-final) → pending, no mutation;
+  - documented FINAL failures (`98`, `99`, `1001`–`1007`, `1017`, `1026`,
+    `2019`, `4001`, `4002`, `4100`) → `recordVerifiedFailure` (PAID/FINALIZED
+    are never regressed);
+  - request/system non-final codes (`10`–`13`, `20`–`22`, `40`–`43`, `45`,
+    `47`), any unmapped code, transport failure or unparseable `resultCode`
+    → **AMBIGUOUS**: logged, no mutation, never a false failure; retried on
+    a later pass (budget permitting).
+- **Exhaustion is explicit** — the row gets the machine-readable
+  `recovery_exhausted` marker + a critical log; it is never selected again.
+  The marker is OPERATIONAL ONLY: it is not money evidence and never
+  quarantines the attempt — a valid authenticated IPN/Return arriving later
+  still resolves the payment normally.
+
+Config defaults (`payment/momo_payment/recovery_*`): `recovery_window` 15,
+`recovery_batch_size` 25, `recovery_max_attempts` 5.
+
 ## Config (Admin → Sales → Payment Methods → MoMo)
 
 | Field | Notes |

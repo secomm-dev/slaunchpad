@@ -45,6 +45,10 @@
                 comment="Machine-readable reason code for requires_reconciliation"/>
         <column xsi:type="smallint" name="retry_count" padding="5" unsigned="true" nullable="false" default="0"
                 comment="Number of prior attempts for the same quote"/>
+        <column xsi:type="smallint" name="recovery_attempts" padding="5" unsigned="true" nullable="false" default="0"
+                comment="Proactive v2/query recovery budget consumed (MOMO-03)"/>
+        <column xsi:type="boolean" name="recovery_exhausted" nullable="false" default="false"
+                comment="Operational-only marker: proactive queries stopped (a valid IPN/Return still resolves)"/>
         <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" default="0"
                 comment="Store Id"/>
         <column xsi:type="int" name="email_dispatch" padding="10" unsigned="true" nullable="true" identity="false"

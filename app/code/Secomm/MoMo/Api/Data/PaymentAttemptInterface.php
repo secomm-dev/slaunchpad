@@ -40,6 +40,15 @@ interface PaymentAttemptInterface
     public const REQ_RECONCILIATION = 'requires_reconciliation';
     public const RECONCILIATION_CODE = 'reconciliation_code';
     public const RETRY_COUNT = 'retry_count';
+    /** Proactive v2/query recovery budget consumed (MOMO-03, ZaloPay parity). */
+    public const RECOVERY_ATTEMPTS = 'recovery_attempts';
+    /**
+     * Operational-only recovery marker: proactive queries stopped for this
+     * attempt. NOT money-real evidence and NOT a quarantine — an
+     * authenticated IPN/Return arriving later still resolves the payment
+     * normally; only proactive queries stop.
+     */
+    public const RECOVERY_EXHAUSTED = 'recovery_exhausted';
     public const STORE_ID = 'store_id';
     /**
      * In-flight claim token (unix ts) for the order confirmation email
@@ -330,6 +339,38 @@ interface PaymentAttemptInterface
      * @return void
      */
     public function setRetryCount(int $retryCount): void;
+
+    /**
+     * Get how much proactive v2/query recovery budget this attempt has consumed.
+     *
+     * @return int
+     */
+    public function getRecoveryAttempts(): int;
+
+    /**
+     * Set the recovery budget consumed.
+     *
+     * @param int $recoveryAttempts
+     * @return void
+     */
+    public function setRecoveryAttempts(int $recoveryAttempts): void;
+
+    /**
+     * Whether proactive recovery queries are exhausted for this attempt
+     * (operational marker only — an authenticated IPN/Return arriving later
+     * still resolves the payment).
+     *
+     * @return bool
+     */
+    public function isRecoveryExhausted(): bool;
+
+    /**
+     * Set the recovery-exhausted operational marker.
+     *
+     * @param bool $recoveryExhausted
+     * @return void
+     */
+    public function setRecoveryExhausted(bool $recoveryExhausted): void;
 
     /**
      * Get the owning store id.
