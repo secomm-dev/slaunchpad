@@ -6,8 +6,10 @@
  * resultCode 0 with a valid positive transId; strict integer grammar for
  * provider amounts; non-final codes (7002, 7000, 21, …) → UNKNOWN;
  * provider-confirmed final refusal → FAILED; echo mismatch / malformed →
- * UNKNOWN (never FAILED); query-based resolve parsing requires an EXACT
- * orderId match (no single-entry fallback).
+ * UNKNOWN (never FAILED); query-based resolve parsing binds the response to
+ * the EXACT query sent (top-level requestId/orderId/partnerCode echoes)
+ * and requires an EXACT orderId match on refundTrans entries (no
+ * single-entry fallback).
  *
  * @author    Secomm Teams
  * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
@@ -25,6 +27,7 @@ class RefundResultClassifierTest extends TestCase
 {
     private const REFUND_ORDER_ID = 'MOMO2609180000-SLP-1-RF1111';
     private const REQUEST_ID = 'MOMO2609180000-SLP-1-RQ2222';
+    private const QUERY_REQUEST_ID = 'MOMO2609180000-SLP-1-RF1111-QQaaaa';
     private const AMOUNT = 150000;
 
     /**
@@ -114,14 +117,17 @@ class RefundResultClassifierTest extends TestCase
      * Non-final codes (Final Status = No — money may still move) must never
      * resolve FAILED; they stay UNKNOWN with reason provider_processing.
      * Regression: previously only 7002 was special-cased; the correction
-     * round adds the full provider contract list (10/11/12/13, 20/21/22,
-     * 40/41/42/43/45/47, 7000, 9000).
+     * rounds add the full provider contract list (10/11/12/13, 20/21/22,
+     * 40/41/42/43/45/47, 1000, 7000, 9000).
      *
      * @return void
      */
     public function testNonFinalCodesAreUnknownProcessing(): void
     {
-        $nonFinalCodes = ['10', '11', '12', '13', '20', '21', '22', '40', '41', '42', '43', '45', '47', '7000', '9000'];
+        $nonFinalCodes = [
+            '10', '11', '12', '13', '20', '21', '22',
+            '40', '41', '42', '43', '45', '47', '1000', '7000', '9000',
+        ];
         foreach ($nonFinalCodes as $code) {
             $classification = $this->classifier()->classify(
                 $this->expected(),
@@ -305,11 +311,34 @@ class RefundResultClassifierTest extends TestCase
     // ---- classifyQuery: operator resolve path ----
 
     /**
+     * Expected identity for a resolve query: the stored refund row plus the
+     * FRESH query requestId that was just signed and sent.
+     *
+     * @param array $overrides
+     * @return array
+     */
+    private function queryExpected(array $overrides = []): array
+    {
+        return array_merge([
+            'refund_order_id' => self::REFUND_ORDER_ID,
+            'amount' => self::AMOUNT,
+            'query_request_id' => self::QUERY_REQUEST_ID,
+            'partner_code' => 'SECOMM',
+        ], $overrides);
+    }
+
+    /**
+     * A minimal valid refund/query response (top-level query identity echo
+     * + refundTrans evidence entries).
+     *
      * @return array
      */
     private function queryResponse(array $entries = [], array $overrides = []): array
     {
         return array_merge([
+            'partnerCode' => 'SECOMM',
+            'orderId' => self::REFUND_ORDER_ID,
+            'requestId' => self::QUERY_REQUEST_ID,
             'resultCode' => 0,
             'message' => ' Success',
             'refundTrans' => $entries,
@@ -331,6 +360,84 @@ class RefundResultClassifierTest extends TestCase
     }
 
     /**
+     * A response that does NOT echo the exact fresh query requestId this
+     * invocation just sent is not evidence about this row — UNKNOWN, never
+     * terminal (a stale response from an earlier query must never resolve).
+     *
+     * @return void
+     */
+    public function testQueryStaleRequestIdEchoIsUnknown(): void
+    {
+        $classification = $this->classifier()->classifyQuery(
+            $this->queryExpected(),
+            $this->queryResponse([$this->queryEntry()], ['requestId' => 'MOMO-STALE-QQ9999'])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
+    }
+
+    /**
+     * A missing top-level requestId echo is missing material identity.
+     *
+     * @return void
+     */
+    public function testQueryMissingRequestIdEchoIsUnknown(): void
+    {
+        $classification = $this->classifier()->classifyQuery(
+            $this->queryExpected(),
+            $this->queryResponse([$this->queryEntry()], ['requestId' => null])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
+    }
+
+    /**
+     * A top-level orderId that does not name THIS refund's orderId means the
+     * answer describes something else — UNKNOWN, even with matching entries.
+     *
+     * @return void
+     */
+    public function testQueryTopLevelOrderIdMismatchIsUnknown(): void
+    {
+        $classification = $this->classifier()->classifyQuery(
+            $this->queryExpected(),
+            $this->queryResponse([$this->queryEntry()], ['orderId' => 'OTHER-RF'])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
+    }
+
+    /**
+     * A DIFFERENT partnerCode in the query response cannot be trusted.
+     *
+     * @return void
+     */
+    public function testQueryPartnerCodeConflictIsUnknown(): void
+    {
+        $classification = $this->classifier()->classifyQuery(
+            $this->queryExpected(),
+            $this->queryResponse([$this->queryEntry()], ['partnerCode' => 'NOT-SECOMM'])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
+    }
+
+    /**
+     * Missing partnerCode in the query response is tolerated (same rule as
+     * the direct refund path: only a CONFLICT misdirects evidence).
+     *
+     * @return void
+     */
+    public function testQueryMissingPartnerCodeTolerated(): void
+    {
+        $classification = $this->classifier()->classifyQuery(
+            $this->queryExpected(),
+            $this->queryResponse([$this->queryEntry()], ['partnerCode' => null])
+        );
+        $this->assertTrue($classification->isSuccess());
+    }
+
+    /**
      * A resolved (resultCode 0) entry with a transId confirms the refund.
      *
      * @return void
@@ -338,7 +445,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQueryResolvesSuccessWithTransId(): void
     {
         $classification = $this->classifier()->classifyQuery(
-            $this->expected(),
+            $this->queryExpected(),
             $this->queryResponse([$this->queryEntry()])
         );
         $this->assertTrue($classification->isSuccess());
@@ -353,7 +460,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQueryReadsEntriesNestedInItems(): void
     {
         $response = $this->queryResponse([], ['items' => [['refundTrans' => [$this->queryEntry()]]]]);
-        $classification = $this->classifier()->classifyQuery($this->expected(), $response);
+        $classification = $this->classifier()->classifyQuery($this->queryExpected(), $response);
         $this->assertTrue($classification->isSuccess());
     }
 
@@ -368,7 +475,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQuerySingleNonMatchingEntryIsNeverAccepted(): void
     {
         $classification = $this->classifier()->classifyQuery(
-            $this->expected(),
+            $this->queryExpected(),
             $this->queryResponse([$this->queryEntry(['orderId' => 'OTHER-RF'])])
         );
         $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
@@ -386,7 +493,7 @@ class RefundResultClassifierTest extends TestCase
             $this->queryEntry(['orderId' => 'OTHER-RF-1', 'resultCode' => 21]),
             $this->queryEntry(['orderId' => 'OTHER-RF-2', 'resultCode' => 21]),
         ];
-        $classification = $this->classifier()->classifyQuery($this->expected(), $this->queryResponse($entries));
+        $classification = $this->classifier()->classifyQuery($this->queryExpected(), $this->queryResponse($entries));
         $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
         $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
     }
@@ -399,7 +506,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQueryRejectionIsUnknown(): void
     {
         $classification = $this->classifier()->classifyQuery(
-            $this->expected(),
+            $this->queryExpected(),
             $this->queryResponse([], ['resultCode' => 19, 'message' => ' Data not found'])
         );
         $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
@@ -414,7 +521,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQueryProcessingEntryStaysUnknown(): void
     {
         $classification = $this->classifier()->classifyQuery(
-            $this->expected(),
+            $this->queryExpected(),
             $this->queryResponse([$this->queryEntry(['resultCode' => 7002])])
         );
         $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
@@ -430,7 +537,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQueryRefusedEntryResolvesFailed(): void
     {
         $classification = $this->classifier()->classifyQuery(
-            $this->expected(),
+            $this->queryExpected(),
             $this->queryResponse([$this->queryEntry(['resultCode' => 99])])
         );
         $this->assertSame(RefundRequestInterface::STATUS_FAILED, $classification->status);
@@ -445,9 +552,9 @@ class RefundResultClassifierTest extends TestCase
      */
     public function testQueryNonFinalEntryCodeStaysUnknown(): void
     {
-        foreach (['21', '7000', '9000'] as $code) {
+        foreach (['21', '1000', '7000', '9000'] as $code) {
             $classification = $this->classifier()->classifyQuery(
-                $this->expected(),
+                $this->queryExpected(),
                 $this->queryResponse([$this->queryEntry(['resultCode' => (int)$code])])
             );
             $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
@@ -464,7 +571,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQuerySuccessWithZeroTransIdIsUnknown(): void
     {
         $classification = $this->classifier()->classifyQuery(
-            $this->expected(),
+            $this->queryExpected(),
             $this->queryResponse([$this->queryEntry(['transId' => 0])])
         );
         $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
@@ -480,7 +587,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQueryMalformedAmountIsUnknown(): void
     {
         $classification = $this->classifier()->classifyQuery(
-            $this->expected(),
+            $this->queryExpected(),
             $this->queryResponse([$this->queryEntry(['amount' => '150000abc'])])
         );
         $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
@@ -495,7 +602,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQuerySuccessWithoutTransIdIsUnknown(): void
     {
         $classification = $this->classifier()->classifyQuery(
-            $this->expected(),
+            $this->queryExpected(),
             $this->queryResponse([$this->queryEntry(['transId' => null])])
         );
         $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
@@ -510,7 +617,7 @@ class RefundResultClassifierTest extends TestCase
     public function testQueryAmountMismatchIsUnknown(): void
     {
         $classification = $this->classifier()->classifyQuery(
-            $this->expected(),
+            $this->queryExpected(),
             $this->queryResponse([$this->queryEntry(['amount' => 999])])
         );
         $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
@@ -524,7 +631,7 @@ class RefundResultClassifierTest extends TestCase
      */
     public function testQueryWithoutEntriesIsUnknown(): void
     {
-        $classification = $this->classifier()->classifyQuery($this->expected(), $this->queryResponse([]));
+        $classification = $this->classifier()->classifyQuery($this->queryExpected(), $this->queryResponse([]));
         $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
         $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
     }

@@ -162,6 +162,8 @@ class RefundResolveCommand extends Command
             [
                 'refund_order_id' => $row->getRefundOrderId(),
                 'amount' => $row->getAmount(),
+                'query_request_id' => $queryRequestId,
+                'partner_code' => $this->config->getPartnerCode(),
             ],
             $response
         );

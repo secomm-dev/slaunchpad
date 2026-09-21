@@ -33,6 +33,19 @@ correction_rounds:
       Secomm\MoMo\Gateway\Http\ClientException (transport errors crashed the
       command); it now catches Magento\Payment\Gateway\Http\ClientException.
     schema_change: none (per correction boundary — none required)
+  - round: 2 (coordinator verdict CORRECTION_REQUIRED ROUND 2, 2026-09-21)
+    findings: |
+      Round-1 status: 3/4 findings FIXED; 2 remaining blockers, both fixed:
+      (1) classifyQuery did not validate the refund/query response's
+      TOP-LEVEL identity echoes → now requires response.requestId == the
+      exact fresh query requestId sent, response.orderId == the refund's
+      orderId, and partnerCode conflict-intolerant (absence tolerated) —
+      all checked BEFORE interpreting refundTrans entries; mismatch/missing
+      material identity → UNKNOWN (echo_mismatch), never terminal.
+      (2) NON_FINAL_RESULT_CODES omitted 1000 ("transaction initiated,
+      waiting for user confirmation", Final Status = No) → added; regression
+      coverage on direct + query paths.
+    schema_change: none
 decisions:
   - "Durable secomm_momo_refund table keyed UNIQUE(momo_order_ref, momo_trans_id, open_flag) with the NULL-trick: open_flag=1 for open rows (pending/unknown), NULL for terminal — at most one open refund per payment; terminal rows release the slot (sequential partials + retry-after-FAILED stay native)."
   - "All refund-row persistence goes through an independent DB connection (ConnectionFactory::create on db/connection/default + manual table prefix) because CreditmemoService::refund() wraps the gateway call inside the sales-connection transaction; FAILED/UNKNOWN evidence must survive the native rollback that aborts the creditmemo."
@@ -86,6 +99,7 @@ validation:
   - "setup:di:compile: EXIT=0 ('Generated code and dependency injection configuration successfully')."
   - "CLI smoke: bin/magento list shows momo:refund:list / momo:refund:resolve; momo:refund:list executes against the real DB (temp row listed + cleaned) exercising the independent-connection read path."
   - "Correction round 1 re-validation (final tree): php -l clean on all changed files; phpunit (phpunit-secomm.xml, filter Secomm.MoMo): 177 tests / 492 assertions PASS (5 pre-existing framework deprecations); PHPCS Magento2 severity>=6 on the diff: 0 errors 0 warnings; fresh setup:install with the final tree EXIT=0; setup:di:compile EXIT=0 (resolve command gained an OrderRefBuilder constructor dependency — concrete class, autowired, no di.xml change); schema unchanged vs first submission."
+  - "Correction round 2 re-validation (final tree): php -l clean on all changed files; phpunit: 182 tests / 510 assertions PASS (5 pre-existing framework deprecations; +5 query-echo-binding tests, +1000-code regressions, + resolve-command classifier-identity assertion); PHPCS Magento2 severity>=6 on the changed files: 0 errors 0 warnings; fresh setup:install on an empty DB EXIT=0 with secomm_momo_refund created (schema unchanged — see the environment note in .ai/evidence/TASK-XYDQDF/correction-round-2-validation.txt: two UNRELATED upstream live-stack modules, Secomm_Ahamove and Mageplaza_ExtraFee, plus Hyva_Koti*SampleData patches, break ANY fresh install of the current main checkout and were disabled in the throwaway validation env only); setup:di:compile EXIT=0; CLI smoke: momo:refund:list / momo:refund:resolve listed, momo:refund:list executes."
 verified_against_commit: c685e47968627eed2e17e2b450f389679098d148
 external_refs:
   - "github:thanhle74/slaunchpad#4"

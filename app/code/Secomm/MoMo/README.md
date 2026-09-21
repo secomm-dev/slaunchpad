@@ -63,11 +63,13 @@ classification and reconciliation evidence:
   request (requestId/orderId/amount with a strict integer grammar,
   partnerCode conflict-intolerant) + `resultCode == 0` + a valid positive
   refund `transId`; non-final codes (Final Status = No: 10/11/12/13,
-  20/21/22, 40/41/42/43/45/47, 7000, 7002, 9000) → UNKNOWN
+  20/21/22, 40/41/42/43/45/47, 1000, 7000, 7002, 9000) → UNKNOWN
   (`provider_processing`), never FAILED; provider-confirmed final failures →
   FAILED; malformed/echo-mismatch/transport → UNKNOWN. The query-based
-  resolve path requires an exact `refundTrans[].orderId` match — ambiguity
-  never resolves a terminal verdict, and each resolve invocation signs the
+  resolve path binds the response to the EXACT query sent (top-level
+  requestId/orderId echoes verified, partnerCode conflict-intolerant) and
+  requires an exact `refundTrans[].orderId` match — ambiguity never
+  resolves a terminal verdict — and each resolve invocation signs the
   query with its own fresh `requestId` (the stored refund `requestId` stays
   immutable submission evidence).
 - **UNKNOWN is never blindly retried** — FAILED/UNKNOWN throw after the

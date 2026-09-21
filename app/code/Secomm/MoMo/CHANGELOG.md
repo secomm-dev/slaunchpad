@@ -60,6 +60,17 @@
   \ClientException` (the import pointed at a non-existent module class, so
   transport errors crashed the command instead of keeping the row unknown).
 
+### Fixed (correction round 2, 2026-09-21 — query response binding)
+- `classifyQuery` now validates the refund/query response's TOP-LEVEL
+  identity echoes before reading any `refundTrans` evidence: the response
+  must echo the exact fresh query `requestId` this invocation sent and the
+  refund's `orderId`, and a conflicting `partnerCode` is rejected
+  (absence tolerated, same rule as the direct refund path). A response
+  that answers a different/stale query can no longer resolve the row.
+- `1000` ("transaction initiated, waiting for user confirmation", Final
+  Status = No) added to `NON_FINAL_RESULT_CODES` — UNKNOWN
+  (`provider_processing`), never terminal FAILED, slot stays open.
+
 ## [2.1.0] - 2026-09-18
 
 ### Changed

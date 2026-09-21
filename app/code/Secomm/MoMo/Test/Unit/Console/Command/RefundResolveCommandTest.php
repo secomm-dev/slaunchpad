@@ -163,14 +163,23 @@ class RefundResolveCommandTest extends TestCase
 
     /**
      * A provider-confirmed SUCCESS classification is recorded on the row.
+     * The classifier receives the identity of the EXACT query sent: the
+     * fresh query requestId (matching the one on the wire) and our
+     * partnerCode, so the response echo can be bound back to this query.
      *
      * @return void
      */
     public function testSuccessResolutionRecordsOutcome(): void
     {
+        $wireRequestId = null;
+        $expectedPassed = null;
         $transferFactory = $this->createMock(TransferFactoryInterface::class);
         $transferFactory->method('create')->willReturnCallback(
-            fn () => $this->createMock(TransferInterface::class)
+            function (array $request) use (&$wireRequestId) {
+                $wireRequestId = $request['requestId'];
+
+                return $this->createMock(TransferInterface::class);
+            }
         );
 
         $classification = new RefundClassification(
@@ -181,7 +190,13 @@ class RefundResolveCommandTest extends TestCase
             '2820086740'
         );
         $classifier = $this->createMock(RefundResultClassifier::class);
-        $classifier->method('classifyQuery')->willReturn($classification);
+        $classifier->method('classifyQuery')->willReturnCallback(
+            function (array $expected) use (&$expectedPassed, $classification) {
+                $expectedPassed = $expected;
+
+                return $classification;
+            }
+        );
 
         $manager = $this->createMock(RefundRequestManager::class);
         $manager->expects($this->once())->method('recordOutcome')->willReturn(true);
@@ -193,6 +208,11 @@ class RefundResolveCommandTest extends TestCase
         );
 
         $this->assertSame(Cli::RETURN_SUCCESS, $exit);
+        $this->assertNotNull($expectedPassed);
+        $this->assertSame($wireRequestId, $expectedPassed['query_request_id']);
+        $this->assertMatchesRegularExpression('/-QQ[0-9a-f]{4}$/', (string)$expectedPassed['query_request_id']);
+        $this->assertSame('SECOMM', $expectedPassed['partner_code']);
+        $this->assertSame(self::REFUND_ORDER_ID, $expectedPassed['refund_order_id']);
     }
 
     /**

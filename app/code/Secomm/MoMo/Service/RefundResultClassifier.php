@@ -14,11 +14,11 @@
  * payment instrument selected") is NOT a refusal: money may still move, so
  * it classifies as UNKNOWN, never FAILED.
  *
- * The provider result-code contract (developers.momo.vn, correction round
+ * The provider result-code contract (developers.momo.vn, correction rounds
  * MOMO-02, 2026-09-21) marks the codes 10/11/12/13, 20/21/22, 40/41/42/43/
- * 45/47, 7000, 7002 and 9000 with Final Status = No: money may still move,
- * so they are all UNKNOWN (open slot kept) — only a provider-confirmed
- * FINAL failure code may become FAILED and release the open slot.
+ * 45/47, 1000, 7000, 7002 and 9000 with Final Status = No: money may still
+ * move, so they are all UNKNOWN (open slot kept) — only a provider-
+ * confirmed FINAL failure code may become FAILED and release the open slot.
  *
  * @author    Secomm Teams
  * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
@@ -34,17 +34,19 @@ class RefundResultClassifier
 {
     /**
      * Provider resultCodes with Final Status = No (developers.momo.vn
-     * result-code contract, per the MOMO-02 correction review). Money may
-     * still move for these codes, so they must never be classified FAILED
-     * (a wrong FAILED would release the open slot and invite a double
-     * refund) — they are UNKNOWN (provider_processing), keeping the row
-     * open until the provider settles a final answer.
+     * result-code contract, per the MOMO-02 correction reviews — kept
+     * aligned with the provider's current table, incl. 1000 "transaction
+     * initiated, waiting for user confirmation"). Money may still move for
+     * these codes, so they must never be classified FAILED (a wrong FAILED
+     * would release the open slot and invite a double refund) — they are
+     * UNKNOWN (provider_processing), keeping the row open until the
+     * provider settles a final answer.
      */
     public const NON_FINAL_RESULT_CODES = [
         '10', '11', '12', '13',
         '20', '21', '22',
         '40', '41', '42', '43', '45', '47',
-        '7000', '7002', '9000',
+        '1000', '7000', '7002', '9000',
     ];
 
     /**
@@ -189,14 +191,19 @@ class RefundResultClassifier
     /**
      * Classify a refund/query response (operator resolve path).
      *
-     * Defensive parsing: the evidence entry must match the refund's own
-     * orderId EXACTLY — no single-entry fallback, because a query on a
-     * shared purchase order can legitimately return a sibling refund with
-     * a coincidentally equal amount. Ambiguity or mismatch keeps the row
+     * The response must first echo the EXACT query identity it answers
+     * (provider contract: partnerCode, orderId, requestId at top level):
+     * a response that does not carry the fresh query requestId, the
+     * refund's orderId, or our partnerCode is not evidence about this row
+     * at all. The evidence entry must then match the refund's own orderId
+     * EXACTLY — no single-entry fallback, because a query on a shared
+     * purchase order can legitimately return a sibling refund with a
+     * coincidentally equal amount. Any ambiguity or mismatch keeps the row
      * UNKNOWN — a resolve call must never GUESS a terminal verdict.
      *
-     * @param array $expected Identity of the stored refund row:
-     *        refund_order_id, amount.
+     * @param array $expected Identity of the stored refund row and of the
+     *        query just sent: refund_order_id, amount, query_request_id,
+     *        partner_code.
      * @param array $response Raw decoded refund/query response.
      * @return RefundClassification
      */
@@ -222,6 +229,27 @@ class RefundResultClassifier
         // Normalize once: providers may answer with a JSON number — every
         // verdict below carries the code as a string.
         $queryCode = (string)$queryCode;
+
+        // Bind the response to the EXACT query just sent BEFORE reading any
+        // refundTrans evidence: the fresh query requestId was signed on the
+        // request, its echo is what makes THIS response the answer to THAT
+        // query. partnerCode: strict on conflict, tolerant on absence (only
+        // a DIFFERENT partnerCode could misdirect the evidence).
+        $echoRequestId = (string)($response['requestId'] ?? '');
+        $echoOrderId = (string)($response['orderId'] ?? '');
+        $echoPartner = (string)($response['partnerCode'] ?? '');
+        $expectedPartner = (string)($expected['partner_code'] ?? '');
+        if ($echoRequestId !== (string)($expected['query_request_id'] ?? '')
+            || $echoOrderId !== (string)$expected['refund_order_id']
+            || ($echoPartner !== '' && $expectedPartner !== '' && $echoPartner !== $expectedPartner)
+        ) {
+            return new RefundClassification(
+                RefundRequestInterface::STATUS_UNKNOWN,
+                RefundRequestInterface::REASON_ECHO_MISMATCH,
+                $queryCode,
+                $this->readMessage($response)
+            );
+        }
 
         $entries = $this->collectRefundEntries($response);
         $matches = array_values(array_filter(
