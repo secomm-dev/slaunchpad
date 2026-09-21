@@ -12,6 +12,8 @@
     <testsuites>
         <testsuite name="Secomm_App_Code">
             <directory>../../../app/code/Secomm/*/Test/Unit</directory>
+            <!-- TASK-NQT782: Launchpad composition modules (first: LT-BRIDGE-1 bridge) -->
+            <directory>../../../app/code/Launchpad/*/Test/Unit</directory>
         </testsuite>
     </testsuites>
 </phpunit>

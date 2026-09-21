@@ -15,6 +15,10 @@
     <!-- DEC-FEATYA2C0W-004 (D5) / TASK-Q4B98P — operational ↔ canonical identity bridge. -->
     <preference for="Secomm\VietNamAddress\Api\VnOperationalAddressResolverInterface"
                 type="Secomm\VietNamAddress\Model\VnOperationalAddressResolver"/>
+    <!-- DEC-FEATYA2C0W-004 (D5 name-entry) / TASK-7AJ3K8 — transitional name-based entry
+         (region-scoped ward name → canonical identity; AMBIGUOUS never auto-picked). -->
+    <preference for="Secomm\VietNamAddress\Api\VnOperationalNameResolverInterface"
+                type="Secomm\VietNamAddress\Model\VnOperationalNameResolver"/>
 
     <!-- DEC-FEATYA2C0W-004 (D7): external-reference guards for destructive scheme
          operations are contributed via DI by the modules owning the referencing tables
@@ -22,6 +26,46 @@
     <type name="Secomm\VietNamAddress\Model\Import\VnAddressSchemeImporter">
         <arguments>
             <argument name="directoryReferenceGuards" xsi:type="array"/>
+        </arguments>
+    </type>
+
+    <!-- TASK-GS78X2 — VN_ADMIN_PRE_2025 SNAPSHOT_2024 dataset version (cuối 2024:
+         63 province + 696 district + 10.035 ward). Reuses the SAME import stack through the
+         reader's designed file-override point and the validator's expected-counts override —
+         same scheme identity (VN_ADMIN_PRE_2025), alternate file + counts contract only. -->
+    <virtualType name="VnSnapshot2024DatasetReader" type="Secomm\VietNamAddress\Model\Import\VnDatasetReader">
+        <arguments>
+            <argument name="files" xsi:type="array">
+                <item name="VN_ADMIN_PRE_2025" xsi:type="string">VN_ADMIN_PRE_2025_SNAPSHOT_2024_import.csv</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="VnSnapshot2024DatasetValidator" type="Secomm\VietNamAddress\Model\Import\VnDatasetValidator">
+        <arguments>
+            <argument name="expectedOverrides" xsi:type="array">
+                <item name="VN_ADMIN_PRE_2025" xsi:type="array">
+                    <item name="counts" xsi:type="array">
+                        <item name="regions" xsi:type="number">63</item>
+                        <item name="depth1" xsi:type="number">696</item>
+                        <item name="depth2" xsi:type="number">10035</item>
+                    </item>
+                    <item name="collision" xsi:type="array">
+                        <item name="groups" xsi:type="number">18</item>
+                        <item name="rows" xsi:type="number">36</item>
+                    </item>
+                </item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="VnSnapshot2024ReferenceImporter" type="Secomm\VietNamAddress\Model\Import\VnReferenceSchemeImporter">
+        <arguments>
+            <argument name="reader" xsi:type="object">VnSnapshot2024DatasetReader</argument>
+            <argument name="validator" xsi:type="object">VnSnapshot2024DatasetValidator</argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\VietNamAddress\Setup\Patch\Data\RefreshVnAdminPre2025Snapshot2024">
+        <arguments>
+            <argument name="referenceImporter" xsi:type="object">VnSnapshot2024ReferenceImporter</argument>
         </arguments>
     </type>
 
@@ -37,7 +81,14 @@
                 <item name="secomm_vietnam_address_validate_mapping_command" xsi:type="object">
                     Secomm\VietNamAddress\Console\Command\ValidateVnAddressMappingCommand
                 </item>
+                <item name="secomm_vietnam_address_repair_hierarchy_command" xsi:type="object">
+                    Secomm\VietNamAddress\Console\Command\RepairAddressHierarchyCommand
+                </item>
             </argument>
         </arguments>
     </type>
+    <!-- TASK-MD2BD3 (architecture v10 §35.4): deterministic curated-primary selector cho
+         resolution key AMBIGUOUS — directional, dataset-versioned, không fuzzy/first-candidate. -->
+    <preference for="Secomm\VietNamAddress\Api\VnPrimaryCandidateSelectorInterface"
+                type="Secomm\VietNamAddress\Model\VnPrimaryCandidateSelector"/>
 </config>

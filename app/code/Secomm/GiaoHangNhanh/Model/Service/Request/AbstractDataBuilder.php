@@ -8,11 +8,13 @@ namespace Secomm\GiaoHangNhanh\Model\Service\Request;
 use Magento\Quote\Model\Quote\AddressFactory;
 use Magento\Store\Model\Information;
 use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 use Secomm\GhnAddressMapper\Api\LocationResolverInterface;
 use Secomm\GiaoHangNhanh\Helper\Rate;
 use Secomm\GiaoHangNhanh\IntegrationBase\Model\Service\ConfigInterface;
 use Secomm\GiaoHangNhanh\IntegrationBase\Model\Service\Request\BuilderInterface;
 use Secomm\GiaoHangNhanh\Model\Config;
+use Secomm\GiaoHangNhanh\Model\Exception\GhnLocationMappingException;
 
 /**
  * Class AbstractDataBuilder
@@ -102,6 +104,11 @@ abstract class AbstractDataBuilder implements BuilderInterface
     protected LocationResolverInterface $locationResolver;
 
     /**
+     * @var LoggerInterface
+     */
+    protected LoggerInterface $logger;
+
+    /**
      * AbstractDataBuilder constructor.
      * @param ConfigInterface $config
      * @param StoreManagerInterface $storeManager
@@ -110,6 +117,7 @@ abstract class AbstractDataBuilder implements BuilderInterface
      * @param Config $baseConfig
      * @param Rate $helperRate
      * @param LocationResolverInterface $locationResolver
+     * @param LoggerInterface $logger
      */
     public function __construct(
         ConfigInterface $config,
@@ -118,7 +126,8 @@ abstract class AbstractDataBuilder implements BuilderInterface
         AddressFactory $addressFactory,
         Config $baseConfig,
         Rate $helperRate,
-        LocationResolverInterface $locationResolver
+        LocationResolverInterface $locationResolver,
+        LoggerInterface $logger
     ) {
         $this->config = $config;
         $this->storeManager = $storeManager;
@@ -127,49 +136,103 @@ abstract class AbstractDataBuilder implements BuilderInterface
         $this->baseConfig = $baseConfig;
         $this->helperRate = $helperRate;
         $this->locationResolver = $locationResolver;
-    }
-
-    protected function getIsDevelopMode()
-    {
-        return $this->config->getValue('is_develop_mode');
+        $this->logger = $logger;
     }
 
     /**
-     * Resolve GHN location (District ID & Ward Code) from Region ID, City ID, or City Name
+     * Resolve GHN location (District ID & Ward Code) from Region ID, City ID, or City Name.
+     *
+     * BUG-JBX3H9 — fail closed: an unresolvable location throws instead of being silently
+     * replaced by hardcoded GHN ids. There is intentionally NO develop-mode fallback —
+     * a fake destination/origin must never reach the GHN API.
      *
      * @param int $regionId
      * @param string $city
      * @param int $cityId
-     * @return array{toDistrictId: ?int, toWardCode: string}
+     * @param string $side origin|destination — for diagnostics only
+     * @return array{toDistrictId: int, toWardCode: string}
+     * @throws GhnLocationMappingException when the mapping is missing or incomplete
      */
-    protected function resolveGhnLocation(int $regionId, string $city = '', int $cityId = 0): array
+    protected function resolveGhnLocation(int $regionId, string $city = '', int $cityId = 0, string $side = 'destination'): array
     {
-        $toDistrictId = null;
-        $toWardCode = '';
+        if (!$regionId || (!$cityId && $city === '')) {
+            throw $this->createMappingException(
+                $side,
+                $regionId,
+                $cityId,
+                $city,
+                'no region/city identifiers supplied'
+            );
+        }
 
-        if ($regionId && ($cityId || $city !== '')) {
-            try {
-                if ($cityId) {
-                    $result = $this->locationResolver->resolve($regionId, $cityId);
-                } else {
-                    $result = $this->locationResolver->resolveByName($regionId, $city);
-                }
-                $toDistrictId = (int)$result->getDistrictId();
-                $toWardCode = (string)$result->getWardCode();
-            } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-                if ($this->getIsDevelopMode()) {
-                    $toDistrictId = 1456;
-                    $toWardCode = '21511';
-                }
-            }
-        } elseif ($this->getIsDevelopMode()) {
-            $toDistrictId = 1456;
-            $toWardCode = '21511';
+        try {
+            $result = $cityId
+                ? $this->locationResolver->resolve($regionId, $cityId)
+                : $this->locationResolver->resolveByName($regionId, $city);
+        } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+            throw $this->createMappingException(
+                $side,
+                $regionId,
+                $cityId,
+                $city,
+                'no mapping row for the location'
+            );
+        }
+
+        $toDistrictId = (int)$result->getDistrictId();
+        $toWardCode = (string)$result->getWardCode();
+        if ($toDistrictId <= 0 || $toWardCode === '') {
+            throw $this->createMappingException(
+                $side,
+                $regionId,
+                $cityId,
+                $city,
+                sprintf('incomplete mapping row (district_id=%d, ward_code="%s")', $toDistrictId, $toWardCode)
+            );
         }
 
         return [
             'toDistrictId' => $toDistrictId,
             'toWardCode' => $toWardCode
         ];
+    }
+
+    /**
+     * Build the fail-closed mapping exception and log the identifiers involved
+     * (administrative identifiers only — never street/phone/receiver PII).
+     *
+     * @param string $side origin|destination
+     * @param int $regionId
+     * @param int $cityId
+     * @param string $city
+     * @param string $reason
+     * @return GhnLocationMappingException
+     */
+    private function createMappingException(
+        string $side,
+        int $regionId,
+        int $cityId,
+        string $city,
+        string $reason
+    ): GhnLocationMappingException {
+        $this->logger->warning(
+            '[GHN Location Mapping] Unresolvable GHN location for {side}: {reason}',
+            [
+                'side' => $side,
+                'reason' => $reason,
+                'region_id' => $regionId,
+                'city_id' => $cityId,
+                'city' => $city,
+            ]
+        );
+
+        return new GhnLocationMappingException(
+            __(
+                'GHN location mapping is unavailable for the requested address '
+                . '(region_id=%1, city_id=%2). Shipping via GHN cannot be calculated safely.',
+                $regionId,
+                $cityId
+            )
+        );
     }
 }

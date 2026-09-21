@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- TASK-9Q5ZAK (GHN-D): the CREATE trigger. commit_after (not save_after) keeps the GHN
+         HTTP call OUTSIDE the sales transaction; the observer is fully contained (never throws)
+         and idempotent (the service's SUBMITTED-row guard makes re-fires no-ops). -->
+    <event name="sales_order_shipment_save_commit_after">
+        <observer name="secomm_ghn_shipment_create" instance="Secomm\Ghn\Observer\GhnShipmentCreateObserver"/>
+    </event>
+</config>

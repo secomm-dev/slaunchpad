@@ -59,7 +59,7 @@ class VnMappingReaderTest extends TestCase
     public function testRejectsWrongColumnCount(): void
     {
         $this->expectException(LocalizedException::class);
-        $this->expectExceptionMessage('expected 5 columns');
+        $this->expectExceptionMessage('expected 5 or 6 columns');
         (new VnMappingReader())->read(self::FIXTURE_DIR . '/bad_columns.csv');
     }
 

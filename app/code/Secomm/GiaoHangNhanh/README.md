@@ -263,7 +263,7 @@ Bao gồm tất cả các field của Express, **cộng thêm** giới hạn per
 | # | Vấn Đề | Mức Độ | Ghi Chú |
 |---|---|---|---|
 | 1 | `length`, `width`, `height` trong payload tạo đơn GHN được hardcode = `1` | Medium | Dimension thực tế bị mất do `Secomm_ShippingDimensions` đã bị loại bỏ. Cần implement lại logic tính tổng kích thước từ các item. |
-| 2 | Develop Mode hardcode địa chỉ kho = "Phường 17, Quận Phú Nhuận, HCM" trong `SynchronizeOrderDataBuilder` | Low | Chỉ dùng khi `is_develop_mode = Yes`. Không ảnh hưởng Production. |
+| 2 | ~~Develop Mode hardcode địa chỉ kho = "Phường 17, Quận Phú Nhuận, HCM" trong `SynchronizeOrderDataBuilder`~~ **ĐÃ XÓA (BUG-JBX3H9, 2026-09-08)** | — | Toàn bộ fake-location fallback (1456/21511, 1457/21715, "Phường 17…") + config `is_develop_mode` đã bị loại bỏ — mapping unavailable ⇒ fail closed (`GhnLocationMappingException`), rate → GHN method unavailable; sync → fail + log. |
 | 3 | `queue_consumer.xml` dùng `connection="db"` (MySQL Queue) | Low | Phù hợp môi trường hiện tại. Cần chuyển `amqp` trước khi đạt tải cao Production. |
 
 ---

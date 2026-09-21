@@ -10,7 +10,7 @@
  */
 ?>
 <div class="secomm-ghtk-mapping">
-    <p><strong><?= $block->escapeHtml(__('GHTK Address Mapping — CSV Import (Replace All)')) ?></strong></p>
+    <p><strong><?= $block->escapeHtml(__('GHTK Address Overrides — CSV Import (Replace All)')) ?></strong></p>
     <p class="note">
         <?= $block->escapeHtml(
             __('Uploading replaces the ENTIRE mapping table with the CSV content. '
@@ -45,7 +45,7 @@
         </fieldset>
 
         <button class="action-primary" type="submit">
-            <?= $block->escapeHtml(__('Replace Mapping')) ?>
+            <?= $block->escapeHtml(__('Replace Overrides')) ?>
         </button>
     </form>
 
@@ -63,8 +63,8 @@
                 e.preventDefault();
                 return;
             }
-            // Replace-all safety net: confirm before wiping the mapping table.
-            if (!window.confirm('<?= $block->escapeJsQuote(__('Replace-all: this overwrites the ENTIRE GHTK mapping table. Continue?')) ?>')) {
+            // Replace-all safety net: confirm before wiping the override table.
+            if (!window.confirm('<?= $block->escapeJsQuote(__('Replace-all: this overwrites the ENTIRE GHTK address override table. Continue?')) ?>')) {
                 e.preventDefault();
             }
         });

@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!--
+  ~ TASK-5XQXZK (DEC-TASK5XQXZK-001) — Launchpad-owned extension tables.
+  ~ No Mageplaza-owned table is altered: all three tables carry FK ON DELETE CASCADE into the
+  ~ Mageplaza entities so a deleted method/rate cleans up automatically. `city_code` stores the
+  ~ stable address-node code (directory_region_city.code / Secomm unit_code) — never a DB
+  ~ auto-increment identity that changes between environments/schemes.
+  -->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="launchpad_mptablerate_method_setting" resource="default" engine="innodb"
+           comment="Launchpad per-Mageplaza-method capabilities (show_to_customer / use_as_fallback)">
+        <column xsi:type="int" name="method_id" unsigned="true" nullable="false" identity="false"
+                comment="Mageplaza_TableRateShipping method_id (shared PK, no settings row = native Mageplaza behavior)"/>
+        <column xsi:type="smallint" name="show_to_customer" unsigned="false" nullable="false" default="1"
+                comment="1 = standalone checkout exposure follows Mageplaza carrier; 0 = hidden from customers (fallback-only when use_as_fallback=1)"/>
+        <column xsi:type="smallint" name="use_as_fallback" unsigned="false" nullable="false" default="0"
+                comment="1 = method is a fallback-capable group whose realtime members gate the fallback price"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="method_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="LMPTR_SETTING_METHOD_ID_MPTABLERATE_METHOD"
+                    table="launchpad_mptablerate_method_setting" column="method_id"
+                    referenceTable="mageplaza_tablerate_method" referenceColumn="method_id"
+                    onDelete="CASCADE"/>
+    </table>
+
+    <table name="launchpad_mptablerate_method_member" resource="default" engine="innodb"
+           comment="Realtime Magento shipping methods assigned to a Mageplaza fallback group">
+        <column xsi:type="int" name="member_id" unsigned="true" nullable="false" identity="true"
+                comment="Primary key"/>
+        <column xsi:type="int" name="method_id" unsigned="true" nullable="false" identity="false"
+                comment="Owning Mageplaza TableRate method_id"/>
+        <column xsi:type="varchar" name="carrier_code" nullable="false" length="32"
+                comment="Magento carrier code (stable identity part 1)"/>
+        <column xsi:type="varchar" name="method_code" nullable="false" length="255"
+                comment="Magento method code (stable identity part 2) — never an underscore composite"/>
+        <column xsi:type="smallint" name="enabled" unsigned="false" nullable="false" default="1"
+                comment="0 = member kept for reference but excluded from fallback evaluation"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="member_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="LMPTR_MEMBER_METHOD_CARRIER_METHOD">
+            <column name="method_id"/>
+            <column name="carrier_code"/>
+            <column name="method_code"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="LMPTR_MEMBER_METHOD_ID_MPTABLERATE_METHOD"
+                    table="launchpad_mptablerate_method_member" column="method_id"
+                    referenceTable="mageplaza_tablerate_method" referenceColumn="method_id"
+                    onDelete="CASCADE"/>
+    </table>
+
+    <table name="launchpad_mptablerate_rate_city" resource="default" engine="innodb"
+           comment="Optional City/Area constraint attached to a Mageplaza TableRate rate row">
+        <column xsi:type="int" name="rate_id" unsigned="true" nullable="false" identity="false"
+                comment="Mageplaza_TableRateShipping rate_id (shared PK — a row here marks a city-constrained rate)"/>
+        <column xsi:type="varchar" name="city_code" nullable="false" length="64"
+                comment="Stable address-node code (directory_region_city.code / Secomm unit_code); no row = wildcard (legacy behavior)"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="rate_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="LMPTR_RATE_CITY_RATE_ID_MPTABLERATE_RATE"
+                    table="launchpad_mptablerate_rate_city" column="rate_id"
+                    referenceTable="mageplaza_tablerate_rate" referenceColumn="rate_id"
+                    onDelete="CASCADE"/>
+        <index referenceId="LMPTR_RATE_CITY_CITY_CODE" indexType="btree">
+            <column name="city_code"/>
+        </index>
+    </table>
+</schema>

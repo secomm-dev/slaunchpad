@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  ~ TASK-5XQXZK — Launchpad Mageplaza TableRate fallback composition.
+  ~ Launchpad-specific composition: Secomm_ShippingCore outcome collector contracts + the
+  ~ Mageplaza TableRate internal calculation engine. No reverse dependency may ever exist.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Launchpad_MageplazaTableRate">
+        <sequence>
+            <module name="Magento_Backend"/>
+            <module name="Magento_Config"/>
+            <module name="Secomm_AddressDropdown"/>
+            <module name="Secomm_VietNamAddress"/>
+            <module name="Secomm_ShippingCore"/>
+            <module name="Mageplaza_TableRateShipping"/>
+        </sequence>
+    </module>
+</config>

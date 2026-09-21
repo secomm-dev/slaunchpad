@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!--
+  ~ TASK-5XQXZK (DEC-TASK5XQXZK-001) — the legacy global bridge mode
+  ~ (launchpad_mptablerate/general/mode FALLBACK_ONLY|STANDALONE) is deprecated and removed:
+  ~ per-method capabilities (show_to_customer / use_as_fallback) now own the behavior.
+  ~ `carriers/mptablerate/active` remains the Mageplaza carrier activation flag.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default/>
+</config>

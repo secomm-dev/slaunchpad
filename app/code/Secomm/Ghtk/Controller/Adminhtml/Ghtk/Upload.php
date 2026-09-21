@@ -14,10 +14,10 @@ use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\Controller\Result\Redirect;
-use Secomm\Ghtk\Model\GhtkAddressMapImport\Summary;
+use Secomm\Ghtk\Model\GhtkAddressOverrideImport\Summary;
 
 /**
- * Handles the GHTK mapping CSV upload (replace-all).
+ * Handles the GHTK address override CSV upload (replace-all).
  *
  * ACL via ADMIN_RESOURCE; form key validated automatically by the backend Action
  * for HttpPostActionInterface. Validates extension/size/upload-error, then delegates
@@ -27,13 +27,13 @@ class Upload extends Action implements HttpPostActionInterface
 {
     public const ADMIN_RESOURCE = 'Secomm_Ghtk::manage_map';
 
-    private const FIELD_NAME = 'mapping_csv';
+    private const FIELD_NAME = 'mapping_csv'; // form field name kept for URL/form stability
     private const ALLOWED_EXTENSION = 'csv';
     private const MAX_SIZE_BYTES = 5242880; // 5 MB
 
     public function __construct(
         Context $context,
-        private \Secomm\Ghtk\Model\GhtkAddressMapImport\Importer $importer,
+        private \Secomm\Ghtk\Model\GhtkAddressOverrideImport\Importer $importer,
         private Session $authSession
     ) {
         parent::__construct($context);
@@ -103,7 +103,7 @@ class Upload extends Action implements HttpPostActionInterface
 
         $this->messageManager->addSuccessMessage(
             __(
-                'Mapping replaced: %1 inserted, %2 updated, %3 removed, %4 skipped.',
+                'Address overrides replaced: %1 inserted, %2 updated, %3 removed, %4 skipped.',
                 $summary->getInserted(),
                 $summary->getUpdated(),
                 $summary->getRemoved(),

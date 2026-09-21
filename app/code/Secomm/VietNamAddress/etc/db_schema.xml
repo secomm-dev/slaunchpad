@@ -66,6 +66,7 @@
         <column xsi:type="varchar" name="target_scheme" nullable="false" length="32" comment="Target scheme identity"/>
         <column xsi:type="varchar" name="target_code" nullable="false" length="64" comment="Target unit code"/>
         <column xsi:type="varchar" name="relation_type" nullable="false" length="16" comment="SAME_AS | RENAMED_TO | MERGED_INTO | SPLIT_INTO"/>
+        <column xsi:type="boolean" name="is_primary" nullable="false" default="false" comment="TASK-MD2BD3 v10: curated directional primary designation (source→target direction only)"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="mapping_id"/>
         </constraint>

@@ -2,7 +2,6 @@
 /*
  * @author Secomm Team
  * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
- * See COPYING.txt for license details.
  */
 
 declare(strict_types=1);
@@ -14,23 +13,42 @@ use Secomm\Ghtk\Model\Address\GhtkAddress;
 use Secomm\Ghtk\Model\Address\PickupAddress;
 
 /**
- * Assembles the GHTK Submit Order payload (SL-016 / DEC-SL016-001).
+ * Assembles the GHTK Create Order payload (SL-016 / DEC-SL016-001).
  *
- * Contract notes (Q-EXT still open — this mapper isolates any drift):
- * - pickup from the resolved PickupAddress (metadata pick_address_id wins,
- *   DEC-021); shipper contact (pick_name/pick_tel) from the NATIVE
- *   Shipment\Request (admin user + store_information, validated by core);
- * - pick_money = the RESOLVED COD amount only (CodAmountResolverInterface) —
- *   never grand_total;
- * - is_freeship = 1: Magento charged shipping at checkout; GHTK must not
- *   collect it again at the door (no double charge);
- * - value = declared value of the shipped items (subtotal);
- * - weight in grams (DEC-022 Q2 — same unit as the fee API).
+ * TASK-KCXKVR — corrected against the OFFICIAL Create Order contract
+ * (api.ghtk.vn submit-order-express; evidence SPIKE-A1DGPY §2):
  *
- * @return array<string, mixed>
+ * - Top-level request is `{"order": {...}, "products": [...]}` — the previous
+ *   flattened shape (`partner_order_id`, `order` carrying the products array)
+ *   does not exist in the official contract;
+ * - the deterministic Secomm partner key rides in `order.id` (the duplicate-
+ *   detection key — recovered via ORDER_ID_EXIST after TASK-BE5YD2);
+ * - `products[].weight` is in KILOGRAMS per the official docs ("The unit of
+ *   weight GHTK uses for each product is kilograms (KG)"); the project-internal
+ *   gram values are converted HERE — the GHTK API boundary. `weight_option` is
+ *   omitted (documented default = kilogram) so no mixed-unit payload exists;
+ * - `order.total_weight` (Double, kg) carries the resolved shipment weight
+ *   (admin-entered packages or catalog-derived) — GHTK would otherwise compute
+ *   it from products.weight;
+ * - `is_freeship = 1`: Magento charged shipping at checkout → the recipient
+ *   pays ONLY pick_money at the door (no double charge);
+ * - `pick_money` = the RESOLVED COD amount only (CodAmountResolverInterface) —
+ *   never grand_total. `pick_option` deliberately omitted: official default
+ *   `cod` is correct (it is a LOGISTICS pickup mode, not a payment selector);
+ * - `hamlet = "Khác"` per the official docs ("use Khác when not applicable")
+ *   since detailed hamlet/street parsing is not built.
+ *
+ * Contract notes (staging-gated, NEEDS_RUNTIME_VERIFICATION — Q-EXT):
+ * `district` optionality on 2-level post-2025 addresses is documented REQUIRED
+ * but unverified at runtime — the address adapter output is serialized as-is.
+ *
+ * @return array<string, mixed> `{"order": {...}, "products": [...]}` payload
  */
 class OrderRequestMapper
 {
+    /** Official docs: minimum representable product weight — 1 gram in kg. */
+    private const MIN_PRODUCT_WEIGHT_KG = 0.001;
+
     public function map(
         Request $request,
         PickupAddress $pickup,
@@ -41,7 +59,8 @@ class OrderRequestMapper
         array $products,
         string $transport
     ): array {
-        $payload = [
+        $order = [
+            'id' => $partnerOrderId,
             'pick_name' => (string) ($request->getShipperContactPersonName()
                 ?: $request->getShipperContactCompanyName()),
             'pick_tel' => (string) $request->getShipperContactPhoneNumber(),
@@ -49,38 +68,62 @@ class OrderRequestMapper
             'is_freeship' => 1,
             'pick_money' => (int) round($codAmount),
             'value' => (int) round($this->declaredValue($products)),
-            'weight_option' => 'gram',
-            'partner_order_id' => $partnerOrderId,
             'transport' => $transport,
-            // Destination (VN 2-level, normalized GHTK names).
+            // Destination (VN 2-level, canonical GHTK text from the address adapter).
             'name' => trim((string) $request->getRecipientContactPersonName()),
             'tel' => (string) $request->getRecipientContactPhoneNumber(),
             'address' => trim((string) $request->getRecipientAddressStreet()),
             'province' => $dest->province,
             'ward' => $dest->ward,
             'hamlet' => 'Khác',
-            'weight' => $weightGram,
-            'order' => $products,
+            'total_weight' => $this->gramsToKilograms((float) $weightGram),
         ];
         if ($dest->district !== null) {
-            $payload['district'] = $dest->district;
+            $order['district'] = $dest->district;
         }
 
         if ($pickup->hasPickAddressId()) {
-            $payload['pick_address_id'] = $pickup->pickAddressId;
+            $order['pick_address_id'] = $pickup->pickAddressId; // official priority field
         } else {
-            $payload['pick_province'] = (string) $pickup->province;
-            $payload['pick_ward'] = (string) $pickup->ward;
+            $order['pick_province'] = (string) $pickup->province;
+            $order['pick_ward'] = (string) $pickup->ward;
             if ($pickup->district !== null) {
-                $payload['pick_district'] = $pickup->district;
+                $order['pick_district'] = $pickup->district;
             }
+        }
+
+        return ['order' => $order, 'products' => $this->productsPayload($products)];
+    }
+
+    /**
+     * Project-internal product rows carry GRAM weights (ShipmentWeightCalculator /
+     * buildProducts); the GHTK boundary requires KILOGRAMS — converted here.
+     *
+     * @param array<int, array{name: string, weight: int, quantity: int, price: float}> $products
+     * @return array<int, array{name: string, weight: float, quantity: int, price: float}>
+     */
+    private function productsPayload(array $products): array
+    {
+        $payload = [];
+        foreach ($products as $product) {
+            $payload[] = [
+                'name' => (string) ($product['name'] ?? 'Item'),
+                'weight' => $this->gramsToKilograms((float) ($product['weight'] ?? 0)),
+                'quantity' => max(1, (int) ($product['quantity'] ?? 1)),
+                'price' => (float) ($product['price'] ?? 0),
+            ];
         }
 
         return $payload;
     }
 
+    private function gramsToKilograms(float $grams): float
+    {
+        return max(self::MIN_PRODUCT_WEIGHT_KG, round($grams / 1000, 6));
+    }
+
     /**
-     * @param array<int, array{name: string, quantity: int, weight: int, price: float}> $products
+     * @param array<int, array{name: string, weight: int, quantity: int, price: float}> $products
      */
     private function declaredValue(array $products): float
     {

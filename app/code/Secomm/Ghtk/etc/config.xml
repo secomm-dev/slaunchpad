@@ -35,7 +35,6 @@
                 <!-- Rate composition (DEC-022 Q1): base fee.fee + selected include -->
                 <rate_include></rate_include>
                 <!-- COD (SL-016 / DEC-SL016-001): methods collecting at the door -->
-                <cod_method_codes>cashondelivery</cod_method_codes>
                 <!-- Tracking (SL-017 / DEC-SL017-001): webhook primary; API reconciliation opt-in -->
                 <webhook_secret></webhook_secret>
                 <tracking_refresh_enabled>0</tracking_refresh_enabled>

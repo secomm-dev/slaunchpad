@@ -10,7 +10,8 @@ declare(strict_types=1);
 namespace Secomm\Ghtk\Test\Unit\Model\Address;
 
 use PHPUnit\Framework\TestCase;
-use Secomm\Ghtk\Model\Address\DestinationAddressResolver;
+use Secomm\ShippingCore\Api\Address\ShippingAddressOperation;
+use Secomm\Ghtk\Model\Address\GhtkAddressAdapter;
 use Secomm\Ghtk\Model\Address\GhtkAddress;
 use Secomm\Ghtk\Model\Address\PickupAddressResolver;
 use Secomm\Ghtk\Model\Origin\GhtkOriginProvider;
@@ -20,7 +21,7 @@ class PickupAddressResolverTest extends TestCase
 {
     private function resolver(?GhtkAddress $normalized): PickupAddressResolver
     {
-        $destResolver = $this->createMock(DestinationAddressResolver::class);
+        $destResolver = $this->createMock(GhtkAddressAdapter::class);
         $destResolver->method('resolve')->willReturn($normalized);
 
         return new PickupAddressResolver($destResolver);
@@ -46,7 +47,8 @@ class PickupAddressResolverTest extends TestCase
     public function testPickAddressIdMetadataPreferred(): void
     {
         $pickup = $this->resolver(null)->resolve(
-            $this->origin(['province' => 'ignored'], [GhtkOriginProvider::METADATA_PICK_ADDRESS_ID => 'abc123'])
+            $this->origin(['province' => 'ignored'], [GhtkOriginProvider::METADATA_PICK_ADDRESS_ID => 'abc123']),
+        ShippingAddressOperation::RATE
         );
 
         $this->assertNotNull($pickup);
@@ -59,7 +61,8 @@ class PickupAddressResolverTest extends TestCase
     {
         $normalized = new GhtkAddress('Hà Nội', 'Hoàn Kiếm', 'Phường Hàng Trống', true);
         $pickup = $this->resolver($normalized)->resolve(
-            $this->origin(['regionId' => 467, 'ward' => 'Phường Hàng Trống'])
+            $this->origin(['regionId' => 467, 'ward' => 'Phường Hàng Trống']),
+        ShippingAddressOperation::RATE
         );
 
         $this->assertNotNull($pickup);
@@ -72,14 +75,15 @@ class PickupAddressResolverTest extends TestCase
     public function testRegionIdBasedOriginUnresolvableIsNull(): void
     {
         $this->assertNull(
-            $this->resolver(null)->resolve($this->origin(['regionId' => 467, 'ward' => 'Không Tồn Tại']))
+            $this->resolver(null)->resolve($this->origin(['regionId' => 467, 'ward' => 'Không Tồn Tại']), ShippingAddressOperation::RATE)
         );
     }
 
     public function testNamesOnlyOriginUsedAsIs(): void
     {
         $pickup = $this->resolver(null)->resolve(
-            $this->origin(['province' => 'Hà Nội', 'ward' => 'Hoàn Kiếm', 'district' => ''])
+            $this->origin(['province' => 'Hà Nội', 'ward' => 'Hoàn Kiếm', 'district' => '']),
+        ShippingAddressOperation::RATE
         );
 
         $this->assertNotNull($pickup);
@@ -91,7 +95,8 @@ class PickupAddressResolverTest extends TestCase
     public function testNamesOnlyOriginOptionalDistrictForwarded(): void
     {
         $pickup = $this->resolver(null)->resolve(
-            $this->origin(['province' => 'Hà Nội', 'ward' => 'Hoàn Kiếm', 'district' => 'Ba Đình'])
+            $this->origin(['province' => 'Hà Nội', 'ward' => 'Hoàn Kiếm', 'district' => 'Ba Đình']),
+        ShippingAddressOperation::RATE
         );
 
         $this->assertNotNull($pickup);
@@ -100,16 +105,16 @@ class PickupAddressResolverTest extends TestCase
 
     public function testMissingWardIsInvalid(): void
     {
-        $this->assertNull($this->resolver(null)->resolve($this->origin(['province' => 'Hà Nội'])));
+        $this->assertNull($this->resolver(null)->resolve($this->origin(['province' => 'Hà Nội']), ShippingAddressOperation::RATE));
     }
 
     public function testMissingProvinceIsInvalid(): void
     {
-        $this->assertNull($this->resolver(null)->resolve($this->origin(['ward' => 'Hoàn Kiếm'])));
+        $this->assertNull($this->resolver(null)->resolve($this->origin(['ward' => 'Hoàn Kiếm']), ShippingAddressOperation::RATE));
     }
 
     public function testEmptyOriginIsInvalid(): void
     {
-        $this->assertNull($this->resolver(null)->resolve($this->origin([])));
+        $this->assertNull($this->resolver(null)->resolve($this->origin([]), ShippingAddressOperation::RATE));
     }
 }

@@ -1,0 +1,27 @@
+{
+    "dataset_version": "1.0.0",
+    "generated_at": "2026-09-11T00:00:00+00:00",
+    "source_environment": "sandbox",
+    "files": {
+        "master/GHN_ADMIN_2025.csv": {
+            "scheme_code": "GHN_ADMIN_2025",
+            "record_count": 3355,
+            "sha256": "f31c1ed4822dafc2027429a8d59a26c97731ff43dd56b661b94b630e6015b05f"
+        },
+        "master/GHN_ADMIN_PRE_2025.csv": {
+            "scheme_code": "GHN_ADMIN_PRE_2025",
+            "record_count": 12772,
+            "sha256": "0712b1f7815211fab5a9044bce8efb6eae3d78e95d0a451f70e7535c76bc46e4"
+        },
+        "mapping/VN_ADMIN_2025_TO_GHN_ADMIN_2025.csv": {
+            "scheme_code": "VN_ADMIN_2025",
+            "record_count": 3355,
+            "sha256": "acc219a3cc5e664943d71fc5078976a0eebba2ae890fc58f581e9f446f6ee8ba"
+        },
+        "mapping/VN_ADMIN_PRE_2025_TO_GHN_ADMIN_PRE_2025.csv": {
+            "scheme_code": "VN_ADMIN_PRE_2025",
+            "record_count": 10794,
+            "sha256": "fc2b74be354f497993f04f5d669121604e67b8aef713bb4e1032f2d440eb4cc0"
+        }
+    }
+}

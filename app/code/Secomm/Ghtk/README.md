@@ -70,6 +70,35 @@ names-only / strict invalid), origin provider BC chain, fee request mapping
 the carrier without modifying it), destination resolution, ward bridge, weight
 calculator, fee response mapper, rate composer, CSV import.
 
+## Address resolution — TEXT_NATIVE (TASK-7AJ3K8 r1 / DEC-TASK7AJ3K8-002)
+
+Canonical Vietnamese names (`name_vi`) là representation MẶC ĐỊNH gửi GHTK (fee + create order
++ pickup name-path dùng chung `GhtkAddressAdapter`):
+
+```
+Magento address (region_id + native-city ward name)
+  → VietNamAddress name-based bridge (canonical identity, AMBIGUOUS = candidates, không pick)
+  → ShippingCore canonical orchestration (RuntimeAddressContextBuilder → handoffContext)
+  → GhtkAddressAdapter (TEXT_NATIVE):
+      canonical name_vi (ward unit + region unit)  ← DEFAULT
+      override secomm_ghtk_address_map (exception rows, canonical-keyed)  ← optional
+      AMBIGUOUS / UNMAPPED → null (KHÔNG gửi guessed address — fail closed)
+  → GhtkAddress(province, district?, ward)
+```
+
+`secomm_ghtk_address_map` là **exception/override table** (không phải source of truth VN
+identity, không mandatory): key canonical `(scheme_code, province_code, ward_code)`, các cột
+override nullable, dataset RỖNG mặc định. Chỉ import exception rows khi evidence sandbox cho
+thấy unit cụ thể cần text khác (CSV: `scheme_code,province_code,ward_code,ghtk_province,
+ghtk_district,ghtk_ward,is_active,note`; validator kiểm tra canonical qua VietNamAddress
+contracts). Bảng không còn runtime references → không cần scheme-swap guard.
+
+Observability: `CANONICAL_ADDRESS_UNRESOLVED` / `GHTK_ADDRESS_INVALID` (rate-hidden reasons) ·
+`GHTK_OVERRIDE_APPLIED` (debug). Log chỉ chứa unit codes, không street/telephone.
+
+Transport HTTP dùng shared ShippingCore client (DEC-TASK7AJ3K8-001); fee GET retry theo
+`retry_max`, create-order single attempt.
+
 ## Dependencies
 
 `Secomm_ShippingCore` (origin contract), `Secomm_AddressDropdown` (ward data

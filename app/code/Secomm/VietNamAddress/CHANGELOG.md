@@ -1,5 +1,43 @@
 # Secomm_VietNamAddress — Changelog
 
+## [Unreleased] — BUG-ZTGGYZ: canonical hierarchy — province→L2 edge (2026-09-14)
+- **Fixed** hierarchy contract: `parent_code` là canonical portable parent relation nhưng unit
+  snapshot trước giờ MẤT province→L2 edge — seed CSV để trống parent cho direct-province children
+  (2025 wards, PRE_2025 districts) và `UnitSnapshotWriter` import verbatim (level derive
+  `parent ? 3 : 2` đúng nhưng parent NULL) → `getChildren(province)` trả rỗng → name-bridge
+  (`VnOperationalNameResolver`) UNMAPPED với mọi ward → chặn GHN-C/GHTK real checkout rate.
+- **`UnitSnapshotWriter`**: synthesize `parent_code = region_code` cho unit có seed parent trống
+  (region unit code == region_code); level vẫn theo RAW seed parent (empty→2, set→3); guard
+  fail-loud khi region không tồn tại trong dataset batch. Áp cho MỌI import path (scheme importer,
+  reference/snapshot importer, data patches — cùng writer).
+- **Added** `Model\Import\HierarchyParentBackfill` + CLI `secomm:vietnam-address:hierarchy:repair`
+  — repair existing DB: backfill `parent_code = region_code` cho `level=2 AND parent_code IS NULL`
+  (join validate region L1 cùng scheme; idempotent; identity-preserving; orphan được report, không
+  đoán). Current DB: 2025 backfilled 3,321; PRE_2025 backfilled 696; re-run = no-op; counts dataset
+  không đổi (34+3,321 / 63+696+10,035); non-root parent NULL = 0.
+- Tests: writer synthesis matrix (real rows Long Vĩnh 2025/PRE, district An Phú), backfill contract,
+  `getChildren` parent_code-column lock. Cross-carrier: GHN-C QC CASE 1 real Quote path PASS
+  (214,500 VND sandbox); GHTK name path hưởng lợi cùng bridge (không sửa code GHTK).
+- Follow-up riêng (không thuộc BUG này): `VnSchemes::unitFile(PRE_2025)` trỏ
+  `VN_ADMIN_PRE_2025_import.csv` (reference cũ) trong khi dataset hiện hành là
+  `VN_ADMIN_PRE_2025_SNAPSHOT_2024_import.csv` — re-import PRE_2025 qua CLI sẽ đọc stale file.
+
+## [Unreleased] — TASK-7AJ3K8: name-based operational↔canonical bridge (D5 name-entry) (2026-09-10)
+- **Added** `Api\VnOperationalNameResolverInterface` + `Api\Data\VnOperationalNameResolutionInterface`
+  + `Model\VnOperationalNameResolver` — sibling contract của bridge id-based (TASK-Q4B98P, KHÔNG
+  sửa interface đã freeze): region-scoped ward name → canonical identity, match `name_vi` OR
+  `name_en` (exact sau trim) trên reference layer `secomm_vietnam_address_unit` (sửa lỗi latent:
+  match runtime `default_name` = name_en trong khi storefront submit tên vi); 0 match → UNMAPPED,
+  >1 → AMBIGUOUS (candidates sort deterministically, KHÔNG auto-pick — D9), 1 → EXACT + compose
+  runtime identity qua `VnOperationalAddressResolverInterface::resolveFromCanonical` (1 lookup
+  path, không duplicate SQL). Active scheme theo cùng rule config+registry. Statuses REUSE
+  `VnAddressResolutionInterface::STATUS_*` (alias constants, không parallel set).
+- **Added** DI preference `VnOperationalNameResolverInterface`. Consumer đầu tiên:
+  `Secomm_ShippingCore\RuntimeAddressContextBuilder` (Phase E-C1) → `Secomm_Ghtk`.
+- **Tests** +11 (`VnOperationalNameResolverTest`): vi/en/trim match, ambiguous sorted candidates +
+  never-pick, unmapped, non-VN, scheme drift (fresh-registry mock), region-level skip, runtime-row
+  missing compose, invalid input no-query.
+
 ## [Unreleased] — TASK-NDSZ7V: canonical mapping seed PRE_2025→2025 + auto-import patch (2026-09-04)
 - **Added** `Setup/Patch/Data/ImportVnAdminPre2025To2025MappingPatch` — seed canonical mapping baseline `VN_ADMIN_PRE_2025_TO_2025_mapping.csv` (10.064 edges: 63 region + 10.001 ward; MERGED_INTO 9.250 / SPLIT_INTO 627 / SAME_AS 146 / RENAMED_TO 41) qua `setup:upgrade`, tái dùng `VnMappingImporter` (validate ALL → upsert UNIQUE edge, idempotent, fail-loud). Deps `[ImportVnAdminPre2025ReferencePatch]` (orphan validation cần cả 2 unit datasets). Runtime/registry KHÔNG đổi (2025=CURRENT, PRE=HISTORICAL).
 - **Data** 924/10.595 PRE wards không có edge (nguồn evidence không cover) — giữ là `UNMAPPED` hợp lệ, KHÔNG đoán/synthetic; 3.120 target có >1 legacy candidates — reverse resolution `AMBIGUOUS` (graph cardinality là nguồn sự thật, `relation_type` chỉ metadata).

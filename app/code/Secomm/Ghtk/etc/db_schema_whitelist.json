@@ -2,26 +2,32 @@
     "secomm_ghtk_address_map": {
         "column": {
             "map_id": true,
-            "country_id": true,
-            "region_id": true,
-            "ward_id": true,
-            "source_province_name": true,
-            "source_ward_name": true,
+            "scheme_code": true,
+            "province_code": true,
+            "ward_code": true,
             "ghtk_province": true,
             "ghtk_district": true,
             "ghtk_ward": true,
             "is_active": true,
+            "note": true,
             "created_at": true,
-            "updated_at": true
+            "updated_at": true,
+            "country_id": true,
+            "region_id": true,
+            "ward_id": true,
+            "source_province_name": true,
+            "source_ward_name": true
         },
         "index": {
             "SECOMM_GHTK_ADDRESS_MAP_REGION_ID": true,
-            "SECOMM_GHTK_ADDRESS_MAP_IS_ACTIVE": true
+            "SECOMM_GHTK_ADDRESS_MAP_IS_ACTIVE": true,
+            "SECOMM_GHTK_ADDR_OVERRIDE_IS_ACTIVE": true
         },
         "constraint": {
             "PRIMARY": true,
             "SECOMM_GHTK_ADDRESS_MAP_COUNTRY_REGION_WARD": true,
-            "SECOMM_GHTK_ADDRESS_MAP_COUNTRY_ID_REGION_ID_WARD_ID": true
+            "SECOMM_GHTK_ADDRESS_MAP_COUNTRY_ID_REGION_ID_WARD_ID": true,
+            "SECOMM_GHTK_ADDR_OVERRIDE_SCHEME_PROV_WARD": true
         }
     }
 }

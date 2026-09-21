@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!--
+  ~ TASK-5XQXZK (DEC-TASK5XQXZK-001) — composition wiring.
+  ~ - Outer lifecycle plugin: the ONE seam around Magento\Shipping\Model\Shipping::collectRates()
+  ~   (sole RateCollectorInterface preference) — visibility filter + fallback append.
+  ~ - City/Area narrowing plugin on Mageplaza's rate collection filter.
+  ~ - The internal provider stays registered in the ShippingCore fallback provider pool (bucket
+  ~   code `mptr_<method_id>`) — the service-level contract path keeps working; the production
+  ~   trigger is the outer plugin.
+  ~ - The legacy global mode (launchpad_mptablerate/general/mode) + DI methodMapping/labels are
+  ~   REMOVED (deprecated by DEC-TASK5XQXZK-001; no production data existed).
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Shipping\Model\Shipping">
+        <plugin name="launchpadMptablerateOuterLifecycle"
+                type="Launchpad\MageplazaTableRate\Plugin\Shipping\CollectRatesPlugin"
+                sortOrder="100"/>
+    </type>
+
+    <type name="Mageplaza\TableRateShipping\Model\ResourceModel\Rate\Collection">
+        <plugin name="launchpadMptablerateCityScope"
+                type="Launchpad\MageplazaTableRate\Plugin\Rate\CollectionFilterPlugin"
+                sortOrder="10"/>
+    </type>
+
+    <type name="Launchpad\MageplazaTableRate\Model\City\CityRateScopeResolver">
+        <arguments>
+            <argument name="settingsProvider" xsi:type="object">Launchpad\MageplazaTableRate\Model\MethodSettingsProvider</argument>
+        </arguments>
+    </type>
+
+    <!-- Service-level contract path (kept for ShippingCore orchestration consumers); bucket
+         code convention: mptr_<method_id>. -->
+    <type name="Secomm\ShippingCore\Model\Fallback\FallbackRateProviderPool">
+        <arguments>
+            <argument name="fallbackRateProviders">
+                <item name="launchpad_mptablerate" xsi:type="object">Launchpad\MageplazaTableRate\Model\FallbackRateProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- TASK-5XQXZK — admin extension via preference (vendor source untouched). -->
+    <preference for="Mageplaza\TableRateShipping\Block\Adminhtml\Method\Edit\Tabs"
+                type="Launchpad\MageplazaTableRate\Block\Adminhtml\Method\Edit\MethodTabs"/>
+    <preference for="Mageplaza\TableRateShipping\Block\Adminhtml\Method\Edit\Tab\Rate\Form"
+                type="Launchpad\MageplazaTableRate\Block\Adminhtml\Method\Edit\Tab\Rate\CityForm"/>
+    <preference for="Mageplaza\TableRateShipping\Block\Adminhtml\Method\Edit\Tab\Rate\Grid"
+                type="Launchpad\MageplazaTableRate\Block\Adminhtml\Method\Edit\Tab\Rate\CityGrid"/>
+    <preference for="Mageplaza\TableRateShipping\Model\Import"
+                type="Launchpad\MageplazaTableRate\Model\MptablerateImport"/>
+
+    <type name="Mageplaza\TableRateShipping\Controller\Adminhtml\Method\Save">
+        <plugin name="launchpadMptablerateSettingsPersist"
+                type="Launchpad\MageplazaTableRate\Plugin\Adminhtml\MethodSavePlugin"
+                sortOrder="10"/>
+    </type>
+    <type name="Mageplaza\TableRateShipping\Model\ResourceModel\Rate">
+        <plugin name="launchpadMptablerateRateCityPersist"
+                type="Launchpad\MageplazaTableRate\Plugin\Rate\ResourceRateSavePlugin"
+                sortOrder="10"/>
+    </type>
+</config>

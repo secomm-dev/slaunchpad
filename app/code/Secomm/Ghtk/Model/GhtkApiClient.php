@@ -2,34 +2,42 @@
 /*
  * @author Secomm Team
  * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
- * See COPYING.txt for license details.
  */
 
 declare(strict_types=1);
 
 namespace Secomm\Ghtk\Model;
 
-use Magento\Framework\HTTP\Client\CurlFactory;
 use Secomm\Ghtk\Model\Config\GhtkConfig;
 use Secomm\Ghtk\Model\Log\MaskingLogger;
+use Secomm\Ghtk\Model\GhtkApiProfile;
+use Secomm\ShippingCore\Api\Http\CarrierHttpClientInterface;
+use Secomm\ShippingCore\Api\Http\CarrierHttpException;
+use Secomm\ShippingCore\Api\Http\CarrierHttpErrorCategory;
+use Secomm\ShippingCore\Model\Http\CarrierHttpRequest;
+use Secomm\ShippingCore\Model\Http\RetryExecutor;
+use Secomm\ShippingCore\Model\Http\RetryPolicy;
 
 /**
- * Single GHTK API client abstraction (DEC-023 — base URI locked here). Transport
- * only (SL-015): HTTP, auth headers, timeouts, one retry on network/5xx errors
- * (never on 4xx), masked logging. Business payload assembly lives in
- * Model\Fee\FeeRequestMapper; origin resolution in the ShippingCore provider
- * chain — this class resolves nothing and builds no business payload.
- * Never logs the raw payload or decrypted token.
+ * Single GHTK API client abstraction (DEC-023 — base URI locked here). TASK-7AJ3K8: transport
+ * (HTTP, timeouts, status/JSON error classification) moved onto the SHARED ShippingCore client
+ * (DEC-TASK7AJ3K8-001 §1); GHTK still owns its auth headers, endpoints (via GhtkApiProfile),
+ * payload mapping and retry SEMANTICS: safe reads retry NETWORK/SERVER_ERROR per config
+ * `retry_max` (DEC-023 rule: never 4xx); create-order is SINGLE attempt — no automatic retry
+ * until GHTK documents idempotency (DEC-SL016-001). Never logs the raw payload or the token.
  */
 class GhtkApiClient
 {
-    private const FEE_PATH = '/services/shipment/fee';
-    private const ORDER_PATH = '/services/shipment/order';
+    private const HEADER_TOKEN = 'Token';
+    private const HEADER_CLIENT_SOURCE = 'X-Client-Source';
+    private const HEADER_CONTENT_TYPE = 'Content-Type';
 
     public function __construct(
-        private CurlFactory $curlFactory,
-        private GhtkConfig $config,
-        private MaskingLogger $logger
+        private readonly CarrierHttpClientInterface $httpClient,
+        private readonly RetryExecutor $retryExecutor,
+        private readonly GhtkConfig $config,
+        private readonly GhtkApiProfile $profile,
+        private readonly MaskingLogger $logger
     ) {
     }
 
@@ -41,23 +49,18 @@ class GhtkApiClient
      */
     public function getFee(array $params, ?int $storeId = null): array
     {
-        $url = $this->config->getApiBaseUrl($storeId) . self::FEE_PATH . '?' . http_build_query($params);
-        $attempt = 0;
-        $max = $this->config->getRetryMax($storeId);
+        $uri = $this->config->getApiBaseUrl($storeId)
+            . $this->profile->getFeePath()
+            . '?' . http_build_query($params);
+        $policy = RetryPolicy::safeRead(1 + $this->config->getRetryMax($storeId));
 
-        while (true) {
-            try {
-                return $this->call($url, $storeId);
-            } catch (GhtkApiException $e) {
-                if (!$e->isRetryable() || $attempt >= $max) {
-                    throw $e;
-                }
-                $attempt++;
-                $this->logger->warning(
-                    'GHTK fee call retrying after retryable error.',
-                    ['attempt' => $attempt]
-                );
-            }
+        try {
+            return $this->retryExecutor->execute(
+                fn (): array => $this->httpClient->sendJson($this->request(CarrierHttpRequest::METHOD_GET, $uri, $storeId)),
+                $policy
+            );
+        } catch (CarrierHttpException $e) {
+            throw $this->wrap($e, 'GHTK fee request');
         }
     }
 
@@ -65,7 +68,7 @@ class GhtkApiClient
      * Submits an order to GHTK (SL-016 / DEC-SL016-001). SINGLE attempt by
      * design: an automatic retry of a create call risks a duplicate GHTK order
      * when the first request actually succeeded after a network hiccup — the
-     * deterministic partner_order_id plus a manual merchant retry is the safe
+     * deterministic order.id (Secomm partner id) plus a manual merchant retry is the safe
      * idempotency story for this release.
      *
      * @param array<string, mixed> $payload Mapped payload (see OrderRequestMapper).
@@ -74,49 +77,35 @@ class GhtkApiClient
      */
     public function submitOrder(array $payload, ?int $storeId = null): array
     {
-        $url = $this->config->getApiBaseUrl($storeId) . self::ORDER_PATH;
-        $curl = $this->curlFactory->create();
-        $curl->setOptions([
-            CURLOPT_CONNECTTIMEOUT => $this->config->getTimeoutConnect($storeId),
-            CURLOPT_TIMEOUT => $this->config->getTimeoutTotal($storeId),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => false,
-        ]);
-
-        $token = $this->config->getApiToken($storeId);
-        if ($token !== '') {
-            $curl->addHeader('Token', $token);
-        }
-        $clientSource = $this->config->getClientSource($storeId);
-        if ($clientSource !== '') {
-            $curl->addHeader('X-Client-Source', $clientSource);
-        }
-        $curl->addHeader('Content-Type', 'application/json');
-
         try {
-            $curl->post($url, (string) json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+            $body = json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         } catch (\JsonException $e) {
             throw new GhtkApiException('GHTK order payload could not be encoded.', false, 0, $e);
-        } catch (\Throwable $e) {
-            throw new GhtkApiException('GHTK order request failed (network): ' . $e->getMessage(), true, 0, $e);
         }
 
-        $status = (int) $curl->getStatus();
-        if ($status === 0 || $status >= 500) {
-            throw new GhtkApiException('GHTK order request failed (status ' . $status . ').', true);
-        }
-        if ($status >= 400) {
-            throw new GhtkApiException('GHTK order request rejected (status ' . $status . ').', false);
-        }
+        $uri = $this->config->getApiBaseUrl($storeId) . $this->profile->getOrderPath();
+        $request = new CarrierHttpRequest(
+            method: CarrierHttpRequest::METHOD_POST,
+            uri: $uri,
+            headers: $this->headers($storeId, true),
+            body: $body,
+            timeoutConnect: $this->config->getTimeoutConnect($storeId),
+            timeoutTotal: $this->config->getTimeoutTotal($storeId)
+        );
 
-        $decoded = json_decode((string) $curl->getBody(), true);
-        if (!is_array($decoded)) {
-            throw new GhtkApiException('GHTK order response is not valid JSON.', false);
+        try {
+            // SINGLE attempt by policy (DEC-SL016-001 / DEC-TASK7AJ3K8-001 §1) — never a loop.
+            $decoded = $this->retryExecutor->execute(
+                fn (): array => $this->httpClient->sendJson($request),
+                RetryPolicy::singleAttempt()
+            );
+        } catch (CarrierHttpException $e) {
+            throw $this->wrap($e, 'GHTK order request');
         }
 
         $this->logger->info(
             'GHTK order submit call ok.',
-            ['status' => $status, 'partner_order_id' => (string) ($payload['partner_order_id'] ?? '')]
+            ['order_id' => (string) ($payload['order']['id'] ?? '')]
         );
 
         return $decoded;
@@ -124,104 +113,128 @@ class GhtkApiClient
 
     /**
      * Fetches the GHTK order/tracking status by label id (SL-017 fallback /
-     * reconciliation path — same processing pipeline as the webhook via
-     * TrackingRefreshService). Q-EXT: endpoint path per GHTK docs.
+     * reconciliation path — same processing pipeline as the webhook via the
+     * shared tracking reconciliation). Q-EXT: endpoint path per GHTK docs.
      *
      * @return array Decoded response (order block carries the status).
      * @throws GhtkApiException On transport failure, non-2xx, or invalid JSON.
      */
     public function getOrderStatus(string $labelId, ?int $storeId = null): array
     {
-        $url = $this->config->getApiBaseUrl($storeId) . '/services/shipment/v2/' . rawurlencode($labelId);
-
-        $curl = $this->curlFactory->create();
-        $curl->setOptions([
-            CURLOPT_CONNECTTIMEOUT => $this->config->getTimeoutConnect($storeId),
-            CURLOPT_TIMEOUT => $this->config->getTimeoutTotal($storeId),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => false,
-        ]);
-
-        $token = $this->config->getApiToken($storeId);
-        if ($token !== '') {
-            $curl->addHeader('Token', $token);
-        }
-        $clientSource = $this->config->getClientSource($storeId);
-        if ($clientSource !== '') {
-            $curl->addHeader('X-Client-Source', $clientSource);
-        }
+        $uri = $this->config->getApiBaseUrl($storeId) . $this->profile->getOrderStatusPath($labelId);
+        $policy = RetryPolicy::safeRead(1 + $this->config->getRetryMax($storeId));
 
         try {
-            $curl->get($url);
-        } catch (\Throwable $e) {
-            throw new GhtkApiException('GHTK status request failed (network): ' . $e->getMessage(), true, 0, $e);
+            return $this->retryExecutor->execute(
+                fn (): array => $this->httpClient->sendJson($this->request(CarrierHttpRequest::METHOD_GET, $uri, $storeId)),
+                $policy
+            );
+        } catch (CarrierHttpException $e) {
+            throw $this->wrap($e, 'GHTK status request');
+        }
+    }
+
+    /**
+     * Cancels a GHTK shipment/order (TASK-FNVHK5 — official api-cancel-order).
+     * SINGLE automatic attempt: a mutation that may already have landed — never
+     * retried automatically (manual retry resolves benignly via the
+     * already-cancelled answer).
+     *
+     * @param string $identifier GHTK label code, or `partner_id:{code}`
+     * @return array Decoded response (`success`, `message`, `log_id`).
+     * @throws GhtkApiException On transport failure, non-2xx, or invalid JSON.
+     */
+    public function cancelShipment(string $identifier, ?int $storeId = null): array
+    {
+        $uri = $this->config->getApiBaseUrl($storeId)
+            . $this->profile->getCancelPath()
+            . rawurlencode($identifier);
+        // Single attempt by policy — a mutation; no RetryPolicy (unlike safe reads).
+        try {
+            $decoded = $this->httpClient->sendJson(
+                $this->request(CarrierHttpRequest::METHOD_POST, $uri, $storeId)
+            );
+        } catch (CarrierHttpException $e) {
+            throw $this->wrap($e, 'GHTK cancel request');
         }
 
-        $status = (int) $curl->getStatus();
-        if ($status === 0 || $status >= 500) {
-            throw new GhtkApiException('GHTK status request failed (status ' . $status . ').', true);
-        }
-        if ($status >= 400) {
-            throw new GhtkApiException('GHTK status request rejected (status ' . $status . ').', false);
-        }
-
-        $decoded = json_decode((string) $curl->getBody(), true);
-        if (!is_array($decoded)) {
-            throw new GhtkApiException('GHTK status response is not valid JSON.', false);
-        }
-
-        $this->logger->info('GHTK status call ok.', ['status' => $status]);
+        $this->logger->info('GHTK cancel call ok.');
 
         return $decoded;
     }
 
-    private function call(string $url, ?int $storeId): array
+    /**
+     * Lists the merchant pickup addresses (TASK-3HPB76 — admin Test Connection
+     * tooling; NEVER called from rate/create/checkout paths).
+     *
+     * @return array Decoded response (`success`, `data[]` pickup rows).
+     * @throws GhtkApiException On transport failure, non-2xx, or invalid JSON.
+     */
+    public function getPickupAddresses(?int $storeId = null): array
     {
-        $curl = $this->curlFactory->create();
-        $curl->setOptions([
-            CURLOPT_CONNECTTIMEOUT => $this->config->getTimeoutConnect($storeId),
-            CURLOPT_TIMEOUT => $this->config->getTimeoutTotal($storeId),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => false,
-        ]);
+        $uri = $this->config->getApiBaseUrl($storeId) . $this->profile->getPickupListPath();
+        // Read-only operation — approved safe-read retry applies (NETWORK/SERVER_ERROR/TIMEOUT).
+        $policy = RetryPolicy::safeRead(1 + $this->config->getRetryMax($storeId));
 
+        try {
+            return $this->retryExecutor->execute(
+                fn (): array => $this->httpClient->sendJson($this->request(CarrierHttpRequest::METHOD_GET, $uri, $storeId)),
+                $policy
+            );
+        } catch (CarrierHttpException $e) {
+            throw $this->wrap($e, 'GHTK pickup list request');
+        }
+    }
+
+    private function request(string $method, string $uri, ?int $storeId): CarrierHttpRequest
+    {
+        return new CarrierHttpRequest(
+            method: $method,
+            uri: $uri,
+            headers: $this->headers($storeId, false),
+            timeoutConnect: $this->config->getTimeoutConnect($storeId),
+            timeoutTotal: $this->config->getTimeoutTotal($storeId)
+        );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function headers(?int $storeId, bool $jsonBody): array
+    {
+        $headers = [];
         $token = $this->config->getApiToken($storeId);
         if ($token !== '') {
-            $curl->addHeader('Token', $token);
+            $headers[self::HEADER_TOKEN] = $token;
         }
         $clientSource = $this->config->getClientSource($storeId);
         if ($clientSource !== '') {
-            $curl->addHeader('X-Client-Source', $clientSource);
+            $headers[self::HEADER_CLIENT_SOURCE] = $clientSource;
+        }
+        if ($jsonBody) {
+            $headers[self::HEADER_CONTENT_TYPE] = 'application/json';
         }
 
-        try {
-            $curl->get($url);
-        } catch (\Throwable $e) {
-            throw new GhtkApiException(
-                'GHTK fee request failed (network): ' . $e->getMessage(),
-                true,
-                0,
-                $e
-            );
-        }
+        return $headers;
+    }
 
-        $status = (int) $curl->getStatus();
+    /**
+     * One carrier-facing exception surface (public contract unchanged): the retryable flag
+     * follows the shared category — NETWORK/SERVER_ERROR/TIMEOUT are retryable, everything
+     * else (RATE_LIMIT/CLIENT_ERROR/INVALID_RESPONSE) is not.
+     */
+    private function wrap(CarrierHttpException $e, string $operation): GhtkApiException
+    {
+        $retryable = in_array(
+            $e->getCategory(),
+            [
+                CarrierHttpErrorCategory::NETWORK,
+                CarrierHttpErrorCategory::SERVER_ERROR,
+                CarrierHttpErrorCategory::TIMEOUT,
+            ],
+            true
+        );
 
-        if ($status === 0 || $status >= 500) {
-            throw new GhtkApiException('GHTK fee request failed (status ' . $status . ').', true);
-        }
-        if ($status >= 400) {
-            // 4xx — never retry.
-            throw new GhtkApiException('GHTK fee request rejected (status ' . $status . ').', false);
-        }
-
-        $decoded = json_decode((string) $curl->getBody(), true);
-        if (!is_array($decoded)) {
-            throw new GhtkApiException('GHTK fee response is not valid JSON.', false);
-        }
-
-        $this->logger->info('GHTK fee call ok.', ['status' => $status]);
-
-        return $decoded;
+        return new GhtkApiException($operation . ' failed: ' . $e->getMessage(), $retryable, 0, $e, $e->getCategory());
     }
 }

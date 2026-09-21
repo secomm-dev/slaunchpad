@@ -27,17 +27,21 @@ final class NormalizedTrackingStatus
     public const OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY';
     public const DELIVERED = 'DELIVERED';
     public const DELIVERY_FAILED = 'DELIVERY_FAILED';
+    public const LOST = 'LOST';
+    public const DAMAGED = 'DAMAGED';
     public const RETURNING = 'RETURNING';
     public const RETURNED = 'RETURNED';
     public const CANCELLED = 'CANCELLED';
     public const UNKNOWN = 'UNKNOWN';
 
     /**
-     * @return string[] Statuses the tracking pipeline treats as final.
+     * @return string[] Statuses the tracking pipeline treats as final. LOST/DAMAGED are
+     *         terminal: goods written off by the carrier never legitimately resume transit
+     *         (DEC-TASK9Q5ZAK-001 r3 / TASK-GKHXY1 r2 taxonomy extension).
      */
     public static function terminal(): array
     {
-        return [self::DELIVERED, self::RETURNED, self::CANCELLED];
+        return [self::DELIVERED, self::RETURNED, self::CANCELLED, self::LOST, self::DAMAGED];
     }
 
     public static function isTerminal(string $status): bool
@@ -58,6 +62,8 @@ final class NormalizedTrackingStatus
             self::OUT_FOR_DELIVERY,
             self::DELIVERED,
             self::DELIVERY_FAILED,
+            self::LOST,
+            self::DAMAGED,
             self::RETURNING,
             self::RETURNED,
             self::CANCELLED,
@@ -71,6 +77,6 @@ final class NormalizedTrackingStatus
      */
     public static function commentable(): array
     {
-        return [self::DELIVERED, self::DELIVERY_FAILED, self::RETURNED];
+        return [self::DELIVERED, self::DELIVERY_FAILED, self::LOST, self::DAMAGED, self::RETURNED];
     }
 }

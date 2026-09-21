@@ -31,8 +31,8 @@ use Magento\Shipping\Model\Tracking\Result\ErrorFactory as TrackErrorFactory;
 use Magento\Shipping\Model\Tracking\Result\StatusFactory as TrackStatusFactory;
 use Magento\Shipping\Model\Tracking\ResultFactory as TrackResultFactory;
 use Psr\Log\LoggerInterface;
-use Secomm\Ghtk\Model\Address\DestinationAddressResolver;
 use Secomm\Ghtk\Model\Address\GhtkAddress;
+use Secomm\Ghtk\Model\Address\GhtkAddressAdapter;
 use Secomm\Ghtk\Model\Address\PickupAddress;
 use Secomm\Ghtk\Model\Address\PickupAddressResolver;
 use Secomm\Ghtk\Model\Config\GhtkConfig;
@@ -42,11 +42,17 @@ use Secomm\Ghtk\Model\Fee\RateComposer;
 use Secomm\Ghtk\Model\GhtkApiClient;
 use Secomm\Ghtk\Model\GhtkApiException;
 use Secomm\Ghtk\Model\Log\MaskingLogger;
+use Secomm\Ghtk\Model\Rate\GhtkFeeResponse;
 use Secomm\Ghtk\Model\OrderSubmit\LabelPdfGenerator;
 use Secomm\Ghtk\Model\OrderSubmit\OrderSubmitService;
 use Secomm\Ghtk\Model\Origin\GhtkOriginProvider;
+use Secomm\Ghtk\Model\Rate\GhtkRateOutcomeFactory;
 use Secomm\Ghtk\Model\RateCache;
 use Secomm\Ghtk\Model\Shipment\ShipmentWeightCalculator;
+use Secomm\ShippingCore\Api\Address\ShippingAddressOperation;
+use Secomm\ShippingCore\Api\Failure\ShippingFailureReason;
+use Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeCollectorInterface;
+use Secomm\ShippingCore\Model\Rate\CarrierRateOutcome;
 use Secomm\ShippingCore\Model\ShippingContextFactory;
 
 /**
@@ -83,11 +89,12 @@ class Ghtk extends AbstractCarrierOnline implements CarrierInterface
         StockRegistryInterface $stockRegistry,
         private ResultFactory $rateResultFactory,
         private MethodFactory $rateMethodFactory,
-        private DestinationAddressResolver $destResolver,
+        private GhtkAddressAdapter $destResolver,
         private PickupAddressResolver $pickupResolver,
         private ShipmentWeightCalculator $weightCalculator,
         private GhtkApiClient $apiClient,
         private FeeResponseMapper $feeMapper,
+        private GhtkRateOutcomeFactory $outcomeFactory,
         private RateComposer $rateComposer,
         private RateCache $rateCache,
         private GhtkConfig $ghtkConfig,
@@ -97,6 +104,7 @@ class Ghtk extends AbstractCarrierOnline implements CarrierInterface
         private FeeRequestMapper $requestMapper,
         private OrderSubmitService $orderSubmitService,
         private LabelPdfGenerator $labelPdfGenerator,
+        private readonly CarrierRateOutcomeCollectorInterface $outcomeCollector,
         array $data = []
     ) {
         parent::__construct(
@@ -211,9 +219,19 @@ class Ghtk extends AbstractCarrierOnline implements CarrierInterface
                 'GHTK collectRates failed; returning no rate (graceful).',
                 ['exception' => $e->getMessage()]
             );
+            $this->reportOutcome(CarrierRateOutcome::technicalFailure(ShippingFailureReason::TECHNICAL_ERROR));
 
             return $this->hide();
         }
+    }
+
+    /**
+     * TASK-5XQXZK: report the normalized outcome FACT to ShippingCore (status + structured
+     * reason). Reporting never triggers fallback itself and never throws into the carrier path.
+     */
+    private function reportOutcome(\Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeInterface $outcome): void
+    {
+        $this->outcomeCollector->record($this->_code, 'ghtk_standard', $outcome);
     }
 
     /**
@@ -226,27 +244,31 @@ class Ghtk extends AbstractCarrierOnline implements CarrierInterface
 
         // VN gate (AC-014).
         if ((string) $request->getDestCountryId() !== 'VN') {
+            $this->reportOutcome(CarrierRateOutcome::unavailable(ShippingFailureReason::UNSUPPORTED_DESTINATION));
             return $this->hide();
         }
 
-        // Destination (VN 2-level: province = region, ward stored in native city).
+        // Destination (VN 2-level: province = region, ward stored in native city) — through
+        // the ShippingCore canonical pipeline (TASK-7AJ3K8).
         $regionId = (int) $request->getDestRegionId();
         $wardName = trim((string) $request->getDestCity());
-        $dest = $this->destResolver->resolve('VN', $regionId, null, $wardName !== '' ? $wardName : null);
+        $dest = $this->destResolver->resolve('VN', $regionId, null, $wardName !== '' ? $wardName : null, ShippingAddressOperation::RATE);
         if ($dest === null) {
             $this->maskingLogger->info('GHTK: destination not resolvable; no rate.', ['region_id' => $regionId]);
+            $this->reportOutcome(CarrierRateOutcome::unavailable(ShippingFailureReason::CANONICAL_UNRESOLVED));
             return $this->hide();
         }
 
         // Origin (SL-015): context → provider chain → strict pickup gate (DEC-021).
         $context = $this->contextFactory->fromRateRequest($request, $this->_code);
         $origin = $this->originProvider->resolve($context);
-        $pickup = $this->pickupResolver->resolve($origin);
+        $pickup = $this->pickupResolver->resolve($origin, ShippingAddressOperation::RATE);
         if ($pickup === null) {
             $this->maskingLogger->warning(
                 'GHTK: pickup configuration invalid; carrier inactive. '
                 . 'Set carriers/ghtk/pick_* or configure the Magento Shipping Origin.'
             );
+            $this->reportOutcome(CarrierRateOutcome::unavailable(ShippingFailureReason::INVALID_CONFIGURATION));
             return $this->hide();
         }
 
@@ -258,36 +280,69 @@ class Ghtk extends AbstractCarrierOnline implements CarrierInterface
         $cacheKey = $this->buildCacheKey($pickup, $dest, $weightGram, $value, $transport);
         $cached = $this->rateCache->load($cacheKey);
         if ($cached !== null) {
+            $this->reportOutcome($this->outcomeFactory->success((float) $cached));
             return $this->buildResult($cached, $storeId);
         }
 
-        // Fee API call.
+        // Fee API call — outcome classification per TASK-W8SH0N (v5 semantics):
+        // TECHNICAL_FAILURE (network/5xx/malformed) vs UNAVAILABLE (business/auth);
+        // customer-facing behavior stays binary (rate / rate-unavailable).
         try {
             $response = $this->apiClient->getFee(
                 $this->requestMapper->map($dest, $pickup, $weightGram, $value, $transport),
                 $storeId
             );
         } catch (GhtkApiException $e) {
-            $this->maskingLogger->warning(
-                'GHTK fee API failed; no rate.',
-                ['exception' => $e->getMessage(), 'province' => $dest->province, 'ward' => $dest->ward]
+            $this->logRateOutcome(
+                $this->outcomeFactory->fromTransportException($e),
+                ['province' => $dest->province, 'ward' => $dest->ward, 'exception' => $e->getMessage()]
             );
             return $this->hide();
         }
 
-        $fee = $this->feeMapper->map($response);
-        if ($fee === null || !$fee->delivery) {
-            $this->maskingLogger->info(
-                'GHTK: fee unavailable or delivery denied.',
-                ['delivery' => $fee?->delivery, 'province' => $dest->province, 'ward' => $dest->ward]
+        $feeResponse = $this->feeMapper->parse($response);
+        if ($feeResponse->getKind() !== GhtkFeeResponse::KIND_SUCCESS) {
+            $this->logRateOutcome(
+                $this->outcomeFactory->fromParsedResponse($feeResponse),
+                [
+                    'response_kind' => $feeResponse->getKind(),
+                    'error_code' => $feeResponse->getErrorCode(),
+                    'message' => $feeResponse->getMessage(),
+                    'province' => $dest->province,
+                    'ward' => $dest->ward,
+                ]
+            );
+            return $this->hide();
+        }
+
+        $fee = $feeResponse->getFee();
+        if (!$fee->delivery) {
+            $this->logRateOutcome(
+                $this->outcomeFactory->fromParsedResponse($feeResponse),
+                ['delivery' => false, 'province' => $dest->province, 'ward' => $dest->ward]
             );
             return $this->hide();
         }
 
         $amount = $this->rateComposer->compose($fee, $this->ghtkConfig->getRateInclude($storeId));
         $this->rateCache->save($cacheKey, $amount);
+        $this->logRateOutcome($this->outcomeFactory->success($amount), ['amount' => $amount]);
 
         return $this->buildResult($amount, $storeId);
+    }
+
+    /**
+     * One masked classification line per RATE attempt — safe diagnostics only
+     * (status/reason/error_code/admin names); never token/telephone/full address.
+     */
+    private function logRateOutcome(\Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeInterface $outcome, array $context): void
+    {
+        $this->reportOutcome($outcome);
+        $level = $outcome->isSuccessful() ? 'info' : ($outcome->getStatus() === 'TECHNICAL_FAILURE' ? 'warning' : 'info');
+        $this->maskingLogger->{$level}(
+            'GHTK rate outcome: ' . $outcome->getStatus() . '.',
+            $context + ['failure_reason' => $outcome->getFailureReason()]
+        );
     }
 
     private function buildResult(float $amount, ?int $storeId): Result

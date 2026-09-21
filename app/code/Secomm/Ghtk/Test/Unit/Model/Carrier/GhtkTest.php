@@ -29,7 +29,8 @@ use Magento\Shipping\Model\Tracking\Result\StatusFactory as TrackStatusFactory;
 use Magento\Shipping\Model\Tracking\ResultFactory as TrackResultFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Secomm\Ghtk\Model\Address\DestinationAddressResolver;
+use Psr\Log\NullLogger;
+use Secomm\Ghtk\Model\Address\GhtkAddressAdapter;
 use Secomm\Ghtk\Model\Address\GhtkAddress;
 use Secomm\Ghtk\Model\Address\PickupAddressResolver;
 use Secomm\Ghtk\Model\Carrier\Ghtk;
@@ -47,6 +48,7 @@ use Secomm\Ghtk\Model\Shipment\ShipmentWeightCalculator;
 use Secomm\ShippingCore\Api\OriginInterface;
 use Secomm\ShippingCore\Api\OriginProviderInterface;
 use Secomm\ShippingCore\Model\Origin;
+use Secomm\ShippingCore\Model\Rate\CarrierRateOutcomeCollector;
 use Secomm\ShippingCore\Model\ShippingContextFactory;
 
 /**
@@ -78,7 +80,7 @@ class GhtkTest extends TestCase
         $ghtkConfig->method('getRateInclude')->willReturn([]);
         $ghtkConfig->method('isShowMethod')->willReturn(false);
 
-        $destResolver = $this->createMock(DestinationAddressResolver::class);
+        $destResolver = $this->createMock(GhtkAddressAdapter::class);
         $destResolver->method('resolve')->willReturn(new GhtkAddress('Hà Nội', 'Hoàn Kiếm', 'Phường Hàng Trống', true));
 
         $weightCalculator = $this->createMock(ShipmentWeightCalculator::class);
@@ -121,6 +123,7 @@ class GhtkTest extends TestCase
             $weightCalculator,
             $apiClient,
             new FeeResponseMapper(),
+            new \Secomm\Ghtk\Model\Rate\GhtkRateOutcomeFactory(),
             new RateComposer(),
             $rateCache,
             $ghtkConfig,
@@ -130,6 +133,7 @@ class GhtkTest extends TestCase
             new FeeRequestMapper(),
             $orderSubmitService,
             $this->createMock(LabelPdfGenerator::class),
+            new CarrierRateOutcomeCollector(new NullLogger()),
         );
     }
 

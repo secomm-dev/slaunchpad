@@ -1,0 +1,9 @@
+secomm_scheme_code,secomm_unit_code,secomm_name,ghn_scheme_code,ghn_provider_key,ghn_name,mapping_method,mapping_status,decision_note
+VN_ADMIN_2025,VNA25-0B13A24053,Ia Dreh,GHN_ADMIN_2025,1005699,Xã Ia HDreh,PARENT_SCOPED_REVIEWED,APPROVED,human-approved:same-parent:unique-candidate; canonical-history-supported
+VN_ADMIN_2025,VNA25-4EA3ADA7E1,Kỳ Lừa,GHN_ADMIN_2025,1004104,Xã Tân Thanh,PARENT_SCOPED_RESIDUAL_1TO1,APPROVED,human-approved:lang-son:65-vs-65:sole-residual-pair
+VN_ADMIN_2025,VNA25-9031A96D7C,Liên Sơn Lắk,GHN_ADMIN_2025,1006039,Xã Liên Sơn Lák,PARENT_SCOPED_REVIEWED,APPROVED,human-approved:same-parent:unique-candidate
+VN_ADMIN_2025,VNA25-9ADE42E276,Đào Duy Từ,GHN_ADMIN_2025,1004495,Phường Đào Duy Từ,PARENT_SCOPED_REVIEWED,APPROVED,human-approved:same-parent:unique-candidate
+VN_ADMIN_2025,VNA25-B69111DBF9,Tà Xi Láng,GHN_ADMIN_2025,1004885,Xã Tà Si Láng,PARENT_SCOPED_REVIEWED,APPROVED,human-approved:same-parent:unique-candidate; canonical-history-supported
+VN_ADMIN_2025,VNA25-BA72FB0335,Cư Pơng,GHN_ADMIN_2025,1006025,Xã Cư Pong,PARENT_SCOPED_REVIEWED,APPROVED,human-approved:same-parent:unique-candidate
+VN_ADMIN_2025,VNA25-DD7E307D7B,Vụ Bổn,GHN_ADMIN_2025,1006037,Xã Vụ Bồn,PARENT_SCOPED_REVIEWED,APPROVED,human-approved:same-parent:unique-candidate
+VN_ADMIN_2025,VNA25-FAE7F9B654,Sáng Nhè,GHN_ADMIN_2025,1004186,Xã Xá Nhè,PARENT_SCOPED_REVIEWED,APPROVED,human-approved:same-parent:unique-candidate

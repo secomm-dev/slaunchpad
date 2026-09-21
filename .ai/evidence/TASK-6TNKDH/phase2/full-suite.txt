@@ -1,0 +1,21 @@
+# Full secomm unit suite — 2026-09-11 (baseline phân loại stream)
+
+Command: `vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml`
+
+```
+ERRORS!
+Tests: 1208, Assertions: 214041, Errors: 15, PHPUnit Deprecations: 6.
+```
+
+Phân loại 15 errors (không có failure nào; KHÔNG thuộc Secomm_Ghn):
+
+  8 × Secomm\PromotionMaxDiscount\Test\Unit\Quote\Address\Total\MaxDiscountCapTest
+  7 × Secomm\Tracking\Test\Unit\Event\EventNormalizerTest
+      (7 errors Tracking = baseline đã ghi trong CURRENT_STATE từ E-SL0/NQT782;
+       PromotionMaxDiscount = working tree stream song song, không phải thay đổi của TASK-6TNKDH)
+
+Secomm_Ghn + BundledDatasetIntegrityTest: 0 failures / 0 errors / 0 skips.
+
+Validator (.ai/bin/project-ai-validate): identity 15→14 FAIL sau khi re-render H1 TASK-6TNKDH
+(14 còn lại + 13 check-specs FAIL = records/specs/plans của stream khác, pre-existing —
+"15 FAIL validator cũ pre-existing" trong CURRENT_STATE).

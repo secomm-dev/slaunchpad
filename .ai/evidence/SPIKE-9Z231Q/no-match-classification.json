@@ -1,0 +1,268 @@
+[
+    {
+        "code": "VNA25-61B39F9ABE",
+        "name": "Thổ Châu",
+        "region": "VN-01",
+        "class": "SECOMM_MAPPING_DATA_GAP",
+        "evidence": "old ward same name in merged-in region: VNAP25-CAA7605832\/VN-33 (note: same-name district also exists — author full ward-set edges, not just this one)"
+    },
+    {
+        "code": "VNA25-10CAEEA2BE",
+        "name": "Thới Bình",
+        "region": "VN-03",
+        "class": "SECOMM_MAPPING_DATA_GAP",
+        "evidence": "old ward same name in merged-in region: VNAP25-D184529C32\/VN-12 (note: same-name district also exists — author full ward-set edges, not just this one)"
+    },
+    {
+        "code": "VNA25-A8236D8DE3",
+        "name": "Lịch Hội Thượng",
+        "region": "VN-04",
+        "class": "SECOMM_MAPPING_DATA_GAP",
+        "evidence": "old ward same name in merged-in region: VNAP25-3769D0454E\/VN-51 (note: same-name district also exists — author full ward-set edges, not just this one)"
+    },
+    {
+        "code": "VNA25-E415064A42",
+        "name": "Vị Thanh",
+        "region": "VN-04",
+        "class": "SECOMM_MAPPING_DATA_GAP",
+        "evidence": "old ward same name in merged-in region: VNAP25-4D607F8A21\/VN-28 (note: same-name district also exists — author full ward-set edges, not just this one)"
+    },
+    {
+        "code": "VNA25-17AF618953",
+        "name": "Trường Sa",
+        "region": "VN-18",
+        "class": "SECOMM_MAPPING_DATA_GAP",
+        "evidence": "old ward same name in merged-in region: VNAP25-CDB2705BB7\/VN-32 (note: same-name district also exists — author full ward-set edges, not just this one)"
+    },
+    {
+        "code": "VNA25-B827ED7759",
+        "name": "Tân Minh",
+        "region": "VN-24",
+        "class": "SECOMM_MAPPING_DATA_GAP",
+        "evidence": "old ward same name in same region: VNAP25-B33ECA9639"
+    },
+    {
+        "code": "VNA25-7600A5EE8B",
+        "name": "Tân Thành",
+        "region": "VN-28",
+        "class": "SECOMM_MAPPING_DATA_GAP",
+        "evidence": "old ward same name in same region: VNAP25-84C60BC350"
+    },
+    {
+        "code": "VNA25-518FA2F646",
+        "name": "Suối Tọ",
+        "region": "VN-29",
+        "class": "SECOMM_MAPPING_DATA_GAP",
+        "evidence": "old ward same name in merged-in region: VNAP25-2060268D25\/VN-52 (note: same-name district also exists — author full ward-set edges, not just this one)"
+    },
+    {
+        "code": "VNA25-8467A47257",
+        "name": "Lục Sỹ Thành",
+        "region": "VN-34",
+        "class": "SECOMM_MAPPING_DATA_GAP",
+        "evidence": "old ward same name in merged-in region: VNAP25-B1FB7281BC\/VN-61 (note: same-name district also exists — author full ward-set edges, not just this one)"
+    },
+    {
+        "code": "VNA25-ED78F70581",
+        "name": "Kiên Hải",
+        "region": "VN-01",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-72487649BF\/VN-33"
+    },
+    {
+        "code": "VNA25-BEA0C89209",
+        "name": "Phú Quốc",
+        "region": "VN-01",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-0F306EB029\/VN-33"
+    },
+    {
+        "code": "VNA25-9144AC37BD",
+        "name": "Long Phú",
+        "region": "VN-04",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-2463BC3510\/VN-51"
+    },
+    {
+        "code": "VNA25-1CADA61989",
+        "name": "Hoàng Sa",
+        "region": "VN-06",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-651D3A8B5A\/VN-15"
+    },
+    {
+        "code": "VNA25-1CB5CB93CB",
+        "name": "Bạch Long Vĩ",
+        "region": "VN-14",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-85C49CD0A0\/VN-27"
+    },
+    {
+        "code": "VNA25-6AE1408B57",
+        "name": "Cát Hải",
+        "region": "VN-14",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-1093CD9313\/VN-27"
+    },
+    {
+        "code": "VNA25-985ACD7CE6",
+        "name": "Côn Đảo",
+        "region": "VN-15",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-F092EBC0E1\/VN-02"
+    },
+    {
+        "code": "VNA25-A1AB772041",
+        "name": "Lý Sơn",
+        "region": "VN-26",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-85371DD203\/VN-48"
+    },
+    {
+        "code": "VNA25-245679D4EE",
+        "name": "Cô Tô",
+        "region": "VN-27",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-072E3B9A81\/VN-49"
+    },
+    {
+        "code": "VNA25-C14E19B300",
+        "name": "Vân Đồn",
+        "region": "VN-27",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-4BAD844789\/VN-49"
+    },
+    {
+        "code": "VNA25-A07295443E",
+        "name": "Cồn Cỏ",
+        "region": "VN-28",
+        "class": "STRUCTURAL_ADMIN_CHANGE",
+        "evidence": "former district elevated to ward (region-consistent): VNAP25-13E2BD3191\/VN-50"
+    },
+    {
+        "code": "VNA25-C077943E16",
+        "name": "Quang Trung",
+        "region": "VN-02",
+        "class": "UNKNOWN",
+        "evidence": "same-name candidate exists but region edge does NOT connect (VN-08 -> VN-11), region mismatch — name coincidence; manual review"
+    },
+    {
+        "code": "VNA25-6E2434CF8C",
+        "name": "Albá",
+        "region": "VN-11",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-9AA1019D8D",
+        "name": "Việt Khê",
+        "region": "VN-14",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-58BCDA5E7F",
+        "name": "Bàn Cờ",
+        "region": "VN-15",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-E49A1873B5",
+        "name": "Chánh Hưng",
+        "region": "VN-15",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-D4638849B5",
+        "name": "Chợ Quán",
+        "region": "VN-15",
+        "class": "UNKNOWN",
+        "evidence": "same-name candidate exists but region edge does NOT connect (VN-06 -> VN-02), region mismatch — name coincidence; manual review"
+    },
+    {
+        "code": "VNA25-F3A0B4DAC5",
+        "name": "Hạnh Thông",
+        "region": "VN-15",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-4BC6A640DD",
+        "name": "Tân Sơn Hoà",
+        "region": "VN-15",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-B2D41ED08D",
+        "name": "Tân Sơn Nhất",
+        "region": "VN-15",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-3954C23AA2",
+        "name": "Vĩnh Hội",
+        "region": "VN-15",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-0236EF02A3",
+        "name": "Dương Nỗ",
+        "region": "VN-16",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-2A515790A1",
+        "name": "Phong Phú",
+        "region": "VN-16",
+        "class": "UNKNOWN",
+        "evidence": "same-name candidate exists but region edge does NOT connect (VN-11 -> VN-20), region mismatch — name coincidence; manual review"
+    },
+    {
+        "code": "VNA25-6F40A48A3C",
+        "name": "Đạ Huoai 3",
+        "region": "VN-20",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-EB4B670E6D",
+        "name": "Langbiang - Đà Lạt",
+        "region": "VN-20",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-6BAF623462",
+        "name": "Phú Quý",
+        "region": "VN-20",
+        "class": "UNKNOWN",
+        "evidence": "same-name candidate exists but region edge does NOT connect (VN-58 -> VN-10), region mismatch — name coincidence; manual review"
+    },
+    {
+        "code": "VNA25-2ED764BD24",
+        "name": "Tân Yên",
+        "region": "VN-29",
+        "class": "UNKNOWN",
+        "evidence": "same-name candidate exists but region edge does NOT connect (VN-37 -> VN-21), region mismatch — name coincidence; manual review | district name exists in other region: VNAP25-F8CE3199F6"
+    },
+    {
+        "code": "VNA25-C006806F3A",
+        "name": "Thảo Nguyên",
+        "region": "VN-29",
+        "class": "UNKNOWN",
+        "evidence": "no normalized-name match in PRE_2025 dataset"
+    },
+    {
+        "code": "VNA25-C710B567CB",
+        "name": "Vân Sơn",
+        "region": "VN-29",
+        "class": "UNKNOWN",
+        "evidence": "same-name candidate exists but region edge does NOT connect (VN-03 -> VN-02), region mismatch — name coincidence; manual review"
+    }
+]

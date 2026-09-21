@@ -124,22 +124,9 @@ class GhtkConfig
         return array_values(array_filter(array_map('trim', explode(',', $value))));
     }
 
-    /**
-     * Payment method codes treated as COD (SL-016 / DEC-SL016-001 §4) — the
-     * CodAmountResolver only collects for these; everything else is prepaid
-     * (pick_money = 0). Default: Magento's offline "cashondelivery".
-     *
-     * @return string[]
-     */
-    public function getCodMethodCodes(?int $storeId = null): array
-    {
-        $value = (string) $this->getValue('cod_method_codes', $storeId);
-        if ($value === '') {
-            return ['cashondelivery'];
-        }
-
-        return array_values(array_filter(array_map('trim', explode(',', $value))));
-    }
+    // TASK-6YG3HP: carriers/ghtk/cod_method_codes REMOVED — COD payment-method
+    // identification is owned by Secomm_ShippingCore
+    // (`secomm_shippingcore/cod/payment_methods` + CodPaymentMethodResolverInterface).
 
     /**
      * Decrypted webhook secret (SL-017 / DEC-SL017-001 §4 — GHTK has no

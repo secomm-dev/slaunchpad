@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!--
+  ~ TASK-JZXM66 — admin route for the City/Area self-service endpoints (options feed,
+  ~ City Reference CSV, import template). FrontName is Launchpad-scoped so Mageplaza's own
+  ~ `mptablerate` route stays untouched (upgrade-safe: no vendor route/controller edits).
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="admin">
+        <route id="launchpad_mptablerate" frontName="launchpad_mptablerate">
+            <module name="Launchpad_MageplazaTableRate"/>
+        </route>
+    </router>
+</config>

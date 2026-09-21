@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!-- SPEC-FEAT-FQWEQ3 §5 — GHN administrative master data, ONE row = ONE GHN unit in ONE scheme.
+         No merged current/legacy columns. No FK to secomm_vietnam_address_unit (bridge lives in
+         secomm_ghn_address_mapping only — AC-ADDR-005). provider_key is the app-filled
+         COALESCE(provider_id, provider_code): MySQL treats NULLs as distinct in UNIQUE indexes,
+         so the stable unique key is materialized instead. -->
+    <table name="secomm_ghn_address_unit" resource="default" engine="innodb"
+           comment="Secomm_Ghn GHN administrative master data (dual scheme)">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="scheme_code" nullable="false" length="32"
+                comment="GHN_ADMIN_2025 | GHN_ADMIN_PRE_2025"/>
+        <column xsi:type="varchar" name="provider_id" nullable="true" length="32"
+                comment="GHN ProvinceID/DistrictID (legacy) or _id (new model), numeric-as-string"/>
+        <column xsi:type="varchar" name="provider_code" nullable="true" length="32"
+                comment="GHN WardCode (legacy model only)"/>
+        <column xsi:type="varchar" name="provider_key" nullable="false" length="32"
+                comment="App-filled COALESCE(provider_id, provider_code) — stable unique key"/>
+        <column xsi:type="int" name="parent_id" unsigned="true" nullable="true"
+                comment="Self FK — parent unit entity_id (NULL = province level)"/>
+        <column xsi:type="smallint" name="depth" unsigned="true" nullable="false"
+                comment="1=province, 2=district (PRE) or ward (2025), 3=ward (PRE)"/>
+        <column xsi:type="varchar" name="name" nullable="false" length="255"
+                comment="GHN canonical name — verbatim value for Create Order names (new model)"/>
+        <column xsi:type="text" name="extension_names" nullable="true"
+                comment="JSON array of GHN name variants (new model extension_names)"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="16" default="ACTIVE"
+                comment="ACTIVE | DISABLED (missing from a sync disables, never deletes)"/>
+        <column xsi:type="varchar" name="source_version" nullable="false" length="64"
+                comment="Sync batch label (environment + date)"/>
+        <column xsi:type="timestamp" name="synced_at" on_update="false" nullable="true" comment="Last sync time"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_GHN_ADDR_UNIT_SCHEME_KEY">
+            <column name="scheme_code"/>
+            <column name="provider_key"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="SECOMM_GHN_ADDR_UNIT_PARENT"
+                    table="secomm_ghn_address_unit" column="parent_id"
+                    referenceTable="secomm_ghn_address_unit" referenceColumn="entity_id"
+                    onDelete="NO ACTION"/>
+        <index referenceId="SECOMM_GHN_ADDR_UNIT_SCHEME_PARENT" indexType="btree">
+            <column name="scheme_code"/>
+            <column name="parent_id"/>
+        </index>
+        <index referenceId="SECOMM_GHN_ADDR_UNIT_SCHEME_DEPTH_STATUS" indexType="btree">
+            <column name="scheme_code"/>
+            <column name="depth"/>
+            <column name="status"/>
+        </index>
+    </table>
+
+    <!-- SPEC-FEAT-FQWEQ3 §6 — canonical↔GHN bridge. Only APPROVED bridges are stored (one row per
+         canonical unit; ambiguity is resolved offline via curated aliases, never at runtime).
+         Canonical keys are scheme_code + unit_code — no runtime region_id/city_id anywhere. -->
+    <table name="secomm_ghn_address_mapping" resource="default" engine="innodb"
+           comment="Secomm_Ghn canonical Vietnam ↔ GHN provider mapping">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="secomm_scheme_code" nullable="false" length="32"
+                comment="VN_ADMIN_2025 | VN_ADMIN_PRE_2025"/>
+        <column xsi:type="varchar" name="secomm_unit_code" nullable="false" length="32"
+                comment="Canonical unit code: VN-XX | VNA25-* | VNAP25-*"/>
+        <column xsi:type="int" name="ghn_address_unit_id" unsigned="true" nullable="false"
+                comment="secomm_ghn_address_unit.entity_id"/>
+        <column xsi:type="varchar" name="mapping_method" nullable="false" length="32"
+                comment="EXACT_NAME | CURATED_ALIAS | MANUAL"/>
+        <column xsi:type="varchar" name="mapping_status" nullable="false" length="16" default="APPROVED"
+                comment="APPROVED (only approved bridges are stored)"/>
+        <column xsi:type="timestamp" name="verified_at" on_update="false" nullable="true" comment="Verified At"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_GHN_ADDR_MAPPING_SCHEME_UNIT">
+            <column name="secomm_scheme_code"/>
+            <column name="secomm_unit_code"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="SECOMM_GHN_ADDR_MAPPING_UNIT"
+                    table="secomm_ghn_address_mapping" column="ghn_address_unit_id"
+                    referenceTable="secomm_ghn_address_unit" referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+        <index referenceId="SECOMM_GHN_ADDR_MAPPING_UNIT" indexType="btree">
+            <column name="ghn_address_unit_id"/>
+        </index>
+    </table>
+
+    <!-- SPEC-FEAT-FQWEQ3 §20 (GHN-D / TASK-9Q5ZAK) — provider shipment persistence. One row per
+         Secomm shipment attempt; client_order_code is the deterministic idempotency key
+         (GHNS + shipment entity_id) written BEFORE the Create Order call so a post-provider
+         failure can always be reconciled by resubmitting the same code (sandbox-proven).
+         No GHN columns on sales_order; the full Order Info payload is never mirrored. -->
+    <table name="secomm_ghn_shipment" resource="default" engine="innodb"
+           comment="Secomm_Ghn provider shipment persistence (create idempotency + reconciliation)">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="shipping_reference" nullable="false" length="50"
+                comment="Secomm shipment reference (= client_order_code)"/>
+        <column xsi:type="int" name="magento_order_id" unsigned="true" nullable="false" comment="sales_order.entity_id"/>
+        <column xsi:type="int" name="magento_shipment_id" unsigned="true" nullable="false" comment="sales_shipment.entity_id"/>
+        <column xsi:type="varchar" name="shop_id" nullable="false" length="32" comment="GHN ShopId used for the call"/>
+        <column xsi:type="varchar" name="client_order_code" nullable="false" length="50"
+                comment="Deterministic idempotency key — GHNS + shipment entity_id, written before the API call"/>
+        <column xsi:type="varchar" name="ghn_order_code" nullable="true" length="32"
+                comment="Provider order code (= tracking number); NULL until the provider accepts"/>
+        <column xsi:type="smallint" name="service_type_id" unsigned="true" nullable="true"
+                comment="GHN weight class sent: 2 (under 20kg) | 5 (20kg or more)"/>
+        <column xsi:type="varchar" name="provider_status" nullable="false" length="16" default="PENDING"
+                comment="PENDING | SUBMITTED | FAILED | UNKNOWN (UNKNOWN = create result uncertain, needs reconciliation)"/>
+        <column xsi:type="varchar" name="provider_reason_code" nullable="true" length="64"
+                comment="Service-level failure token (typed-exception short name / ShippingFailureReason) — never raw credentials"/>
+        <column xsi:type="decimal" name="quoted_fee" scale="4" precision="12" unsigned="true" nullable="true"
+                comment="Provider total_fee at creation (VND)"/>
+        <column xsi:type="decimal" name="actual_fee" scale="4" precision="12" unsigned="true" nullable="true"
+                comment="Provider total_fee confirmed later (VND)"/>
+        <column xsi:type="decimal" name="cod_amount" scale="4" precision="12" unsigned="true" nullable="true"
+                comment="Collection amount submitted upstream (VND); 0 = no COD policy upstream yet"/>
+        <column xsi:type="datetime" name="expected_delivery_at" nullable="true" comment="Provider ETA from create response"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_GHN_SHIPMENT_CLIENT_ORDER_CODE">
+            <column name="client_order_code"/>
+        </constraint>
+        <index referenceId="SECOMM_GHN_SHIPMENT_SHIPMENT_ID" indexType="btree">
+            <column name="magento_shipment_id"/>
+        </index>
+        <index referenceId="SECOMM_GHN_SHIPMENT_ORDER_ID" indexType="btree">
+            <column name="magento_order_id"/>
+        </index>
+        <index referenceId="SECOMM_GHN_SHIPMENT_GHN_ORDER_CODE" indexType="btree">
+            <column name="ghn_order_code"/>
+        </index>
+    </table>
+</schema>

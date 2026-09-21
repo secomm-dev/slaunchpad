@@ -52,10 +52,12 @@ class VnMappingImporter
                 'target_scheme' => (string)$row['target_scheme'],
                 'target_code' => (string)$row['target_code'],
                 'relation_type' => (string)$row['relation_type'],
+                // TASK-MD2BD3 v1.1 — curated directional primary; KHÔNG infer, legacy CSV → 0.
+                'is_primary' => ((string)($row['is_primary'] ?? '0') === '1') ? 1 : 0,
             ],
             $rows
         );
-        $connection->insertOnDuplicate($table, $batch, ['relation_type']);
+        $connection->insertOnDuplicate($table, $batch, ['relation_type', 'is_primary']);
 
         return ['rows_validated' => count($rows), 'errors' => [], 'warnings' => $warnings];
     }

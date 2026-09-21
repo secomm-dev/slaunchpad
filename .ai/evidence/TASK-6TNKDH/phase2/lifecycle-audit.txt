@@ -1,0 +1,18 @@
+# §12/§13 code-path audit (grep) — 2026-09-11
+$ grep -rn "AddressMapping" app/code/Secomm/Ghn/Model --include="*.php" -l
+Model/ResourceModel/AddressMapping.php          # ResourceModel (SQL duy nhất)
+Model/Address/Mapping/MappingAuditor.php        # read: fetchByScheme
+Model/Address/Import/MappingImporter.php        # WRITE: upsert (APPROVED-only) — writer duy nhất
+Model/Address/Mapping/GhnMappingResolver.php    # read: findApproved
+
+$ grep -rn "mappingResource->|->upsert(" app/code/Secomm/Ghn/Model --include="*.php" | grep -v Test
+MappingImporter.php:79  $this->mappingResource->upsert($allApprovedRows);
+MappingAuditor.php:53   $stored = $this->mappingResource->fetchByScheme($secommScheme);
+GhnMappingResolver.php:67 $mapping = $this->mappingResource->findApproved(...);
+Sync/UnitPersister.php:103 $affected += $this->unitResource->upsert($dbRows);   # UNITS only
+
+$ grep -rn "secomm_ghn_address_mapping" app/code/Secomm/Ghn --include="*.php" | grep -v "ResourceModel|Test|db_schema"
+# chỉ docblock: MasterDataImporter.php:23, MasterDataSynchronizer.php:19 (sync NEVER touches mapping)
+
+# MappingSuggester: chỉ fputcsv vào review workfile (không DB)
+# MappingMatcher/AliasRepository/NameNormalizer: 0 persist call

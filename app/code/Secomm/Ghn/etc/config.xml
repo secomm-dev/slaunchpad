@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/config.xsd">
+    <!-- GHN carrier defaults under the standard Delivery Methods section (carriers/secomm_ghn/*).
+         api_token deliberately has NO default (encrypted backend; legacy giaohangnhanh_setting is
+         NOT reused — parallel coexistence until GHN-F/TASK-8019VC). Debug defaults to 0.
+         TASK-FMBBSD slice 2: the `enabled` field was replaced by Magento's standard carrier
+         `active` gate (the carrier model node is what turns this group into a live carrier). -->
+    <default>
+        <carriers>
+            <secomm_ghn>
+                <active>0</active>
+                <model>Secomm\Ghn\Model\Carrier\Ghn</model>
+                <title>GHN</title>
+                <!-- Storefront method title (SPEC §20 — one stable method, no provider ids). -->
+                <name>GHN Delivery</name>
+                <sort_order>20</sort_order>
+                <showmethod>0</showmethod>
+                <sallowspecific>1</sallowspecific>
+                <specificcountry>VN</specificcountry>
+                <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
+                <environment>sandbox</environment>
+                <!-- origin_district_id empty by default: GHN prices/creates against the shop's
+                     registered address until the merchant pins a specific legacy district. -->
+                <origin_district_id/>
+                <!-- payment_type 1 = shop pays the GHN fee (Magento already charged shipping at
+                     checkout — 2 would double-charge the customer; TASK-FMBBSD contract audit). -->
+                <payment_type>1</payment_type>
+                <required_note>CHOXEMHANGKHONGTHU</required_note>
+                <debug>0</debug>
+                <!-- TASK-GKHXY1 (GHN-E1): shared callback secret — the merchant configures the
+                     SAME value as a GHN dashboard custom header (X-Secomm-Ghn-Secret). GHN
+                     webhooks carry NO signature; empty = all callbacks rejected 401. -->
+                <webhook_secret/>
+                <tracking_refresh_enabled>0</tracking_refresh_enabled>
+                <tracking_refresh_threshold_hours>6</tracking_refresh_threshold_hours>
+                <connection_timeout>10</connection_timeout>
+                <request_timeout>30</request_timeout>
+                <!-- TASK-WAWNDS (v10) — explicit defaults matching Config accessors exactly:
+                     fresh merchant config resolves deterministically without a save. -->
+                <rate_source_mode>CARRIER_WITH_FALLBACK</rate_source_mode>
+                <address_resolution_policy>FALLBACK</address_resolution_policy>
+                <rate_adjustment_enabled>0</rate_adjustment_enabled>
+                <rate_adjustment_type>fixed</rate_adjustment_type>
+                <rate_adjustment_rounding>none</rate_adjustment_rounding>
+                <rate_adjustment_apply_to>carrier_rate_only</rate_adjustment_apply_to>
+                <rate_adjustment_value>0</rate_adjustment_value>
+            </secomm_ghn>
+        </carriers>
+    </default>
+</config>

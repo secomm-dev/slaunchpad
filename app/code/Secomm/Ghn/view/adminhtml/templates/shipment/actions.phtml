@@ -1,0 +1,52 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+/** @var \Secomm\Ghn\Block\Adminhtml\Shipment\View\Actions $block */
+
+if (!$block->canShowActions() || (!$block->canCancel() && !$block->canReturn())) {
+    return;
+}
+?>
+<div class="admin__field secomm-ghn-shipment-actions" style="margin: 12px 0;">
+    <h4><?= $block->escapeHtml(__('GHN Carrier Actions')) ?></h4>
+    <div class="secomm-ghn-actions-row" style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
+        <?php if ($block->canCancel()) : ?>
+            <form method="post"
+                  action="<?= $block->escapeUrl($block->getCancelUrl()) ?>"
+                  id="secomm_ghn_cancel_form"
+                  onsubmit="return confirm('<?= $block->escapeJs(__('Cancel this shipment at GHN? This asks the provider to cancel the delivery order.')) ?>')">
+                <?= $block->getChildHtml('formkey') ?>
+                <div class="admin__field-control" style="display:flex; gap:8px; align-items:center;">
+                    <label for="secomm_ghn_cancel_reason_code"><?= $block->escapeHtml(__('Cancellation reason')) ?></label>
+                    <select id="secomm_ghn_cancel_reason_code" name="reason_code" class="admin__control-select" required>
+                        <?php foreach ($block->getCancelReasons() as $code => $label) : ?>
+                            <option value="<?= $block->escapeHtml($code) ?>"><?= $block->escapeHtml($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <input type="text" name="reason" class="admin__control-text"
+                           placeholder="<?= $block->escapeHtml(__('Optional detail (e.g. for Other reason)')) ?>"
+                           maxlength="255"/>
+                    <button type="submit" class="action-secondary scalable">
+                        <span><?= $block->escapeHtml(__('Cancel GHN Shipment')) ?></span>
+                    </button>
+                </div>
+            </form>
+        <?php endif; ?>
+
+        <?php if ($block->canReturn()) : ?>
+            <form method="post"
+                  action="<?= $block->escapeUrl($block->getReturnUrl()) ?>"
+                  id="secomm_ghn_return_form"
+                  onsubmit="return confirm('<?= $block->escapeJs(__('Request GHN Return? This asks the carrier to return the goods to you (not a customer RMA).')) ?>')">
+                <?= $block->getChildHtml('formkey') ?>
+                <button type="submit" class="action-secondary scalable">
+                    <span><?= $block->escapeHtml(__('Request GHN Return')) ?></span>
+                </button>
+            </form>
+        <?php endif; ?>
+    </div>
+</div>

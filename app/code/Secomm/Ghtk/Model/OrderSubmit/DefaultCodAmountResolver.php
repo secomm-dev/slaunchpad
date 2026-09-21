@@ -12,13 +12,16 @@ namespace Secomm\Ghtk\Model\OrderSubmit;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
-use Secomm\Ghtk\Model\Config\GhtkConfig;
+use Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface;
 
 /**
- * Default COD resolution (SL-016 / DEC-SL016-001 §4-5):
+ * Default COD resolution (SL-016 / DEC-SL016-001 §4-5). TASK-6YG3HP (architecture v4 §4.1):
+ * payment-method IDENTIFICATION is owned by Secomm_ShippingCore
+ * (`CodPaymentMethodResolverInterface::isCod`, config `secomm_shippingcore/cod/payment_methods`)
+ * — this carrier no longer maintains its own COD method list. What remains here is the
+ * provider conversion only:
  *
- * - payment method not in the configured COD list (default: cashondelivery)
- *   → 0.0 — prepaid orders never collect at the door;
+ * - shared resolver says non-COD → 0.0 — prepaid orders never collect at the door;
  * - COD → base_total_due (grand total minus already paid/captured): deposit,
  *   gift-card and partial online payments are handled naturally — the carrier
  *   collects only what is still outstanding, never grand_total blindly;
@@ -28,15 +31,15 @@ use Secomm\Ghtk\Model\Config\GhtkConfig;
 class DefaultCodAmountResolver implements CodAmountResolverInterface
 {
     public function __construct(
-        private GhtkConfig $config
+        private readonly CodPaymentMethodResolverInterface $codPaymentMethodResolver
     ) {
     }
 
     public function resolve(Order $order, Shipment $shipment): float
     {
         $method = $order->getPayment() !== null ? (string) $order->getPayment()->getMethod() : '';
-        if ($method === '' || !in_array($method, $this->config->getCodMethodCodes((int) $order->getStoreId()), true)) {
-            return 0.0; // prepaid / non-COD
+        if ($method === '' || !$this->codPaymentMethodResolver->isCod($method)) {
+            return 0.0; // prepaid / non-COD — identification is ShippingCore-owned (v4 §4.1)
         }
 
         $due = round(max(0.0, (float) $order->getBaseTotalDue()), 4);

@@ -59,10 +59,6 @@
                     <source_model>Secomm\Ghtk\Model\Config\Source\RateInclude</source_model>
                     <comment>Base fee.fee is always included. Select additional components.</comment>
                 </field>
-                <field id="cod_method_codes" translate="label" type="text" sortOrder="145" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>COD Payment Method Codes (comma-separated)</label>
-                    <comment>Payment method codes whose shipments collect cash at the door (pick_money). Everything else is prepaid (pick_money = 0). Partial shipments of COD orders are rejected until an allocation rule exists. Default: cashondelivery</comment>
-                </field>
                 <field id="webhook_secret" translate="label" type="obscure" sortOrder="146" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Tracking Webhook Secret (appended to webhook URL)</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>

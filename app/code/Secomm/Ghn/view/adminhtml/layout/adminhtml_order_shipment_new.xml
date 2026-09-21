@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- TASK-9Q5ZAK r2 (DEC-TASK9Q5ZAK-001): physical package information for GHN shipments —
+             hosted in the core `extra_shipment_info` container (before the items grid). -->
+        <referenceContainer name="extra_shipment_info">
+            <block class="Secomm\Ghn\Block\Adminhtml\Shipment\PackageInformation"
+                   name="secomm_ghn_package_information"
+                   template="Secomm_Ghn::shipment/package_information.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

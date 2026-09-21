@@ -18,6 +18,9 @@ class VnMappingReader
 {
     public const HEADER = ['source_scheme', 'source_code', 'target_scheme', 'target_code', 'relation_type'];
 
+    /** TASK-MD2BD3 v1.1 — optional curated directional primary flag appended to the base header. */
+    public const HEADER_V11 = ['source_scheme', 'source_code', 'target_scheme', 'target_code', 'relation_type', 'is_primary'];
+
     private const BOM = "\xEF\xBB\xBF";
 
     /**
@@ -56,9 +59,11 @@ class VnMappingReader
                 if (isset($raw[0])) {
                     $raw[0] = preg_replace('/^' . preg_quote(self::BOM, '/') . '/u', '', $raw[0]) ?? $raw[0];
                 }
-                if ($raw !== self::HEADER) {
+                // TASK-MD2BD3 v10: both the legacy 5-column header and the v1.1 header (with the
+                // curated `is_primary` flag) are accepted — legacy files stay backward-safe.
+                if ($raw !== self::HEADER && $raw !== self::HEADER_V11) {
                     throw new LocalizedException(
-                        __('%1: wrong header. Expected "%2", got "%3".', $path, implode(',', self::HEADER), implode(',', $raw))
+                        __('%1: wrong header. Expected "%2" or "%3", got "%4".', $path, implode(',', self::HEADER), implode(',', self::HEADER_V11), implode(',', $raw))
                     );
                 }
                 continue;
@@ -66,23 +71,21 @@ class VnMappingReader
             if (count($raw) === 1 && trim((string)$raw[0]) === '') {
                 continue;
             }
-            if (count($raw) !== count(self::HEADER)) {
+            if (count($raw) !== count(self::HEADER) && count($raw) !== count(self::HEADER_V11)) {
                 throw new LocalizedException(
-                    __('%1 line %2: expected %3 columns, got %4.', $path, $line, count(self::HEADER), count($raw))
+                    __('%1 line %2: expected %3 or %4 columns, got %5.', $path, $line, count(self::HEADER), count(self::HEADER_V11), count($raw))
                 );
             }
 
-            [$sourceScheme, $sourceCode, $targetScheme, $targetCode, $relationType] = array_map(
-                static fn (string $value): string => trim($value),
-                $raw
-            );
+            $values = array_map(static fn (string $value): string => trim($value), $raw);
             $rows[] = [
                 'line' => $line,
-                'source_scheme' => $sourceScheme,
-                'source_code' => $sourceCode,
-                'target_scheme' => $targetScheme,
-                'target_code' => $targetCode,
-                'relation_type' => $relationType,
+                'source_scheme' => $values[0],
+                'source_code' => $values[1],
+                'target_scheme' => $values[2],
+                'target_code' => $values[3],
+                'relation_type' => $values[4],
+                'is_primary' => isset($values[5]) ? $values[5] : '0',
             ];
         }
 

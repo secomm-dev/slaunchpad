@@ -1,0 +1,191 @@
+{
+    "dataset": {
+        "current_wards_2025": 3321,
+        "legacy_units_pre_2025": 11294,
+        "mapping_edges": 10064
+    },
+    "reverse_classification": {
+        "ONE_TO_ONE": 186,
+        "ONE_TO_MANY": 3097,
+        "NO_MATCH": 38,
+        "INVALID_MAPPING": 0,
+        "coverage_pct_deterministic": 5.6,
+        "coverage_pct_resolvable_incl_ambiguous": 98.86
+    },
+    "one_to_many_breakdown": {
+        "same_district_only": 2832,
+        "cross_district": 265,
+        "cross_province": 0
+    },
+    "district_information_loss": {
+        "current_wards_whose_sources_span_gt1_legacy_district": 265,
+        "pct_of_current_wards": 7.98
+    },
+    "province_level": {
+        "region_level_edges": 34,
+        "regions_with_gt1_incoming_edge_reverse_ambiguous": 23,
+        "current_wards_with_sources_spanning_gt1_legacy_province": 0
+    },
+    "relation_type_distribution": {
+        "MERGED_INTO": 9250,
+        "SAME_AS": 146,
+        "RENAMED_TO": 41,
+        "SPLIT_INTO": 627
+    },
+    "top_10_largest_merges": [
+        {
+            "target": {
+                "code": "VNA25-3823AB39FD",
+                "name": "Hoàn Kiếm",
+                "province": "VN-12"
+            },
+            "source_count": 12,
+            "districts_spanned": 1,
+            "provinces_spanned": 1
+        },
+        {
+            "target": {
+                "code": "VNA25-9029E55C07",
+                "name": "Hồng Hà",
+                "province": "VN-12"
+            },
+            "source_count": 11,
+            "districts_spanned": 5,
+            "provinces_spanned": 1
+        },
+        {
+            "target": {
+                "code": "VNA25-10D167037D",
+                "name": "Hạc Thành",
+                "province": "VN-32"
+            },
+            "source_count": 11,
+            "districts_spanned": 1,
+            "provinces_spanned": 1
+        },
+        {
+            "target": {
+                "code": "VNA25-9627ED9403",
+                "name": "Hoa Lư",
+                "province": "VN-24"
+            },
+            "source_count": 10,
+            "districts_spanned": 2,
+            "provinces_spanned": 1
+        },
+        {
+            "target": {
+                "code": "VNA25-6007495F53",
+                "name": "Rạch Giá",
+                "province": "VN-01"
+            },
+            "source_count": 9,
+            "districts_spanned": 1,
+            "provinces_spanned": 1
+        },
+        {
+            "target": {
+                "code": "VNA25-2715E07DCC",
+                "name": "Cao Lãnh",
+                "province": "VN-10"
+            },
+            "source_count": 9,
+            "districts_spanned": 1,
+            "provinces_spanned": 1
+        },
+        {
+            "target": {
+                "code": "VNA25-F445ABCA6E",
+                "name": "Đông Anh",
+                "province": "VN-12"
+            },
+            "source_count": 9,
+            "districts_spanned": 1,
+            "provinces_spanned": 1
+        },
+        {
+            "target": {
+                "code": "VNA25-9B6EAA5B98",
+                "name": "Tiến Thắng",
+                "province": "VN-12"
+            },
+            "source_count": 9,
+            "districts_spanned": 1,
+            "provinces_spanned": 1
+        },
+        {
+            "target": {
+                "code": "VNA25-83D0C9A20F",
+                "name": "Thành Sen",
+                "province": "VN-13"
+            },
+            "source_count": 9,
+            "districts_spanned": 1,
+            "provinces_spanned": 1
+        },
+        {
+            "target": {
+                "code": "VNA25-ED1D7FEA6E",
+                "name": "Cam Lâm",
+                "province": "VN-18"
+            },
+            "source_count": 9,
+            "districts_spanned": 1,
+            "provinces_spanned": 1
+        }
+    ],
+    "no_match_examples": [
+        {
+            "code": "VNA25-ED78F70581",
+            "name": "Kiên Hải",
+            "province": "VN-01"
+        },
+        {
+            "code": "VNA25-BEA0C89209",
+            "name": "Phú Quốc",
+            "province": "VN-01"
+        },
+        {
+            "code": "VNA25-61B39F9ABE",
+            "name": "Thổ Châu",
+            "province": "VN-01"
+        },
+        {
+            "code": "VNA25-C077943E16",
+            "name": "Quang Trung",
+            "province": "VN-02"
+        },
+        {
+            "code": "VNA25-10CAEEA2BE",
+            "name": "Thới Bình",
+            "province": "VN-03"
+        },
+        {
+            "code": "VNA25-A8236D8DE3",
+            "name": "Lịch Hội Thượng",
+            "province": "VN-04"
+        },
+        {
+            "code": "VNA25-9144AC37BD",
+            "name": "Long Phú",
+            "province": "VN-04"
+        },
+        {
+            "code": "VNA25-E415064A42",
+            "name": "Vị Thanh",
+            "province": "VN-04"
+        },
+        {
+            "code": "VNA25-1CADA61989",
+            "name": "Hoàng Sa",
+            "province": "VN-06"
+        },
+        {
+            "code": "VNA25-6E2434CF8C",
+            "name": "Albá",
+            "province": "VN-11"
+        }
+    ],
+    "invalid_edges": [],
+    "invalid_edges_total": 0
+}

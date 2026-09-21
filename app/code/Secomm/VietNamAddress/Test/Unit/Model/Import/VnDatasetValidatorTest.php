@@ -231,6 +231,123 @@ class VnDatasetValidatorTest extends TestCase
         $this->assertStringContainsString('must not contain collision suffixes', implode('; ', $errors));
     }
 
+    // ------------------------------------ expectedOverrides: DI numeric strings (TASK-GS78X2)
+
+    /**
+     * Regression: Magento DI renders xsi:type="number" argument values as numeric STRINGS,
+     * so the snapshot virtual validator receives "63"/"696"/… and the strict comparisons
+     * reported false mismatches ("expected 63, got 63" ×5) on an exactly-matching dataset.
+     * String overrides (DI) and int overrides (PHP literals) must behave identically.
+     */
+    public function testAcceptsOverridesMatchingDatasetAsStringsAndInts(): void
+    {
+        $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
+
+        $stringValidator = new VnDatasetValidator($this->overrides('63', '699', '10595', '19', '38'));
+        $this->assertSame(
+            [],
+            $stringValidator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units'])
+        );
+
+        $intValidator = new VnDatasetValidator($this->overrides(63, 699, 10595, 19, 38));
+        $this->assertSame(
+            [],
+            $intValidator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units'])
+        );
+    }
+
+    public function testReportsOnlyRegionCountMismatch(): void
+    {
+        $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
+        $validator = new VnDatasetValidator($this->overrides('62', '699', '10595', '19', '38'));
+
+        $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
+
+        $this->assertSame(['Region rows: expected 62, got 63.'], $errors);
+    }
+
+    public function testReportsOnlyDepthOneCountMismatch(): void
+    {
+        $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
+        $validator = new VnDatasetValidator($this->overrides('63', '698', '10595', '19', '38'));
+
+        $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
+
+        $this->assertSame(['Depth-1 rows: expected 698, got 699.'], $errors);
+    }
+
+    public function testReportsOnlyDepthTwoCountMismatch(): void
+    {
+        $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
+        $validator = new VnDatasetValidator($this->overrides('63', '699', '10594', '19', '38'));
+
+        $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
+
+        $this->assertSame(['Depth-2 rows: expected 10594, got 10595.'], $errors);
+    }
+
+    public function testReportsOnlyCollisionRowCountMismatch(): void
+    {
+        $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
+        $validator = new VnDatasetValidator($this->overrides('63', '699', '10595', '19', '37'));
+
+        $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
+
+        $this->assertSame(['Collision rows: expected 37, got 38.'], $errors);
+    }
+
+    public function testReportsOnlyCollisionGroupCountMismatch(): void
+    {
+        $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
+        $validator = new VnDatasetValidator($this->overrides('63', '699', '10595', '18', '38'));
+
+        $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
+
+        $this->assertSame(['Collision groups: expected 18, got 19.'], $errors);
+    }
+
+    public function testReportsExactlyTheMismatchingChecks(): void
+    {
+        $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
+        // depth2 and collision rows match; the other three checks must be the only errors.
+        $validator = new VnDatasetValidator($this->overrides('62', '698', '10595', '18', '38'));
+
+        $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
+
+        $this->assertSame([
+            'Region rows: expected 62, got 63.',
+            'Depth-1 rows: expected 698, got 699.',
+            'Collision groups: expected 18, got 19.',
+        ], $errors);
+    }
+
+    /**
+     * End-to-end: the SHIPPED snapshot CSV against the exact di.xml virtual-validator wiring
+     * (string overrides) — the same data path RefreshVnAdminPre2025Snapshot2024 exercises.
+     */
+    public function testShippedSnapshot2024DatasetPassesDiStringOverrides(): void
+    {
+        $registrar = $this->createMock(ComponentRegistrarInterface::class);
+        $registrar->method('getPath')->willReturn(dirname(__DIR__, 4));
+        $reader = new VnDatasetReader($registrar, [
+            'VN_ADMIN_PRE_2025' => 'VN_ADMIN_PRE_2025_SNAPSHOT_2024_import.csv',
+        ]);
+        $validator = new VnDatasetValidator([
+            VnSchemes::VN_ADMIN_PRE_2025 => [
+                'counts' => ['regions' => '63', 'depth1' => '696', 'depth2' => '10035'],
+                'collision' => ['groups' => '18', 'rows' => '36'],
+            ],
+        ]);
+
+        $dataset = $reader->read(VnSchemes::VN_ADMIN_PRE_2025);
+        $this->assertCount(63, $dataset['regions']);
+        $this->assertCount(10731, $dataset['units']);
+        $this->assertSame(
+            [],
+            $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units'])
+        );
+    }
+
     // ------------------------------------------------------------------ synthetic datasets
 
     /**
@@ -309,5 +426,26 @@ class VnDatasetValidatorTest extends TestCase
         ];
 
         return $codes[$i - 1];
+    }
+
+    /**
+     * expectedOverrides shaped like di.xml's VnSnapshot2024DatasetValidator, expected values
+     * against the catalog-sized synthetic PRE_2025 dataset; pass strings (DI) or ints.
+     *
+     * @return array<string, array{counts: array{regions: string|int, depth1: string|int, depth2: string|int}, collision: array{groups: string|int, rows: string|int}}>
+     */
+    private function overrides(
+        string|int $regions,
+        string|int $depth1,
+        string|int $depth2,
+        string|int $groups,
+        string|int $rows
+    ): array {
+        return [
+            VnSchemes::VN_ADMIN_PRE_2025 => [
+                'counts' => ['regions' => $regions, 'depth1' => $depth1, 'depth2' => $depth2],
+                'collision' => ['groups' => $groups, 'rows' => $rows],
+            ],
+        ];
     }
 }
