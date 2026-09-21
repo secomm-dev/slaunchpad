@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="secomm_momo_payment_recovery_cronjob"
+             instance="Secomm\MoMo\Cron\PaymentRecoveryCronjob" method="execute">
+            <!--MoMo lost/delayed-IPN recovery (MOMO-03): proactively query
+                v2/query for outstanding attempts past the callback window.
+                Every 5 minutes, bounded batch — see Service/PaymentRecovery.-->
+            <schedule>*/5 * * * *</schedule>
+        </job>
+    </group>
+</config>

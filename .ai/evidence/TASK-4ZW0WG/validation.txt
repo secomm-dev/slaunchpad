@@ -1,0 +1,61 @@
+TASK-4ZW0WG (MOMO-03 — recover paid attempts when authoritative IPN is lost)
+— validation evidence, 2026-09-21
+Environment: container `m2r-php` (markoshust/magento-php:8.3-fpm, PHP 8.3.20)
++ throwaway validation copy `/tmp/m2r` (host) mounted at /var/www/html, synced
+with the task branch before each validation step. DB `zt-mariadb106/magento`.
+Repo BASE_SHA 26c4ef6e (verified at START; branch
+thanhle74/momo-momo-03-recover-paid-attempts-when-authorit).
+
+Changed/new files
+- app/code/Secomm/MoMo/etc/db_schema.xml          (+2 columns, additive)
+- app/code/Secomm/MoMo/etc/db_schema_whitelist.json (+2 column entries)
+- app/code/Secomm/MoMo/etc/config.xml             (+3 recovery_* defaults)
+- app/code/Secomm/MoMo/etc/crontab.xml            (new)
+- app/code/Secomm/MoMo/Api/Data/PaymentAttemptInterface.php (+4 methods)
+- app/code/Secomm/MoMo/Model/PaymentAttempt.php   (+4 impls)
+- app/code/Secomm/MoMo/Service/PaymentRecovery.php          (new)
+- app/code/Secomm/MoMo/Cron/PaymentRecoveryCronjob.php      (new)
+- app/code/Secomm/MoMo/Test/Unit/Service/PaymentRecoveryTest.php  (new)
+- app/code/Secomm/MoMo/Test/Unit/Cron/PaymentRecoveryCronjobTest.php (new)
+- README.md / CHANGELOG.md (docs)
+
+1) php -l (all new/changed PHP)
+   -> EXIT=0 for all (see php-lint.txt). XML files parse (consumed by
+   setup:upgrade + setup:di:compile below).
+
+2) PHPCS — Magento2 standard, severity >= 6, all changed/new files
+   -> EXIT=0, 0 errors / 0 warnings after fixing 2 line-length warnings and
+   3 auto-fixable formatting warnings (see phpcs-compile.txt).
+
+3) PHPUnit — full Secomm\MoMo suite
+   php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --filter 'Secomm\\MoMo'
+   -> OK, but with the 5 PRE-EXISTING framework-level PHPUnit deprecations
+   (identical to the TASK-Y6SGHE baseline "Tests: 185, Assertions: 515,
+   PHPUnit Deprecations: 5"):
+      Tests: 200, Assertions: 562  (baseline 185/515 + 15 new tests / 47 new
+      assertions). No regression. see phpunit-secomm-momo.txt
+
+4) setup:di:compile (full; generated/code wiped first) -> COMPILE_EXIT=0.
+
+5) Schema — setup:upgrade in the throwaway env -> EXIT=0;
+   SHOW CREATE TABLE secomm_momo_payment_attempt confirms:
+     recovery_attempts smallint(5) unsigned NOT NULL DEFAULT 0
+     recovery_exhausted tinyint(1) NOT NULL DEFAULT 0
+   (see db-schema-after-upgrade.txt).
+   Whitelist: hand-added the 2 columns in the project's committed array
+   format (the validation container's `generate-whitelist` re-emits the OLD
+   numeric-key object format and drops nothing — replacing the committed
+   file with its output would churn the format, so the additive hand edit
+   matches the repo convention; verified the container-generated content
+   contains exactly the same 2 added columns).
+
+6) .ai/bin/project-ai-validate --check-specs --check-identity --check-records
+   -> repo-wide result: 58 FAIL / INVALID — ALL pre-existing in artifacts of
+   OTHER tasks (BUG-AMRBJR mini-spec sections, SPEC-FEAT-* header naming,
+   old plans missing Specification reference). Zero findings mention
+   TASK-4ZW0WG (grep across validator output: no match). My spec/plan/
+   record pass all three checks.
+
+7) Not run: E2E sandbox against MoMo (requires partner credentials — not
+   available on this host; manual QA path documented in the spec's
+   validation plan).

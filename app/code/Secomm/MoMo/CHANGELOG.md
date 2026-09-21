@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.3.0] - 2026-09-21
+
+### Added
+- **Bounded lost/delayed-IPN payment recovery (MOMO-03, issue #5)**: cron
+  `secomm_momo_payment_recovery_cronjob` (every 5 minutes) proactively runs
+  the authoritative `v2/query` for `active`/`paid` attempts with no bound
+  order that are past the callback window, so money MoMo already accepted
+  cannot stay stranded without an order when the IPN is lost (see incident
+  #13).
+- `Service\PaymentRecovery` — deterministic selection (non-terminal, unbound,
+  un-quarantined, un-exhausted, in-budget, oldest first, page-limited), an
+  atomic conditional-UPDATE claim BEFORE the provider HTTP (a lost race skips
+  the row; no DB lock across MoMo calls), and outcomes routed ONLY through
+  the canonical `PaymentAttemptLifecycle` + `OrderFinalizer` — verified PAID
+  finalizes exactly one order; pending/ambiguous never mutate; transport
+  failures and unparseable `resultCode` are AMBIGUOUS, never false failures.
+- `secomm_momo_payment_attempt` additive columns `recovery_attempts` (per-row
+  proactive query budget) + `recovery_exhausted` (explicit operational-only
+  exhaustion marker — NOT money evidence, never a quarantine: a valid later
+  IPN/Return still resolves the payment).
+- Config defaults `payment/momo_payment/recovery_window` (15 min),
+  `recovery_batch_size` (25), `recovery_max_attempts` (5).
+- Unit coverage: `Test/Unit/Service/PaymentRecoveryTest.php` +
+  `Test/Unit/Cron/PaymentRecoveryCronjobTest.php`.
+
+> Note: `composer.json` still declares `"version": "2.0.0"` — known drift vs
+> this CHANGELOG (2.2.1 before this entry); left untouched, out of scope.
+
 ## [2.2.1] - 2026-09-21
 
 ### Fixed
