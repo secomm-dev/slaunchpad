@@ -38,17 +38,24 @@ use Zend_Db_Expr;
  *    orderId; the query requestId is minted fresh per call by
  *    QueryDataBuilder, per MoMo contract — AC6);
  *  - OUTCOMES through the SAME canonical services as IPN/Return — never a
- *    duplicate order-placement implementation:
- *      resultCode 0 + exact amount + positive transId -> PaymentAttemptLifecycle::
- *      recordVerifiedPaid -> OrderFinalizer::finalizeOrRecover (exactly one
- *      order; quarantined rows are refused by the finalizer itself);
- *      resultCode 0 + wrong amount        -> recordAmountMismatch (no order);
- *      resultCode 0 + missing/bad transId -> recordProviderIdentityUnavailable
- *                                            (no order);
- *      7000/7002 (pending)                -> no mutation;
- *      other parseable non-zero           -> recordVerifiedFailure (the
- *                                            lifecycle never regresses
- *                                            PAID/FINALIZED);
+ *    duplicate order-placement implementation. Query resultCodes classify
+ *    ONLY through the explicit, provider-documented allowlists (developers
+ *    .momo.vn result-code contract, verified 2026-09-21) — an unmapped code
+ *    is NEVER a failure proof (fail-safe money state):
+ *      0 / 9000 (1-step captureWallet, default autoCapture) + exact amount
+ *        + positive transId -> PaymentAttemptLifecycle::recordVerifiedPaid ->
+ *        OrderFinalizer::finalizeOrRecover (exactly one order; quarantined
+ *        rows are refused by the finalizer itself);
+ *      paid code + wrong amount        -> recordAmountMismatch (no order);
+ *      paid code + missing/bad transId -> recordProviderIdentityUnavailable
+ *                                           (no order);
+ *      1000/7000/7002 (non-final)      -> pending: no mutation;
+ *      request/system non-final codes (10-13, 20-22, 40-43, 45, 47) and ANY
+ *      unmapped code                   -> AMBIGUOUS: logged, NO mutation,
+ *      NOT failed — retried on a later run (AC3);
+ *      documented FINAL failures (98, 99, 1001-1007, 1017, 1026, 2019,
+ *      4001, 4002, 4100)               -> recordVerifiedFailure (the
+ *      lifecycle never regresses PAID/FINALIZED);
  *      exception / missing-unparseable resultCode -> AMBIGUOUS: logged, NO
  *      mutation, NOT failed — retried on a later run (AC3).
  *
@@ -78,8 +85,42 @@ class PaymentRecovery
 
     private const TABLE_PAYMENT_ATTEMPT = 'secomm_momo_payment_attempt';
 
-    /** MoMo v2/query result codes that are NON-FINAL (not yet paid / processing). */
-    private const QUERY_PENDING = [7000, 7002];
+    /**
+     * Authoritative PAID codes (v2/query). 0 = successful; 9000 = authorized
+     * successfully (Final Status = No, but for the module's 1-step
+     * `captureWallet` contract with the default autoCapture=true MoMo
+     * documents "mark this transaction as success"). Both still go through
+     * the amount + positive-transId + identity guards before any order.
+     */
+    private const QUERY_PAID = [0, 9000];
+
+    /**
+     * Documented NON-FINAL transaction states (Final Status = No): 1000 =
+     * initiated, waiting for user confirmation; 7000/7002 = processing. No
+     * mutation; a later pass re-queries (budget permitting).
+     */
+    private const QUERY_PENDING = [1000, 7000, 7002];
+
+    /**
+     * Documented FINAL payment-transaction failures (Final Status = Yes,
+     * developers.momo.vn result-code contract, verified 2026-09-21) — the
+     * ONLY codes allowed to fail the attempt authoritatively via
+     * recordVerifiedFailure. Anything outside these allowlists (request/
+     * system codes below, exceptions, unmapped codes) is AMBIGUOUS: an
+     * unknown code must never default to FAILED (fail-safe money state).
+     */
+    private const QUERY_FAILURE = [
+        98, 99,
+        1001, 1002, 1003, 1004, 1005, 1006, 1007, 1017, 1026,
+        2019, 4001, 4002, 4100,
+    ];
+
+    /**
+     * Documented REQUEST/SYSTEM errors (Final Status = No — request-level,
+     * not transaction outcomes: maintenance, auth/config, malformed request,
+     * duplicate semantics). Money state is unknown; AMBIGUOUS, never FAILED.
+     */
+    private const QUERY_REQUEST_ERROR = [10, 11, 12, 13, 20, 21, 22, 40, 41, 42, 43, 45, 47];
 
     public function __construct(
         private readonly PaymentAttemptCollectionFactory $collectionFactory,
@@ -301,18 +342,44 @@ class PaymentRecovery
             return;
         }
 
+        if (in_array($resultCode, self::QUERY_PAID, true)) {
+            // Authoritative PAID (0 = successful; 9000 = authorized — for
+            // the module's 1-step captureWallet/default autoCapture=true
+            // contract MoMo documents "mark this transaction as success").
+            // Both codes still pass the amount + transId + identity guards
+            // before any order (see applyPaidOutcome).
+            $this->applyPaidOutcome($query, $attempt, $orderRef, $summary);
+
+            return;
+        }
+
         if (in_array($resultCode, self::QUERY_PENDING, true)) {
-            // Non-terminal: the provider has not concluded (7000 = not yet
-            // paid, 7002 = still processing). A later run queries again.
+            // Non-terminal transaction state (1000 = initiated, waiting for
+            // user confirmation; 7000 = not yet paid; 7002 = still
+            // processing). No mutation; a later run re-queries.
             $summary['pending']++;
 
             return;
         }
 
-        if ($resultCode !== 0) {
-            // Authoritative FAIL: concurrency-safe failure where the fresh
-            // state permits (PAID/FINALIZED are never regressed — a PAID
-            // contradiction is quarantined as provider_state_conflict).
+        if (in_array($resultCode, self::QUERY_REQUEST_ERROR, true)) {
+            // Request/system-level non-final (maintenance, auth/config,
+            // malformed request, duplicate semantics): not a transaction
+            // outcome — money state unknown, never a failure proof (AC3).
+            $summary['ambiguous']++;
+            $this->logger->error(
+                'MoMo recovery: request-level resultCode — ambiguous, no mutation.',
+                ['order_ref' => $orderRef, 'resultCode' => $resultCode]
+            );
+
+            return;
+        }
+
+        if (in_array($resultCode, self::QUERY_FAILURE, true)) {
+            // Documented FINAL payment-transaction failure: the ONLY branch
+            // allowed to fail the attempt authoritatively — concurrency-safe
+            // (PAID/FINALIZED are never regressed; a PAID contradiction is
+            // quarantined as provider_state_conflict).
             $fresh = $this->lifecycle->recordVerifiedFailure(
                 $orderRef,
                 sprintf('Recovery v2/query resultCode %d.', $resultCode),
@@ -325,6 +392,34 @@ class PaymentRecovery
             return;
         }
 
+        // Fail-safe default: an unmapped/undocumented code is NOT a failure
+        // proof (AC3) — ambiguous, no mutation, a later run re-queries.
+        $summary['ambiguous']++;
+        $this->logger->error(
+            'MoMo recovery: unmapped resultCode is not a documented final outcome; ambiguous, no mutation.',
+            ['order_ref' => $orderRef, 'resultCode' => $resultCode]
+        );
+    }
+
+    /**
+     * Verified PAID outcome: amount lock against the persisted frozen
+     * snapshot (never re-converted), then the positive-transId provider
+     * identity requirement — the same guards, in the same order, as the
+     * browser Return path — then the canonical finalizer.
+     *
+     * @param array $query The v2/query response payload.
+     * @param PaymentAttemptInterface $attempt The SELECTION copy (frozen
+     *        amount snapshot; lifecycle/finalizer re-lock the FRESH row).
+     * @param string $orderRef
+     * @param array $summary
+     * @return void
+     */
+    private function applyPaidOutcome(
+        array $query,
+        PaymentAttemptInterface $attempt,
+        string $orderRef,
+        array &$summary
+    ): void {
         // Authoritative PAID: amount lock against the persisted frozen
         // snapshot (never re-converted), then the positive-transId provider
         // identity requirement — the same guards, in the same order, as the

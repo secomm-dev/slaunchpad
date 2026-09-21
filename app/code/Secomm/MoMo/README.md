@@ -114,19 +114,25 @@ recovery pass (`Service\PaymentRecovery`):
   ORIGINAL identity (`order_ref` as MoMo orderId; fresh query requestId per
   MoMo contract), outside any transaction.
 - **Outcomes** — always through the SAME canonical services as IPN/Return,
-  never a second order-placement implementation:
-  - paid + exact amount + positive `transId` → `PaymentAttemptLifecycle::
-    recordVerifiedPaid` → `OrderFinalizer::finalizeOrRecover` (exactly one
-    order);
+  never a second order-placement implementation. Result codes classify ONLY
+  through explicit, provider-documented allowlists (developers.momo.vn
+  result-code table, verified 2026-09-21) — an unknown code NEVER defaults
+  to FAILED:
+  - paid code (`0`, or `9000` — authorized — for the module's 1-step
+    `captureWallet`/default autoCapture contract) + exact amount + positive
+    `transId` → `PaymentAttemptLifecycle::recordVerifiedPaid` →
+    `OrderFinalizer::finalizeOrRecover` (exactly one order);
   - paid + wrong amount → `recordAmountMismatch` (quarantine, no order);
   - paid + missing/bad `transId` → `recordProviderIdentityUnavailable`
     (quarantine, no order);
-  - `7000`/`7002` → pending, no mutation;
-  - any other parseable code → `recordVerifiedFailure` (PAID/FINALIZED are
-    never regressed);
-  - transport failure or unparseable `resultCode` → **AMBIGUOUS**: logged,
-    no mutation, never a false failure; retried on a later pass (budget
-    permitting).
+  - `1000`/`7000`/`7002` (non-final) → pending, no mutation;
+  - documented FINAL failures (`98`, `99`, `1001`–`1007`, `1017`, `1026`,
+    `2019`, `4001`, `4002`, `4100`) → `recordVerifiedFailure` (PAID/FINALIZED
+    are never regressed);
+  - request/system non-final codes (`10`–`13`, `20`–`22`, `40`–`43`, `45`,
+    `47`), any unmapped code, transport failure or unparseable `resultCode`
+    → **AMBIGUOUS**: logged, no mutation, never a false failure; retried on
+    a later pass (budget permitting).
 - **Exhaustion is explicit** — the row gets the machine-readable
   `recovery_exhausted` marker + a critical log; it is never selected again.
   The marker is OPERATIONAL ONLY: it is not money evidence and never

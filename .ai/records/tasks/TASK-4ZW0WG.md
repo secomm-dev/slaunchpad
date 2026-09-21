@@ -114,3 +114,17 @@ không tạo finalizer thứ hai, không cho browser Return bypass verification.
 - Tier-2 surfaced cho TL review: additive schema (2 cột), payment cron mới,
   store-scope limitation (cron chạy default scope), quan sát ReturnProcessor
   `-1`→failure khi response thiếu resultCode (không sửa trong task này).
+- **Correction round (2026-09-21, OWNER_AUTHORIZATION=GRANTED trên issue #5,
+  review của TIP `7601df05`)**: classifier `resultCode` bỏ rule "non-zero =
+  failure" (unsafe theo contract MoMo) → explicit allowlists verified bảng
+  result-code developers.momo.vn 2026-09-21: PAID `0`/`9000` (cả hai qua đủ
+  amount + transId + identity guards), PENDING `1000`/`7000`/`7002`,
+  request/system `10`–`13`/`20`–`22`/`40`–`43`/`45`/`47` + MỌI code unmapped
+  → AMBIGUOUS (log, không mutation — fail-safe, không bao giờ default FAILED),
+  VERIFIED FAILURE chỉ cho allowlist final `98`/`99`/`1001`–`1007`/`1017`/
+  `1026`/`2019`/`4001`/`4002`/`4100`. Paid-path tách thành `applyPaidOutcome`.
+  Test 11 → 16 (thêm 1000→pending, 9000→paid, 10→ambiguous, unmapped→ambiguous,
+  1001→verified failure; test cũ -1 đổi thành 1001 vì -1 giờ là unmapped).
+  Validation delta: `.ai/evidence/TASK-4ZW0WG/correction-round-1-validation.txt`.
+  ReturnProcessor (`-1`→failure) giữ nguyên theo directive — ghi follow-up
+  risk riêng cho TL.

@@ -255,22 +255,23 @@ class PaymentRecoveryTest extends TestCase
     }
 
     /**
-     * A parseable non-zero, non-pending resultCode is an authoritative
-     * failure where the fresh state permits — lifecycle only, never an
-     * order.
+     * A code DOCUMENTED as a final payment-transaction failure (1001 —
+     * explicitly allowlisted) is an authoritative failure where the fresh
+     * state permits — lifecycle only, never an order. Unmapped codes never
+     * reach this branch (fail-safe ambiguous below).
      *
      * @return void
      */
-    public function testDefinitiveFailureRecordsVerifiedFailure(): void
+    public function testDocumentedFinalFailureRecordsVerifiedFailure(): void
     {
         $this->candidates([$this->attempt('active')]);
         $this->claimSucceeds();
-        $this->queryReturns(['resultCode' => -1, 'amount' => 150000]);
+        $this->queryReturns(['resultCode' => 1001, 'amount' => 150000]);
         $fresh = $this->attempt('failed');
         $this->lifecycle->expects($this->once())->method('recordVerifiedFailure')
             ->with(
                 'MOMOREF',
-                'Recovery v2/query resultCode -1.',
+                'Recovery v2/query resultCode 1001.',
                 'failed'
             )->willReturn($fresh);
         $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
@@ -278,6 +279,93 @@ class PaymentRecoveryTest extends TestCase
         $summary = $this->recovery->execute();
 
         $this->assertSame(1, $summary['failed']);
+    }
+
+    /**
+     * AC3: `1000` (initiated, waiting for user confirmation — Final Status
+     * = No) is non-final: no mutation, no false failure.
+     *
+     * @return void
+     */
+    public function testInitiated1000IsPendingNoMutation(): void
+    {
+        $this->candidates([$this->attempt('active')]);
+        $this->claimSucceeds();
+        $this->queryReturns(['resultCode' => 1000, 'amount' => 150000]);
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $summary = $this->recovery->execute();
+
+        $this->assertSame(1, $summary['pending']);
+    }
+
+    /**
+     * `9000` (authorized; Final Status = No but documented "mark this
+     * transaction as success" for the module's 1-step captureWallet /
+     * default autoCapture contract) finalizes through the SAME paid path —
+     * still guarded by amount + positive transId.
+     *
+     * @return void
+     */
+    public function testAuthorized9000FinalizesThroughPaidPath(): void
+    {
+        $this->candidates([$this->attempt('active')]);
+        $this->claimSucceeds();
+        $this->queryReturns(['resultCode' => 9000, 'amount' => 150000, 'transId' => '987654321']);
+        $fresh = $this->attempt('paid', ['provider_transaction_id' => '987654321']);
+        $this->lifecycle->expects($this->once())->method('recordVerifiedPaid')
+            ->with('MOMOREF', '987654321')->willReturn($fresh);
+        $this->orderFinalizer->expects($this->once())->method('finalizeOrRecover')
+            ->with($fresh, '987654321');
+
+        $summary = $this->recovery->execute();
+
+        $this->assertSame(1, $summary['claimed']);
+        $this->assertSame(1, $summary['finalized']);
+        $this->assertSame(0, $summary['mismatch']);
+    }
+
+    /**
+     * AC3: a request/system-level non-final code (`10` — maintenance,
+     * Final Status = No) is NOT a transaction outcome: ambiguous, no
+     * mutation, no false failure.
+     *
+     * @return void
+     */
+    public function testRequestLevelCode10IsAmbiguousNoMutation(): void
+    {
+        $this->candidates([$this->attempt('active')]);
+        $this->claimSucceeds();
+        $this->queryReturns(['resultCode' => 10, 'amount' => 150000]);
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $summary = $this->recovery->execute();
+
+        $this->assertSame(1, $summary['ambiguous']);
+    }
+
+    /**
+     * AC3 fail-safe: an unmapped/undocumented resultCode is never a
+     * failure proof — ambiguous, no mutation, no false failure.
+     *
+     * @return void
+     */
+    public function testUnknownResultCodeIsAmbiguousNoMutation(): void
+    {
+        $this->candidates([$this->attempt('active')]);
+        $this->claimSucceeds();
+        $this->queryReturns(['resultCode' => 424242, 'amount' => 150000]);
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $summary = $this->recovery->execute();
+
+        $this->assertSame(1, $summary['ambiguous']);
     }
 
     /**

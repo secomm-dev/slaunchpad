@@ -25,6 +25,26 @@
 - Unit coverage: `Test/Unit/Service/PaymentRecoveryTest.php` +
   `Test/Unit/Cron/PaymentRecoveryCronjobTest.php`.
 
+### Fixed (correction round, 2026-09-21 — review of the reviewed TIP `7601df05`)
+- **Recovery query classifier bounded by the documented MoMo result-code
+  contract** (developers.momo.vn result-code table, verified 2026-09-21).
+  The initial "any non-zero code = verified failure" rule was unsafe: `1000`
+  (initiated) and `9000` (authorized — success for the module's 1-step
+  `captureWallet`/default autoCapture contract) would be marked FAILED, and
+  request-level codes (`10`/`11`/`12`/`45`/`47`…) treated as terminal
+  transaction failures. Now:
+  - PAID = `0`/`9000` only — both still pass amount + positive-transId +
+    identity guards before `recordVerifiedPaid`/`finalizeOrRecover`;
+  - PENDING = `1000`/`7000`/`7002` — no mutation;
+  - VERIFIED FAILURE only for the documented final-transaction-failure
+    allowlist (`98`, `99`, `1001`–`1007`, `1017`, `1026`, `2019`, `4001`,
+    `4002`, `4100`);
+  - request/system codes (`10`–`13`, `20`–`22`, `40`–`43`, `45`, `47`) and
+    ANY unmapped code are **AMBIGUOUS** — logged, no mutation, never a
+    false failure (fail-safe default, never FAILED).
+  Regression suite grew 11 → 16 tests: `1000`→pending, `9000`→paid path,
+  `10`→ambiguous, unmapped→ambiguous, `1001`→verified failure.
+
 > Note: `composer.json` still declares `"version": "2.0.0"` — known drift vs
 > this CHANGELOG (2.2.1 before this entry); left untouched, out of scope.
 

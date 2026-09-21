@@ -67,20 +67,30 @@ durable evidence.
    `recovery_attempts < max`, `created_at <= now − window`, order `entity_id ASC`,
    page size = batch. FINALIZED/order-bound/quarantined rows không bao giờ được
    select (AC5, AC2).
-5. **Phân loại resultCode (AC3 chặt hơn ReturnProcessor)**:
-   - `7000`/`7002` → PENDING: không mutation (như ReturnProcessor).
-   - `0` → PAID guards theo đúng thứ tự ReturnProcessor: amount ≠ frozen snapshot
-     → `recordAmountMismatch(source 'Recovery')`; transId không khớp `/^\d+$/`
+5. **Phân loại resultCode — correction round (2026-09-21): explicit allowlist
+   theo contract MoMo đã tài liệu hoá, KHÔNG dùng "non-zero = failure"**:
+   - PAID = `0` hoặc `9000` (authorized — với contract 1-step `captureWallet`/
+     default autoCapture=true của module, MoMo tài liệu "mark this transaction
+     as success"). Cả hai qua ĐỦ paid guards: amount ≠ frozen snapshot →
+     `recordAmountMismatch(source 'Recovery')`; transId không khớp `/^\d+$/`
      hoặc ≤ 0 → `recordProviderIdentityUnavailable(source 'Recovery-query')`;
-     còn lại → `recordVerifiedPaid(orderRef, transId)` → fresh `paid|finalized` và
-     `!requires_reconciliation` → `finalizeOrRecover(fresh, transId)`.
-   - giá trị parse được khác (≠ 0, ≠ pending) → `recordVerifiedFailure` — lifecycle
+     còn lại → `recordVerifiedPaid(orderRef, transId)` → fresh `paid|finalized`
+     và `!requires_reconciliation` → `finalizeOrRecover(fresh, transId)`.
+   - PENDING = `1000`/`7000`/`7002` (Final Status = No) → không mutation.
+   - AMBIGUOUS = request/system non-final (`10`–`13`, `20`–`22`, `40`–`43`,
+     `45`, `47`) + BẤT KỲ code không nằm trong allowlist nào ở trên → log
+     error với code + context, KHÔNG mutation, KHÔNG `recordVerifiedFailure`
+     (fail-safe: code lạ không bao giờ default thành FAILED).
+   - VERIFIED FAILURE = CHỈ code được MoMo tài liệu là final transaction
+     failure (allowlist tường minh: `98`, `99`, `1001`–`1007`, `1017`, `1026`,
+     `2019`, `4001`, `4002`, `4100` — verified bảng result-code
+     developers.momo.vn 2026-09-21) → `recordVerifiedFailure` — lifecycle
      tự bảo vệ (PAID/FINALIZED không regress; conflict → quarantine).
    - **exception (timeout/transport/validator) hoặc `resultCode` thiếu/không
      parse-được là số nguyên → AMBIGUOUS: log error, KHÔNG mutation, KHÔNG
      false-fail** — chờ run sau (budget đã consume bởi claim, như ZaloPay).
      (Lưu ý quan sát cho TL: ReturnProcessor hiện map thiếu resultCode → `-1` →
-     failure — ngoài scope, không sửa.)
+     failure — ngoài scope, không sửa; ghi follow-up risk riêng.)
 6. **Cron tĩnh, không toggle**: job `secomm_momo_payment_recovery_cronjob`,
    group `default`, `*/5 * * * *` — mirror precedent
    `secomm_zalopay_payment_recovery_cronjob`. Không thêm system.xml field. Cron
@@ -122,12 +132,14 @@ cron */5 (group default) → Cron\PaymentRecoveryCronjob::execute()
     │   claim: atomic UPDATE (budget+1, exhausted-if-last) WHERE trạng thái còn hợp lệ
     │   ├─ claim fail (thua race) → skip, không đếm claimed
     │   └─ claim ok → query_transaction (HTTP NGOÀI TX, identity = attempt gốc):
-    │        7000/7002            → PENDING: không mutation
-    │        0 + amount lệch    → recordAmountMismatch('Recovery') → KHÔNG order
-    │        0 + transId xấu    → recordProviderIdentityUnavailable → KHÔNG order
-    │        0 + hợp lệ         → recordVerifiedPaid → finalizeOrRecover (≤1 order)
-    │        ≠0 parse được      → recordVerifiedFailure (lifecycle tự giữ PAID)
-    │        exception/missing  → AMBIGUOUS: log, không mutation, chờ run sau
+    │        0 / 9000 + guards ok → recordVerifiedPaid → finalizeOrRecover (≤1 order)
+    │        0 / 9000 + amount lệch → recordAmountMismatch('Recovery') → KHÔNG order
+    │        0 / 9000 + transId xấu → recordProviderIdentityUnavailable → KHÔNG order
+    │        1000/7000/7002     → PENDING: không mutation
+    │        10–47 request-lvl  → AMBIGUOUS: log, không mutation
+    │        98/99/1001..4100   → recordVerifiedFailure (lifecycle tự giữ PAID)
+    │        unmapped/exception → AMBIGUOUS: log, không mutation, chờ run sau
+    │                             (code lạ KHÔNG BAO GIỜ default thành FAILED)
     └─ summary counters → cron log info (critical khi có exhaust/error)
 ```
 
@@ -136,7 +148,7 @@ cron */5 (group default) → Cron\PaymentRecoveryCronjob::execute()
 | AC | Cơ chế | Bằng chứng test |
 |---|---|---|
 | AC1 query PAID → đúng 1 order | recordVerifiedPaid → finalizeOrRecover (finalizer idempotent: row lock + unique order_ref/order_id) | PaymentRecoveryTest: PAID → finalizer called once với transId đúng |
-| AC2 pending/fail → không order | 7000/7002 no-op; ≠0 → recordVerifiedFailure không đặt order | test pending không mutation; fail → lifecycle-only |
+| AC2 pending/fail → không order | 1000/7000/7002 no-op; chỉ allowlist final-failure → recordVerifiedFailure, không đặt order | test pending (7002 + 1000) không mutation; 1001 → lifecycle-only |
 | AC3 timeout/ambiguous → không false-fail | exception/missing resultCode → no mutation, chờ run sau | test query throw + test resultCode thiếu |
 | AC4 idempotent, không duplicate | claim WHERE chặn row đổi trạng thái; finalizer exactly-once; re-run an toàn | test duplicate recovery; test claim-thua-race skip |
 | AC5 FINALIZED short-circuit | selection loại finalized/order-bound; claim re-check | test không select row có order_id/status finalized |
