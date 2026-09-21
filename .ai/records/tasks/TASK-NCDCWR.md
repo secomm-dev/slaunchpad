@@ -96,5 +96,8 @@ schema/migration; ZaloPay; Bitbucket sync.
 - Tier-2 surface: payment capture configuration (Owner authorization trên
   issue #17 trước khi start).
 - Validation 2026-09-21 (full: `.ai/evidence/TASK-NCDCWR/`): kết quả đã ghi
-  ở evidence; commit local; push/comment issue chỉ khi user yêu cầu
-  (global git rule).
+  ở evidence. Handoff cuối: implementation commit
+  `eff9e7210633d1d2cc71606464b32ab3ee8e6aaa` pushed NON-FORCE lên GitHub
+  `origin` (`ad6e2d7f..eff9e721`) dưới explicit Owner authorization; issue #17
+  READY_FOR_REVIEW; Bitbucket untouched. Coordinator review @ TIP `eff9e721`:
+  implementation ACCEPTED, doc-only correction round 1 syncs note này.
