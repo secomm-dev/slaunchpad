@@ -1,5 +1,76 @@
 # Changelog
 
+## [2.2.0] - 2026-09-18
+
+### Added
+- **Native Credit Memo refunds made idempotent and uncertainty-safe (MOMO-02)**:
+  the admin flow stays native Magento accounting; the module now owns provider
+  request identity, response classification and reconciliation evidence.
+- `secomm_momo_refund` table (db_schema + whitelist): full order/creditmemo/
+  invoice linkage, amount, original MoMo `transId`, minted refund identity,
+  classification, guarded lifecycle (`open_flag` NULL-trick UNIQUE index =
+  at most one open refund per payment; terminal states release the slot),
+  persisted on an **independent DB connection** so evidence survives the
+  `CreditmemoService` sales-transaction rollback.
+- `RefundCommand` (gateway `refund` command): durable identity opened BEFORE
+  any provider call, echo-verified classification, guarded outcome transitions.
+- `RefundResultClassifier` — refund responses carry NO signature (verified
+  provider contract): SUCCESS requires intact echoes (requestId/orderId/
+  amount, partnerCode conflict-intolerant) + `resultCode == 0`; `7002` is
+  processing → UNKNOWN, never FAILED; malformed/echo-mismatch/transport →
+  UNKNOWN. `classifyQuery` parses `/v2/gateway/api/refund/query` evidence
+  conservatively (ambiguity never resolves to a terminal verdict).
+- `RefundRequestManager` — stale-pending sweep (TTL 600s ≫ 45s HTTP timeout),
+  open-row block (pending/unknown), budget drift guard, race-safe insert,
+  `last_error` reserved for UNKNOWN rows.
+- Operator CLI: `momo:refund:list` (evidence browser) and
+  `momo:refund:resolve <requestId>` (query-only resolution; the refund is
+  never re-posted with a new identity; SUCCESS outcome instructs an offline
+  credit memo realignment).
+- `Plugin\Sales\CreditmemoService` — backfills `creditmemo_id` onto the
+  refund row post-commit (read-only on sales data).
+- 45s HTTP timeout on refund transfers (MoMo documents a 30s refund minimum;
+  the ~10s Laminas default would misclassify slow-but-successful refunds).
+- Focused unit suites: classifier contract, command flow (block/refusal/
+  unknown/transport), manager guards, identity minting, plugin backfill.
+
+### Fixed
+- Refund requests previously reused the purchase `orderId` (violates the MoMo
+  contract: the refund's `orderId` MUST differ) and trusted HTTP status
+  without a response-integrity check; refund `requestId`s are now minted per
+  operation (provider idempotency key, ≥31 days).
+
+### Fixed (correction round, 2026-09-21 — provider-contract boundary)
+- `momo:refund:resolve` mints a FRESH query `requestId` per invocation and
+  signs with it; the stored refund `requestId` stays immutable as
+  refund-submission evidence (the query is a different API operation and
+  never reuses the refund's provider idempotency key).
+- `classifyQuery` requires an EXACT `refundTrans[].orderId` match — the
+  single-entry fallback is removed; ambiguity/mismatch stays UNKNOWN.
+- Direct refund SUCCESS requires strict provider data: amounts must be
+  well-formed integers (no `(int)` cast of malformed values like
+  `"150000abc"`), and `resultCode == 0` additionally requires a valid
+  positive refund `transId` — malformed/unverifiable → UNKNOWN (AC5).
+- Full provider non-final result-code set (Final Status = No: 10/11/12/13,
+  20/21/22, 40/41/42/43/45/47, 7000, 7002, 9000) classifies UNKNOWN
+  (`provider_processing`) and keeps the refund slot open — only
+  provider-confirmed FINAL failures release the slot (FAILED). Previously
+  only `7002` was non-final; codes like 21/7000 wrongly resolved FAILED.
+- `momo:refund:resolve` now catches `Magento\Payment\Gateway\Http
+  \ClientException` (the import pointed at a non-existent module class, so
+  transport errors crashed the command instead of keeping the row unknown).
+
+### Fixed (correction round 2, 2026-09-21 — query response binding)
+- `classifyQuery` now validates the refund/query response's TOP-LEVEL
+  identity echoes before reading any `refundTrans` evidence: the response
+  must echo the exact fresh query `requestId` this invocation sent and the
+  refund's `orderId`, and a conflicting `partnerCode` is rejected
+  (absence tolerated, same rule as the direct refund path). A response
+  that answers a different/stale query can no longer resolve the row.
+- `1000` ("transaction initiated, waiting for user confirmation", Final
+  Status = No) added to `NON_FINAL_RESULT_CODES` — UNKNOWN
+  (`provider_processing`), never terminal FAILED, slot stays open.
+
 ## [2.1.0] - 2026-09-18
 
 ### Changed

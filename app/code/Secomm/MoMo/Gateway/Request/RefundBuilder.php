@@ -13,15 +13,23 @@ namespace Secomm\MoMo\Gateway\Request;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Secomm\MoMo\Api\Data\RefundRequestInterface;
 use Secomm\MoMo\Gateway\Helper\Signature;
 use Secomm\MoMo\Model\Config;
+use Secomm\MoMo\Model\OrderRefBuilder;
 
 /**
- * Builds the MoMo refund payload (AC10 refund identity compat).
+ * Builds the MoMo refund payload.
  *
- * Refund identity (payment-first, MOMO-01): the MoMo refund API requires
- * the ORIGINAL create-time orderId — our attempt order_ref, bound onto the
- * order payment as `momo_order_ref` by the OrderFinalizer — plus the MoMo
+ * Refund identity (MOMO-02): the minted refund_order_id + request_id come
+ * from the durable refund row (carried in the command subject), so the
+ * provider payload can never disagree with the persisted reconciliation
+ * evidence. The refund orderId is ALWAYS distinct from the original
+ * purchase orderId (MoMo contract requirement) and the requestId is the
+ * provider idempotency key — minted once, stored, never regenerated.
+ *
+ * The ORIGINAL payment identity still uses the attempt order_ref (`momo_order_ref`,
+ * bound onto the order payment by the OrderFinalizer) plus the MoMo
  * transId (`momo_trans_id`).
  *
  * Legacy compat: orders placed under the previous order-first flow have no
@@ -48,10 +56,12 @@ class RefundBuilder implements BuilderInterface
      *
      * @param Config $config
      * @param Signature $signature
+     * @param OrderRefBuilder $orderRefBuilder
      */
     public function __construct(
         private readonly Config $config,
-        private readonly Signature $signature
+        private readonly Signature $signature,
+        private readonly OrderRefBuilder $orderRefBuilder
     ) {
     }
 
@@ -80,7 +90,17 @@ class RefundBuilder implements BuilderInterface
                 __('MoMo transaction reference is missing; the refund cannot be sent to MoMo.')
             );
         }
-        $requestId = $orderRef . '-refund-' . time();
+
+        $row = $buildSubject['momo_refund_row'] ?? null;
+        if ($row instanceof RefundRequestInterface) {
+            $requestId = $row->getRequestId();
+            $orderId = $row->getRefundOrderId();
+        } else {
+            // Fallback (row unavailable): still mint a distinct refund
+            // orderId/requestId so the purchase identity is never reused.
+            $orderId = $this->orderRefBuilder->buildRefundOrderId($orderRef);
+            $requestId = $this->orderRefBuilder->buildRefundRequestId($orderRef);
+        }
         $description = (string)__('Refund for order #%1', $order->getOrderIncrementId());
 
         // rawSignature MUST follow MoMo's exact refund field order.
@@ -88,7 +108,7 @@ class RefundBuilder implements BuilderInterface
             'accessKey' => $this->config->getAccessKey(),
             'amount' => $amount,
             'description' => $description,
-            'orderId' => $orderRef,
+            'orderId' => $orderId,
             'partnerCode' => $this->config->getPartnerCode(),
             'requestId' => $requestId,
             'transId' => $transId,
@@ -99,7 +119,7 @@ class RefundBuilder implements BuilderInterface
             'accessKey' => $this->config->getAccessKey(),
             'requestId' => $requestId,
             'amount' => $amount,
-            'orderId' => $orderRef,
+            'orderId' => $orderId,
             'transId' => $transId,
             'description' => $description,
             'signature' => $this->signature->sign($rawParams, $this->config->getSecretKey()),
