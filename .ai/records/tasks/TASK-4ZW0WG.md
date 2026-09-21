@@ -59,11 +59,19 @@ không tạo finalizer thứ hai, không cho browser Return bypass verification.
   bind order, chưa quarantine, còn recovery budget → claim atomic (tăng
   `recovery_attempts`, set `recovery_exhausted` nếu tiêu nốt budget) → query
   `v2/query` bằng đúng `order_ref` của attempt.
-- `resultCode 0` + amount khớp + transId hợp lệ → `recordVerifiedPaid` →
-  `finalizeOrRecover` — đúng một order, idempotent qua re-run.
-- `7000/7002` → không mutation; `≠0` parse được → `recordVerifiedFailure`
-  (lifecycle tự giữ PAID/FINALIZED); exception/thiếu resultCode → AMBIGUOUS,
-  không mutation, không false-fail.
+- resultCode PAID (`0` hoặc `9000` — authorized; contract 1-step
+  `captureWallet`/default autoCapture=true) + amount khớp + transId hợp lệ →
+  `recordVerifiedPaid` → `finalizeOrRecover` — đúng một order, idempotent qua
+  re-run.
+- `1000`/`7000`/`7002` (non-final) → PENDING: không mutation.
+- VERIFIED FAILURE chỉ khi code nằm trong allowlist final-failure MoMo tài
+  liệu hoá (`98`, `99`, `1001`–`1007`, `1017`, `1026`, `2019`, `4001`,
+  `4002`, `4100`) → `recordVerifiedFailure` (lifecycle tự giữ
+  PAID/FINALIZED).
+- request/system non-final (`10`–`13`, `20`–`22`, `40`–`43`, `45`, `47`),
+  code unmapped, exception/thiếu-không-parse-được resultCode → AMBIGUOUS:
+  không mutation, không false-fail (code lạ không bao giờ default thành
+  FAILED).
 - Exhaustion: dừng query chủ động cho row đó (marker + critical log); IPN/Return
   hợp lệ đến sau vẫn resolve được tiền (marker operational-only, không quarantine).
 
