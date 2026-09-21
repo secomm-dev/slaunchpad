@@ -31,31 +31,32 @@ use Secomm\MoMo\Exception\ContractMismatchException;
  *  3. the query response identity is validated inside the command
  *     (QueryValidator: merchant identity + echoes against the exact query
  *     request just sent) — a mismatch throws before any mutation;
- *  4. resultCode 7000/7002 (not-yet-paid / still processing): non-terminal
- *     — no mutation, the attempt keeps its current state (the IPN, a later
- *     return hit or MoMo's IPN retry resolves it);
- *  5. authoritative non-paid: FAILED transition ONLY where the persisted
- *     state permits, via PaymentAttemptLifecycle (locked, short
+ *  4. the shared fail-safe classifier (PurchaseQueryClassifier, MOMO-04 —
+ *     the SAME semantics as the MOMO-03 recovery worker) routes the
+ *     authoritative resultCode: only provider-documented allowlists may
+ *     conclude anything;
+ *  5. PENDING (1000/7000/7002 — non-final) and AMBIGUOUS (request/system
+ *     codes, a missing/unparseable resultCode, ANY unmapped code): no
+ *     mutation, the attempt keeps its current state, the customer is asked
+ *     to check back / retry (the IPN, a later return hit or the MOMO-03
+ *     recovery resolves it). Unknown NEVER defaults to FAILED;
+ *  6. documented FINAL failures only: FAILED transition ONLY where the
+ *     persisted state permits, via PaymentAttemptLifecycle (locked, short
  *     transaction) — never from a stale copy, never out of a terminal or
  *     money-real state;
- *  6. authoritative PAID (resultCode 0): amount lock against the persisted
- *     frozen snapshot, positive-transId identity requirement,
- *     PaymentAttemptLifecycle::recordVerifiedPaid -> OrderFinalizer
- *     (exactly one Sales Order; duplicate returns recover the bound one) ->
- *     SuccessSessionPreparer (AC8: rebuilds the 5 checkout success keys).
+ *  7. authoritative PAID (resultCode 0 / 9000 for the module's 1-step
+ *     captureWallet / default autoCapture=true contract): amount lock
+ *     against the persisted frozen snapshot, positive-transId identity
+ *     requirement, PaymentAttemptLifecycle::recordVerifiedPaid ->
+ *     OrderFinalizer (exactly one Sales Order; duplicate returns recover
+ *     the bound one) -> SuccessSessionPreparer (AC8: rebuilds the 5
+ *     checkout success keys).
  *
  * All attempt mutations go through PaymentAttemptLifecycle — this class
  * never marks or saves an attempt directly.
  */
 class ReturnProcessor
 {
-    /**
-     * MoMo v2/query result codes that are NON-FINAL (per MoMo's result-code
-     * table): 7000 = transaction not yet paid, 7002 = still processing.
-     * Neither may terminally fail an attempt from a browser return.
-     */
-    private const QUERY_PENDING = [7000, 7002];
-
     /**
      * ReturnProcessor constructor.
      *
@@ -64,6 +65,7 @@ class ReturnProcessor
      * @param OrderFinalizer $orderFinalizer
      * @param PaymentAttemptLifecycle $lifecycle
      * @param SuccessSessionPreparer $successSessionPreparer
+     * @param PurchaseQueryClassifier $purchaseQueryClassifier
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -72,6 +74,7 @@ class ReturnProcessor
         private readonly OrderFinalizer $orderFinalizer,
         private readonly PaymentAttemptLifecycle $lifecycle,
         private readonly SuccessSessionPreparer $successSessionPreparer,
+        private readonly PurchaseQueryClassifier $purchaseQueryClassifier,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -106,25 +109,59 @@ class ReturnProcessor
         // command (QueryValidator); a mismatch throws here with ZERO
         // mutation.
         $query = $this->queryTransaction($orderRef, $attempt);
-        $resultCode = isset($query['resultCode']) ? (int)$query['resultCode'] : -1;
-        $paidAmount = isset($query['amount']) ? (int)$query['amount'] : 0;
-        $transId = (string)($query['transId'] ?? '');
+        $outcome = $this->purchaseQueryClassifier->classify($query['resultCode'] ?? null);
+        $resultCode = $outcome->getResultCode();
 
-        if (in_array($resultCode, self::QUERY_PENDING, true)) {
-            // Non-terminal: the provider has not concluded (7000 = not yet
-            // paid, 7002 = processing). The attempt keeps its current state
-            // — the IPN, a later return hit or the attempt TTL resolves it.
-            // No mutation here.
+        if ($resultCode === null) {
+            // A response without a parseable resultCode cannot support ANY
+            // payment-state decision (MOMO-04): ambiguous — logged, NO
+            // mutation, the customer is asked to retry/check back. The IPN,
+            // a later return hit or the MOMO-03 recovery resolves it.
+            $this->logger->error(
+                'MoMo return: v2/query response without a parseable resultCode; ambiguous, no mutation.',
+                ['order_ref' => $orderRef]
+            );
+            throw new LocalizedException(
+                __('MoMo payment could not be verified right now. Please try again or contact support.')
+            );
+        }
+
+        if ($outcome->getCategory() === PurchaseQueryOutcome::AMBIGUOUS) {
+            // Request/system-level or unmapped code: NOT a transaction
+            // outcome — never a failure proof (fail-safe money state).
+            $this->logger->error(
+                'MoMo return: request-level or unmapped resultCode is not a documented final outcome;'
+                . ' ambiguous, no mutation.',
+                ['order_ref' => $orderRef, 'reason' => $outcome->getReason(), 'result_code' => $resultCode]
+            );
+            throw new LocalizedException(
+                __('MoMo payment could not be verified right now. Please try again or contact support.')
+            );
+        }
+
+        if ($outcome->getCategory() === PurchaseQueryOutcome::PENDING) {
+            // Non-terminal: the provider has not concluded (1000 = initiated,
+            // 7000 = not yet paid, 7002 = processing). The attempt keeps its
+            // current state — the IPN, a later return hit or the MOMO-03
+            // recovery resolves it. No mutation here.
             throw new LocalizedException(
                 __('Your MoMo payment is still being processed. Please check back shortly.')
             );
         }
 
-        if ($resultCode === 0) {
-            return $this->finalizeVerifiedPaid($attempt, $orderRef, $paidAmount, $transId);
+        if ($outcome->getCategory() === PurchaseQueryOutcome::FINAL_FAILURE) {
+            // Documented FINAL payment-transaction failure — the only branch
+            // that may terminally fail the attempt, and only where the fresh
+            // state permits (never out of PAID/FINALIZED).
+            return $this->recordAuthoritativeFailure($attempt, $orderRef, $resultCode);
         }
 
-        return $this->recordAuthoritativeFailure($attempt, $orderRef, $resultCode);
+        // The remaining documented outcome is PAID (0 / 9000): the guarded
+        // finalization path — identical for both codes.
+        $paidAmount = isset($query['amount']) ? (int)$query['amount'] : 0;
+        $transId = (string)($query['transId'] ?? '');
+
+        return $this->finalizeVerifiedPaid($attempt, $orderRef, $paidAmount, $transId);
     }
 
     /**
@@ -248,7 +285,7 @@ class ReturnProcessor
     }
 
     /**
-     * Authoritative non-paid, non-processing result: transition ONLY where
+     * Documented FINAL payment-transaction failure: transition ONLY where
      * the persisted state permits — a stale browser hit can never regress a
      * money-real (PAID) or finalized attempt.
      *

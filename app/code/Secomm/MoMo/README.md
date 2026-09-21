@@ -33,8 +33,9 @@ CommandPool — **not** the deprecated `AbstractMethod`. Mirrors `Secomm_ZaloPay
 
 - **Create order** → POST `/v2/gateway/api/create` → redirect browser to returned `payUrl`.
 - **Return** (`momo/payment/returnaction`, GET) — UX/recovery only; resolves the attempt
-  by the `orderId` echo (= `order_ref`), re-verifies via `v2/query` (7000/7002 stay
-  non-terminal), finalizes, then
+  by the `orderId` echo (= `order_ref`), re-verifies via `v2/query` (non-final
+  `1000`/`7000`/`7002` and ambiguous request/system/unknown codes never mutate —
+  MOMO-04), finalizes, then
   rebuilds the 5 checkout success-session keys (like core `Onepage::saveOrder`).
 - **Notify / IPN** (`momo/payment/notify`, POST) — **authoritative**; strict signed-value
   parsing + 13-field signature + identity/amount echo checks against the attempt.
@@ -115,9 +116,11 @@ recovery pass (`Service\PaymentRecovery`):
   MoMo contract), outside any transaction.
 - **Outcomes** — always through the SAME canonical services as IPN/Return,
   never a second order-placement implementation. Result codes classify ONLY
-  through explicit, provider-documented allowlists (developers.momo.vn
-  result-code table, verified 2026-09-21) — an unknown code NEVER defaults
-  to FAILED:
+  through the shared fail-safe purchase-query classifier
+  (`Service\PurchaseQueryClassifier`, MOMO-04 — the SAME explicit,
+  provider-documented allowlists as the browser Return path;
+  developers.momo.vn result-code table, verified 2026-09-21) — an unknown
+  code NEVER defaults to FAILED:
   - paid code (`0`, or `9000` — authorized — for the module's 1-step
     `captureWallet`/default autoCapture contract) + exact amount + positive
     `transId` → `PaymentAttemptLifecycle::recordVerifiedPaid` →
