@@ -21,9 +21,50 @@ interface RefundInterface
     public const IS_PROCESSED = "is_processed";
     public const AMOUNT = "amount";
     public const CREDIT_MEMO_ID = "credit_memo_id";
-    public const PROCESSED = 1;
-    public const NOT_PROCESSED = 0;
+    public const QUERY_ATTEMPTS = "query_attempts";
+    public const LAST_ERROR = "last_error";
+    public const REFUND_STATE = "refund_state";
+    public const ACTIVE_CLAIM = "active_claim";
+    public const PROVIDER_REQUEST_STARTED_AT = "provider_request_started_at";
+    public const CREATED_AT = "created_at";
 
+    /**
+     * Semantic refund outcome states (TASK-CG6BM7 corrective round 2/3).
+     * query_attempts saturation alone must NEVER imply "safe to refund
+     * again": blocking a new refund request is decided by refund_state.
+     *
+     * State machine v5 (round 5, F23):
+     *  initiating  = LOCAL_READY: provider has DEFINITELY not been
+     *                contacted yet (F23). Cron NEVER queries it; a stale
+     *                LOCAL_READY row is safely abandoned (no I/O possible).
+     *  provider_request_started = the durable, timestamped provider-start
+     *                boundary: provider HTTP is allowed to run (or have
+     *                run). Cron queries the SAME m_refund_id only AFTER the
+     *                reconciliation grace has elapsed (grace > HTTP timeout).
+     *  processing  = provider accepted, outcome open (query same identity).
+     *  unknown     = outcome never confirmed (query same identity,
+     *                bounded; keeps blocking).
+     *  provider_success_local_pending -> confirmed_success (finalize only).
+     *
+     * Blocking set = initiating + provider_request_started + processing +
+     * unknown + provider_success_local_pending; released by
+     * confirmed_success / confirmed_fail.
+     */
+    public const REFUND_STATE_INITIATING = "initiating";
+    public const REFUND_STATE_PROVIDER_REQUEST_STARTED = "provider_request_started";
+    public const REFUND_STATE_PROCESSING = "processing";
+    public const REFUND_STATE_UNKNOWN = "unknown";
+    public const REFUND_STATE_PROVIDER_SUCCESS_LOCAL_PENDING = "provider_success_local_pending";
+    public const REFUND_STATE_CONFIRMED_SUCCESS = "confirmed_success";
+    public const REFUND_STATE_CONFIRMED_FAIL = "confirmed_fail";
+
+    /**
+     * Evidence prefix for provider-confirmed refusal (also used by the
+     * state backfill data patch to classify resolved FAIL history).
+     */
+    public const STATE_EVIDENCE_REFUND_FAILED = 'refund_failed:';
+    public const PROCESSED = true;
+    public const NOT_PROCESSED = false;
 
     /**
      * Getter for EntityId.
@@ -147,4 +188,68 @@ interface RefundInterface
      * @return float|null
      */
     public function getAmount(): ?float;
+
+    /**
+     * Getter for QueryAttempts.
+     *
+     * @return int
+     */
+    public function getQueryAttempts(): int;
+
+    /**
+     * Setter for QueryAttempts.
+     *
+     * @param int $queryAttempts
+     *
+     * @return void
+     */
+    public function setQueryAttempts(int $queryAttempts): void;
+
+    /**
+     * Getter for LastError.
+     *
+     * @return string|null
+     */
+    public function getLastError(): ?string;
+
+    /**
+     * Setter for LastError.
+     *
+     * @param string|null $lastError
+     *
+     * @return void
+     */
+    public function setLastError(?string $lastError): void;
+
+    /**
+     * Getter for RefundState.
+     *
+     * @return string|null
+     */
+    public function getRefundState(): ?string;
+
+    /**
+     * Setter for RefundState.
+     *
+     * @param string|null $refundState
+     *
+     * @return void
+     */
+    public function setRefundState(?string $refundState): void;
+
+    /**
+     * Getter for ActiveClaim (1 = THE atomic active attempt for the order).
+     *
+     * @return int|null
+     */
+    public function getActiveClaim(): ?int;
+
+    /**
+     * Setter for ActiveClaim.
+     *
+     * @param int|null $activeClaim
+     *
+     * @return void
+     */
+    public function setActiveClaim(?int $activeClaim): void;
 }

@@ -18,6 +18,14 @@ define([
          */
         getInstructions: function () {
             return window.checkoutConfig.payment.instructions[this.item.method] || '';
+        },
+
+        /**
+         * Logo Src
+         * @returns {String}
+         */
+        getPaymentAcceptanceMarkSrc: function () {
+            return window.checkoutConfig.payment.secomm_vietqr.logoSrc || '';
         }
     });
 });

@@ -29,6 +29,7 @@ Generic Content A, Accordion A, Banner B and Banner C consume the explicit trust
 - Image fields use the `media-image` Admin control: Magento Media Gallery selection, immediate thumbnail preview and removal while preserving the persisted string payload contract.
 - Imported templates preserve the pinned Hyvä UI layout and visual behaviour; local differences are limited to data plumbing, validation/escaping, instance-safe semantics and removal of demo fallbacks.
 - The module registers its templates and Tailwind utilities through `hyva_config_generate_before`, so every consuming Hyvä theme scans the shipped component classes.
+- When Mirasvit SEO Autolink is installed, a frontend compatibility plugin preserves the original rendered Secomm UI HTML only if Autolink unexpectedly returns an empty result. Successful Autolink output and CMS content without Secomm UI markers are unchanged.
 
 See `SPEC-FEAT-J06WXZ` and `DEC-FEATJ06WXZ-001` for the canonical contract.
 Trusted rich text is governed by `DEC-FEATJ06WXZ-002`.

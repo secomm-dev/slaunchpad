@@ -52,11 +52,6 @@
                         <label>Shop Id</label>
                         <config_path>giaohangnhanh_setting/general/shop_id</config_path>
                     </field>
-                    <field id="is_develop_mode" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Is Develop Mode</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <config_path>giaohangnhanh_setting/general/is_develop_mode</config_path>
-                    </field>
                     <field id="payment_for_shipping_cod" translate="label" type="multiselect" sortOrder="71" showInDefault="1"
                            showInWebsite="1" showInStore="1">
                         <label>Payment Shipping COD</label>

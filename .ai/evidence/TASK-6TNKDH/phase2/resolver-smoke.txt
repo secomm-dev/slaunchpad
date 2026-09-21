@@ -1,0 +1,32 @@
+== CURRENT MODE (VN_ADMIN_2025 → GHN_ADMIN_2025) ==
+ normal-exact case: VNA25-0003B2FA66
+  [PASS] ward name verbatim (GHN): 'Xã Cảm Nhân'
+  [PASS] province name verbatim (GHN): 'Lào Cai'
+  [PASS] 2025 mode carries no legacy ids: true
+ reviewed case (Kỳ Lừa → residual pair):
+  [PASS] Kỳ Lừa ward → Tân Thanh: 'Xã Tân Thanh'
+  [PASS] province → Lạng Sơn: 'Lạng Sơn'
+== LEGACY MODE (VN_ADMIN_PRE_2025 → GHN_ADMIN_PRE_2025) ==
+ normal-exact case: VNAP25-000046EF49 (district stored: Huyện Vĩnh Linh)
+  [PASS] ward name verbatim: 'Xã Vĩnh Thái'
+  [PASS] district_id: '1861'
+  [PASS] ward_code: '320318'
+  [PASS] province name verbatim: 'Quảng Trị'
+  [PASS] province_id: '238'
+ reviewed case (Đông Thành → historical merge Nhân Thành):
+  [PASS] ward → Xã Nhân Thành: 'Xã Nhân Thành'
+  [PASS] ward_code → 291124: '291124'
+  [PASS] district_id → 1846 (Huyện Yên Thành, d:235:1846): '1846'
+  [PASS] province_id → 235 (p:235 Nghệ An): '235'
+  [PASS] province → Nghệ An: 'Nghệ An'
+  [PASS] complete legacy triple: true
+ curated duplicate case (Hòa Bình, Kim Thành, Hải Dương):
+  [PASS] ward_code → curated 910116 (NOT 91352): '910116'
+  [PASS] district_id → 1953 (Kim Thành): '1953'
+  [PASS] province → Hải Dương: 'Hải Dương'
+ curated duplicate case (Yên Sơn, Yên Sơn, Tuyên Quang):
+  [PASS] ward_code → curated 910044 (NOT 90815): '910044'
+  [PASS] district_id → 1745 (Yên Sơn): '1745'
+  [PASS] province → Tuyên Quang: 'Tuyên Quang'
+
+ALL RESOLVER SMOKE CHECKS PASSED

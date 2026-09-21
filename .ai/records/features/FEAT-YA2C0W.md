@@ -12,12 +12,25 @@ specification_ref: ../../specs/SPEC-FEAT-YA2C0W-vietnam-current-legacy-address.m
 risk: medium
 status: proposed
 created: 2026-08-25
-updated: 2026-08-25
+updated: 2026-09-08
 ticket_ref:
   - TASK-R83FXW                   # Đăng ký profiles + config mapping + membership seeding (done 2026-08-26; renamed theo DEC-003)
   - TASK-ADT94K                   # Phase B — versioned scheme import foundation (VN_ADMIN_*, re-scoped 2026-08-27)
   - TASK-9394A9                   # Phase C — scheme registry + historical unit reference layer (2026-08-27)
   - TASK-J9AVGK                   # Phase D — mapping layer + resolution API (supersedes TASK-X0XKH4 + TASK-AP6YXP; 2026-08-27)
+  - TASK-Q4B98P                   # Phase-E prerequisite — operational↔canonical bridge + DirectoryReferenceGuard (2026-09-03)
+  - TASK-AQT7V3                   # Phase E-A — ShippingCore lean shipping address resolution contracts (2026-09-08)
+  - TASK-5XDG1P                   # Phase E-B — ShippingCore local canonical shipping-address orchestration (manager + request cache, 2026-09-08)
+  - TASK-XXBN5X                   # Phase E-SL0 — ShippingCore service-level + fallback contracts (SPIKE-WHHEZV/YH439T, 2026-09-08)
+  - TASK-T78YH6                   # Phase E-C0 — ShippingCore carrier-facing address handoff (builder + handoff service, Option B-minimal, 2026-09-08)
+  - TASK-NAT3YV                   # Phase E-C1 — ShippingCore carrier rate outcome semantics (SUCCESS/UNAVAILABLE/TECHNICAL_FAILURE, 2026-09-08)
+  - TASK-32ACTR                   # Phase E-SL1 — ShippingCore service-level realtime rate aggregation (aggregate outcomes per dynamic level, 2026-09-08)
+  - TASK-M3ME32                   # Phase E-SL2 — ShippingCore service-level fallback decision (FINAL foundation slice, 2026-09-08)
+  - TASK-NQT782                   # LT-BRIDGE-1 — Launchpad_MageplazaTableRate fallback provider bridge (FALLBACK_ONLY/STANDALONE, 2026-09-08)
+  - TASK-STC3NB                   # ShippingCore COD payment identification — architecture v4 §4.1 delta (resolver + config, 2026-09-11)
+  - TASK-Y3X6H5                   # ShippingCore v4 delta A–E — per-operation capability + CanonicalResolutionSnapshot + AMBIGUOUS-only seam (reopen-and-freeze, 2026-09-11)
+  - TASK-5JQYMP                   # ShippingCore v5 — fallback eligibility orchestration (TECHNICAL_FALLBACK | LEGACY_ADDRESS_FALLBACK) + legacy RATE strategy constants (2026-09-11)
+  - TASK-MD2BD3                   # ShippingCore v10 — PICK_PRIMARY: directional curated primary + deterministic selector (VietNamAddress + AddressResolutionPolicy, 2026-09-16)
   - TASK-7RK8Q3                   # Integration tests + QC evidence (điều chỉnh theo phases mới khi kích hoạt)
   - TASK-S0M7YC                   # Docs sync + boundary audit
 decisions:

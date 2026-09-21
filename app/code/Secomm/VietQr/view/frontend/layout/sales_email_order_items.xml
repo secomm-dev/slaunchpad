@@ -8,6 +8,7 @@
                 <arguments>
                     <argument name="vietqr_config" xsi:type="object">Secomm\VietQr\Model\Config</argument>
                     <argument name="vietqr_timezone" xsi:type="object">Magento\Framework\Stdlib\DateTime\Timezone</argument>
+                    <argument name="vietqr_vnd_amount" xsi:type="object">Secomm\VietQr\Model\VndAmount</argument>
                 </arguments>
             </block>
         </referenceBlock>

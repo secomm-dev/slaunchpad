@@ -1,0 +1,230 @@
+---
+id: EVIDENCE-TASK-CG6BM7-VALIDATION
+work_item: TASK-CG6BM7
+spec: SPEC-TASK-CG6BM7-zalopay-postfix-audit
+kind: l3-validation
+created: 2026-09-16
+updated: 2026-09-16 (corrective round)
+environment: container slaunchpad-phpfpm-1 (PHP 8.3.20, PHPUnit 10.5.x, PHPCS w/ Magento2 standard); unit harness /tmp/zt (worktree module copy + prepend spl_autoload_register — bắt buộc vì composer.json có PSR-0 fallback "": app/code làm main src thắng nếu append); di-compile tree /tmp/m2 (bản sao Magento đầy đủ trong container, share workspace không bị ghi)
+pre_correction_head: 70416b7aa6889276818b72e311a9955cbf5ed578
+---
+
+# §12 L3 validation — corrective round (kết quả trung thực)
+
+## PHP syntax (php -l)
+- PASS — 16/16 file PHP đã đổi lint sạch (PHP 8.3.20 trong container).
+
+## Unit — ZaloPay (toàn bộ `Test/Unit`)
+- PASS — **OK, 260 tests / 937 assertions** (baseline corrective head của round 1: 223/825 →
+  corrective round thêm 37 test / 112 assertion, không test nào đỏ).
+  Suite corrective mới/đổi:
+  - `PendingRefundManagerTest` — 11 test / 42 assertions (lifecycle: registerPending không đụng
+    totals, finalize native exact-once + marker, race already-processed, recovery đã-REFUNDED,
+    rollback khi accounting fail, consume/terminate budget).
+  - `CreditmemoRefundPluginTest` — 11 test / 46 assertions (guard offline/in-flight/missing
+    invoice-txn, PROCESSING STOP trước core, SUCCESS mark + proceed, FAIL propagate nguyên vẹn,
+    TRANSPORT track-đúng-cách, pass-through non-ZaloPay/null outcome).
+  - `RefundCronjobTest` (rewrite) — 13 test / 33 assertions (SUCCESS finalize, duplicate no-op,
+    finalize-fail tiêu budget, FAIL terminal `refund_failed:`, PROCESSING budget, transport tiêu
+    budget, budget cap critical, malformed payload / thiếu m_refund_id / missing creditmemo /
+    state drift → terminal, batch sống sót).
+  - `RefundCommandTest` (rewrite) — 11 test / 45 assertions (provider-only: SUCCESS, PROCESSING +
+    query thành công/đang xử lý/transport-fail/FAIL, rc=2 message map `Zalopay: Refund failed.`,
+    raw provider text KHÔNG lọt UI, transport mang tracking outcome, marker skip, thiếu creditmemo).
+  - `OrderFinalizerTest` — 24 test / 92 assertions (giữ EMAIL 1–7 + mới EMAIL 8–10: thua claim ⇒
+    không gửi; send fail ⇒ release claim ⇒ retry được; send thành công ⇒ release).
+  - `PaymentAttemptResourceTest` — 3 test / 5 assertions (pin SQL: conditional UPDATE claim,
+    0-row ⇒ false, release token-guarded).
+- Hạn chế khai báo: đây là UNIT với mock ở biên DB/HTTP (connection, repository, gateway client).
+  Invariant CLOSED được chứng minh bằng unit + source-call-chain (proofs P7–P8), KHÔNG phải bằng
+  integration runtime.
+
+## PHPCS (Magento2 standard, module-wide)
+- ERRORS: **0** (`-n` exit 0 trên toàn module).
+- WARNINGS: 321 module-wide (round 1: 284) — style/annotation; các file đổi đều 0 error
+  (đếm per-file: RefundCommand W6, RefundCronjob W7, CreditmemoRefundPlugin W6,
+  PendingRefundManager W2, OrderFinalizer W0, các test file W1–W17 — annotation style, khớp
+  convention hiện có của module; xem M6 round 1).
+
+## setup:di:compile
+- **PASS (thật, corrective round)** — chạy `setup:di:compile` trên BẢN SAO Magento đầy đủ trong
+  container (`/tmp/m2`: bin/app/vendor/generated/setup + module worktree thay cho module main),
+  không đụng workspace/DB chung: **9/9 step, exit 0** ("Generated code and dependency injection
+  configuration successfully").
+- Xác minh thêm: `CreditmemoRefundPlugin` xuất hiện trong compiled
+  `generated/metadata/*|plugin-list.php` cho mọi scope (global/frontend/webapi_rest/crontab).
+
+## Regression
+- Scope: `git status` — mọi thay đổi nằm trong `app/code/Secomm/ZaloPay` (+ `.ai`); không file
+  nào ngoài ZaloPay bị đụng (auth.json modified pre-existing, KHÔNG commit — chứa token).
+- Cross-module proof: grep toàn `app/code` — KHÔNG có tham chiếu PHP class `Secomm\ZaloPay`
+  nào từ module khác (chỉ 1 mention chữ "ZaloPay" trong docblock GhtkConfig, không phải code),
+  ⇒ thay đổi nội bộ ZaloPay không thể regress module khác.
+- Round-1 regression evidence giữ nguyên tính hợp lệ (1047 tests, 8e+2f pre-existing ở
+  FulfillmentCore/Tracking, chứng minh pre-existing bằng baseline rerun — không liên quan ZaloPay).
+
+## Integration runtime
+- **INTEGRATION = ENVIRONMENT_BLOCKED** (không claim PASS) — bất đổi round 1: DB
+  `magento_integration_tests` đã tồn tại trên MySQL dev chung; chạy integration suite sẽ DROP/đè
+  DB dev chung và ghi vào share — vi phạm SHARED_WORKSPACE_MODIFIED=NO.
+
+## §9 SMTP/staging (READ-ONLY)
+- KHÔNG đụng bất kỳ env/system config/credentials/Mailpit/Mageplaza SMTP nào (bất biến qua round).
+
+## Ghi chú harness (lesson cho session sau)
+- `phpunit.xml` của module không tự chạy được ngoài Magento root; harness sandbox phải
+  `spl_autoload_register(..., throw=true, prepend=true)` — nếu KHÔNG prepend, Composer ClassLoader
+  của Magento (PSR-0 fallback `"": app/code/, generated/code/`) thắng và resolve class module từ
+  MAIN src (khác branch) → kết quả test sai lặng lẽ. Đã từng gây 16 failure "phantom" trước khi fix.
+
+---
+
+# Round 2 validation (2026-09-16, corrective round 2)
+
+- Full unit suite: **279 tests / 988 assertions — OK** (sandbox /tmp/zt, prepend-autoloader
+  bootstrap; tăng từ 260/937 của round 1).
+  - MỚI `CreditmemoRefundPreflightTest`: 9 test / 15 assertions — parity từng check với
+    `validateForRefund` + boundary "refund đúng phần còn lại" PASS + supplementary amount <= 0.
+  - MỚI plugin matrix provider-never (5 test): over-refund / non-open creditmemo / invalid
+    order / zero amount → `RefundCommand::execute` NEVER, `registerPending` NEVER, `$proceed`
+    NEVER; valid → provider exactly once với order-assertion preflight → provider.
+    `CreditmemoRefundPluginTest`: 16 test / 66 assertions.
+  - MỚI unknown-quarantine matrix: filter pin hasInFlight (state IN processing+unknown, KHÔNG
+    attempts), quarantine-at-cap, below-cap processing, terminate default unknown +
+    confirmed_fail, finalizeSuccess bind confirmed_success; cron FAIL ↦ confirmed_fail,
+    state-drift ↦ unknown mặc định. `PendingRefundManagerTest`: 16 test / 56 assertions;
+    `RefundCronjobTest`: 13 test / 35 assertions.
+- php -l: clean toàn bộ file thay đổi round 2.
+- PHPCS Magento2 module-wide: **0 ERRORS**, 345 warnings / 68 files (baseline tồn tại từ trước;
+  round 2 đã GIẢM 2 warning — wrap chữ ký terminate, dồn blank-line RefundInterface; các warning
+  còn lại ở file round 2 là message strings dài của round 1 + property PHPDoc style test, đã
+  tolerance từ round 1).
+- setup:di:compile THẬT trên bản sao Magento 2.4.8-p5 trong container (/tmp/m2, module thay bằng
+  code round 2): **9/9 OK, exit 0 — chạy LẠI trên bản code cuối cùng** (sau khi gỡ một dòng
+  trùng lặp trong `PendingRefundManager::terminate` mà bản explore CodeGraph surface được; dòng
+  trùng idempotent, không ảnh hưởng DI nhưng compile lại cho bằng chứng sạch).
+- CodeGraph call-chain: index build riêng trên worktree (116.367 nodes / 224.313 edges); proof
+  P13 với anchor file:line từng hop; giới hạn index (dev/tests nhiễu callers) ghi trung thực.
+- Regression scope: `git status` — mọi thay đổi trong `app/code/Secomm/ZaloPay` + `.ai`;
+  auth.json modified pre-existing KHÔNG commit (chứa token Hyvä Packagist).
+- INTEGRATION: vẫn **ENVIRONMENT_BLOCKED** (bất biến qua round — DB integration test không khả
+  dụng trên workspace chung).
+
+---
+
+# Round 3 validation (2026-09-16, corrective round 3)
+
+- Full unit suite: **296 tests / 1057 assertions — OK** (sandbox /tmp/zt, prepend-autoloader
+  bootstrap; tăng từ 279/988 round 2).
+  - `PendingRefundManagerTest` (rewrite): **24 test / 89 assertions** — acquireClaim×4 (persist
+    initiating+claim exact binds, KHÔNG transaction, duplicate-key ↦ "active or awaiting
+    reconciliation", lỗi khác ↦ abort safe KHÔNG gọi provider), hasInFlight 3 filter (pin
+    `is_processed=0` + 4-state IN), mark×5 state v3 (unknown/confirmed_fail nhả claim/PSLP/
+    confirmed_success nhả claim), blocking-rethrow vs terminal-swallow, quarantine giữ slot,
+    consumeQueryBudget PSLP không đụng state.
+  - `CreditmemoRefundPluginTest` (rewrite): **18 test / 75 assertions** — order-assertion
+    `['preflight','prepare','claim','provider']`; claim conflict propagate KHÔNG provider;
+    provider SUCCESS + `$proceed()` throw ↦ PSLP + executePrepared exactly once; invalid order
+    ↦ NoSuchEntityException TRƯỚC mọi thứ (fresh Creditmemo getOrder throw); transport không
+    trackable ↦ unknown; PROCESSING/SUCCESS/FAIL paths giữ nguyên contract round 2.
+  - `RefundCronjobTest`: **18 test / 52 assertions** — MỚI: PSLP finalize-local-only (query
+    never) + PSLP finalize fail consume budget; CM REFUNDED ↦ markConfirmedSuccess bookkeeping
+    only; drift 3 ↦ terminate unknown; FAIL release STATE_OPEN + save-fail swallowed.
+  - MỚI `BackfillRefundStateTest`: **2 test / 10 assertions** — 3 cohort đúng evidence order
+    (`is_processed=1 AND last_error LIKE 'refund_failed:%'` → confirmed_fail; `is_processed=1`
+    → confirmed_success; `is_processed=0` → unknown) + không dependency.
+- php -l: clean toàn bộ file PHP round 3 (PHP 8.3.20 container).
+- PHPCS Magento2 module-wide: **0 ERRORS**, 6 warnings (giảm từ 345 — các file round 3 được
+  viết clean; warning còn lại là legacy round 1, gate 0 error).
+- setup:di:compile THẬT trên bản sao Magento 2.4.8-p5 (/tmp/m2, re-stage module round 3):
+  **PASS, exit 0** ("Generated code and dependency injection configuration successfully.").
+- **Real-DB concurrency evidence (MỚI round 3)**: MariaDB 10.4 container throwaway riêng
+  (`zt-mariadb-evidence`, KHÔNG đụng DB dev chung; đã xoá) — E1–E8 PASS: first-claim commits;
+  second-claim same order rejected duplicate-key `ZALO_PAY_REFUND_ORDER_ACTIVE`; same
+  m_refund_id (order khác) rejected `ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE`; 3 row lịch sử
+  NULL-active cùng order cùng tồn tại (NULL-trick); release-then-reclaim OK; exactly-one
+  active; UNKNOWN quarantine giữ DB slot; 2 session song song → 1 COMMITTED / 1 REJECTED.
+  Chi tiết proofs.md P14.
+- CodeGraph: worktree index rebuild đầy đủ (`codegraph index -q`); edges tĩnh resolve
+  `executePrepared ← execute (RefundCommand.php:105)`; dynamic edges qua injected property
+  không resolve đầy đủ (trung thực) ⇒ supplement bằng anchor file:line P15 (plugin chain
+  :111→:142→:165→:176→:179; cron :140→:143); `registerPending` remnant = 0 trong production.
+- Regression scope: `git status` — mọi thay đổi trong `app/code/Secomm/ZaloPay` + `.ai`;
+  `auth.json` modified pre-existing KHÔNG commit (chứa token Hyvä Packagist).
+- INTEGRATION runtime: vẫn **ENVIRONMENT_BLOCKED** (bất biến qua round) — bù lại round 3 có
+  DB evidence THẬT dạng container throwaway riêng cho chính concurrency property bị thách
+  thức (khác integration Magento suite).
+
+## Round 4
+
+- php -l: PASS toàn bộ file đổi (sandbox /tmp/zt, PHP 8.3.20).
+- Unit: **306 tests / 1105 assertions OK** — gồm 4 test plugin mới (F17 REQUIRED + persist-fail + lost-claim + pre-saved), 3 test cron mới (F18), `BackfillRefundStateTest` viết lại (F19/F20), test F22 FK-not-conflict.
+- PHPCS Magento2 (app + Test): 0 errors.
+- setup:di:compile round-4: DEFER cho TL chạy CLI (round-3 PASS trên /tmp/m2).
+- Real DB F21/F19: DEFER cho TL (P18). Stack sẵn sàng; lệnh gợi ý (trong container `slaunchpad-phpfpm-1`):
+  `php /tmp/m2b/bin/magento setup:install --base-url=http://zt-f21.local/ --db-host=zt-mariadb --db-name=magento --db-user=root --db-password=zt-f21-pw --admin-firstname=A --admin-lastname=B --admin-email=a@b.c --admin-user=admin --admin-password='Admin123!' --language=en_US --currency=USD --timezone=UTC --backend-frontname=admin --search-engine=opensearch --opensearch-host=zt-opensearch --opensearch-port=9200 --opensearch-enable-auth=0`
+  Verify: `SHOW CREATE TABLE zalo_pay_refund` (2 UNIQUE `ZALO_PAY_REFUND_ORDER_ACTIVE`/`ZALO_PAY_REFUND_M_REFUND_ID_ACTIVE` + `credit_memo_id` NULL YES) ; `SELECT patch_name FROM patch_list WHERE patch_name LIKE '%BackfillRefundState%'` ; seed row legacy (`is_processed=0` và `is_processed=1`/`last_error` varied) → `DELETE FROM patch_list WHERE patch_name LIKE '%BackfillRefundState%'` → `setup:upgrade` lại → verify cohort v2 + F19 (order unresolved chặn claim mới, order resolved không chặn).
+
+## Round 5
+
+- php -l: PASS từng file đổi ngay sau MỖI edit (RefundCronjob, PendingRefundManagerTest,
+  RefundCronjobTest, CreditmemoRefundPluginTest, BackfillRefundState + Test; lint qua container
+  `slaunchpad-phpfpm-1` PHP 8.3.20) + grep pattern-corruption sau mỗi lần ghi.
+- Unit: **312 tests / 1126 assertions OK** (round 4: 306/1105). Thêm: 4 cron F23 (fresh-grace /
+  stale-same-identity / missing-timestamp / bound-initiating REWRITE), 2 manager
+  markProviderRequestStarted, 1 plugin provider-start-fail, REQUIRED order-recorder
+  `['save','bind','start','provider']`, backfill test pin 2 quoteInto + exact WHERE.
+- PHPCS Magento2 (app + Test): **0 errors** (1 warning duy nhất: template KO pre-existing
+  `zalopay.html`, ngoài scope round 5).
+- REAL DB (NO-DEFER, đền P18/F25): `setup:install` PASS (MariaDB 10.6.28 `zt-mariadb106` —
+  10.11 bị Magento 2.4.8 từ chối; 358 module core+Secomm_ZaloPay; `--cache-backend=default`
+  là flag SAI — bỏ); `SHOW CREATE TABLE zalo_pay_refund` PASS đủ 4 điều kiện + cột mới;
+  `setup:upgrade` PASS (drop-cột → tái tạo + patch re-run); legacy cohorts A/B/C/D +
+  multi-row-per-order PASS; migration claim proof `acquireClaim` thật PASS (unresolved
+  REJECTED / resolved ALLOWED); F24 cohort-3 WHERE PASS trên MariaDB thật;
+  `setup:di:compile` PASS (exit 0) trên /tmp/m2b code round-5.
+- CodeGraph: index workspace active; anchor: `CreditmemoRefundPlugin::aroundRefund`
+  (claim → save → bind → markProviderRequestStarted → executePrepared),
+  `PendingRefundManager::markProviderRequestStarted`, `RefundCronjob::processRefund`
+  (steps 0/0b/0c/1/2a/2b/3-7).
+- Scope: chỉ `app/code/Secomm/ZaloPay/**` + `.ai/**`; icon/logo, ExtraFee, MoMo, LLMS,
+  Bitbucket: KHÔNG đụng; `auth.json` pre-existing KHÔNG commit.
+
+## Round 6
+
+- php -l: PASS từng file đổi (RefundCronjob, PendingRefundManager, RefundInterface,
+  RefundCronjobTest — lint qua container `slaunchpad-phpfpm-1` PHP 8.3.20) + grep
+  pattern-corruption sau mỗi lần ghi.
+- Unit: **316 tests / 1145 assertions OK** (round 5: 312/1126; −2 test round-5 initiating,
+  +6 test F26): fresh unbound/bound LOCAL_READY no-op hoàn toàn, stale unbound/bound
+  released-CONFIRMED_FAIL không query, missing created_at consume-budget-never-release,
+  race composition cron-untouched-then-mark-succeeds. 3 test F23 provider-start giữ nguyên
+  (verify bằng danh sách test + suite xanh).
+- PHPCS Magento2 (app + Test): **0 errors**.
+- setup:di:compile THẬT trên /tmp/m2b (module re-stage code round-6): **PASS exit 0**
+  ("Generated code and dependency injection configuration successfully.", 9/9 steps).
+- Real-DB F26 race proof (P20): **ALL_CHECKS_PASSED 21/21** trên MariaDB 10.6 disposable —
+  cron thật qua DI (scopeConfig override `isSetFlag`): fresh unbound/bound untouched + mark
+  thành công; stale unbound/bound nhả confirmed_fail với evidence `abandoned_before_provider_io:
+  stale...` (provider call count 0); row provider_request_started trong grace vẫn untouched trong
+  cùng cron run (F23 giữ nguyên). Side-proof atomic claim: duplicate (order_id, active_claim) →
+  1062 thật. Schema/migration KHÔNG đổi ⇒ SCHEMA_CHANGED=NO, REAL_DB_RERUN_REQUIRED=NO
+  (bằng chứng round-5 P19 còn hiệu lực).
+- CodeGraph: re-index worktree sau thay đổi cuối; anchors: `RefundCronjob::processRefund`
+  (0b fresh/missing-ts/stale, 0c grace), `PendingRefundManager::LOCAL_READY_GRACE_SECONDS`,
+  `markProviderRequestStarted`, `bindCreditMemo`.
+- Scope: chỉ `app/code/Secomm/ZaloPay/**` (RefundInterface +1 const; PendingRefundManager
+  +1 const; RefundCronjob 0b + docblock; RefundCronjobTest) + `.ai/**`; icon/logo, ExtraFee,
+  MoMo, LLMS, Bitbucket: KHÔNG đụng; `auth.json` pre-existing KHÔNG commit.
+
+## Round 7 (2026-09-17, DEADLINE MODE — minimum release gate)
+
+- Unit: **364 tests / 1299 assertions OK** (suite đầy đủ Secomm_ZaloPay trên merged tree; plugin 27/121, RefundCommand 17/67, marker 6/18, cron + manager + cleanup matrix; PASSED 2 lần — trước và sau fix Rate/manager). Không còn test stale tham chiếu `CreditmemoPlugin` (chỉ còn legacy-state-4 compat test có chủ đích).
+- php -l: **121/121 file clean** (PHP 8.3.20).
+- PHPCS Magento2: **0 ERRORS** toàn module và trên toàn bộ 14 file PHP changed (round scope); warnings còn lại = style/docblock (391 module-wide, phần lớn pre-existing) ⇒ POST-DEADLINE HARDENING.
+- setup:di:compile: **PASS** (generated code + plugin list 9/9). Ghi minh bạch: compile chạy lại 2 lần NỮA chỉ do cấu hình env disposable (bật module env-only `Secomm_ZaloPayTestEnv` + override di argument fake transport) — KHÔNG do code repo.
+- setup:upgrade: **PASS** (schema đổi: FK NO ACTION) + `SHOW CREATE TABLE zalo_pay_refund` xác minh `ON DELETE NO ACTION`.
+- REAL smokes (P21): REAL_SYNC_SUCCESS / ASYNC_RECOVERY / EXPLICIT_FAIL / MARKER_ISOLATION / CAS_FOCUSED — **5/5 PASS** trên REAL Magento 2.4.8-p5 (seam duy nhất = transport; verify đúng các field accounting cốt lõi: CM state, invoice_id, invoice/order/payment refunded totals, online refunded, refund row state, provider call counts).
+- Payment-first: KHÔNG có thay đổi order-creation path; refund path giữ payment-first invariant (no Sales Order tạo từ refund).
+- Scope: chỉ `app/code/Secomm/ZaloPay/**` + `.ai/**`; KHÔNG đụng icon/logo, ExtraFee, MoMo, LLMS, Debug Mode config, New Order Status, Bitbucket; `auth.json` pre-existing KHÔNG commit.
+- CodeGraph: chờ re-index sau commit (workspace `slaunchpad-workspaces/zalopay-postfix-audit` @ corrective head).

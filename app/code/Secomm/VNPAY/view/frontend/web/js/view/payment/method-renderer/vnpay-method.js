@@ -214,6 +214,17 @@ define(
             },
 
             /**
+             * VNPAY logo URL from checkout config (VnpayConfigProvider).
+             * Null-safe: returns '' when the config is not present yet,
+             * so the method title still renders without the logo.
+             */
+            getLogo: function () {
+                var paymentConfig = window.checkoutConfig.payment;
+
+                return (paymentConfig && paymentConfig.vnpay) ? paymentConfig.vnpay.logo : '';
+            },
+
+            /**
              * @return {Boolean}
              */
             validate: function () {

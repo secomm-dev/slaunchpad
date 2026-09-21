@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Mageplaza\ExtraFee\Model\Total\Creditmemo\ExtraFee">
+        <plugin name="launchpad_mageplaza_extrafee_fix_creditmemo_amount"
+                type="Launchpad\MageplazaExtraFeeFix\Plugin\Model\Total\Creditmemo\ExtraFeePlugin"/>
+    </type>
+    <type name="Magento\Sales\Model\Order\OrderStateResolverInterface">
+        <plugin name="launchpad_mageplaza_extrafee_fix_order_state_resolver"
+                type="Launchpad\MageplazaExtraFeeFix\Plugin\Model\Order\StateResolverPlugin"
+                sortOrder="20"/>
+    </type>
+    <type name="Magento\Sales\Model\Order">
+        <plugin name="launchpad_mageplaza_extrafee_fix_order_can_creditmemo"
+                type="Launchpad\MageplazaExtraFeeFix\Plugin\Model\Order\CanCreditmemoPlugin"
+                sortOrder="20"/>
+    </type>
+</config>

@@ -15,7 +15,7 @@
              resource="Secomm_Ghtk::manage_map"
              parent="MenuSecomm_Base::menu"/>
         <add id="Secomm_Ghtk::mapping"
-             title="Address Mapping"
+             title="Address Overrides"
              module="Secomm_Ghtk"
              translate="title"
              sortOrder="10"

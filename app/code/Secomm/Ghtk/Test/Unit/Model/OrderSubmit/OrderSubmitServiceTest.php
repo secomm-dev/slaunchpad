@@ -16,7 +16,7 @@ use Magento\Sales\Model\Order\Shipment;
 use Magento\Sales\Model\ResourceModel\Order\Shipment\Collection as ShipmentCollection;
 use Magento\Shipping\Model\Shipment\Request;
 use PHPUnit\Framework\TestCase;
-use Secomm\Ghtk\Model\Address\DestinationAddressResolver;
+use Secomm\Ghtk\Model\Address\GhtkAddressAdapter;
 use Secomm\Ghtk\Model\Address\GhtkAddress;
 use Secomm\Ghtk\Model\Address\PickupAddress;
 use Secomm\Ghtk\Model\Address\PickupAddressResolver;
@@ -43,7 +43,7 @@ class OrderSubmitServiceTest extends TestCase
 {
     private GhtkOriginProvider $originProvider;
     private PickupAddressResolver $pickupResolver;
-    private DestinationAddressResolver $destResolver;
+    private GhtkAddressAdapter $destResolver;
     private GhtkApiClient $apiClient;
     private MaskingLogger $logger;
 
@@ -67,9 +67,9 @@ class OrderSubmitServiceTest extends TestCase
         $provider->method('resolve')->willReturn($origin);
         $this->originProvider = $provider;
 
-        $this->pickupResolver = new PickupAddressResolver($this->createMock(DestinationAddressResolver::class));
+        $this->pickupResolver = new PickupAddressResolver($this->createMock(GhtkAddressAdapter::class));
 
-        $destResolver = $this->createMock(DestinationAddressResolver::class);
+        $destResolver = $this->createMock(GhtkAddressAdapter::class);
         $destResolver->method('resolve')->willReturn(new GhtkAddress('Hà Nội', 'Hoàn Kiếm', 'Phường Hàng Trống', true));
         $this->destResolver = $destResolver;
 
@@ -163,12 +163,15 @@ class OrderSubmitServiceTest extends TestCase
             ->method('submitOrder')
             ->with(
                 $this->callback(function (array $payload) {
-                    // Origin came through the (custom) provider — metadata wins.
-                    return $payload['pick_address_id'] === 'src-paid-42'
-                        && $payload['pick_money'] === 0
-                        && $payload['is_freeship'] === 1
-                        && $payload['partner_order_id'] === 'ghtk-100000001-1'
-                        && $payload['weight'] === 1500;
+                    // Official CREATE shape: {order: {...}, products: [...]} — TASK-KCXKVR.
+                    return isset($payload['order'], $payload['products'])
+                        // Origin came through the (custom) provider — metadata wins.
+                        && $payload['order']['pick_address_id'] === 'src-paid-42'
+                        && $payload['order']['pick_money'] === 0
+                        && $payload['order']['is_freeship'] === 1
+                        && $payload['order']['id'] === 'ghtk-100000001-1'
+                        // 1500 g → 1.5 kg at the GHTK boundary.
+                        && $payload['order']['total_weight'] === 1.5;
                 }),
                 1
             )
@@ -193,25 +196,169 @@ class OrderSubmitServiceTest extends TestCase
         $this->service(0.0, $shipment)->submit($this->request($shipment));
     }
 
-    public function testTransportFailureAborts(): void
+    public function testTechnicalTransportFailureAbortsNoRetry(): void
     {
         $shipment = $this->shipment();
-        $this->apiClient->method('submitOrder')
-            ->willThrowException(new GhtkApiException('GHTK order request failed (status 500).', true));
+        // 5xx → TECHNICAL: single attempt, uncertain outcome, safe-retry message.
+        $this->apiClient->expects($this->once())->method('submitOrder')
+            ->willThrowException(new GhtkApiException(
+                'GHTK order request failed (status 503).',
+                false,
+                0,
+                null,
+                \Secomm\ShippingCore\Api\Http\CarrierHttpErrorCategory::SERVER_ERROR
+            ));
 
         $this->expectException(LocalizedException::class);
-        $this->expectExceptionMessage('GHTK order submission failed');
+        $this->expectExceptionMessage('temporarily unavailable');
         $this->service(0.0, $shipment)->submit($this->request($shipment));
     }
 
-    public function testMissingLabelIdentifierAborts(): void
+    public function testBusinessTransportCategoryAbortsAsConfigFailure(): void
     {
         $shipment = $this->shipment();
+        // 403 auth/config → BUSINESS non-retry (§15/§16).
+        $this->apiClient->expects($this->once())->method('submitOrder')
+            ->willThrowException(new GhtkApiException(
+                'GHTK order request rejected (status 403).',
+                false,
+                0,
+                null,
+                \Secomm\ShippingCore\Api\Http\CarrierHttpErrorCategory::CLIENT_ERROR
+            ));
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('rejected the shipment submission');
+        $this->service(0.0, $shipment)->submit($this->request($shipment));
+    }
+
+    public function testMalformedSuccessPayloadAbortsAsTechnical(): void
+    {
+        $shipment = $this->shipment();
+        // success=true but NO usable shipment identity — no shipment may be built (§18).
         $this->apiClient->method('submitOrder')->willReturn(['success' => true, 'order' => []]);
 
         $this->expectException(LocalizedException::class);
-        $this->expectExceptionMessage('no label/tracking');
+        $this->expectExceptionMessage('unusable response');
         $this->service(0.0, $shipment)->submit($this->request($shipment));
+    }
+
+    public function testDuplicateWithMatchingPartnerIdRecoversExistingOrder(): void
+    {
+        // §32 — ORDER_ID_EXIST + matching partner_id + ghtk_label → RECOVERED_EXISTING:
+        // reuse the provider identity, mark recovered, no second submission.
+        $shipment = $this->shipment();
+        $shipment->expects($this->once())
+            ->method('addComment')
+            ->with($this->callback(fn (string $comment): bool => str_contains($comment, 'existing order recovered')), false, false);
+
+        $this->apiClient->expects($this->once())->method('submitOrder')
+            ->willReturn([
+                'success' => false,
+                'error_code' => 'ORDER_ID_EXIST',
+                'partner_id' => 'ghtk-100000001-1',
+                'ghtk_label' => 'S1.A1.17373471',
+                'status' => 1,
+            ]);
+
+        $result = $this->service(0.0, $shipment)->submit($this->request($shipment));
+
+        $this->assertTrue($result->recovered);
+        $this->assertSame('ghtk-100000001-1', $result->partnerOrderId);
+        $this->assertSame('S1.A1.17373471', $result->labelId);
+        $this->assertSame('1', $result->providerStatus);
+    }
+
+    public function testDuplicateWithMismatchedPartnerIdIsAHardConflict(): void
+    {
+        $shipment = $this->shipment();
+        $this->apiClient->method('submitOrder')->willReturn([
+            'success' => false,
+            'error_code' => 'ORDER_ID_EXIST',
+            'partner_id' => 'ghtk-OTHER-ORDER',
+            'ghtk_label' => 'S1.A1.OTHER',
+        ]);
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('different reference');
+        $this->service(0.0, $shipment)->submit($this->request($shipment));
+    }
+
+    public function testDuplicateWithoutPartnerIdIsNeverSilentlyRecovered(): void
+    {
+        $shipment = $this->shipment();
+        $this->apiClient->method('submitOrder')->willReturn([
+            'success' => false,
+            'error_code' => 'ORDER_ID_EXIST',
+            'ghtk_label' => 'S1.A1.17373471',
+        ]);
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('did not identify it');
+        $this->service(0.0, $shipment)->submit($this->request($shipment));
+    }
+
+    public function testDuplicateWithoutLabelIdentityIsAHardFailure(): void
+    {
+        $shipment = $this->shipment();
+        $this->apiClient->method('submitOrder')->willReturn([
+            'success' => false,
+            'error_code' => 'ORDER_ID_EXIST',
+            'partner_id' => 'ghtk-100000001-1',
+        ]);
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('without a label identity');
+        $this->service(0.0, $shipment)->submit($this->request($shipment));
+    }
+
+    public function testManualRetryAfterUncertainFailureRecoversWithSameDeterministicId(): void
+    {
+        // §33 — attempt 1: uncertain technical failure; manual retry with the SAME
+        // deterministic order.id → ORDER_ID_EXIST → recovery. No duplicate shipment.
+        $shipment = $this->shipment();
+        $capturedIds = [];
+        $attempt = 0;
+
+        $this->apiClient->expects($this->exactly(2))->method('submitOrder')
+            ->with($this->callback(function (array $payload) use (&$capturedIds): bool {
+                $capturedIds[] = $payload['order']['id'];
+
+                return true;
+            }))
+            ->willReturnCallback(function () use (&$attempt) {
+                $attempt++;
+                if ($attempt === 1) {
+                    throw new GhtkApiException(
+                        'GHTK order request failed (status 503).',
+                        false, 0, null,
+                        \Secomm\ShippingCore\Api\Http\CarrierHttpErrorCategory::SERVER_ERROR
+                    );
+                }
+
+                return [ // the provider HAD created the order on attempt 1
+                    'success' => false,
+                    'error_code' => 'ORDER_ID_EXIST',
+                    'partner_id' => 'ghtk-100000001-1',
+                    'ghtk_label' => 'S1.A1.17373471',
+                    'status' => 1,
+                ];
+            });
+
+        $service = $this->service(0.0, $shipment);
+
+        try {
+            $service->submit($this->request($shipment));
+            $this->fail('Attempt 1 must abort the shipment creation (no false success).');
+        } catch (LocalizedException) {
+            // expected — admin/system retries the label creation
+        }
+
+        $result = $service->submit($this->request($shipment));
+
+        $this->assertSame(['ghtk-100000001-1', 'ghtk-100000001-1'], $capturedIds, 'deterministic id must be identical across attempts');
+        $this->assertTrue($result->recovered);
+        $this->assertSame('S1.A1.17373471', $result->labelId);
     }
 
     public function testPartialCodFailFastPropagatesBeforeApiCall(): void
@@ -251,7 +398,7 @@ class OrderSubmitServiceTest extends TestCase
 
         $this->apiClient->expects($this->once())
             ->method('submitOrder')
-            ->with($this->callback(fn (array $p) => $p['weight'] === 700), 1) // calculator mock below
+            ->with($this->callback(fn (array $p) => $p['order']['total_weight'] === 0.7), 1) // calculator mock below
             ->willReturn(['success' => true, 'order' => ['label' => 'S2', 'tracking_code' => 'S2.T']]);
 
         $codResolver = $this->createMock(CodAmountResolverInterface::class);

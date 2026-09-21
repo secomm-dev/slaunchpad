@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+  ~ TASK-5XQXZK (DEC-TASK5XQXZK-001) — layout update: append the Launchpad Settings tab block
+  ~ as a child of the (preference-subclassed) Mageplaza tabs block.
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="mptablerate_method_edit_tabs">
+            <block class="Launchpad\MageplazaTableRate\Block\Adminhtml\Method\Edit\Tab\Launchpad"
+                   name="mptablerate_method_edit_tabs.launchpad" as="launchpad"/>
+        </referenceBlock>
+    </body>
+</page>

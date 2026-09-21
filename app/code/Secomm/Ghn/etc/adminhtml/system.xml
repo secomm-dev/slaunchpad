@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <!-- GHN is a shipping method: its configuration lives in the STANDARD Delivery Methods
+         section (Sales → Delivery Methods, section id "carriers") as group "secomm_ghn" —
+         TL directive 2026-09-10 (was: custom tab secomm_ghn/general/*). Group id = carrier
+         family code, distinct from legacy carriers/giaohangnhanh_* (parallel coexistence,
+         DEC-FEATFQWEQ3-002/R8). ACL is the section owner's (Magento_Sales).
+         TASK-FMBBSD slice 2: `enabled` replaced by the Magento-standard carrier `active` gate;
+         standard display fields (title/name/sort_order/showmethod/sallowspecific/specificcountry/
+         specificerrmsg) added for collectRates() registration. -->
+    <system>
+        <section id="carriers" translate="label" type="text" sortOrder="1000" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="secomm_ghn" translate="label" type="text" sortOrder="500" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>GHN (Giao Hàng Nhanh)</label>
+                <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                </field>
+                <field id="name" translate="label" type="text" sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Method Name</label>
+                    <comment>Storefront method title shown to customers at checkout.</comment>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <validate>validate-greater-than-zero</validate>
+                </field>
+                <field id="showmethod" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Method (if not applicable)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>When enabled, the specific error message is displayed instead of hiding the method.</comment>
+                </field>
+                <field id="sallowspecific" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Ship to Applicable Countries</label>
+                    <source_model>Magento\Shipping\Model\Config\Source\Allspecificcountries</source_model>
+                </field>
+                <field id="specificcountry" translate="label" type="multiselect" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Ship to Specific Countries</label>
+                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                </field>
+                <field id="specificerrmsg" translate="label" type="textarea" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Displayed Error Message</label>
+                </field>
+                <field id="environment" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Environment</label>
+                    <source_model>Secomm\Ghn\Model\Config\Source\Environment</source_model>
+                    <comment>Sandbox uses dev-online-gateway.ghn.vn. API profile switching stays atomic per store.</comment>
+                </field>
+                <field id="api_token" translate="label" type="obscure" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Token</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="shop_id" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Shop ID</label>
+                </field>
+                <field id="origin_district_id" translate="label" type="text" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Origin District ID (GHN legacy)</label>
+                    <validate>integer</validate>
+                    <comment>Optional GHN legacy district ID used as Calculate-Fee from_district_id. Empty = GHN prices against the shop's registered address.</comment>
+                </field>
+                <field id="payment_type" translate="label" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Payment Type</label>
+                    <source_model>Secomm\Ghn\Model\Config\Source\PaymentType</source_model>
+                    <comment>Who pays the shipping fee on the GHN order. Keep "Shop pays" — shipping was already charged at checkout; "Buyer pays" double-charges. Unrelated to COD.</comment>
+                </field>
+                <field id="required_note" translate="label" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Required Note</label>
+                    <source_model>Secomm\Ghn\Model\Config\Source\RequiredNote</source_model>
+                </field>
+                <field id="debug" translate="label" type="select" sortOrder="110" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Debug Logging</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>When enabled, sanitized request payloads are logged (token is always scrubbed).</comment>
+                </field>
+                <field id="connection_timeout" translate="label" type="text" sortOrder="120" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Connection Timeout (seconds)</label>
+                    <validate>integer validate-greater-than-zero</validate>
+                </field>
+                <field id="request_timeout" translate="label" type="text" sortOrder="130" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Request Timeout (seconds)</label>
+                    <validate>integer validate-greater-than-zero</validate>
+                </field>
+                <field id="webhook_secret" translate="label" type="obscure" sortOrder="115" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Webhook Secret</label>
+                    <comment>GHN does not sign callbacks. The GHN portal supports merchant-configured custom headers: create header X-Secomm-Ghn-Secret with this exact value. Magento validates it with a constant-time comparison — this is shared-secret authentication, NOT provider signature verification. Empty = all callbacks rejected 401.</comment>
+                </field>
+                <field id="tracking_refresh_enabled" translate="label" type="select" sortOrder="116" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Tracking Refresh (cron)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment>Periodically re-syncs non-terminal GHN shipment statuses via the Order Info API (webhook remains the primary source).</comment>
+                </field>
+                <field id="tracking_refresh_threshold_hours" translate="label" type="text" sortOrder="117" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Tracking Refresh Staleness (hours)</label>
+                    <validate>integer validate-greater-than-zero</validate>
+                    <comment>Re-sync rows whose last sync is older than this many hours.</comment>
+                </field>
+                <field id="address_dataset" type="note" sortOrder="140" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Address Dataset (bundled)</label>
+                    <frontend_model>Secomm\Ghn\Block\Adminhtml\System\Config\DatasetInfo</frontend_model>
+                </field>
+                <field id="rate_source_mode" translate="label" type="select" sortOrder="145" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Rate Source Mode</label>
+                    <options>
+                        <option label="Carrier Only (realtime GHN rate, no fallback)">CARRIER_ONLY</option>
+                        <option label="Carrier With Fallback (realtime GHN rate, shared fallback for eligible outcomes)">CARRIER_WITH_FALLBACK</option>
+                        <option label="Fallback Only (ShippingCore short-circuits realtime GHN rate)">FALLBACK_ONLY</option>
+                    </options>
+                    <comment>ShippingCore v10 contract — consumed by the shared rate orchestration. FALLBACK_ONLY never calls the GHN RATE API.</comment>
+                </field>
+                <field id="address_resolution_policy" translate="label" type="select" sortOrder="146" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Address Resolution Policy (RATE)</label>
+                    <options>
+                        <option label="Strict (hide GHN when the canonical destination is ambiguous)">STRICT</option>
+                        <option label="Fallback (hide GHN; leave resolution to the fallback layer)">FALLBACK</option>
+                        <option label="Pick Primary (merchant opt-in: use the curated primary PRE-2025 candidate)">PICK_PRIMARY</option>
+                    </options>
+                    <comment>Applies to GHN RATE only (legacy PRE-2025 scheme consumer). Selection is performed by the shared VietNamAddress selector — never by GHN. Not applicable when Rate Source Mode = Fallback Only.</comment>
+                </field>
+                <field id="rate_adjustment_enabled" translate="label" type="select" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Rate Adjustment</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>TASK-WAWNDS — applies to a SUCCESSFUL provider/fallback rate only. Never affects parcel eligibility.</comment>
+                </field>
+                <field id="rate_adjustment_type" translate="label" type="select" sortOrder="151" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Adjustment Type</label>
+                    <options>
+                        <option label="Fixed (VND)">fixed</option>
+                        <option label="Percentage (%)">percent</option>
+                    </options>
+                </field>
+                <field id="rate_adjustment_value" translate="label" type="text" sortOrder="152" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Adjustment Value</label>
+                    <comment>VND when fixed; percent (e.g. 5 = +5%) when percent.</comment>
+                </field>
+                <field id="rate_adjustment_rounding" translate="label" type="select" sortOrder="153" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Rounding</label>
+                    <options>
+                        <option label="None">none</option>
+                        <option label="Round to 1,000 VND">1000</option>
+                        <option label="Round to 5,000 VND">5000</option>
+                    </options>
+                </field>
+                <field id="rate_adjustment_apply_to" translate="label" type="select" sortOrder="154" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Apply To</label>
+                    <options>
+                        <option label="Carrier Rate Only">carrier_rate_only</option>
+                        <option label="Carrier + Fallback">carrier_and_fallback</option>
+                    </options>
+                    <comment>Launchpad note: Secomm_Ghn adjusts the GHN carrier rate only; adjusting the fallback rate happens in the Launchpad bridge composition (ShippingCore owns orchestration).</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

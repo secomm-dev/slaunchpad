@@ -87,6 +87,8 @@ Admin media UX extension approved on 2026-08-26: existing image fields use the r
 
 Media chooser bug-fix approach approved by user report on 2026-08-27: build the chooser URL with Magento's native `/target_element_id/{id}/store/{store}/type/image/` path contract and pass `targetElementId` explicitly. Keep the persisted image input hidden so Admin sees only preview/status and Gallery/Remove actions. Verify Gallery opens without the `browser.js:112` exception and selecting an image updates preview/payload.
 
+Media target compatibility follow-up on 2026-09-17: mark only module-owned `media-image` inputs and apply an Admin RequireJS mixin that resolves those targets directly as jQuery objects. This prevents Magento Media Gallery from passing a stale WYSIWYG `window`/DOM target to `insertImageAction`, while preserving the native resolution path for every non-Secomm target.
+
 Slice 6 implemented on 2026-08-27: deliver `card_b` (`Media Card`) from Hyvä UI `card/B-media`. The default left-media output preserves the upstream structure/classes and adds required Gallery-backed media, trusted CMS body and the established CTA contract. The matrix-required right-media position is opt-in so existing/default visual parity remains unchanged.
 
 Slice 7 implemented on 2026-08-27: deliver `categories_a` (`Image Category Grid`) from Hyvä UI `categories/A-grid-images`. Ordered bounded items expose label, Gallery-backed image, alt text and validated URL. The default output retains the upstream mobile snap slider and desktop grid; disabling the mobile slider is an explicit opt-in extension.

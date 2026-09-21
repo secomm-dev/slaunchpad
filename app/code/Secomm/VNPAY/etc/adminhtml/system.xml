@@ -39,6 +39,10 @@
                                        sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Payment URL</label>
                 </field>
+                <field id="api_url" translate="label" type="text"
+                       sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>API URL (QueryDR / Refund)</label>
+                </field>
                 <field id="tmn_code" translate="label" type="text"
                        sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Terminal Code</label>
@@ -46,6 +50,26 @@
                 <field id="hash_code" translate="label" type="text"
                        sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Hash Code</label>
+                </field>
+                <field id="version" translate="label" type="text"
+                       sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>API Version</label>
+                    <comment>vnp_Version sent to VNPAY (e.g. 2.1.0). Change only when VNPAY updates the protocol.</comment>
+                </field>
+                <field id="min_order_total" translate="label" type="text"
+                       sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Minimum Order Total</label>
+                    <frontend_class>validate-number</frontend_class>
+                    <comment><![CDATA[
+                        - Currency VND.<br />
+                        - Minimum price/1 order:5.000vnđ<br />]]>
+                    </comment>
+                </field>
+                <field id="max_order_total" translate="label" type="text"
+                       sortOrder="61" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Maximum Order Total</label>
+                    <frontend_class>validate-number</frontend_class>
+                    <comment>Leave empty for no limit — the actual limit depends on the customer's card/bank limit.</comment>
                 </field>
             </group>
         </section>

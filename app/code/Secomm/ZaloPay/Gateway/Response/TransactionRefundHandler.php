@@ -37,10 +37,19 @@ class TransactionRefundHandler implements HandlerInterface
         $paymentDO = SubjectReader::readPayment($handlingSubject);
         /** @var Payment $orderPayment */
         $orderPayment = $paymentDO->getPayment();
-        $orderPayment->setTransactionId($response[AbstractResponseValidator::REFUND_ID]);
+
+        // TASK-CG6BM7: refund_id is the provider cross-check id — a missing
+        // one must not fatal on an undefined key. Transaction bookkeeping is
+        // skipped safely; the refund row still carries m_refund_id evidence.
+        $refundId = $response[AbstractResponseValidator::REFUND_ID] ?? null;
+        if ($refundId === null || $refundId === '') {
+            return;
+        }
+        $orderPayment->setTransactionId((string)$refundId);
 
         $orderPayment->setIsTransactionClosed(true);
-        $orderPayment->setShouldCloseParentTransaction(!$orderPayment->getCreditmemo()->getInvoice()->canRefund());
+        $invoice = $orderPayment->getCreditmemo()?->getInvoice();
+        $orderPayment->setShouldCloseParentTransaction($invoice !== null && !$invoice->canRefund());
 
         foreach ($this->additionalInformationMapping as $informationKey => $responseKey) {
             if (isset($response[$responseKey])) {

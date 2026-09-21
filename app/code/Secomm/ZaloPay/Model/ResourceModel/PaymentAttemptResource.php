@@ -50,4 +50,64 @@ class PaymentAttemptResource extends AbstractDb
 
         return $row ?: null;
     }
+
+    /**
+     * Atomically claim the order confirmation email dispatch for one attempt
+     * row. The conditional UPDATE succeeds only when no claim is held
+     * (email_dispatch IS NULL) or the held claim is stale enough to reclaim
+     * (older than the grace period - a sender that crashed after claiming
+     * but before sending); the caller's FOR UPDATE row lock (the finalizer
+     * holds it inside its transaction) serializes concurrent claimers, so a
+     * claim can never be double-granted while the lock is held.
+     *
+     * @param int $entityId
+     * @param int $token Claim token (current unix ts).
+     * @param int $graceSeconds Age at which an existing claim is reclaimable.
+     * @return bool True if THIS call now holds the claim.
+     */
+    public function claimEmailDispatch(int $entityId, int $token, int $graceSeconds): bool
+    {
+        $cutoff = $token - $graceSeconds;
+        $where = sprintf(
+            '%s = %d AND (%s IS NULL OR %s <= %d)',
+            PaymentAttemptInterface::ENTITY_ID,
+            $entityId,
+            PaymentAttemptInterface::EMAIL_DISPATCH,
+            PaymentAttemptInterface::EMAIL_DISPATCH,
+            $cutoff
+        );
+        $affected = $this->getConnection()->update(
+            $this->getMainTable(),
+            [PaymentAttemptInterface::EMAIL_DISPATCH => $token],
+            $where
+        );
+
+        return $affected > 0;
+    }
+
+    /**
+     * Release THIS caller's claim (token-guarded: a claim taken over by a
+     * newer sender after the grace period is never released by a stale
+     * owner). Runs after the send attempt regardless of its outcome - the
+     * durable "sent" record is the order's email_sent, not the claim.
+     *
+     * @param int $entityId
+     * @param int $token
+     * @return void
+     */
+    public function releaseEmailDispatch(int $entityId, int $token): void
+    {
+        $where = sprintf(
+            '%s = %d AND %s = %d',
+            PaymentAttemptInterface::ENTITY_ID,
+            $entityId,
+            PaymentAttemptInterface::EMAIL_DISPATCH,
+            $token
+        );
+        $this->getConnection()->update(
+            $this->getMainTable(),
+            [PaymentAttemptInterface::EMAIL_DISPATCH => null],
+            $where
+        );
+    }
 }

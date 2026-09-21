@@ -2,36 +2,41 @@
 <!--
   ~ @author Secomm Team
   ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
-  ~ See COPYING.txt for license details.
   -->
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <!--
-        GHTK address mapping — canonical key (country_id, region_id, ward_id).
-        VN 2-level model: ward (phường/xã) = the city level, so ward_id references
-        Secomm_AddressDropdown directory_region_city.city_id (stable PK). The
-        sub-city (3rd) level is NOT used for 2-level VN.
-        ward_name columns are display/audit/import support only (NOT a join key).
-        Carrier-owned (DEC-018/019); no FK to address tables so the mapping stays stable
-        across address-data re-seeds.
+        GHTK address OVERRIDE table (DEC-TASK7AJ3K8-002 — r1 TEXT_NATIVE correction).
+        Responsibility: exception/representation overrides ONLY — canonical Vietnamese
+        names (name_vi, Secomm_VietNamAddress reference layer) are the DEFAULT GHTK
+        destination/pickup representation; a row here replaces them ONLY for units the
+        GHTK API demonstrably needs different text for. Empty table = fully functional.
+        NOT a source of truth for VN administrative identity.
+        Canonical key (scheme_code, province_code, ward_code) — stable across VN scheme
+        swaps (DEC-FEATYA2C0W-004 D6 satisfied); no runtime directory references, hence
+        no scheme-swap guard registration.
+        Requires `setup:upgrade` (replaces the r0 runtime-keyed alias schema; existing
+        rows must be re-imported via the new CSV format).
     -->
-    <table name="secomm_ghtk_address_map" resource="default" engine="innodb" comment="GHTK Address Mapping">
+    <table name="secomm_ghtk_address_map" resource="default" engine="innodb" comment="GHTK Address Overrides (exception representation only)">
         <column xsi:type="int" name="map_id" padding="10" unsigned="true" nullable="false" identity="true"
-                comment="Map Id"/>
-        <column xsi:type="varchar" name="country_id" nullable="false" length="2" comment="Country Id (ISO)"/>
-        <column xsi:type="int" name="region_id" padding="10" unsigned="true" nullable="false" identity="false"
-                comment="Region Id (directory_country_region)"/>
-        <column xsi:type="int" name="ward_id" padding="10" unsigned="true" nullable="false" identity="false"
-                comment="Ward Id (directory_region_city.city_id — VN 2-level ward)"/>
-        <column xsi:type="varchar" name="source_province_name" nullable="true" length="255"
-                comment="Source province display name (audit/import only)"/>
-        <column xsi:type="varchar" name="source_ward_name" nullable="true" length="255"
-                comment="Source ward display name (audit/import only)"/>
-        <column xsi:type="varchar" name="ghtk_province" nullable="false" length="255" comment="GHTK province name"/>
-        <column xsi:type="varchar" name="ghtk_district" nullable="true" length="255" comment="GHTK district name (optional)"/>
-        <column xsi:type="varchar" name="ghtk_ward" nullable="false" length="255" comment="GHTK ward name"/>
+                comment="Override Id"/>
+        <column xsi:type="varchar" name="scheme_code" nullable="false" length="32"
+                comment="Canonical VN admin scheme code (e.g. VN_ADMIN_2025)"/>
+        <column xsi:type="varchar" name="province_code" nullable="false" length="32"
+                comment="Canonical region unit code (e.g. VN-01)"/>
+        <column xsi:type="varchar" name="ward_code" nullable="false" length="32"
+                comment="Canonical ward unit code (e.g. VNA25-3D6A6CF4D0)"/>
+        <column xsi:type="varchar" name="ghtk_province" nullable="true" length="255"
+                comment="GHTK province override (null = use canonical name_vi)"/>
+        <column xsi:type="varchar" name="ghtk_district" nullable="true" length="255"
+                comment="GHTK district override (null = omit unless canonical data provides one)"/>
+        <column xsi:type="varchar" name="ghtk_ward" nullable="true" length="255"
+                comment="GHTK ward override (null = use canonical name_vi)"/>
         <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" identity="false"
                 default="1" comment="Is Active"/>
+        <column xsi:type="varchar" name="note" nullable="true" length="255"
+                comment="Why this override exists (evidence reference)"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"
                 comment="Created At"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP"
@@ -40,15 +45,12 @@
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="map_id"/>
         </constraint>
-        <constraint xsi:type="unique" referenceId="SECOMM_GHTK_ADDRESS_MAP_COUNTRY_REGION_WARD">
-            <column name="country_id"/>
-            <column name="region_id"/>
-            <column name="ward_id"/>
+        <constraint xsi:type="unique" referenceId="SECOMM_GHTK_ADDR_OVERRIDE_SCHEME_PROV_WARD">
+            <column name="scheme_code"/>
+            <column name="province_code"/>
+            <column name="ward_code"/>
         </constraint>
-        <index referenceId="SECOMM_GHTK_ADDRESS_MAP_REGION_ID" indexType="btree">
-            <column name="region_id"/>
-        </index>
-        <index referenceId="SECOMM_GHTK_ADDRESS_MAP_IS_ACTIVE" indexType="btree">
+        <index referenceId="SECOMM_GHTK_ADDR_OVERRIDE_IS_ACTIVE" indexType="btree">
             <column name="is_active"/>
         </index>
     </table>

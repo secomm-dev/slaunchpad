@@ -28,6 +28,34 @@ class VnDatasetValidator
     /** Zero-width / invisible characters that must never appear in a display name. */
     private const INVISIBLE_CHARS = "\u{200B}\u{200C}\u{200D}\u{FEFF}";
 
+    private readonly array $expectedOverrides;
+
+    /**
+     * @param array<string, array{counts?: array{regions: int, depth1: int, depth2: int}, collision?: array{groups: int, rows: int}|null}> $expectedOverrides
+     *      scheme => expected-counts/collision override for alternate dataset VERSIONS of a known
+     *      scheme (e.g. the VN_ADMIN_PRE_2025_SNAPSHOT_2024 files). Same DI pattern as
+     *      VnDatasetReader::$files: absent entries fall back to the VnSchemes catalog contract.
+     *      Numeric leaves MAY arrive as numeric strings — Magento DI renders xsi:type="number"
+     *      array items verbatim (@see \Magento\Framework\Data\Argument\Interpreter\Number::evaluate)
+     *      — and are normalized to int below so the strict comparisons in checkCounts /
+     *      checkCollisions compare int against int.
+     */
+    public function __construct(
+        array $expectedOverrides = []
+    ) {
+        $this->expectedOverrides = array_map(
+            static function (array $expected): array {
+                foreach ($expected as $section => $value) {
+                    // collision === null (no suffix contract) must survive as null.
+                    $expected[$section] = is_array($value) ? array_map('intval', $value) : $value;
+                }
+
+                return $expected;
+            },
+            $expectedOverrides
+        );
+    }
+
     /**
      * @param array<int, array<string, string|int>> $regions region rows from VnDatasetReader::read()
      * @param array<int, array<string, string|int>> $units unit rows from VnDatasetReader::read()
@@ -159,7 +187,7 @@ class VnDatasetValidator
      */
     private function checkCounts(string $scheme, array $regions, array $units, array &$errors): void
     {
-        $expected = VnSchemes::catalog()[$scheme]['counts'];
+        $expected = $this->expectedOverrides[$scheme]['counts'] ?? VnSchemes::catalog()[$scheme]['counts'];
 
         $depth1 = 0;
         $depth2 = 0;
@@ -205,7 +233,7 @@ class VnDatasetValidator
      */
     private function checkCollisions(string $scheme, array $units, array &$errors): void
     {
-        $expected = VnSchemes::catalog()[$scheme]['collision'];
+        $expected = $this->expectedOverrides[$scheme]['collision'] ?? VnSchemes::catalog()[$scheme]['collision'];
 
         $groups = [];
         $suffixRows = 0;

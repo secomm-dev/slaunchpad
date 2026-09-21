@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Secomm_Ghn::ghn" title="Secomm GHN" translate="title" sortOrder="61">
+                    <resource id="Secomm_Ghn::shipment_actions" title="GHN Shipment Actions" translate="title" sortOrder="10">
+                        <resource id="Secomm_Ghn::cancel_shipment" title="Cancel GHN Shipment" translate="title" sortOrder="10"/>
+                        <resource id="Secomm_Ghn::return_shipment" title="Request GHN Return" translate="title" sortOrder="20"/>
+                    </resource>
+                    <resource id="Secomm_Ghn::config" title="GHN Configuration" translate="title" sortOrder="20"/>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>
