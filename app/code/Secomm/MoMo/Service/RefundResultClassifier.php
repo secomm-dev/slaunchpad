@@ -14,6 +14,12 @@
  * payment instrument selected") is NOT a refusal: money may still move, so
  * it classifies as UNKNOWN, never FAILED.
  *
+ * The provider result-code contract (developers.momo.vn, correction round
+ * MOMO-02, 2026-09-21) marks the codes 10/11/12/13, 20/21/22, 40/41/42/43/
+ * 45/47, 7000, 7002 and 9000 with Final Status = No: money may still move,
+ * so they are all UNKNOWN (open slot kept) — only a provider-confirmed
+ * FINAL failure code may become FAILED and release the open slot.
+ *
  * @author    Secomm Teams
  * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
  * @package   Secomm_MoMo
@@ -27,11 +33,19 @@ use Secomm\MoMo\Api\Data\RefundRequestInterface;
 class RefundResultClassifier
 {
     /**
-     * Provider resultCodes meaning "still processing" — money may move, so
-     * they must never be classified FAILED (a wrong FAILED would release the
-     * open slot and invite a double refund).
+     * Provider resultCodes with Final Status = No (developers.momo.vn
+     * result-code contract, per the MOMO-02 correction review). Money may
+     * still move for these codes, so they must never be classified FAILED
+     * (a wrong FAILED would release the open slot and invite a double
+     * refund) — they are UNKNOWN (provider_processing), keeping the row
+     * open until the provider settles a final answer.
      */
-    public const PROCESSING_RESULT_CODES = ['7002'];
+    public const NON_FINAL_RESULT_CODES = [
+        '10', '11', '12', '13',
+        '20', '21', '22',
+        '40', '41', '42', '43', '45', '47',
+        '7000', '7002', '9000',
+    ];
 
     /**
      * Classify a refund response against the request echoes.
@@ -51,15 +65,11 @@ class RefundResultClassifier
         }
 
         $responseCode = (string)$responseCode;
-        $echo = [
-            'requestId' => (string)($response['requestId'] ?? ''),
-            'orderId' => (string)($response['orderId'] ?? ''),
-            'amount' => (int)($response['amount'] ?? -1),
-        ];
-
-        if ($echo['requestId'] !== (string)$expected['requestId']
-            || $echo['orderId'] !== (string)$expected['refund_order_id']
-            || $echo['amount'] !== (int)$expected['amount']
+        $responseAmount = $this->strictInt($response['amount'] ?? null);
+        if ((string)($response['requestId'] ?? '') !== (string)$expected['requestId']
+            || (string)($response['orderId'] ?? '') !== (string)$expected['refund_order_id']
+            || $responseAmount === null
+            || $responseAmount !== (int)$expected['amount']
         ) {
             return new RefundClassification(
                 RefundRequestInterface::STATUS_UNKNOWN,
@@ -84,16 +94,29 @@ class RefundResultClassifier
         }
 
         if ($responseCode === '0') {
+            // SUCCESS needs the provider's own refund transId as evidence;
+            // a resultCode 0 without a valid positive transId is malformed,
+            // not trusted (AC5 — same conservative rule as the query path).
+            $transId = $response['transId'] ?? null;
+            if (!$this->isValidTransId($transId)) {
+                return new RefundClassification(
+                    RefundRequestInterface::STATUS_UNKNOWN,
+                    RefundRequestInterface::REASON_MALFORMED_RESPONSE,
+                    $responseCode,
+                    $this->readMessage($response)
+                );
+            }
+
             return new RefundClassification(
                 RefundRequestInterface::STATUS_SUCCESS,
                 RefundRequestInterface::REASON_PROVIDER_CONFIRMED,
                 $responseCode,
                 $this->readMessage($response),
-                (string)($response['transId'] ?? '')
+                (string)$transId
             );
         }
 
-        if (in_array($responseCode, self::PROCESSING_RESULT_CODES, true)) {
+        if (in_array($responseCode, self::NON_FINAL_RESULT_CODES, true)) {
             return new RefundClassification(
                 RefundRequestInterface::STATUS_UNKNOWN,
                 RefundRequestInterface::REASON_PROVIDER_PROCESSING,
@@ -127,11 +150,50 @@ class RefundResultClassifier
     }
 
     /**
+     * Strict integer grammar for provider-sourced numerics: only a JSON
+     * integer or an all-digit string parses. A malformed value like
+     * "150000abc" must never cast into a plausible number (it would pass
+     * the amount echo check and trust a wrong refund).
+     *
+     * @param mixed $value
+     * @return int|null null when the value is not a well-formed integer.
+     */
+    private function strictInt(mixed $value): ?int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && $value !== '' && ctype_digit($value)) {
+            return (int)$value;
+        }
+
+        return null;
+    }
+
+    /**
+     * A provider transId is trusted as SUCCESS evidence only as a valid
+     * positive integer (int or digit string, > 0) — the same conservative
+     * rule on the direct refund and the query resolve paths.
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    private function isValidTransId(mixed $value): bool
+    {
+        $transId = $this->strictInt($value);
+
+        return $transId !== null && $transId > 0;
+    }
+
+    /**
      * Classify a refund/query response (operator resolve path).
      *
-     * Defensive parsing: the evidence entry is matched by the refund's own
-     * orderId; ambiguity or absence keeps the row UNKNOWN — a resolve call
-     * must never GUESS a terminal verdict.
+     * Defensive parsing: the evidence entry must match the refund's own
+     * orderId EXACTLY — no single-entry fallback, because a query on a
+     * shared purchase order can legitimately return a sibling refund with
+     * a coincidentally equal amount. Ambiguity or mismatch keeps the row
+     * UNKNOWN — a resolve call must never GUESS a terminal verdict.
      *
      * @param array $expected Identity of the stored refund row:
      *        refund_order_id, amount.
@@ -166,9 +228,6 @@ class RefundResultClassifier
             $entries,
             fn (array $entry): bool => (string)($entry['orderId'] ?? '') === (string)$expected['refund_order_id']
         ));
-        if ($matches === [] && count($entries) === 1) {
-            $matches = $entries;
-        }
         if (count($matches) !== 1) {
             return new RefundClassification(
                 RefundRequestInterface::STATUS_UNKNOWN,
@@ -179,9 +238,9 @@ class RefundResultClassifier
         }
 
         $entry = $matches[0];
-        $entryAmount = (int)($entry['amount'] ?? -1);
+        $entryAmount = $this->strictInt($entry['amount'] ?? null);
         $entryCode = $entry['resultCode'] ?? null;
-        if ($entryAmount !== (int)$expected['amount']) {
+        if ($entryAmount === null || $entryAmount !== (int)$expected['amount']) {
             return new RefundClassification(
                 RefundRequestInterface::STATUS_UNKNOWN,
                 RefundRequestInterface::REASON_ECHO_MISMATCH,
@@ -201,8 +260,8 @@ class RefundResultClassifier
 
         $entryCode = (string)$entryCode;
         if ($entryCode === '0') {
-            $transId = (string)($entry['transId'] ?? '');
-            if ($transId === '') {
+            $transId = $entry['transId'] ?? null;
+            if (!$this->isValidTransId($transId)) {
                 return new RefundClassification(
                     RefundRequestInterface::STATUS_UNKNOWN,
                     RefundRequestInterface::REASON_MALFORMED_RESPONSE,
@@ -216,11 +275,11 @@ class RefundResultClassifier
                 RefundRequestInterface::REASON_PROVIDER_CONFIRMED,
                 $queryCode,
                 $this->readMessage($response),
-                $transId
+                (string)$transId
             );
         }
 
-        if (in_array($entryCode, self::PROCESSING_RESULT_CODES, true)) {
+        if (in_array($entryCode, self::NON_FINAL_RESULT_CODES, true)) {
             return new RefundClassification(
                 RefundRequestInterface::STATUS_UNKNOWN,
                 RefundRequestInterface::REASON_PROVIDER_PROCESSING,

@@ -3,9 +3,11 @@
  * Unit tests for the MoMo refund result classifier (MOMO-02).
  *
  * Covers the response-integrity contract: SUCCESS only on intact echoes +
- * resultCode 0; 7002 processing → UNKNOWN; provider refusal → FAILED;
- * echo mismatch / malformed → UNKNOWN (never FAILED); query-based resolve
- * parsing stays conservative on ambiguity.
+ * resultCode 0 with a valid positive transId; strict integer grammar for
+ * provider amounts; non-final codes (7002, 7000, 21, …) → UNKNOWN;
+ * provider-confirmed final refusal → FAILED; echo mismatch / malformed →
+ * UNKNOWN (never FAILED); query-based resolve parsing requires an EXACT
+ * orderId match (no single-entry fallback).
  *
  * @author    Secomm Teams
  * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
@@ -93,16 +95,41 @@ class RefundResultClassifierTest extends TestCase
     }
 
     /**
+     * A provider-confirmed FINAL failure code resolves FAILED (releases the
+     * open slot). 99 is outside the non-final set.
+     *
      * @return void
      */
-    public function testOtherNonZeroResultCodeIsFailed(): void
+    public function testFinalFailureCodeIsFailed(): void
     {
         $classification = $this->classifier()->classify(
             $this->expected(),
-            $this->response(['resultCode' => 21, 'message' => ' Refused'])
+            $this->response(['resultCode' => 99, 'message' => ' Refused'])
         );
         $this->assertSame(RefundRequestInterface::STATUS_FAILED, $classification->status);
         $this->assertSame(RefundRequestInterface::REASON_PROVIDER_REFUSED, $classification->reason);
+    }
+
+    /**
+     * Non-final codes (Final Status = No — money may still move) must never
+     * resolve FAILED; they stay UNKNOWN with reason provider_processing.
+     * Regression: previously only 7002 was special-cased; the correction
+     * round adds the full provider contract list (10/11/12/13, 20/21/22,
+     * 40/41/42/43/45/47, 7000, 9000).
+     *
+     * @return void
+     */
+    public function testNonFinalCodesAreUnknownProcessing(): void
+    {
+        $nonFinalCodes = ['10', '11', '12', '13', '20', '21', '22', '40', '41', '42', '43', '45', '47', '7000', '9000'];
+        foreach ($nonFinalCodes as $code) {
+            $classification = $this->classifier()->classify(
+                $this->expected(),
+                $this->response(['resultCode' => (int)$code, 'transId' => 0])
+            );
+            $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+            $this->assertSame(RefundRequestInterface::REASON_PROVIDER_PROCESSING, $classification->reason);
+        }
     }
 
     /**
@@ -196,6 +223,85 @@ class RefundResultClassifierTest extends TestCase
         $this->assertSame(RefundRequestInterface::REASON_MALFORMED_RESPONSE, $classification->reason);
     }
 
+    /**
+     * A malformed amount ("150000abc") must never (int)-cast into a
+     * plausible number and pass the echo check — strict grammar → UNKNOWN.
+     *
+     * @return void
+     */
+    public function testMalformedAmountNeverPassesEchoCheck(): void
+    {
+        $classification = $this->classifier()->classify(
+            $this->expected(),
+            $this->response(['amount' => '150000abc'])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
+    }
+
+    /**
+     * A JSON number delivered as an all-digit STRING is well-formed and
+     * accepted by the strict grammar.
+     *
+     * @return void
+     */
+    public function testDigitStringAmountIsAccepted(): void
+    {
+        $classification = $this->classifier()->classify(
+            $this->expected(),
+            $this->response(['amount' => '150000'])
+        );
+        $this->assertTrue($classification->isSuccess());
+    }
+
+    /**
+     * A float amount (e.g. JSON 150000.0) is not a well-formed integer in
+     * the strict grammar — conservative UNKNOWN, never trusted.
+     *
+     * @return void
+     */
+    public function testFloatAmountIsNeverTrusted(): void
+    {
+        $classification = $this->classifier()->classify(
+            $this->expected(),
+            $this->response(['amount' => 150000.0])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
+    }
+
+    /**
+     * resultCode 0 without a transId lacks the provider evidence needed to
+     * trust SUCCESS — UNKNOWN (malformed), never SUCCESS.
+     *
+     * @return void
+     */
+    public function testSuccessWithoutTransIdIsUnknown(): void
+    {
+        $classification = $this->classifier()->classify(
+            $this->expected(),
+            $this->response(['transId' => null])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_MALFORMED_RESPONSE, $classification->reason);
+    }
+
+    /**
+     * resultCode 0 with transId 0 is not a valid positive transaction id —
+     * UNKNOWN (malformed), never SUCCESS.
+     *
+     * @return void
+     */
+    public function testSuccessWithZeroTransIdIsUnknown(): void
+    {
+        $classification = $this->classifier()->classify(
+            $this->expected(),
+            $this->response(['transId' => 0])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_MALFORMED_RESPONSE, $classification->reason);
+    }
+
     // ---- classifyQuery: operator resolve path ----
 
     /**
@@ -252,18 +358,21 @@ class RefundResultClassifierTest extends TestCase
     }
 
     /**
-     * One entry whose orderId differs is still accepted as THE refund (the
-     * query was sent with this refund's identity).
+     * NO single-entry fallback: an entry whose orderId differs from the
+     * stored refund_order_id is never accepted as THE refund, even when it
+     * is the only entry — an unrelated refund with a coincidentally equal
+     * amount must not resolve this row.
      *
      * @return void
      */
-    public function testQueryFallsBackToSingleEntry(): void
+    public function testQuerySingleNonMatchingEntryIsNeverAccepted(): void
     {
         $classification = $this->classifier()->classifyQuery(
             $this->expected(),
             $this->queryResponse([$this->queryEntry(['orderId' => 'OTHER-RF'])])
         );
-        $this->assertTrue($classification->isSuccess());
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
     }
 
     /**
@@ -313,7 +422,8 @@ class RefundResultClassifierTest extends TestCase
     }
 
     /**
-     * An entry refused by the provider resolves the row as FAILED.
+     * An entry refused with a provider-confirmed FINAL failure code
+     * resolves the row as FAILED (releases the open slot).
      *
      * @return void
      */
@@ -321,9 +431,60 @@ class RefundResultClassifierTest extends TestCase
     {
         $classification = $this->classifier()->classifyQuery(
             $this->expected(),
-            $this->queryResponse([$this->queryEntry(['resultCode' => 21])])
+            $this->queryResponse([$this->queryEntry(['resultCode' => 99])])
         );
         $this->assertSame(RefundRequestInterface::STATUS_FAILED, $classification->status);
+    }
+
+    /**
+     * A non-final entry code (Final Status = No) keeps the row UNKNOWN
+     * (provider_processing) — money may still move, the slot stays open.
+     * Regression for the correction round: 21 was previously FAILED.
+     *
+     * @return void
+     */
+    public function testQueryNonFinalEntryCodeStaysUnknown(): void
+    {
+        foreach (['21', '7000', '9000'] as $code) {
+            $classification = $this->classifier()->classifyQuery(
+                $this->expected(),
+                $this->queryResponse([$this->queryEntry(['resultCode' => (int)$code])])
+            );
+            $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+            $this->assertSame(RefundRequestInterface::REASON_PROVIDER_PROCESSING, $classification->reason);
+        }
+    }
+
+    /**
+     * A SUCCESS entry with transId 0 lacks valid positive transaction-id
+     * evidence — UNKNOWN (malformed), never SUCCESS.
+     *
+     * @return void
+     */
+    public function testQuerySuccessWithZeroTransIdIsUnknown(): void
+    {
+        $classification = $this->classifier()->classifyQuery(
+            $this->expected(),
+            $this->queryResponse([$this->queryEntry(['transId' => 0])])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_MALFORMED_RESPONSE, $classification->reason);
+    }
+
+    /**
+     * A malformed entry amount ("150000abc") must never (int)-cast into a
+     * plausible number — strict grammar, echo mismatch → UNKNOWN.
+     *
+     * @return void
+     */
+    public function testQueryMalformedAmountIsUnknown(): void
+    {
+        $classification = $this->classifier()->classifyQuery(
+            $this->expected(),
+            $this->queryResponse([$this->queryEntry(['amount' => '150000abc'])])
+        );
+        $this->assertSame(RefundRequestInterface::STATUS_UNKNOWN, $classification->status);
+        $this->assertSame(RefundRequestInterface::REASON_ECHO_MISMATCH, $classification->reason);
     }
 
     /**

@@ -40,6 +40,26 @@
   without a response-integrity check; refund `requestId`s are now minted per
   operation (provider idempotency key, ≥31 days).
 
+### Fixed (correction round, 2026-09-21 — provider-contract boundary)
+- `momo:refund:resolve` mints a FRESH query `requestId` per invocation and
+  signs with it; the stored refund `requestId` stays immutable as
+  refund-submission evidence (the query is a different API operation and
+  never reuses the refund's provider idempotency key).
+- `classifyQuery` requires an EXACT `refundTrans[].orderId` match — the
+  single-entry fallback is removed; ambiguity/mismatch stays UNKNOWN.
+- Direct refund SUCCESS requires strict provider data: amounts must be
+  well-formed integers (no `(int)` cast of malformed values like
+  `"150000abc"`), and `resultCode == 0` additionally requires a valid
+  positive refund `transId` — malformed/unverifiable → UNKNOWN (AC5).
+- Full provider non-final result-code set (Final Status = No: 10/11/12/13,
+  20/21/22, 40/41/42/43/45/47, 7000, 7002, 9000) classifies UNKNOWN
+  (`provider_processing`) and keeps the refund slot open — only
+  provider-confirmed FINAL failures release the slot (FAILED). Previously
+  only `7002` was non-final; codes like 21/7000 wrongly resolved FAILED.
+- `momo:refund:resolve` now catches `Magento\Payment\Gateway\Http
+  \ClientException` (the import pointed at a non-existent module class, so
+  transport errors crashed the command instead of keeping the row unknown).
+
 ## [2.1.0] - 2026-09-18
 
 ### Changed

@@ -1,0 +1,32 @@
+Correction round 1 validation evidence — TASK-XYDQDF (issue #4)
+Validation env: m2r-php (markoshust/magento-php:8.3-fpm, PHP 8.3.20), MariaDB 10.6 (zt-mariadb106), OpenSearch 2.19.1 (zt-os), 2026-09-21
+Final tree = b7796d78 + correction diff (9 files: 4 src, 3 test, CHANGELOG/README, record)
+
+php -l (all changed PHP files): No syntax errors detected — RefundResultClassifier.php, OrderRefBuilder.php, RefundResolveCommand.php, RefundResultClassifierTest.php, OrderRefBuilderRefundIdentityTest.php, RefundResolveCommandTest.php
+
+phpunit (dev/tests/unit/phpunit-secomm.xml, filter Secomm.MoMo):
+OK, but there were issues!
+Tests: 177, Assertions: 492, PHPUnit Deprecations: 5.
+(5 deprecations are pre-existing framework-level, same as first submission)
+
+PHPCS Magento2 standard, severity>=6, -n, on the changed files:
+FOUND 0 ERRORS AND 0 WARNINGS
+(deprecated sniff notice: Squiz.CSS.NamedColours — framework-level, not our code)
+
+setup:install on a fresh DB with the FINAL tree: EXIT=0 (1456/1456)
+secomm_momo_refund created (verified via SHOW CREATE TABLE)
+
+setup:di:compile: EXIT=0 — "Generated code and dependency injection configuration successfully"
+(resolve command gained an OrderRefBuilder constructor dependency — concrete class, autowired; no di.xml change needed)
+
+CLI smoke:
+bin/magento list shows momo:refund:list / momo:refund:resolve
+bin/magento momo:refund:list → "No MoMo refund requests found." (independent-connection read path exercised against the real DB)
+
+Schema: UNCHANGED vs first submission (correction boundary: no schema change required)
+
+Incidental fix found by the new regression test:
+RefundResolveCommand imported a non-existent Secomm\MoMo\Gateway\Http\ClientException,
+so its transport-failure catch never matched — transport errors crashed the command
+instead of keeping the row unknown. It now catches Magento\Payment\Gateway\Http\ClientException
+(the same class RefundCommand already catches).

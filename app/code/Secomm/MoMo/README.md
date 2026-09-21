@@ -60,9 +60,16 @@ classification and reconciliation evidence:
   sequential partial refunds and retry-after-FAILED stay native.
 - **Classification contract** (verified against developers.momo.vn, the refund
   response carries NO signature) — SUCCESS only on intact echoes of the exact
-  request (requestId/orderId/amount, partnerCode conflict-intolerant) +
-  `resultCode == 0`; `7002` = still processing → UNKNOWN, never FAILED; any
-  other code → FAILED; malformed/echo-mismatch/transport → UNKNOWN.
+  request (requestId/orderId/amount with a strict integer grammar,
+  partnerCode conflict-intolerant) + `resultCode == 0` + a valid positive
+  refund `transId`; non-final codes (Final Status = No: 10/11/12/13,
+  20/21/22, 40/41/42/43/45/47, 7000, 7002, 9000) → UNKNOWN
+  (`provider_processing`), never FAILED; provider-confirmed final failures →
+  FAILED; malformed/echo-mismatch/transport → UNKNOWN. The query-based
+  resolve path requires an exact `refundTrans[].orderId` match — ambiguity
+  never resolves a terminal verdict, and each resolve invocation signs the
+  query with its own fresh `requestId` (the stored refund `requestId` stays
+  immutable submission evidence).
 - **UNKNOWN is never blindly retried** — FAILED/UNKNOWN throw after the
   outcome is recorded, so the native creditmemo rolls back and no accounting
   is finalized on an unconfirmed outcome.

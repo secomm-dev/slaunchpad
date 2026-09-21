@@ -5,8 +5,8 @@
  * re-posted with a new identity — a resolution may only be evidenced by
  * the provider's own answer about the SAME refund identity.
  *
- * Manual, operator-invoked, one requestId per invocation — not an
- * automated reconciliation loop.
+ * Manual, operator-invoked; each invocation mints a fresh query requestId
+ * for the /refund/query call — never an automated reconciliation loop.
  *
  * @author    Secomm Teams
  * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
@@ -18,10 +18,11 @@ namespace Secomm\MoMo\Console\Command;
 
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
+use Magento\Payment\Gateway\Http\ClientException;
 use Secomm\MoMo\Api\Data\RefundRequestInterface;
 use Secomm\MoMo\Api\RefundRequestRepositoryInterface;
 use Secomm\MoMo\Gateway\Helper\Signature;
-use Secomm\MoMo\Gateway\Http\ClientException;
+use Secomm\MoMo\Model\OrderRefBuilder;
 use Secomm\MoMo\Service\RefundClassification;
 use Secomm\MoMo\Service\RefundRequestManager;
 use Secomm\MoMo\Service\RefundResultClassifier;
@@ -61,6 +62,9 @@ class RefundResolveCommand extends Command
     /** @var State */
     private $state;
 
+    /** @var OrderRefBuilder */
+    private $orderRefBuilder;
+
     public function __construct(
         RefundRequestRepositoryInterface $repository,
         RefundRequestManager $manager,
@@ -70,6 +74,7 @@ class RefundResolveCommand extends Command
         \Magento\Payment\Gateway\Http\TransferFactoryInterface $transferFactory,
         \Magento\Payment\Gateway\Http\ClientInterface $client,
         State $state,
+        OrderRefBuilder $orderRefBuilder,
         ?string $name = null
     ) {
         $this->repository = $repository;
@@ -80,6 +85,7 @@ class RefundResolveCommand extends Command
         $this->transferFactory = $transferFactory;
         $this->client = $client;
         $this->state = $state;
+        $this->orderRefBuilder = $orderRefBuilder;
         parent::__construct($name);
     }
 
@@ -114,12 +120,21 @@ class RefundResolveCommand extends Command
             return Cli::RETURN_SUCCESS;
         }
 
+        // The query is a DIFFERENT API operation than the refund submission:
+        // it mints its own FRESH requestId per invocation and signs with it.
+        // The stored refund requestId is the refund's provider idempotency
+        // key — immutable submission evidence, never reused on the wire for
+        // another operation.
+        $queryRequestId = $this->orderRefBuilder->buildRefundQueryRequestId(
+            $row->getRefundOrderId()
+        );
+
         // MoMo signs the refund/query REQUEST; the response carries no
         // signature (same contract as refund/query sibling endpoints).
         $request = [
             'partnerCode' => $this->config->getPartnerCode(),
             'orderId' => $row->getRefundOrderId(),
-            'requestId' => $row->getRequestId(),
+            'requestId' => $queryRequestId,
             'lang' => 'vi',
         ];
         $request['signature'] = $this->signature->sign(

@@ -9,6 +9,30 @@ mode: A
 specification_level: FULL
 risk: high
 status: READY_FOR_REVIEW
+base_sha: c685e47968627eed2e17e2b450f389679098d148
+correction_rounds:
+  - round: 1 (coordinator verdict CORRECTION_REQUIRED, 2026-09-21)
+    findings: |
+      4 blockers on the provider-contract boundary, all fixed:
+      (1) refund/query reused the stored refund requestId → resolve now mints
+      a fresh query requestId (-QQ) per invocation via
+      OrderRefBuilder::buildRefundQueryRequestId() and signs with it; the
+      stored refund requestId stays immutable submission evidence.
+      (2) classifyQuery single-entry fallback accepted an unrelated refund →
+      exact refundTrans[].orderId match required; ambiguity/mismatch → UNKNOWN.
+      (3) direct refund SUCCESS too permissive → strict integer grammar for
+      amounts (no (int) cast of "150000abc") and SUCCESS additionally requires
+      a valid positive refund transId (same rule on both paths).
+      (4) only 7002 was non-final → full provider non-final set (10/11/12/13,
+      20/21/22, 40/41/42/43/45/47, 7000, 7002, 9000) is UNKNOWN
+      (provider_processing) keeping the slot open; only FINAL failures →
+      FAILED. Regression coverage added for 7000 + representative non-final
+      system/merchant codes on both direct and query paths.
+      Incidental fix caught by the new resolve-command regression test:
+      RefundResolveCommand caught a non-existent
+      Secomm\MoMo\Gateway\Http\ClientException (transport errors crashed the
+      command); it now catches Magento\Payment\Gateway\Http\ClientException.
+    schema_change: none (per correction boundary — none required)
 decisions:
   - "Durable secomm_momo_refund table keyed UNIQUE(momo_order_ref, momo_trans_id, open_flag) with the NULL-trick: open_flag=1 for open rows (pending/unknown), NULL for terminal — at most one open refund per payment; terminal rows release the slot (sequential partials + retry-after-FAILED stay native)."
   - "All refund-row persistence goes through an independent DB connection (ConnectionFactory::create on db/connection/default + manual table prefix) because CreditmemoService::refund() wraps the gateway call inside the sales-connection transaction; FAILED/UNKNOWN evidence must survive the native rollback that aborts the creditmemo."
@@ -44,6 +68,7 @@ components:
   - app/code/Secomm/MoMo/Test/Unit/Gateway/Command/RefundCommandTest.php
   - app/code/Secomm/MoMo/Test/Unit/Model/OrderRefBuilderRefundIdentityTest.php
   - app/code/Secomm/MoMo/Test/Unit/Plugin/Sales/CreditmemoServiceTest.php
+  - app/code/Secomm/MoMo/Test/Unit/Console/Command/RefundResolveCommandTest.php
   - app/code/Secomm/MoMo/README.md
   - app/code/Secomm/MoMo/CHANGELOG.md
 changes_request:
@@ -60,6 +85,7 @@ validation:
   - "Incremental migration path: fresh install with the BASE module (git archive HEAD — no secomm_momo_refund), then copy the new module and setup:upgrade → table created incrementally, 'Upgrade completed successfully', setup:db:status → 'All modules are up to date' (schema + whitelist in sync). DDL in .ai/evidence/TASK-XYDQDF/db-schema-after-upgrade.txt."
   - "setup:di:compile: EXIT=0 ('Generated code and dependency injection configuration successfully')."
   - "CLI smoke: bin/magento list shows momo:refund:list / momo:refund:resolve; momo:refund:list executes against the real DB (temp row listed + cleaned) exercising the independent-connection read path."
+  - "Correction round 1 re-validation (final tree): php -l clean on all changed files; phpunit (phpunit-secomm.xml, filter Secomm.MoMo): 177 tests / 492 assertions PASS (5 pre-existing framework deprecations); PHPCS Magento2 severity>=6 on the diff: 0 errors 0 warnings; fresh setup:install with the final tree EXIT=0; setup:di:compile EXIT=0 (resolve command gained an OrderRefBuilder constructor dependency — concrete class, autowired, no di.xml change); schema unchanged vs first submission."
 verified_against_commit: c685e47968627eed2e17e2b450f389679098d148
 external_refs:
   - "github:thanhle74/slaunchpad#4"

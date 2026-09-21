@@ -88,4 +88,52 @@ class OrderRefBuilderRefundIdentityTest extends TestCase
             $builder->buildRefundRequestId('REF-1')
         );
     }
+
+    /**
+     * The refund/query call mints its own `-QQ` identity: never the refund
+     * submission's requestId (different API operation, different request
+     * identity — the submission requestId stays immutable as evidence).
+     *
+     * @return void
+     */
+    public function testRefundQueryRequestIdIsDistinctFromRefundIdentity(): void
+    {
+        $orderRef = 'MOMO2609180000-SLP-1';
+        $builder = $this->builder();
+        $refundOrderId = $builder->buildRefundOrderId($orderRef);
+        $refundRequestId = $builder->buildRefundRequestId($orderRef);
+        $queryRequestId = $builder->buildRefundQueryRequestId($refundOrderId);
+
+        $this->assertNotSame($refundRequestId, $queryRequestId);
+        $this->assertStringStartsWith($refundOrderId . '-QQ', $queryRequestId);
+    }
+
+    /**
+     * Provider String(50) caps apply to the query requestId too, even for
+     * a maximum-length refund orderId (49 chars).
+     *
+     * @return void
+     */
+    public function testLongRefundOrderIdQueryIdentityStaysWithinProviderLimits(): void
+    {
+        $queryRequestId = $this->builder()->buildRefundQueryRequestId(str_repeat('A', 49));
+
+        $this->assertLessThanOrEqual(49, strlen($queryRequestId));
+    }
+
+    /**
+     * Each resolve invocation mints a FRESH query identity (a re-query gets
+     * its own requestId — never a replay of an earlier one).
+     *
+     * @return void
+     */
+    public function testQueryIdentitiesAreUniquePerCall(): void
+    {
+        $builder = $this->builder();
+
+        $this->assertNotSame(
+            $builder->buildRefundQueryRequestId('REF-1'),
+            $builder->buildRefundQueryRequestId('REF-1')
+        );
+    }
 }
