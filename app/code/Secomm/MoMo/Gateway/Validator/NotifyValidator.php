@@ -1,28 +1,42 @@
 <?php
 /**
- * Validates the MoMo Notify (IPN) payload.
- *
- * Verifies the MoMo signature over the result fields and that resultCode == 0
- * (success). This is the authoritative confirmation.
+ * Validates the MoMo Notify (IPN) payload against the persisted attempt.
  *
  * @author    Secomm Teams
- * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
+ * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
  * @package   Secomm_MoMo
  */
 declare(strict_types=1);
 
 namespace Secomm\MoMo\Gateway\Validator;
 
-use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Validator\AbstractValidator;
 use Magento\Payment\Gateway\Validator\ResultInterface;
-use Secomm\MoMo\Model\Config;
+use Secomm\MoMo\Api\Data\PaymentAttemptInterface;
 use Secomm\MoMo\Gateway\Helper\Signature;
+use Secomm\MoMo\Model\Config;
 
+/**
+ * Attempt-based IPN validation (MOMO-01). The validation subject carries the
+ * raw IPN fields under `response` and the resolved attempt under `attempt`.
+ *
+ * The full authoritative chain:
+ *  1. structural presence of the 13 MoMo-signed fields + signature;
+ *  2. HMAC-SHA256 signature over MoMo's fixed 13-field order;
+ *  3. merchant identity: partnerCode must be OUR partner code;
+ *  4. transaction identity echoes: orderId == attempt.order_ref,
+ *     requestId == attempt.request_id;
+ *  5. extraData (when present) decodes to the attempt's order_ref;
+ *  6. amount == the attempt's frozen VND amount.
+ *
+ * The business outcome (resultCode == 0 success vs provider failure) is the
+ * CALLER's decision (IpnProcessor) — this validator is purely identity +
+ * integrity, so a FAILED provider transaction can still be verified as
+ * authentic and recorded as a verified failure.
+ */
 class NotifyValidator extends AbstractValidator
 {
     public const RESULT_CODE = 'resultCode';
-    public const SUCCESS = 0;
 
     /**
      * Result fields MoMo signs (IPN / result rawSignature — fixed order).
@@ -44,7 +58,7 @@ class NotifyValidator extends AbstractValidator
     ];
 
     /**
-     * Constructor
+     * NotifyValidator constructor.
      *
      * @param \Magento\Payment\Gateway\Validator\ResultInterfaceFactory $resultFactory
      * @param Config $config
@@ -59,52 +73,61 @@ class NotifyValidator extends AbstractValidator
     }
 
     /**
-     * @inheritdoc
+     * Validate the raw IPN payload against the persisted attempt.
+     *
+     * @param array $validationSubject expects: response (raw IPN fields), attempt.
+     * @return ResultInterface
      */
     public function validate(array $validationSubject): ResultInterface
     {
-        $response = SubjectReader::readResponse($validationSubject);
+        $response = (array)($validationSubject['response'] ?? []);
+        $attempt = $validationSubject['attempt'] ?? null;
+        if (!$attempt instanceof PaymentAttemptInterface) {
+            return $this->createResult(false, [__('MoMo payment attempt is required for IPN validation.')]);
+        }
         $errors = [];
 
         $signature = (string)($response['signature'] ?? '');
-        if (!$this->verifySignature($signature, $response)) {
+        if ($signature === '' || !$this->verifySignature($signature, $response)) {
             $errors[] = __('MoMo notify signature verification failed.');
         }
 
-        $resultCode = isset($response[self::RESULT_CODE]) ? (int)$response[self::RESULT_CODE] : null;
-        if ($resultCode !== self::SUCCESS) {
-            $errors[] = __('MoMo payment not successful (resultCode: %1).', [$resultCode ?? 'unknown']);
+        if ((string)($response['partnerCode'] ?? '') !== $this->config->getPartnerCode()) {
+            $errors[] = __('MoMo partnerCode mismatch.');
         }
 
-        // Spec §10 BLOCK: re-validate amount server-side against the order.
-        // The Notify controller asserts the order id before delegating, and the
-        // payment data object carries the authorized grand total.
-        $paymentDO = SubjectReader::readPayment($validationSubject);
-        $order = $paymentDO->getOrder();
-        $expectedAmount = (int)round((float)$order->getGrandTotalAmount());
-        $notifyAmount = isset($response['amount']) ? (int)$response['amount'] : null;
-        if ($notifyAmount === null || $notifyAmount !== $expectedAmount) {
-            $errors[] = __(
-                'MoMo amount mismatch (expected %1, got %2).',
-                [$expectedAmount, $notifyAmount ?? 'unknown']
-            );
+        // Transaction identity echoes: the provider must answer with the
+        // exact merchant references minted for THIS attempt.
+        if ((string)($response['orderId'] ?? '') !== (string)$attempt->getOrderRef()) {
+            $errors[] = __('MoMo orderId does not match the payment attempt.');
+        }
+        if ((string)($response['requestId'] ?? '') !== (string)$attempt->getRequestId()) {
+            $errors[] = __('MoMo requestId does not match the payment attempt.');
         }
 
-        // Fetch-to-confirm (paysquad): if extraData is returned, verify it maps
-        // back to THIS order's entity id. Guards against orderId-only spoofing.
+        // extraData binds the payload to the attempt even beyond orderId.
         $extraData = (string)($response['extraData'] ?? '');
         if ($extraData !== '') {
             $decoded = base64_decode($extraData, true);
-            if ($decoded === false || (string)$order->getId() !== $decoded) {
-                $errors[] = __('MoMo extraData does not match the order.');
+            if ($decoded === false || $decoded !== (string)$attempt->getOrderRef()) {
+                $errors[] = __('MoMo extraData does not match the payment attempt.');
             }
+        }
+
+        $notifyAmount = isset($response['amount']) ? (int)$response['amount'] : null;
+        if ($notifyAmount === null || $notifyAmount !== (int)$attempt->getAmount()) {
+            $errors[] = __(
+                'MoMo amount mismatch (expected %1, got %2).',
+                (int)$attempt->getAmount(),
+                $notifyAmount ?? 'unknown'
+            );
         }
 
         return $this->createResult(empty($errors), $errors);
     }
 
     /**
-     * Verify the MoMo signature over the signed result fields.
+     * Verify the MoMo signature over the 13 signed fields (fixed order).
      *
      * @param string $signature
      * @param array $response
@@ -112,10 +135,6 @@ class NotifyValidator extends AbstractValidator
      */
     private function verifySignature(string $signature, array $response): bool
     {
-        if ($signature === '') {
-            return false;
-        }
-
         $params = ['accessKey' => $this->config->getAccessKey()];
         foreach (self::SIGNED_FIELDS as $field) {
             if ($field === 'accessKey') {
