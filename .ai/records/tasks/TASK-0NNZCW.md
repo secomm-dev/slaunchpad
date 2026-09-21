@@ -284,3 +284,15 @@ Save PB convert column-group → column-line; 22 selector strip-proof được p
 
 - Screenshots: `home-v4-vi-1440-full.png`, `home-v4-vi-375-full.png`; content v5 seeded: `home-content-v5-seeded.html`; backup: `home-content-before-v5.txt`; Figma shots: `figma-desktop-shot.png`/`figma-mobile-shot.png`/`figma-card-shot.png`.
 - Verify chi tiết + findings F9–F14: `RESULTS.md` §"v4 (09-18)".
+
+## Update 09-21: v4.12 — fix admin không load được content (user report) + revert {{view}} → {{media}}
+
+**User report**: Admin > Content > Pages > Home Page — PageBuilder stage không render content.
+
+- **Root cause 1 — JSON truncate (stage chết)**: template v4.11 sinh directive `{{view url="X"}}` có RAW double quotes trong `data-background-images` (JSON-in-attribute) → browser cắt attribute tại `"` đầu → `BackgroundImages.fromDom` JSON.parse fail ("Unterminated string at position 29") → stage init chết, content trắng. 4/37 attr bị (hero ×3 + sofa banner), 22 attr `<img src>` cùng lỗi (src cụt).
+- **Root cause 2 — {{view}} không round-trip**: PB stage chỉ round-trip ổn định `{{media url=}}` trỏ media có thật; `{{view url=Module::…}}` bị stage regenerate thành `{{media url=Module::…}}` → preview 404 + Save kế ghi đè content hỏng. Chi tiết: **LL-0039**.
+- **Fix**: (1) `etc/homepage-content.html` — 29 directive `{{view url=Launchpad_Homepage::images/homepage/*.webp}}` → `{{media url=wysiwyg/homepage/*.webp}}`; (2) copy 17 webp → `pub/media/wysiwyg/homepage/` (poster real-spaces.webp đã có sẵn); (3) update DB `cms_page` `home` (page_id 2) cùng nội dung — backup trước: `home-content-before-escape-fix-db.txt` + `home-content-fixed-escape-20260921.html`; (4) cache:flush.
+- **Kèm theo**: `item.phtml` ParseError 17:07 (đã được sửa trong file, php -l PASS) — fileformerly root-owned, đã `chown secomm:secomm` (shell-trap LL).
+- **Verify (Playwright, admin user tạm `claudetmp` — đã xóa)**: Admin edit page → expand Content → stage render **120 content-type** (row 14, column 16, heading 26, 0 pageerror, 0 console error, 0 HTTP 4xx, hero bg preview load từ media). Storefront 1440: rows 14 / slides 3 / headings 26 / cards 32 / 24 img homepage (23 loaded, 1 lazy) / 0 pageerror / 0 4xx / không overflow-x.
+- **Deploy note (đổi so v4.11)**: content homepage giờ tham chiếu **media files** (`wysiwyg/homepage/*.webp`, 17 file) — runbook deploy phải ship `pub/media/wysiwyg/homepage/*.webp` (thay vì "0 media ref" như v4.11 ghi). Data patch `SeedHomepageContent` đọc đúng template đã fix — env mới seed chuẩn.
+- **Flag còn mở**: hero slider hiện 3 slides (template seed) — design gốc 6 dots; 3/6 slides placeholder chờ ảnh user (đã ghi ở mục Còn mở). Manifest không đổi ngoài content/template + media files.
