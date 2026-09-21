@@ -155,6 +155,13 @@ Config defaults (`payment/momo_payment/recovery_*`): `recovery_window` 15,
 | Sandbox Mode | `test-payment.momo.vn` vs `payment.momo.vn` |
 | Return URL | public URL → `.../momo/payment/returnaction` |
 | Notify URL | public URL → `.../momo/payment/notify` (IPN) |
+| Payment Action | canonical Magento key `payment/momo_payment/payment_action` (MOMO-05), default `authorize_capture` → local capture after verification; any other value finalizes without capture |
+
+> Legacy note (MOMO-05): installations that saved a value under the pre-alignment
+> admin field key `payment/momo_payment/momo_payment_action` are unaffected —
+> that key never had a runtime reader (behavior was always the
+> `authorize_capture` default). The orphaned row is inert and may be deleted;
+> re-saving via the Payment Action field now writes the canonical key.
 
 **Signature**: `hmac_sha256(rawSignature, secretKey)`, where
 `rawSignature = accessKey=...&amount=...&extraData=...&ipnUrl=...&orderId=...&orderInfo=...&partnerCode=...&redirectUrl=...&requestId=...&requestType=...`.

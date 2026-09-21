@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.3.2] - 2026-09-21
+
+### Fixed
+- **Payment Action config key aligned with runtime (MOMO-05, issue #17)**:
+  the admin field previously saved under
+  `payment/momo_payment/momo_payment_action` — a key with NO runtime
+  reader — while `OrderFinalizer::captureOrder()` (and Magento core
+  placement via `getConfigPaymentAction()`) read the canonical
+  `payment/momo_payment/payment_action`. Changing Payment Action in the
+  admin therefore never took effect. The admin field now writes the
+  canonical key, `Model\Config::KEY_PAYMENT_ACTION` is corrected to
+  `payment_action` and is the single code-level source (used by
+  `OrderFinalizer`). Default semantics unchanged (`authorize_capture` →
+  capture after verification; any other/missing value finalizes without
+  capture — now regression-tested).
+- **No migration needed (compatibility decision)**: the legacy key never
+  had a runtime reader and its select offered only `authorize_capture`, so
+  every existing installation always ran the default — behavior is
+  provably unchanged. Any orphaned `momo_payment_action` row in
+  `core_config_data` is inert and may be deleted (see README legacy note).
+
 ## [2.3.1] - 2026-09-21
 
 ### Fixed
