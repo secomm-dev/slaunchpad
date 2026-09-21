@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!-- Hero autoplay for the LAUNCHPAD homepage (TASK-0NNZCW v4.2).
+     Page Builder stores data-autoplay/data-autoplay-speed on the slider, but
+     the Hyva PB carousel script does not implement autoplay — this block adds
+     a small interval-based scroller scoped to .lp-hero-slider. -->
+<page xmlns:xsi="http://www.w3.org/2000/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block name="launchpad.homepage.hero-autoplay"
+                   template="Launchpad_Homepage::homepage/hero-autoplay.phtml"
+                   after="-"/>
+        </referenceContainer>
+    </body>
+</page>

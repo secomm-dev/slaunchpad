@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- Preference (TASK-0NNZCW v4.3): every CatalogWidget ProductsList batch-loads
+     the media gallery (addMediaGalleryData) so the product-card image slider in
+     item.phtml renders without per-product queries. Flash Sale List additionally
+     supports the sale_end widget option. -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager:etc/config.xsd">
+    <preference for="Magento\CatalogWidget\Block\Product\ProductsList"
+                type="Launchpad\Homepage\Block\Product\FlashSaleList"/>
+    <type name="Magento\Catalog\Block\Product\ListProduct">
+        <plugin name="launchpad_list_product_gallery"
+                type="Launchpad\Homepage\Plugin\ListProductGallery"/>
+    </type>
+</config>

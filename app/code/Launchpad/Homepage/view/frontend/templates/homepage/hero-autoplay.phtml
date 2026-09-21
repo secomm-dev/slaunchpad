@@ -1,0 +1,116 @@
+<?php
+/**
+ * Hero slider autoplay + story-style dot progress (TASK-0NNZCW v4.4, SLP-213).
+ *
+ * Reads data-autoplay / data-autoplay-speed from the Page Builder slider
+ * (.lp-hero-slider). The active pager dot fills left-to-right over the
+ * autoplay duration; on completion the slider advances and the next dot arms.
+ * Pauses on pointer hover, hidden tab and when the user prefers reduced
+ * motion.
+ *
+ * v4.9.4: fill driven by rAF writing --lp-dot-progress (0→1) on the active
+ * marker instead of a CSS animation — SnapSlider dispatches `slideChange` on
+ * EVERY IntersectionObserver tick and its marker refresh paths cancel/restart
+ * CSS animations, so the animation never progressed past scaleX(0).
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+?>
+<script>
+    'use strict';
+    window.addEventListener('DOMContentLoaded', () => {
+        const slider = document.querySelector('.lp-hero-slider');
+        if (!slider || slider.dataset.autoplay !== 'true') return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        const speed = Math.max(2000, parseInt(slider.dataset.autoplaySpeed || '4000', 10));
+        let paused = false;
+        let armedMarker = null;
+        let fillRaf = 0;
+        let fillElapsed = 0;
+        let fillLast = 0;
+
+        slider.addEventListener('pointerenter', () => { paused = true; slider.classList.add('lp-dot-paused'); });
+        slider.addEventListener('pointerleave', () => { paused = false; slider.classList.remove('lp-dot-paused'); });
+        document.addEventListener('visibilitychange', () => {
+            paused = document.hidden;
+            slider.classList.toggle('lp-dot-paused', paused);
+        });
+
+        const startFill = (marker) => {
+            window.cancelAnimationFrame(fillRaf);
+            const tick = (now) => {
+                if (!marker.isConnected || !marker.classList.contains('lp-dot-run')) return;
+                if (!paused) {
+                    fillElapsed += now - fillLast;
+                    const progress = Math.min(1, fillElapsed / speed);
+                    marker.style.setProperty('--lp-dot-progress', progress.toFixed(4));
+                    if (progress >= 1) {
+                        marker.dispatchEvent(new Event('lp-dot-complete', { bubbles: true }));
+                        return;
+                    }
+                }
+                fillLast = now;
+                fillRaf = window.requestAnimationFrame(tick);
+            };
+            fillLast = performance.now();
+            fillRaf = window.requestAnimationFrame(tick);
+        };
+
+        // Chỉ arm khi active marker THẬT SỰ đổi — slideChange bắn liên tục.
+        const arm = () => {
+            const pager = slider.querySelector('nav[data-pager]');
+            if (!pager) return;
+            const active = pager.querySelector('.snap-marker[aria-current="true"]');
+            if (!active || active === armedMarker) return;
+            armedMarker = active;
+            pager.querySelectorAll('.lp-dot-run').forEach((m) => {
+                if (m !== active) {
+                    m.classList.remove('lp-dot-run');
+                    m.style.removeProperty('--lp-dot-progress');
+                }
+            });
+            void active.offsetWidth;
+            active.classList.add('lp-dot-run');
+            fillElapsed = 0;
+            startFill(active);
+        };
+
+        slider.addEventListener('lp-dot-complete', () => {
+            armedMarker = null;
+            const track = slider.querySelector('[data-track]');
+            if (!track) return;
+            const maxScroll = track.scrollWidth - track.clientWidth - 4;
+            if (track.scrollLeft >= maxScroll) {
+                track.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                track.scrollBy({ left: track.clientWidth, behavior: 'smooth' });
+            }
+            window.setTimeout(arm, 400);
+        });
+
+        slider.addEventListener('slideChange', () => window.setTimeout(arm, 250));
+
+        // The PB carousel script builds the pager in its own DOMContentLoaded
+        // handler — poll briefly until the markers exist, then arm.
+        let tries = 0;
+        const probe = window.setInterval(() => {
+            tries += 1;
+            if (slider.querySelector('nav[data-pager] .snap-marker')) {
+                window.clearInterval(probe);
+                arm();
+            } else if (tries > 40) {
+                window.clearInterval(probe);
+            }
+        }, 250);
+    });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

@@ -1,0 +1,1605 @@
+/**
+ * Homepage Layout Mock-up (TASK-0NNZCW, SLP-213) — v3.
+ * Homepage content = PageBuilder content in the `home` CMS page (Admin-editable).
+ * Banner/hero element styling lives INLINE in the CMS content (v3.1 — editable
+ * per element in PageBuilder). Product-widget styling stays in code below:
+ * card = product_list_item pipeline (item.phtml), carousel = hp-pb-*.
+ * Section-support classes used by the CMS content (hp-heading, hp-usp-*…)
+ * are compiled here — classes referenced only by DB content would otherwise
+ * be purged from the Tailwind bundle (@source cannot scan the database).
+ */
+
+@theme {
+    --color-hp-green: #3d5245;
+    --color-hp-green-dark: #324439;
+    --color-hp-cream: #e9f0e1;
+    --color-hp-surface: #f8f6ee;
+    --color-hp-yellow: #f6e27c;
+    --color-hp-amber: #efa82e;
+    --color-hp-badge: #e4e9f7;
+    --color-hp-brand: #588f60;
+    --color-hp-brand-dark: #45744c;
+    --color-hp-ink: #101828;
+    --color-hp-soft: #e7f1e8;
+    --color-hp-soft-strong: #45744c;
+}
+
+@layer components {
+    /* Full width (ticket note "home page is full width"): neutralize the 1280px
+       .columns cap + container padding on the homepage only. Scoped !important —
+       cascade war with theme .columns rules (SLP-160 precedent). */
+    body.cms-index-index main .columns {
+        max-width: none !important;
+        padding-inline: 0 !important;
+    }
+
+    /* ---------------- Product card (product_list_item pipeline) ---------------- */
+
+    .hp-card {
+        /* v4.9.9 (user): bỏ nền trắng card — card trong suốt trên nền section. */
+        @apply relative flex flex-col;
+    }
+
+    .hp-card-media-wrap {
+        @apply relative block overflow-hidden bg-hp-surface;
+    }
+
+    .hp-card-photo img {
+        @apply aspect-square w-full object-contain mix-blend-multiply;
+    }
+
+    /* Card media slider (v4.3 — design mini dots under the image). */
+    .hp-card-gallery {
+        --snap-cols: 1;
+        --snap-gap: 0px;
+        padding-block: 0;
+    }
+
+    .hp-card-media-slider nav[data-pager] {
+        /* z above the ATC hover overlay: dots stay clickable while hovered;
+           the actions row is right-aligned so the centered dots stay clear. */
+        @apply absolute inset-x-0 bottom-2 z-30 mx-auto w-fit;
+    }
+
+    .hp-card-media-slider nav[data-pager] .snap-marker {
+        @apply h-2 w-2 rounded-full border-0 bg-[#a9ccae] opacity-80;
+    }
+
+    .hp-card-media-slider nav[data-pager] .snap-marker[aria-current="true"] {
+        @apply w-6 rounded-full bg-[#588f60] opacity-100;
+    }
+
+    /* Configurable options on card — the Hyvä swatch-option is a GRID that
+       stacks the hidden radio over the label (grid-area 1/1); overriding its
+       display to flex pushes the radio into the flow and breaks the box.
+       Restyle through the component's own custom properties only. */
+    .hp-card fieldset {
+        @apply m-0 border-0 p-0;
+    }
+
+    .hp-card fieldset legend {
+        @apply sr-only;
+    }
+
+    .hp-card fieldset > div {
+        @apply mt-2;
+    }
+
+    .hp-card .swatch-option {
+        --swatch-size: 2rem;
+        --swatch-px: 0.5rem;
+        --swatch-py: 0.25rem;
+        transition: border-color 150ms ease;
+        border-color: #d1d5dc;
+        border-radius: 0.375rem;
+        background-color: #fff;
+        color: #101828;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1.25rem;
+    }
+
+    .hp-card .swatch-option[data-swatch-type="text"] {
+        min-inline-size: 3rem;
+    }
+
+    .hp-card .swatch-option[data-swatch-type="visual"] {
+        --swatch-radius: 9999px;
+        --swatch-px: 2px;
+        --swatch-py: 2px;
+        border-color: transparent;
+    }
+
+    .hp-card .swatch-option[data-swatch-type="visual"] > span {
+        width: 24px !important;
+        height: 24px !important;
+        border: 1px solid #d1d5dc;
+    }
+
+    .hp-card .swatch-option:is(:has(:checked)) {
+        border-color: #293e2d;
+        box-shadow: inset 0 0 0 1px #293e2d;
+    }
+
+    .hp-card .swatch-option:is(:has(:disabled), [aria-disabled="true"]) {
+        border-style: dashed;
+        opacity: 0.45;
+    }
+
+    .hp-card-badge {
+        /* Design badge: "New arrival" — brand green, square corners. */
+        @apply absolute start-0 top-0 z-10 bg-hp-brand px-3 py-1 text-xs font-medium text-[#cfe3d1];
+    }
+
+    .hp-card-wishlist {
+        @apply absolute end-1 top-1 z-10;
+    }
+
+    .hp-card-wishlist .btn {
+        @apply bg-transparent text-ink shadow-none hover:bg-transparent hover:text-hp-brand;
+    }
+
+    /* Action row overlaid on the media bottom: always visible on touch,
+       hover/focus-reveal on desktop (design: clean card). pointer-events
+       toggles with the reveal — an opacity-0 overlay would still swallow
+       clicks meant for the gallery dots underneath. */
+    .hp-card-actions {
+        @apply pointer-events-auto absolute inset-x-2 bottom-2 z-20 flex flex-wrap items-center justify-end gap-2 transition
+            sm:pointer-events-none sm:opacity-0 sm:group-hover/media:pointer-events-auto sm:group-hover/media:opacity-100 sm:focus-within:pointer-events-auto sm:focus-within:opacity-100;
+    }
+
+    .hp-card-actions .btn {
+        @apply bg-white text-ink shadow-sm hover:bg-hp-cream;
+    }
+
+    .hp-card-actions .btn-primary {
+        @apply bg-hp-green text-white hover:bg-hp-green-dark;
+    }
+
+    .hp-card .price-box {
+        @apply m-0 flex flex-wrap items-center gap-2;
+    }
+
+    /* Design price line (label-xl 18/28 medium) + old price (12, #99a1af). */
+    .hp-card .price-box .price {
+        @apply text-lg font-medium leading-7 text-hp-ink lg:text-[18px];
+    }
+
+    .hp-card .price-box .old-price {
+        @apply order-2 text-xs leading-4 text-[#99a1af];
+    }
+
+    .hp-card .price-box .old-price .price {
+        @apply text-xs font-normal leading-4 text-[#99a1af] line-through;
+    }
+
+    .hp-card .price-box .special-price {
+        @apply order-1;
+    }
+
+    .hp-card .product-item-details {
+        @apply mt-1;
+    }
+
+    .product-item-link.hp-card-name {
+        @apply line-clamp-2 text-base font-medium leading-6 text-hp-ink hover:text-hp-brand-dark lg:text-[18px] lg:leading-7;
+    }
+
+    .hp-card-brand {
+        @apply text-sm font-medium leading-5 text-[#99a1af];
+    }
+
+    .hp-card-price {
+        @apply mt-2 flex flex-wrap items-center gap-2 text-sm;
+    }
+
+    .hp-card-discount {
+        /* Design discount chip: red, square, white 12/16 medium. */
+        @apply bg-[#c10007] px-3 py-1 text-xs font-medium leading-4 text-white;
+    }
+
+    .hp-card-swatches {
+        @apply mt-2 flex items-center gap-1.5;
+    }
+
+    .hp-card-swatch {
+        @apply h-4 w-4 rounded-full border border-slate-300;
+    }
+
+    .hp-card-swatch-out {
+        background-image: linear-gradient(
+            to bottom right,
+            transparent calc(50% - 0.5px),
+            var(--color-red-700) calc(50% - 0.5px),
+            var(--color-red-700) calc(50% + 0.5px),
+            transparent calc(50% + 0.5px)
+        );
+    }
+
+    /* Design meta row: "In stock" left + rating right, single line. */
+    .hp-card-meta {
+        @apply mt-2 flex w-full items-center justify-between gap-2;
+    }
+
+    .hp-card-stock {
+        @apply flex items-center gap-1.5 text-sm text-hp-ink;
+    }
+
+    .hp-card-stock-dot {
+        @apply h-3 w-3 shrink-0 rounded-full bg-[#10b981];
+    }
+
+    .hp-card-rating {
+        @apply flex items-center gap-1 text-sm;
+    }
+
+    /* v4.9.9 (design): ★ 4.5 (xxxx) — score đậm, count xám. */
+    .hp-card-rating-score {
+        @apply font-medium text-hp-ink;
+    }
+
+    .hp-card-rating-count {
+        @apply text-[#99a1af];
+    }
+
+    /* Design "Quick view" outline button pinned to the card bottom. */
+    .hp-card-quickview {
+        @apply mt-3;
+    }
+
+    .hp-card-quickview-btn {
+        @apply inline-flex items-center gap-1.5 rounded-md border border-hp-brand bg-white px-4 py-2 text-sm font-medium leading-5 text-[#293e2d] transition hover:bg-hp-soft;
+    }
+
+    .hp-eyebrow {
+        @apply text-xs font-semibold uppercase tracking-widest;
+    }
+
+    /* ---------------- Buttons used by the CMS content ---------------- */
+
+    .hp-btn {
+        @apply btn gap-2 px-5 py-2.5;
+    }
+
+    .hp-btn-primary {
+        @apply btn gap-2 px-5 py-2.5 bg-hp-green text-white transition hover:bg-hp-green-dark;
+    }
+
+    .hp-btn-outline {
+        @apply btn gap-2 px-5 py-2.5 border border-current bg-transparent;
+    }
+
+    /* Countdown pill (flash sale) */
+    .hp-countdown {
+        @apply flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm shadow-sm;
+    }
+
+    .hp-countdown-value {
+        @apply font-semibold tabular-nums;
+    }
+
+    /* PB banner/slide overlays must stretch to the media min-height so the
+       copy sits at the bottom edge (align-items: flex-end in the content).
+       Structural rule — element styling itself lives in the CMS content. */
+    body.cms-index-index [data-content-type="banner"] > [data-element="overlay"],
+    body.cms-index-index [data-content-type="slide"] [data-element="overlay"] {
+        min-height: inherit;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ------------- PB content support styles (v3, code-owned) ------------- */
+
+    .hp-container {
+        @apply container;
+    }
+
+    .hp-section-head {
+        @apply mb-6;
+    }
+
+    .hp-section-head-gap {
+        @apply mt-12;
+    }
+
+    .hp-section-head-center {
+        @apply text-center;
+    }
+
+    .hp-heading {
+        @apply m-0 text-2xl font-semibold text-hp-green md:text-3xl;
+    }
+
+    .hp-heading-caps {
+        @apply font-bold uppercase;
+    }
+
+    .hp-subheading {
+        @apply mt-1 text-sm text-ink-muted;
+    }
+
+    .hp-body-text {
+        @apply text-sm leading-6 text-ink-muted;
+    }
+
+    .hp-center-cta {
+        @apply mt-8 text-center;
+    }
+
+    .hp-center-cta-gap {
+        @apply mt-12;
+    }
+
+    /* Category strip */
+    .hp-category-strip {
+        @apply grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8;
+    }
+
+    .hp-cat-tile {
+        @apply flex flex-col items-center justify-center gap-3 rounded-lg bg-hp-cream py-10 text-center text-ink transition hover:shadow-md;
+    }
+
+    .hp-cat-icon {
+        @apply h-14 w-14;
+    }
+
+    .hp-cat-label {
+        @apply text-sm font-semibold uppercase tracking-wide;
+    }
+
+    /* Flash sale heading row */
+    .hp-flash-head {
+        @apply mb-6 flex flex-wrap items-center justify-between gap-3;
+    }
+
+    .hp-countdown-label {
+        @apply flex items-center gap-1.5;
+    }
+
+    /* Everyday more value: 4 PB banners (drag-drop, inline-styled in content) */
+    .hp-banner-grid {
+        @apply grid gap-3 md:grid-cols-4;
+    }
+
+    .hp-banner-grid [data-content-type="column"] {
+        @apply static w-auto max-w-none;
+    }
+
+    .hp-banner-grid [data-content-type="banner"] {
+        @apply h-full;
+    }
+
+    /* Living, Reimagined split */
+    .hp-split-grid {
+        @apply grid items-stretch gap-8 md:grid-cols-5 md:gap-0;
+    }
+
+    .hp-split-grid [data-content-type="column"] {
+        @apply static w-auto max-w-none;
+    }
+
+    .hp-split-media-col {
+        @apply md:col-span-3;
+    }
+
+    .hp-split-copy-col {
+        @apply md:col-span-2;
+    }
+
+    .hp-split-media {
+        @apply h-full min-h-[360px];
+    }
+
+    .hp-split-copy {
+        @apply flex h-full flex-col items-start justify-center gap-5 md:ps-12;
+    }
+
+    /* PB products carousel (flash sale + collections) — code-owned styling */
+    .hp-pb-products {
+        @apply w-full;
+    }
+
+    .hp-pb-slider {
+        @apply relative;
+    }
+
+    .hp-pb-track {
+        --snap-gap: --spacing(3);
+        padding-inline: 0 --spacing(6);
+        padding-block: --spacing(4);
+    }
+
+    @media (min-width: 48rem) {
+        .hp-pb-track { --snap-cols: 4.08; }
+    }
+
+    .hp-pb-pager {
+        @apply mt-5;
+    }
+
+    .hp-pb-marker {
+        @apply border-slate-300;
+    }
+
+    /* REAL SPACES */
+    .hp-realspaces-media {
+        @apply relative flex w-full items-center justify-center;
+    }
+
+    .hp-video-controls {
+        @apply flex items-center gap-4;
+    }
+
+    .hp-video-btn {
+        @apply flex items-center justify-center rounded-full bg-white/25 text-white transition hover:bg-white/40;
+    }
+
+    .hp-video-btn-sm {
+        @apply h-12 w-12 md:h-14 md:w-14;
+    }
+
+    .hp-video-btn-lg {
+        @apply h-16 w-16 md:h-20 md:w-20;
+    }
+
+    .hp-video-icon {
+        @apply h-5 w-5 md:h-7 md:w-7;
+    }
+
+    .hp-realspaces-media + .hp-container {
+        @apply mt-8;
+    }
+
+    /* Why us */
+    .hp-usp-grid {
+        @apply grid gap-3 md:grid-cols-4 md:gap-4;
+    }
+
+    .hp-usp-card {
+        @apply flex flex-col items-center bg-hp-cream px-6 py-9 text-center;
+    }
+
+    .hp-usp-icon {
+        @apply flex h-14 w-14 items-center justify-center rounded-full bg-hp-green text-white;
+    }
+
+    .hp-usp-svg {
+        @apply h-6 w-6;
+    }
+
+    .hp-usp-title {
+        @apply m-0 mt-5 text-lg font-semibold text-ink;
+    }
+
+    .hp-usp-text {
+        @apply m-0 mt-3 text-sm leading-6 text-ink-muted;
+    }
+
+    /* Journal */
+    .hp-journal-grid {
+        @apply grid gap-6 md:grid-cols-3;
+    }
+
+    .hp-journal-media {
+        @apply w-full;
+    }
+
+    .hp-journal-title {
+        @apply m-0 mt-5 text-lg font-semibold text-ink;
+    }
+
+    .hp-journal-text {
+        @apply m-0 mt-2 text-sm leading-6 text-ink-muted;
+    }
+
+    /* =====================================================================
+       LAUNCHPAD CORE v4 (09-18) — Figma 5MpBw9VaNgFdct3UDWABuV
+       desktop 2151:17103 (1440) / mobile 2151:16903 (375).
+       Section-support classes referenced by the Page Builder CMS content and
+       the Launchpad_Homepage module templates. Content = class attributes only
+       (no inline styles beyond PB column width); DB classes are safelisted in
+       web/tailwind/safelist/launchpad-cms.html.
+       ===================================================================== */
+
+    /* Asymmetric bleed must not create a horizontal page scrollbar (AC-4). */
+    body.cms-index-index {
+        overflow-x: clip;
+    }
+
+
+    /* ---------------- Hero slider (PB slider) ---------------- */
+
+    /* Design: dots bottom-center inside the hero, active = 24x8 pill. */
+    body.cms-index-index [data-content-type="slider"] nav[data-pager] {
+        @apply absolute inset-x-0 bottom-3 z-10 mx-auto w-fit;
+    }
+
+    body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
+        @apply relative h-2 w-2 overflow-hidden rounded-full border-0 bg-[#a9ccae] opacity-80;
+    }
+
+    body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker[aria-current="true"] {
+        @apply w-6 rounded-full bg-[#588f60] opacity-100;
+    }
+
+    /* Autoplay progress (story-style): the active pill fills left-to-right
+       over data-autoplay-speed, then the slider advances (hero-autoplay.phtml
+       drives --lp-dot-progress via rAF — CSS animation bị IO-tick restart). */
+    body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker[aria-current="true"].lp-dot-run {
+        background-color: #a9ccae;
+    }
+
+    body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker[aria-current="true"].lp-dot-run::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background-color: #588f60;
+        transform: scaleX(var(--lp-dot-progress, 0));
+        transform-origin: left;
+    }
+
+    body.cms-index-index [data-content-type="slider"] {
+        @apply !pb-0;
+    }
+
+    /* ---------------- Products rails / flash slider ---------------- */
+
+    /* Track bleeds to the right viewport edge (design: overflow peek) while
+       the section itself stays inside the container. */
+    .lp-pb-track,
+    .lp-flash-track {
+        margin-inline-end: calc(50% - 50vw);
+        padding-inline: 0;
+    }
+
+    @media (min-width: 64rem) {
+        .lp-pb-track,
+        .lp-flash-track {
+            padding-inline: 0 2.5rem;
+        }
+    }
+
+    .lp-pb-track {
+        --snap-gap: --spacing(2);
+        --snap-cols: 2;
+    }
+
+    @media (min-width: 64rem) {
+        .lp-pb-track {
+            --snap-gap: --spacing(6);
+            --snap-cols: 4;
+        }
+    }
+
+    .lp-flash-track {
+        --snap-gap: --spacing(2);
+        --snap-cols: 2;
+    }
+
+    @media (min-width: 64rem) {
+        .lp-flash-track {
+            --snap-gap: --spacing(4);
+            --snap-cols: 4.1;
+        }
+    }
+
+    /* Design rail nav: 48px outline buttons above the track, right-aligned
+       with the section heading; mobile uses swipe + dots only. */
+    .lp-pb-nav {
+        @apply absolute bottom-full end-0 z-10 items-center justify-end gap-4;
+    }
+
+    .lp-nav-btn {
+        @apply flex h-12 w-12 items-center justify-center rounded-md border border-[#d1d5dc] bg-white text-[#293e2d] transition hover:bg-hp-soft disabled:cursor-default disabled:opacity-40;
+    }
+
+    /* Pager dots (design: 8px dot #a9ccae, active 24x8 pill #588f60). */
+    .lp-pb-pager,
+    .lp-journal-slider nav[data-pager] {
+        /* v4.9.9 (user, design): section blog KHÔNG có dot cho slide. */
+        display: none !important;
+    }
+
+    .lp-flash-pager {
+        @apply mt-4;
+    }
+
+    /* v4.9.9 (design Heading-3): title flash sale desktop = Inter Bold 36/40
+       #293e2d tracking -0.5px — !important vì utility lg:text-[36px] trên
+       element bị rule khác đoạt quyền (computed vẫn 20px). Heading là anh em
+       của .lp-flash trong row → dùng row:has(.lp-flash). */
+    @media (min-width: 64rem) {
+        body.cms-index-index [data-content-type="row"]:has(.lp-flash) h2[data-content-type='heading'] {
+            font-size: 36px !important;
+            font-weight: 700 !important;
+            line-height: 40px !important;
+            letter-spacing: -0.5px !important;
+            color: #293e2d !important;
+        }
+    }
+
+    /* v4.9.9 (user, design mobile): flash sale MOBILE = grid 2 cột (không
+       slider, không dot); desktop giữ slider bleed 4.1 cols. */
+    @media (max-width: 63.98rem) {
+        body.cms-index-index .lp-flash .hp-pb-slider > [data-track] {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 1rem !important;
+            overflow: visible !important;
+            width: auto !important;
+            margin-inline-end: 0 !important;
+            padding-inline: 0 !important;
+        }
+
+        body.cms-index-index .lp-flash nav[data-pager] {
+            display: none !important;
+        }
+    }
+
+    body.cms-index-index .hp-pb-marker {
+        @apply h-2 w-2 rounded-full border-0 bg-[#a9ccae] opacity-80;
+    }
+
+    body.cms-index-index .hp-pb-marker[aria-current="true"] {
+        @apply w-6 rounded-full bg-[#588f60] opacity-100;
+    }
+
+    /* ---------------- Flash sale countdown (Launchpad_Homepage widget) ---------------- */
+
+    /* Mobile: full-width pill under the heading. Desktop: absolute right,
+       aligned with the Page Builder heading line (widget follows it). */
+    .lp-flash-countdown {
+        @apply mb-5 w-full;
+    }
+
+    .lp-countdown-pill {
+        @apply flex w-full items-center justify-between gap-2 rounded-full bg-hp-soft px-4 py-2.5 text-sm leading-5 text-[#293e2d] lg:w-auto lg:justify-start lg:gap-4;
+    }
+
+    .lp-countdown-label {
+        @apply flex items-center gap-2;
+    }
+
+    .lp-countdown-value {
+        @apply font-semibold tabular-nums;
+    }
+
+    @media (min-width: 64rem) {
+        .lp-flash-countdown {
+            position: absolute;
+            inset-inline-end: 0;
+            bottom: calc(100% + 4px);
+            margin: 0;
+            width: auto;
+        }
+    }
+
+    /* ---------------- REAL SPACES video (PB video element) ---------------- */
+
+    /* REAL SPACES video lives in a PB html element (.lp-video): the native
+       video content-type dropped the iframe on admin save re-serialization. */
+    body.cms-index-index .lp-video,
+    body.cms-index-index .lp-video iframe {
+        @apply block w-full;
+    }
+
+    body.cms-index-index .lp-video iframe {
+        @apply aspect-video border-0;
+    }
+
+    /* ---------------- Journal (Launchpad_Homepage blog block) ---------------- */
+
+    /* Mobile: slider with peek (design card 300/375); desktop: exact 3-up
+       (no overflow → SnapSlider hides the dots automatically). */
+    .lp-journal-track {
+        --snap-gap: --spacing(4);
+        --snap-cols: 1.2;
+        margin-inline-end: calc(50% - 50vw);
+        padding-inline: 0 1.5rem;
+    }
+
+    @media (min-width: 64rem) {
+        .lp-journal-track {
+            --snap-gap: --spacing(6);
+            --snap-cols: 3;
+            margin-inline-end: 0;
+            padding-inline: 0;
+        }
+    }
+
+    .lp-journal-card {
+        @apply flex w-full flex-col gap-3;
+    }
+
+    .lp-journal-title {
+        @apply m-0 text-lg font-medium leading-7 text-hp-ink lg:text-2xl lg:leading-8;
+    }
+
+    .lp-journal-excerpt {
+        @apply m-0 text-base leading-6 text-[#475569];
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+    }
+
+    /* ---------------- Newsletter band (PB row + CMS block form) ---------------- */
+
+    body.cms-index-index .lp-newsletter {
+        @apply bg-hp-surface;
+    }
+
+    .lp-newsletter-title {
+        @apply m-0 mb-4 text-center text-base font-medium uppercase leading-6 tracking-normal text-hp-ink lg:text-xl lg:leading-7;
+    }
+
+    .hp-pb-pager {
+        @apply mt-4;
+    }
+
+    /* ---- Launchpad_Homepage module templates (v4.5) ----
+       app/code templates are NOT in the theme's @source — utility classes used
+       only there would never compile. Style them via these lp-* classes. */
+    .lp-newsletter-form {
+        @apply mx-auto flex w-full max-w-[1136px] flex-col gap-3 lg:flex-row lg:items-center lg:gap-4;
+    }
+
+    .lp-newsletter-input {
+        @apply h-11 w-full rounded-md border border-[#d1d5dc] bg-white px-4 text-base leading-6 text-hp-ink placeholder:text-[#99a1af] focus:border-hp-brand focus:outline-none;
+    }
+
+    .lp-newsletter-btn {
+        @apply h-11 shrink-0 rounded-md bg-hp-brand-dark px-6 text-base font-medium text-white transition hover:bg-hp-ink;
+    }
+
+    .lp-journal-media img {
+        @apply aspect-[437/520] w-full object-cover;
+    }
+
+    .lp-journal-title a {
+        @apply transition-colors hover:text-[#35573a];
+    }
+}
+
+/* ========================================================================
+/* ========================================================================
+   UNLAYERED overrides — must stay OUTSIDE @layer: page-builder.css ships
+   UNLAYERED rules and PageBuilder admin saves emit ID-specificity
+   `#html-body [data-pb-style=…]` rules, so every layout declaration below
+   carries !important. Selectors are keyed on data-content-type /
+   data-appearance + :has() of features that SURVIVE an admin save (module
+   templates .lp-flash/.lp-journal/.lp-newsletter-form, media src, the
+   products element); column groups are matched as BOTH column-group and
+   column-line (the admin save converts column-group → column-line).
+   ======================================================================== */
+
+/* ---- hero slider (Page Builder slider content type) ---- */
+body.cms-index-index [data-content-type="slider"] {
+    position: relative !important;
+}
+
+body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] {
+    overflow: hidden !important;
+}
+
+body.cms-index-index [data-content-type="slider"] .pagebuilder-slide-wrapper {
+    height: 750px !important;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="slider"] .pagebuilder-slide-wrapper {
+        height: 1024px !important;
+    }
+}
+
+/* copy pinned bottom-left (design 2151:17103/2151:16903) */
+body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay {
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    align-items: flex-start !important;
+    min-height: 100% !important;
+    padding-block-start: 2.5rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay [data-element="content"] p {
+    max-inline-size: none !important;
+}
+
+@media (min-width: 48rem) {
+    body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay {
+        padding-inline: 1.5rem !important;
+    }
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay {
+        padding-inline: 2.5rem !important;
+    }
+}
+
+@layer base {
+    body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay {
+        padding-block-end: 4rem !important;
+    }
+}
+
+/* hero dots: story-style progress fill, armed by hero-autoplay.phtml */
+body.cms-index-index [data-content-type="slider"] [data-track] {
+    padding-block: 0 !important;
+}
+
+body.cms-index-index [data-content-type="slider"] nav[data-pager] {
+    position: absolute !important;
+    inset-inline: 0 !important;
+    bottom: 4.5rem !important;
+    margin-inline: auto !important;
+    width: fit-content !important;
+    z-index: 10 !important;
+}
+
+body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
+    position: relative !important;
+    width: 8px !important;
+    height: 8px !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 9999px !important;
+    background-color: #a9ccae !important;
+    opacity: 0.8 !important;
+    transition: none !important;
+}
+
+body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker[aria-current="true"] {
+    width: 24px !important;
+    background-color: #588f60 !important;
+    opacity: 1 !important;
+}
+
+body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker[aria-current="true"].lp-dot-run {
+    background-color: #a9ccae !important;
+}
+
+body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker[aria-current="true"].lp-dot-run::after {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: inherit !important;
+    background-color: #588f60 !important;
+    /* v4.9.4 (user): fill chạy bằng rAF trong hero-autoplay.phtml ghi
+       --lp-dot-progress (0→1) — CSS animation bị SnapSlider IO-tick
+       cancel/restart liên tục nên kẹt 0. */
+    transform: scaleX(var(--lp-dot-progress, 0)) !important;
+    transform-origin: left !important;
+}
+
+body.cms-index-index [data-content-type="slider"].lp-dot-paused .snap-marker::after {
+    animation-play-state: paused !important;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="slider"] nav[data-pager] {
+        bottom: 4rem !important;
+    }
+}
+
+/* v4.9.4 (user): dot hero slider — pager overlay ĐÁY hero giữa (trước đây
+   static flow nên rơi xuống dưới slider, bottom:4rem vô nghĩa khi phần tử
+   không absolute). Marker hero chỉ có .snap-marker (không hp-pb-marker như
+   rails) → style riêng: inactive chấm trắng mờ 8px, active pill xanh
+   #588f60 24px, fill #588f60 chạy theo autoplay (lp-dot-run). Đặt SAU rule
+   815-844 để thắng cùng specificity. */
+body.cms-index-index [data-content-type="slider"] {
+    position: relative !important;
+}
+
+body.cms-index-index [data-content-type="slider"] nav[data-pager] {
+    position: absolute !important;
+    inset-inline: 0 !important;
+    bottom: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    z-index: 10 !important;
+    pointer-events: none !important;
+}
+
+body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
+    pointer-events: auto !important;
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 9999px !important;
+    background-color: #A9CCAE !important;
+    opacity: 1 !important;
+    transition:
+        width 0.3s ease,
+        background-color 0.3s ease !important;
+}
+
+/* v4.9.7 (user, Figma design): Category slider = HTML element (KHÔNG PB
+   column), track tràn ra mép phải viewport; dots SnapSlider autoPager —
+   CHỈ mobile/tablet (desktop design không có dot). */
+.lp-cat-track {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-block-end: 0.5rem;
+    margin-inline-end: calc(50% - 50vw);
+    padding-inline-end: 2.5rem;
+}
+
+.lp-cat-track::-webkit-scrollbar {
+    display: none;
+}
+
+.lp-cat-tile {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    width: 172px;
+    scroll-snap-align: start;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    padding: 0.75rem 0.5rem 0.625rem;
+}
+
+.lp-cat-tile img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+}
+
+.lp-cat-tile-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1rem;
+    letter-spacing: 0.02em;
+    color: #1e293b;
+}
+
+.lp-cat-slider nav[data-pager] {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.lp-cat-slider nav[data-pager] .snap-marker {
+    width: 8px;
+    height: 8px;
+    border: 0;
+    border-radius: 9999px;
+    background-color: #a9ccae;
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+.lp-cat-slider nav[data-pager] .snap-marker[aria-current='true'] {
+    width: 24px;
+    background-color: #588f60;
+    opacity: 1;
+}
+
+@media (min-width: 64rem) {
+    .lp-cat-slider nav[data-pager] {
+        display: none;
+    }
+}
+
+/* v4.10 (user): CTA arrows — secondary button: text + arrow CÙNG màu
+   primary xanh (design); mọi CTA một dòng (arrow khôngwrap xuống line). */
+body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary {
+    color: #588f60 !important;
+}
+
+body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary,
+body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-primary {
+    display: inline-flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    width: auto !important;
+    white-space: nowrap !important;
+}
+
+/* v4.10 (user): mũi tên CTA bằng CSS ::after + mask currentColor —
+   KHÔNG nhúng svg vào content (PB round-trip strip inline svg trong button).
+   Màu arrow tự theo màu chữ button (primary=trắng, secondary=xanh #588f60).
+   Hero slide KHÔNG arrow (override riêng). */
+body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-primary::after,
+body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary::after {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+    background-color: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E") no-repeat center / contain;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
+/* hero slide: button KHÔNG arrow */
+body.cms-index-index [data-content-type="slide"] [data-content-type="button-item"] a.pagebuilder-button-primary::after,
+body.cms-index-index [data-content-type="slide"] [data-content-type="button-item"] a.pagebuilder-button-secondary::after {
+    content: none;
+}
+
+/* ---- product sliders: mobile 2-up / desktop 4-up, bleed to viewport edge ---- */
+/* v4.9.4: pager rail đặt TRƯỚC track trong DOM (để thắng document-order
+   querySelector "[data-pager]" của SnapSlider) nhưng hiển thị DƯỚI cards
+   bằng flex order. */
+body.cms-index-index .hp-pb-slider {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+body.cms-index-index .hp-pb-slider > [data-track] {
+    order: 1 !important;
+    width: 100% !important;
+}
+
+body.cms-index-index .hp-pb-slider > nav[data-pager] {
+    order: 2 !important;
+}
+
+.lp-pb-track,
+.lp-flash-track {
+    margin-inline-end: calc(50% - 50vw) !important;
+    /* v4.9.7: pb-style khoá width:100% làm margin âm vô hiệu (width giữ
+       1345, không tràn) — width:auto để margin âm mở rộng track ra viewport. */
+    width: auto !important;
+    padding-inline: 0 !important;
+    --snap-gap: --spacing(2) !important;
+    --snap-cols: 2 !important;
+}
+
+@media (min-width: 64rem) {
+    .lp-pb-track,
+    .lp-flash-track {
+        padding-inline: 0 2.5rem !important;
+    }
+
+    /* v4.9.3 (user): CHỈ flash sale tràn product ra viewport; rails (Living
+       Room/Bedroom/Accessories) giữ trong container 1360, 4 products/slide. */
+    .lp-pb-track {
+        margin-inline-end: 0 !important;
+        padding-inline: 0 !important;
+    }
+
+    /* v4.9.8: flash sale thuộc 3 section bleed — flash track mang CẢ 2 class
+       (hp-pb-track + lp-flash-track) nên rule "rails không bleed" phía trên
+       nhầm cả flash → ghi đè bằng .lp-flash-track (class từ template
+       FlashSaleList, ổn định qua mọi save; .lp-flash trên row đã bị save
+       15:38 strip). */
+    #html-body.cms-index-index .lp-flash-track {
+        margin-inline-end: calc(50% - 50vw) !important;
+        padding-inline: 0 2.5rem !important;
+        width: auto !important;
+    }
+
+    .lp-pb-track {
+        --snap-gap: --spacing(6) !important;
+        --snap-cols: 4 !important;
+    }
+
+    .lp-flash-track {
+        --snap-gap: --spacing(4) !important;
+        --snap-cols: 4.1 !important;
+    }
+}
+
+/* v4.9.3 (user): chỉ FLASH giữ cols tăng theo viewport (track bleed ra mép
+   phải); rails cols cố định 4 — container 1360 cố định rồi nên card không
+   phóng, không cần breakpoint theo màn lớn. */
+@media (min-width: 105rem) {
+    .lp-flash-track {
+        --snap-cols: 4.85 !important;
+    }
+}
+
+@media (min-width: 120rem) {
+    .lp-flash-track {
+        --snap-cols: 5.25 !important;
+    }
+}
+
+/* pager dots (rails): active = 24x8 pill #588f60 */
+body.cms-index-index .hp-pb-marker {
+    width: 8px !important;
+    height: 8px !important;
+    border: 0 !important;
+    border-radius: 9999px !important;
+    background-color: #a9ccae !important;
+    opacity: 0.8 !important;
+}
+
+body.cms-index-index .hp-pb-marker[aria-current="true"] {
+    width: 24px !important;
+    background-color: #588f60 !important;
+    opacity: 1 !important;
+}
+
+/* ---- REAL SPACES video (Secomm UI widget embed_a) ---- */
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-secomm-ui-component="embed_a"]) {
+    margin-block-start: 3rem !important;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-secomm-ui-component="embed_a"]) {
+        margin-block-start: 4rem !important;
+    }
+}
+
+body.cms-index-index [data-secomm-ui-component="embed_a"],
+body.cms-index-index [data-secomm-ui-component="embed_a"] iframe {
+    width: 100% !important;
+}
+
+/* ---- promo card circular arrow: PB forces inline-block — restore flex ---- */
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="buttons"] [data-element="link"] {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+/* ---- newsletter band: centered title + centered form ---- */
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has(.lp-newsletter-form) {
+    margin-block-start: 3rem !important;
+    background-color: #f8f6ee !important;
+    padding: 1.5rem !important;
+}
+
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has(.lp-newsletter-form) [data-element="inner"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has(.lp-newsletter-form) {
+        margin-block-start: 4rem !important;
+        padding: 2.5rem !important;
+    }
+}
+
+/* ========================================================================
+   STRIP-PROOF SECTION LAYOUT — every group is matched as BOTH column-group
+   and column-line (admin save converts column-group → column-line);
+   columns keep their own classes, the groups never do.
+
+   v4.9: the save ALSO nests a column-line INSIDE the column-group
+   (group > line > columns). Container layout below therefore only targets
+   the element that DIRECTLY holds the columns (:has(> column)); a wrapper
+   holding another group/line is neutralized so the inner container keeps
+   the full row width.
+   ======================================================================== */
+
+body.cms-index-index [data-content-type="row"] [data-content-type="column-group"]:has(> [data-content-type="column-line"]),
+body.cms-index-index [data-content-type="row"] [data-content-type="column-line"]:has(> [data-content-type="column-group"]) {
+    display: block !important;
+    width: 100% !important;
+}
+
+/* v4.9.3 (user): container cố định — design 1440 có content 1360px (trừ 2×40
+   margin). Section contained KHÔNG giãn ở màn lớn (1440+): max-width 1440 =
+   1360 content + 2×40 padding, centered. Full-bleed (hero/video/split/sofa)
+   vẫn tràn viewport. */
+body.cms-index-index [data-content-type="row"][data-appearance="contained"] {
+    max-width: 90rem !important;
+    margin-inline: auto !important;
+}
+
+/* ---- category slider section spacing (v4.9.7: HTML slider thay columns) ---- */
+/* v4.9.8 (user: Admin stage không render khi content có html-slider element →
+   quay lại PB columns; bleeding + dots làm bằng CSS/JS trên columns):
+   mobile/tablet = flex rail swipe; desktop = grid 6 cột tĩnh, không dot. */
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
+    margin-block-start: 2rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.5rem !important;
+    overflow-x: auto !important;
+    padding-block-end: 0.5rem !important;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
+    flex: 0 0 auto !important;
+}
+
+@media (max-width: 63.98rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
+        width: 172px !important;
+    }
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
+        margin-block-start: 2.5rem !important;
+        padding-inline: 2.5rem !important;
+    }
+
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 1.5rem !important;
+        overflow: visible !important;
+        padding-block-end: 0 !important;
+    }
+}
+
+/* ---- category slider section spacing (v4.9.7: HTML slider thay columns) ---- */
+body.cms-index-index [data-content-type="row"]:has(.lp-cat-slider) {
+    margin-block-start: 2rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-cat-slider) {
+        margin-block-start: 2.5rem !important;
+        padding-inline: 2.5rem !important;
+    }
+}
+
+/* ---- category slider (v4.9.8 FINAL): tiles = PB columns — mobile/tablet
+   flex rail swipe 172px + dots; desktop grid 6 cột tĩnh KHÔNG dot (design).
+   Dots tạo bằng JS sliders-init (.lp-tiles-dots) — SnapSlider không khởi tạo
+   được trên columns (thiếu [data-track] con). ---- */
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
+    margin-block-start: 2rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.5rem !important;
+    overflow-x: auto !important;
+    padding-block-end: 0.5rem !important;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
+body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
+    flex: 0 0 auto !important;
+}
+
+@media (max-width: 63.98rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
+        width: 172px !important;
+    }
+}
+
+.lp-tiles-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.lp-tiles-dots .lp-tiles-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 9999px;
+    background-color: #a9ccae;
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+.lp-tiles-dots .lp-tiles-dot[aria-current='true'] {
+    width: 24px;
+    background-color: #588f60;
+    opacity: 1;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
+        margin-block-start: 2.5rem !important;
+        padding-inline: 2.5rem !important;
+    }
+
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 1.5rem !important;
+        overflow: visible !important;
+        padding-block-end: 0 !important;
+    }
+
+    .lp-tiles-dots {
+        display: none !important;
+    }
+}
+
+/* ---- flash sale ---- */
+body.cms-index-index [data-content-type="row"]:has(.lp-flash) {
+    margin-block-start: 2.5rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+@media (min-width: 48rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-flash) {
+        padding-inline: 1.5rem !important;
+    }
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-flash) {
+        margin-block-start: 3.5rem !important;
+        padding-inline: 2.5rem !important;
+    }
+}
+
+/* ---- everyday more value: mobile rail / desktop bleed rail ---- */
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) {
+    margin-block-start: 1.5rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 1rem !important;
+    overflow-x: auto !important;
+    padding-block-end: 0.5rem !important;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"] > [data-content-type="column"],
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"] > [data-content-type="column"] {
+    flex: 0 0 auto !important;
+}
+
+@media (min-width: 48rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) {
+        padding-inline: 1.5rem !important;
+    }
+}
+
+@media (min-width: 64rem) {
+    /* v4.9.2 (user): pb-style cap max-width 1280 trên row này — dùng cap
+       container chuẩn 90rem/1440 như mọi section contained (1360 content):
+       1440 clip item 4 tại mép container, màn lớn không giãn. */
+    #html-body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) {
+        max-width: 90rem !important;
+        margin-inline: auto !important;
+        margin-block-start: 1.5rem !important;
+        padding-inline: 2.5rem !important;
+    }
+
+    body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+    body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        gap: 1.5rem !important;
+        max-width: none !important;
+        /* v4.9.7 (user): promo TRÀN ra mép phải viewport như design (Category/
+           Flash/Promotion là 3 section bleed) — item 4 clip tại mép màn.
+           width:auto — pb-style width:100% làm margin âm vô hiệu. */
+        width: auto !important;
+        margin-inline-end: calc(50% - 50vw) !important;
+        padding-inline-end: 2.5rem !important;
+    }
+
+    body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"] > [data-content-type="column"],
+    body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"] > [data-content-type="column"] {
+        width: 360px !important;
+        height: 502px !important;
+    }
+}
+
+/* ---- split image / text (Living, Reimagined): row chứa column-group/line,
+   appearance do Admin đặt — cover CẢ full-width và full-bleed (user đổi giữa
+   các lần save). Rule full-bleed:has(buttons) (min-height 800 + padding
+   2.5rem/4rem) áp oan cho row này → neutralize riêng, specificity cao hơn
+   (#html-body) vì cùng specificity thì rule nằm sau thắng. ---- */
+#html-body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]),
+#html-body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]),
+#html-body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-group"]),
+#html-body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-line"]) {
+    margin-block-start: 3rem !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+}
+
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"] [data-content-type="column-group"]:has(> [data-content-type="column"]),
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"] [data-content-type="column-line"]:has(> [data-content-type="column"]),
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"] [data-content-type="column-group"]:has(> [data-content-type="column"]),
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"] [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+}
+
+@media (min-width: 64rem) {
+    #html-body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]),
+    #html-body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]),
+    #html-body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-group"]),
+    #html-body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-line"]) {
+        margin-block-start: 4rem !important;
+    }
+
+    body.cms-index-index [data-content-type="row"][data-appearance="full-width"] [data-content-type="column-group"]:has(> [data-content-type="column"]),
+    body.cms-index-index [data-content-type="row"][data-appearance="full-width"] [data-content-type="column-line"]:has(> [data-content-type="column"]),
+    body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"] [data-content-type="column-group"]:has(> [data-content-type="column"]),
+    body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"] [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        grid-template-columns: 940fr 467fr !important;
+        gap: 2rem !important;
+    }
+}
+
+/* v4.9.2 (user, Figma 2151:17164): Living, Reimagined = section FULL WIDTH —
+   ảnh tràn sát mép trái viewport, cột text phải chừa 2.5rem mép phải.
+   (newsletter full-width không chứa column-group/line nên không bị phạm.) */
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]) [data-element="inner"],
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]) [data-element="inner"],
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-group"]) [data-element="inner"],
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-line"]) [data-element="inner"] {
+    max-width: none !important;
+    margin-inline: 0 !important;
+    padding: 0 2.5rem 0 0 !important;
+}
+
+/* ---- product rails (3x) ---- */
+body.cms-index-index [data-content-type="row"]:has([data-content-type="products"]) {
+    margin-block-start: 1.5rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+@media (min-width: 48rem) {
+    body.cms-index-index [data-content-type="row"]:has([data-content-type="products"]) {
+        padding-inline: 1.5rem !important;
+    }
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"]:has([data-content-type="products"]) {
+        padding-inline: 2.5rem !important;
+    }
+}
+
+/* ---- REAL SPACES copy (contained row: heading + button, no columns/modules) ---- */
+body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-tile)) {
+    margin-block-start: 1rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+@media (min-width: 48rem) {
+    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-tile)) {
+        padding-inline: 1.5rem !important;
+    }
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-tile)) {
+        margin-block-start: 1.5rem !important;
+        padding-inline: 2.5rem !important;
+    }
+}
+
+/* ---- editorial banner: full-bleed row with copy + button ---- */
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="buttons"]) {
+    margin-block-start: 3rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    min-height: 640px !important;
+    padding: 2.5rem 0.5rem 1.5rem !important;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+@media (min-width: 48rem) {
+    body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="buttons"]) {
+        padding-inline: 1.5rem !important;
+    }
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="buttons"]) {
+        margin-block-start: 4rem !important;
+        min-height: 800px !important;
+        padding: 2.5rem 2.5rem 4rem !important;
+    }
+}
+
+/* ---- why us: mobile stack w/ gap / desktop 4-col ---- */
+body.cms-index-index [data-content-type="row"]:has(.lp-usp) {
+    margin-block-start: 3rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-usp) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+body.cms-index-index [data-content-type="row"]:has(.lp-usp) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+}
+
+@media (min-width: 40rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-usp) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+    body.cms-index-index [data-content-type="row"]:has(.lp-usp) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 1.5rem !important;
+    }
+}
+
+@media (min-width: 48rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-usp) {
+        padding-inline: 1.5rem !important;
+    }
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-usp) {
+        margin-block-start: 4rem !important;
+        padding-inline: 2.5rem !important;
+    }
+
+    body.cms-index-index [data-content-type="row"]:has(.lp-usp) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+    body.cms-index-index [data-content-type="row"]:has(.lp-usp) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 2.5rem !important;
+    }
+}
+
+/* ---- journal ---- */
+body.cms-index-index [data-content-type="row"]:has(.lp-journal) {
+    margin-block-start: 3rem !important;
+    padding-inline: 0.5rem !important;
+}
+
+@media (min-width: 48rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-journal) {
+        padding-inline: 1.5rem !important;
+    }
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"]:has(.lp-journal) {
+        margin-block-start: 4rem !important;
+        padding-inline: 2.5rem !important;
+    }
+}
+
+/* ---- newsletter band (only full-width row with the module form) ---- */
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has(.lp-newsletter-form) {
+    margin-block-start: 3rem !important;
+    background-color: #f8f6ee !important;
+    padding: 1.5rem !important;
+}
+
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has(.lp-newsletter-form) [data-element="inner"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has(.lp-newsletter-form) {
+        margin-block-start: 4rem !important;
+        padding: 2.5rem !important;
+    }
+}
