@@ -1,0 +1,26 @@
+{
+    "vn_pay_refund": {
+        "column": {
+            "entity_id": true,
+            "order_id": true,
+            "increment_id": true,
+            "txn_ref": true,
+            "transaction_no": true,
+            "pay_date": true,
+            "refund_type": true,
+            "amount": true,
+            "request_id": true,
+            "response_code": true,
+            "vnp_transaction_status": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "VN_PAY_REFUND_ORDER_ID": true,
+            "VN_PAY_REFUND_TXN_REF": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

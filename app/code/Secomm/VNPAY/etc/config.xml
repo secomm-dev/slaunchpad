@@ -10,9 +10,11 @@
                 <title>VNPAY</title>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
+                <version>2.1.0</version>
+                <api_url>https://sandbox.vnpayment.vn/merchant_webapi/api/transaction</api_url>
                 <min_order_total>5000</min_order_total>
             </vnpay>
-          
+
         </payment>
     </default>
 </config>

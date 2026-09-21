@@ -62,7 +62,7 @@ class Info extends Action
             $returnUrl = rtrim($returnUrl, "/");
             $returnUrl .= "/paymentvnpay/order/pay";
             $inputData = [
-                "vnp_Version" => "2.1.0",
+                "vnp_Version" => $this->scopeConfig->getValue('payment/vnpay/version') ?: '2.1.0',
                 "vnp_TmnCode" => $this->scopeConfig->getValue('payment/vnpay/tmn_code'),
                 "vnp_Amount" => $vnpAmount,
                 "vnp_Command" => "pay",

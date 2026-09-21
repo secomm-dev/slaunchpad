@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="vn_pay_refund" resource="default" engine="innodb" comment="VNPAY Refund">
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Entity Id"/>
+        <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" comment="Order Id"/>
+        <column xsi:type="varchar" name="increment_id" nullable="false" length="45" comment="Order Increment Id"/>
+        <column xsi:type="varchar" name="txn_ref" nullable="false" length="100" comment="vnp_TxnRef"/>
+        <column xsi:type="varchar" name="transaction_no" nullable="false" length="32" comment="vnp_TransactionNo"/>
+        <column xsi:type="varchar" name="pay_date" nullable="false" length="14" comment="vnp_PayDate (GMT+7)"/>
+        <column xsi:type="varchar" name="refund_type" nullable="false" length="2" comment="vnp_TransactionType: 02 full / 03 partial"/>
+        <column xsi:type="decimal" name="amount" scale="4" precision="20" nullable="false" comment="Refund Amount (base)"/>
+        <column xsi:type="varchar" name="request_id" nullable="false" length="32" comment="vnp_RequestId"/>
+        <column xsi:type="varchar" name="response_code" nullable="false" length="8" comment="vnp_ResponseCode"/>
+        <column xsi:type="varchar" name="vnp_transaction_status" nullable="true" length="8" comment="vnp_TransactionStatus (05/06/09)"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <index referenceId="VN_PAY_REFUND_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+        <index referenceId="VN_PAY_REFUND_TXN_REF" indexType="btree">
+            <column name="txn_ref"/>
+        </index>
+    </table>
+</schema>
