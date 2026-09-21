@@ -1,0 +1,69 @@
+TASK-Y6SGHE (MOMO-01-HF1) — validation evidence, 2026-09-21
+Environment: container `m2r-php` (markoshust/magento-php:8.3-fpm, PHP 8.3.20)
++ throwaway validation copy `/tmp/m2r` (host) mounted at /var/www/html, synced
+with the task branch files before validation. Repo BASE_SHA 88050d2d.
+
+1) php -l (changed/new PHP files)
+   app/code/Secomm/MoMo/Test/Unit/Di/PaymentAttemptDiBindingTest.php -> No syntax errors detected
+   app/code/Secomm/MoMo/Plugin/Quote/CartManagementPlaceOrderGuard.php -> No syntax errors detected
+   (guard re-linted as sanity; NOT modified by this task)
+   di.xml: validated by simplexml parse (unit test) + full setup:di:compile below.
+
+2) PHPCS (Magento2 standard, severity >= 6, changed files)
+   vendor/bin/phpcs --standard=Magento2 --severity=6 \
+     app/code/Secomm/MoMo/Test/Unit/Di/PaymentAttemptDiBindingTest.php
+   -> EXIT=0, 0 errors / 0 warnings (only phpcs' own framework DEPRECATED
+   sniff notices, pre-existing; see phpcs-compile.txt)
+
+3) PHPUnit — focused regression (new test + guard suite)
+   php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml \
+     --filter 'PaymentAttemptDiBindingTest|CartManagementPlaceOrderGuardTest'
+   -> OK: tests pass, 5 pre-existing framework-level PHPUnit deprecations.
+
+4) PHPUnit — full Secomm\MoMo suite (task baseline per MOMO-02 methodology)
+   php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --filter 'Secomm\\MoMo'
+   -> OK, but with pre-existing framework deprecations:
+      Tests: 185, Assertions: 515  (MOMO-02 baseline 182/510 + 3 new tests / 5 assertions)
+   see phpunit-secomm-momo.txt
+
+   Full unfiltered suite shows errors in OTHER lanes (e.g. Secomm/FulfillmentCore
+   "save() on null"). Proven independent of this task: re-ran with the MoMo
+   di.xml REMOVED from the validation copy -> FulfillmentCore still fails the
+   same way (pre-existing at BASE, unrelated lane, outside mutation scope).
+
+5) Clean DI compile (disposable generated artifacts wiped in the throwaway
+   copy only; main checkout untouched)
+   rm -rf generated/code var/cache/* && php bin/magento setup:di:compile
+   -> "Generated code and dependency injection configuration successfully." EXIT=0
+   see phpcs-compile.txt
+
+6) Runtime ObjectManager/DI smoke (see di-smoke.txt; throwaway script
+   /tmp/m2r/di_smoke_hf1.php, never committed)
+   Magento\Framework\App\Bootstrap::create(BP, $_SERVER)->getObjectManager():
+   - repo  = Secomm\MoMo\Model\PaymentAttemptRepository
+     (AC1: interface resolves to the intended concrete repository)
+   - entity-interface preference check:
+     getPreference(Secomm\MoMo\Api\Data\PaymentAttemptInterface) returns the
+     interface itself (identity) -> NO binding exists, confirming spec §3.2:
+     the entity interface has no ObjectManager-created path; deliberately no
+     speculative preference added (scope item #13.3).
+   - guard = Secomm\MoMo\Plugin\Quote\CartManagementPlaceOrderGuard
+     (the exact class that fataled at BASE instantiates from clean DI)
+   - QuoteManagement::placeOrder(999999999) through the interceptor chain:
+     Magento\Framework\Exception\NoSuchEntityException: No such entity with
+     cartId = 999999999 — core behaviour for a nonexistent cart; the MoMo
+     plugin graph instantiated and ran without the
+     "Cannot instantiate interface PaymentAttemptRepositoryInterface" fatal.
+     (AC3: non-MoMo/Zalo-like place-order path no longer blocked by the guard
+     plugin instantiation; guard is a no-op for non-MoMo quotes — unit test
+     testGuardConstructsWithRealRepositoryAndIsNoOpForNonMoMo covers the
+     no-op assertion with the REAL repository injected.)
+   -> SMOKE OK
+
+7) Guard behaviour regression (AC4): existing CartManagementPlaceOrderGuardTest
+   suite (6 tests: block without grant, grant backed by persisted attempt
+   triple, single-use consume, mismatched order_ref/quote_id refusal) PASS —
+   unchanged, unmodified.
+
+8) Framework validators: .ai/bin/project-ai-validate --check-specs /
+   --check-identity / --check-records — see handoff comment for results.

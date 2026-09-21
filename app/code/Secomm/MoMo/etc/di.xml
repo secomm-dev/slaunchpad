@@ -9,6 +9,14 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- MOMO-01-HF1 (issue #13): payment-attempt repository contract. The
+         global QuoteManagement placeOrder guard and every payment-first
+         service (PaymentAttemptManagement, IpnProcessor, OrderFinalizer,
+         PaymentAttemptLifecycle, ReturnProcessor) resolve this interface
+         from ObjectManager; with no preference ANY place-order path —
+         including non-MoMo/ZaloPay — fatals at plugin instantiation. -->
+    <preference for="Secomm\MoMo\Api\PaymentAttemptRepositoryInterface" type="Secomm\MoMo\Model\PaymentAttemptRepository"/>
+
     <!-- MOMO-02: durable refund request persistence (independent connection). -->
     <preference for="Secomm\MoMo\Api\Data\RefundRequestInterface" type="Secomm\MoMo\Model\RefundRequest"/>
     <preference for="Secomm\MoMo\Api\RefundRequestRepositoryInterface" type="Secomm\MoMo\Model\RefundRequestRepository"/>

@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.2.1] - 2026-09-21
+
+### Fixed
+- **Missing DI preference blocked non-MoMo orders (MOMO-01-HF1, issue #13)**:
+  added the ObjectManager preference
+  `Secomm\MoMo\Api\PaymentAttemptRepositoryInterface` →
+  `Secomm\MoMo\Model\PaymentAttemptRepository`. The global
+  `QuoteManagement` placeOrder guard and every payment-first service
+  (PaymentAttemptManagement, IpnProcessor, OrderFinalizer,
+  PaymentAttemptLifecycle, ReturnProcessor) resolve this interface;
+  without the preference any `placeOrder` call — including ZaloPay and
+  other non-MoMo methods — failed with "Cannot instantiate interface" at
+  plugin instantiation. Guard behaviour is unchanged: non-MoMo quotes stay
+  a no-op, MoMo quotes still require the persisted attempt-backed grant.
+- Regression coverage: `Test/Unit/Di/PaymentAttemptDiBindingTest.php` pins
+  the preference + the real repository/guard construction path (DI compile
+  alone cannot catch a missing constructor preference — runtime-only).
+
 ## [2.2.0] - 2026-09-18
 
 ### Added
