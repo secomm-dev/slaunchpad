@@ -1,5 +1,45 @@
 # Changelog
 
+## [2.2.0] - 2026-09-18
+
+### Added
+- **Native Credit Memo refunds made idempotent and uncertainty-safe (MOMO-02)**:
+  the admin flow stays native Magento accounting; the module now owns provider
+  request identity, response classification and reconciliation evidence.
+- `secomm_momo_refund` table (db_schema + whitelist): full order/creditmemo/
+  invoice linkage, amount, original MoMo `transId`, minted refund identity,
+  classification, guarded lifecycle (`open_flag` NULL-trick UNIQUE index =
+  at most one open refund per payment; terminal states release the slot),
+  persisted on an **independent DB connection** so evidence survives the
+  `CreditmemoService` sales-transaction rollback.
+- `RefundCommand` (gateway `refund` command): durable identity opened BEFORE
+  any provider call, echo-verified classification, guarded outcome transitions.
+- `RefundResultClassifier` — refund responses carry NO signature (verified
+  provider contract): SUCCESS requires intact echoes (requestId/orderId/
+  amount, partnerCode conflict-intolerant) + `resultCode == 0`; `7002` is
+  processing → UNKNOWN, never FAILED; malformed/echo-mismatch/transport →
+  UNKNOWN. `classifyQuery` parses `/v2/gateway/api/refund/query` evidence
+  conservatively (ambiguity never resolves to a terminal verdict).
+- `RefundRequestManager` — stale-pending sweep (TTL 600s ≫ 45s HTTP timeout),
+  open-row block (pending/unknown), budget drift guard, race-safe insert,
+  `last_error` reserved for UNKNOWN rows.
+- Operator CLI: `momo:refund:list` (evidence browser) and
+  `momo:refund:resolve <requestId>` (query-only resolution; the refund is
+  never re-posted with a new identity; SUCCESS outcome instructs an offline
+  credit memo realignment).
+- `Plugin\Sales\CreditmemoService` — backfills `creditmemo_id` onto the
+  refund row post-commit (read-only on sales data).
+- 45s HTTP timeout on refund transfers (MoMo documents a 30s refund minimum;
+  the ~10s Laminas default would misclassify slow-but-successful refunds).
+- Focused unit suites: classifier contract, command flow (block/refusal/
+  unknown/transport), manager guards, identity minting, plugin backfill.
+
+### Fixed
+- Refund requests previously reused the purchase `orderId` (violates the MoMo
+  contract: the refund's `orderId` MUST differ) and trusted HTTP status
+  without a response-integrity check; refund `requestId`s are now minted per
+  operation (provider idempotency key, ≥31 days).
+
 ## [2.1.0] - 2026-09-18
 
 ### Changed

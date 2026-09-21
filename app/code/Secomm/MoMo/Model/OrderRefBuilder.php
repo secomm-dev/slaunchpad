@@ -56,6 +56,34 @@ class OrderRefBuilder
     }
 
     /**
+     * Build the MoMo orderId for a REFUND transaction.
+     *
+     * MoMo requires the refund orderId to differ from the ORIGINAL purchase
+     * orderId, and both orderId and requestId are String(50) at the provider
+     * — hence the orderRef truncation (the recognizable prefix is kept, the
+     * tail is random for uniqueness).
+     *
+     * @param string $orderRef Purchase order_ref (the original MoMo orderId).
+     * @return string <= 49 chars.
+     */
+    public function buildRefundOrderId(string $orderRef): string
+    {
+        return substr($orderRef, 0, 42) . '-RF' . $this->randomSuffix();
+    }
+
+    /**
+     * Build the MoMo requestId for a REFUND transaction (the provider
+     * idempotency key — minted once per refund row, stored, never regenerated).
+     *
+     * @param string $orderRef Purchase order_ref (the original MoMo orderId).
+     * @return string <= 49 chars.
+     */
+    public function buildRefundRequestId(string $orderRef): string
+    {
+        return substr($orderRef, 0, 42) . '-RQ' . $this->randomSuffix();
+    }
+
+    /**
      * Short random suffix (collision safety within one second clock tick).
      *
      * @return string 4 hex chars.

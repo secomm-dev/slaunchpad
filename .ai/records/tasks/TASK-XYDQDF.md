@@ -1,0 +1,66 @@
+# TASK-XYDQDF — MoMo native refund idempotency + uncertainty safety (MOMO-02)
+
+---
+id: TASK-XYDQDF
+type: task
+title: "[MoMo][MOMO-02] Make native Credit Memo refunds idempotent and uncertainty-safe"
+project_code: SLP
+mode: A
+specification_level: FULL
+risk: high
+status: READY_FOR_REVIEW
+decisions:
+  - "Durable secomm_momo_refund table keyed UNIQUE(momo_order_ref, momo_trans_id, open_flag) with the NULL-trick: open_flag=1 for open rows (pending/unknown), NULL for terminal — at most one open refund per payment; terminal rows release the slot (sequential partials + retry-after-FAILED stay native)."
+  - "All refund-row persistence goes through an independent DB connection (ConnectionFactory::create on db/connection/default + manual table prefix) because CreditmemoService::refund() wraps the gateway call inside the sales-connection transaction; FAILED/UNKNOWN evidence must survive the native rollback that aborts the creditmemo."
+  - "Refund response classification is echo-based (requestId/orderId/amount against the exact request sent) + resultCode: 0=SUCCESS, 7002=UNKNOWN (provider processing), other non-zero=FAILED; transport/timeout/malformed=UNKNOWN never FAILED. Backed by official docs fetched 2026-09-18: the refund response carries no signature; requestId is the provider idempotency key (>=31 days); refund orderId must differ from the purchase orderId."
+  - "Minted refund identity (refund_order_id + request_id, <=50 chars each) stored on the row; the row IS the logical operation since the creditmemo id does not exist at gateway time; creditmemo_id backfilled post-commit by a read-only sales plugin writing only the MoMo-owned table."
+  - "HTTP timeout 45s on the refund transfer (docs minimum 30s; Laminas default ~10s would misclassify slow-but-successful refunds as UNKNOWN)."
+  - "Budget drift guard: sum(SUCCESS row amounts) > payment amount_refunded blocks new submissions; operator runbook = offline creditmemo to realign."
+  - "Operator CLI momo:refund:list / momo:refund:resolve (query-only via /v2/gateway/api/refund/query, never re-POST the refund) closes UNKNOWN rows via guarded transitions; manual, per-invocation — not automated reconciliation."
+components:
+  - app/code/Secomm/MoMo/etc/db_schema.xml
+  - app/code/Secomm/MoMo/etc/db_schema_whitelist.json
+  - app/code/Secomm/MoMo/etc/di.xml
+  - app/code/Secomm/MoMo/Api/Data/RefundRequestInterface.php
+  - app/code/Secomm/MoMo/Api/RefundRequestRepositoryInterface.php
+  - app/code/Secomm/MoMo/Model/RefundRequest.php
+  - app/code/Secomm/MoMo/Model/RefundRequestFactory.php
+  - app/code/Secomm/MoMo/Model/RefundRequestRepository.php
+  - app/code/Secomm/MoMo/Model/Config.php
+  - app/code/Secomm/MoMo/Model/OrderRefBuilder.php
+  - app/code/Secomm/MoMo/Gateway/Command/RefundCommand.php
+  - app/code/Secomm/MoMo/Gateway/Request/RefundBuilder.php
+  - app/code/Secomm/MoMo/Gateway/Response/RefundHandler.php
+  - app/code/Secomm/MoMo/Gateway/Http/TransferFactory.php
+  - app/code/Secomm/MoMo/Service/RefundClassification.php
+  - app/code/Secomm/MoMo/Service/RefundConnectionProvider.php
+  - app/code/Secomm/MoMo/Service/RefundResultClassifier.php
+  - app/code/Secomm/MoMo/Service/RefundRequestManager.php
+  - app/code/Secomm/MoMo/Plugin/Sales/CreditmemoService.php
+  - app/code/Secomm/MoMo/Console/Command/RefundListCommand.php
+  - app/code/Secomm/MoMo/Console/Command/RefundResolveCommand.php
+  - app/code/Secomm/MoMo/Test/Unit/Service/RefundResultClassifierTest.php
+  - app/code/Secomm/MoMo/Test/Unit/Service/RefundRequestManagerTest.php
+  - app/code/Secomm/MoMo/Test/Unit/Gateway/Command/RefundCommandTest.php
+  - app/code/Secomm/MoMo/Test/Unit/Model/OrderRefBuilderRefundIdentityTest.php
+  - app/code/Secomm/MoMo/Test/Unit/Plugin/Sales/CreditmemoServiceTest.php
+  - app/code/Secomm/MoMo/README.md
+  - app/code/Secomm/MoMo/CHANGELOG.md
+changes_request:
+  - "Modified: db_schema.xml + db_schema_whitelist.json (secomm_momo_refund), di.xml (preferences, refund command/transfer factories, CLI registration, sales plugin), Config.php (PATH_REFUND_QUERY), TransferFactory.php (clientConfig/timeout), OrderRefBuilder.php (buildRefundOrderId/Id), RefundBuilder.php (row-driven identity, refund-specific orderId), RefundHandler.php (refund transId/requestId on payment), README.md + CHANGELOG.md."
+changes_add:
+  - "Added: Api contracts (RefundRequestInterface, RefundRequestRepositoryInterface), entity + factory, raw-SQL repository on an independent connection (RefundConnectionProvider/RefundRequestRepository), RefundRequestManager (guards + lifecycle), RefundResultClassifier + RefundClassification VO, Gateway/Command/RefundCommand, Plugin/Sales/CreditmemoService (post-commit creditmemo_id backfill), Console momo:refund:list / momo:refund:resolve, 5 focused unit test files."
+changes_delete:
+  - "None (out of scope: RefundValidator legacy class left untouched; no longer referenced by di.xml)."
+validation:
+  - "php -l: all changed/new PHP files clean (validation env m2r-php, PHP 8.3.20)."
+  - "phpunit (dev/tests/unit/phpunit-secomm.xml, filter Secomm.MoMo): 160 tests, 423 assertions, PASS (5 pre-existing PHPUnit deprecations, framework-level)."
+  - "PHPCS Magento2 standard, severity>=6, on the module diff: 0 errors (2 fixable warnings auto-fixed; 1 deliberate static VO factory warning left with note)."
+  - "setup:install on a fresh DB with the NEW schema: EXIT=0 (1456/1456); secomm_momo_refund created; DDL captured in .ai/evidence/TASK-XYDQDF/db-schema-after-install.txt."
+  - "Incremental migration path: fresh install with the BASE module (git archive HEAD — no secomm_momo_refund), then copy the new module and setup:upgrade → table created incrementally, 'Upgrade completed successfully', setup:db:status → 'All modules are up to date' (schema + whitelist in sync). DDL in .ai/evidence/TASK-XYDQDF/db-schema-after-upgrade.txt."
+  - "setup:di:compile: EXIT=0 ('Generated code and dependency injection configuration successfully')."
+  - "CLI smoke: bin/magento list shows momo:refund:list / momo:refund:resolve; momo:refund:list executes against the real DB (temp row listed + cleaned) exercising the independent-connection read path."
+verified_against_commit: c685e47968627eed2e17e2b450f389679098d148
+external_refs:
+  - "github:thanhle74/slaunchpad#4"
+---

@@ -27,12 +27,14 @@ class TransferFactory implements TransferFactoryInterface
      * @param Config $config
      * @param Json $serializer
      * @param string $urlPath
+     * @param array $clientConfig Optional Laminas client options (e.g. timeout).
      */
     public function __construct(
         private readonly TransferBuilder $transferBuilder,
         private readonly Config $config,
         private readonly Json $serializer,
-        private readonly string $urlPath = Config::PATH_CREATE
+        private readonly string $urlPath = Config::PATH_CREATE,
+        private readonly array $clientConfig = []
     ) {
     }
 
@@ -44,11 +46,15 @@ class TransferFactory implements TransferFactoryInterface
      */
     public function create(array $request): TransferInterface
     {
-        return $this->transferBuilder
+        $builder = $this->transferBuilder
             ->setMethod('POST')
             ->setHeaders(['Content-Type' => 'application/json'])
             ->setBody($this->serializer->serialize($request))
-            ->setUri($this->config->getEndpointUrl($this->urlPath))
-            ->build();
+            ->setUri($this->config->getEndpointUrl($this->urlPath));
+        if ($this->clientConfig !== []) {
+            $builder->setClientConfig($this->clientConfig);
+        }
+
+        return $builder->build();
     }
 }

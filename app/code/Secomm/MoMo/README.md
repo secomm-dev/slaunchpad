@@ -38,7 +38,52 @@ CommandPool — **not** the deprecated `AbstractMethod`. Mirrors `Secomm_ZaloPay
   rebuilds the 5 checkout success-session keys (like core `Onepage::saveOrder`).
 - **Notify / IPN** (`momo/payment/notify`, POST) — **authoritative**; strict signed-value
   parsing + 13-field signature + identity/amount echo checks against the attempt.
-- **Refund** — admin creditmemo → POST `/v2/gateway/api/refund` (unchanged).
+- **Refund** (MOMO-02) — admin creditmemo → native `CreditmemoService::refund()` →
+  POST `/v2/gateway/api/refund`, made idempotent and uncertainty-safe (below).
+
+## Refund (MOMO-02): idempotent + uncertainty-safe
+
+Credit Memo refunds stay **native Magento accounting** (Invoice → Credit Memo →
+Refund; no custom refund button, no custom controller touching order state).
+Secomm_MoMo owns only the provider-side request identity, response
+classification and reconciliation evidence:
+
+- **Durable identity** — every refund mints its own `refund_order_id` (`-RF`)
+  and `requestId` (`-RQ`, provider idempotency key, valid ≥31 days) and is
+  persisted as a `secomm_momo_refund` row (order/creditmemo/invoice linkage,
+  amount, original `transId`, classification, timestamps) on an **independent
+  DB connection**, so evidence survives the `CreditmemoService` rollback.
+- **Duplicate protection** — a UNIQUE index on
+  `(momo_order_ref, momo_trans_id, open_flag)` allows at most ONE open refund
+  per payment: a second creditmemo is blocked before any provider call
+  (pending and unknown rows both block). Terminal rows release the slot, so
+  sequential partial refunds and retry-after-FAILED stay native.
+- **Classification contract** (verified against developers.momo.vn, the refund
+  response carries NO signature) — SUCCESS only on intact echoes of the exact
+  request (requestId/orderId/amount, partnerCode conflict-intolerant) +
+  `resultCode == 0`; `7002` = still processing → UNKNOWN, never FAILED; any
+  other code → FAILED; malformed/echo-mismatch/transport → UNKNOWN.
+- **UNKNOWN is never blindly retried** — FAILED/UNKNOWN throw after the
+  outcome is recorded, so the native creditmemo rolls back and no accounting
+  is finalized on an unconfirmed outcome.
+- **Budget drift guard** — provider-confirmed refunds exceeding the
+  accounting `amount_refunded` (e.g. an UNKNOWN resolved to SUCCESS after its
+  creditmemo rolled back) block further refunds until the books are aligned.
+
+### Operator runbook
+
+```bash
+# Inspect refund evidence (filterable by status/order)
+bin/magento momo:refund:list --status unknown
+
+# Resolve an unconfirmed row by querying the provider (query-only; the
+# refund itself is NEVER re-posted with a new identity)
+bin/magento momo:refund:resolve <requestId>
+```
+
+Resolve outcomes: `SUCCESS` (issue an **offline credit memo** for the amount
+if Magento still shows it unrefunded), `FAILED` (slot released — refund again
+normally), `UNKNOWN` (leave open, re-query later or contact MoMo support).
 
 ## Config (Admin → Sales → Payment Methods → MoMo)
 

@@ -31,6 +31,7 @@ class Config
     public const PATH_CREATE = '/v2/gateway/api/create';
     public const PATH_REFUND = '/v2/gateway/api/refund';
     public const PATH_QUERY = '/v2/gateway/api/query';
+    public const PATH_REFUND_QUERY = '/v2/gateway/api/refund/query';
     /**#@-*/
 
     /**#@+
