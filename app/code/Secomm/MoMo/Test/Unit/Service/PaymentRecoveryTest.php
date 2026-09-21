@@ -32,6 +32,7 @@ use Secomm\MoMo\Model\ResourceModel\PaymentAttempt\PaymentAttemptCollection;
 use Secomm\MoMo\Model\ResourceModel\PaymentAttempt\PaymentAttemptCollectionFactory;
 use Secomm\MoMo\Service\OrderFinalizer;
 use Secomm\MoMo\Service\PaymentRecovery;
+use Secomm\MoMo\Service\PurchaseQueryClassifier;
 use Secomm\MoMo\Service\PaymentAttemptLifecycle;
 
 /**
@@ -99,6 +100,7 @@ class PaymentRecoveryTest extends TestCase
             $this->commandPool,
             $this->lifecycle,
             $this->orderFinalizer,
+            new PurchaseQueryClassifier(),
             $this->scopeConfig,
             $this->logger
         );

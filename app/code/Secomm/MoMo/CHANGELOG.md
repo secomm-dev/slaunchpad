@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.3.1] - 2026-09-21
+
+### Fixed
+- **Browser-Return `resultCode` classification made fail-safe (MOMO-04,
+  issue #16)**: `ReturnProcessor` previously coerced a missing `resultCode`
+  to `-1` and treated EVERY code outside `0`/`7000`/`7002` as a verified
+  failure — falsely failing attempts for `1000` (initiated), `9000`
+  (authorized/success for the module's 1-step `captureWallet`/default
+  autoCapture contract), request/system codes, missing/unparseable values
+  and any unmapped future code. Now the authoritative `v2/query` outcome is
+  classified ONLY through explicit provider-documented allowlists
+  (developers.momo.vn contract, verified 2026-09-21): PAID `0`/`9000` (same
+  amount + positive-transId + identity guards, same finalization path),
+  PENDING `1000`/`7000`/`7002` (check back shortly, no mutation), VERIFIED
+  FAILURE only for the documented final-failure allowlist (`98`, `99`,
+  `1001`–`1007`, `1017`, `1026`, `2019`, `4001`, `4002`, `4100`), and
+  EVERYTHING else — request/system codes, missing, unparseable, unmapped —
+  is **AMBIGUOUS**: logged, no mutation, never false-failed; the customer
+  gets a verification-unavailable/retry message.
+- **Shared purchase-query classifier (single source of truth)**: extracted
+  `Service\PurchaseQueryClassifier` + `Service\PurchaseQueryOutcome` and
+  migrated BOTH authoritative purchase-query callers (browser
+  `ReturnProcessor` MOMO-01/04 + recovery `PaymentRecovery` MOMO-03) onto
+  it — the two paths can no longer drift apart. Refund classification stays
+  separate (different semantics, notably `9000`). Each ambiguous outcome
+  still logs its distinct cause (unparseable / request-system / unmapped).
+- Unit coverage: new `Test/Unit/Service/PurchaseQueryClassifierTest.php`
+  (every allowlist code + ambiguity reasons) and 6 new `ReturnProcessor`
+  cases (`1000`→pending, `9000`→paid path, `10`/missing/unparseable/
+  unknown→ambiguous, `1001`→verified failure); `PaymentRecovery` suite
+  regression-pinned against the shared classifier.
+
 ## [2.3.0] - 2026-09-21
 
 ### Added

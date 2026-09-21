@@ -39,25 +39,23 @@ use Zend_Db_Expr;
  *    QueryDataBuilder, per MoMo contract — AC6);
  *  - OUTCOMES through the SAME canonical services as IPN/Return — never a
  *    duplicate order-placement implementation. Query resultCodes classify
- *    ONLY through the explicit, provider-documented allowlists (developers
- *    .momo.vn result-code contract, verified 2026-09-21) — an unmapped code
- *    is NEVER a failure proof (fail-safe money state):
- *      0 / 9000 (1-step captureWallet, default autoCapture) + exact amount
- *        + positive transId -> PaymentAttemptLifecycle::recordVerifiedPaid ->
+ *    ONLY through the shared fail-safe PurchaseQueryClassifier (MOMO-04 —
+ *    the SAME explicit, provider-documented allowlists as the browser
+ *    Return path; verified developers.momo.vn contract 2026-09-21) — an
+ *    unmapped code is NEVER a failure proof (fail-safe money state):
+ *      PAID (0 / 9000, 1-step captureWallet / default autoCapture) + exact
+ *        amount + positive transId -> PaymentAttemptLifecycle::recordVerifiedPaid ->
  *        OrderFinalizer::finalizeOrRecover (exactly one order; quarantined
  *        rows are refused by the finalizer itself);
  *      paid code + wrong amount        -> recordAmountMismatch (no order);
  *      paid code + missing/bad transId -> recordProviderIdentityUnavailable
  *                                           (no order);
- *      1000/7000/7002 (non-final)      -> pending: no mutation;
- *      request/system non-final codes (10-13, 20-22, 40-43, 45, 47) and ANY
- *      unmapped code                   -> AMBIGUOUS: logged, NO mutation,
+ *      PENDING (1000/7000/7002, non-final) -> pending: no mutation;
+ *      request/system codes and ANY unmapped or unparseable resultCode
+ *                                      -> AMBIGUOUS: logged, NO mutation,
  *      NOT failed — retried on a later run (AC3);
- *      documented FINAL failures (98, 99, 1001-1007, 1017, 1026, 2019,
- *      4001, 4002, 4100)               -> recordVerifiedFailure (the
- *      lifecycle never regresses PAID/FINALIZED);
- *      exception / missing-unparseable resultCode -> AMBIGUOUS: logged, NO
- *      mutation, NOT failed — retried on a later run (AC3).
+ *      documented FINAL failures       -> recordVerifiedFailure (the
+ *      lifecycle never regresses PAID/FINALIZED).
  *
  *  - BOUNDS: batch size, per-row query budget (recovery_attempts) and the
  *    window are configuration (payment/momo_payment/recovery_*). Exhaustion
@@ -85,49 +83,13 @@ class PaymentRecovery
 
     private const TABLE_PAYMENT_ATTEMPT = 'secomm_momo_payment_attempt';
 
-    /**
-     * Authoritative PAID codes (v2/query). 0 = successful; 9000 = authorized
-     * successfully (Final Status = No, but for the module's 1-step
-     * `captureWallet` contract with the default autoCapture=true MoMo
-     * documents "mark this transaction as success"). Both still go through
-     * the amount + positive-transId + identity guards before any order.
-     */
-    private const QUERY_PAID = [0, 9000];
-
-    /**
-     * Documented NON-FINAL transaction states (Final Status = No): 1000 =
-     * initiated, waiting for user confirmation; 7000/7002 = processing. No
-     * mutation; a later pass re-queries (budget permitting).
-     */
-    private const QUERY_PENDING = [1000, 7000, 7002];
-
-    /**
-     * Documented FINAL payment-transaction failures (Final Status = Yes,
-     * developers.momo.vn result-code contract, verified 2026-09-21) — the
-     * ONLY codes allowed to fail the attempt authoritatively via
-     * recordVerifiedFailure. Anything outside these allowlists (request/
-     * system codes below, exceptions, unmapped codes) is AMBIGUOUS: an
-     * unknown code must never default to FAILED (fail-safe money state).
-     */
-    private const QUERY_FAILURE = [
-        98, 99,
-        1001, 1002, 1003, 1004, 1005, 1006, 1007, 1017, 1026,
-        2019, 4001, 4002, 4100,
-    ];
-
-    /**
-     * Documented REQUEST/SYSTEM errors (Final Status = No — request-level,
-     * not transaction outcomes: maintenance, auth/config, malformed request,
-     * duplicate semantics). Money state is unknown; AMBIGUOUS, never FAILED.
-     */
-    private const QUERY_REQUEST_ERROR = [10, 11, 12, 13, 20, 21, 22, 40, 41, 42, 43, 45, 47];
-
     public function __construct(
         private readonly PaymentAttemptCollectionFactory $collectionFactory,
         private readonly ResourceConnection $resourceConnection,
         private readonly CommandPoolInterface $commandPool,
         private readonly PaymentAttemptLifecycle $lifecycle,
         private readonly OrderFinalizer $orderFinalizer,
+        private readonly PurchaseQueryClassifier $purchaseQueryClassifier,
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly LoggerInterface $logger
     ) {
@@ -325,24 +287,10 @@ class PaymentRecovery
             return;
         }
 
-        // AC3: a response without a parseable integer resultCode cannot
-        // support ANY payment-state decision — treat as ambiguous (no
-        // mutation), never as a failure.
-        $rawCode = $query['resultCode'] ?? null;
-        $resultCode = is_scalar($rawCode) && preg_match('/^-?\d+$/', trim((string)$rawCode)) === 1
-            ? (int)$rawCode
-            : null;
-        if ($resultCode === null) {
-            $summary['ambiguous']++;
-            $this->logger->error(
-                'MoMo recovery: v2/query response without a parseable resultCode; ambiguous, no mutation.',
-                ['order_ref' => $orderRef]
-            );
+        $outcome = $this->purchaseQueryClassifier->classify($query['resultCode'] ?? null);
+        $resultCode = $outcome->getResultCode();
 
-            return;
-        }
-
-        if (in_array($resultCode, self::QUERY_PAID, true)) {
+        if ($outcome->getCategory() === PurchaseQueryOutcome::PAID) {
             // Authoritative PAID (0 = successful; 9000 = authorized — for
             // the module's 1-step captureWallet/default autoCapture=true
             // contract MoMo documents "mark this transaction as success").
@@ -353,7 +301,7 @@ class PaymentRecovery
             return;
         }
 
-        if (in_array($resultCode, self::QUERY_PENDING, true)) {
+        if ($outcome->getCategory() === PurchaseQueryOutcome::PENDING) {
             // Non-terminal transaction state (1000 = initiated, waiting for
             // user confirmation; 7000 = not yet paid; 7002 = still
             // processing). No mutation; a later run re-queries.
@@ -362,43 +310,53 @@ class PaymentRecovery
             return;
         }
 
-        if (in_array($resultCode, self::QUERY_REQUEST_ERROR, true)) {
-            // Request/system-level non-final (maintenance, auth/config,
-            // malformed request, duplicate semantics): not a transaction
-            // outcome — money state unknown, never a failure proof (AC3).
+        // AC3: a response without a parseable integer resultCode cannot
+        // support ANY payment-state decision — treat as ambiguous (no
+        // mutation), never as a failure.
+        if ($resultCode === null) {
             $summary['ambiguous']++;
             $this->logger->error(
-                'MoMo recovery: request-level resultCode — ambiguous, no mutation.',
+                'MoMo recovery: v2/query response without a parseable resultCode; ambiguous, no mutation.',
+                ['order_ref' => $orderRef]
+            );
+
+            return;
+        }
+
+        if ($outcome->getCategory() === PurchaseQueryOutcome::AMBIGUOUS) {
+            // Request/system-level (maintenance, auth/config, malformed
+            // request, duplicate semantics) or an unmapped code: not a
+            // transaction outcome — money state unknown, never a failure
+            // proof (AC3); a later run re-queries.
+            $summary['ambiguous']++;
+            if ($outcome->getReason() === PurchaseQueryOutcome::REASON_REQUEST_SYSTEM) {
+                $this->logger->error(
+                    'MoMo recovery: request-level resultCode — ambiguous, no mutation.',
+                    ['order_ref' => $orderRef, 'resultCode' => $resultCode]
+                );
+
+                return;
+            }
+            $this->logger->error(
+                'MoMo recovery: unmapped resultCode is not a documented final outcome; ambiguous, no mutation.',
                 ['order_ref' => $orderRef, 'resultCode' => $resultCode]
             );
 
             return;
         }
 
-        if (in_array($resultCode, self::QUERY_FAILURE, true)) {
-            // Documented FINAL payment-transaction failure: the ONLY branch
-            // allowed to fail the attempt authoritatively — concurrency-safe
-            // (PAID/FINALIZED are never regressed; a PAID contradiction is
-            // quarantined as provider_state_conflict).
-            $fresh = $this->lifecycle->recordVerifiedFailure(
-                $orderRef,
-                sprintf('Recovery v2/query resultCode %d.', $resultCode),
-                'failed'
-            );
-            if ($fresh->getPaymentStatus() === PaymentAttemptInterface::STATUS_FAILED) {
-                $summary['failed']++;
-            }
-
-            return;
-        }
-
-        // Fail-safe default: an unmapped/undocumented code is NOT a failure
-        // proof (AC3) — ambiguous, no mutation, a later run re-queries.
-        $summary['ambiguous']++;
-        $this->logger->error(
-            'MoMo recovery: unmapped resultCode is not a documented final outcome; ambiguous, no mutation.',
-            ['order_ref' => $orderRef, 'resultCode' => $resultCode]
+        // Documented FINAL payment-transaction failure: the ONLY branch
+        // allowed to fail the attempt authoritatively — concurrency-safe
+        // (PAID/FINALIZED are never regressed; a PAID contradiction is
+        // quarantined as provider_state_conflict).
+        $fresh = $this->lifecycle->recordVerifiedFailure(
+            $orderRef,
+            sprintf('Recovery v2/query resultCode %d.', $resultCode),
+            'failed'
         );
+        if ($fresh->getPaymentStatus() === PaymentAttemptInterface::STATUS_FAILED) {
+            $summary['failed']++;
+        }
     }
 
     /**

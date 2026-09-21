@@ -1,0 +1,41 @@
+TASK-3083BD (MOMO-04 — Make ReturnProcessor resultCode handling fail-safe)
+— validation evidence, 2026-09-21
+Environment: container m2r-php (markoshust/magento-php:8.3-fpm, PHP 8.3.20)
++ throwaway validation copy /tmp/m2r (host) mounted at /var/www/html, synced
+with the task branch before each validation step.
+Repo BASE_SHA a87255f8 (verified at START; branch
+thanhle74/momo-momo-04-returnprocessor-resultcode-fail-safe).
+
+Changed/new files
+- app/code/Secomm/MoMo/Service/PurchaseQueryClassifier.php        (new)
+- app/code/Secomm/MoMo/Service/PurchaseQueryOutcome.php          (new)
+- app/code/Secomm/MoMo/Service/ReturnProcessor.php               (classifier routing)
+- app/code/Secomm/MoMo/Service/PaymentRecovery.php               (classifier routing)
+- app/code/Secomm/MoMo/Test/Unit/Service/PurchaseQueryClassifierTest.php (new)
+- app/code/Secomm/MoMo/Test/Unit/Service/ReturnProcessorTest.php (+6 tests, 700->1001)
+- app/code/Secomm/MoMo/Test/Unit/Service/PaymentRecoveryTest.php (classifier dep)
+- README.md / CHANGELOG.md (docs)
+
+No schema/config/crontab change in this task (setup:upgrade N/A).
+
+1) php -l (all new/changed PHP) — container m2r-php
+
+3) PHPUnit — full Secomm\MoMo suite
+   php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --filter 'Secomm\MoMo'
+   -> OK with the 5 PRE-EXISTING framework-level PHPUnit deprecations
+   Tests: 253, Assertions: 746 (baseline MOMO-03 200/562 + new tests).
+   New: PurchaseQueryClassifierTest (42 cases: every allowlist code, request/
+   system set, unparseable shapes incl. array/bool-false, unmapped defaults,
+   string numerics); ReturnProcessorTest +6 (1000->pending, 9000->paid path,
+   10/missing/unparseable/424242->ambiguous, 1001->verified failure).
+   see phpunit-secomm-momo.txt
+
+4) .ai/bin/project-ai-validate --check-specs --check-identity --check-records
+   -> repo-wide: 58 FAIL — ALL pre-existing in artifacts of OTHER tasks
+   (BUG-AMRBJR mini-spec sections, SPEC-FEAT-*/SPEC-TASK-* header naming,
+   old plans missing Specification reference; identical set to the MOMO-03
+   baseline). Zero findings mention TASK-3083BD (grep count: 0).
+   My spec/plan/record pass all three checks.
+
+5) Not run: E2E sandbox against MoMo (requires partner credentials — not
+   available on this host); schema setup:upgrade N/A (no schema change).
