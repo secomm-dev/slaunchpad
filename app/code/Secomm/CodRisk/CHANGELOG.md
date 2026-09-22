@@ -1,0 +1,33 @@
+# Changelog — Secomm_CodRisk
+
+All notable changes follow Keep a Changelog; versioning: unreleased until TL review.
+
+## [Unreleased] — 2026-09-21
+
+### Fixed (2026-09-22 — sau self-test đợt 1)
+
+- **404 các trang admin** (inspector/lists/events/evaluations/audit + POST actions Order View): controller đặt thừa 1 tầng thư mục `Codrisk\` khiến URL không bao giờ resolve được — dời về `Controller/Adminhtml/{Area}/` chuẩn Magento. **Đính chính 22/09:** luật map URL→class thật của Magento là `strtolower` + `_` → `\` (ActionList::get) — `order_risk` tìm class `Order\Risk`, KHÔNG phải `OrderRisk`. Sửa lại: thư mục `OrderRisk` → `Risk`, class `AddToList` → `AddList`, URL cuối cùng `codrisk/risk/{record,addlist,override}` — đã verify 12/12 URL bằng mô phỏng đúng luật `ActionList::get`.
+- **404 mọi POST handler** (Record Risk Event / Add to List / Override / Save list): base controller khai `HttpGetActionInterface` → FrontController 404 mọi request POST. Tách rõ: 7 trang GET `implements HttpGetActionInterface`, 4 POST handler `implements HttpPostActionInterface`, base không khai interface (Deactivate là GET qua link, giữ nguyên).
+- **Code review (22/09): bỏ 5 hand-written factory** (`CodRiskList/Event/Evaluation/OverrideFactory`, `AuditLogFactory` viết tay với ObjectManager) — về chuẩn Magento: chỉ type-hint tên factory, để `setup:di:compile` sinh vào `generated/code`; module sạch ObjectManager. Chú ý: các class factory chỉ tồn tại sau khi compile (hoặc tự sinh ở developer mode).
+- **Plugin availability không bao giờ chạy** (phát hiện qua probe runtime): target class sai — vendor Magento dùng `Magento\OfflinePayments\Model\Cashondelivery` ("d" thường), tôi viết theo trí nhớ `CashOnDelivery` → plugin gắn vào class không tồn tại. Sửa `etc/di.xml` type name + type-hint `$subject` trong plugin. Bài học: FQCN phải lấy từ vendor, không nhớ tên.
+- **Grids Risk Events + Evaluations**: cột `In Count (snapshot)` / `Spam Match` trống (cùng lỗi int-vs-string Yesno → source chuỗi `YesNo`); cột `Order` render increment id `#000000036` qua column class `OrderIncrement` (batch 1 query/page, không N+1). *Review 22/09: cột `In Count (snapshot)` bị bỏ khỏi grid Risk Events — snapshot vẫn nằm trong DB và là nền của Historical rule, chỉ ngừng hiển thị.* *Review 22/09: grid Evaluations bỏ cột Quote (nội bộ kỹ thuật) và cột Order — evaluation đến từ luồng checkout nên order_id luôn NULL lúc evaluate, hiển thị chỉ toàn "—".*
+- **Risk Lists grid cột Status hiển thị trống**: options Yesno int (1/0) vs giá trị DB chuỗi ("1") — select column so khớp strict → cell rỗng. Fix: source riêng `ActivationStatus` với value CHUỖI + label Active/Inactive, dataType text.
+- **Form Add/Edit list: nút Save/Back đưa lên đầu form, căn phải** (hàng `page-actions` trong template, id form `edit_form`); bỏ nút đáy trang. Không có nút Delete (deactivate-only, Flow E). *Đính chính: thử pattern `Widget\Form\Container` bị trùng layout button ID (`codrisk_lists_edit-back_button already exists`) — container đã bỏ, giữ template thuần để tránh đụng toolbar của core.*
+- **Order View / Inspector hiển thị Historical Count = 0 sai** dù phone có event: pipeline dừng sớm ở rule ưu tiên cao (vd. Blacklist match → break) nên Historical/Spam rule không bao giờ chạy → count hiển thị luôn 0. Sửa: OrderRiskView + PhoneInspector tự tính count/spam trực tiếp từ event store để hiển thị, độc lập với pipeline (decision vẫn đúng precedence cũ).
+- **CSS Order View section**: bỏ class `bg-*` (không tồn tại trong admin Magento), badge inline-style rõ ràng; các mini-form bọc `admin__fieldset`/`admin__field`/`admin__field-control` để label/control căn chuẩn admin theme.
+
+### Added (TASK-YPWH9B / LC-26 P1)
+
+- Public contracts: `CodRiskEvaluatorInterface`, `CodRiskRuleInterface`, `RiskEventRecorderInterface`, DTOs `CodRiskContext`, `CodRiskDecision`, `RiskEvent`.
+- VN phone normalizer (E.164, `+84...`) — invalid input trả null, không tạo risk BLOCK.
+- DB schema (additive, rollback bằng DROP): `secomm_cod_risk_list`, `secomm_cod_risk_event`, `secomm_cod_risk_evaluation`, `secomm_cod_risk_override`, `secomm_cod_risk_audit`.
+- Rule engine: RulePool (DI sortOrder 10/20/30/40) + Blacklist/SpamOrder/Allowlist/Historical; evaluation trace chỉ log WARNING/BLOCK; order-view live eval không log (tránh spam).
+- RiskEventRecorder với include-flag snapshot lúc ghi.
+- Admin: Phone Inspector, Risk Lists (grid + CRUD + activate/deactivate), Risk Events, Evaluations, Audit Log, ACL 1 resource, config (kill-switch default OFF, threshold validation qua backend model), i18n en_US + vi_VN.
+- Order View section cho mọi order COD: decision live + Record Risk Event / Add to List / Override (BLOCK → ALLOW, audit) / Deactivate Blacklist; anchor `order_additional_info` (render ngay dưới Payment & Shipping — không override template core).
+
+### Known limitations
+
+- Live-preview chuẩn hóa phone + duplicate-check real-time trên form (mockup UX) chưa làm — chuẩn hóa xảy ra lúc save, thông báo hiển thị sau save.
+- Message customer-facing trên checkout chưa wire (Tier-2 OSC).
+- Audit liên kết theo phone qua free-text match trong Phone Inspector (không có FK phone trong bảng audit).

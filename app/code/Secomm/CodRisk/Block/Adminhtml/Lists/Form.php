@@ -1,0 +1,93 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+declare(strict_types=1);
+
+namespace Secomm\CodRisk\Block\Adminhtml\Lists;
+
+use Magento\Backend\Block\Template;
+use Magento\Backend\Block\Template\Context;
+use Magento\Framework\Registry;
+use Magento\Framework\UrlInterface;
+use Magento\Store\Model\WebsiteFactory;
+use Secomm\CodRisk\Model\CodRiskList;
+use Secomm\CodRisk\Model\Source\ListTypes;
+use Secomm\CodRisk\Model\Source\ReasonCodes;
+
+/**
+ * Phone list record form (new/edit). Rendered as a standard admin form page —
+ * the mockup modal maps to this page (SPEC-TASK-YPWH9B §6).
+ *
+ * @method CodRiskList|null getRecord()
+ */
+class Form extends Template
+{
+    public function __construct(
+        Context $context,
+        private readonly Registry $registry,
+        private readonly ListTypes $listTypes,
+        private readonly ReasonCodes $reasonCodes,
+        private readonly WebsiteFactory $websiteFactory,
+        private readonly UrlInterface $urlBuilder,
+        array $data = [],
+    ) {
+        parent::__construct($context, $data);
+    }
+
+    public function getRecord(): ?CodRiskList
+    {
+        $record = $this->registry->registry('secomm_codrisk_list');
+
+        return $record instanceof CodRiskList ? $record : null;
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getListTypeOptions(): array
+    {
+        return $this->listTypes->toOptionArray();
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getReasonOptions(): array
+    {
+        return $this->reasonCodes->toOptionArray();
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getWebsiteOptions(): array
+    {
+        $options = [['label' => (string)__('All Websites'), 'value' => '0']];
+        foreach ($this->websiteFactory->create()->getCollection() as $website) {
+            $options[] = [
+                'label' => (string)$website->getName(),
+                'value' => (string)(int)$website->getId(),
+            ];
+        }
+
+        return $options;
+    }
+
+    public function getSaveUrl(): string
+    {
+        $record = $this->getRecord();
+
+        return $this->urlBuilder->getUrl('codrisk/lists/save', [
+            'list_id' => $record !== null ? (int)$record->getId() : null,
+        ]);
+    }
+
+    public function getBackUrl(): string
+    {
+        return $this->urlBuilder->getUrl('codrisk/lists/index');
+    }
+}

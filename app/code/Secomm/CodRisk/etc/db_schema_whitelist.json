@@ -1,0 +1,66 @@
+{
+    "secomm_cod_risk_list": {
+        "entity_id": true,
+        "normalized_phone": true,
+        "list_type": true,
+        "website_id": true,
+        "reason": true,
+        "note": true,
+        "source": true,
+        "effective_from": true,
+        "effective_to": true,
+        "is_active": true,
+        "created_by": true,
+        "created_at": true,
+        "updated_at": true
+    },
+    "secomm_cod_risk_event": {
+        "entity_id": true,
+        "normalized_phone": true,
+        "website_id": true,
+        "order_id": true,
+        "quote_id": true,
+        "customer_id": true,
+        "reason_code": true,
+        "source": true,
+        "include_snapshot": true,
+        "note": true,
+        "created_at": true
+    },
+    "secomm_cod_risk_evaluation": {
+        "entity_id": true,
+        "normalized_phone": true,
+        "website_id": true,
+        "decision": true,
+        "matched_rule": true,
+        "reason_code": true,
+        "historical_count": true,
+        "spam_matched": true,
+        "order_id": true,
+        "quote_id": true,
+        "created_at": true
+    },
+    "secomm_cod_risk_override": {
+        "entity_id": true,
+        "order_id": true,
+        "normalized_phone": true,
+        "website_id": true,
+        "base_decision": true,
+        "override_decision": true,
+        "reason": true,
+        "note": true,
+        "admin_username": true,
+        "created_at": true
+    },
+    "secomm_cod_risk_audit": {
+        "entity_id": true,
+        "entity_type": true,
+        "entity_id_ref": true,
+        "action": true,
+        "old_value": true,
+        "new_value": true,
+        "admin_username": true,
+        "note": true,
+        "created_at": true
+    }
+}
