@@ -1,0 +1,9 @@
+PHPCS (Magento2, severity 6, changed files) — container m2r-php, 2026-09-22
+Command: php vendor/bin/phpcs --standard=Magento2 --severity=6 -p <7 changed/new PHP files>
+(stderr framework sniff deprecation notices filtered — pre-existing)
+
+....... 7 / 7 (100%)
+
+Time: 320ms; Memory: 20MB
+
+PHPCS_EXIT=0

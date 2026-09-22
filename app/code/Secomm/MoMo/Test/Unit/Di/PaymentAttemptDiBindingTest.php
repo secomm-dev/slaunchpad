@@ -13,7 +13,6 @@ namespace Secomm\MoMo\Test\Unit\Di;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Payment\Model\MethodInterface;
 use Magento\Quote\Api\CartManagementInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\Quote;
@@ -101,7 +100,7 @@ class PaymentAttemptDiBindingTest extends TestCase
         $guard = new CartManagementPlaceOrderGuard(
             $quoteRepository,
             $this->createRepository(),
-            $this->method(),
+            'momo_payment',
             new OrderPlacementAuthorization(),
             $this->createMock(\Psr\Log\LoggerInterface::class)
         );
@@ -126,19 +125,6 @@ class PaymentAttemptDiBindingTest extends TestCase
             $this->createMock(DateTime::class),
             $this->createMock(PaymentAttemptResource::class)
         );
-    }
-
-    /**
-     * MoMo facade double (method code as configured).
-     *
-     * @return MethodInterface&\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function method(): MethodInterface
-    {
-        $method = $this->createMock(MethodInterface::class);
-        $method->method('getCode')->willReturn('momo_payment');
-
-        return $method;
     }
 
     /**

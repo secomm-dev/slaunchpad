@@ -89,6 +89,16 @@ Configuration info to integrate with MoMo API.
     ZaloPay quotes: no verified payment, no order. Admin order creation is
     unaffected. Abandoned/cancelled payments create no order.
 
+    > **Guard construction isolation (issue #20):** the guard is a GLOBAL
+    > `QuoteManagement` plugin, so Magento builds it for EVERY payment
+    > method's placement. Its constructor builds nothing ZaloPay-only:
+    > method discrimination compares against the configured `zalopay` code
+    > string, and the attempt repository is wired as a Proxy — the real
+    > repository is constructed only once a quote is confirmed as ZaloPay.
+    > A ZaloPay DI/construction failure can never abort another payment
+    > method's order placement (`Secomm_MoMo` applies the identical
+    > pattern).
+
 ## Operator toolkit (ZLP-OPS-01)
 
 ### CLI diagnostics (`zalopay:diagnose`)
