@@ -1,5 +1,5 @@
 /*
- * Social Login (Mageplaza) — theme overlay (TASK-7P5RJP / SLP-160).
+ * Social Login (Mageplaza) — theme overlay (TASK-7P5RJP / SLP-160; title vs button style per TASK-E1YAHT / SLP-259).
  *
  * File này được import từ tailwind-source.css ở top level (ngoài mọi @layer) → cascade
  * unlayered: thắng Tailwind utilities layer và đứng trước inline <style> của vendor
@@ -276,25 +276,29 @@ dialog.wrap-modal-login[class*="-disappear"]::backdrop {
 }
 
 /* ------------------------------------------------------------------ */
-/* 3. Title — CONFIG-RESPECTING: `.social-login-title` mang màu banner */
-/*    từ config `style_management` (css.phtml inject, local = #3399cc; */
-/*    admin đổi per store view). Overlay chỉ shape (padding/radius),   */
-/*    KHÔNG đè màu; chữ trắng trên banner màu = legacy chuẩn vendor.   */
+/* 3. Title — SLP-259 (TASK-E1YAHT): title KHÔNG còn banner màu config.*/
+/*    Trước đây css.phtml inject chung MỘT màu cho title banner lẫn    */
+/*    button submit → 2 khối nhìn như 2 nút giống hệt nhau. Nay màu    */
+/*    config `style_management` chỉ áp cho button; title = heading     */
+/*    trần chữ ink. `background: none` ở 1-2-0 thắng inject 1-1-0      */
+/*    (css.phtml load sau styles.css).                                 */
 /* ------------------------------------------------------------------ */
 #social-login-popup .block-container .social-login-title {
-    padding: 0.625rem 1rem;
+    background: none;
+    padding: 0;
     margin-block: 0 1rem;
-    border-radius: 0.5rem;
+    border-radius: 0;
     text-align: center;
 }
 
 /* Mọi title variant (login-title / create-account-title / forgot-pass-title) —
-   chữ trắng trên banner màu config (legacy set color #fff — giữ nguyên);
+   SLP-259: chữ ink trên nền card (legacy set color #fff cho banner — bị đè);
    legacy còn gắn `background-image: url(images/*-title.png)` + `padding-left:
-   40px` (icon PNG đè lên chữ khi banner màu config hiện lại) → khử cả hai,
-   overlay chỉ chỉnh typography + căn giữa */
+   40px` (icon PNG) → vẫn khử. 1-2-1 thắng vendor `.social-login-title h2`
+   0-1-1 (color #fff) bất kể thứ tự load */
 #social-login-popup .block-container div.social-login-title h2 {
     background: none;
+    color: var(--color-ink, #0f172a);
     font-size: 1.125rem;
     font-weight: 600;
     line-height: 1.4;
