@@ -496,7 +496,7 @@
        LAUNCHPAD CORE v4 (09-18) — Figma 5MpBw9VaNgFdct3UDWABuV
        desktop 2151:17103 (1440) / mobile 2151:16903 (375).
        Section-support classes referenced by the Page Builder CMS content and
-       the Launchpad_Homepage module templates. Content = class attributes only
+       the Launchpad_CmsContent module templates. Content = class attributes only
        (no inline styles beyond PB column width); DB classes are safelisted in
        web/tailwind/safelist/launchpad-cms.html.
        ===================================================================== */
@@ -620,21 +620,31 @@
     }
 
     /* v4.9.9 (user, design mobile): flash sale MOBILE = grid 2 cột (không
-       slider, không dot); desktop giữ slider bleed 4.1 cols. */
+       slider, không dot); desktop giữ slider bleed 4.1 cols.
+       v4.12.1 (09-22, user: "flashsale mobile bị hư, không hiện grid 2"):
+       base .snap-track đặt grid-auto-flow:column + grid-auto-columns:
+       var(--snap-size) — chỉ đè grid-template-columns thì item 3+ vẫn tràn
+       vào implicit columns 168px, 2 cột explicit bị nén 0px (card đầu ẩn).
+       Phải reset cả auto-flow/auto-columns. */
     @media (max-width: 63.98rem) {
         body.cms-index-index .lp-flash .hp-pb-slider > [data-track] {
             display: grid !important;
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            grid-auto-flow: row !important;
+            grid-auto-columns: auto !important;
             gap: 1rem !important;
             overflow: visible !important;
             width: auto !important;
             margin-inline-end: 0 !important;
             padding-inline: 0 !important;
         }
+    }
 
-        body.cms-index-index .lp-flash nav[data-pager] {
-            display: none !important;
-        }
+    /* v4.12.1 (user: hide dot slider ở flashsale): pager section slider ẩn ở
+       MỌI breakpoint. Chỉ target pager trực tiếp dưới slider root — mini-dot
+       gallery trong card (bên trong [data-track]) giữ nguyên. */
+    body.cms-index-index .lp-flash .hp-pb-slider > nav[data-pager] {
+        display: none !important;
     }
 
     body.cms-index-index .hp-pb-marker {
@@ -645,7 +655,7 @@
         @apply w-6 rounded-full bg-[#588f60] opacity-100;
     }
 
-    /* ---------------- Flash sale countdown (Launchpad_Homepage widget) ---------------- */
+    /* ---------------- Flash sale countdown (Launchpad_CmsContent widget) ---------------- */
 
     /* Mobile: full-width pill under the heading. Desktop: absolute right,
        aligned with the Page Builder heading line (widget follows it). */
@@ -688,7 +698,7 @@
         @apply aspect-video border-0;
     }
 
-    /* ---------------- Journal (Launchpad_Homepage blog block) ---------------- */
+    /* ---------------- Journal (Launchpad_CmsContent blog block) ---------------- */
 
     /* Mobile: slider with peek (design card 300/375); desktop: exact 3-up
        (no overflow → SnapSlider hides the dots automatically). */
@@ -738,7 +748,7 @@
         @apply mt-4;
     }
 
-    /* ---- Launchpad_Homepage module templates (v4.5) ----
+    /* ---- Launchpad_CmsContent module templates (v4.5) ----
        app/code templates are NOT in the theme's @source — utility classes used
        only there would never compile. Style them via these lp-* classes. */
     .lp-newsletter-form {
@@ -1586,7 +1596,6 @@ body.cms-index-index [data-content-type="row"]:has(.lp-journal) {
 /* ---- newsletter band (only full-width row with the module form) ---- */
 body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has(.lp-newsletter-form) {
     margin-block-start: 3rem !important;
-    background-color: #f8f6ee !important;
     padding: 1.5rem !important;
 }
 

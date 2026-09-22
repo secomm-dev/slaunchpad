@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- Shared frontend assets (TASK-0NNZCW v4.3): one SnapSlider initializer for
+     every launchpad slider on the page (card gallery [data-lp-card-slider],
+     flash slider + journal [data-lp-slider]). Hero autoplay is handled by the
+     cms_index_index block separately. -->
+<page xmlns:xsi="http://www.w3.org/2000/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="before.body.end">
+            <block name="launchpad.sliders.init"
+                   template="Launchpad_CmsContent::sliders-init.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

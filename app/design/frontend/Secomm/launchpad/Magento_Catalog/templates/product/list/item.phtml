@@ -140,8 +140,8 @@ if (!$isProductGroupedOrBundle) {
                Gallery comes batch-loaded from CatalogWidget lists
                (addMediaGalleryData); elsewhere it lazy-loads per product. */ ?>
     <div class="hp-card-media-wrap group/media relative block w-full <?= $viewIsGrid ? '' : 'md:w-2/6 md:shrink-0' ?>">
-        <?php /** @var \Launchpad\Homepage\ViewModel\ProductGallery $productGallery */ ?>
-        <?php $productGallery = $viewModels->require(\Launchpad\Homepage\ViewModel\ProductGallery::class) ?>
+        <?php /** @var \Launchpad\CmsContent\ViewModel\ProductGallery $productGallery */ ?>
+        <?php $productGallery = $viewModels->require(\Launchpad\CmsContent\ViewModel\ProductGallery::class) ?>
         <?php $galleryImages = $productGallery->getSliderImages($product); ?><!-- gallery-debug count=<?= $galleryImages ? $galleryImages->count() : 'NULL' ?> vm=<?= get_class($productGallery) ?> err=<?= $escaper->escapeHtmlAttr($productGallery->getLastError()) ?> pid=<?= (int) $product->getId() ?> sku=<?= $escaper->escapeHtmlAttr($product->getSku()) ?> type=<?= $escaper->escapeHtmlAttr($product->getTypeId()) ?> -->
         <?php if ($galleryImages && $galleryImages->getSize() > 1): ?>
             <div class="hp-card-media-slider relative" data-lp-card-slider>
@@ -270,7 +270,7 @@ if (!$isProductGroupedOrBundle) {
             ?>
             <div class="hp-card-rating">
                 <?php if ($score !== null && $score > 0): ?>
-                    <?= /* @noEscape */ $lucideIcons->starHtml('fill-current text-hp-ink', 16, 16, ['aria-hidden' => 'true']) ?>
+                    <?= /* @noEscape */ $lucideIcons->starHtml('fill-current text-[#F0B100]', 16, 16, ['aria-hidden' => 'true']) ?>
                     <span class="hp-card-rating-score"><?= $escaper->escapeHtml((string) $score) ?></span>
                     <?php if ($count > 0): ?>
                         <span class="hp-card-rating-count">(<?= (int) $count ?>)</span>
