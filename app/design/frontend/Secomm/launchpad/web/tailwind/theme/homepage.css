@@ -736,10 +736,6 @@
 
     /* ---------------- Newsletter band (PB row + CMS block form) ---------------- */
 
-    body.cms-index-index .lp-newsletter {
-        @apply bg-hp-surface;
-    }
-
     .lp-newsletter-title {
         @apply m-0 mb-4 text-center text-base font-medium uppercase leading-6 tracking-normal text-hp-ink lg:text-xl lg:leading-7;
     }
@@ -1166,7 +1162,6 @@ body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content
 /* ---- newsletter band: centered title + centered form ---- */
 body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has(.lp-newsletter-form) {
     margin-block-start: 3rem !important;
-    background-color: #f8f6ee !important;
     padding: 1.5rem !important;
 }
 

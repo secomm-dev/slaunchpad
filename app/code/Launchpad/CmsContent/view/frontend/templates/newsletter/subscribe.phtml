@@ -17,6 +17,7 @@ declare(strict_types=1);
     <label class="sr-only" for="homepage-newsletter-email">
         <?= $escaper->escapeHtml(__('Email Address')) ?>
     </label>
+    <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>">
     <input class="lp-newsletter-input"
            id="homepage-newsletter-email"
            name="email"
@@ -24,7 +25,7 @@ declare(strict_types=1);
            required
            autocomplete="email"
            placeholder="<?= $escaper->escapeHtmlAttr(__('Enter your email address')) ?>">
-    <button class="lp-newsletter-btn"
+    <button class="btn btn-primary lp-newsletter-btn"
             type="submit">
         <?= $escaper->escapeHtml(__('Subscribe')) ?>
     </button>
