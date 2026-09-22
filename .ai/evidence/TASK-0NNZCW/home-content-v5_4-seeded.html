@@ -1,0 +1,322 @@
+<!--
+  LAUNCHPAD CORE - Homepage v5 (09-18).
+  Figma 5MpBw9VaNgFdct3UDWABuV: desktop 2151:17103 (1440) / mobile 2151:16903 (375).
+  Styling via class attribute only; DB classes safelisted in web/tailwind/safelist/launchpad-cms.html.
+-->
+
+<!-- ============ 1. HERO — Page Builder slider ============ -->
+<!--  Content type `slider` + `slide` gốc của Page Builder.
+      Slide edit trong stage: ảnh nền, nội dung (WYSIWYG), nút, link.
+      Dots / arrows do Slick sinh ra — style bạn tự lo (.slick-dots, .slick-arrow).
+      Bật autoplay: data-autoplay="true" + data-autoplay-speed (ms).               -->
+<div data-content-type="row" data-appearance="full-bleed" data-element="main" data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" class="lp-hero relative !m-0 !p-0">
+  <div data-content-type="slider" data-appearance="default" data-autoplay="true" data-autoplay-speed="4000" data-fade="false" data-infinite-loop="true" data-show-arrows="false" data-show-dots="true" data-element="main" class="lp-hero-slider">
+
+    <div data-content-type="slide" data-slide-name="Made for Living" data-appearance="poster" data-show-button="always" data-show-overlay="never" data-element="main">
+      <a href="/collection" target="" data-link-type="default" data-element="link">
+        <div class="pagebuilder-slide-wrapper lp-slide !min-h-[750px] bg-cover bg-center lg:!min-h-[1024px]" data-background-images="{&quot;desktop_image&quot;:&quot;{{media url=wysiwyg/homepage/hero-desktop.jpg}}&quot;,&quot;mobile_image&quot;:&quot;{{media url=wysiwyg/homepage/hero-mobile.jpg}}&quot;}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="wrapper">
+          <div class="pagebuilder-overlay pagebuilder-poster-overlay lp-slide-overlay flex !min-h-[750px] flex-col justify-end !px-2 !pb-20 !pt-10 md:!px-6 lg:!min-h-[1024px] lg:!px-10 lg:!pb-24" data-overlay-color="" data-element="overlay">
+            <div class="pagebuilder-poster-content">
+              <div data-element="content">
+                <h2 class="!mb-2 font-sans text-[30px] font-bold leading-[36px] tracking-[-1px] text-white lg:text-[60px] lg:leading-[72px]">Made for Living</h2>
+                <p class="!mb-4 max-w-[640px] font-sans text-[16px] leading-[24px] text-white lg:text-[18px] lg:leading-[28px]">Timeless furniture, natural materials, and considered details for modern spaces.</p>
+              </div>
+            </div>
+            <button type="button" class="pagebuilder-slide-button pagebuilder-button-primary lp-slide-button inline-flex w-fit items-center justify-center rounded-md bg-[#588f60] !px-6 !py-3 font-sans text-[16px] font-medium leading-[24px] text-white transition hover:bg-[#45744c]" data-element="button">Shop Collection</button>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div data-content-type="slide" data-slide-name="Built to Last" data-appearance="poster" data-show-button="always" data-show-overlay="never" data-element="main">
+      <a href="/collection" target="" data-link-type="default" data-element="link">
+        <div class="pagebuilder-slide-wrapper lp-slide !min-h-[750px] bg-cover bg-center lg:!min-h-[1024px]" data-background-images="{&quot;desktop_image&quot;:&quot;{{media url=wysiwyg/homepage/living-reimagined-1.jpg}}&quot;,&quot;mobile_image&quot;:&quot;{{media url=wysiwyg/homepage/living-reimagined-1.jpg}}&quot;}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="wrapper">
+          <div class="pagebuilder-overlay pagebuilder-poster-overlay lp-slide-overlay flex !min-h-[750px] flex-col justify-end !px-2 !pb-20 !pt-10 md:!px-6 lg:!min-h-[1024px] lg:!px-10 lg:!pb-24" data-overlay-color="" data-element="overlay">
+            <div class="pagebuilder-poster-content">
+              <div data-element="content">
+                <h2 class="!mb-2 font-sans text-[30px] font-bold leading-[36px] tracking-[-1px] text-white lg:text-[60px] lg:leading-[72px]">Built to Last</h2>
+                <p class="!mb-4 max-w-[640px] font-sans text-[16px] leading-[24px] text-white lg:text-[18px] lg:leading-[28px]">Solid wood, honest joinery and finishes that age well. Pieces you keep, not replace.</p>
+              </div>
+            </div>
+            <button type="button" class="pagebuilder-slide-button pagebuilder-button-primary lp-slide-button inline-flex w-fit items-center justify-center rounded-md bg-[#588f60] !px-6 !py-3 font-sans text-[16px] font-medium leading-[24px] text-white transition hover:bg-[#45744c]" data-element="button">Shop Collection</button>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div data-content-type="slide" data-slide-name="New Season, New Calm" data-appearance="poster" data-show-button="always" data-show-overlay="never" data-element="main">
+      <a href="/collection" target="" data-link-type="default" data-element="link">
+        <div class="pagebuilder-slide-wrapper lp-slide !min-h-[750px] bg-cover bg-center lg:!min-h-[1024px]" data-background-images="{&quot;desktop_image&quot;:&quot;{{media url=wysiwyg/homepage/living-reimagined-2.jpg}}&quot;,&quot;mobile_image&quot;:&quot;{{media url=wysiwyg/homepage/living-reimagined-2.jpg}}&quot;}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="wrapper">
+          <div class="pagebuilder-overlay pagebuilder-poster-overlay lp-slide-overlay flex !min-h-[750px] flex-col justify-end !px-2 !pb-20 !pt-10 md:!px-6 lg:!min-h-[1024px] lg:!px-10 lg:!pb-24" data-overlay-color="" data-element="overlay">
+            <div class="pagebuilder-poster-content">
+              <div data-element="content">
+                <h2 class="!mb-2 font-sans text-[30px] font-bold leading-[36px] tracking-[-1px] text-white lg:text-[60px] lg:leading-[72px]">New Season, New Calm</h2>
+                <p class="!mb-4 max-w-[640px] font-sans text-[16px] leading-[24px] text-white lg:text-[18px] lg:leading-[28px]">Soft textures and warm neutrals for the rooms you actually live in.</p>
+              </div>
+            </div>
+            <button type="button" class="pagebuilder-slide-button pagebuilder-button-primary lp-slide-button inline-flex w-fit items-center justify-center rounded-md bg-[#588f60] !px-6 !py-3 font-sans text-[16px] font-medium leading-[24px] text-white transition hover:bg-[#45744c]" data-element="button">Shop Collection</button>
+          </div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ 2. CATEGORY TILES — scroll ngang trên mobile ============ -->
+<div data-content-type="row" data-appearance="contained" data-element="main" class="lp-section !mt-8 !px-2 md:!px-6 lg:!mt-10 lg:!px-10">
+  <div data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="inner" class="flex flex-col">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!mb-4 font-sans text-[20px] font-medium leading-[28px] text-[#1e293b]">Category</h2>
+    <div class="pagebuilder-column-group lp-tiles lp-rail flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 lg:!grid lg:grid-cols-6 lg:gap-6 lg:overflow-visible lg:pb-0" data-background-images="{}" data-content-type="column-group" data-appearance="default" data-grid-size="12" data-element="main">
+
+      <div class="pagebuilder-column lp-tile !w-[172px] shrink-0 snap-start flex flex-col items-center gap-1 rounded-2xl bg-[#e7f1e8] !p-4 lg:!w-full" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:16.6667%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 h-24 w-full overflow-hidden rounded-lg"><img class="h-full w-full object-cover" src="{{media url=wysiwyg/homepage/cat-chair.png}}" alt="Chair" title="Chair" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[14px] font-medium leading-[20px] text-[#293e2d]">CHAIR</h3>
+      </div>
+
+      <div class="pagebuilder-column lp-tile !w-[172px] shrink-0 snap-start flex flex-col items-center gap-1 rounded-2xl bg-[#e7f1e8] !p-4 lg:!w-full" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:16.6667%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 h-24 w-full overflow-hidden rounded-lg"><img class="h-full w-full object-cover" src="{{media url=wysiwyg/homepage/cat-table.png}}" alt="Table" title="Table" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[14px] font-medium leading-[20px] text-[#293e2d]">TABLE</h3>
+      </div>
+
+      <div class="pagebuilder-column lp-tile !w-[172px] shrink-0 snap-start flex flex-col items-center gap-1 rounded-2xl bg-[#e7f1e8] !p-4 lg:!w-full" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:16.6667%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 h-24 w-full overflow-hidden rounded-lg"><img class="h-full w-full object-cover" src="{{media url=wysiwyg/homepage/cat-cabinet.png}}" alt="Cabinet" title="Cabinet" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[14px] font-medium leading-[20px] text-[#293e2d]">CABINET</h3>
+      </div>
+
+      <div class="pagebuilder-column lp-tile !w-[172px] shrink-0 snap-start flex flex-col items-center gap-1 rounded-2xl bg-[#e7f1e8] !p-4 lg:!w-full" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:16.6667%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 h-24 w-full overflow-hidden rounded-lg"><img class="h-full w-full object-cover" src="{{media url=wysiwyg/homepage/cat-lighting.png}}" alt="Lighting" title="Lighting" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[14px] font-medium leading-[20px] text-[#293e2d]">LIGHTING</h3>
+      </div>
+
+      <div class="pagebuilder-column lp-tile !w-[172px] shrink-0 snap-start flex flex-col items-center gap-1 rounded-2xl bg-[#e7f1e8] !p-4 lg:!w-full" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:16.6667%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 h-24 w-full overflow-hidden rounded-lg"><img class="h-full w-full object-cover" src="{{media url=wysiwyg/homepage/cat-bed.png}}" alt="Bed" title="Bed" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[14px] font-medium leading-[20px] text-[#293e2d]">BED</h3>
+      </div>
+
+      <div class="pagebuilder-column lp-tile !w-[172px] shrink-0 snap-start flex flex-col items-center gap-1 rounded-2xl bg-[#e7f1e8] !p-4 lg:!w-full" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:16.6667%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 h-24 w-full overflow-hidden rounded-lg"><img class="h-full w-full object-cover" src="{{media url=wysiwyg/homepage/cat-nightstand.png}}" alt="Nightstand" title="Nightstand" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[14px] font-medium leading-[20px] text-[#293e2d]">NIGHTSTAND</h3>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ 3. FLASH SALE ============ -->
+<div data-content-type="row" data-appearance="contained" data-element="main" class="lp-section !mt-10 !px-2 md:!px-6 lg:!mt-14 lg:!px-10">
+  <div data-element="inner" class="flex flex-col">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 font-sans text-[20px] font-medium leading-[28px] text-[#1e293b] lg:text-[32px] lg:font-bold lg:leading-[40px] lg:tracking-[-1px]">Flash sale</h2>
+    <div data-content-type="html" data-appearance="default" data-element="main" class="!mt-5">
+{{widget type="Launchpad\Homepage\Block\Product\FlashSaleList" template="Launchpad_Homepage::product/widget/flash-sale.phtml" products_count="8" sale_end="" condition_option="condition" conditions_encoded="^[`1`:^[`aggregator`:`all`,`new_child`:``,`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,`value`:`1`^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,`attribute`:`category_ids`,`operator`:``,`value`:`3`^]^]"}}
+    </div>
+    <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="flex !mt-6 justify-center">
+      <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+        <a class="pagebuilder-button-secondary inline-flex items-center justify-center rounded-md border border-[#588f60] !px-6 !py-3 font-sans text-[16px] font-medium leading-[24px] text-[#304b34] transition hover:bg-[#e7f1e8]" href="/flash-sale" target="" data-link-type="default" data-element="link"><span data-element="link_text">Explore all</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4. PROMOTION — scroll ngang trên mobile ============ -->
+<div data-content-type="row" data-appearance="contained" data-element="main" class="lp-section !mt-6 !px-2 md:!px-6 lg:!px-10">
+  <div data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="inner" class="flex flex-col">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!mb-1 font-sans text-[24px] font-bold leading-[32px] tracking-[-1px] text-[#1e293b] lg:!mb-3 lg:text-[48px] lg:leading-[56px]">Everyday more value</h2>
+    <div data-content-type="text" data-appearance="default" data-element="main" class="!mb-4 font-sans text-[16px] leading-[24px] text-[#475569] lg:!mb-5">
+      <p>Quality You Trust, Prices You&rsquo;ll Love. From 20 Aug 26 &ndash; 25 Aug 27. Shop now!</p>
+    </div>
+    <div class="pagebuilder-column-group lp-promo lp-rail flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 lg:gap-6" data-background-images="{}" data-content-type="column-group" data-appearance="default" data-grid-size="12" data-element="main">
+
+      <div class="pagebuilder-column lp-promo-card !w-[320px] shrink-0 snap-start flex h-[400px] flex-col items-start justify-center gap-10 bg-[#304b34] !px-4 !py-[110px] lg:!w-[360px] lg:h-[502px]" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:25%">
+        <div data-content-type="text" data-appearance="default" data-element="main" class="!m-0 w-full font-sans text-[12px] font-medium leading-[16px] text-white lg:text-[14px] lg:leading-[20px]"><p>Everyday more value</p></div>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full font-sans text-[24px] font-bold leading-[32px] tracking-[-1px] text-white lg:text-[48px] lg:leading-[56px]">Shop all lower-price products</h3>
+        <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="flex !m-0 justify-start">
+          <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+            <a class="pagebuilder-button-link inline-flex h-9 w-9 items-center justify-center rounded-full border border-white !p-0 text-white transition hover:bg-white/10" href="/value" target="" data-link-type="default" data-element="link"><span data-element="link_text">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pagebuilder-column lp-promo-card !w-[320px] shrink-0 snap-start flex h-[400px] flex-col items-start justify-center gap-10 bg-[#304b34] !px-4 !py-[110px] lg:!w-[360px] lg:h-[502px]" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:25%">
+        <div data-content-type="text" data-appearance="default" data-element="main" class="!m-0 w-full font-sans text-[12px] font-medium leading-[16px] text-white lg:text-[14px] lg:leading-[20px]"><p>Everyday more value</p></div>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full font-sans text-[24px] font-bold leading-[32px] tracking-[-1px] text-white lg:text-[48px] lg:leading-[56px]">Shop all lower-price products</h3>
+        <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="flex !m-0 justify-start">
+          <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+            <a class="pagebuilder-button-link inline-flex h-9 w-9 items-center justify-center rounded-full border border-white !p-0 text-white transition hover:bg-white/10" href="/value" target="" data-link-type="default" data-element="link"><span data-element="link_text">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pagebuilder-column lp-promo-card !w-[320px] shrink-0 snap-start flex h-[400px] flex-col items-start justify-center gap-10 bg-[#304b34] !px-4 !py-[110px] lg:!w-[360px] lg:h-[502px]" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:25%">
+        <div data-content-type="text" data-appearance="default" data-element="main" class="!m-0 w-full font-sans text-[12px] font-medium leading-[16px] text-white lg:text-[14px] lg:leading-[20px]"><p>Promotion zone</p></div>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full font-sans text-[24px] font-bold leading-[32px] tracking-[-1px] text-white lg:text-[48px] lg:leading-[56px]">Shop all lower-price products</h3>
+        <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="flex !m-0 justify-start">
+          <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+            <a class="pagebuilder-button-link inline-flex h-9 w-9 items-center justify-center rounded-full border border-white !p-0 text-white transition hover:bg-white/10" href="/value" target="" data-link-type="default" data-element="link"><span data-element="link_text">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pagebuilder-column lp-promo-card !w-[320px] shrink-0 snap-start flex h-[400px] flex-col items-start justify-center gap-10 bg-[#304b34] !px-4 !py-[110px] lg:!w-[360px] lg:h-[502px]" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:25%">
+        <div data-content-type="text" data-appearance="default" data-element="main" class="!m-0 w-full font-sans text-[12px] font-medium leading-[16px] text-white lg:text-[14px] lg:leading-[20px]"><p>Promotion zone</p></div>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full font-sans text-[24px] font-bold leading-[32px] tracking-[-1px] text-white lg:text-[48px] lg:leading-[56px]">Shop all lower-price products</h3>
+        <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="flex !m-0 justify-start">
+          <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+            <a class="pagebuilder-button-link inline-flex h-9 w-9 items-center justify-center rounded-full border border-white !p-0 text-white transition hover:bg-white/10" href="/value" target="" data-link-type="default" data-element="link"><span data-element="link_text">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ 5. SPLIT IMAGE / TEXT ============ -->
+<div data-content-type="row" data-appearance="full-width" data-element="main" class="lp-section !mt-12 lg:!mt-16">
+  <div data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="inner" class="flex flex-col">
+    <div class="pagebuilder-column-group lp-split !grid grid-cols-1 gap-4 lg:grid-cols-[940fr_467fr] lg:gap-8" data-background-images="{}" data-content-type="column-group" data-appearance="default" data-grid-size="12" data-element="main">
+
+      <div class="pagebuilder-column !w-full flex flex-col" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:66.6667%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 h-[535px] w-full lg:h-full"><img class="h-full w-full object-cover" src="{{media url=wysiwyg/homepage/living-reimagined.png}}" alt="Living, Reimagined" title="Living, Reimagined" data-element="desktop_image"></figure>
+      </div>
+
+      <div class="pagebuilder-column !w-full flex flex-col justify-end gap-3 !px-2 !pb-0 md:!px-6 lg:!px-0 lg:!pb-6 lg:!pr-10" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:33.3333%">
+        <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 font-sans text-[24px] font-bold leading-[32px] tracking-[-1px] text-[#1e293b] lg:text-[32px] lg:leading-[40px]">Living, Reimagined</h2>
+        <div data-content-type="text" data-appearance="default" data-element="main" class="!m-0 font-sans text-[16px] leading-[24px] text-[#475569]">
+          <p>Create a space that feels considered and effortlessly inviting. Discover timeless furniture and thoughtful details designed for modern living.</p>
+        </div>
+        <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="flex !mt-3 justify-start">
+          <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+            <a class="pagebuilder-button-primary inline-flex items-center justify-center rounded-md bg-[#588f60] !px-6 !py-3 font-sans text-[16px] font-medium leading-[24px] text-white transition hover:bg-[#45744c]" href="/collection" target="" data-link-type="default" data-element="link"><span data-element="link_text">Explore all</span></a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ 6a. PRODUCT RAIL — LIVING ROOM ============ -->
+<div data-content-type="row" data-appearance="contained" data-element="main" class="lp-section !mt-6 !px-2 md:!px-6 lg:!px-10">
+  <div data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="inner" class="flex flex-col">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!mb-4 font-sans text-[20px] font-medium leading-[28px] text-[#1e293b]">Living Room</h2>
+    <div data-content-type="products" data-appearance="carousel" data-show-dots="true" data-show-arrows="true" data-element="main" class="!m-0 !text-left">{{widget type="Magento\CatalogWidget\Block\Product\ProductsList" template="Magento_PageBuilder::catalog/product/widget/content/carousel.phtml" anchor_text="" id_path="" show_pager="0" products_count="8" condition_option="condition" condition_option_value="" type_name="Catalog Products List" conditions_encoded="^[`1`:^[`aggregator`:`all`,`new_child`:``,`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,`value`:`1`^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,`attribute`:`category_ids`,`operator`:`==`,`value`:`4`^]^]"}}</div>
+  </div>
+</div>
+
+<!-- ============ 6b. PRODUCT RAIL — BEDROOM ============ -->
+<div data-content-type="row" data-appearance="contained" data-element="main" class="lp-section !mt-6 !px-2 md:!px-6 lg:!px-10">
+  <div data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="inner" class="flex flex-col">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!mb-4 font-sans text-[20px] font-medium leading-[28px] text-[#1e293b]">Bedroom</h2>
+    <div data-content-type="products" data-appearance="carousel" data-show-dots="true" data-show-arrows="true" data-element="main" class="!m-0 !text-left">{{widget type="Magento\CatalogWidget\Block\Product\ProductsList" template="Magento_PageBuilder::catalog/product/widget/content/carousel.phtml" anchor_text="" id_path="" show_pager="0" products_count="8" condition_option="condition" condition_option_value="" type_name="Catalog Products List" conditions_encoded="^[`1`:^[`aggregator`:`all`,`new_child`:``,`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,`value`:`1`^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,`attribute`:`category_ids`,`operator`:`==`,`value`:`5`^]^]"}}</div>
+  </div>
+</div>
+
+<!-- ============ 6c. PRODUCT RAIL — ACCESSORIES ============ -->
+<div data-content-type="row" data-appearance="contained" data-element="main" class="lp-section !mt-6 !px-2 md:!px-6 lg:!px-10">
+  <div data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="inner" class="flex flex-col">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!mb-4 font-sans text-[20px] font-medium leading-[28px] text-[#1e293b]">Accessories</h2>
+    <div data-content-type="products" data-appearance="carousel" data-show-dots="true" data-show-arrows="true" data-element="main" class="!m-0 !text-left">{{widget type="Magento\CatalogWidget\Block\Product\ProductsList" template="Magento_PageBuilder::catalog/product/widget/content/carousel.phtml" anchor_text="" id_path="" show_pager="0" products_count="8" condition_option="condition" condition_option_value="" type_name="Catalog Products List" conditions_encoded="^[`1`:^[`aggregator`:`all`,`new_child`:``,`type`:`Magento||CatalogWidget||Model||Rule||Condition||Combine`,`value`:`1`^],`1--1`:^[`type`:`Magento||CatalogWidget||Model||Rule||Condition||Product`,`attribute`:`category_ids`,`operator`:`==`,`value`:`6`^]^]"}}</div>
+    <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="flex !mt-8 justify-center">
+      <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+        <a class="pagebuilder-button-primary inline-flex items-center justify-center rounded-md bg-[#588f60] !px-6 !py-3 font-sans text-[16px] font-medium leading-[24px] text-white transition hover:bg-[#45744c]" href="/collection" target="" data-link-type="default" data-element="link"><span data-element="link_text">Go to Collection</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 7. REAL SPACES - video (PB html element: iframe survives admin saves;
+     the native video content-type re-serialization dropped it on 09-18 save) ============ -->
+<div data-content-type="row" data-appearance="full-bleed" data-element="main" class="lp-media !mt-12 lg:!mt-16">
+  <div data-content-type="html" data-appearance="default" data-element="main" class="lp-video">
+    <iframe frameborder="0" allowfullscreen="" loading="lazy" title="Real Spaces" src="https://www.youtube.com/embed/6HIi9IzqoNM" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+  </div>
+</div>
+
+<!-- ============ 7b. REAL SPACES — content ============ -->
+<div data-content-type="row" data-appearance="contained" data-element="main" class="lp-section !mt-4 !px-2 md:!px-6 lg:!mt-6 lg:!px-10">
+  <div data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="inner" class="flex flex-col">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!mb-1 font-sans text-[24px] font-bold leading-[32px] tracking-[-1px] text-[#1e293b] lg:!mb-2 lg:text-[48px] lg:leading-[56px]">REAL SPACES</h2>
+    <div data-content-type="text" data-appearance="default" data-element="main" class="!mb-4 font-sans text-[16px] leading-[24px] text-[#475569] lg:text-[18px] lg:leading-[28px]">
+      <p>Experience the pieces in their natural setting.</p>
+    </div>
+    <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="flex justify-start">
+      <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+        <a class="pagebuilder-button-secondary inline-flex items-center justify-center gap-2 rounded-md border border-[#d1d5dc] bg-white !px-6 !py-3 font-sans text-[16px] font-medium leading-[24px] text-[#293e2d] transition hover:bg-[#f4f9f4]" href="/lookbook" target="" data-link-type="default" data-element="link"><span data-element="link_text">Explore</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 8. EDITORIAL — READY TO SHIP ============ -->
+<div data-content-type="row" data-appearance="full-bleed" data-element="main" data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{&quot;desktop_image&quot;:&quot;{{media url=wysiwyg/homepage/ready-to-ship.jpg}}&quot;}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" class="lp-editorial relative !mt-12 flex !min-h-[640px] flex-col justify-end bg-cover bg-center !px-2 !pb-6 !pt-10 md:!px-6 lg:!mt-16 lg:!min-h-[800px] lg:!px-10 lg:!pb-16">
+  <div data-content-type="text" data-appearance="default" data-element="main" class="relative z-10 !mb-2 font-sans text-[14px] font-medium leading-[20px] tracking-[0.1em] text-white">
+    <p>READY TO SHIP</p>
+  </div>
+  <h2 data-content-type="heading" data-appearance="default" data-element="main" class="relative z-10 !mb-2 font-sans text-[32px] font-bold leading-[40px] tracking-[-1px] text-white">New Sofa for Autumn</h2>
+  <div data-content-type="text" data-appearance="default" data-element="main" class="relative z-10 !mb-4 font-sans text-[16px] leading-[20px] text-white">
+    <p>Find the perfect style for all the family</p>
+  </div>
+  <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="relative z-10 flex justify-start">
+    <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+      <a class="pagebuilder-button-primary inline-flex items-center justify-center rounded-md bg-[#588f60] !px-6 !py-3 font-sans text-[16px] font-medium leading-[24px] text-white transition hover:bg-[#45744c]" href="/sofas" target="" data-link-type="default" data-element="link"><span data-element="link_text">Shop in-stock sofa</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 9. USPs — xếp dọc trên mobile ============ -->
+<div data-content-type="row" data-appearance="contained" data-element="main" class="lp-section !mt-12 !px-2 md:!px-6 lg:!mt-16 lg:!px-10">
+  <div data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="inner" class="flex flex-col">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!mb-4 font-sans text-[20px] font-medium leading-[28px] text-[#1e293b] lg:!mb-5">Why us?</h2>
+    <div class="pagebuilder-column-group lp-usps !grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4 lg:gap-10" data-background-images="{}" data-content-type="column-group" data-appearance="default" data-grid-size="12" data-element="main">
+
+      <div class="pagebuilder-column lp-usp !w-full flex flex-col items-center gap-4 bg-[#e7f1e8] !px-4 !py-6" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:25%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 flex h-14 w-14 items-center justify-center rounded-full bg-[#45744c] !p-2"><img class="h-10 w-10" src="{{media url=wysiwyg/homepage/icon-secure.png}}" alt="Safe and secure" title="Safe and secure" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[20px] font-medium leading-[28px] text-[#1e293b]">Safe and secure</h3>
+        <div data-content-type="text" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[16px] leading-[24px] text-[#475569]"><p>Shop with confidence knowing that your online orders are safe and secure with our advanced security measures.</p></div>
+      </div>
+
+      <div class="pagebuilder-column lp-usp !w-full flex flex-col items-center gap-4 bg-[#e7f1e8] !px-4 !py-6" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:25%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 flex h-14 w-14 items-center justify-center rounded-full bg-[#45744c] !p-2"><img class="h-10 w-10" src="{{media url=wysiwyg/homepage/icon-shipping.png}}" alt="Free shipping" title="Free shipping" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[20px] font-medium leading-[28px] text-[#1e293b]">Free shipping</h3>
+        <div data-content-type="text" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[16px] leading-[24px] text-[#475569]"><p>Enjoy the convenience of free shipping on all orders, making it even easier to get your favourite pieces delivered to your door.</p></div>
+      </div>
+
+      <div class="pagebuilder-column lp-usp !w-full flex flex-col items-center gap-4 bg-[#e7f1e8] !px-4 !py-6" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:25%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 flex h-14 w-14 items-center justify-center rounded-full bg-[#45744c] !p-2"><img class="h-10 w-10" src="{{media url=wysiwyg/homepage/icon-gift.png}}" alt="Amazing gift-wrapping" title="Amazing gift-wrapping" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[20px] font-medium leading-[28px] text-[#1e293b]">Amazing gift-wrapping</h3>
+        <div data-content-type="text" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[16px] leading-[24px] text-[#475569]"><p>Elevate your gifting experience with our amazing gift wrapping service, adding a touch of elegance to every present.</p></div>
+      </div>
+
+      <div class="pagebuilder-column lp-usp !w-full flex flex-col items-center gap-4 bg-[#e7f1e8] !px-4 !py-6" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="width:25%">
+        <figure data-content-type="image" data-appearance="full-width" data-element="main" class="!m-0 flex h-14 w-14 items-center justify-center rounded-full bg-[#45744c] !p-2"><img class="h-10 w-10" src="{{media url=wysiwyg/homepage/icon-deals.png}}" alt="The best deals" title="The best deals" data-element="desktop_image"></figure>
+        <h3 data-content-type="heading" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[20px] font-medium leading-[28px] text-[#1e293b]">The best deals</h3>
+        <div data-content-type="text" data-appearance="default" data-element="main" class="!m-0 w-full text-center font-sans text-[16px] leading-[24px] text-[#475569]"><p>Discover unbeatable online deals and savings, ensuring you get the best value for your purchases.</p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ 10. JOURNAL - Magefan blog slider ============ -->
+<div data-content-type="row" data-appearance="contained" data-element="main" class="lp-section !mt-12 !px-2 md:!px-6 lg:!mt-16 lg:!px-10">
+  <div data-element="inner" class="flex flex-col">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="!mb-4 font-sans text-[20px] font-medium leading-[28px] text-[#1e293b] lg:!mb-5">Journal</h2>
+    <div data-content-type="html" data-appearance="default" data-element="main">
+{{block class="Launchpad\Homepage\Block\Blog\Journal" template="Launchpad_Homepage::blog/journal.phtml" count="3"}}
+    </div>
+    <div data-content-type="buttons" data-appearance="inline" data-same-width="false" data-element="main" class="flex !mt-8 justify-center">
+      <div data-content-type="button-item" data-appearance="default" data-element="main" class="inline-block">
+        <a class="pagebuilder-button-secondary inline-flex items-center justify-center rounded-md border border-[#588f60] !px-6 !py-3 font-sans text-[16px] font-medium leading-[24px] text-[#304b34] transition hover:bg-[#e7f1e8]" href="/blog" target="" data-link-type="default" data-element="link"><span data-element="link_text">View all post</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 11. NEWSLETTER ============ -->
+<div data-content-type="row" data-appearance="full-width" data-element="main" class="lp-newsletter !mt-12 lg:!mt-16">
+  <div data-enable-parallax="0" data-parallax-speed="0.3" data-background-images="{}" data-background-type="image" data-video-loop="true" data-video-play-only-visible="true" data-video-lazy-load="true" data-video-fallback-src="" data-element="inner" class="flex flex-col items-start !px-6 !py-4 lg:items-center lg:!px-10 lg:!py-10">
+    <h2 data-content-type="heading" data-appearance="default" data-element="main" class="lp-newsletter-title !mb-6">Subscribe to our newsletter</h2>
+    <div data-content-type="block" data-appearance="default" data-element="main" class="w-full max-w-[1136px]">{{block class="Launchpad\Homepage\Block\Newsletter\Subscribe" template="Launchpad_Homepage::newsletter/subscribe.phtml"}}</div>
+  </div>
+</div>

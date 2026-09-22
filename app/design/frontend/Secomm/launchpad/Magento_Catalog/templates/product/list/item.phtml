@@ -3,6 +3,11 @@
  * Hyvä Themes - https://hyva.io
  * Copyright © Hyvä Themes. All rights reserved.
  * See COPYING.txt for license details.
+ *
+ * Restyled for Homepage mock-up (TASK-0NNZCW, SLP-213): design product card
+ * (badge overlay, wishlist overlay, brand, price + discount chip, swatches,
+ * stock, rating). Functional hooks unchanged: product_addtocart_form,
+ * price-box events, initWishlist, open-quickview dispatch, compare.
  */
 
 declare(strict_types=1);
@@ -10,7 +15,6 @@ declare(strict_types=1);
 use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\LucideIcons;
 use Hyva\Theme\ViewModel\BlockJsDependencies;
-use Hyva\Theme\ViewModel\ProductCompare;
 use Hyva\Theme\ViewModel\ProductListItem;
 use Hyva\Theme\ViewModel\ProductPage;
 use Hyva\Theme\ViewModel\Wishlist;
@@ -37,8 +41,6 @@ $productListItemViewModel = $viewModels->require(ProductListItem::class);
 /** @var CatalogOutputHelper $catalogOutputHelper */
 $catalogOutputHelper = $this->helper(CatalogOutputHelper::class);
 
-/** @var ProductCompare $compareViewModel */
-$compareViewModel = $viewModels->require(ProductCompare::class);
 /** @var Wishlist $wishlistViewModel */
 $wishlistViewModel = $viewModels->require(Wishlist::class);
 
@@ -56,7 +58,6 @@ $templateType = $block->getData('template_type');
 $viewMode = $block->getData('view_mode');
 $showDescription = $block->getData('show_description');
 $showAddToWishlist = $wishlistViewModel->isEnabled();
-$showAddToCompare = $compareViewModel->showInProductList();
 $viewIsGrid = $viewMode === 'grid';
 $productType = $product->getTypeId();
 $isProductGroupedOrBundle = $productType === 'bundle' || $productType === "grouped";
@@ -79,12 +80,35 @@ $productName = $catalogOutputHelper->productAttribute($product, $product->getNam
 // Ensure the required JS is rendered on the page
 $viewModels->require(BlockJsDependencies::class)->setBlockTemplateDependency($block, 'Magento_Catalog::product/list/js/price-box.phtml');
 
+// Design card extras (TASK-0NNZCW): brand line + discount percent.
+// grouped/bundle have no single regular/final price pair — discount chip is skipped for them.
+$brand = null;
+if ($product->getData('manufacturer')) {
+    $brandText = $product->getAttributeText('manufacturer');
+    $brand = is_array($brandText) ? implode(', ', $brandText) : $brandText;
+}
+
+$isNew = (bool)$product->getData('news_from_date');
+
+$discountPercent = 0;
+if (!$isProductGroupedOrBundle) {
+    try {
+        $regularPrice = $product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue();
+        $finalPrice = $product->getPriceInfo()->getPrice('final_price')->getAmount()->getValue();
+        if ($regularPrice && $finalPrice && $finalPrice < $regularPrice) {
+            $discountPercent = (int)round((1 - $finalPrice / $regularPrice) * 100);
+        }
+    } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        // Price info not available for this product type — card renders without the discount chip.
+    }
+}
+
 ?>
 
 <?php if ($product->isSaleable()): ?>
 <form method="post"
     action="<?= $escaper->escapeUrl($productViewModel->getAddToCartUrl($product, ['useUencPlaceholder' => true])) ?>"
-    class="item product product-item product_addtocart_form card card-interactive grow flex flex-col w-full <?= $viewIsGrid ? '' : 'md:flex-row' ?>"
+    class="item product product-item product_addtocart_form hp-card grow flex flex-col w-full <?= $viewIsGrid ? '' : 'md:flex-row' ?>"
     <?php if ($product->getOptions()): ?>
     enctype="multipart/form-data"
     <?php endif; ?>
@@ -103,7 +127,7 @@ $viewModels->require(BlockJsDependencies::class)->setBlockTemplateDependency($bl
            value="<?= $escaper->escapeHtml($optionItem['value']) ?>">
     <?php endforeach; ?>
 <?php else: ?>
-<div class="item product product-item card card-interactive flex flex-col w-full <?= $viewIsGrid ? '' : 'md:flex-row' ?>"
+<div class="item product product-item hp-card flex flex-col w-full <?= $viewIsGrid ? '' : 'md:flex-row' ?>"
      <?php foreach ($block->getData('product_data_attributes')  ?? [] as $attribute => $include): ?>
          <?php if ($include): ?>
              <?php /** Append data-* attributes based on layout XML arguments */ ?>
@@ -112,46 +136,85 @@ $viewModels->require(BlockJsDependencies::class)->setBlockTemplateDependency($bl
     <?php endforeach; ?>
 >
 <?php endif; ?>
-    <?php /* Product Image */ ?>
-    <?php if ($blockImage = $block->getImage($product, $imageDisplayArea)): ?>
-        <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
-            title="<?= $escaper->escapeHtmlAttr($product->getName()) ?>"
-            class="product photo product-item-photo block mx-auto mb-3 <?= $viewIsGrid ? '' : 'md:w-2/6 md:mb-0 md:shrink-0' ?>"
-            tabindex="-1"
-        >
-            <?= $blockImage
-                ->setTemplate('Magento_Catalog::product/list/image.phtml')
-                ->setData('custom_attributes', $imageCustomAttributes)
-                ->setProductId($productId)
-                ->toHtml();
-            ?>
-        </a>
-    <?php endif; ?>
-    <div class="product-info flex flex-col grow <?= $viewIsGrid ? '' : 'md:pl-5 md:w-4/6' ?>">
-        <div class="mt-2 mb-1 items-center justify-center font-semibold text-lg text-center <?= $viewIsGrid ? '' : 'md:text-left' ?>">
+    <?php /* Product media slider (TASK-0NNZCW v4.3, design mini dots) + overlays.
+               Gallery comes batch-loaded from CatalogWidget lists
+               (addMediaGalleryData); elsewhere it lazy-loads per product. */ ?>
+    <div class="hp-card-media-wrap group/media relative block w-full <?= $viewIsGrid ? '' : 'md:w-2/6 md:shrink-0' ?>">
+        <?php /** @var \Launchpad\CmsContent\ViewModel\ProductGallery $productGallery */ ?>
+        <?php $productGallery = $viewModels->require(\Launchpad\CmsContent\ViewModel\ProductGallery::class) ?>
+        <?php $galleryImages = $productGallery->getSliderImages($product); ?><!-- gallery-debug count=<?= $galleryImages ? $galleryImages->count() : 'NULL' ?> vm=<?= get_class($productGallery) ?> err=<?= $escaper->escapeHtmlAttr($productGallery->getLastError()) ?> pid=<?= (int) $product->getId() ?> sku=<?= $escaper->escapeHtmlAttr($product->getSku()) ?> type=<?= $escaper->escapeHtmlAttr($product->getTypeId()) ?> -->
+        <?php if ($galleryImages && $galleryImages->getSize() > 1): ?>
+            <div class="hp-card-media-slider relative" data-lp-card-slider>
+                <div data-track class="snap-track hp-card-gallery">
+                    <?php $slideIndex = 0; ?>
+                    <?php foreach ($galleryImages as $galleryImage): ?>
+                        <?php if ($slideIndex > 3) break; ?>
+                        <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                            title="<?= $escaper->escapeHtmlAttr($product->getName()) ?>"
+                            class="product photo product-item-photo hp-card-photo block shrink-0"
+                            tabindex="-1"
+                        >
+                            <img src="<?= $escaper->escapeUrl($galleryImage->getUrl()) ?>"
+                                 alt="<?= $escaper->escapeHtmlAttr($slideIndex === 0 ? $product->getName() : '') ?>"
+                                 class="aspect-square w-full object-contain mix-blend-multiply"
+                                 loading="<?= $slideIndex === 0 ? 'eager' : 'lazy' ?>">
+                        </a>
+                        <?php $slideIndex++; ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php elseif ($blockImage = $block->getImage($product, $imageDisplayArea)): ?>
+            <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+                title="<?= $escaper->escapeHtmlAttr($product->getName()) ?>"
+                class="product photo product-item-photo hp-card-photo block"
+                tabindex="-1"
+            >
+                <?= $blockImage
+                    ->setTemplate('Magento_Catalog::product/list/image.phtml')
+                    ->setData('custom_attributes', $imageCustomAttributes)
+                    ->setProductId($productId)
+                    ->toHtml();
+                ?>
+            </a>
+        <?php endif; ?>
+        <?php if ($isNew): ?>
+            <span class="hp-card-badge">
+                <?= $escaper->escapeHtml(__('New arrival')) ?>
+            </span>
+        <?php endif; ?>
+        <?php if ($showAddToWishlist && $blockWishlist = $block->getChildBlock('wishlist')): ?>
+            <span class="hp-card-wishlist">
+                <?= $blockWishlist->setData('product', $product)->toHtml() ?>
+            </span>
+        <?php endif; ?>
+        <div class="hp-card-actions hidden">
+            <?php if ($product->isSaleable() && !$isProductGroupedOrBundle): ?>
+                <button
+                    class="btn btn-primary text-sm"
+                    aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $productName) ?>"
+                    data-addto="cart"
+                >
+                    <?= $lucideIcons->shoppingCartHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
+                    <span class="inline"><?= $escaper->escapeHtml(__('Add to Cart')) ?></span>
+                </button>
+            <?php endif; ?>
+            <?php if ($addToBlock = $block->getChildBlock('addto')): ?>
+                <?= $addToBlock->setProduct($product)->getChildHtml() ?>
+            <?php endif; ?>
+        </div>
+    </div>
+    <div class="product-info flex flex-col grow <?= $viewIsGrid ? 'pt-3 px-1' : 'md:pl-5 md:w-4/6 md:pt-0' ?>">
+        <?php if ($brand): ?>
+            <span class="hp-card-brand"><?= $escaper->escapeHtml($brand) ?></span>
+        <?php endif; ?>
+        <div class="<?= $brand ? 'mt-1' : 'mt-2' ?> mb-0 <?= $viewIsGrid ? 'text-start' : 'md:text-left' ?>">
             <a
-                class="product-item-link"
+                class="product-item-link hp-card-name"
                 href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
             >
                 <?= /* @noEscape */ $productName ?>
             </a>
         </div>
-
-        <?php if (!$hideRatingSummary): ?>
-        <div class="py-1 mx-auto <?= $viewIsGrid ? '' : 'md:mx-0 md:w-auto' ?>">
-            <?= $block->getReviewsSummaryHtml($product, 'short') ?>
-        </div>
-        <?php endif; ?>
-
-        <?php if ($product->isAvailable() && !$hideDetails): ?>
-            <?= $block->getProductDetailsHtml($product) ?>
-        <?php endif; ?>
-
-        <?php if ($showDescription): ?>
-        <div class="mt-2 mb-1 items-center justify-center text-center <?= $viewIsGrid ? '' : 'md:text-left' ?>">
-            <?= /* @noEscape */ $productViewModel->getShortDescriptionForProduct($product) ?>
-        </div>
-        <?php endif; ?>
 
         <?php if ($isProductGroupedOrBundle): ?>
             <span class="sr-only">
@@ -164,71 +227,78 @@ $viewModels->require(BlockJsDependencies::class)->setBlockTemplateDependency($bl
              x-defer="intersect"
              @update-prices-<?= (int)$productId ?>.window="updatePrice($event.detail);"
         >
-            <?= /* @noEscape */ $productListItemViewModel->getProductPriceHtml($product) ?>
+            <div class="flex flex-wrap items-center gap-2">
+                <?= /* @noEscape */ $productListItemViewModel->getProductPriceHtml($product) ?>
+                <?php if ($discountPercent && !$isProductGroupedOrBundle): ?>
+                    <span class="hp-card-discount"><?= $escaper->escapeHtml(__('-%1%', $discountPercent)) ?></span>
+                <?php endif; ?>
+            </div>
         </div>
 
-        <div class="mt-auto pt-3 flex flex-wrap justify-between items-center gap-y-4 gap-x-2">
-            <?php if ($product->isSaleable()): ?>
-                <?php if ($isProductGroupedOrBundle): ?>
-                <a
-                    href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
-                    class="btn btn-primary text-sm"
-                    aria-label="<?= $escaper->escapeHtmlAttr(__('Configure %1 on the product page', $productName)) ?>"
-                >
-                    <?= $lucideIcons->pencilHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
-                    <span class="inline <?= $viewIsGrid ? 'md:hidden lg:inline' : '' ?>">
-                        <?= $escaper->escapeHtml(__('Configure')) ?>
-                    </span>
-                </a>
-                <?php else: ?>
-                <button
-                    class="btn btn-primary text-sm"
-                    aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Cart') . ' ' . $productName) ?>"
-                    data-addto="cart"
-                >
-                    <?= $lucideIcons->shoppingCartHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
-                    <span class="inline <?= $viewIsGrid ? 'md:hidden lg:inline' : '' ?>">
-                        <?= $escaper->escapeHtml(__('Add to Cart')) ?>
-                    </span>
-                </button>
-                <?php endif; ?>
+        <?php if ($product->isAvailable() && !$hideDetails): ?>
+            <?= $block->getProductDetailsHtml($product) ?>
+        <?php endif; ?>
 
-            <?php else: ?>
-            <div>
-                <?= $block->getChildBlock('stockstatus')->setData('product', $product)->toHtml() ?>
+        <?php if ($showDescription): ?>
+        <div class="mt-2 mb-1 items-center justify-center <?= $viewIsGrid ? 'text-start' : 'md:text-left' ?>">
+            <?= /* @noEscape */ $productViewModel->getShortDescriptionForProduct($product) ?>
+        </div>
+        <?php endif; ?>
+
+        <?php /* Design meta row (TASK-0NNZCW v4): stock left, rating right. */ ?>
+        <div class="hp-card-meta">
+            <div class="hp-card-stock">
+                <?php if ($product->isSaleable() && !$isProductGroupedOrBundle): ?>
+                    <span class="hp-card-stock-dot"></span>
+                    <?= $escaper->escapeHtml(__('In stock')) ?>
+                <?php else: ?>
+                    <?= $block->getChildBlock('stockstatus')->setData('product', $product)->toHtml() ?>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!$hideRatingSummary): ?>
+            <?php /* v4.9.9 (design): star + score + count.
+               getReviewsSummaryHtml goi truoc de append summary data vao product.
+               LUU Y (LL-0030): getRatingSummary() co the tra STRING (% dang
+               chuoi) thay vi object — xu ly ca hai dang, khong goi method tren
+               string (500 toan trang neu quen). */
+            $summaryHtml = $block->getReviewsSummaryHtml($product, 'short');
+            $summary = $product->getRatingSummary();
+            $percent = is_object($summary) ? (float) $summary->getPercentage() : (float) $summary;
+            $score = $summary ? round($percent / 20, 1) : null;
+            $count = is_object($summary) ? (int) $summary->getReviewsCount() : 0;
+            ?>
+            <div class="hp-card-rating">
+                <?php if ($score !== null && $score > 0): ?>
+                    <?= /* @noEscape */ $lucideIcons->starHtml('fill-current text-[#F0B100]', 16, 16, ['aria-hidden' => 'true']) ?>
+                    <span class="hp-card-rating-score"><?= $escaper->escapeHtml((string) $score) ?></span>
+                    <?php if ($count > 0): ?>
+                        <span class="hp-card-rating-count">(<?= (int) $count ?>)</span>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <?= /* @noEscape */ $summaryHtml ?>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
-            <div class="flex flex-wrap gap-2">
-                <?php if ($showQuickView): ?>
-                <button
-                    type="button"
-                    class="btn p-2 rounded-full"
-                    aria-label="<?= $escaper->escapeHtmlAttr(__('Quick view') . ' ' . $productName) ?>"
-                    onclick="window.dispatchEvent(new CustomEvent('open-quickview', { detail: { sku: '<?= $escaper->escapeJs($product->getSku()) ?>' } }))"
-                >
-                    <?= $lucideIcons->eyeHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
-                </button>
-                <?php endif; ?>
-                <?php if ($showAddToWishlist && $blockWishlist = $block->getChildBlock('wishlist')): ?>
-                    <?= $blockWishlist->setData('product', $product)->toHtml() ?>
-                <?php endif; ?>
-                <?php if ($showAddToCompare): ?>
-                <button x-data="initCompareOnProductList()"
-                        x-defer="intersect"
-                        @click.prevent="addToCompare(<?= (int)$productId ?>)"
-                        aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Compare') . ' ' . $productName) ?>"
-                        type="button"
-                        class="btn p-2 rounded-full"
-                        data-addto="compare"
-                >
-                    <?= $lucideIcons->scaleHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
-                </button>
-                <?php endif; ?>
-                <?php if ($addToBlock = $block->getChildBlock('addto')): ?>
-                    <?= $addToBlock->setProduct($product)->getChildHtml() ?>
-                <?php endif; ?>
-            </div>
         </div>
+
+        <?php if ($showQuickView): ?>
+        <div class="hp-card-quickview">
+            <button
+                type="button"
+                class="hp-card-quickview-btn"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Quick view') . ' ' . $productName) ?>"
+                onclick="window.dispatchEvent(new CustomEvent('open-quickview', { detail: { sku: '<?= $escaper->escapeJs($product->getSku()) ?>' } }))"
+            >
+                <?= $lucideIcons->eyeHtml('', 14, 14, ['aria-hidden' => 'true']) ?>
+                <span><?= $escaper->escapeHtml(__('Quick view')) ?></span>
+            </button>
+        </div>
+        <?php endif; ?>
+
+        <?php /* Design (TASK-0NNZCW): no Configure button — grouped/bundle cards
+               link through the product name / gallery / Quick view, which render
+               the full option set. */ ?>
     </div>
 <?php if ($product->isSaleable()): ?>
 </form>

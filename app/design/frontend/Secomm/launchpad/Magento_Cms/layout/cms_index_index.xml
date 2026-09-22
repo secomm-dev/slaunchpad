@@ -1,10 +1,16 @@
 <?xml version="1.0"?>
 <!--
-    Secomm Launchpad — Quick View modal (TASK-Z3DAH5, SLP-157)
-    Reusable modal container for product cards rendered by homepage CMS widgets.
+    Secomm Launchpad — Homepage (TASK-0NNZCW, SLP-213)
+    Layout mock-up sections per design upload. Header/footer keep the current theme.
+    Quick View modal (TASK-Z3DAH5, SLP-157) stays wired for product cards.
 -->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<page xmlns:xsi="http://www.w3.org/2000/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <!-- Remove Hyv&auml; default-theme demo content (hero + demo product sliders) —
+             replaced by the mock-up sections below (TASK-0NNZCW, SLP-213). -->
+        <referenceBlock name="hero" remove="true"/>
+        <referenceBlock name="slider-1" remove="true"/>
+        <referenceBlock name="slider-2" remove="true"/>
         <referenceContainer name="content">
             <block
                 class="Magento\Framework\View\Element\Template"
@@ -13,6 +19,5 @@
                 after="-"
                 ifconfig="hyva_theme_quickview/general/enabled"
             />
-        </referenceContainer>
-    </body>
+        </referenceContainer></body>
 </page>

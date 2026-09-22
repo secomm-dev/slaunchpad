@@ -1,0 +1,21 @@
+FAIL | 1280 login gap >= 12 | gap=10
+PASS | 1280 forgot gap >= 12 | gap=12
+PASS | 1280 create gap >= 12 | gap=12
+PASS | 1280 forgot email msg VI | ["Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com)."]
+PASS | 1280 create msgs VI (email+pwd+confirm) | ["Đây là một trường bắt buộc.","Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).","Vui lòng nhập 6 ký tự trở lên. Khoảng trắng ở đầu và cuối sẽ được bỏ qua.","Vui lòng nhập lại cùng một giá trị."]
+PASS | 1280 create no error overlaps next label | []
+PASS | 1280 forgot no error overlaps
+FAIL | 745 login gap >= 12 | gap=-346.6
+PASS | 745 forgot gap >= 12 | gap=12
+PASS | 745 create gap >= 12 | gap=12
+PASS | 745 forgot email msg VI | ["Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com)."]
+PASS | 745 create msgs VI (email+pwd+confirm) | ["Đây là một trường bắt buộc.","Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).","Vui lòng nhập 6 ký tự trở lên. Khoảng trắng ở đầu và cuối sẽ được bỏ qua.","Vui lòng nhập lại cùng một giá trị."]
+PASS | 745 create no error overlaps next label | []
+PASS | 745 forgot no error overlaps
+FAIL | 375 login gap >= 12 | gap=-317
+PASS | 375 forgot gap >= 12 | gap=12
+PASS | 375 create gap >= 12 | gap=12
+PASS | 375 forgot email msg VI | ["Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com)."]
+PASS | 375 create msgs VI (email+pwd+confirm) | ["Đây là một trường bắt buộc.","Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).","Vui lòng nhập 6 ký tự trở lên. Khoảng trắng ở đầu và cuối sẽ được bỏ qua.","Vui lòng nhập lại cùng một giá trị."]
+PASS | 375 create no error overlaps next label | []
+PASS | 375 forgot no error overlaps
