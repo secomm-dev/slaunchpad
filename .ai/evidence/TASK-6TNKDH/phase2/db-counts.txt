@@ -1,0 +1,29 @@
+== secomm_ghn_address_unit per scheme/depth/status:
+  GHN_ADMIN_2025 depth=1 ACTIVE: 34
+  GHN_ADMIN_2025 depth=2 ACTIVE: 3321
+  GHN_ADMIN_PRE_2025 depth=1 ACTIVE: 65
+  GHN_ADMIN_PRE_2025 depth=2 ACTIVE: 726
+  GHN_ADMIN_PRE_2025 depth=3 ACTIVE: 11981
+== secomm_ghn_address_mapping per scheme/status:
+  VN_ADMIN_2025 APPROVED: 3355
+  VN_ADMIN_PRE_2025 APPROVED: 10794
+== mapping method distribution (DB):
+  NORMALIZED_EXACT: 13840
+  NORMALIZED_TONE_PLACEMENT: 112
+  NORMALIZED_POLICY: 98
+  HIERARCHY_REVIEWED: 25
+  PARENT_SCOPED_REVIEWED: 16
+  OFFICIAL_SOURCE_REVIEWED: 16
+  NORMALIZED_SEMANTIC_NOTATION: 15
+  PARENT_SCOPED_RESIDUAL_1TO1: 13
+  NORMALIZED_SPACING_DASH: 9
+  PROVIDER_DUPLICATE_CURATED: 2
+  NORMALIZED_ORTHOGRAPHY: 1
+  AI_REVIEWED_ALIAS: 1
+  HISTORICAL_MERGE_PRIMARY: 1
+== DB-side integrity:
+  duplicate ghn target: 0
+  duplicate canonical source: 0
+  dangling ghn unit refs: 0
+  dangling canonical refs: 0
+  null identity: 0

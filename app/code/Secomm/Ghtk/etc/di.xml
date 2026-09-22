@@ -10,13 +10,21 @@
     <preference for="Secomm\Ghtk\Model\OrderSubmit\CodAmountResolverInterface"
                 type="Secomm\Ghtk\Model\OrderSubmit\DefaultCodAmountResolver" />
 
-    <!-- DEC-FEATYA2C0W-004 (D7) / TASK-Q4B98P: register the GHTK mapping table with the
-         VN scheme-swap reference guard. Table knowledge stays in this module. -->
-    <type name="Secomm\VietNamAddress\Model\Import\VnAddressSchemeImporter">
+    <!-- TASK-7AJ3K8: tracking reconciliation orchestration is SHARED (ShippingCore); this
+         virtual type binds it to the GHTK fetcher + carrier code. Carrier config policy
+         (enabled flag, staleness threshold) stays in the thin TrackingRefreshService shell. -->
+    <virtualType name="Secomm\Ghtk\Model\Tracking\GhtkTrackingReconciliation"
+                 type="Secomm\ShippingCore\Model\Tracking\TrackingReconciliationService">
         <arguments>
-            <argument name="directoryReferenceGuards" xsi:type="array">
-                <item name="secomm_ghtk_address_map" xsi:type="object">Secomm\Ghtk\Model\Import\DirectoryReferenceGuard</item>
-            </argument>
+            <argument name="fetcher" xsi:type="object">Secomm\Ghtk\Model\Tracking\GhtkTrackingFetcher</argument>
+            <argument name="carrierCode" xsi:type="string">ghtk</argument>
+            <argument name="batchSize" xsi:type="number">50</argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\Ghtk\Model\Tracking\TrackingRefreshService">
+        <arguments>
+            <argument name="reconciliationService" xsi:type="object">Secomm\Ghtk\Model\Tracking\GhtkTrackingReconciliation</argument>
         </arguments>
     </type>
+
 </config>

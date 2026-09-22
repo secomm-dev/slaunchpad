@@ -20,12 +20,16 @@
  */
 
 /**
- * Secomm override (BUG-TK8C2Y / ext ticket SLP-144):
+ * Secomm override (BUG-TK8C2Y / ext ticket SLP-144, BUG-8G0WCT / SLP-244):
  * Extra fee form on the cart — the required-field validation message was
  * hardcoded English inside the checkout-link JS handler. It is injected via
  * __() instead ('This is a required field.' — Magento core phrase, already in
- * the theme i18n dictionaries). All vendor logic kept verbatim (no
- * strict_types: vendor price formatting relies on type coercion) — re-sync
+ * the theme i18n dictionaries).
+ * BUG-8G0WCT: is_required checks compare against '1' (webapi serializes rule
+ * fields as strings, so a truthy check makes "0" required). Matches the
+ * pattern already used by Mageplaza_ExtraFee checkout templates.
+ * All vendor logic kept verbatim (no strict_types: vendor price formatting
+ * relies on type coercion) — re-sync
  * with Mageplaza_ExtraFee::hyva/cart/extra-fee.phtml on module upgrades.
  */
 
@@ -317,7 +321,7 @@ use Magento\Framework\Escaper;
                                     </div>
                                 </dt>
                                 <template x-if="rule.display_type !== '3'">
-                                    <div x-init="$nextTick(() => {afterRenderOptions($el)});" :class="rule.is_required ? 'mp-extra-fee-required' : ''">
+                                    <div x-init="$nextTick(() => {afterRenderOptions($el)});" :class="rule.is_required == '1' ? 'mp-extra-fee-required' : ''">
                                         <template x-for="option in getOptions(rule)" >
                                                 <div class="rule">
                                                     <template x-if="rule.display_type === '1'">
@@ -347,7 +351,7 @@ use Magento\Framework\Escaper;
                                                                    :value="option.value"
                                                                    :id="'s_rule_' + option.rule_id + '_' + option.value"
                                                                    :ruleId="option.rule_id"
-                                                                   :required="rule.is_required ? 'required' : false"
+                                                                   :required="rule.is_required == '1' ? 'required' : false"
                                                                    @click="selectOption($el)"
                                                             >
                                                             <label class="label"

@@ -10,7 +10,15 @@
          A future module (e.g. Secomm_ShippingFulfillment) replaces this preference
          (or decorates via plugin) to supply an MSI-source-based runtime origin —
          carriers consume OriginInterface and never change. -->
-    <preference for="Secomm\ShippingCore\Api\OriginProviderInterface"
+        <!-- DEC-TASK9Q5ZAK-001 — carrier-neutral physical facts (facts only; carriers interpret). -->
+    <preference for="Secomm\ShippingCore\Api\Physical\PhysicalPackageInterface"
+                type="Secomm\ShippingCore\Model\Physical\PhysicalPackage"/>
+    <preference for="Secomm\ShippingCore\Api\Physical\ShipmentPhysicalDataInterface"
+                type="Secomm\ShippingCore\Model\Physical\ShipmentPhysicalData"/>
+    <!-- CarrierPhysicalLimitInterface has NO default implementation — each carrier module
+         provides its own limits (ShippingCore never hard-codes carrier values). -->
+
+<preference for="Secomm\ShippingCore\Api\OriginProviderInterface"
                 type="Secomm\ShippingCore\Model\OriginProvider\ShippingOriginProvider"/>
     <preference for="Secomm\ShippingCore\Api\ShippingContextInterface"
                 type="Secomm\ShippingCore\Model\ShippingContext"/>
@@ -19,4 +27,119 @@
     <!-- SL-017 / DEC-SL017-001: single tracking pipeline (webhook + Tracking API + cron). -->
     <preference for="Secomm\ShippingCore\Api\Tracking\CarrierTrackingProcessorInterface"
                 type="Secomm\ShippingCore\Model\Tracking\ShipmentTrackingProcessor"/>
+    <!-- DEC-FEATYA2C0W-004 (D2/D4) / TASK-AQT7V3: Phase E-A address resolution contracts. -->
+    <!-- TASK-5XDG1P (Phase E-B): LOCAL canonical manager — delegates canonical graph resolution to
+         Secomm_VietNamAddress, request-scoped cache keyed by canonical identity. External
+         disambiguation (pool below) + textual fallback remain later phases and are never invoked
+         by the local manager. -->
+    <preference for="Secomm\ShippingCore\Api\Address\ShippingAddressResolutionManagerInterface"
+                type="Secomm\ShippingCore\Model\Address\ShippingAddressResolutionManager"/>
+    <!-- TASK-T78YH6 (Phase E-C0): carrier-facing Stage-1 canonical handoff — single resolution
+         path through the manager; non-VN exception translated into a non-applicable handoff. -->
+    <preference for="Secomm\ShippingCore\Api\Address\CarrierAddressHandoffServiceInterface"
+                type="Secomm\ShippingCore\Model\Address\CarrierAddressHandoffService"/>
+    <preference for="Secomm\ShippingCore\Api\Address\DestinationContextBuilderInterface"
+                type="Secomm\ShippingCore\Model\Address\DestinationContextBuilder"/>
+    <!-- TASK-7AJ3K8 (Phase E-C1): scalar runtime address sources (RateRequest / sales order
+         address) build their resolution context through the same identity path as the quote
+         builder — id-based bridge first, transitional name-based fallback, AMBIGUOUS candidates
+         passed through (never auto-picked). -->
+    <preference for="Secomm\ShippingCore\Api\Address\RuntimeAddressContextBuilderInterface"
+                type="Secomm\ShippingCore\Model\Address\RuntimeAddressContextBuilder"/>
+    <!-- TASK-7AJ3K8 (DEC-TASK7AJ3K8-001 §1): shared carrier transport primitive — ONE exchange
+         per call, categorized errors. Carrier auth/endpoints/payloads/retry policies stay in the
+         carrier modules; the shared layer never retries or logs payloads on its own. -->
+    <preference for="Secomm\ShippingCore\Api\Http\CarrierHttpClientInterface"
+                type="Secomm\ShippingCore\Model\Http\CurlCarrierHttpClient"/>
+    <!-- TASK-7AJ3K8 (DEC-004 D3): carrier API profile contract has NO default implementation —
+         each carrier module injects its own profile class (complete capability bundle, D3).
+         A preference here would be a reverse ShippingCore → carrier dependency: forbidden. -->
+    <!-- TASK-NAT3YV (Phase E-C1): common carrier rate outcome domain values (SUCCESS /
+         UNAVAILABLE / TECHNICAL_FAILURE); carrier adapters construct them directly. -->
+    <preference for="Secomm\ShippingCore\Api\Rate\CarrierRateInterface"
+                type="Secomm\ShippingCore\Model\Rate\CarrierRate"/>
+    <preference for="Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeInterface"
+                type="Secomm\ShippingCore\Model\Rate\CarrierRateOutcome"/>
+    <!-- TASK-32ACTR (Phase E-SL1): per-service-level realtime aggregation — groups classified
+         outcomes; no selection, no fallback triggering (E-SL2 owns the fallback decision). -->
+    <preference for="Secomm\ShippingCore\Api\ServiceLevelRateAggregatorInterface"
+                type="Secomm\ShippingCore\Model\ServiceLevel\ServiceLevelRateAggregator"/>
+    <!-- TASK-M3ME32 (Phase E-SL2): fallback decision — SUCCESS suppresses fallback; only a
+         technical failure on an enabled, policy-allowed level reaches the provider. Levels not
+         listed in the policy map are DENIED (emergency pricing is opt-in per level). -->
+    <preference for="Secomm\ShippingCore\Api\Fallback\FallbackPolicyInterface"
+                type="Secomm\ShippingCore\Model\Fallback\ConfigurableFallbackPolicy"/>
+    <preference for="Secomm\ShippingCore\Api\ServiceLevelRateOrchestratorInterface"
+                type="Secomm\ShippingCore\Model\ServiceLevel\ServiceLevelRateOrchestrator"/>
+    <!-- TASK-STC3NB (architecture v4 §4.1): COD payment identification — ShippingCore owns the
+         configuration declaring which Magento payment method codes are COD; carriers consume
+         isCod(paymentMethodCode) when building provider requests. Empty config = nothing is COD. -->
+    <preference for="Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface"
+                type="Secomm\ShippingCore\Model\Cod\ConfiguredCodPaymentMethodResolver"/>
+    <type name="Secomm\ShippingCore\Model\Fallback\ConfigurableFallbackPolicy">
+        <arguments>
+            <argument name="fallbackEnabledByLevel" xsi:type="array"/>
+        </arguments>
+    </type>
+    <preference for="Secomm\ShippingCore\Api\Address\ResolvedShippingAddressInterface"
+                type="Secomm\ShippingCore\Model\Address\ResolvedShippingAddress"/>
+    <preference for="Secomm\ShippingCore\Api\Address\ShippingAddressResolutionContextInterface"
+                type="Secomm\ShippingCore\Model\Address\ShippingAddressResolutionContext"/>
+    <!-- Optional external disambiguation providers (Secomm_VietMap, …) register themselves via
+         item entries — never named here (zero registered providers is a valid state). -->
+    <type name="Secomm\ShippingCore\Model\Address\ExternalAddressResolverPool">
+        <arguments>
+            <argument name="externalAddressResolvers" xsi:type="array"/>
+        </arguments>
+    </type>
+    <!-- TASK-XXBN5X (Phase E-SL0, SPIKE-WHHEZV §13): optional fallback rate providers register
+         themselves via item entries — zero providers is a valid state; current need is exactly
+         one, contributed by an optional third-party bridge module (never named here —
+         ShippingCore has no third-party/Launchpad dependency). -->
+    <type name="Secomm\ShippingCore\Model\Fallback\FallbackRateProviderPool">
+        <arguments>
+            <argument name="fallbackRateProviders" xsi:type="array"/>
+        </arguments>
+    </type>
+    <!-- TASK-5XQXZK (DEC-TASK5XQXZK-001): carriers REPORT normalized outcomes while Magento runs
+         them; a composition reads them after a collection. Request-scoped memory, bracketed per
+         RateCollectorInterface::collectRates() execution — no DB/session/cache, no fan-out. -->
+    <preference for="Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeCollectorInterface"
+                type="Secomm\ShippingCore\Model\Rate\CarrierRateOutcomeCollector"/>
+    <!-- TASK-5XQXZK (DEC-TASK5XQXZK-001 §5): ShippingCore owns the safe-degradation fallback
+         eligibility POLICY; carriers only report status + structured reason facts. -->
+    <preference for="Secomm\ShippingCore\Api\Fallback\FallbackEligibilityPolicyInterface"
+                type="Secomm\ShippingCore\Model\Fallback\SafeDegradationEligibilityPolicy"/>
+    <!-- TASK-XXBN5X r1 (Phase E-SL0): shipping service levels are DYNAMICALLY registered —
+         project/composition modules contribute definitions via item entries (never named here;
+         zero registered levels is a valid state — ShippingCore embeds no business taxonomy). -->
+    <type name="Secomm\ShippingCore\Model\ServiceLevel\ShippingServiceLevelRegistry">
+        <arguments>
+            <argument name="serviceLevels" xsi:type="array"/>
+        </arguments>
+    </type>
+    <!-- TASK-8MQHJX (Phase B): destination-scope eligibility — zones are merchant/composition
+         data contributed via item entries (zero zones is a valid state; ShippingCore never
+         hardcodes zone identities). The matcher is deterministic and stateless. -->
+    <preference for="Secomm\ShippingCore\Api\Address\CanonicalZoneMatcherInterface"
+                type="Secomm\ShippingCore\Model\Address\CanonicalZoneMatcher"/>
+    <preference for="Secomm\ShippingCore\Api\Address\CanonicalZoneRegistryInterface"
+                type="Secomm\ShippingCore\Model\Address\CanonicalZoneRegistry"/>
+    <type name="Secomm\ShippingCore\Model\Address\CanonicalZoneRegistry">
+        <arguments>
+            <argument name="canonicalZones" xsi:type="array"/>
+        </arguments>
+    </type>
+    <preference for="Secomm\ShippingCore\Api\Rate\CarrierEligibilityEvaluatorInterface"
+                type="Secomm\ShippingCore\Model\Rate\CarrierEligibilityEvaluator"/>
+    <!-- TASK-8MQHJX (Phase C): shared execution gating — eligibility → mode → origin → address
+         policy → realtime contributor → contribution. RealtimeCarrierRateContributorInterface
+         has NO default implementation: carrier modules provide their own (reverse dependency
+         forbidden), mirroring the carrier API profile contract. -->
+    <preference for="Secomm\ShippingCore\Api\Rate\CarrierRateExecutionRequestInterface"
+                type="Secomm\ShippingCore\Model\Rate\CarrierRateExecutionRequest"/>
+    <preference for="Secomm\ShippingCore\Api\Rate\CarrierRateExecutionDecisionInterface"
+                type="Secomm\ShippingCore\Model\Rate\CarrierRateExecutionDecision"/>
+    <preference for="Secomm\ShippingCore\Api\Rate\CarrierRateExecutionServiceInterface"
+                type="Secomm\ShippingCore\Model\Rate\CarrierRateExecutionService"/>
 </config>

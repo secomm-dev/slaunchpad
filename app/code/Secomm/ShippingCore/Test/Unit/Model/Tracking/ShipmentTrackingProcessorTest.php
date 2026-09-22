@@ -230,6 +230,72 @@ class ShipmentTrackingProcessorTest extends TestCase
         $this->assertContains('secomm_shipping_tracking_updated', $this->dispatched);
     }
 
+    public function testSameStatusAtDifferentOccurrenceTimeIsADistinctEvent(): void
+    {
+        // r2/GHN-E1: same status + same raw code at a DIFFERENT occurrence time = a distinct
+        // provider event (e.g. repeated delivery_fail attempt) — the row's occurrence time and
+        // message refresh and the event re-fires; only an exact re-send is a no-op.
+        $this->stored = ['status' => NormalizedTrackingStatus::DELIVERY_FAILED, 'code' => 'delivery_fail', 'at' => '2026-08-17 10:00:00'];
+
+        $this->stateResource->expects($this->once())->method('save');
+        $this->trackResource->expects($this->once())->method('save');
+
+        $state = $this->stateMock();
+        $this->assertTrue(
+            $this->processor($this->track, $state)->process(
+                $this->update(NormalizedTrackingStatus::DELIVERY_FAILED, 'delivery_fail', strtotime('2026-08-17 16:00:00'))
+            )
+        );
+    }
+
+    public function testExactResendSameTimeIsStillANoOp(): void
+    {
+        $this->stored = ['status' => NormalizedTrackingStatus::DELIVERY_FAILED, 'code' => 'delivery_fail', 'at' => '2026-08-17 10:00:00'];
+
+        $this->stateResource->expects($this->never())->method('save');
+
+        $state = $this->stateMock();
+        $this->assertTrue(
+            $this->processor($this->track, $state)->process(
+                $this->update(NormalizedTrackingStatus::DELIVERY_FAILED, 'delivery_fail', strtotime('2026-08-17 10:00:00'))
+            )
+        );
+    }
+
+    public function testLostIsTerminal(): void
+    {
+        $this->stored = ['status' => NormalizedTrackingStatus::LOST, 'code' => 'lost', 'at' => '2026-08-17 13:00:00'];
+        $this->stateResource->expects($this->never())->method('save');
+
+        // A LATER ordinary progress event must not revive a LOST shipment…
+        $later = $this->stateMock();
+        $this->assertTrue(
+            $this->processor($this->track, $later)->process(
+                $this->update(NormalizedTrackingStatus::IN_TRANSIT, '4', strtotime('2026-08-17 14:00:00'))
+            )
+        );
+        // …nor an earlier one.
+        $earlier = $this->stateMock();
+        $this->assertTrue(
+            $this->processor($this->track, $earlier)->process(
+                $this->update(NormalizedTrackingStatus::IN_TRANSIT, '4', strtotime('2026-08-17 12:00:00'))
+            )
+        );
+    }
+
+    public function testDamagedIsTerminal(): void
+    {
+        $this->stored = ['status' => NormalizedTrackingStatus::DAMAGED, 'code' => 'damage', 'at' => '2026-08-17 13:00:00'];
+        $this->stateResource->expects($this->never())->method('save');
+
+        $state = $this->stateMock();
+        $this->assertTrue(
+            $this->processor($this->track, $state)->process(
+                $this->update(NormalizedTrackingStatus::OUT_FOR_DELIVERY, '4', strtotime('2026-08-17 14:00:00'))
+            )
+        );
+    }
+
     public function testSameNormalizedDifferentRawCodeStillPersists(): void
     {
         $this->stored = ['status' => NormalizedTrackingStatus::PICKING, 'code' => '2', 'at' => '2026-08-17 09:00:00'];

@@ -1,5 +1,57 @@
 # Changelog
 
+## [2.1.0] - 2026-09-18
+
+### Changed
+- **Payment-first order finalization (MOMO-01)**: `NO verified MoMo payment →
+  NO Magento Sales Order`. Starting checkout with MoMo no longer creates a
+  Sales Order. The ACTIVE QUOTE survives payment; a `secomm_momo_payment_attempt`
+  row freezes amount/currency/contract (sha-256 quote fingerprint) and the
+  merchant reference (`order_ref`/`request_id`) before the provider call.
+- Authoritative verification boundary: only a signature-valid MoMo callback
+  whose `partnerCode`, `orderId`, `requestId`, `extraData` and `amount` match
+  the attempt can move the attempt to `PAID` (money-real). The browser Return
+  re-verifies server-side via `v2/query` — MoMo signs the query REQUEST; the
+  response carries no signature, so identity = the `partnerCode`/`orderId`/
+  `requestId` echoes against the exact request just sent (fresh per-query
+  requestId; the create-time `request_id` stays create/IPN-only) — browser
+  parameters never create an order. Result codes 7000 AND 7002 are
+  non-terminal (zero mutation).
+- Query-path correction (review fix): QueryValidator no longer requires an
+  undocumented query-response signature (MoMo's query API returns none) —
+  identity is the echo-of-exact-request + attempt check; QueryDataBuilder
+  mints a fresh per-query `requestId` instead of reusing the create-time
+  attempt `request_id`.
+- Canonical finalizer: attempt-row `FOR UPDATE` lock → single-use order
+  placement grant (verified via a `QuoteManagement::placeOrder` plugin) →
+  exactly one order → invoice/capture per `payment_action` → attempt bound to
+  the order (`order_id` unique). Duplicate Return/IPN callbacks recover the
+  bound order instead of placing twice.
+- Money-real is durable: if finalization fails after `PAID`, the attempt stays
+  `PAID`, the IPN answers HTTP 500 so MoMo retries as the recovery driver;
+  anomalies (amount/contract/identity conflicts) quarantine
+  (`requires_reconciliation`, typed codes) for manual review — never silent
+  cancellation.
+
+### Added
+- `secomm_momo_payment_attempt` table (db_schema) + `PaymentAttempt` model /
+  `PaymentAttemptRepository` / `PaymentAttemptLifecycle` (state machine:
+  initiated→active→paid→finalized, terminal states, reconciliation codes).
+- `IpnProcessor` / `ReturnProcessor` (query-backed), `OrderFinalizer`,
+  `OrderPlacementAuthorization`, `SuccessSessionPreparer` (rebuilds the 5
+  checkout success keys), `OrderRefBuilder`, `QuoteContractFingerprint`,
+  `CartManagementPlaceOrderGuard` plugin, `InitializeCommand` /
+  `QueryDataBuilder` / `QueryTransactionCommand` / `QueryValidator`.
+- Unit tests: 115 tests / 305 assertions green (state machine, IPN/Return
+  verification chains, finalizer placement+recovery, initiation, guard
+  plugin, fingerprint, signature validators, query request-builder/validator/
+  command incl. 7000/7002 non-terminal regressions).
+
+### Removed
+- Order-first remnants: `Gateway/Command/NotifyCommand`,
+  `Gateway/Response/TransactionHandler` and the redirect-time order creation
+  in `Controller/Payment/Redirect`.
+
 ## [2.0.1] - 2026-08-27
 
 ### Fixed

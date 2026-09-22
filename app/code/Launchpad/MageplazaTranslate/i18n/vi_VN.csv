@@ -97,3 +97,6 @@ No Payment method available.,Không có phương thức thanh toán nào khả d
 You can create an account after checkout.,Bạn có thể tạo tài khoản sau khi thanh toán.
 Discount,Chiết khấu
 Discount (%1),Chiết khấu (%1)
+"Please enter a valid email address (Ex: johndoe@domain.com).","Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com)."
+"Please enter 6 or more characters. Leading and trailing spaces will be ignored.","Vui lòng nhập 6 ký tự trở lên. Khoảng trắng ở đầu và cuối sẽ được bỏ qua."
+"Please enter the same value again.","Vui lòng nhập lại cùng một giá trị."

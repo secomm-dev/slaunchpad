@@ -11,15 +11,13 @@ namespace Secomm\ZaloPay\Cron;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Model\Order\Creditmemo;
 use Secomm\ZaloPay\Api\Data\RefundInterface;
 use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Command\RefundQueryCommand;
-use Secomm\ZaloPay\Gateway\Helper\Authorization;
-use Secomm\ZaloPay\Gateway\Request\AbstractDataBuilder;
+use Secomm\ZaloPay\Gateway\Helper\RefundQuerySubjectBuilder;
 use Secomm\ZaloPay\Gateway\Validator\AbstractResponseValidator;
 use Secomm\ZaloPay\Logger\Logger as LoggerInterface;
 use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollection;
@@ -101,10 +99,9 @@ class RefundCronjob
      * @param LoggerInterface $logger
      * @param RefundQueryCommand $refundQueryCommand
      * @param DateTime $dateTime
-     * @param Authorization $authorization
      * @param ScopeConfigInterface $scopeConfig
-     * @param Json $serializer
      * @param PendingRefundManager $pendingRefundManager
+     * @param RefundQuerySubjectBuilder $refundQuerySubjectBuilder
      */
     public function __construct(
         private readonly RefundCollectionFactory       $refundCollectionFactory,
@@ -112,10 +109,9 @@ class RefundCronjob
         private readonly LoggerInterface               $logger,
         private readonly RefundQueryCommand            $refundQueryCommand,
         private readonly DateTime                      $dateTime,
-        private readonly Authorization                 $authorization,
         private readonly ScopeConfigInterface          $scopeConfig,
-        private readonly Json                          $serializer,
-        private readonly PendingRefundManager          $pendingRefundManager
+        private readonly PendingRefundManager          $pendingRefundManager,
+        private readonly RefundQuerySubjectBuilder     $refundQuerySubjectBuilder
     ) {
     }
 
@@ -491,32 +487,17 @@ class RefundCronjob
      * the timestamp, drop the stale MAC, re-sign (official MAC keys:
      * app_id|m_refund_id|timestamp - the stored payload holds exactly these).
      *
+     * TASK-MCHN2T: the logic moved to the shared
+     * RefundQuerySubjectBuilder so the read-only diagnose CLI can query a
+     * refund through the exact same re-signing path without duplicating it.
+     *
      * @param \Secomm\ZaloPay\Model\RefundModel $refund
      * @return array
      * @throws LocalizedException Malformed stored payload.
      */
     private function buildQuerySubject($refund): array
     {
-        try {
-            $commandSubject = $this->serializer->unserialize((string)$refund->getAdditionalInformation());
-        } catch (\InvalidArgumentException $exception) {
-            throw new LocalizedException(
-                __('ZaloPay refund row #%1 has a malformed stored query payload.', (int)$refund->getId())
-            );
-        }
-
-        if (!is_array($commandSubject) || empty($commandSubject[RefundInterface::M_REFUND_ID])) {
-            throw new LocalizedException(
-                __('ZaloPay refund row #%1 has a malformed stored query payload.', (int)$refund->getId())
-            );
-        }
-
-        $commandSubject[AbstractDataBuilder::TIMESTAMP] = $this->dateTime->timestamp() * 1000;
-        //Remove old Mac
-        unset($commandSubject[AbstractDataBuilder::MAC]);
-        $commandSubject[AbstractDataBuilder::MAC] = $this->authorization->getMac($commandSubject);
-
-        return $commandSubject;
+        return $this->refundQuerySubjectBuilder->build($refund);
     }
 
     /**

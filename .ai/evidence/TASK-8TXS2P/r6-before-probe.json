@@ -1,0 +1,211 @@
+{
+  "tag": "before",
+  "transFiles": [
+    "http://slaunchpad.localhost/static/version1789637319/frontend/Magento/luma/vi_VN/js-translation.json"
+  ],
+  "login": {
+    "view": "login",
+    "viewsVisible": {
+      "authentication": true,
+      "create": false,
+      "forgot": false
+    },
+    "primary": {
+      "x": 305,
+      "right": 423.6,
+      "y": 569.9,
+      "bottom": 605.9,
+      "w": 118.6,
+      "h": 36
+    },
+    "secondary": {
+      "x": 433.6,
+      "right": 544.8,
+      "y": 573.9,
+      "bottom": 593.9,
+      "w": 111.2,
+      "h": 20
+    },
+    "gap": 10,
+    "toolbar": {
+      "x": 305,
+      "w": 370,
+      "h": 84
+    },
+    "secStyle": {
+      "marginLeft": "0px",
+      "marginRight": "0px",
+      "paddingLeft": "0px"
+    },
+    "tbDisplay": "block"
+  },
+  "forgot": {
+    "view": "forgot",
+    "viewsVisible": {
+      "authentication": false,
+      "create": false,
+      "forgot": true
+    },
+    "primary": {
+      "x": 313,
+      "right": 377,
+      "y": 540.3,
+      "bottom": 576.3,
+      "w": 64,
+      "h": 36
+    },
+    "secondary": {
+      "x": 377,
+      "right": 432.6,
+      "y": 546.3,
+      "bottom": 566.3,
+      "w": 55.6,
+      "h": 20
+    },
+    "gap": 0,
+    "toolbar": {
+      "x": 305,
+      "w": 370,
+      "h": 60
+    },
+    "secStyle": {
+      "marginLeft": "0px",
+      "marginRight": "0px",
+      "paddingLeft": "0px"
+    },
+    "tbDisplay": "block"
+  },
+  "forgotError": {
+    "text": "",
+    "position": "static",
+    "bottom": 521.3,
+    "inputBottom": 521.3,
+    "h": 42
+  },
+  "create": {
+    "view": "create",
+    "viewsVisible": {
+      "authentication": false,
+      "create": true,
+      "forgot": false
+    },
+    "primary": {
+      "x": 313,
+      "right": 449.9,
+      "y": 707.4,
+      "bottom": 743.4,
+      "w": 136.9,
+      "h": 36
+    },
+    "secondary": {
+      "x": 449.9,
+      "right": 505.5,
+      "y": 713.4,
+      "bottom": 733.4,
+      "w": 55.6,
+      "h": 20
+    },
+    "gap": 0,
+    "toolbar": {
+      "x": 305,
+      "w": 370,
+      "h": 60
+    },
+    "secStyle": {
+      "marginLeft": "0px",
+      "marginRight": "0px",
+      "paddingLeft": "0px"
+    },
+    "tbDisplay": "block"
+  },
+  "createErrors": [
+    {
+      "text": "",
+      "position": "static",
+      "top": 250.8,
+      "bottom": 292.8,
+      "h": 42,
+      "fieldBottom": 316.9,
+      "nextTop": 324.9,
+      "nextLabel": "Họ",
+      "overlapsNext": false
+    },
+    {
+      "text": "Đây là một trường bắt buộc.",
+      "position": "static",
+      "top": 299.8,
+      "bottom": 316.9,
+      "h": 17.1,
+      "fieldBottom": 316.9,
+      "nextTop": 324.9,
+      "nextLabel": "Họ",
+      "overlapsNext": false
+    },
+    {
+      "text": "",
+      "position": "static",
+      "top": 438.9,
+      "bottom": 480.9,
+      "h": 42,
+      "fieldBottom": 505.1,
+      "nextTop": 513.1,
+      "nextLabel": "Đăng ký nhận bản tin",
+      "overlapsNext": false
+    },
+    {
+      "text": "Please enter a valid email address (Ex: johndoe@domain.com).",
+      "position": "static",
+      "top": 487.9,
+      "bottom": 505.1,
+      "h": 17.1,
+      "fieldBottom": 505.1,
+      "nextTop": 513.1,
+      "nextLabel": "Đăng ký nhận bản tin",
+      "overlapsNext": false
+    },
+    {
+      "text": "",
+      "position": "static",
+      "top": 565.1,
+      "bottom": 607.1,
+      "h": 42,
+      "fieldBottom": 648.4,
+      "nextTop": 656.4,
+      "nextLabel": "Xác nhận mật khẩu",
+      "overlapsNext": false
+    },
+    {
+      "text": "Please enter 6 or more characters. Leading and trailing spaces will be ignored.",
+      "position": "static",
+      "top": 614.1,
+      "bottom": 648.4,
+      "h": 34.3,
+      "fieldBottom": 648.4,
+      "nextTop": 656.4,
+      "nextLabel": "Xác nhận mật khẩu",
+      "overlapsNext": false
+    },
+    {
+      "text": "",
+      "position": "static",
+      "top": 688.4,
+      "bottom": 730.4,
+      "h": 42,
+      "fieldBottom": 754.5,
+      "nextTop": null,
+      "nextLabel": null,
+      "overlapsNext": false
+    },
+    {
+      "text": "Please enter the same value again.",
+      "position": "static",
+      "top": 737.4,
+      "bottom": 754.5,
+      "h": 17.1,
+      "fieldBottom": 754.5,
+      "nextTop": null,
+      "nextLabel": null,
+      "overlapsNext": false
+    }
+  ]
+}

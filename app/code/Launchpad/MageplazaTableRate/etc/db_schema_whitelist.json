@@ -1,0 +1,40 @@
+{
+    "launchpad_mptablerate_method_setting": {
+        "column": {
+            "method_id": true,
+            "show_to_customer": true,
+            "use_as_fallback": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_46E8964C40813C173877895933DC14D8": true
+        }
+    },
+    "launchpad_mptablerate_method_member": {
+        "column": {
+            "member_id": true,
+            "method_id": true,
+            "carrier_code": true,
+            "method_code": true,
+            "enabled": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "UNQ_BEDF7622400AC0C0627138CBF3F9A74F": true,
+            "FK_F3D4FB99FFBFAB7166C822B34369E561": true
+        }
+    },
+    "launchpad_mptablerate_rate_city": {
+        "column": {
+            "rate_id": true,
+            "city_code": true
+        },
+        "index": {
+            "LAUNCHPAD_MPTABLERATE_RATE_CITY_CITY_CODE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_B537BD90A890C816D88362F150656038": true
+        }
+    }
+}

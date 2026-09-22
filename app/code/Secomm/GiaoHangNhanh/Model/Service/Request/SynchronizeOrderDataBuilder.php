@@ -18,6 +18,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\Quote\AddressFactory;
 use Magento\Store\Model\Information;
 use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class SynchronizeOrderDataBuilder
@@ -45,6 +46,7 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
         Config                $baseConfig,
         Rate                  $helperRate,
         LocationResolverInterface $locationResolver,
+        LoggerInterface $logger,
         private readonly ShippingContextFactory $shippingContextFactory,
         private readonly OriginProviderInterface $originProvider
     )
@@ -56,7 +58,8 @@ class SynchronizeOrderDataBuilder extends AbstractDataBuilder
             $addressFactory,
             $baseConfig,
             $helperRate,
-            $locationResolver
+            $locationResolver,
+            $logger
         );
     }
 

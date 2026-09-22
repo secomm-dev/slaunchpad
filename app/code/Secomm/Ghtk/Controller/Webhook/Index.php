@@ -80,13 +80,16 @@ class Index extends Action implements CsrfAwareActionInterface, HttpPostActionIn
             return $this->json(['ok' => false, 'error' => 'invalid_secret']);
         }
 
-        $payload = json_decode($rawBody, true);
+        // TASK-KCXKVR: the official webhook sample posts form-urlencoded (JSON
+        // sample also documented) — decode accepts BOTH, so a valid update in
+        // either format is never ignored on a content-type technicality.
+        $payload = $this->parser->decode($rawBody);
         if (!is_array($payload)) {
-            $this->logger->info('GHTK webhook ignored: payload is not valid JSON.');
+            $this->logger->info('GHTK webhook ignored: payload is neither valid JSON nor form-urlencoded.');
             return $this->json(['ok' => false, 'error' => 'invalid_payload']);
         }
 
-        $update = $this->parser->parse($rawBody);
+        $update = $this->parser->parsePayload($payload);
         if ($update === null) {
             $this->logger->info('GHTK webhook ignored: missing identifier or status.');
             return $this->json(['ok' => false, 'error' => 'invalid_payload']);

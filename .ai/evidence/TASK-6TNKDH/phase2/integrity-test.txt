@@ -1,0 +1,35 @@
+# BundledDatasetIntegrityTest + Secomm_Ghn suite — 2026-09-11
+
+## Filtered run (BundledDatasetIntegrityTest)
+
+Command: `vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --filter BundledDatasetIntegrityTest`
+
+```
+OK, but there were issues!
+Tests: 4, Assertions: 209984, PHPUnit Deprecations: 6.
+Time: 04:21.781, Memory: 62.00 MB
+```
+
+- 4/4 PASS — **0 skip** (placeholder-gate `markTestSkipped` đã GỠ; gate active: version cấm
+  `0.0.0-empty` + `1.0.0-master-only`, manifest phải khai báo đủ 4 file).
+- Gate nội dung: manifest checksum + **record_count** == CSV rows (mới thêm) · portable identity ·
+  hierarchy parent-complete (no dangling parent provider keys) · APPROVED resolvable 2 phía —
+  source unit_code ∈ canonical Secomm (PRE_2025 = `VN_ADMIN_PRE_2025_SNAPSHOT_2024_import.csv`,
+  codes ∪ region tổng hợp) · provider_key ∈ bundled master · APPROVED sources unique ·
+  APPROVED targets unique (1:1) · full coverage + pins **3,355 / 10,794**.
+- 6 PHPUnit Deprecations = baseline PHP 8.3 (pre-existing, không phải failure).
+
+## Suite Secomm_Ghn
+
+Command: `vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --filter "Secomm\\Ghn"`
+
+```
+OK, but there were issues!
+Tests: 129, Assertions: 210339, PHPUnit Deprecations: 6.
+Time: 04:20.879, Memory: 62.00 MB
+```
+
+**129 tests / 210,339 assertions / 0 failures / 0 errors / 0 skips.**
+
+(Trước phase 2: 125 tests / 360 assertions / 1 skip placeholder-gate — không còn test nào giả định
+`v0.0.0-empty`, `1.0.0-master-only`, hay `mapping record_count = 0`.)

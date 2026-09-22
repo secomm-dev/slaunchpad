@@ -2,7 +2,6 @@
 /*
  * @author Secomm Team
  * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
- * See COPYING.txt for license details.
  */
 
 declare(strict_types=1);
@@ -10,10 +9,14 @@ declare(strict_types=1);
 namespace Secomm\Ghtk\Model\Address;
 
 /**
- * Resolved GHTK address value object.
+ * GHTK-bound textual address value object (TEXT_NATIVE mode — DEC-TASK7AJ3K8-002).
  *
- * $isExact = true when sourced from a mapping hit; false when sourced from the
- * best-effort vi_VN fallback (GHTK may still reject it).
+ * province/ward are the canonical Vietnamese names (name_vi) of the carrier-required
+ * scheme by default; district is nullable (only from an override row — the VN 2-level
+ * canonical model has no district level).
+ *
+ * $isExact = true when an explicit GHTK address override was applied (merchant-confirmed
+ * exception text); false when the text is the canonical native representation.
  */
 final class GhtkAddress
 {

@@ -6,7 +6,7 @@
 **Mode:** A (chạm generic risk category: DB / data-migration — RM decision tree §9)
 **Risk tier:** Tier 2 (schema change → **chờ TL review trước khi modify code / chạy `setup:upgrade`**)
 **Author:** AI draft · **Date:** 2026-09-07
-**Status:** Applied (local) — chờ AC4 pre-check khi deploy staging · TL approve: 2026-09-07
+**Status:** Applied (local) · AC4 pre-check PASS (staging-parity 2026-09-08) · re-run R2 trên live staging trước `setup:upgrade` · TL approve: 2026-09-07
 **Specification:** TASK-ND6AZ2 — Mini-Spec embedded (this file)
 **Related:** `app/code/Secomm/Ahamove/etc/db_schema.xml` · db hiện trạng local: db `launchpad` @ mysql84:3307
 
@@ -114,7 +114,7 @@ Steps: (1) TL review ticket → (2) apply diff → (3) AC2 fresh-create test →
 
 ## Open Questions
 
-- [ ] Staging: duplicate `city_id` trong `ahamove_city`? (chưa có access/connect từ local — cần DBA/DevOps chạy R2)
+- [x] Staging: duplicate `city_id` trong `ahamove_city`? → **KHÔNG có duplicate** (pre-check 2026-09-08 — xem Execution Log AC4). Chạy trên staging-parity snapshot `fashion_launchpad` @ docker `mysql` 5.7 (chưa có access live staging từ local) → luật R2 vẫn giữ nguyên: re-run query trên live staging ngay trước `setup:upgrade`.
 - [ ] Backlog ~315 diff pre-existing: có gom 1 ticket reconcile riêng trước khi ai đó chạy `setup:upgrade` local không?
 
 ## Risks
@@ -136,6 +136,6 @@ Steps: (1) TL review ticket → (2) apply diff → (3) AC2 fresh-create test →
 | AC1 | ✅ Pass (phần Ahamove) | Db `launchpad`@mysql84:3307: `AHAMOVE_CITY_CITY_ID` NON_UNIQUE=0, cols=`city_id`; PRIMARY(`entity_id`,`city_id`); FK pattern-name khớp whitelist. Declaration ↔ db = khớp. Banner "not up to date" tổng còn do backlog pre-existing (R3 — ngoài scope) |
 | AC2 | ✅ Pass | Db tạm `_ac2_test` trên MySQL 8.4.7: CREATE 2 bảng theo schema mới → FK tạo thành công (fk_count=1), không ERROR 6125; db đã DROP sau test |
 | AC3 | ✅ Pass | `project-ai-validate --check-specs` và `--check-identity`: 0 lỗi cho ND6AZ2 (repo còn 7 FAIL pre-existing nhóm FEAT-YA2C0W — đã có sẵn, ngoài scope) |
-| AC4 | ⏳ Pending | Pre-check duplicate `city_id` trên staging — chạy khi deploy (R2) |
+| AC4 | ✅ Pass (staging-parity) | Pre-check 2026-09-08 trên `fashion_launchpad` @ docker `mysql` (MySQL 5.7, :3306). R2 query `SELECT city_id, COUNT(*) c FROM ahamove_city GROUP BY city_id HAVING c > 1` → **0 row**. `ahamove_city`=0 rows, `ahamove_city_detail`=0 rows. Index hiện trạng khớp giả định ticket: `AHAMOVE_CITY_CITY_ID` Non_unique=1, PRIMARY(`entity_id`,`city_id`). Snapshot mang data thật (15 orders, order cuối 2026-09-03; import 2026-09-07) → bảng rỗng là hiện trạng staging, không phải dump strip data. **Caveat:** snapshot ≠ live staging — re-run R2 trên live staging ngay trước `setup:upgrade` |
 
 Diff applied: `db_schema.xml` (index → unique constraint) + `db_schema_whitelist.json` (entry chuyển `index` → `constraint`). `setup:upgrade` KHÔNG chạy trên local (không cần — db đã unique sẵn từ import, đúng Expected Behavior #3).

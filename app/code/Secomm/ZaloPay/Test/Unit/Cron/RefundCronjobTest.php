@@ -9,8 +9,8 @@ declare(strict_types=1);
 namespace Secomm\ZaloPay\Test\Unit\Cron;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Model\Order\Creditmemo;
@@ -20,7 +20,7 @@ use Secomm\ZaloPay\Api\Data\RefundInterface;
 use Secomm\ZaloPay\Cron\RefundCronjob;
 use Secomm\ZaloPay\Exception\RefundTransportException;
 use Secomm\ZaloPay\Gateway\Command\RefundQueryCommand;
-use Secomm\ZaloPay\Gateway\Helper\Authorization;
+use Secomm\ZaloPay\Gateway\Helper\RefundQuerySubjectBuilder;
 use Secomm\ZaloPay\Logger\Logger;
 use Secomm\ZaloPay\Model\RefundModel;
 use Secomm\ZaloPay\Model\ResourceModel\RefundModel\RefundCollection;
@@ -62,7 +62,7 @@ class RefundCronjobTest extends TestCase
 
     private RefundQueryCommand|MockObject $refundQueryCommand;
 
-    private Authorization|MockObject $authorization;
+    private RefundQuerySubjectBuilder|MockObject $refundQuerySubjectBuilder;
 
     private ScopeConfigInterface|MockObject $scopeConfig;
 
@@ -98,12 +98,25 @@ class RefundCronjobTest extends TestCase
         $this->creditmemoRepository = $this->createMock(CreditmemoRepositoryInterface::class);
         $this->logger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
         $this->refundQueryCommand = $this->createMock(RefundQueryCommand::class);
-        $this->authorization = $this->createMock(Authorization::class);
+        $this->refundQuerySubjectBuilder = $this->createMock(RefundQuerySubjectBuilder::class);
         $this->scopeConfig = $this->createMock(ScopeConfigInterface::class);
         $this->pendingRefundManager = $this->createMock(PendingRefundManager::class);
 
         $this->scopeConfig->method('isSetFlag')->willReturn(true);
-        $this->authorization->method('getMac')->willReturn('STUBBED-MAC');
+        // Boundary mock mirroring RefundQuerySubjectBuilder's contract:
+        // decode the stored payload, terminal on malformed, re-signed MAC.
+        $this->refundQuerySubjectBuilder->method('build')->willReturnCallback(
+            function (RefundModel $row): array {
+                $payload = json_decode((string)$row->getAdditionalInformation(), true);
+                if (!is_array($payload) || empty($payload[RefundInterface::M_REFUND_ID])) {
+                    throw new LocalizedException(
+                        __('ZaloPay refund row #%1 has a malformed stored query payload.', (int)$row->getId())
+                    );
+                }
+
+                return array_merge($payload, ['mac' => 'STUBBED-MAC']);
+            }
+        );
 
         $this->cmState = Creditmemo::STATE_OPEN;
         $this->cmMap = [];
@@ -131,10 +144,9 @@ class RefundCronjobTest extends TestCase
             $this->logger,
             $this->refundQueryCommand,
             $this->dateTime,
-            $this->authorization,
             $this->scopeConfig,
-            new Json(),
-            $this->pendingRefundManager
+            $this->pendingRefundManager,
+            $this->refundQuerySubjectBuilder
         );
     }
 

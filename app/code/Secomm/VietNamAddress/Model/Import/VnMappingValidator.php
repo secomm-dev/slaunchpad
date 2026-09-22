@@ -54,6 +54,12 @@ class VnMappingValidator
                 continue; // no point checking semantics of an incomplete row
             }
 
+            // TASK-MD2BD3 v1.1 — curated directional primary flag (optional, default 0).
+            $isPrimary = isset($row['is_primary']) ? (string)$row['is_primary'] : '';
+            if ($isPrimary !== '' && !in_array($isPrimary, ['0', '1'], true)) {
+                $errors[] = sprintf('Line %d: invalid is_primary "%s" (expected 0 or 1).', $line, $isPrimary);
+            }
+
             if (!VnSchemes::exists((string)$row['source_scheme'])) {
                 $errors[] = sprintf('Line %d: unknown source_scheme "%s".', $line, $row['source_scheme']);
             }
@@ -103,6 +109,26 @@ class VnMappingValidator
                     count($sources),
                     $sourceScheme,
                     implode(', ', array_keys($sources))
+                );
+            }
+        }
+
+        // TASK-MD2BD3 v1.1 — curated directional primary must be UNIQUE per resolution key
+        // (source_scheme + source_code + target_scheme). >1 = DATA_INTEGRITY_DEFECT (fail-loud).
+        $primaryCount = [];
+        foreach ($rows as $row) {
+            if (((string)($row['is_primary'] ?? '0')) !== '1') {
+                continue;
+            }
+            $key = $row['source_scheme'] . '|' . $row['source_code'] . '|' . $row['target_scheme'];
+            $primaryCount[$key] = ($primaryCount[$key] ?? 0) + 1;
+        }
+        foreach ($primaryCount as $key => $count) {
+            if ($count > 1) {
+                $errors[] = sprintf(
+                    'Duplicate curated primary for resolution key "%s" (%d rows) — only one is allowed.',
+                    $key,
+                    $count
                 );
             }
         }

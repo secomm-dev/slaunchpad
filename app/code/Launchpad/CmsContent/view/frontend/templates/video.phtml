@@ -1,0 +1,19 @@
+<?php
+/**
+ * REAL SPACES video iframe (TASK-0NNZCW v4.5): module-owned markup so the
+ * embed survives PageBuilder admin saves. Styling: .lp-video in homepage.css.
+ *
+ * @var \Launchpad\CmsContent\Block\Video $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+declare(strict_types=1);
+?>
+<div class="lp-video">
+    <iframe frameborder="0"
+            allowfullscreen
+            loading="lazy"
+            title="<?= $escaper->escapeHtmlAttr(__('Real Spaces')) ?>"
+            src="https://www.youtube.com/embed/6HIi9IzqoNM"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+</div>

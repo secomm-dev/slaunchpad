@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  ~ TASK-STC3NB — COD payment identification defaults.
+  ~ Empty by default: nothing is treated as COD until the merchant declares payment method
+  ~ codes (safe false — emergency/policy decisions must be explicit).
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <secomm_shippingcore>
+            <!-- DEC-TASK9Q5ZAK-001: merchant default PACKAGE dimensions (cm) — admin PREFILL
+                 only, never authoritative carrier dimensions; unset = no prefill. -->
+            <physical>
+                <default_package_length/>
+                <default_package_width/>
+                <default_package_height/>
+            </physical>
+            <cod>
+                <payment_methods/>
+            </cod>
+        </secomm_shippingcore>
+    </default>
+</config>

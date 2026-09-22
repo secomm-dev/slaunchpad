@@ -1,5 +1,34 @@
 # Changelog — Secomm_GiaoHangNhanh
 
+## 1.2.0 — 2026-09-08 (BUG-JBX3H9)
+
+### Fixed — remove unsafe hardcoded destination fallback (fail closed)
+- **`AbstractDataBuilder::resolveGhnLocation()`**: mapping miss (no row / missing
+  region/city identifiers / incomplete row) now throws the new
+  `Model\Exception\GhnLocationMappingException` + logs a warning with the
+  administrative identifiers involved (side, region_id, city_id, city) — never
+  customer PII. The hardcoded fallback `to_district_id=1456, to_ward_code='21511'`
+  (previously gated by `is_develop_mode`, default ON) is REMOVED — an unmappable
+  destination must never silently become an unrelated GHN address.
+- **`ServicesDataBuilder`**: develop-mode branch (fake `from_district=1457` /
+  `to_district=1456`) removed — districts come from config + the location mapping.
+- **`ShippingDetailsDataBuilder`**: develop-mode branch overriding the resolved
+  origin with hardcoded `1457`/`'21715'` removed (it produced real quotes for a
+  fake route); origin now always comes from `OriginProvider` + mapping.
+- **`SynchronizeOrderDataBuilder`**: develop-mode branch faking the from-address
+  (`'Phường 17'`/`'Quận Phú Nhuận'`/`'Hồ Chí Minh'`) removed.
+- **`is_develop_mode` config removed entirely** (`etc/config.xml` default +
+  `system.xml` field): after the branch removals it had zero readers, and its
+  only historical behavior was faking administrative location data. Stale
+  `core_config_data` rows for the path are harmless orphans.
+- Failure semantics: rate path → `GHN::estimateShippingCost()` catch →
+  **GHN method unavailable** for the address (no fake quote, no stack trace to
+  customers); order/shipment sync → explicit failure (MQ consumer logs
+  `[GHN OrderSync]` + re-throws for retry; admin direct sync shows the error).
+- Unit tests (+9): mapping exists (id + name), missing mapping fails closed even
+  with a stale develop-mode config value, missing identifiers, partial mapping
+  (district/ward), ServicesDataBuilder mapping + fail-closed.
+
 ## 1.1.1 — 2026-09-03 (BUG-YQT1FW / SLP-138)
 
 ### Fixed
