@@ -1,59 +1,49 @@
 <?php
 /**
- * Unit test for the MoMo Notify (IPN) validator.
+ * Unit test for the attempt-based MoMo Notify (IPN) validator (MOMO-01).
  *
  * @author    Secomm Teams
- * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
+ * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
  * @package   Secomm_MoMo
  */
 declare(strict_types=1);
 
 namespace Secomm\MoMo\Test\Unit\Gateway\Validator;
 
-use Magento\Payment\Gateway\Data\Order\OrderAdapter;
-use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Validator\ResultInterface;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 use PHPUnit\Framework\TestCase;
-use Secomm\MoMo\Model\Config;
 use Secomm\MoMo\Gateway\Helper\Signature;
 use Secomm\MoMo\Gateway\Validator\NotifyValidator;
+use Secomm\MoMo\Model\Config;
+use Secomm\MoMo\Model\PaymentAttempt;
 
 /**
- * Verifies the Notify validator accepts a correctly signed success result with a
- * matching amount, and rejects bad signatures, non-zero resultCodes, or amount
- * mismatches (spec §10: amount must be re-validated server-side).
+ * Verifies the IPN authoritative chain: signature over the 13 MoMo-signed
+ * fields, merchant identity (partnerCode), transaction identity echoes
+ * (orderId/requestId/extraData vs the attempt) and the frozen amount. The
+ * business outcome (resultCode) is deliberately NOT the validator's
+ * concern — a signature-valid failure must validate.
  */
 class NotifyValidatorTest extends TestCase
 {
+    private const ORDER_REF = 'MOMO260918120000200000001ab12';
+    private const REQUEST_ID = 'MOMO260918120000200000001ab12-Rcd34';
+
     /**
-     * @var Config|\PHPUnit\Framework\MockObject\MockObject
+     * @var Config&\PHPUnit\Framework\MockObject\MockObject
      */
     private $config;
 
-    /**
-     * @var Signature
-     */
     private Signature $signature;
 
     /**
-     * @var ResultInterfaceFactory|\PHPUnit\Framework\MockObject\MockObject
+     * @var ResultInterfaceFactory&\PHPUnit\Framework\MockObject\MockObject
      */
     private $resultFactory;
 
-    /**
-     * @var NotifyValidator
-     */
     private NotifyValidator $validator;
 
-    /**
-     * @var OrderAdapter|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private $orderAdapter;
-
-    /**
-     * @var bool|null
-     */
     private ?bool $capturedIsValid = null;
 
     /**
@@ -64,6 +54,7 @@ class NotifyValidatorTest extends TestCase
         $this->config = $this->createMock(Config::class);
         $this->config->method('getAccessKey')->willReturn('AK');
         $this->config->method('getSecretKey')->willReturn('SK');
+        $this->config->method('getPartnerCode')->willReturn('MOMO');
 
         $this->signature = new Signature();
 
@@ -77,31 +68,182 @@ class NotifyValidatorTest extends TestCase
                 return $result;
             });
 
-        // Order adapter exposes grand total + entity id — the values to compare against.
-        $this->orderAdapter = $this->createMock(OrderAdapter::class);
-        $this->orderAdapter->method('getGrandTotalAmount')->willReturn(1000.0);
-        $this->orderAdapter->method('getId')->willReturn(123);
-
         $this->validator = new NotifyValidator($this->resultFactory, $this->config, $this->signature);
     }
 
     /**
-     * Build a validation subject with a signed response and a payment DO whose
-     * order grand total matches the response amount.
+     * A correctly signed success payload with matching identity echoes and
+     * frozen amount validates.
      *
-     * @param array $response
-     * @return array
+     * @return void
      */
-    private function subject(array $response): array
+    public function testValidSignedSuccessPasses(): void
     {
-        $paymentDO = $this->createMock(PaymentDataObjectInterface::class);
-        $paymentDO->method('getOrder')->willReturn($this->orderAdapter);
+        $response = $this->signed($this->basePayload());
+        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
 
-        return ['response' => $response, 'payment' => $paymentDO];
+        $this->assertTrue($this->capturedIsValid);
     }
 
     /**
-     * Build a MoMo result payload signed with the test secret.
+     * A signature-valid authoritative FAILURE also validates: identity +
+     * integrity are the validator's scope; the resultCode decision is the
+     * caller's (IpnProcessor records the verified failure).
+     *
+     * @return void
+     */
+    public function testSignatureValidFailureAlsoPasses(): void
+    {
+        $payload = $this->basePayload();
+        $payload['resultCode'] = 700;
+        $payload['message'] = 'User cancelled.';
+        $response = $this->signed($payload);
+        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
+
+        $this->assertTrue($this->capturedIsValid);
+    }
+
+    /**
+     * A tampered signature is rejected.
+     *
+     * @return void
+     */
+    public function testTamperedSignatureFails(): void
+    {
+        $response = $this->signed($this->basePayload());
+        $response['signature'] = 'tampered';
+        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * A payload from a different merchant (partnerCode) is rejected even
+     * when the signature arithmetic would pass with a foreign key.
+     *
+     * @return void
+     */
+    public function testPartnerCodeMismatchFails(): void
+    {
+        $payload = $this->basePayload();
+        $payload['partnerCode'] = 'FOREIGN';
+        $response = $this->signed($payload);
+        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * An orderId that is not this attempt's order_ref is rejected.
+     *
+     * @return void
+     */
+    public function testOrderIdMismatchFails(): void
+    {
+        $payload = $this->basePayload();
+        $payload['orderId'] = 'MOMOOTHERREF';
+        $response = $this->signed($payload);
+        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * A requestId that is not this attempt's requestId is rejected.
+     *
+     * @return void
+     */
+    public function testRequestIdMismatchFails(): void
+    {
+        $payload = $this->basePayload();
+        $payload['requestId'] = 'FOREIGN-REQUEST';
+        $response = $this->signed($payload);
+        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * extraData that does not decode to the attempt order_ref is rejected.
+     *
+     * @return void
+     */
+    public function testExtraDataMismatchFails(): void
+    {
+        $payload = $this->basePayload();
+        $payload['extraData'] = base64_encode('SOMEOTHERREF');
+        $response = $this->signed($payload);
+        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * An amount different from the frozen attempt amount is rejected —
+     * spec §10 / AC4.
+     *
+     * @return void
+     */
+    public function testAmountMismatchFails(): void
+    {
+        $payload = $this->basePayload();
+        $payload['amount'] = 500;
+        $response = $this->signed($payload);
+        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * A missing amount is rejected (never defaults to a passing zero).
+     *
+     * @return void
+     */
+    public function testMissingAmountFails(): void
+    {
+        $payload = $this->basePayload();
+        unset($payload['amount']);
+        $response = $this->signed($payload);
+        $this->validator->validate(['response' => $response, 'attempt' => $this->attempt()]);
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * Validation without a resolved attempt is refused outright.
+     *
+     * @return void
+     */
+    public function testMissingAttemptFails(): void
+    {
+        $this->validator->validate(['response' => $this->signed($this->basePayload()), 'attempt' => null]);
+
+        $this->assertFalse($this->capturedIsValid);
+    }
+
+    /**
+     * @return array The canonical success payload for the test attempt.
+     */
+    private function basePayload(): array
+    {
+        return [
+            'partnerCode' => 'MOMO',
+            'orderId' => self::ORDER_REF,
+            'requestId' => self::REQUEST_ID,
+            'amount' => 150000,
+            'transId' => '987654321',
+            'resultCode' => 0,
+            'message' => 'Successful',
+            'responseTime' => 1787000000000,
+            'extraData' => base64_encode(self::ORDER_REF),
+            'orderInfo' => 'Pay for order',
+            'orderType' => 'momo_wallet',
+            'payType' => 'webApp',
+        ];
+    }
+
+    /**
+     * Sign the payload over MoMo's fixed 13-field order with the test secret.
      *
      * @param array $response
      * @return array
@@ -126,97 +268,17 @@ class NotifyValidatorTest extends TestCase
     }
 
     /**
-     * Correctly signed success result with matching amount is valid.
+     * The persisted attempt the payload must echo.
      *
-     * @return void
+     * @return PaymentAttempt
      */
-    public function testValidSignedSuccessResultPasses(): void
+    private function attempt(): PaymentAttempt
     {
-        $response = $this->signed([
-            'partnerCode' => 'MOMO',
-            'orderId' => 'ORD-1',
-            'requestId' => 'R-1',
-            'amount' => 1000,
-            'transId' => 'T-1',
-            'resultCode' => 0,
-            'message' => 'Successful',
-            'responseTime' => 1700000000000,
-            'extraData' => '',
-            'orderInfo' => 'info',
-            'orderType' => 'momo_wallet',
-            'payType' => 'creditApp',
-        ]);
+        $attempt = new PaymentAttempt($this->createMock(\Magento\Framework\Model\Context::class), $this->createMock(\Magento\Framework\Registry::class));
+        $attempt->setOrderRef(self::ORDER_REF);
+        $attempt->setRequestId(self::REQUEST_ID);
+        $attempt->setAmount(150000);
 
-        $this->validator->validate($this->subject($response));
-
-        $this->assertTrue($this->capturedIsValid);
-    }
-
-    /**
-     * Tampered signature is rejected.
-     *
-     * @return void
-     */
-    public function testTamperedSignatureFails(): void
-    {
-        $response = $this->signed(['orderId' => 'ORD-1', 'amount' => 1000, 'transId' => 'T-1', 'resultCode' => 0]);
-        $response['signature'] = 'tampered';
-
-        $this->validator->validate($this->subject($response));
-
-        $this->assertFalse($this->capturedIsValid);
-    }
-
-    /**
-     * Non-zero resultCode is rejected even with a valid signature.
-     *
-     * @return void
-     */
-    public function testNonZeroResultCodeFails(): void
-    {
-        $response = $this->signed(['orderId' => 'ORD-1', 'amount' => 1000, 'transId' => 'T-1', 'resultCode' => 700]);
-
-        $this->validator->validate($this->subject($response));
-
-        $this->assertFalse($this->capturedIsValid);
-    }
-
-    /**
-     * Amount mismatch (signed 500 but order total is 1000) is rejected — spec §10.
-     *
-     * @return void
-     */
-    public function testAmountMismatchFails(): void
-    {
-        $response = $this->signed([
-            'orderId' => 'ORD-1',
-            'amount' => 500, // mismatched — order grand total is 1000.
-            'transId' => 'T-1',
-            'resultCode' => 0,
-        ]);
-
-        $this->validator->validate($this->subject($response));
-
-        $this->assertFalse($this->capturedIsValid);
-    }
-
-    /**
-     * extraData that does not map to the order entity id is rejected — fetch-to-confirm.
-     *
-     * @return void
-     */
-    public function testExtraDataMismatchFails(): void
-    {
-        $response = $this->signed([
-            'orderId' => 'ORD-1',
-            'amount' => 1000,
-            'transId' => 'T-1',
-            'resultCode' => 0,
-            'extraData' => base64_encode('999'), // wrong entity id
-        ]);
-
-        $this->validator->validate($this->subject($response));
-
-        $this->assertFalse($this->capturedIsValid);
+        return $attempt;
     }
 }

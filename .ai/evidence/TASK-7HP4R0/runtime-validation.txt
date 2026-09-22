@@ -1,0 +1,3 @@
+# setup:upgrade — run in m2r-php (validation env /tmp/m2r, DB zt-mariadb106), 2026-09-18T07:16:55Z
+# output: "Upgrade completed successfully."; Secomm_MoMo enabled via module:enable -f (was 0 in env config.php)
+# setup:di:compile — "Generated code and dependency injection configuration successfully."

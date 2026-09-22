@@ -52,6 +52,20 @@
                     <label>Sandbox Mode</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="logo" translate="label comment" type="image" sortOrder="62" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Checkout Logo</label>
+                    <backend_model>Secomm\ZaloPay\Model\System\Config\Backend\Logo</backend_model>
+                    <upload_dir config="system/filesystem/media" scope_info="1">zalopay</upload_dir>
+                    <base_url type="media" scope_info="1">zalopay</base_url>
+                    <comment><![CDATA[Allowed file types: png, jpg, jpeg, webp (SVG is not allowed). Overrides the bundled ZaloPay logo at checkout. Leave empty to use the default module logo.]]></comment>
+                </field>
+                <field id="debug" translate="label comment" type="select" sortOrder="64" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Debug</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Diagnostic logging only. When enabled, masked ZaloPay provider request/response payloads are written to var/log/zalo-pay.log for manual troubleshooting. Keys, MAC and signatures are never logged. Keep OFF outside of an active investigation: real error/critical incident logging is always kept regardless of this setting.]]></comment>
+                </field>
                 <field id="attempt_ttl" translate="label comment" type="text" sortOrder="66" showInDefault="1"
                        showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Payment Attempt TTL (minutes)</label>
