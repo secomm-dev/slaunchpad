@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.3.3] - 2026-09-22
+
+### Fixed
+- **Cross-payment placeOrder guard construction isolation (issue #20,
+  BUG-QFR2AY)**: the `QuoteManagement::placeOrder` guard is a GLOBAL plugin,
+  so Magento constructed it — with its eagerly-built `MoMoFacade` Adapter
+  and `PaymentAttemptRepositoryInterface` implementation — for EVERY
+  payment method's placement. A MoMo-side construction/DI failure therefore
+  aborted other methods' order placement (production incident: a paid
+  ZaloPay checkout died before Sales Order creation with
+  `Cannot instantiate interface Secomm\MoMo\Api\PaymentAttemptRepositoryInterface`).
+  The guard now depends on nothing MoMo-only before the quote is confirmed
+  as MoMo: method discrimination uses an ObjectManager-injected `momo_payment`
+  code string (the facade is not needed to compare a string), and the
+  attempt repository is wired as a generated Proxy — the real repository
+  and its ResourceConnection graph are constructed only on the MoMo
+  grant-validation path. Guard semantics (persisted-attempt triple,
+  single-use grant, block messaging) unchanged. `Secomm_ZaloPay` applies
+  the identical pattern. No provider API, classifier, refund or schema
+  change.
+
 ## [2.3.2] - 2026-09-21
 
 ### Fixed

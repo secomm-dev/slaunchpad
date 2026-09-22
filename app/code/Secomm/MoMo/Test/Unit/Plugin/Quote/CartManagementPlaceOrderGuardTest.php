@@ -13,7 +13,6 @@ namespace Secomm\MoMo\Test\Unit\Plugin\Quote;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Registry;
-use Magento\Payment\Model\MethodInterface;
 use Magento\Quote\Api\CartManagementInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\Quote;
@@ -28,14 +27,17 @@ use Secomm\MoMo\Service\OrderPlacementAuthorization;
  * Verifies the server-side guard: generic placeOrder calls on a MoMo quote
  * are refused unless the exact internal grant — validated against the
  * PERSISTED attempt triple — is consumable (AC2/AC7).
+ *
+ * Construction isolation (issue #20 / BUG-QFR2AY): the guard discriminates
+ * by an injected method code STRING — no facade is constructed to decide —
+ * and the attempt repository is reached ONLY after the quote is confirmed
+ * as MoMo (never on the non-MoMo no-op path).
  */
 class CartManagementPlaceOrderGuardTest extends TestCase
 {
     private CartRepositoryInterface&\PHPUnit\Framework\MockObject\MockObject $quoteRepository;
 
     private PaymentAttemptRepositoryInterface&\PHPUnit\Framework\MockObject\MockObject $attemptRepository;
-
-    private MethodInterface&\PHPUnit\Framework\MockObject\MockObject $method;
 
     private OrderPlacementAuthorization $authorization;
 
@@ -48,27 +50,28 @@ class CartManagementPlaceOrderGuardTest extends TestCase
     {
         $this->quoteRepository = $this->createMock(CartRepositoryInterface::class);
         $this->attemptRepository = $this->createMock(PaymentAttemptRepositoryInterface::class);
-        $this->method = $this->createMock(MethodInterface::class);
-        $this->method->method('getCode')->willReturn('momo_payment');
         $this->authorization = new OrderPlacementAuthorization();
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
 
         $this->guard = new CartManagementPlaceOrderGuard(
             $this->quoteRepository,
             $this->attemptRepository,
-            $this->method,
+            'momo_payment',
             $this->authorization,
             $logger
         );
     }
 
     /**
-     * Non-MoMo quotes pass through untouched.
+     * Non-MoMo quotes pass through untouched — the attempt repository is
+     * never consulted (issue #20: the target-only dependency must not even
+     * be resolved for another payment method's placement).
      *
      * @return void
      */
     public function testNonMoMoQuotePassesThrough(): void
     {
+        $this->attemptRepository->expects($this->never())->method('getById');
         $quote = $this->quote('checkmo');
         $this->quoteRepository->method('get')->willReturn($quote);
 

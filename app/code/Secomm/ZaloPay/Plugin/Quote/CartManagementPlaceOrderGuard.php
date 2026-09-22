@@ -13,7 +13,6 @@ use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Payment\Model\MethodInterface;
 use Psr\Log\LoggerInterface;
 use Secomm\ZaloPay\Api\PaymentAttemptRepositoryInterface;
 use Secomm\ZaloPay\Service\OrderPlacementAuthorization;
@@ -43,6 +42,16 @@ use Secomm\ZaloPay\Service\OrderPlacementAuthorization;
  *    triple) — a quote id, a PAID status, a session or a browser input
  *    alone never authorizes anything (review-corrective TASK-EDS9T5
  *    Blocker 3).
+ *
+ * Construction isolation (issue #20 / BUG-QFR2AY): the plugin is GLOBAL on
+ * QuoteManagement::placeOrder(), so it is built for EVERY payment method's
+ * placement. Its constructor therefore depends on nothing ZaloPay-only:
+ * method discrimination compares against an ObjectManager-injected method
+ * code string (the ZaloPayFacade Adapter is NOT needed to compare a
+ * string), and the attempt repository is wired as a Proxy in etc/di.xml, so
+ * the real repository (and its ResourceConnection graph) is constructed
+ * only when a quote is CONFIRMED as ZaloPay. A construction/DI failure in
+ * this module can no longer abort another payment method's order placement.
  */
 class CartManagementPlaceOrderGuard
 {
@@ -51,14 +60,15 @@ class CartManagementPlaceOrderGuard
      *
      * @param CartRepositoryInterface $quoteRepository
      * @param PaymentAttemptRepositoryInterface $attemptRepository
-     * @param MethodInterface $method
+     *         (wired as Secomm\ZaloPay\Model\PaymentAttemptRepository\Proxy)
+     * @param string $methodCode the ZaloPay method code (zalopay)
      * @param OrderPlacementAuthorization $authorization
      * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly CartRepositoryInterface           $quoteRepository,
         private readonly PaymentAttemptRepositoryInterface $attemptRepository,
-        private readonly MethodInterface                   $method,
+        private readonly string                            $methodCode,
         private readonly OrderPlacementAuthorization       $authorization,
         private readonly LoggerInterface                   $logger
     ) {
@@ -170,6 +180,6 @@ class CartManagementPlaceOrderGuard
     {
         $payment = $quote->getPayment();
 
-        return $payment !== null && $payment->getMethod() === $this->method->getCode();
+        return $payment !== null && $payment->getMethod() === $this->methodCode;
     }
 }

@@ -182,9 +182,19 @@
                 type="Secomm\MoMo\Plugin\Quote\CartManagementPlaceOrderGuard"
                 sortOrder="10"/>
     </type>
+    <!-- Construction isolation (issue #20 / BUG-QFR2AY): the guard plugin
+         is built for EVERY payment method's placeOrder (it is registered
+         globally on QuoteManagement), so its constructor must not build
+         anything MoMo-only before the quote is confirmed as MoMo. Method
+         discrimination uses the literal method code (the facade is not
+         needed to compare a string); the attempt repository is a generated
+         Proxy — the real repository and its ResourceConnection graph are
+         constructed on first use, i.e. only on the MoMo grant-validation
+         path. -->
     <type name="Secomm\MoMo\Plugin\Quote\CartManagementPlaceOrderGuard">
         <arguments>
-            <argument name="method" xsi:type="object">MoMoFacade</argument>
+            <argument name="methodCode" xsi:type="string">momo_payment</argument>
+            <argument name="attemptRepository" xsi:type="object">Secomm\MoMo\Model\PaymentAttemptRepository\Proxy</argument>
         </arguments>
     </type>
 

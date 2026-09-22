@@ -26,6 +26,15 @@ before an authoritative, signature-verified MoMo success.
    recovery driver. Contract/amount/identity anomalies quarantine the attempt
    (`requires_reconciliation` + typed code) — never silent cancellation.
 
+> **Guard construction isolation (issue #20):** the `placeOrder` guard is a
+> GLOBAL `QuoteManagement` plugin, so Magento builds it for EVERY payment
+> method's placement. Its constructor therefore builds nothing MoMo-only:
+> method discrimination compares against the configured `momo_payment` code
+> string, and the attempt repository is wired as a Proxy — the real
+> repository is constructed only once a quote is confirmed as MoMo. A MoMo
+> DI/construction failure can never abort another payment method's order
+> placement (`Secomm_ZaloPay` applies the identical pattern).
+
 ## Architecture
 
 Built on `Magento\Payment\Model\Method\Adapter` (virtualType `MoMoFacade`) with a Gateway

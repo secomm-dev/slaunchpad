@@ -1,0 +1,3 @@
+MoMo guard: constructed=YES repo=Secomm\MoMo\Model\PaymentAttemptRepository\Proxy realRepoConstructed=NO (proxy deferred) methodCode=momo_payment
+ZaloPay guard: constructed=YES repo=Secomm\ZaloPay\Model\PaymentAttemptRepository\Proxy realRepoConstructed=NO (proxy deferred) methodCode=zalopay
+QuoteManagement: CONSTRUCTION FAILED: SQLSTATE[HY000] [2002] php_network_getaddresses: getaddrinfo for zt-mariadb106 failed: Temporary failure in name resolution
