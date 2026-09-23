@@ -200,7 +200,9 @@ class Api extends CurlBuilder implements
      */
     public function __destruct()
     {
-        $this->cache->remove($this->actionName);
+        if (isset($this->cache, $this->actionName)) {
+            $this->cache->remove($this->actionName);
+        }
     }
 
     /**
