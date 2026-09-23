@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <!-- TASK-YPWH9B defaults (decisions D-01/D-03). enabled=0 is deliberate:
+         the checkout-visible behavior changes only after an admin enables it
+         per website — installing this module never silently changes checkout. -->
+    <default>
+        <codrisk>
+            <general>
+                <enabled>0</enabled>
+            </general>
+            <historical>
+                <lookback_days>180</lookback_days>
+                <warning_threshold>2</warning_threshold>
+                <block_threshold>3</block_threshold>
+            </historical>
+            <spam>
+                <enabled>1</enabled>
+                <lookback_days>2</lookback_days>
+                <threshold>10</threshold>
+                <attributable_reasons>CUSTOMER_CANCELLATION_PRE_CONFIRM,REFUSED_DELIVERY,UNREACHABLE_CUSTOMER</attributable_reasons>
+            </spam>
+            <!-- Reason include defaults MUST mirror ReasonCatalog::getReasons()
+                 (BA table, spec §10.2). Declared here so the config form displays
+                 the intended default per reason — without these, the first
+                 Save Config persists whatever the empty selects showed. -->
+            <reasons>
+                <include_customer_cancellation_pre_confirm>0</include_customer_cancellation_pre_confirm>
+                <include_customer_requested_cancel>0</include_customer_requested_cancel>
+                <include_refused_delivery>1</include_refused_delivery>
+                <include_unreachable_customer>1</include_unreachable_customer>
+                <include_out_of_stock>0</include_out_of_stock>
+                <include_wrong_price>0</include_wrong_price>
+                <include_damaged_in_transit>0</include_damaged_in_transit>
+                <include_lost_shipment>0</include_lost_shipment>
+                <include_system_error>0</include_system_error>
+                <include_undetermined>0</include_undetermined>
+            </reasons>
+            <checkout>
+                <message>COD is currently unavailable for this order. Please choose another payment method.</message>
+            </checkout>
+        </codrisk>
+    </default>
+</config>

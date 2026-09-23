@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- D-06 option A: the core tab info template renders the
+             order_additional_info container right after the Payment & Shipping
+             Method section — no core template override needed. -->
+        <referenceContainer name="order_additional_info">
+            <block class="Secomm\CodRisk\Block\Adminhtml\OrderView\CodRisk"
+                   name="secomm_codrisk_order_view"
+                   template="Secomm_CodRisk::order_view_codrisk.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

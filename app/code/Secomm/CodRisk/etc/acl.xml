@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <!-- D-13: single ACL resource, full permission — no per-action role split. -->
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Secomm_CodRisk::manage" title="COD Risk" translate="title" sortOrder="100"/>
+            </resource>
+        </resources>
+    </acl>
+</config>

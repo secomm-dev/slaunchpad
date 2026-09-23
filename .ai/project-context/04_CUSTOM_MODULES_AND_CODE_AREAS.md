@@ -48,7 +48,7 @@ Lists custom modules, key code areas, and risk zones.
 | Secomm_Promotion | `app/code/Secomm/Promotion` | Promotion group anchor module — registration only, no logic (DEC-FEATJKZM68-001 §5) | low | [TBD] |
 | Secomm_PromotionMaxDiscount | `app/code/Secomm/PromotionMaxDiscount` | Per-rule Maximum Discount Cap cho `by_percent` Cart Price Rules: quote total collector `max_discount_cap` (sort 310, sales.xml), LRM redistribution 2 chuỗi, `salesrule.maximum_discount_amount` column (declarative) + extension attribute + converter plugins, admin field cuối Actions tab (ValueProvider plugin + JS gating). **Checkout-critical pricing path — Tier-2 review mọi change** (FEAT-JKZM68) | high | [TBD] |
 | Secomm_UiWidget | `app/code/Secomm/UiWidget` | Shared Hyvä-only `Secomm UI` Magento widget with an explicit registry, versioned schemas/payloads, Admin dynamic fields and 21 approved Batch 1 components | medium | Secomm FE |
-| Secomm_VNPAY | `app/code/Secomm/VNPAY` | VNPAY payment gateway — Pay/Info/IPN controllers, payment.xml/config.xml (default inactive) | high | [TBD] |
+| Secomm_VNPAY | `app/code/Secomm/VNPAY` | VNPAY payment gateway — Pay/Info/IPN controllers, payment.xml/config.xml (default inactive); checkout logo upload `payment/vnpay/logo` (PNG/JPG/JPEG/WEBP, media storage, mirrors Secomm_ZaloPay) | high | [TBD] |
 | Mageplaza_Core | `app/code/Mageplaza/Core` | Mageplaza shared core (feed + update) | medium | [TBD] |
 | Mageplaza_Osc / OscPro / OscUltimate | `app/code/Mageplaza/Osc` (+ OscPro, OscUltimate) | One Step Checkout family — replaces default checkout | medium | [TBD] |
 | Mageplaza_SocialLogin (+ Pro) | `app/code/Mageplaza/SocialLogin` | Social sign-in | low | [TBD] |

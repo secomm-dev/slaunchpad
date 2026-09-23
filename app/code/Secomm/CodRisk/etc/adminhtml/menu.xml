@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <!-- D-10 IA: Sales → COD Risk → (Phone Inspector | Risk Lists | Risk Events |
+         Evaluations | Audit Log). Parent node has no action — it is a group title. -->
+    <menu>
+        <add id="Secomm_CodRisk::parent" title="COD Risk" module="Secomm_CodRisk"
+             sortOrder="100" parent="Magento_Sales::sales"
+             resource="Secomm_CodRisk::manage"/>
+        <add id="Secomm_CodRisk::inspector" title="Phone Inspector" module="Secomm_CodRisk"
+             sortOrder="10" parent="Secomm_CodRisk::parent"
+             action="codrisk/inspector/index" resource="Secomm_CodRisk::manage"/>
+        <add id="Secomm_CodRisk::lists" title="Risk Lists" module="Secomm_CodRisk"
+             sortOrder="20" parent="Secomm_CodRisk::parent"
+             action="codrisk/lists/index" resource="Secomm_CodRisk::manage"/>
+        <add id="Secomm_CodRisk::events" title="Risk Events" module="Secomm_CodRisk"
+             sortOrder="30" parent="Secomm_CodRisk::parent"
+             action="codrisk/events/index" resource="Secomm_CodRisk::manage"/>
+        <add id="Secomm_CodRisk::evaluations" title="Evaluations" module="Secomm_CodRisk"
+             sortOrder="40" parent="Secomm_CodRisk::parent"
+             action="codrisk/evaluations/index" resource="Secomm_CodRisk::manage"/>
+        <add id="Secomm_CodRisk::audit" title="Audit Log" module="Secomm_CodRisk"
+             sortOrder="50" parent="Secomm_CodRisk::parent"
+             action="codrisk/audit/index" resource="Secomm_CodRisk::manage"/>
+    </menu>
+</config>
