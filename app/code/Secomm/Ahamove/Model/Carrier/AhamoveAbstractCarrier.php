@@ -199,8 +199,9 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
                 }
                 return false;
             }
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             $this->loggerShipping->error($exception->getMessage());
+            return false;
         }
     }
 
@@ -299,7 +300,8 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
                 ->setNameFrom((string)$this->ahamoveHelper->getStoreName())
                 ->setPhoneFrom((string)$this->ahamoveHelper->getMobilePhoneValue());
             return $this->calculateShippingFee($ahamoveAddressFactory);
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
+            $this->loggerShipping->error($exception->getMessage());
             return 0;
         }
     }
@@ -464,64 +466,117 @@ abstract class AhamoveAbstractCarrier extends AbstractCarrier implements Carrier
             if ($request->getDestRegionCode() != '') {
                 return $request->getDestRegionCode();
             }
-            $region = $request->getData('shipping_address')->getData('region');
-            if (is_array($region)) {
-                return $region['region'];
-            } else {
-                return !is_null($this->getShippingAddressSelected($request)) ? $this->getShippingAddressSelected($request)->getRegion() : '';
+            $shippingAddress = $request->getData('shipping_address');
+            if (is_object($shippingAddress) && method_exists($shippingAddress, 'getData')) {
+                $region = $shippingAddress->getData('region');
+                if (is_array($region)) {
+                    return $region['region'] ?? '';
+                }
             }
-        } catch (Exception $exception) {
+            $selected = $this->getShippingAddressSelected($request);
+            return !is_null($selected) && method_exists($selected, 'getRegion') ? (string)$selected->getRegion() : '';
+        } catch (\Throwable $exception) {
             return '';
         }
     }
 
     /**
-     * @return Quote
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
+     * @param mixed $request
+     * @return mixed
      */
     public function getShippingAddressSelected($request): mixed
     {
         try {
-            $shippingAddressId = $request->getData('shipping_address')->getAddressId();
-            $address = $this->quoteAddressFactory->create()->load($shippingAddressId);
-            if ($address) {
-                return $address;
+            $shippingAddress = is_object($request) && method_exists($request, 'getData')
+                ? $request->getData('shipping_address')
+                : null;
+
+            if ($shippingAddress instanceof \Magento\Quote\Model\Quote\Address) {
+                return $shippingAddress;
             }
+
+            if (is_object($shippingAddress)) {
+                $shippingAddressId = method_exists($shippingAddress, 'getAddressId')
+                    ? $shippingAddress->getAddressId()
+                    : (method_exists($shippingAddress, 'getId') ? $shippingAddress->getId() : null);
+
+                if ($shippingAddressId) {
+                    $address = $this->quoteAddressFactory->create()->load($shippingAddressId);
+                    if ($address && $address->getId()) {
+                        return $address;
+                    }
+                }
+            }
+
+            $items = null;
+            if ($request instanceof \Magento\Framework\DataObject) {
+                $items = $request->getAllItems() ?: $request->getData('all_items');
+            } elseif (is_object($request) && is_callable([$request, 'getAllItems'])) {
+                $items = $request->getAllItems();
+            }
+
+            if (!empty($items) && is_iterable($items)) {
+                foreach ($items as $item) {
+                    $address = null;
+                    if ($item instanceof \Magento\Framework\DataObject) {
+                        $address = $item->getAddress() ?: $item->getData('address');
+                    } elseif (is_object($item) && is_callable([$item, 'getAddress'])) {
+                        $address = $item->getAddress();
+                    }
+                    if ($address instanceof \Magento\Quote\Model\Quote\Address) {
+                        return $address;
+                    }
+                }
+            }
+
             return null;
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return null;
         }
     }
 
     public function getFullStreet(RateRequest $request): mixed
     {
-        if ($request->getDestStreet() != '') {
-            return $request->getDestStreet();
-        } else {
-            $street = $request->getData('shipping_address')->getData('street');
+        try {
+            if ($request->getDestStreet() != '') {
+                return $request->getDestStreet();
+            }
+            $street = null;
+            $shippingAddress = $request->getData('shipping_address');
+            if (is_object($shippingAddress) && method_exists($shippingAddress, 'getData')) {
+                $street = $shippingAddress->getData('street');
+            }
             if (empty($street)) {
-                $street = !is_null($this->getShippingAddressSelected($request)) ? $this->getShippingAddressSelected($request)->getStreet() : '';
+                $selected = $this->getShippingAddressSelected($request);
+                $street = !is_null($selected) && method_exists($selected, 'getStreet') ? $selected->getStreet() : '';
             }
             return is_array($street) ? implode("\n", $street) : ($street ?? '');
+        } catch (\Throwable $exception) {
+            return '';
         }
     }
 
     /**
-     * @return Quote
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
+     * @param RateRequest $request
+     * @return mixed
      */
     private function getCityTo(RateRequest $request): mixed
     {
-        if ($request->getDestCity() != '') {
-            return $request->getDestCity();
-        }
-        $region = $request->getData('shipping_address')->getData('city');
-        if (is_array($region)) {
-            return $region['city'];
-        } else {
-            return !is_null($this->getShippingAddressSelected($request)) ? $this->getShippingAddressSelected($request)->getCity() : '';
+        try {
+            if ($request->getDestCity() != '') {
+                return $request->getDestCity();
+            }
+            $shippingAddress = $request->getData('shipping_address');
+            if (is_object($shippingAddress) && method_exists($shippingAddress, 'getData')) {
+                $region = $shippingAddress->getData('city');
+                if (is_array($region)) {
+                    return $region['city'] ?? '';
+                }
+            }
+            $selected = $this->getShippingAddressSelected($request);
+            return !is_null($selected) && method_exists($selected, 'getCity') ? (string)$selected->getCity() : '';
+        } catch (\Throwable $exception) {
+            return '';
         }
     }
 

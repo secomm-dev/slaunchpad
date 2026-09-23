@@ -1,0 +1,80 @@
+BUG-QFR2AY (issue #20 — Isolate MoMo/ZaloPay placeOrder guards from cross-payment DI failures)
+— validation evidence, 2026-09-22
+Environment: container m2r-php (markoshust/magento-php:8.3-fpm, PHP 8.3.20)
++ throwaway validation copy /tmp/m2r (host) mounted at /var/www/html, synced
+from the task branch worktree before each validation step (rsync
+app/code/Secomm/MoMo/ + app/code/Secomm/ZaloPay/).
+Repo BASE_SHA e38738a0 (worktree branch
+thanhle74/hotfix-cross-payment-placeorder-guard-isolation == origin TIP at
+start; clean).
+
+Changed/new files
+- app/code/Secomm/MoMo/Plugin/Quote/CartManagementPlaceOrderGuard.php   (MethodInterface -> scalar methodCode; repo stays interface-typed)
+- app/code/Secomm/ZaloPay/Plugin/Quote/CartManagementPlaceOrderGuard.php (identical pattern)
+- app/code/Secomm/MoMo/etc/di.xml   (guard: methodCode string + PaymentAttemptRepository\Proxy; facade argument removed)
+- app/code/Secomm/ZaloPay/etc/di.xml (identical pattern)
+- app/code/Secomm/MoMo/Test/Unit/Plugin/Quote/CartManagementPlaceOrderGuardTest.php     (constructor shape; non-target repo-never-consulted test)
+- app/code/Secomm/ZaloPay/Test/Unit/Plugin/Quote/CartManagementPlaceOrderGuardTest.php  (same + pre-existing >120 char line wrapped)
+- app/code/Secomm/MoMo/Test/Unit/Di/PaymentAttemptDiBindingTest.php     (constructor shape)
+- app/code/Secomm/MoMo/Test/Unit/Di/PlaceOrderGuardDiIsolationTest.php  (NEW — DI isolation contract)
+- app/code/Secomm/ZaloPay/Test/Unit/Di/PlaceOrderGuardDiIsolationTest.php (NEW — DI isolation contract)
+- README.md / CHANGELOG.md (both modules — guard isolation note + entry)
+
+No schema/crontab/config.xml change (setup:upgrade N/A). No provider API,
+classifier, refund or payment-state change.
+
+1) php -l (all 7 changed/new PHP) — container m2r-php
+   -> "No syntax errors detected" x7
+
+2) PHPUnit — full Secomm\MoMo + Secomm_ZaloPay suites
+   php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --filter "Secomm.(MoMo|ZaloPay)"
+   -> OK (5 PRE-EXISTING framework-level PHPUnit deprecations, identical to
+   the MOMO-04/05 baselines)
+   Tests: 652, Assertions: 2202.
+   Baseline before this task: 648 tests (both modules) — +4 new DI contract
+   tests, existing guard/block/grant tests green (updated only for the
+   constructor shape).
+   see phpunit-secomm-momo-zalopay.txt
+
+3) PHPCS (Magento2, severity 6, changed files) -> 0 errors, 0 warnings, EXIT=0
+   (framework sniff deprecation notices on stderr are pre-existing noise)
+   see phpcs.txt
+
+4) setup:di:compile (full, generated/code wiped first)
+   -> "Generated code and dependency injection configuration successfully."
+   Proxy classes generated for BOTH modules:
+   - generated/code/Secomm/MoMo/Model/PaymentAttemptRepository/Proxy.php
+   - generated/code/Secomm/ZaloPay/Model/PaymentAttemptRepository/Proxy.php
+   Note: compile runs in "not installed" mode (app/etc/env.php temporarily
+   moved aside; setup:di:compile needs no DB; env.php restored after).
+
+5) Runtime ObjectManager resolution check (throwaway
+   /tmp/m2r/guard_runtime_check.php, NOT committed) — resolves both guards
+   from the COMPILED ObjectManager and reflects on the injected deps:
+   MoMo guard:    constructed=YES repo=...\PaymentAttemptRepository\Proxy
+                  realRepoConstructed=NO (proxy deferred) methodCode=momo_payment
+   ZaloPay guard: constructed=YES repo=...\PaymentAttemptRepository\Proxy
+                  realRepoConstructed=NO (proxy deferred) methodCode=zalopay
+   see runtime-check.txt
+
+   LIMITATION + control test: constructing the FULL QuoteManagement
+   (plugin-chain subject) failed in this environment with
+   SQLSTATE[HY000][2002] getaddrinfo for zt-mariadb106 failed — the DB
+   container of the throwaway copy no longer exists on this host.
+   Control: the SAME failure reproduces with the four changed files
+   reverted to BASE state in /tmp/m2r (recompiled) — environmental, not a
+   regression. Stronger still, the control run shows the BASE-state MoMo
+   guard itself FAILS construction in the degraded environment (its eager
+   MoMoFacade chain), while the fixed construction succeeds for both
+   guards. Plugin-chain coverage for QuoteManagement is provided by the DI
+   compile step (interceptors + plugin list generated for all areas) and
+   the guard-level construction proof above.
+
+6) .ai/bin/project-ai-validate --check-specs --check-identity --check-records
+   -> pre-existing FAIL set in OTHER tasks' artifacts only (identical set to
+   the MOMO-04/05 baselines); zero findings mention BUG-QFR2AY.
+   see validate.txt
+
+7) Not run: E2E checkout against MoMo/ZaloPay sandboxes (partner
+   credentials not available on this host); the already-paid ZaloPay
+   transaction repair is explicitly out of scope (issue NON_SCOPE).

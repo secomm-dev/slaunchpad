@@ -1,5 +1,25 @@
 # Changelog
 
+## [Unreleased] - ZLP-HF-01 (issue #20 / BUG-QFR2AY — cross-payment placeOrder guard construction isolation)
+
+### Fixed
+- **The `QuoteManagement::placeOrder` guard no longer couples every payment
+  method's placement to ZaloPay-only DI**: the guard is a GLOBAL plugin, so
+  Magento constructed it — with its eagerly-built `ZaloPayFacade` Adapter
+  and `PaymentAttemptRepositoryInterface` implementation — for EVERY
+  payment method's placeOrder, including MoMo's. The guard now depends on
+  nothing ZaloPay-only before the quote is confirmed as ZaloPay: method
+  discrimination uses an ObjectManager-injected `zalopay` code string (the
+  facade is not needed to compare a string), and the attempt repository is
+  wired as a generated Proxy — the real repository and its
+  ResourceConnection graph are constructed only on the ZaloPay
+  grant-validation path. Guard semantics (persisted-attempt triple,
+  single-use grant, block messaging) unchanged. `Secomm_MoMo` applies the
+  identical pattern (this also fixes the production incident where a paid
+  ZaloPay checkout died before order creation because the MoMo-side
+  repository could not be instantiated). No provider API, classifier,
+  refund or schema change.
+
 ## [Unreleased] - ZLP-OPS-01 (TASK-MCHN2T — operator diagnostics, debug mode, configurable checkout branding)
 
 ### Added

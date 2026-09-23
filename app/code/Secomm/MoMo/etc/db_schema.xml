@@ -45,6 +45,10 @@
                 comment="Machine-readable reason code for requires_reconciliation"/>
         <column xsi:type="smallint" name="retry_count" padding="5" unsigned="true" nullable="false" default="0"
                 comment="Number of prior attempts for the same quote"/>
+        <column xsi:type="smallint" name="recovery_attempts" padding="5" unsigned="true" nullable="false" default="0"
+                comment="Proactive v2/query recovery budget consumed (MOMO-03)"/>
+        <column xsi:type="boolean" name="recovery_exhausted" nullable="false" default="false"
+                comment="Operational-only marker: proactive queries stopped (a valid IPN/Return still resolves)"/>
         <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" default="0"
                 comment="Store Id"/>
         <column xsi:type="int" name="email_dispatch" padding="10" unsigned="true" nullable="true" identity="false"
@@ -79,6 +83,82 @@
         </index>
         <index referenceId="SECOMM_MOMO_PAYMENT_ATTEMPT_PAYMENT_STATUS" indexType="btree">
             <column name="payment_status"/>
+        </index>
+    </table>
+
+    <!--
+        Native Credit Memo refund requests (MOMO-02). One row per logical
+        refund operation against a captured MoMo payment. open_flag is the
+        duplicate-submission guard: 1 for open rows (pending/unknown), NULL
+        for terminal rows (success/failed) — MySQL exempts NULL from unique
+        indexes, so UNIQUE(momo_order_ref, momo_trans_id, open_flag) allows
+        at most ONE open refund per payment while terminal rows release the
+        slot (sequential partials and retry-after-failure stay native).
+        Rows are written through an independent DB connection so FAILED/
+        UNKNOWN evidence survives the CreditmemoService sales-transaction
+        rollback that aborts the creditmemo.
+    -->
+    <table name="secomm_momo_refund" resource="default" engine="innodb"
+           comment="MoMo native creditmemo refund requests">
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Entity Id"/>
+        <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true"
+                comment="Sales order entity id"/>
+        <column xsi:type="varchar" name="order_increment_id" nullable="false" length="32"
+                comment="Sales order increment id (operator-readable linkage)"/>
+        <column xsi:type="int" name="invoice_id" padding="10" unsigned="true" nullable="true"
+                comment="Native invoice entity id when the creditmemo is invoiced"/>
+        <column xsi:type="int" name="creditmemo_id" padding="10" unsigned="true" nullable="true"
+                comment="Creditmemo entity id (backfilled post-commit by the sales plugin)"/>
+        <column xsi:type="varchar" name="momo_order_ref" nullable="false" length="64"
+                comment="MoMo orderId of the ORIGINAL captured transaction (or legacy fallback)"/>
+        <column xsi:type="varchar" name="momo_trans_id" nullable="false" length="64"
+                comment="MoMo transId of the ORIGINAL captured transaction"/>
+        <column xsi:type="varchar" name="refund_order_id" nullable="false" length="64"
+                comment="MoMo orderId minted for the refund (must differ from the purchase orderId)"/>
+        <column xsi:type="varchar" name="request_id" nullable="false" length="96"
+                comment="MoMo requestId minted for the refund (provider idempotency key)"/>
+        <column xsi:type="varchar" name="provider_transaction_id" nullable="true" length="64"
+                comment="MoMo transId of the refund itself (set on SUCCESS)"/>
+        <column xsi:type="int" name="amount" padding="10" unsigned="true" nullable="false"
+                comment="Snapshot refund amount in VND"/>
+        <column xsi:type="varchar" name="currency" nullable="false" length="3" default="VND" comment="Currency"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="32" default="pending"
+                comment="Refund lifecycle status (pending/success/failed/unknown)"/>
+        <column xsi:type="varchar" name="response_code" nullable="true" length="32"
+                comment="Raw provider resultCode (when the provider answered)"/>
+        <column xsi:type="varchar" name="response_message" nullable="true" length="255"
+                comment="Raw provider message (when the provider answered)"/>
+        <column xsi:type="varchar" name="classification_reason" nullable="true" length="64"
+                comment="Machine-readable reason for the classification"/>
+        <column xsi:type="text" name="last_error" nullable="true" comment="Last error detail (sanitized)"/>
+        <column xsi:type="boolean" name="open_flag" nullable="true" default="true"
+                comment="1 = open operation (pending/unknown, blocks new refunds), NULL = terminal"/>
+        <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" default="0"
+                comment="Store Id"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true"/>
+        <column xsi:type="timestamp" name="resolved_at" nullable="true" on_update="false"
+                comment="When the operation reached a terminal state (success/failed)"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_MOMO_REFUND_REQUEST_ID">
+            <column name="request_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_MOMO_REFUND_OPEN">
+            <column name="momo_order_ref"/>
+            <column name="momo_trans_id"/>
+            <column name="open_flag"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="SECOMM_MOMO_REFUND_ORDER_ID_SALES_ORDER_ENTITY_ID"
+                    table="secomm_momo_refund" column="order_id" referenceTable="sales_order"
+                    referenceColumn="entity_id" onDelete="SET NULL"/>
+        <index referenceId="SECOMM_MOMO_REFUND_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+        <index referenceId="SECOMM_MOMO_REFUND_STATUS" indexType="btree">
+            <column name="status"/>
         </index>
     </table>
 </schema>

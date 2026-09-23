@@ -59,25 +59,27 @@ class CartManagementPlaceOrderGuardTest extends TestCase
         $this->quoteRepository = $this->createMock(CartRepositoryInterface::class);
         $this->attemptRepository = $this->createMock(PaymentAttemptRepositoryInterface::class);
         $this->authorization = new OrderPlacementAuthorization(); // REAL grant state machine
-        $method = $this->createMock(\Magento\Payment\Model\MethodInterface::class);
-        $method->method('getCode')->willReturn('zalopay');
 
         $this->guard = new CartManagementPlaceOrderGuard(
             $this->quoteRepository,
             $this->attemptRepository,
-            $method,
+            'zalopay',
             $this->authorization,
             $this->createMock(LoggerInterface::class)
         );
     }
 
     /**
-     * Non-ZaloPay quote: untouched, no grant interaction at all.
+     * Non-ZaloPay quote: untouched, no grant interaction at all — the
+     * attempt repository is never consulted (issue #20: the target-only
+     * dependency must not even be resolved for another payment method's
+     * placement).
      *
      * @return void
      */
     public function testNonZaloPayQuotePassesThrough(): void
     {
+        $this->attemptRepository->expects($this->never())->method('get');
         $this->stubQuote('checkmo');
 
         $this->assertNull($this->guard->beforePlaceOrder(
@@ -212,7 +214,10 @@ class CartManagementPlaceOrderGuardTest extends TestCase
         $this->authorization->grant(self::QUOTE_ID, self::ATTEMPT_ID, self::APP_TRANS_ID);
         $this->stubPersistedAttempt($this->newAttemptMock(PaymentAttemptInterface::STATUS_PAID));
 
-        $this->assertNull($this->guard->beforePlaceOrder($this->createMock(CartManagementInterface::class), self::QUOTE_ID));
+        $this->assertNull($this->guard->beforePlaceOrder(
+            $this->createMock(CartManagementInterface::class),
+            self::QUOTE_ID
+        ));
 
         $this->expectException(\Magento\Framework\Exception\LocalizedException::class);
         $this->expectExceptionMessage('can only be created after the payment is verified');

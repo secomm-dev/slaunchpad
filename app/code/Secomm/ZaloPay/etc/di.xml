@@ -185,9 +185,19 @@
                 type="Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard"
                 sortOrder="10"/>
     </type>
+    <!-- Construction isolation (issue #20 / BUG-QFR2AY): the guard plugin
+         is built for EVERY payment method's placeOrder (it is registered
+         globally on QuoteManagement), so its constructor must not build
+         anything ZaloPay-only before the quote is confirmed as ZaloPay.
+         Method discrimination uses the literal method code (the facade is
+         not needed to compare a string); the attempt repository is a
+         generated Proxy — the real repository and its ResourceConnection
+         graph are constructed on first use, i.e. only on the ZaloPay
+         grant-validation path. -->
     <type name="Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard">
         <arguments>
-            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
+            <argument name="methodCode" xsi:type="string">zalopay</argument>
+            <argument name="attemptRepository" xsi:type="object">Secomm\ZaloPay\Model\PaymentAttemptRepository\Proxy</argument>
         </arguments>
     </type>
 

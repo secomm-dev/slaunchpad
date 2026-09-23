@@ -1,0 +1,11 @@
+PHPUnit 10.5.64 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.20
+Configuration: /var/www/html/dev/tests/unit/phpunit-secomm.xml
+
+D..............................................................  63 / 652 (  9%)
+
+Time: 00:00.461, Memory: 60.00 MB
+
+OK, but there were issues!
+Tests: 652, Assertions: 2202, PHPUnit Deprecations: 5.

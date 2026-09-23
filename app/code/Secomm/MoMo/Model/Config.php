@@ -31,6 +31,7 @@ class Config
     public const PATH_CREATE = '/v2/gateway/api/create';
     public const PATH_REFUND = '/v2/gateway/api/refund';
     public const PATH_QUERY = '/v2/gateway/api/query';
+    public const PATH_REFUND_QUERY = '/v2/gateway/api/refund/query';
     /**#@-*/
 
     /**#@+
@@ -42,7 +43,7 @@ class Config
     public const KEY_SANDBOX = 'sandbox';
     public const KEY_RETURN_URL = 'return_url';
     public const KEY_NOTIFY_URL = 'notify_url';
-    public const KEY_PAYMENT_ACTION = 'momo_payment_action';
+    public const KEY_PAYMENT_ACTION = 'payment_action';
     public const KEY_REQUEST_TYPE = 'captureWallet';
     /**#@-*/
 

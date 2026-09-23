@@ -56,6 +56,52 @@ class OrderRefBuilder
     }
 
     /**
+     * Build the MoMo orderId for a REFUND transaction.
+     *
+     * MoMo requires the refund orderId to differ from the ORIGINAL purchase
+     * orderId, and both orderId and requestId are String(50) at the provider
+     * — hence the orderRef truncation (the recognizable prefix is kept, the
+     * tail is random for uniqueness).
+     *
+     * @param string $orderRef Purchase order_ref (the original MoMo orderId).
+     * @return string <= 49 chars.
+     */
+    public function buildRefundOrderId(string $orderRef): string
+    {
+        return substr($orderRef, 0, 42) . '-RF' . $this->randomSuffix();
+    }
+
+    /**
+     * Build the MoMo requestId for a REFUND transaction (the provider
+     * idempotency key — minted once per refund row, stored, never regenerated).
+     *
+     * @param string $orderRef Purchase order_ref (the original MoMo orderId).
+     * @return string <= 49 chars.
+     */
+    public function buildRefundRequestId(string $orderRef): string
+    {
+        return substr($orderRef, 0, 42) . '-RQ' . $this->randomSuffix();
+    }
+
+    /**
+     * Build the MoMo requestId for a REFUND QUERY call
+     * (/v2/gateway/api/refund/query).
+     *
+     * The query is a DIFFERENT API operation than the refund submission, so
+     * it must never reuse the refund submission's requestId (that is the
+     * provider idempotency key of the refund itself): each resolve
+     * invocation mints its own fresh query identity and signs with it. The
+     * stored refund requestId stays immutable as refund-submission evidence.
+     *
+     * @param string $refundOrderId The refund's own orderId.
+     * @return string <= 49 chars (provider requestId limit 50).
+     */
+    public function buildRefundQueryRequestId(string $refundOrderId): string
+    {
+        return substr($refundOrderId, 0, 42) . '-QQ' . $this->randomSuffix();
+    }
+
+    /**
      * Short random suffix (collision safety within one second clock tick).
      *
      * @return string 4 hex chars.

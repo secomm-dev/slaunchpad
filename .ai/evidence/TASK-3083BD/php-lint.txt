@@ -1,0 +1,8 @@
+No syntax errors detected in app/code/Secomm/MoMo/Service/ReturnProcessor.php
+No syntax errors detected in app/code/Secomm/MoMo/Service/PaymentRecovery.php
+No syntax errors detected in app/code/Secomm/MoMo/Service/PurchaseQueryClassifier.php
+No syntax errors detected in app/code/Secomm/MoMo/Service/PurchaseQueryOutcome.php
+No syntax errors detected in app/code/Secomm/MoMo/Test/Unit/Service/ReturnProcessorTest.php
+No syntax errors detected in app/code/Secomm/MoMo/Test/Unit/Service/PaymentRecoveryTest.php
+No syntax errors detected in app/code/Secomm/MoMo/Test/Unit/Service/PurchaseQueryClassifierTest.php
+PHP_LINT_EXIT=0

@@ -1,0 +1,163 @@
+warn: python3/pyyaml not available — skipping YAML syntax check (structural checks still run)
+--- records (project) ---
+WARN: decisions/DEC-FEATZLP1PF-001.md: work_items entry not a valid work-item ID (new FEAT|TASK|BUG|SPIKE|REL-XXXXXX or legacy ABBR-NNN): FEAT-ZLP1PF
+WARN: decisions/DEC-FEATZLP1PF-002.md: work_items entry not a valid work-item ID (new FEAT|TASK|BUG|SPIKE|REL-XXXXXX or legacy ABBR-NNN): FEAT-ZLP1PF
+WARN: decisions/DEC-FEATZLP1PF-003.md: work_items entry not a valid work-item ID (new FEAT|TASK|BUG|SPIKE|REL-XXXXXX or legacy ABBR-NNN): FEAT-ZLP1PF
+FAIL: tasks/PLAN-TASKN35E28-vietqr-payment.md: no YAML frontmatter
+FAIL: tasks/TASK-6X2FQH.md: Mode A decision_assessment=material but decisions empty (create DEC records)
+FAIL: tasks/TASK-XYDQDF.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-006.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-007.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-008.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-009.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-010.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-011.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-012.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-013.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-014.md: no YAML frontmatter
+FAIL: decisions/DEC-TASKCG6BM7-015.md: no YAML frontmatter
+--- identity (project) ---
+WARN: 5 legacy-format record(s) grandfathered (display-title + project_code checks skipped — P2A §10)
+FAIL: records/tasks/TASK-9394A9.md: display title stale/mismatched — H1 "[SLP][FEAT-YA2C0W][TASK-9394A9] Phase C — Scheme registry + historical unit reference layer" != rendered "[SLP][FEAT-YA2C0W][TASK-9394A9] Phase C — Scheme registry + historical unit reference layer (secomm_vietnam_address_scheme + secomm_vietnam_address_unit)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/tasks/TASK-ADT94K.md: display title stale/mismatched — H1 "[SLP][FEAT-YA2C0W][TASK-ADT94K] Phase B — Versioned scheme import foundation (VN_ADMIN_*)" != rendered "[SLP][FEAT-YA2C0W][TASK-ADT94K] Phase B — Versioned scheme import foundation (VN_ADMIN_* codes, 7-col datasets, active_scheme config, profiles rename)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/tasks/TASK-CG6BM7.md: display title stale/mismatched — H1 "[SLP][TASK-CG6BM7] ZaloPay post-fix audit & correction" != rendered "[SLP][TASK-CG6BM7] ZaloPay post-fix audit & correction — email idempotency, refund async lifecycle, rate validation, response-state semantics" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/tasks/TASK-EDS9T5.md: display title stale/mismatched — H1 "[SLP][TASK-EDS9T5] ZaloPay payment-first only — không Sales Order trước khi thanh toán được xác thực" != rendered "[SLP][TASK-EDS9T5] ZaloPay payment-first only — không Sales Order trước khi thanh toán được xác thực (IPN-first finalize + placeOrder authorization/guard)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/tasks/TASK-F9XJ5G.md: display title stale/mismatched — H1 "[SLP][FEAT-YA2C0W][TASK-F9XJ5G] Historical VN address reference-only import (VN_ADMIN_PRE_2025)" != rendered "[SLP][FEAT-YA2C0W][TASK-F9XJ5G] Historical VN address reference-only import (VN_ADMIN_PRE_2025 vào reference layer, không đụng runtime)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/tasks/TASK-J9AVGK.md: display title stale/mismatched — H1 "[SLP][FEAT-YA2C0W][TASK-J9AVGK] Phase D — Administrative mapping layer + resolution API" != rendered "[SLP][FEAT-YA2C0W][TASK-J9AVGK] Phase D — Administrative mapping layer + directional resolution API (EXACT/MAPPED/AMBIGUOUS/UNMAPPED)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/tasks/TASK-NDSZ7V.md: display title stale/mismatched — H1 "[SLP][FEAT-YA2C0W][TASK-NDSZ7V] Canonical mapping seed — PRE_2025→2025 + auto-import patch" != rendered "[SLP][FEAT-YA2C0W][TASK-NDSZ7V] Canonical mapping seed — VN_ADMIN_PRE_2025→2025 (10.064 edges) + auto-import Data Patch + resolver graph verification" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/tasks/TASK-Q4B98P.md: display title stale/mismatched — H1 "[SLP][FEAT-YA2C0W][TASK-Q4B98P] Operational ↔ canonical identity bridge + DirectoryReferenceGuard extension" != rendered "[SLP][FEAT-YA2C0W][TASK-Q4B98P] Operational ↔ canonical identity bridge + DirectoryReferenceGuard extension (bỏ hardcode carrier tables khỏi VietNamAddress)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/bugs/BUG-2MK37V.md: display title stale/mismatched — H1 "[SLP][BUG-2MK37V] [Checkout page] Align apply-discount-code section UI" != rendered "[SLP][BUG-2MK37V] [Checkout page] Align apply-discount-code section UI (Mageplaza OSC)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/bugs/BUG-5NR0PD.md: display title stale/mismatched — H1 "[SLP][BUG-5NR0PD] Translate coupon add/remove messages + shipping errmsg at checkout" != rendered "[SLP][BUG-5NR0PD] Translate coupon add/remove messages at checkout (Mageplaza OSC js-translation)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/bugs/BUG-AMRBJR.md: display title stale/mismatched — H1 "[SLP][BUG-AMRBJR] Translate checkout page sections (OSC)" != rendered "[SLP][BUG-AMRBJR] Translate checkout page sections (OSC) — shipping address/methods, payment, order summary" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/bugs/BUG-ER121M.md: display title stale/mismatched — H1 "[SLP][BUG-ER121M] [Checkout page] Discount section: keep button aligned with input while the validation message shows" != rendered "[SLP][BUG-ER121M] [Checkout page] Discount section: keep button aligned with input while the validation message shows (Mageplaza OSC)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/bugs/BUG-MNEZ92.md: display title stale/mismatched — H1 "[SLP][BUG-MNEZ92] [Header][Account][UI] Dropdown tài khoản bị cắt phải ở 1440x900/1024x768 — root cause CSS demo stale, không cần đổi code" != rendered "[SLP][BUG-MNEZ92] [SLP][BUG-MNEZ92] [Header][Account][UI] Dropdown tài khoản bị cắt phải ở 1440x900/1024x768 — root cause CSS demo stale, không cần đổi code" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/bugs/BUG-NY0M3S.md: display title stale/mismatched — H1 "[SLP][BUG-NY0M3S] Translate Extra Fee validation message + reduce spacing in extra fee payment" != rendered "[SLP][BUG-NY0M3S] Translate Extra Fee validation message + reduce spacing in extra fee payment (OSC)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/bugs/BUG-TK8C2Y.md: display title stale/mismatched — H1 "[SLP][BUG-TK8C2Y] Translate extra fee "(Excl. Tax)" suffix on cart totals" != rendered "[SLP][BUG-TK8C2Y] Translate extra fee "(Excl. Tax)" suffix on cart totals (Mageplaza ExtraFee Hyvä)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/spikes/SPIKE-W273TB.md: display title stale/mismatched — H1 "[SLP][FEAT-YA2C0W][SPIKE-W273TB] Audit ShippingCore + đề xuất orchestration canonical VN address resolution" != rendered "[SLP][FEAT-YA2C0W][SPIKE-W273TB] Audit ShippingCore + đề xuất orchestration canonical VN address resolution (Phase E design, pre-implementation)" (metadata authoritative; re-render after parent/code/title change)
+FAIL: records/features/FEAT-JKZM68.md: legacy_ids entry FEAT-008 collides with a canonical id (records/features/FEAT-008.md)
+--- specs (project) ---
+WARN: /var/www/html/.ai/records/features/FEAT-ZKD4VA.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/features/FEAT-HEHJQ4.md: missing/invalid specification_level
+WARN: /var/www/html/.ai/records/features/FEAT-KQ6WC4.md: missing/invalid specification_level
+WARN: /var/www/html/.ai/records/features/FEAT-YESRCX.md: missing/invalid specification_level
+WARN: /var/www/html/.ai/records/tasks/TASK-4F1K3N.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-AP6YXP.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-7RK8Q3.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Goal
+WARN: /var/www/html/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/html/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Out of Scope
+WARN: /var/www/html/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/html/.ai/records/tasks/TASK-CR4D1V.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-H9R1HX.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-X0XKH4.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-YQSS3M.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-XYDQDF.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Goal
+WARN: /var/www/html/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/html/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Out of Scope
+WARN: /var/www/html/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/html/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Goal
+WARN: /var/www/html/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/html/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Out of Scope
+WARN: /var/www/html/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/html/.ai/records/tasks/TASK-K09G8Y.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-ZHFVRH.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Goal
+WARN: /var/www/html/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/html/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Out of Scope
+WARN: /var/www/html/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/html/.ai/records/tasks/TASK-S0M7YC.md: spec_status is not VALID
+WARN: /var/www/html/.ai/records/tasks/TASK-938NGT.md: missing/invalid specification_level
+WARN: /var/www/html/.ai/records/tasks/PLAN-TASKN35E28-vietqr-payment.md: missing/invalid specification_level
+WARN: /var/www/html/.ai/records/bugs/BUG-NTQ0H2.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Goal
+WARN: /var/www/html/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/html/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Out of Scope
+WARN: /var/www/html/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/html/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Goal
+WARN: /var/www/html/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/html/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Out of Scope
+WARN: /var/www/html/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/html/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Goal
+WARN: /var/www/html/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/html/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Out of Scope
+WARN: /var/www/html/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/html/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Goal
+WARN: /var/www/html/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/html/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Out of Scope
+WARN: /var/www/html/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/html/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Goal
+WARN: /var/www/html/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/html/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Out of Scope
+WARN: /var/www/html/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/html/.ai/records/bugs/BUG-4TWFGD.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/html/.ai/tickets/TASK-NDASAD-shippingcore-origin-contract.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-4ZV5NG-apply-address-dropdown-admin-customer-form.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-N35E28-vietqr-payment.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-86NX9T-ghtk-carrier-tracking.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-2V0AEV-apply-address-dropdown-admin-msi-source.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-KCBDDT-generalize-addressdropdown-remove-vn-leak.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-BRKHN4-ghtk-carrier-rate.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-H9R1HX-carrier-rate-fallback.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-KM6YAT-ghtk-native-label-flow.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-SQY42T-apply-address-dropdown-admin-order-form.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-N1VBSM-performance-engineering-baseline.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-YJENM2-ghtk-address-mapping.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-3F6QWZ-review-install-shipping-modules.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-WN0PBT-abandoned-cart-email.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-E0SK0H-spec-naming-propagation.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-KV328X-ghtk-order-sync.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-8WSERX-apply-address-dropdown-admin-store-information.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-Z132WA-spec-first-governance.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-FD6A9X-hyva-cart-estimate-city-cascade.md: missing Specification reference
+WARN: /var/www/html/.ai/tickets/TASK-88NDV5-apply-hyva-theme-addressdropdown.md: missing Specification reference
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/tasks/TASK-BS91A3.md: spec_status is not VALID
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/tasks/TASK-AEZTTB.md: spec_status is not VALID
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/tasks/TASK-0F96X5.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/tasks/TASK-0F96X5.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/tasks/TASK-0F96X5.md: Mini-Spec missing Acceptance Criteria
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/tasks/TASK-ZR2ZNS.md: spec_status is not VALID
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-MNEZ92.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-H929MC.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-CW6KDK.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-CW6KDK.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-CW6KDK.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-W3XTW4.md: Mini-Spec missing Acceptance Criteria
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-4WYXCB.md: FULL specification_ref does not resolve: Embedded Full Spec
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-PWP31X.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-PWP31X.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-EFWXPA.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-AMRBJR.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-AMRBJR.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/records/bugs/BUG-AMRBJR.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md: naming mismatch: filename owner requires header "Specification ID: SPEC-FEAT-J06WXZ"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/specs/SPEC-FEAT-ZKD4VA-vietqr-payment.md: naming mismatch: filename owner requires header "Specification ID: SPEC-FEAT-ZKD4VA"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/specs/SPEC-TASK-EDS9T5-zalopay-payment-first-only.md: naming mismatch: filename owner requires header "Specification ID: SPEC-TASK-EDS9T5"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/specs/SPEC-TASK-N1VBSM-performance-engineering-baseline.md: naming mismatch: filename owner requires header "Specification ID: SPEC-TASK-N1VBSM"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/html/.ai/specs/SPEC-TASK-XYDQDF-momo-refund-idempotency.md: naming mismatch: filename owner requires header "Specification ID: SPEC-TASK-XYDQDF"
+FAIL: /var/www/html/.ai/plans/plan-abandonedcart-email.md: plan missing required Specification reference
+FAIL: /var/www/html/.ai/plans/TASK-N1VBSM-implementation-plan.md: plan missing required Specification reference
+FAIL: /var/www/html/.ai/plans/PLAN-TASK-EDS9T5-zalopay-payment-first.md: plan missing required Specification reference
+FAIL: /var/www/html/.ai/plans/TASK-Z3DAH5-implementation-plan.md: plan missing required Specification reference
+--- hyva-integration (project) ---
+FAIL: no Hyva dev-skills under .claude/skills/dev/
+ok:   integration metadata present: SECOMM_OVERLAY.md
+ok:   integration metadata present: provenance.yaml
+ok:   integration metadata present: version-lock.yaml
+ok:   integration metadata present: upstream-manifest.yaml
+ok:   Codex routing present (STATIC)
+ok:   Copilot routing present (STATIC)
+ok:   Codex/Copilot discoverability = STATIC VALIDATION ONLY (natural-language routing; runtime invocation not automated)
+ok:   toolkit-version hyva stamp present
+----------------------------------------
+result (project): 59 FAIL, 1 WARN
+INVALID
