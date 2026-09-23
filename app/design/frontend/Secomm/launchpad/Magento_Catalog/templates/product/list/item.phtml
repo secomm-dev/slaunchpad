@@ -290,8 +290,8 @@ if (!$isProductGroupedOrBundle) {
                 aria-label="<?= $escaper->escapeHtmlAttr(__('Quick view') . ' ' . $productName) ?>"
                 onclick="window.dispatchEvent(new CustomEvent('open-quickview', { detail: { sku: '<?= $escaper->escapeJs($product->getSku()) ?>' } }))"
             >
-                <?= $lucideIcons->eyeHtml('', 14, 14, ['aria-hidden' => 'true']) ?>
                 <span><?= $escaper->escapeHtml(__('Quick view')) ?></span>
+                <?= $lucideIcons->eyeHtml('', 14, 14, ['aria-hidden' => 'true']) ?>
             </button>
         </div>
         <?php endif; ?>
