@@ -10,7 +10,7 @@
         <resources>
             <resource id="Magento_Backend::admin">
                 <resource id="Secomm_Ghtk::ghtk" title="GHTK" translate="title" sortOrder="60">
-                    <resource id="Secomm_Ghtk::manage_map" title="Manage Address Mapping" translate="title" sortOrder="10"/>
+                    <resource id="Secomm_Ghtk::manage_map" title="Manage Address Address Overrides" translate="title" sortOrder="10"/>
                     <resource id="Secomm_Ghtk::config" title="GHTK Configuration" translate="title" sortOrder="20"/>
                 </resource>
             </resource>

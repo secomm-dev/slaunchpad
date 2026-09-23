@@ -14,7 +14,7 @@ specification_ref: Embedded Mini-Spec
 risk: medium
 status: in_review
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-09-18
 ticket_ref:
 affects_version: Magento 2.4.8-p5 + Hyvä 3.x (default theme 1.5.2)
 decisions: []
@@ -131,12 +131,37 @@ So sánh trực tiếp modal home (Hyvä, SLP-160 hiện hành) vs modal checkou
 - **Close button = vòng tròn 36px viền + X thuần CSS** (2 thanh rotate trên span): vendor `padding: 15px !important` (0,5,1) bóp content còn 6px → selector `body.checkout-index-index ... header .action-close` (0,6,1); glyph font-icons/`span` SVG data-URI đều render không ổn định trên trang này → pure-CSS ×
 - Verify: **vi 34/34 PASS** (spec mới: banner config color rgb(51,153,204), h2 600, primary config color, banner ≤ cột trái, close radius 9999px + 30 check cũ); ảnh `final-home-1280/375.png` vs `final-checkout-1280/375.png` (evidence)
 
+## Round 6 (09-18 — user feedback 5 ảnh: gap nút↔link "Quay lại", validation message EN, message đè label)
+
+Feedback: (1) nút "Tạo tài khoản"/"Gửi" dính sát link "Quay lại" (create/forgot views) — annotation "Thêm padding"; (2) 3 validation message EN trong popup: "Please enter a valid email address (Ex: johndoe@domain.com)." / "Please enter 6 or more characters. Leading and trailing spaces will be ignored." / "Please enter the same value again."; (3) message lỗi đè label field dưới (create form). "Đây là một trường bắt buộc." đã VI → cơ chế `$.mage.__` hoạt động, chỉ thiếu key/scope.
+
+Root causes đo được (`probe-round6.js` before + probe computed-style):
+- **gap=0 create/forgot**: vendor template **nest `.secondary` (link Quay lại) BÊN TRONG `.primary`** cạnh button → layout float toolbar của luma không bao giờ apply; login view (authentication.phtml) theo markup luma chuẩn (`.secondary` SIBLING của `.primary`) nên chỉ còn whitespace inline-block ≈ 10px.
+- **Message EN**: probe bắt URL thật trang OSC load = `static/frontend/Magento/luma/vi_VN/js-translation.json` — file **5.5KB, 0 key "Please enter"**; key email chỉ có ở `Secomm/launchpad` scope (SLP-225 regen) = **scope chết trên checkout**. 2 key còn lại ("6 or more" — `validation.js:669`, "same value again" — `validation.js:1720`) không có ở bất kỳ CSV layer nào.
+- **Overlap KHÔNG tái hiện được local**: `div.mage-error` là `position: static` in-flow (đo 3 viewport 1280/745/375 — gap 8px chuẩn, `overlapsNext: false` mọi field). Screenshot 4 của user nhiều khả năng là render state cũ. QC demo xác nhận thêm.
+
+Fix:
+- **CSS** `social-login-checkout.css` +2 rules: (a) `#social-login-popup .actions-toolbar .primary { display:flex; align-items:center; gap:12px }` — mọi width, xử lý nested case (create/forgot) + giữ social-btn column nguyên vẹn (toolbars `.social-btn` không có `.primary`); (b) `@media (min-width: 768px)` flex toolbar cho sibling case (login view) + neutralize margin luma của `.secondary` (`margin: 10px` computed — cộng dồn thành gap 22) — breakpoint **768 khớp luma mobile breakpoint**: test tại 745 với 640 làm nút bị squeeze w=88 (luma stack button full-width <768).
+- **i18n**: +3 key/file `Launchpad_MageplazaTranslate/i18n/{vi,en}.csv` (99→102; email mirror wording theme CSV dòng 62 — SSOT; 2 key mới wording draft chờ TL) + **regen `js-translation.json` ĐÚNG scope Magento/luma** vi (5507→6039 bytes, 3 key vào dict) + en (`{}` 2 bytes — đúng design: identity row không vào dict, `$.mage.__` fallback source — BUG-NY0M3S F1).
+- Static hygiene: rm 5 stale materialized copies CSS (LL-0015) → dev-mode symlink lại, serve live từ source; chown secomm sau mỗi Edit (BUG-SDZPCD).
+
+Verify (`probe-round6b.js`, `r6-final-results.txt` + `r6-final-report.json`): **24/24 PASS ×3 viewport 1280/745/375** — gap nút↔link **12px** mọi view desktop; luma mobile stack <768 intact (gap dọc 16–26px, không squeeze); 4 message VI ("Đây là một trường bắt buộc." + 3 key mới) ở cả forgot lẫn create; 0 overlap; social buttons vẫn stack full-width. Regression: suite `verify.js` **30/30 PASS** sau khi update 3 assertion stale Round-1 → spec Round-5 (banner/primary giữ màu config #3399cc, h2 600 — 6 FAIL đầu của lượt chạy đầu là stale spec, không phải regression); console 2× "Error fetching data" ambient pre-existing. En: dict-level identity (live store-switch vẫn block — TASK-K14RVZ).
+
+## Flags cho TL (Round 6)
+
+1. **SLP-225 note sai về js-translation scope trên OSC**: record SLP-225 khẳng định "static scope trang OSC = Secomm/launchpad, LL-0011 không ảnh hưởng js-translation" — probe Round 6 chứng minh ngược lại (OSC load `Magento/luma` scope; file launchpad scope không bao giờ được request). QC handoff SLP-225 ("popup Quên mật khẩu submit email invalid → message VI trên /onestepcheckout") đã **FAIL trước Round 6** và giờ PASS nhờ regen đúng scope trong Round này. Cần sửa note SLP-225 + lesson: verify js-translation theo scope của trang đích.
+2. **Wording VI 2 key mới chờ duyệt**: "Vui lòng nhập 6 ký tự trở lên. Khoảng trắng ở đầu và cuối sẽ được bỏ qua." / "Vui lòng nhập lại cùng một giá trị."
+3. **Overlap (screenshot 4) không tái hiện được local** — nếu demo còn thấy, cần screenshot + viewport từ user (nghi vấn state cũ).
+4. Follow-up optional (ngoài scope): regen `Secomm/launchpad` scope js-translation để 2 key mới cũng cover popup social login trên các trang Hyvä (SLP-160 modal) — mechanism như trên, 0 risk.
+
 ## Traps
 
 - Static deploy quick-strategy lại bỏ qua refresh file đổi (SLP-160 F3) — cp tay artifact sang `pub/static/frontend/Magento/luma/{vi_VN,en_US}/Launchpad_*/css/`.
 - Margin-top trên inline radio KHÔNG đổi được vị trí đo được (baseline = bottom margin edge) — dùng `vertical-align: <length>`.
 - Discount input OSC tên `discount_code` (không phải `coupon_code` như core) — verify selector.
+- **R6**: breakpoint flex toolbar phải khớp luma 768 (thử 640 → nút bị squeeze w=88 tại 640–767 vì luma stack <768); `js-translation.json` regen phải theo scope static của trang đích (OSC = Magento/luma — file `Secomm/launchpad` không bao giờ được request, probe network là phép chứng minh); assertion "cùng hàng" trong probe đo overlap dọc (s.y < p.bottom && s.bottom > p.y), không dùng Δy (baseline text lệch 3–11px vẫn là cùng hàng).
 
 ## Chờ TL review → QC (demo)
 
 - QC demo: 6 điểm visual trên demo (design config xanh, payment VietQR/ZaloPay có logo, subtitle VI) + e2e place-order + payment test (§7.1) + QC en sau khi store-2 locale được khôi phục (TASK-K14RVZ flag).
+- **Round 6 thêm vào QC**: popup 3 view (login/create/forgot) — gap nút↔link, 4 validation message VI, hết chồng lấn label; xác nhận overlap screenshot-4 không còn (nếu từng có trên demo).

@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Secomm\Ghn\Api\Client\GhnApiClientInterface" type="Secomm\Ghn\Model\Client\GhnApiClient"/>
+
+    <!-- Dedicated file logger (SPEC-FEAT-FQWEQ3 §48): every GHN call logs one context line to
+         var/log/secomm_ghn.log. Token scrubbing lives in GhnLogger::sanitizeContext() and is
+         unit-tested (AC-A4) — the writer never sees the raw token. -->
+    <virtualType name="Secomm\Ghn\Model\Logger\GhnMonolog" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Secomm\Ghn\Model\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\Ghn\Model\Logger\GhnLogger">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\Ghn\Model\Logger\GhnMonolog</argument>
+        </arguments>
+    </type>
+
+    <!-- TASK-MZ2TCB (GHN-B) — master data sync fetchers, one per GHN address model (SPEC §8). -->
+    <type name="Secomm\Ghn\Model\Address\Sync\MasterDataSynchronizer">
+        <arguments>
+            <argument name="fetchers" xsi:type="array">
+                <item name="GHN_ADMIN_2025" xsi:type="object">Secomm\Ghn\Model\Address\Sync\Admin2025MasterDataFetcher</item>
+                <item name="GHN_ADMIN_PRE_2025" xsi:type="object">Secomm\Ghn\Model\Address\Sync\Pre2025MasterDataFetcher</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- TASK-PWHG0V: register under CommandListInterface — the console instantiates the
+         interface, and argument configs on the concrete `CommandList` type stopped merging once
+         the stale var/di compiled config (which still carried them) was wiped by a failed
+         compile. Every other module in this repo registers via the interface. -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="secommGhnAddressSync" xsi:type="object">Secomm\Ghn\Console\Command\SyncAddressCommand</item>
+                <item name="secommGhnAddressAudit" xsi:type="object">Secomm\Ghn\Console\Command\AuditAddressCommand</item>
+                <item name="secommGhnAddressExport" xsi:type="object">Secomm\Ghn\Console\Command\ExportAddressCommand</item>
+                <item name="secommGhnAddressImport" xsi:type="object">Secomm\Ghn\Console\Command\ImportAddressCommand</item>
+                <item name="secommGhnAddressSuggest" xsi:type="object">Secomm\Ghn\Console\Command\SuggestMappingCommand</item>
+                <item name="secommGhnShipmentRetry" xsi:type="object">Secomm\Ghn\Console\Command\RetryShipmentCommand</item>
+                <item name="secommGhnShipmentCancel" xsi:type="object">Secomm\Ghn\Console\Command\CancelShipmentCommand</item>
+                <item name="secommGhnShipmentReturn" xsi:type="object">Secomm\Ghn\Console\Command\ReturnShipmentCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- TASK-GKHXY1 (GHN-E1) — tracking reconciliation: heals missed webhooks for non-terminal
+         GHN shipments via the Order Info API. The fetcher maps through the SAME GhnStatusMapper
+         as the webhook (one mapping table, two sources). -->
+    <virtualType name="Secomm\Ghn\Model\Tracking\GhnTrackingReconciliation"
+                 type="Secomm\ShippingCore\Model\Tracking\TrackingReconciliationService">
+        <arguments>
+            <argument name="fetcher" xsi:type="object">Secomm\Ghn\Model\Tracking\GhnTrackingFetcher</argument>
+            <argument name="carrierCode" xsi:type="string">secomm_ghn</argument>
+            <argument name="batchSize" xsi:type="number">50</argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\Ghn\Model\Tracking\TrackingRefreshService">
+        <arguments>
+            <argument name="reconciliationService" xsi:type="object">Secomm\Ghn\Model\Tracking\GhnTrackingReconciliation</argument>
+        </arguments>
+    </type>
+
+    <!-- TASK-TBM30R (GHN-B2) — exporter reuses the same fetcher pool as the synchronizer. -->
+    <type name="Secomm\Ghn\Model\Address\Export\MasterDataExporter">
+        <arguments>
+            <argument name="fetchers" xsi:type="array">
+                <item name="GHN_ADMIN_2025" xsi:type="object">Secomm\Ghn\Model\Address\Sync\Admin2025MasterDataFetcher</item>
+                <item name="GHN_ADMIN_PRE_2025" xsi:type="object">Secomm\Ghn\Model\Address\Sync\Pre2025MasterDataFetcher</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- TASK-6TNKDH — canonical SSOT for the GHN mapping lifecycle = the shipped
+         Secomm_VietNamAddress dataset CSVs (read-only input; PRE_2025 = SNAPSHOT_2024 file,
+         see CanonicalCsvProvider). The DB-backed provider cannot serve the matcher/auditor:
+         seeded unit rows carry
+         parent_code = NULL on child levels (recorded defect for the VietNamAddress stream). -->
+    <type name="Secomm\Ghn\Model\Address\Mapping\MappingMatcher">
+        <arguments>
+            <argument name="unitProvider" xsi:type="object">Secomm\Ghn\Model\Address\Mapping\CanonicalCsvProvider</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\Ghn\Model\Address\Mapping\MappingAuditor">
+        <arguments>
+            <argument name="unitProvider" xsi:type="object">Secomm\Ghn\Model\Address\Mapping\CanonicalCsvProvider</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\Ghn\Model\Address\Mapping\MappingSuggester">
+        <arguments>
+            <argument name="unitProvider" xsi:type="object">Secomm\Ghn\Model\Address\Mapping\CanonicalCsvProvider</argument>
+        </arguments>
+    </type>
+</config>

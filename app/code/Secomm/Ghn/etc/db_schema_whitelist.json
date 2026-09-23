@@ -1,0 +1,86 @@
+{
+    "secomm_ghn_address_unit": {
+        "column": {
+            "entity_id": true,
+            "scheme_code": true,
+            "provider_id": true,
+            "provider_code": true,
+            "provider_key": true,
+            "parent_id": true,
+            "depth": true,
+            "name": true,
+            "extension_names": true,
+            "status": true,
+            "source_version": true,
+            "synced_at": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "PRIMARY": true,
+            "SECOMM_GHN_ADDR_UNIT_SCHEME_KEY": true,
+            "SECOMM_GHN_ADDR_UNIT_PARENT": true,
+            "SECOMM_GHN_ADDR_UNIT_SCHEME_PARENT": true,
+            "SECOMM_GHN_ADDR_UNIT_SCHEME_DEPTH_STATUS": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_GHN_ADDR_UNIT_SCHEME_KEY": true,
+            "SECOMM_GHN_ADDR_UNIT_PARENT": true
+        }
+    },
+    "secomm_ghn_address_mapping": {
+        "column": {
+            "entity_id": true,
+            "secomm_scheme_code": true,
+            "secomm_unit_code": true,
+            "ghn_address_unit_id": true,
+            "mapping_method": true,
+            "mapping_status": true,
+            "verified_at": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "PRIMARY": true,
+            "SECOMM_GHN_ADDR_MAPPING_SCHEME_UNIT": true,
+            "SECOMM_GHN_ADDR_MAPPING_UNIT": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_GHN_ADDR_MAPPING_SCHEME_UNIT": true,
+            "SECOMM_GHN_ADDR_MAPPING_UNIT": true
+        }
+    },
+    "secomm_ghn_shipment": {
+        "column": {
+            "entity_id": true,
+            "shipping_reference": true,
+            "magento_order_id": true,
+            "magento_shipment_id": true,
+            "shop_id": true,
+            "client_order_code": true,
+            "ghn_order_code": true,
+            "service_type_id": true,
+            "provider_status": true,
+            "provider_reason_code": true,
+            "quoted_fee": true,
+            "actual_fee": true,
+            "cod_amount": true,
+            "expected_delivery_at": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "PRIMARY": true,
+            "SECOMM_GHN_SHIPMENT_CLIENT_ORDER_CODE": true,
+            "SECOMM_GHN_SHIPMENT_SHIPMENT_ID": true,
+            "SECOMM_GHN_SHIPMENT_ORDER_ID": true,
+            "SECOMM_GHN_SHIPMENT_GHN_ORDER_CODE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_GHN_SHIPMENT_CLIENT_ORDER_CODE": true
+        }
+    }
+}

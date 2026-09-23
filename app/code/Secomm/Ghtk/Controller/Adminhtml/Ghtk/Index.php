@@ -31,7 +31,7 @@ class Index extends Action implements HttpGetActionInterface
         /** @var Page $resultPage */
         $resultPage = $this->resultPageFactory->create();
         $resultPage->setActiveMenu('Secomm_Ghtk::mapping');
-        $resultPage->getConfig()->getTitle()->prepend(__('GHTK Address Mapping'));
+        $resultPage->getConfig()->getTitle()->prepend(__('GHTK Address Overrides'));
 
         return $resultPage;
     }

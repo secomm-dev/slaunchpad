@@ -55,6 +55,12 @@ Cart estimate / customer address / admin store+origin validators match the submi
 
 ## Operational ↔ canonical bridge + external-reference guards (DEC-FEATYA2C0W-004)
 
+Name-based entry (TASK-7AJ3K8, transitional D5): `VnOperationalNameResolverInterface::
+resolveWardByName(regionId, wardName)` — match `name_vi`/`name_en` exact trên reference layer,
+region-scoped; AMBIGUOUS trả candidates (không pick); single match compose identity qua id bridge.
+Cần thiết đến khi persisted addresses mang canonical codes (§23 snapshot).
+
+
 - `VnOperationalAddressResolverInterface` — bridge `region_id/city_id ↔ scheme_code/unit_code` thuần code-based: runtime rows mang dataset codes từ lúc import (`directory_country_region.code = VN-XX`, `directory_region_city.code = VNA25-* / VNAP25-*`); active scheme chỉ được tin khi registry `CURRENT` khớp; non-active scheme → reverse KHÔNG fabricate runtime id.
 - `DirectoryReferenceGuardInterface` — scheme-swap safety giờ là **DI extension point**: carrier mapping tables (`secomm_ghn_address_mapping_location`, `secomm_ghtk_address_map`) tự đăng ký guard từ module sở hữu; `VietNamAddress` orchestrate + aggregate vi phạm, không hardcode tên bảng carrier nào.
 

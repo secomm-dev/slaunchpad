@@ -221,6 +221,49 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
     box-shadow: none;
 }
 
+/* ---- actions toolbar (round 6): gap between the submit button and the
+   back/forgot link ---- */
+
+/* The vendor templates nest .secondary (the "Quay lại"/"Quên mật khẩu?"
+   link) inside .primary next to the button, so luma's float toolbar layout
+   never applies: the link sits flush against the button (gap 0 measured in
+   the create/forgot views). Flex row + fixed gap normalizes all three views
+   and vertically centers the link against the 36px button. The social-btn
+   toolbars have no .primary wrapper — untouched. */
+#social-login-popup .actions-toolbar .primary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* The login view follows the luma markup instead — .secondary is a SIBLING
+   of .primary inside the toolbar, and there the whitespace between the
+   inline-blocks is the only gap (10px measured). Flex the toolbar itself;
+   scoped to the form views (the social-btn toolbars live outside
+   .block-container and stack their full-width buttons vertically) and to
+   ≥768px only — luma stacks the toolbar under 768px (button full-width,
+   link below) and flexing there squeezed the button (measured at 745px).
+   .secondary rides luma's `margin: 10px`, which would stack on top of the
+   flex gap (22px measured) — neutralize it inside the flexed toolbar;
+   flex-wrap keeps a wrapped link below the button if a column ever runs
+   narrow. */
+@media (min-width: 768px) {
+    #social-login-popup .social-login.block-container .actions-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+    }
+
+    #social-login-popup .social-login.block-container .actions-toolbar .secondary {
+        margin: 0;
+    }
+
+    #social-login-popup .social-login.block-container .actions-toolbar .secondary .action {
+        margin-top: 0;
+    }
+}
+
 /* ---- social channel column ---- */
 
 /* "Or sign in with" divider with rules on both sides (SLP-160 look) */

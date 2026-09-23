@@ -44,7 +44,8 @@
             "source_code": true,
             "target_scheme": true,
             "target_code": true,
-            "relation_type": true
+            "relation_type": true,
+            "is_primary": true
         },
         "index": {
             "SECOMM_VN_ADDR_MAPPING_TARGET": true,

@@ -9,6 +9,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\Quote\AddressFactory;
 use Magento\Store\Model\Information;
 use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 use Secomm\GhnAddressMapper\Api\LocationResolverInterface;
 use Secomm\GiaoHangNhanh\Helper\Rate;
 use Secomm\GiaoHangNhanh\IntegrationBase\Model\Service\ConfigInterface;
@@ -32,6 +33,7 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
         Config                $baseConfig,
         Rate                  $helperRate,
         LocationResolverInterface $locationResolver,
+        LoggerInterface $logger,
         private readonly ShippingContextFactory $shippingContextFactory,
         private readonly OriginProviderInterface $originProvider
     ) {
@@ -42,7 +44,8 @@ class ShippingDetailsDataBuilder extends AbstractDataBuilder
             $addressFactory,
             $baseConfig,
             $helperRate,
-            $locationResolver
+            $locationResolver,
+            $logger
         );
     }
 

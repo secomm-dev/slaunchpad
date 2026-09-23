@@ -101,6 +101,14 @@ class Ipn extends Action
                                 $order->setTotalPaid(floatval($amount) / 100);
                                 $orderState = $order::STATE_PROCESSING;
                                 $order->setState($orderState)->setStatus(Order::STATE_PROCESSING);
+                                $order->getPayment()->setAdditionalInformation(
+                                    'vnp_transaction_no',
+                                    (string)$this->getRequest()->getParam('vnp_TransactionNo', '')
+                                );
+                                $order->getPayment()->setAdditionalInformation(
+                                    'vnp_pay_date',
+                                    (string)$this->getRequest()->getParam('vnp_PayDate', '')
+                                );
                                 $this->orderRepository->save($order);
                             }
                             if ($order->canInvoice()) {

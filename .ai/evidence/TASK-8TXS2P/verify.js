@@ -103,7 +103,7 @@ async function atcAndCheckout(page) {
                 const gs = (sel, prop) => { const el = document.querySelector(sel); return el ? getComputedStyle(el)[prop] : null; };
                 const res = {};
                 res.titleDisplay = gs('.modal-popup.osc-social-login-popup .modal-title', 'display');
-                res.titleBarBg = gs('#social-login-popup .social-login .social-login-title', 'backgroundColor');
+                res.titleBarBg = gs('#social-login-popup .social-login .social-login-title', 'backgroundColor'); // round-5 spec: keeps the Mageplaza config color
                 res.h2Weight = gs('#social-login-popup .social-login-title h2', 'fontWeight');
                 res.btnBg = gs('#mp-popup-social-content a.btn.btn-social', 'backgroundColor');
                 res.btnBorder = gs('#mp-popup-social-content a.btn.btn-social', 'borderColor');
@@ -124,11 +124,11 @@ async function atcAndCheckout(page) {
                 return res;
             });
             log(`${vp.tag} S6 modal-title hidden`, s6.titleDisplay === 'none', `display=${s6.titleDisplay}`);
-            log(`${vp.tag} S6 blue bar gone`, s6.titleBarBg === 'rgba(0, 0, 0, 0)', `bg=${s6.titleBarBg}`);
-            log(`${vp.tag} S6 panel h2 bold`, s6.h2Weight === '700', `weight=${s6.h2Weight}`);
+            log(`${vp.tag} S6 banner keeps config color (round-5)`, s6.titleBarBg === 'rgb(51, 153, 204)', `bg=${s6.titleBarBg}`);
+            log(`${vp.tag} S6 panel h2 semibold (round-5)`, s6.h2Weight === '600', `weight=${s6.h2Weight}`);
             log(`${vp.tag} S6 social btn white+border+radius`, s6.btnBg === 'rgb(255, 255, 255)' && s6.btnBorder === 'rgb(209, 213, 219)', `bg=${s6.btnBg} border=${s6.btnBorder} radius=${s6.btnRadius}`);
             log(`${vp.tag} S6 FontAwesome hidden + SVG icon`, s6.faDisplay === 'none' && (s6.iconBefore || '').includes('data:image/svg+xml'), `fa=${s6.faDisplay}`);
-            log(`${vp.tag} S6 primary green`, s6.primaryBg === 'rgb(20, 83, 45)', `bg=${s6.primaryBg}`);
+            log(`${vp.tag} S6 primary keeps config color (round-5)`, s6.primaryBg === 'rgb(51, 153, 204)', `bg=${s6.primaryBg}`);
             if (vp.tag === 'mobile') log(`${vp.tag} S6 columns stacked`, s6.stacked === true, `wrapW=${s6.wrapW}`);
             if (vp.tag === 'desktop') log(`${vp.tag} S6 card widened 760`, s6.wrapW === 760, `wrapW=${s6.wrapW}`);
             await page.screenshot({ path: `${OUT}/${prefix}-${store}-${vp.tag}-modal.png` });

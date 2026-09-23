@@ -20,3 +20,5 @@
 "An error occurred during the transaction","An error occurred during the transaction"
 "Invalid signature","Invalid signature"
 "Your payment was received but the order could not be created. Please contact us for assistance.","Your payment was received but the order could not be created. Please contact us for assistance."
+"Missing original VNPAY transaction data (vnp_TransactionNo / vnp_PayDate) — online refund is not possible for this order.","Missing original VNPAY transaction data (vnp_TransactionNo / vnp_PayDate) — online refund is not possible for this order."
+"VNPAY refund failed: %1 (code %2).","VNPAY refund failed: %1 (code %2)."

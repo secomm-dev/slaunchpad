@@ -161,14 +161,24 @@ class ShipmentTrackingProcessor implements CarrierTrackingProcessorInterface
 
         $storedStatus = (string) $state->getNormalizedStatus();
 
-        // Duplicate: same normalized status AND same carrier code → no-op.
+        // Duplicate: same normalized status AND same raw code AND no distinct-occurrence
+        // evidence. A provider may legitimately re-emit the SAME status later (e.g. a second
+        // delivery_fail attempt) — the provider dedupe identity is order_code + event type +
+        // occurrence time, so an event with a DIFFERENT occurrence time is a distinct event
+        // (re-applied: row timestamp/message refresh + event re-emission), while an exact
+        // re-send (same time, or no comparable timestamps) is absorbed (TASK-GKHXY1 r2).
+        $sameOccurrence = $update->getOccurredAt() === null
+            || $state->getCarrierStatusUpdatedAt() === null
+            || $update->getOccurredAt() === strtotime((string) $state->getCarrierStatusUpdatedAt());
+
         if ($storedStatus === $update->getNormalizedStatus()
             && (string) $state->getCarrierStatusCode() === (string) $update->getCarrierStatusCode()
+            && $sameOccurrence
         ) {
             return false;
         }
 
-        // Sticky terminal: never downgrade out of DELIVERED/RETURNED/CANCELLED.
+        // Sticky terminal: never downgrade out of DELIVERED/RETURNED/CANCELLED/LOST/DAMAGED.
         if (NormalizedTrackingStatus::isTerminal($storedStatus) && $storedStatus !== $update->getNormalizedStatus()) {
             return false;
         }

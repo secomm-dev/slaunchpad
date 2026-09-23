@@ -102,4 +102,36 @@ class VnAddressUnitProviderTest extends TestCase
         $this->fetchOneQueue = ['3355'];
         $this->assertSame(3355, $this->provider->countByScheme(VnSchemes::VN_ADMIN_2025));
     }
+
+    /**
+     * BUG-ZTGGYZ (U1) — lock the hierarchy CONTRACT: children are addressed by the
+     * canonical `parent_code` column (portable unit_code), never by runtime ids.
+     */
+    public function testGetChildrenQueriesByParentCodeColumn(): void
+    {
+        $capturedWhere = [];
+        $select = $this->createMock(Select::class);
+        $select->method('from')->willReturnSelf();
+        $select->method('where')->willReturnCallback(function (string $column, mixed $value = null) use (&$capturedWhere, $select) {
+            $capturedWhere[] = [$column, $value];
+
+            return $select;
+        });
+        $select->method('order')->willReturnSelf();
+
+        // Fresh adapter: stub registrations from setUp() would win over per-test overrides.
+        $adapter = $this->createMock(Mysql::class);
+        $adapter->method('select')->willReturn($select);
+        $adapter->method('fetchAll')->willReturn([]);
+        $resource = $this->createMock(ResourceConnection::class);
+        $resource->method('getConnection')->willReturn($adapter);
+        $resource->method('getTableName')->willReturnCallback(static fn (string $name): string => $name);
+        $provider = new VnAddressUnitProvider($resource);
+
+        $provider->getChildren(VnSchemes::VN_ADMIN_2025, 'VN-34');
+
+        $this->assertContains(['scheme_code = ?', 'VN_ADMIN_2025'], $capturedWhere);
+        $this->assertContains(['parent_code = ?', 'VN-34'], $capturedWhere);
+        $this->assertNotContains(['region_code = ?', 'VN-34'], $capturedWhere, 'hierarchy edge is parent_code, not the region attribution');
+    }
 }

@@ -15,7 +15,7 @@ use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Framework\Component\ComponentRegistrarInterface;
 use Psr\Log\LoggerInterface;
-use Secomm\Ghtk\Model\GhtkAddressMapImport\CsvReader;
+use Secomm\Ghtk\Model\GhtkAddressOverrideImport\CsvReader;
 
 /**
  * Streams the GHTK mapping sample CSV.

@@ -1,0 +1,87 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+declare(strict_types=1);
+
+/** @var \Secomm\Ghn\Block\Adminhtml\Shipment\PackageInformation $block */
+/** @var \Secomm\Ghn\ViewModel\PackageInformation $viewModel */
+$viewModel = $block->getViewModel();
+if (!$viewModel->shouldRender()) {
+    return;
+}
+$defaults = $viewModel->getDefaultDimensions();
+$limits = $viewModel->getLimits();
+$unit = $viewModel->getWeightUnitLabel();
+?>
+<div class="admin__field" id="secomm_ghn_package_information"
+     data-max-weight-g="<?= (int) $limits['maxWeightG'] ?>"
+     data-max-length-cm="<?= (int) $limits['maxLengthCm'] ?>"
+     data-max-width-cm="<?= (int) $limits['maxWidthCm'] ?>"
+     data-max-height-cm="<?= (int) $limits['maxHeightCm'] ?>">
+    <div class="admin__field-label" style="font-weight: bold;">
+        <?= $block->escapeHtml(__('Package Information')) ?>
+    </div>
+    <p class="note"><?= $block->escapeHtml(__(
+        'Real packages handed to GHN. 1 package under 20 kg ships as a light parcel; '
+        . 'heavier or multiple packages ship as heavy items.'
+    )) ?></p>
+    <p class="note">
+        <?= $block->escapeHtml(__('GHN limits per package: max %1 g, max %2 cm per side.',
+            (string) $limits['maxWeightG'],
+            (string) $limits['maxLengthCm'])) ?>
+    </p>
+    <div id="secomm_ghn_package_rows">
+        <div class="admin__field secomm-ghn-package-row" data-role="package-row">
+            <label class="admin__field-label" style="margin-right: 8px;">
+                <?= $block->escapeHtml(__('Package #1')) ?>
+            </label>
+            <label style="margin-right: 4px;"><?= $block->escapeHtml(__('Weight (%1)', $unit)) ?></label>
+            <input type="text" class="input-text admin__control-text" style="width: 90px; margin-right: 12px;"
+                   name="shipment[physical_packages][0][weight]"
+                   value="<?= $block->escapeHtmlAttr((string) $viewModel->getSuggestedWeight()) ?>"/>
+            <label style="margin-right: 4px;"><?= $block->escapeHtml(__('Length (cm)')) ?></label>
+            <input type="text" class="input-text admin__control-text" style="width: 70px; margin-right: 12px;"
+                   name="shipment[physical_packages][0][length]"
+                   value="<?= $block->escapeHtmlAttr((string) ($defaults['length'] ?: '')) ?>"/>
+            <label style="margin-right: 4px;"><?= $block->escapeHtml(__('Width (cm)')) ?></label>
+            <input type="text" class="input-text admin__control-text" style="width: 70px; margin-right: 12px;"
+                   name="shipment[physical_packages][0][width]"
+                   value="<?= $block->escapeHtmlAttr((string) ($defaults['width'] ?: '')) ?>"/>
+            <label style="margin-right: 4px;"><?= $block->escapeHtml(__('Height (cm)')) ?></label>
+            <input type="text" class="input-text admin__control-text" style="width: 70px;"
+                   name="shipment[physical_packages][0][height]"
+                   value="<?= $block->escapeHtmlAttr((string) ($defaults['height'] ?: '')) ?>"/>
+        </div>
+    </div>
+    <button type="button" id="secomm_ghn_add_package" class="action-secondary" style="margin-top: 8px;">
+        <span><?= $block->escapeHtml(__('Add Package')) ?></span>
+    </button>
+</div>
+<script>
+    require(['jquery'], function ($) {
+        'use strict';
+        var packageIndex = 0;
+        $('#secomm_ghn_add_package').on('click', function () {
+            packageIndex++;
+            var $row = $('#secomm_ghn_package_rows .secomm-ghn-package-row').first().clone();
+            $row.find('label').first().text('Package #' + (packageIndex + 1));
+            $row.find('input[name$="[weight]"]').attr(
+                'name', 'shipment[physical_packages][' + packageIndex + '][weight]'
+            ).val('');
+            $row.find('input[name$="[length]"]').attr(
+                'name', 'shipment[physical_packages][' + packageIndex + '][length]'
+            ).val('');
+            $row.find('input[name$="[width]"]').attr(
+                'name', 'shipment[physical_packages][' + packageIndex + '][width]'
+            ).val('');
+            $row.find('input[name$="[height]"]').attr(
+                'name', 'shipment[physical_packages][' + packageIndex + '][height]'
+            ).val('');
+            $('#secomm_ghn_package_rows').append($row);
+        });
+    });
+</script>

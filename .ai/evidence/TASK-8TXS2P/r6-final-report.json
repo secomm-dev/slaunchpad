@@ -1,0 +1,305 @@
+{
+  "375": {
+    "login": {
+      "view": "login",
+      "primary": {
+        "x": 24,
+        "right": 351,
+        "y": 366.8,
+        "bottom": 402.8,
+        "w": 327,
+        "h": 36
+      },
+      "secondary": {
+        "x": 34,
+        "right": 338.1,
+        "y": 418.8,
+        "bottom": 438.8,
+        "w": 304.1,
+        "h": 20
+      },
+      "gap": -317
+    },
+    "forgot": {
+      "view": "forgot",
+      "primary": {
+        "x": 57,
+        "right": 201,
+        "y": 298.8,
+        "bottom": 334.8,
+        "w": 144,
+        "h": 36
+      },
+      "secondary": {
+        "x": 213,
+        "right": 326,
+        "y": 309.8,
+        "bottom": 329.8,
+        "w": 113,
+        "h": 20
+      },
+      "gap": 12
+    },
+    "forgotErrors": [
+      {
+        "text": "Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).",
+        "bottom": 321.1,
+        "nextTop": null,
+        "nextLabel": null,
+        "overlaps": false
+      }
+    ],
+    "create": {
+      "view": "create",
+      "primary": {
+        "x": 57,
+        "right": 201,
+        "y": 598.8,
+        "bottom": 634.8,
+        "w": 144,
+        "h": 36
+      },
+      "secondary": {
+        "x": 213,
+        "right": 326,
+        "y": 609.8,
+        "bottom": 629.8,
+        "w": 113,
+        "h": 20
+      },
+      "gap": 12
+    },
+    "createErrors": [
+      {
+        "text": "Đây là một trường bắt buộc.",
+        "bottom": 255.9,
+        "nextTop": 263.9,
+        "nextLabel": "Họ",
+        "overlaps": false
+      },
+      {
+        "text": "Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).",
+        "bottom": 461.2,
+        "nextTop": 469.2,
+        "nextLabel": "Đăng ký nhận bản tin",
+        "overlaps": false
+      },
+      {
+        "text": "Vui lòng nhập 6 ký tự trở lên. Khoảng trắng ở đầu và cuối sẽ được bỏ qua.",
+        "bottom": 604.5,
+        "nextTop": 612.5,
+        "nextLabel": "Xác nhận mật khẩu",
+        "overlaps": false
+      },
+      {
+        "text": "Vui lòng nhập lại cùng một giá trị.",
+        "bottom": 710.6,
+        "nextTop": null,
+        "nextLabel": null,
+        "overlaps": false
+      }
+    ]
+  },
+  "745": {
+    "login": {
+      "view": "login",
+      "primary": {
+        "x": 85,
+        "right": 441.6,
+        "y": -63.2,
+        "bottom": -27.2,
+        "w": 356.6,
+        "h": 36
+      },
+      "secondary": {
+        "x": 95,
+        "right": 426.6,
+        "y": -1.2,
+        "bottom": 18.8,
+        "w": 331.6,
+        "h": 20
+      },
+      "gap": -346.6
+    },
+    "forgot": {
+      "view": "forgot",
+      "primary": {
+        "x": 93,
+        "right": 277.8,
+        "y": -151.2,
+        "bottom": -115.2,
+        "w": 184.8,
+        "h": 36
+      },
+      "secondary": {
+        "x": 289.8,
+        "right": 441.6,
+        "y": -140.2,
+        "bottom": -120.2,
+        "w": 151.7,
+        "h": 20
+      },
+      "gap": 12
+    },
+    "forgotErrors": [
+      {
+        "text": "Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).",
+        "bottom": -128.9,
+        "nextTop": null,
+        "nextLabel": null,
+        "overlaps": false
+      }
+    ],
+    "create": {
+      "view": "create",
+      "primary": {
+        "x": 93,
+        "right": 277.8,
+        "y": 148.8,
+        "bottom": 184.8,
+        "w": 184.8,
+        "h": 36
+      },
+      "secondary": {
+        "x": 289.8,
+        "right": 441.6,
+        "y": 159.8,
+        "bottom": 179.8,
+        "w": 151.7,
+        "h": 20
+      },
+      "gap": 12
+    },
+    "createErrors": [
+      {
+        "text": "Đây là một trường bắt buộc.",
+        "bottom": -194.1,
+        "nextTop": -186.1,
+        "nextLabel": "Họ",
+        "overlaps": false
+      },
+      {
+        "text": "Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).",
+        "bottom": 11.2,
+        "nextTop": 19.2,
+        "nextLabel": "Đăng ký nhận bản tin",
+        "overlaps": false
+      },
+      {
+        "text": "Vui lòng nhập 6 ký tự trở lên. Khoảng trắng ở đầu và cuối sẽ được bỏ qua.",
+        "bottom": 154.5,
+        "nextTop": 162.5,
+        "nextLabel": "Xác nhận mật khẩu",
+        "overlaps": false
+      },
+      {
+        "text": "Vui lòng nhập lại cùng một giá trị.",
+        "bottom": 260.6,
+        "nextTop": null,
+        "nextLabel": null,
+        "overlaps": false
+      }
+    ]
+  },
+  "1280": {
+    "login": {
+      "view": "login",
+      "primary": {
+        "x": 317,
+        "right": 435.6,
+        "y": 569.9,
+        "bottom": 605.9,
+        "w": 118.6,
+        "h": 36
+      },
+      "secondary": {
+        "x": 447.6,
+        "right": 558.8,
+        "y": 580.9,
+        "bottom": 600.9,
+        "w": 111.2,
+        "h": 20
+      },
+      "gap": 12
+    },
+    "forgot": {
+      "view": "forgot",
+      "primary": {
+        "x": 325,
+        "right": 389,
+        "y": 540.3,
+        "bottom": 576.3,
+        "w": 64,
+        "h": 36
+      },
+      "secondary": {
+        "x": 401,
+        "right": 456.6,
+        "y": 551.3,
+        "bottom": 571.3,
+        "w": 55.6,
+        "h": 20
+      },
+      "gap": 12
+    },
+    "forgotErrors": [
+      {
+        "text": "Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).",
+        "bottom": 545.4,
+        "nextTop": null,
+        "nextLabel": null,
+        "overlaps": false
+      }
+    ],
+    "create": {
+      "view": "create",
+      "primary": {
+        "x": 325,
+        "right": 461.9,
+        "y": 707.4,
+        "bottom": 743.4,
+        "w": 136.9,
+        "h": 36
+      },
+      "secondary": {
+        "x": 473.9,
+        "right": 529.5,
+        "y": 718.4,
+        "bottom": 738.4,
+        "w": 55.6,
+        "h": 20
+      },
+      "gap": 12
+    },
+    "createErrors": [
+      {
+        "text": "Đây là một trường bắt buộc.",
+        "bottom": 316.9,
+        "nextTop": 324.9,
+        "nextLabel": "Họ",
+        "overlaps": false
+      },
+      {
+        "text": "Vui lòng nhập địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com).",
+        "bottom": 505.1,
+        "nextTop": 513.1,
+        "nextLabel": "Đăng ký nhận bản tin",
+        "overlaps": false
+      },
+      {
+        "text": "Vui lòng nhập 6 ký tự trở lên. Khoảng trắng ở đầu và cuối sẽ được bỏ qua.",
+        "bottom": 648.4,
+        "nextTop": 656.4,
+        "nextLabel": "Xác nhận mật khẩu",
+        "overlaps": false
+      },
+      {
+        "text": "Vui lòng nhập lại cùng một giá trị.",
+        "bottom": 754.5,
+        "nextTop": null,
+        "nextLabel": null,
+        "overlaps": false
+      }
+    ]
+  }
+}
