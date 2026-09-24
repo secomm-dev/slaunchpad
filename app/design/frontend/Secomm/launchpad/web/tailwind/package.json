@@ -10,7 +10,9 @@
   },
   "scripts": {
     "start": "npm run watch",
-    "generate": "npx hyva-sources && npx hyva-tokens",
+    "tokens:audit": "node scripts/token-transformer.mjs --input ../../design-tokens/source --contract tokens/contract.yaml --report ../../../../../../../.ai/evidence/TASK-6V8H2P/token-audit.json --dry-run",
+    "tokens:generate": "node scripts/token-transformer.mjs --input ../../design-tokens/source --contract tokens/contract.yaml --output generated/figma-design-tokens.css",
+    "generate": "npm run tokens:generate && npx hyva-sources && npx hyva-tokens",
     "watch": "npm run generate && npx tailwindcss -i tailwind-source.css -o ../css/styles.css --watch",
     "browser-sync": "npx browser-sync start --config ./browser-sync.config.cjs",
     "build": "npm run generate && npx tailwindcss -i tailwind-source.css -o ../css/styles.css --minify",

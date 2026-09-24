@@ -1,7 +1,11 @@
 @layer base {
     :where(form label) {
-        @apply mb-2 block;
-        color: var(--color-fg-secondary);
+        display: block;
+        margin-block-end: 6px;
+        color: var(--ds-text-gray-quaternary);
+        font-size: var(--ds-type-label-m-font-size);
+        font-weight: var(--ds-type-label-m-font-weight);
+        line-height: var(--ds-type-label-m-line-height);
     }
 
     :where(form legend) {

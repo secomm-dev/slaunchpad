@@ -1,0 +1,83 @@
+{
+  "contractVersion": 1,
+  "files": [
+    "buttons/lg.tokens.json",
+    "buttons/md.tokens.json",
+    "buttons/sm.tokens.json",
+    "buttons/xl.tokens.json",
+    "colors/dark.tokens.json",
+    "colors/light.tokens.json",
+    "effects.tokens.json",
+    "olive.tokens.json",
+    "primitives.tokens.json",
+    "semantics.tokens.json",
+    "sizes.tokens.json",
+    "typography/Desktop.tokens.json",
+    "typography/Mobile.tokens.json",
+    "typography/Tablet.tokens.json"
+  ],
+  "fileCount": 14,
+  "tokenCount": 1100,
+  "productionTokenCount": 890,
+  "productionModes": {
+    "colorMode": "light",
+    "brandTheme": "olive",
+    "fontFamily": "Inter",
+    "typographyModes": [
+      "Mobile",
+      "Tablet",
+      "Desktop"
+    ],
+    "buttonModes": [
+      "sm",
+      "md",
+      "lg",
+      "xl"
+    ]
+  },
+  "excluded": {
+    "files": [
+      "colors/dark.tokens.json"
+    ],
+    "pathPrefixes": [
+      "colors/light.tokens.json:other/",
+      "buttons/sm.tokens.json:cta/",
+      "buttons/md.tokens.json:cta/",
+      "buttons/lg.tokens.json:cta/",
+      "buttons/xl.tokens.json:cta/"
+    ]
+  },
+  "jsonErrors": [],
+  "missingContractFiles": [],
+  "uncontractedFiles": [],
+  "duplicateFigmaVariableIds": [],
+  "normalizedCasingConflicts": [],
+  "nonCanonicalCasing": [
+    "buttons/lg.tokens.json:applications/Icon-Size",
+    "buttons/md.tokens.json:applications/Icon-Size",
+    "buttons/sm.tokens.json:applications/Icon-Size",
+    "buttons/xl.tokens.json:applications/Icon-Size"
+  ],
+  "invalidValues": [],
+  "suspiciousButtonCtaZeros": [
+    "buttons/lg.tokens.json:cta/alone-padding",
+    "buttons/lg.tokens.json:cta/h-padding",
+    "buttons/lg.tokens.json:cta/icon-size",
+    "buttons/lg.tokens.json:cta/radius",
+    "buttons/lg.tokens.json:cta/spacing",
+    "buttons/lg.tokens.json:cta/v-padding",
+    "buttons/xl.tokens.json:cta/alone-padding",
+    "buttons/xl.tokens.json:cta/h-padding",
+    "buttons/xl.tokens.json:cta/icon-size",
+    "buttons/xl.tokens.json:cta/radius",
+    "buttons/xl.tokens.json:cta/spacing",
+    "buttons/xl.tokens.json:cta/v-padding"
+  ],
+  "aliasResolution": {
+    "total": 436,
+    "byId": 0,
+    "byCollectionPath": 436
+  },
+  "unresolvedProductionAliases": [],
+  "generatedBytes": 54660
+}

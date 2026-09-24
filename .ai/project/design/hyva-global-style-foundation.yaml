@@ -49,34 +49,47 @@ build_commands:                # from web/tailwind/package.json
 # Do not guess these values.
 # ---------------------------------------------------------------------------
 token_source:
-  path: unresolved              # no *.tokens.json / Figma DTCG export exists in this project yet
+  path: app/design/frontend/Secomm/launchpad/design-tokens/source
 
 production_transformer:
-  path: unresolved              # theme-owned copy — deferred by task scope (no theme files copied yet)
-  version_applied: none
+  path: app/design/frontend/Secomm/launchpad/web/tailwind/scripts/token-transformer.mjs
+  version_applied: theme-owned
 
 production_contract:
-  path: unresolved              # theme-owned contract — created at first foundation run
-  schema_version: unresolved
+  path: app/design/frontend/Secomm/launchpad/web/tailwind/tokens/contract.yaml
+  schema_version: 1
 
 generated_output:
-  path: unresolved              # future design-tokens.css (distinct from generated/hyva-tokens.css)
-  manifest: unresolved
+  path: app/design/frontend/Secomm/launchpad/web/tailwind/generated/figma-design-tokens.css
+  manifest: token-audit.json evidence
 
-approved_modes:                 # requires approved design decision (evidence: none exists)
-  color: unresolved             # NOTE hyva.config.json currently defines --color-primary/secondary
-  brand: unresolved             # from a single inline token set — no Figma mode model exists
-  font: unresolved
+approved_modes:
+  color: light
+  brand: olive
+  font: Inter
 
 typography:
-  breakpoint_token: unresolved  # design decision; no responsive token scale exists yet
-  note: no custom font/typography rules in the child theme — inherits Hyva/default
+  breakpoint_token: "Mobile base; Tablet 768px; Desktop 1280px"
+  note: generated responsive semantic typography with self-hosted Inter
 
-validation_pages: unresolved    # no representative-page decision recorded
+validation_pages: [/, /customer-service, /customer/account/login/, /customer/account/create/, /living-room, /atlas-pouf, /checkout/cart/, /checkout/]
 
 figma:
-  file_id: unresolved
-  foundations_node: unresolved
-  master_components_nodes: unresolved
+  file_id: 5MpBw9VaNgFdct3UDWABuV
+  foundations_node: "5:11305"
+  master_components_nodes: ["2410:25885", "2410:14322", "2174:30745", "2174:32588"]
+
+custom_icons:
+  status: audited_workflow_ready
+  library_node: "5:28677"
+  fill_collection_node: "2001:10644"
+  outline_collection_node: "2001:13718"
+  workflow: .ai/guides/HYVA_CUSTOM_ICON_WORKFLOW.md
+  evidence: .ai/evidence/TASK-6V8H2P/icon-foundation-audit.md
+  policy: on_demand_per_component
+  asset_path: app/design/frontend/Secomm/launchpad/Hyva_Theme/web/svg/{style}/{semantic-name}.svg
+  optical_variant_path: app/design/frontend/Secomm/launchpad/Hyva_Theme/web/svg/{style}/{semantic-name}-{size}.svg
+  renderer: Hyva\\Theme\\ViewModel\\SvgIcons
+  bulk_export: false
 
 audit_rule_overrides: []        # none — no project-specific audit rules yet (contract-level concern once tokens exist)

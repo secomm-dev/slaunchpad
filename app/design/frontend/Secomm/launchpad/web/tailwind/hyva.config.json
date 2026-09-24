@@ -19,10 +19,12 @@
   "tokens": {
     "values": {
       "color": {
-        "primary": "oklch(46% 0.2 265)",
-        "secondary": "oklch(53% 0.15 150)",
-        "on-primary": "#fff",
-        "on-secondary": "#fff"
+        "primary": "var(--ds-bg-brand-solid-primary)",
+        "primary-lighter": "var(--ds-bg-brand-solid-tertiary)",
+        "primary-darker": "var(--ds-bg-brand-solid-quinary)",
+        "secondary": "var(--ds-bg-brand-solid-secondary)",
+        "on-primary": "var(--ds-text-white)",
+        "on-secondary": "var(--ds-text-brand-primary)"
       }
     }
   }

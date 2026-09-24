@@ -1,14 +1,159 @@
 @utility form-input-field {
-    --outline-size: 1px;
+    --outline-size: 0;
     --outline-offset: 0px;
+    box-sizing: border-box;
+    block-size: 44px;
+    min-block-size: 44px;
+    font-size: var(--ds-type-body-2-font-size);
+    font-weight: var(--ds-type-body-2-font-weight);
+    line-height: var(--ds-type-body-2-line-height);
+
+    &:is(textarea) {
+        block-size: auto;
+        min-block-size: var(--form-textarea-min-height);
+    }
+
+    &::placeholder {
+        color: var(--ds-text-gray-quaternary);
+        opacity: 1;
+    }
+
+    &:hover:not(:disabled, :focus, :focus-visible) {
+        border-color: var(--ds-border-brand-secondary);
+    }
+
+    &:active:not(:disabled, [readonly]) {
+        border-color: var(--ds-border-brand-primary);
+    }
+
+    &:focus,
+    &:focus-visible {
+        border-color: var(--ds-border-brand-primary);
+        outline: none;
+        box-shadow: 0 0 0 4px var(--ds-effects-focus-ring-primary);
+    }
+
+    &:disabled,
+    &[readonly] {
+        border-color: var(--ds-border-gray-secondary);
+        background-color: var(--ds-bg-gray-soft-secondary);
+        color: var(--ds-text-gray-quinary);
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    &[readonly] {
+        cursor: default;
+    }
+
+    &:not(:placeholder-shown):not(:disabled) {
+        color: var(--ds-text-gray-primary);
+    }
+
+    &[aria-invalid="true"],
+    &.mage-error {
+        border-color: var(--ds-border-error-primary);
+    }
 }
 
 @utility form-input-control {
-    block-size: --spacing(4.5);
-    inline-size: --spacing(4.5);
+    block-size: 20px;
+    inline-size: 20px;
+    border-width: 1px;
+    border-color: var(--ds-border-gray-primary);
+    background-color: var(--ds-bg-white);
+
+    &:hover:not(:disabled) {
+        border-color: var(--ds-primary-brand-500);
+        background-color: var(--ds-primary-brand-50);
+    }
+
+    &:focus,
+    &:focus-visible {
+        border-color: var(--ds-primary-brand-600);
+        outline: none;
+        box-shadow: 0 0 0 4px var(--ds-effects-focus-ring-primary);
+    }
+
+    &:checked {
+        border-color: transparent;
+        background-color: var(--ds-primary-brand-600);
+    }
+
+    &:checked:hover:not(:disabled) {
+        background-color: var(--ds-primary-brand-700);
+    }
+
+    &:disabled {
+        border-color: var(--ds-text-gray-quinary);
+        background-color: var(--ds-bg-white);
+        opacity: .7;
+    }
+
+    &:disabled:checked {
+        border-color: transparent;
+        background-color: var(--ds-text-gray-quinary);
+    }
+}
+
+@utility form-control-s {
+    block-size: 16px;
+    inline-size: 16px;
+}
+
+@utility form-control-m {
+    block-size: 20px;
+    inline-size: 20px;
+}
+
+@utility form-control-l {
+    block-size: 24px;
+    inline-size: 24px;
 }
 
 @layer base {
+    :where(form label) {
+        margin-block-end: 6px;
+        color: var(--ds-text-gray-quaternary);
+        font-size: var(--ds-type-label-m-font-size);
+        font-weight: var(--ds-type-label-m-font-weight);
+        line-height: var(--ds-type-label-m-line-height);
+    }
+
+    :where(.field .note, .field .mage-error, .field .messages) {
+        margin-block-start: 6px;
+        font-size: var(--ds-type-body-3-font-size);
+        line-height: var(--ds-type-body-3-line-height);
+    }
+
+    :where(.field .note) {
+        color: var(--ds-text-gray-quaternary);
+    }
+
+    :where(.field .mage-error, .field-error .messages) {
+        color: var(--ds-text-error-primary);
+    }
+
+    :where(.field[data-feedback="warning"] :is(.form-input, .form-textarea, .form-select)) {
+        border-color: var(--ds-border-warning);
+    }
+
+    :where(.field[data-feedback="warning"] .note) {
+        color: var(--ds-text-warning);
+    }
+
+    :where(.field[data-feedback="success"] :is(.form-input, .form-textarea, .form-select)) {
+        border-color: var(--ds-border-success);
+    }
+
+    :where(.field[data-feedback="success"] .note) {
+        color: var(--ds-text-success);
+    }
+
+    :where(.field[data-feedback] :is(.form-input, .form-textarea, .form-select):focus-visible) {
+        box-shadow: 0 0 0 4px var(--ds-effects-focus-ring-primary);
+    }
+
     [type="checkbox"][role="switch"] {
         --switch-width: --spacing(9);
         --switch-height: --spacing(5);
@@ -74,13 +219,15 @@
 
         &.choice {
             @apply flex items-center;
+            min-block-size: 44px;
+            gap: 8px;
 
             label {
                 @apply mb-0;
             }
 
             input {
-                @apply mr-3;
+                margin: 0;
             }
         }
 

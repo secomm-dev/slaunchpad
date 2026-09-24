@@ -4,9 +4,11 @@
  */
 
 @theme {
-	--color-primary: oklch(46% 0.2 265);
-	--color-secondary: oklch(53% 0.15 150);
-	--color-on-primary: #fff;
-	--color-on-secondary: #fff;
+	--color-primary: var(--ds-bg-brand-solid-primary);
+	--color-primary-lighter: var(--ds-bg-brand-solid-tertiary);
+	--color-primary-darker: var(--ds-bg-brand-solid-quinary);
+	--color-secondary: var(--ds-bg-brand-solid-secondary);
+	--color-on-primary: var(--ds-text-white);
+	--color-on-secondary: var(--ds-text-brand-primary);
 
 }

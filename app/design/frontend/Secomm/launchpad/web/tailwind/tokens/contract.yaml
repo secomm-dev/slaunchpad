@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "source": "../../design-tokens/source",
+  "production": {
+    "colorMode": "light",
+    "brandTheme": "olive",
+    "fontFamily": "Inter",
+    "typographyModes": ["Mobile", "Tablet", "Desktop"],
+    "buttonModes": ["sm", "md", "lg", "xl"]
+  },
+  "collections": [
+    { "files": ["primitives.tokens.json"], "figmaName": "1. primitives", "layer": "primitive" },
+    { "files": ["semantics.tokens.json"], "figmaName": "2. semantics", "layer": "semantic" },
+    { "files": ["colors/light.tokens.json"], "figmaName": "3. Color", "layer": "color-mode" },
+    { "files": ["olive.tokens.json"], "figmaName": "4. theme", "layer": "brand" },
+    { "files": ["sizes.tokens.json"], "figmaName": "6. sizes", "layer": "size" },
+    { "files": ["effects.tokens.json"], "figmaName": "6. effects", "layer": "effect" },
+    { "files": ["typography/Mobile.tokens.json", "typography/Tablet.tokens.json", "typography/Desktop.tokens.json"], "figmaName": "7. typography", "layer": "typography" },
+    { "files": ["buttons/sm.tokens.json", "buttons/md.tokens.json", "buttons/lg.tokens.json", "buttons/xl.tokens.json"], "figmaName": "8. buttons", "layer": "button" }
+  ],
+  "excluded": {
+    "files": ["colors/dark.tokens.json"],
+    "pathPrefixes": [
+      "colors/light.tokens.json:other/",
+      "buttons/sm.tokens.json:cta/",
+      "buttons/md.tokens.json:cta/",
+      "buttons/lg.tokens.json:cta/",
+      "buttons/xl.tokens.json:cta/"
+    ]
+  },
+  "breakpoints": {
+    "tablet": "768px",
+    "desktop": "1280px"
+  },
+  "container": {
+    "maxWidth": "1360px",
+    "gutters": { "mobile": "8px", "tablet": "24px", "desktop": "40px" }
+  },
+  "accessibility": {
+    "minimumTouchTarget": "44px",
+    "smallButtonStrategy": "preserve-visual-size-expand-hit-area"
+  }
+}
