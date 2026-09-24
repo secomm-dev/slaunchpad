@@ -19,6 +19,9 @@
 @source "../../**/*.phtml";
 @source "../../**/*.xml";
 
+/* Generated from the immutable Figma Variables export. */
+@import "./generated/figma-design-tokens.css";
+
 /* Custom styles */
 @import "./base";
 @import "./components";
@@ -31,10 +34,82 @@
 @import "./generated/hyva-tokens.css";
 
 @theme {
-    --color-ink: var(--color-slate-950);
-    --color-ink-muted: var(--color-slate-600);
-    --color-fg: var(--color-ink);
-    --color-fg-secondary: var(--color-ink-muted);
-    --color-bg: var(--color-slate-50);
-    --color-surface: var(--color-white);
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+    --color-ink: var(--ds-text-gray-primary);
+    --color-ink-muted: var(--ds-text-gray-tertiary);
+    --color-fg: var(--ds-text-gray-primary);
+    --color-fg-secondary: var(--ds-text-gray-secondary);
+    --color-fg-tertiary: var(--ds-text-gray-tertiary);
+    --color-bg: var(--ds-bg-gray-soft-primary);
+    --color-surface: var(--ds-bg-white);
+    --color-border: var(--ds-border-gray-primary);
+    --color-border-subtle: var(--ds-border-gray-secondary);
+    --color-error: var(--ds-text-error-primary);
+    --color-warning: var(--ds-text-warning);
+    --color-success: var(--ds-text-success);
+    --color-focus: var(--ds-effects-focus-ring-primary);
+
+    --form-py: 10px;
+    --form-px: 14px;
+    --form-textarea-min-height: var(--ds-global-sizes-40);
+    --form-radius: 6px;
+    --form-stroke: var(--ds-border-gray-primary);
+    --form-bg: var(--ds-bg-white);
+    --form-color: var(--ds-text-gray-primary);
+    --form-active-color: var(--ds-border-brand-primary);
+
+    --radius-xs: var(--ds-size-radius-xs);
+    --radius-sm: var(--ds-size-radius-sm);
+    --radius-md: var(--ds-size-radius-md);
+    --radius-lg: var(--ds-size-radius-lg);
+    --radius-xl: var(--ds-size-radius-xl);
+    --radius-2xl: var(--ds-size-radius-2xl);
+    --radius-3xl: var(--ds-size-radius-3xl);
+    --radius-4xl: var(--ds-size-radius-4xl);
+    --radius-5xl: var(--ds-size-radius-5xl);
+    --radius-full: var(--ds-size-radius-full);
+
+    --shadow-xs: var(--ds-effect-shadow-xs-primary-x) var(--ds-effect-shadow-xs-primary-y) var(--ds-effect-shadow-xs-primary-blur) var(--ds-effect-shadow-xs-primary-spread) var(--ds-effects-shadows-xs-primary);
+    --shadow-sm: var(--ds-effect-shadow-sm-primary-x) var(--ds-effect-shadow-sm-primary-y) var(--ds-effect-shadow-sm-primary-blur) var(--ds-effect-shadow-sm-primary-spread) var(--ds-effects-shadows-sm-primary), var(--ds-effect-shadow-sm-secondary-x) var(--ds-effect-shadow-sm-secondary-y) var(--ds-effect-shadow-sm-secondary-blur) var(--ds-effect-shadow-sm-secondary-spread) var(--ds-effects-shadows-sm-secondary);
+    --shadow-md: var(--ds-effect-shadow-md-primary-x) var(--ds-effect-shadow-md-primary-y) var(--ds-effect-shadow-md-primary-blur) var(--ds-effect-shadow-md-primary-spread) var(--ds-effects-shadows-md-primary), var(--ds-effect-shadow-md-secondary-x) var(--ds-effect-shadow-md-secondary-y) var(--ds-effect-shadow-md-secondary-blur) var(--ds-effect-shadow-md-secondary-spread) var(--ds-effects-shadows-md-secondary);
+    --shadow-lg: var(--ds-effect-shadow-lg-primary-x) var(--ds-effect-shadow-lg-primary-y) var(--ds-effect-shadow-lg-primary-blur) var(--ds-effect-shadow-lg-primary-spread) var(--ds-effects-shadows-lg-primary), var(--ds-effect-shadow-lg-secondary-x) var(--ds-effect-shadow-lg-secondary-y) var(--ds-effect-shadow-lg-secondary-blur) var(--ds-effect-shadow-lg-secondary-spread) var(--ds-effects-shadows-lg-secondary), var(--ds-effect-shadow-lg-tertiary-x) var(--ds-effect-shadow-lg-tertiary-y) var(--ds-effect-shadow-lg-tertiary-blur) var(--ds-effect-shadow-lg-tertiary-spread) var(--ds-effects-shadows-lg-tertiary);
+    --shadow-xl: var(--ds-effect-shadow-xl-primary-x) var(--ds-effect-shadow-xl-primary-y) var(--ds-effect-shadow-xl-primary-blur) var(--ds-effect-shadow-xl-primary-spread) var(--ds-effects-shadows-xl-primary), var(--ds-effect-shadow-xl-secondary-x) var(--ds-effect-shadow-xl-secondary-y) var(--ds-effect-shadow-xl-secondary-blur) var(--ds-effect-shadow-xl-secondary-spread) var(--ds-effects-shadows-xl-secondary), var(--ds-effect-shadow-xl-tertiary-x) var(--ds-effect-shadow-xl-tertiary-y) var(--ds-effect-shadow-xl-tertiary-blur) var(--ds-effect-shadow-xl-tertiary-spread) var(--ds-effects-shadows-xl-tertiary);
+    --shadow-2xl: var(--ds-effect-shadow-2xl-primary-x) var(--ds-effect-shadow-2xl-primary-y) var(--ds-effect-shadow-2xl-primary-blur) var(--ds-effect-shadow-2xl-primary-spread) var(--ds-effects-shadows-2xl-primary), var(--ds-effect-shadow-2xl-secondary-x) var(--ds-effect-shadow-2xl-secondary-y) var(--ds-effect-shadow-2xl-secondary-blur) var(--ds-effect-shadow-2xl-secondary-spread) var(--ds-effects-shadows-2xl-secondary);
+
+    --text-display: var(--ds-type-display-font-size);
+    --text-display--line-height: var(--ds-type-display-line-height);
+    --text-display--letter-spacing: var(--ds-type-display-letter-spacing);
+    --text-heading-1: var(--ds-type-heading-1-font-size);
+    --text-heading-1--line-height: var(--ds-type-heading-1-line-height);
+    --text-heading-1--letter-spacing: var(--ds-type-heading-1-letter-spacing);
+    --text-heading-2: var(--ds-type-heading-2-font-size);
+    --text-heading-2--line-height: var(--ds-type-heading-2-line-height);
+    --text-heading-2--letter-spacing: var(--ds-type-heading-2-letter-spacing);
+    --text-heading-3: var(--ds-type-heading-3-font-size);
+    --text-heading-3--line-height: var(--ds-type-heading-3-line-height);
+    --text-heading-4: var(--ds-type-heading-4-font-size);
+    --text-heading-4--line-height: var(--ds-type-heading-4-line-height);
+    --text-heading-5: var(--ds-type-heading-5-font-size);
+    --text-heading-5--line-height: var(--ds-type-heading-5-line-height);
+    --text-heading-6: var(--ds-type-heading-6-font-size);
+    --text-heading-6--line-height: var(--ds-type-heading-6-line-height);
+    --text-body-1: var(--ds-type-body-1-font-size);
+    --text-body-1--line-height: var(--ds-type-body-1-line-height);
+    --text-body-2: var(--ds-type-body-2-font-size);
+    --text-body-2--line-height: var(--ds-type-body-2-line-height);
+    --text-body-3: var(--ds-type-body-3-font-size);
+    --text-body-3--line-height: var(--ds-type-body-3-line-height);
+    --text-label-xl: var(--ds-type-label-xl-font-size);
+    --text-label-xl--line-height: var(--ds-type-label-xl-line-height);
+    --text-label-l: var(--ds-type-label-l-font-size);
+    --text-label-l--line-height: var(--ds-type-label-l-line-height);
+    --text-label-m: var(--ds-type-label-m-font-size);
+    --text-label-m--line-height: var(--ds-type-label-m-line-height);
+    --text-label-s: var(--ds-type-label-s-font-size);
+    --text-label-s--line-height: var(--ds-type-label-s-line-height);
+    --text-caption: var(--ds-type-caption-font-size);
+    --text-caption--line-height: var(--ds-type-caption-line-height);
+    --text-overline: var(--ds-type-overline-font-size);
+    --text-overline--line-height: var(--ds-type-overline-line-height);
 }

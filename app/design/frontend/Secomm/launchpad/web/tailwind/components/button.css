@@ -1,88 +1,236 @@
 /**
- * Button styles for Hyva theme
- * This file contains component class for buttons with different styles and sizes.
- *
- * Please avoid using `@apply` for the button styles to ensure compatibly for future versions.
- * Instead, use the component class directly in your HTML.
- * The `@utility` directive is used, for backwards compatibility, to define button styles.
+ * Launchpad Button foundation.
+ * Canonical Figma sources: Button 2410:25972 and Base Button 2410:26973.
  */
 
 @utility btn {
-    --btn-stroke: #0000;
-    --btn-bg: color-mix(in srgb, var(--color-primary) 10%, #0000);
-    --btn-hover-bg: color-mix(in srgb, var(--color-primary) 20%, #0000);
-    --btn-active-bg: color-mix(in srgb, var(--color-primary) 30%, #0000);
-    --btn-color: var(--color-fg);
+    --btn-height: 36px;
+    --btn-padding-x: 16px;
+    --btn-padding-y: 8px;
+    --btn-gap: 6px;
+    --btn-icon-size: 16px;
+    --btn-radius: 6px;
+    --btn-font-size: var(--ds-type-label-m-font-size);
+    --btn-line-height: var(--ds-type-label-m-line-height);
+    --btn-font-weight: var(--ds-type-label-m-font-weight);
+    --btn-letter-spacing: var(--ds-type-label-m-letter-spacing);
+    --btn-bg: var(--ds-bg-brand-soft-primary);
+    --btn-color: var(--ds-text-gray-primary);
+    --btn-shadow: inset 0 0 0 0 transparent;
+    --btn-design-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -2px rgb(0 0 0 / .05);
+    --btn-design-shadow-base: 0 1px 3px rgb(0 0 0 / .1), 0 1px 2px rgb(0 0 0 / .06);
+    position: relative;
     display: inline-flex;
-    justify-content: center;
+    height: var(--btn-height);
     align-items: center;
-    gap: --spacing(1.5);
-    padding-block: --spacing(2);
-    padding-inline: --spacing(4);
-    border-radius: var(--radius-lg);
-    border-width: 2px;
-    border-color: var(--btn-stroke);
+    justify-content: center;
+    gap: var(--btn-gap);
+    padding: var(--btn-padding-y) var(--btn-padding-x);
+    overflow: visible;
+    border: 0;
+    border-radius: var(--btn-radius);
     background-color: var(--btn-bg);
+    box-shadow: var(--btn-shadow);
     color: var(--btn-color);
-    font-weight: 500;
+    font-family: var(--font-sans);
+    font-size: var(--btn-font-size);
+    font-weight: var(--btn-font-weight);
+    line-height: var(--btn-line-height);
+    letter-spacing: var(--btn-letter-spacing);
+    text-decoration: none;
+    white-space: nowrap;
     user-select: none;
     vertical-align: middle;
-    transition-property: color, background-color, border-color, outline-color;
-    transition-timing-function: var(--default-transition-timing-function);
+    transition-property: color, background-color, box-shadow, opacity;
     transition-duration: var(--default-transition-duration);
+    transition-timing-function: var(--default-transition-timing-function);
+
+    &::after {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: max(100%, 44px);
+        height: max(100%, 44px);
+        content: "";
+        transform: translate(-50%, -50%);
+    }
 
     &:hover {
-        border-color: var(--btn-hover-stroke, var(--btn-stroke));
-        background-color: var(--btn-hover-bg, var(--btn-bg));
-        color: var(--btn-hover-color, var(--btn-color));
+        --btn-bg: var(--btn-hover-bg, var(--btn-bg));
+        --btn-color: var(--btn-hover-color, var(--btn-color));
+        --btn-shadow: var(--btn-hover-shadow, var(--btn-design-shadow-lg));
         text-decoration: none;
     }
 
+    &:focus { outline: none; }
+
+    &:focus-visible {
+        --btn-bg: var(--btn-focus-bg, var(--btn-bg));
+        --btn-color: var(--btn-focus-color, var(--btn-color));
+        --btn-shadow: 0 0 0 4px var(--ds-effects-focus-ring-primary);
+    }
+
     &:is(:active, .is-active, [aria-current="page"], [aria-current="true"]) {
-        border-color: var(--btn-active-stroke, var(--btn-stroke));
-        background-color: var(--btn-active-bg, var(--btn-bg));
-        color: var(--btn-active-color, var(--btn-color));
+        --btn-bg: var(--btn-active-bg, var(--btn-bg));
+        --btn-color: var(--btn-active-color, var(--btn-color));
+        --btn-shadow: var(--btn-active-shadow, var(--btn-design-shadow-base));
     }
 
     &:is(:disabled, [aria-disabled="true"]) {
-        border-color: var(--btn-disabled-stroke, var(--color-gray-200));
-        background-color: var(--btn-disabled-bg, var(--color-gray-50));
-        color: var(--btn-disabled-color, var(--color-gray-500));
+        --btn-bg: var(--btn-disabled-bg, var(--ds-bg-gray-soft-quaternary));
+        --btn-color: var(--btn-disabled-color, var(--ds-text-gray-quinary));
+        --btn-shadow: inset 0 0 0 0 transparent;
+        cursor: not-allowed;
+        opacity: .7;
+        pointer-events: none;
+    }
+
+    & > :is(svg, img) {
+        width: var(--btn-icon-size);
+        height: var(--btn-icon-size);
+        flex: none;
     }
 }
 
 @utility btn-primary {
-    --btn-stroke: #0000;
-    --btn-bg: var(--color-primary);
-    --btn-color: var(--color-on-primary);
-
-    --btn-hover-stroke: #0000;
-    --btn-hover-bg: var(--color-primary-lighter);
-    --btn-hover-color: var(--color-on-primary);
-
-    --btn-active-stroke: #0000;
-    --btn-active-bg: var(--color-primary);
-    --btn-active-color: var(--color-on-primary);
+    --btn-bg: var(--ds-primary-brand-600);
+    --btn-color: var(--ds-text-white);
+    --btn-hover-bg: var(--ds-primary-brand-700);
+    --btn-hover-color: var(--ds-text-white);
+    --btn-focus-bg: var(--ds-primary-brand-600);
+    --btn-focus-color: var(--ds-text-white);
+    --btn-active-bg: var(--ds-primary-brand-700);
+    --btn-active-color: var(--ds-text-white);
+    --btn-disabled-bg: var(--ds-bg-gray-soft-quaternary);
+    --btn-disabled-color: var(--ds-text-gray-quinary);
 }
 
 @utility btn-secondary {
-    --btn-stroke: var(--color-primary-lighter);
-    --btn-bg: var(--color-on-primary);
-    --btn-color: var(--color-primary-darker);
+    --btn-bg: var(--ds-primary-brand-200);
+    --btn-color: var(--ds-primary-brand-800);
+    --btn-hover-bg: var(--ds-primary-brand-300);
+    --btn-hover-color: var(--ds-primary-brand-800);
+    --btn-focus-bg: var(--ds-primary-brand-200);
+    --btn-focus-color: var(--ds-primary-brand-800);
+    --btn-active-bg: var(--ds-primary-brand-300);
+    --btn-active-color: var(--ds-primary-brand-800);
+    --btn-disabled-bg: var(--ds-bg-gray-soft-tertiary);
+    --btn-disabled-color: var(--ds-text-gray-quaternary);
+}
 
-    --btn-hover-stroke: var(--color-primary-lighter);
-    --btn-hover-bg: var(--color-on-primary);
-    --btn-hover-color: var(--color-primary-lighter);
+@utility btn-tertiary {
+    --btn-bg: var(--ds-bg-white-transparent);
+    --btn-color: var(--ds-primary-brand-700);
+    --btn-shadow: inset 0 0 0 1px var(--ds-primary-brand-400);
+    --btn-hover-bg: var(--ds-bg-white-transparent);
+    --btn-hover-color: var(--ds-primary-brand-700);
+    --btn-hover-shadow: inset 0 0 0 1px var(--ds-primary-brand-400), var(--btn-design-shadow-lg);
+    --btn-focus-bg: var(--ds-bg-white-transparent);
+    --btn-focus-color: var(--ds-primary-brand-700);
+    --btn-active-bg: var(--ds-bg-white-transparent);
+    --btn-active-color: var(--ds-primary-brand-700);
+    --btn-active-shadow: inset 0 0 0 1px var(--ds-primary-brand-400), var(--btn-design-shadow-base);
+    --btn-disabled-bg: var(--ds-bg-white-transparent);
+    --btn-disabled-color: var(--ds-text-gray-quinary);
 
-    --btn-active-stroke: #0000;
-    --btn-active-bg: var(--color-primary);
-    --btn-active-color: var(--color-on-primary);
+    &:focus-visible {
+        --btn-shadow: inset 0 0 0 1px var(--ds-primary-brand-400), 0 0 0 4px var(--ds-effects-focus-ring-primary);
+    }
+
+    &:is(:disabled, [aria-disabled="true"]) {
+        --btn-shadow: inset 0 0 0 1px var(--ds-bg-gray-soft-tertiary);
+    }
+}
+
+@utility btn-transparent {
+    --btn-bg: var(--ds-bg-white-transparent);
+    --btn-color: var(--ds-primary-brand-700);
+    --btn-hover-bg: var(--ds-bg-white-transparent);
+    --btn-hover-color: var(--ds-primary-brand-800);
+    --btn-hover-shadow: inset 0 0 0 2px var(--ds-primary-brand-100);
+    --btn-focus-bg: var(--ds-bg-white-transparent);
+    --btn-focus-color: var(--ds-primary-brand-700);
+    --btn-active-bg: var(--ds-bg-white-transparent);
+    --btn-active-color: var(--ds-primary-brand-800);
+    --btn-active-shadow: inset 0 0 0 2px var(--ds-primary-brand-500);
+    --btn-disabled-bg: var(--ds-bg-white-transparent);
+    --btn-disabled-color: var(--ds-text-gray-quinary);
+}
+
+@utility btn-size-s {
+    --btn-height: 36px;
+    --btn-padding-x: 16px;
+    --btn-padding-y: 8px;
+    --btn-icon-size: 16px;
+    --btn-font-size: var(--ds-type-label-m-font-size);
+    --btn-line-height: var(--ds-type-label-m-line-height);
+}
+
+@utility btn-size-m {
+    --btn-height: 40px;
+    --btn-padding-x: 20px;
+    --btn-padding-y: 10px;
+    --btn-icon-size: 16px;
+    --btn-font-size: var(--ds-type-label-m-font-size);
+    --btn-line-height: var(--ds-type-label-m-line-height);
+}
+
+@utility btn-size-l {
+    --btn-height: 44px;
+    --btn-padding-x: 20px;
+    --btn-padding-y: 10px;
+    --btn-icon-size: 16px;
+    --btn-font-size: var(--ds-type-label-l-font-size);
+    --btn-line-height: var(--ds-type-label-l-line-height);
+}
+
+@utility btn-size-xl {
+    --btn-height: 48px;
+    --btn-padding-x: 24px;
+    --btn-padding-y: 12px;
+    --btn-icon-size: 16px;
+    --btn-font-size: var(--ds-type-label-l-font-size);
+    --btn-line-height: var(--ds-type-label-l-line-height);
+}
+
+@utility btn-size-2xl {
+    --btn-height: 60px;
+    --btn-padding-x: 32px;
+    --btn-padding-y: 16px;
+    --btn-icon-size: 24px;
+    --btn-font-size: var(--ds-type-label-xl-font-size);
+    --btn-line-height: var(--ds-type-label-xl-line-height);
+}
+
+@utility btn-icon-leading { padding-inline-start: calc(var(--btn-padding-x) - 2px); }
+@utility btn-icon-trailing { padding-inline-end: calc(var(--btn-padding-x) - 2px); }
+
+@utility btn-icon-only {
+    width: var(--btn-height);
+    padding: 0;
+}
+
+@utility btn-icon-round {
+    width: var(--btn-height);
+    padding: 0;
+    border-radius: var(--radius-full);
+}
+
+/* Backwards-compatible aliases used by existing Hyva templates. */
+.btn-size-sm {
+    --btn-height: 36px;
+    --btn-padding-x: 16px;
+    --btn-padding-y: 8px;
+    --btn-icon-size: 16px;
+    --btn-font-size: var(--ds-type-label-m-font-size);
+    --btn-line-height: var(--ds-type-label-m-line-height);
 }
 
 .btn-size-lg {
-    @apply px-10 py-4 text-lg;
-}
-
-.btn-size-sm {
-    @apply px-2 py-2 text-sm;
+    --btn-height: 48px;
+    --btn-padding-x: 24px;
+    --btn-padding-y: 12px;
+    --btn-icon-size: 16px;
+    --btn-font-size: var(--ds-type-label-l-font-size);
+    --btn-line-height: var(--ds-type-label-l-line-height);
 }

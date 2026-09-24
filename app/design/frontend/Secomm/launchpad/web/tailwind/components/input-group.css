@@ -21,8 +21,8 @@
 
         &:focus-within {
             --form-stroke: var(--form-active-color);
-            outline: var(--outline-size, 1px) solid var(--form-active-color);
-            outline-offset: var(--outline-offset, 0px);
+            outline: none;
+            box-shadow: 0 0 0 4px var(--ds-effects-focus-ring-primary);
         }
 
         & > * {

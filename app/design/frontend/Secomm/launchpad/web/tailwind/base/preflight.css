@@ -2,7 +2,7 @@
 
 @layer base {
     :where(:focus-visible) {
-        outline: var(--outline-size, 2px) solid var(--color-primary);
+        outline: var(--outline-size, 2px) solid var(--color-focus);
         outline-offset: var(--outline-offset, 2px);
     }
 
@@ -35,6 +35,26 @@
 
     body {
         min-block-size: 100%;
+    }
+
+    :where(a) {
+        color: inherit;
+        text-underline-offset: 0.2em;
+    }
+
+    :where(a:hover) {
+        color: var(--ds-text-brand-primary);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+        }
     }
 
     /* Prevent touch delay on touch devices */
