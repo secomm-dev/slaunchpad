@@ -1,0 +1,25 @@
+# BUG-F8R4E8 — Command output excerpts (2026-09-22)
+
+## JS syntax check (host, final venue files)
+
+$ node --check app/code/Launchpad/Osc/view/frontend/web/js/model/shipping-rate-service-mixin.js
+$ node --check app/code/Launchpad/Osc/view/frontend/requirejs-config.js
+JS OK
+
+## Revert of interim Ahamove venue (user decision: wrong module ownership)
+
+$ git checkout HEAD -- app/code/Secomm/Ahamove/CHANGELOG.md app/code/Secomm/Ahamove/view/frontend/web/js/model/shipping-rate-processor/new-address-mixins.js
+$ git status --porcelain app/code/Secomm/Ahamove/
+ M app/code/Secomm/Ahamove/Model/Carrier/AhamoveAbstractCarrier.php            <- pre-existing user WIP, untouched
+ M app/code/Secomm/Ahamove/Model/Carrier/ShippingMethod/AhamoveShippingMethod.php  <- pre-existing user WIP, untouched
+
+## Cache flush (new requirejs-config needs aggregation rebuild)
+
+$ docker exec launchpad-docker-phpfpm-1 bash -lc "cd /var/www/html && rm -rf var/view_preprocessed && bin/magento cache:flush"
+Flushed cache types: config, layout, block_html, collections, reflection, db_ddl,
+compiled_config, eav, customer_notification, config_integration,
+config_integration_api, graphql_query_resolver_result, full_page, config_webservice
+
+## Pending
+
+AC-001/AC-002 browser verification (DevTools Network, logged-in customer with cart) — not yet executed.

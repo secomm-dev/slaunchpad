@@ -430,7 +430,7 @@ define([
 
         bindRegionChange: function (customCitySelect) {
             let self = this;
-            $(document).on('change', REGION_SELECTOR, function () {
+            $(document).off('change.secommRegion').on('change.secommRegion', REGION_SELECTOR, function () {
                 self.clearRateCache();
                 let currentCountryId = self.getCountryId();
                 if (self.lastCountryId === 'VN' && currentCountryId !== 'VN') {
@@ -630,7 +630,7 @@ define([
 
         shippingValidate: function () {
             var self = this;
-            $(document).on("click", "#shipping-method-buttons-container .continue, .new-shipping-address-modal .action-save-address", function (event) {
+            $(document).off('click.secommValidate').on('click.secommValidate', "#shipping-method-buttons-container .continue, .new-shipping-address-modal .action-save-address", function (event) {
                 self.triggerValidCity();
                 if ($(CITY_ERROR).is(':visible')) {
                     event.preventDefault();
