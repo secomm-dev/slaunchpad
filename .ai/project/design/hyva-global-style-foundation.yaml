@@ -77,7 +77,7 @@ validation_pages: [/, /customer-service, /customer/account/login/, /customer/acc
 figma:
   file_id: 5MpBw9VaNgFdct3UDWABuV
   foundations_node: "5:11305"
-  master_components_nodes: ["2410:25885", "2410:14322", "2174:30745", "2174:32588"]
+  master_components_nodes: ["2410:25885", "2410:25972", "2410:26973", "2410:14322", "2174:30745", "2174:32588", "2174:33021"]
 
 custom_icons:
   status: audited_workflow_ready

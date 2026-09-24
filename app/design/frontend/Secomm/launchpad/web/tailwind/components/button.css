@@ -9,6 +9,8 @@
     --btn-padding-y: 8px;
     --btn-gap: 6px;
     --btn-icon-size: 16px;
+    --btn-icon-only-size: 32px;
+    --btn-icon-only-icon-size: 16px;
     --btn-radius: 6px;
     --btn-font-size: var(--ds-type-label-m-font-size);
     --btn-line-height: var(--ds-type-label-m-line-height);
@@ -162,6 +164,8 @@
     --btn-padding-x: 16px;
     --btn-padding-y: 8px;
     --btn-icon-size: 16px;
+    --btn-icon-only-size: 32px;
+    --btn-icon-only-icon-size: 16px;
     --btn-font-size: var(--ds-type-label-m-font-size);
     --btn-line-height: var(--ds-type-label-m-line-height);
 }
@@ -171,6 +175,8 @@
     --btn-padding-x: 20px;
     --btn-padding-y: 10px;
     --btn-icon-size: 16px;
+    --btn-icon-only-size: 40px;
+    --btn-icon-only-icon-size: 16px;
     --btn-font-size: var(--ds-type-label-m-font-size);
     --btn-line-height: var(--ds-type-label-m-line-height);
 }
@@ -180,6 +186,8 @@
     --btn-padding-x: 20px;
     --btn-padding-y: 10px;
     --btn-icon-size: 16px;
+    --btn-icon-only-size: 44px;
+    --btn-icon-only-icon-size: 24px;
     --btn-font-size: var(--ds-type-label-l-font-size);
     --btn-line-height: var(--ds-type-label-l-line-height);
 }
@@ -189,6 +197,8 @@
     --btn-padding-x: 24px;
     --btn-padding-y: 12px;
     --btn-icon-size: 16px;
+    --btn-icon-only-size: 48px;
+    --btn-icon-only-icon-size: 24px;
     --btn-font-size: var(--ds-type-label-l-font-size);
     --btn-line-height: var(--ds-type-label-l-line-height);
 }
@@ -198,6 +208,8 @@
     --btn-padding-x: 32px;
     --btn-padding-y: 16px;
     --btn-icon-size: 24px;
+    --btn-icon-only-size: 60px;
+    --btn-icon-only-icon-size: 32px;
     --btn-font-size: var(--ds-type-label-xl-font-size);
     --btn-line-height: var(--ds-type-label-xl-line-height);
 }
@@ -206,12 +218,16 @@
 @utility btn-icon-trailing { padding-inline-end: calc(var(--btn-padding-x) - 2px); }
 
 @utility btn-icon-only {
-    width: var(--btn-height);
+    --btn-icon-size: var(--btn-icon-only-icon-size);
+    width: var(--btn-icon-only-size);
+    height: var(--btn-icon-only-size);
     padding: 0;
 }
 
 @utility btn-icon-round {
-    width: var(--btn-height);
+    --btn-icon-size: var(--btn-icon-only-icon-size);
+    width: var(--btn-icon-only-size);
+    height: var(--btn-icon-only-size);
     padding: 0;
     border-radius: var(--radius-full);
 }
@@ -222,6 +238,8 @@
     --btn-padding-x: 16px;
     --btn-padding-y: 8px;
     --btn-icon-size: 16px;
+    --btn-icon-only-size: 32px;
+    --btn-icon-only-icon-size: 16px;
     --btn-font-size: var(--ds-type-label-m-font-size);
     --btn-line-height: var(--ds-type-label-m-line-height);
 }
@@ -231,6 +249,8 @@
     --btn-padding-x: 24px;
     --btn-padding-y: 12px;
     --btn-icon-size: 16px;
+    --btn-icon-only-size: 48px;
+    --btn-icon-only-icon-size: 24px;
     --btn-font-size: var(--ds-type-label-l-font-size);
     --btn-line-height: var(--ds-type-label-l-line-height);
 }
