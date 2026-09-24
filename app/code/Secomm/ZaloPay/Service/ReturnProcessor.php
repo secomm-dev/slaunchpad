@@ -224,7 +224,25 @@ class ReturnProcessor
                     'We could not match your payment to your current cart. '
                     . 'Please contact support with reference %1.',
                     $appTransId
-                )
+                ),
+                $e
+            );
+        } catch (\Throwable $e) {
+            $this->logger->critical(
+                'ZaloPay return: order finalization failed after payment succeeded: ' . $e->getMessage(),
+                [
+                    'app_trans_id' => $appTransId,
+                    'exception' => get_class($e),
+                    'trace' => $e->getTraceAsString(),
+                ]
+            );
+            throw new LocalizedException(
+                __(
+                    'Your payment was successful, but an error occurred while finalizing your order. '
+                    . 'Please contact support with reference %1.',
+                    $appTransId
+                ),
+                $e
             );
         }
 

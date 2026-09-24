@@ -83,7 +83,12 @@ class ReturnAction implements HttpGetActionInterface
                     'trace' => $e->getTraceAsString(),
                 ]
             );
-            $this->messageManager->addErrorMessage(__('Transaction has been declined. Please try again later.'));
+            $this->messageManager->addErrorMessage(
+                __(
+                    'An error occurred while processing your transaction. Please contact support with reference %1.',
+                    $appTransId
+                )
+            );
 
             return $this->redirectTo('checkout/cart/index');
         }
