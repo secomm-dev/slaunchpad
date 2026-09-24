@@ -789,15 +789,24 @@ body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] {
     overflow: hidden !important;
 }
 
+/* SLP-266: hero = exactly ONE screen at every breakpoint (was a fixed
+   750/1024px that overflowed the viewport). Header + demo notice are NOT
+   subtracted — they will become fixed and overlay the hero.
+   svh (not dvh): stays stable while the mobile URL bar shows/hides, so the
+   hero does not resize and shift the page on scroll. 100vh is the
+   fallback for browsers without small-viewport units (Chrome < 108,
+   Safari < 15.4); svh sits in @supports because the Tailwind minifier
+   collapses a same-rule `height: 100vh; height: 100svh` pair and drops
+   the fallback. */
 body.cms-index-index [data-content-type="slider"] .pagebuilder-slide-wrapper {
-    height: 750px !important;
+    height: 100vh !important;
     background-size: cover !important;
     background-position: center !important;
 }
 
-@media (min-width: 64rem) {
+@supports (height: 100svh) {
     body.cms-index-index [data-content-type="slider"] .pagebuilder-slide-wrapper {
-        height: 1024px !important;
+        height: 100svh !important;
     }
 }
 
