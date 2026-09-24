@@ -1244,6 +1244,33 @@ body.cms-index-index [data-secomm-ui-component="embed_a"] iframe {
     width: 100% !important;
 }
 
+/* SLP-274: the video fills exactly ONE screen at every viewport: full
+   width x viewport height (was 100vw * 9/16, taller than short/wide
+   viewports). aspect-ratio is dropped (!important beats the component's
+   inline style); the poster is object-cover, so it crops to the screen
+   instead of distorting, and the YouTube player letterboxes itself inside
+   the iframe. Same convention as the hero (SLP-266): header is not
+   subtracted, svh sits in @supports so the minifier keeps the 100vh
+   fallback. */
+body.cms-index-index [data-secomm-ui-component="embed_a"] {
+    aspect-ratio: auto !important;
+    height: 100vh !important;
+}
+
+@supports (height: 100svh) {
+    body.cms-index-index [data-secomm-ui-component="embed_a"] {
+        height: 100svh !important;
+    }
+}
+
+/* SLP-274: full-screen video is square-cornered like the hero (component
+   ships rounded-lg on the wrapper, poster link and iframe). */
+body.cms-index-index [data-secomm-ui-component="embed_a"],
+body.cms-index-index [data-secomm-ui-component="embed_a"] > a,
+body.cms-index-index [data-secomm-ui-component="embed_a"] iframe {
+    border-radius: 0 !important;
+}
+
 /* ---- promo card circular arrow: PB forces inline-block — restore flex ---- */
 body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="buttons"] [data-element="link"] {
     display: inline-flex !important;
