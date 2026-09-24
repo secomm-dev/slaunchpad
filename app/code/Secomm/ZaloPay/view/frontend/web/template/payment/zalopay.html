@@ -33,11 +33,11 @@
         <div class="actions-toolbar">
             <div class="primary">
                 <button data-role="review-save"
-                        type="submit"
+                        type="button"
                         data-bind="
                         attr: {title: $t('Continue with ZaloPay')},
                         enable: (getCode() == isChecked()),
-                        click: continueToZaloPay,
+                        click: placeOrder,
                         css: {disabled: !isPlaceOrderActionAllowed()}
                         "
                         class="action primary checkout"

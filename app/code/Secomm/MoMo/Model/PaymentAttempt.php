@@ -332,6 +332,50 @@ class PaymentAttempt extends AbstractModel implements PaymentAttemptInterface
     }
 
     /**
+     * Get how much proactive v2/query recovery budget this attempt has consumed.
+     *
+     * @return int
+     */
+    public function getRecoveryAttempts(): int
+    {
+        return (int)$this->getData(self::RECOVERY_ATTEMPTS);
+    }
+
+    /**
+     * Set the recovery budget consumed.
+     *
+     * @param int $recoveryAttempts
+     * @return void
+     */
+    public function setRecoveryAttempts(int $recoveryAttempts): void
+    {
+        $this->setData(self::RECOVERY_ATTEMPTS, $recoveryAttempts);
+    }
+
+    /**
+     * Whether proactive recovery queries are exhausted for this attempt
+     * (operational marker only — an authenticated IPN/Return arriving later
+     * still resolves the payment).
+     *
+     * @return bool
+     */
+    public function isRecoveryExhausted(): bool
+    {
+        return (bool)$this->getData(self::RECOVERY_EXHAUSTED);
+    }
+
+    /**
+     * Set the recovery-exhausted operational marker.
+     *
+     * @param bool $recoveryExhausted
+     * @return void
+     */
+    public function setRecoveryExhausted(bool $recoveryExhausted): void
+    {
+        $this->setData(self::RECOVERY_EXHAUSTED, $recoveryExhausted);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getStoreId(): int

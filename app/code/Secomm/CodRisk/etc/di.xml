@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- TASK-YPWH9B / SPEC-TASK-YPWH9B -->
+
+    <preference for="Secomm\CodRisk\Api\CodRiskEvaluatorInterface"
+                type="Secomm\CodRisk\Model\Evaluation\CodRiskEvaluator"/>
+    <preference for="Secomm\CodRisk\Api\RiskEventRecorderInterface"
+                type="Secomm\CodRisk\Model\RiskEventRecorder"/>
+
+    <!-- S-01 hook point (merged into CodRisk 2026-09-21): COD availability asks
+         CodRisk (AD-01). After-plugin only — core payment logic of Magento
+         OfflinePayments COD is untouched; the plugin can only flip true->false
+         when CodRisk decides BLOCK and the kill-switch
+         (codrisk/general/enabled) is on. -->
+    <type name="Magento\OfflinePayments\Model\Cashondelivery">
+        <plugin name="secomm_cod_risk_availability"
+                type="Secomm\CodRisk\Plugin\CashOnDeliveryAvailabilityPlugin"
+                sortOrder="100"/>
+    </type>
+
+    <!-- Rule precedence is business-critical and fixed here (AD-03/AD-04).
+         To add a rule: implement CodRiskRuleInterface + register with a
+         deterministic sortOrder reviewed against business precedence. -->
+    <type name="Secomm\CodRisk\Model\Evaluation\RulePool">
+        <arguments>
+            <argument name="rules" xsi:type="array">
+                <item name="10_blacklist" xsi:type="object" sortOrder="10">
+                    Secomm\CodRisk\Model\Evaluation\Rule\BlacklistRule
+                </item>
+                <item name="20_spam_order" xsi:type="object" sortOrder="20">
+                    Secomm\CodRisk\Model\Evaluation\Rule\SpamOrderRule
+                </item>
+                <item name="30_allowlist" xsi:type="object" sortOrder="30">
+                    Secomm\CodRisk\Model\Evaluation\Rule\AllowlistRule
+                </item>
+                <item name="40_historical" xsi:type="object" sortOrder="40">
+                    Secomm\CodRisk\Model\Evaluation\Rule\HistoricalRiskRule
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Admin grids: collection-backed data sources (standard SearchResult virtual types). -->
+    <virtualType name="SecommCodRiskListsGridCollection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">secomm_cod_risk_list</argument>
+            <argument name="resourceModel" xsi:type="string">Secomm\CodRisk\Model\ResourceModel\CodRiskList</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="SecommCodRiskEventsGridCollection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">secomm_cod_risk_event</argument>
+            <argument name="resourceModel" xsi:type="string">Secomm\CodRisk\Model\ResourceModel\CodRiskEvent</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="SecommCodRiskEvaluationsGridCollection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">secomm_cod_risk_evaluation</argument>
+            <argument name="resourceModel" xsi:type="string">Secomm\CodRisk\Model\ResourceModel\CodRiskEvaluation</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="SecommCodRiskAuditGridCollection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">secomm_cod_risk_audit</argument>
+            <argument name="resourceModel" xsi:type="string">Secomm\CodRisk\Model\ResourceModel\AuditLog</argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="codrisk_lists_listing_data_source" xsi:type="string">SecommCodRiskListsGridCollection</item>
+                <item name="codrisk_events_listing_data_source" xsi:type="string">SecommCodRiskEventsGridCollection</item>
+                <item name="codrisk_evaluations_listing_data_source" xsi:type="string">SecommCodRiskEvaluationsGridCollection</item>
+                <item name="codrisk_audit_listing_data_source" xsi:type="string">SecommCodRiskAuditGridCollection</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

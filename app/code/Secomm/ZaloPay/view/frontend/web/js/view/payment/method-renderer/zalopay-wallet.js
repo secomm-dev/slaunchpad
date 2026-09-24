@@ -85,11 +85,14 @@ define([
                 event.preventDefault();
             }
 
-            return this.continueToZaloPay();
+            return this.continueToZaloPay(data, event);
         },
 
         /** Save the payment method, then redirect to the ZaloPay gateway. */
-        continueToZaloPay: function () {
+        continueToZaloPay: function (data, event) {
+            if (event) {
+                event.preventDefault();
+            }
             var self = this;
 
             if (this.validate() && additionalValidators.validate()) {
@@ -109,7 +112,7 @@ define([
                     }
                 );
 
-                return true;
+                return false;
             }
 
             return false;

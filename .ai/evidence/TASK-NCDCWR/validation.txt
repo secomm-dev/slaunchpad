@@ -1,0 +1,60 @@
+TASK-NCDCWR (MOMO-05 — Align payment action config key with runtime behavior)
+— validation evidence, 2026-09-21
+Environment: container m2r-php (markoshust/magento-php:8.3-fpm, PHP 8.3.20)
++ throwaway validation copy /tmp/m2r (host) mounted at /var/www/html, synced
+from the task branch worktree before each validation step (rsync
+app/code/Secomm/MoMo/). Repo BASE_SHA ad6e2d7f (local branch fast-forwarded
+a87255f8 -> ad6e2d7f before implementation; branch
+thanhle74/momo-momo-05-align-payment-action-config).
+
+Changed files
+- app/code/Secomm/MoMo/etc/adminhtml/system.xml          (field id rename)
+- app/code/Secomm/MoMo/Model/Config.php                  (constant value fix)
+- app/code/Secomm/MoMo/Service/OrderFinalizer.php        (constant reference + docblock)
+- app/code/Secomm/MoMo/Test/Unit/Service/OrderFinalizerTest.php (+2 tests)
+- README.md / CHANGELOG.md (docs)
+
+No schema/crontab change in this task (setup:upgrade N/A). Config KEY change
+is XML-level only; no core_config_data migration (compatibility proof:
+spec SPEC-TASK-NCDCWR §2.2 — legacy key had zero runtime readers, source
+model single-option -> behavior provably unchanged for existing installs).
+
+1) php -l (all changed PHP) — container m2r-php
+   Model/Config.php, Service/OrderFinalizer.php, Test/Unit/Service/OrderFinalizerTest.php
+   -> "No syntax errors detected" x3 (see php-lint.txt)
+
+2) XML validation — DOMDocument load OK for system.xml + config.xml;
+   group momo_payment field ids after fix: active, title, sandbox,
+   partner_code, access_key, secret_key, return_url, notify_url,
+   payment_action, min_order_total, allowspecific, specificcountry,
+   sort_order — exactly one `payment_action`, zero legacy
+   `momo_payment_action` fields.
+
+3) PHPCS — Magento2 standard, severity >= 6, changed PHP files
+   -> PHPCS_EXIT=0 (stderr sniff-deprecation notices pre-existing, identical
+   set to MOMO-04 baseline; see phpcs-compile.txt)
+
+4) PHPUnit — full Secomm\MoMo suite
+   php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --filter 'Secomm.MoMo'
+   -> OK — Tests: 255, Assertions: 759, PHPUnit Deprecations: 5 (pre-existing,
+   identical to MOMO-04 baseline 253/746 + the 2 new MOMO-05 tests:
+   testNonCapturingPaymentActionFinalizesWithoutCapture,
+   testMissingPaymentActionDoesNotCapture).
+   Note: the literal filter 'Secomm\MoMo' matched 0 tests under this
+   shell/container argv pass-through (regex escape); 'Secomm.MoMo' (dot
+   matches the namespace separator) selects the same suite MOMO-04 ran.
+   see phpunit-secomm-momo.txt
+
+5) setup:di:compile (full, generated/code wiped first)
+   -> "Generated code and dependency injection configuration successfully."
+   COMPILE_EXIT=0 (see phpcs-compile.txt)
+
+6) .ai/bin/project-ai-validate --check-specs --check-identity --check-records
+   -> repo-wide: 58 FAIL, 0 WARN — identical set to the MOMO-04 baseline
+   (all pre-existing findings in artifacts of OTHER tasks). grep NCDCWR in
+   validator output: 0 findings for this task.
+
+7) Not run: E2E sandbox against MoMo (requires partner credentials — not
+   available on this host); admin-save manual check (QC — Tier-2 review
+   item): save Payment Action in admin and confirm the canonical key lands
+   in core_config_data `payment/momo_payment/payment_action`.

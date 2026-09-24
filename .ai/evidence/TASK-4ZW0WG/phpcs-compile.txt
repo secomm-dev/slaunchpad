@@ -1,0 +1,13 @@
+PHPCS (Magento2, severity >= 6, changed/new files) — container m2r-php, 2026-09-21
+
+......... 9 / 9 (100%)
+
+
+Time: 468ms; Memory: 22MB
+
+PHPCS_EXIT=0
+
+setup:di:compile (full, generated/code wiped first)
+Plugin list generation... 9/9 [==============] 100% 28 secs 606.0 MiB
+Generated code and dependency injection configuration successfully.
+COMPILE_EXIT=0

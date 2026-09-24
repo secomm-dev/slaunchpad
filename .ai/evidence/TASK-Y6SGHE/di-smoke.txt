@@ -1,0 +1,5 @@
+repo  = Secomm\MoMo\Model\PaymentAttemptRepository
+entity-interface preference (identity = no binding): [Secomm\MoMo\Api\Data\PaymentAttemptInterface]
+guard = Secomm\MoMo\Plugin\Quote\CartManagementPlaceOrderGuard
+placeOrder threw Magento\Framework\Exception\NoSuchEntityException: No such entity with cartId = 999999999
+SMOKE OK

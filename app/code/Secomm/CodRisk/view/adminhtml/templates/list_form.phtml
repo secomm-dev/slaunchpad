@@ -1,0 +1,117 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+/** @var \Secomm\CodRisk\Block\Adminhtml\Lists\Form $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$record = $block->getRecord();
+$phoneNumber = $record !== null ? (string)$record->getData('normalized_phone') : '';
+$listType = $record !== null ? (string)$record->getData('list_type') : 'BLOCK';
+$reason = $record !== null ? (string)$record->getData('reason') : '';
+$note = $record !== null ? (string)$record->getData('note') : '';
+$websiteId = $record !== null ? (string)(int)($record->getData('website_id') ?? 0) : '0';
+$effectiveFrom = $record !== null ? (string)($record->getData('effective_from') ?? '') : '';
+$effectiveTo = $record !== null ? (string)($record->getData('effective_to') ?? '') : '';
+?>
+<form method="post" action="<?= $escaper->escapeUrl($block->getSaveUrl()) ?>" id="edit_form">
+    <div class="page-actions" style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
+        <button class="action secondary back" type="button"
+                onclick="setLocation('<?= $escaper->escapeJs($block->getBackUrl()) ?>'); return false;">
+            <?= $escaper->escapeHtml(__('Back')) ?>
+        </button>
+        <button class="action primary save" type="submit">
+            <?= $escaper->escapeHtml(__('Save')) ?>
+        </button>
+    </div>
+    <?= $block->getBlockHtml('formkey') ?>
+    <fieldset class="admin__fieldset">
+        <div class="admin__field">
+            <label class="label admin__field-label" for="raw_phone">
+                <span><?= $escaper->escapeHtml(__('Phone (any format)')) ?> <em>*</em></span>
+            </label>
+            <div class="admin__field-control control">
+                <input class="input-text admin__control-text" type="text" id="raw_phone" name="raw_phone"
+                       value="<?= $escaper->escapeHtml($phoneNumber) ?>"
+                       placeholder="0901 234 567 / 84901234567 / +84 901 234 567" required/>
+                <div class="note"><?= $escaper->escapeHtml(__('The number is normalized to +84 format on save.')) ?></div>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="label admin__field-label" for="list_type">
+                <span><?= $escaper->escapeHtml(__('Type')) ?> <em>*</em></span>
+            </label>
+            <div class="admin__field-control control">
+                <select class="select admin__control-select" id="list_type" name="list_type" required>
+                    <?php foreach ($block->getListTypeOptions() as $option): ?>
+                        <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>"
+                            <?= $option['value'] === $listType ? 'selected' : '' ?>>
+                            <?= $escaper->escapeHtml((string)$option['label']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="label admin__field-label" for="website_id">
+                <span><?= $escaper->escapeHtml(__('Website')) ?></span>
+            </label>
+            <div class="admin__field-control control">
+                <select class="select admin__control-select" id="website_id" name="website_id">
+                    <?php foreach ($block->getWebsiteOptions() as $option): ?>
+                        <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>"
+                            <?= $option['value'] === $websiteId ? 'selected' : '' ?>>
+                            <?= $escaper->escapeHtml((string)$option['label']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="label admin__field-label" for="reason">
+                <span><?= $escaper->escapeHtml(__('Reason')) ?></span>
+            </label>
+            <div class="admin__field-control control">
+                <select class="select admin__control-select" id="reason" name="reason">
+                    <option value="">—</option>
+                    <?php foreach ($block->getReasonOptions() as $option): ?>
+                        <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>"
+                            <?= $option['value'] === $reason ? 'selected' : '' ?>>
+                            <?= $escaper->escapeHtml((string)$option['label']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="label admin__field-label" for="effective_from">
+                <span><?= $escaper->escapeHtml(__('Effective From')) ?></span>
+            </label>
+            <div class="admin__field-control control">
+                <input class="input-text admin__control-text" type="date" id="effective_from"
+                       name="effective_from" value="<?= $escaper->escapeHtml($effectiveFrom) ?>"/>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="label admin__field-label" for="effective_to">
+                <span><?= $escaper->escapeHtml(__('Effective To')) ?></span>
+            </label>
+            <div class="admin__field-control control">
+                <input class="input-text admin__control-text" type="date" id="effective_to"
+                       name="effective_to" value="<?= $escaper->escapeHtml($effectiveTo) ?>"/>
+                <div class="note"><?= $escaper->escapeHtml(__('Leave empty = block/allow indefinitely.')) ?></div>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="label admin__field-label" for="note">
+                <span><?= $escaper->escapeHtml(__('Note')) ?></span>
+            </label>
+            <div class="admin__field-control control">
+                <textarea class="textarea admin__control-textarea" id="note" name="note"
+                          rows="3"><?= $escaper->escapeHtml($note) ?></textarea>
+            </div>
+        </div>
+    </fieldset>
+</form>

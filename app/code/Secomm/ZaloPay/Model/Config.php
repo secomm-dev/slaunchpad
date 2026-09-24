@@ -13,6 +13,6 @@ namespace Secomm\ZaloPay\Model;
 class Config
 {
     public const ZALO_URL = 'https://zalopay.com.vn/';
-    public const LIVE_PAYMENT_ZALO_URL = 'https://openapi.zalopay.com.vn/';
+    public const LIVE_PAYMENT_ZALO_URL = 'https://openapi.zalopay.vn/';
     public const SANDBOX_PAYMENT_ZALO_URL = 'https://sb-openapi.zalopay.vn/';
 }

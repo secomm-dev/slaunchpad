@@ -1,0 +1,40 @@
+setup:upgrade applied in throwaway env /tmp/m2r (container m2r-php, DB zt-mariadb106/magento) — 2026-09-21
+EXIT=0; new columns verified via SHOW CREATE TABLE:
+
+*************************** 1. row ***************************
+       Table: secomm_momo_payment_attempt
+Create Table: CREATE TABLE `secomm_momo_payment_attempt` (
+  `entity_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Entity Id',
+  `quote_id` int(10) unsigned NOT NULL COMMENT 'Owning Quote Id',
+  `reserved_order_id` varchar(64) NOT NULL COMMENT 'Quote reserved order increment id',
+  `order_ref` varchar(64) DEFAULT NULL COMMENT 'MoMo orderId merchant reference (minted at initiation)',
+  `request_id` varchar(96) DEFAULT NULL COMMENT 'MoMo requestId of the create call (query identity)',
+  `provider_transaction_id` varchar(64) DEFAULT NULL COMMENT 'MoMo transId of the confirmed transaction',
+  `pay_url` text DEFAULT NULL COMMENT 'MoMo pay URL',
+  `provider_status` varchar(32) DEFAULT NULL COMMENT 'Provider-side status',
+  `payment_status` varchar(32) NOT NULL DEFAULT 'initiated' COMMENT 'Attempt lifecycle status',
+  `amount` int(10) unsigned NOT NULL COMMENT 'Snapshot amount in VND (locked at initiation)',
+  `currency` varchar(3) NOT NULL DEFAULT 'VND' COMMENT 'Currency',
+  `contract_hash` varchar(64) DEFAULT NULL COMMENT 'Quote payment-contract fingerprint (sha-256) locked at initiation',
+  `order_id` int(10) unsigned DEFAULT NULL COMMENT 'Sales order entity id after finalize',
+  `last_error` text DEFAULT NULL COMMENT 'Last error message',
+  `requires_reconciliation` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Money-real but NOT auto-finalizable (amount/contract/provider-id conflict)',
+  `reconciliation_code` varchar(64) DEFAULT NULL COMMENT 'Machine-readable reason code for requires_reconciliation',
+  `retry_count` smallint(5) unsigned NOT NULL DEFAULT 0 COMMENT 'Number of prior attempts for the same quote',
+  `store_id` smallint(5) unsigned NOT NULL DEFAULT 0 COMMENT 'Store Id',
+  `email_dispatch` int(10) unsigned DEFAULT NULL COMMENT 'Order confirmation email dispatch claim (unix ts of the in-flight claim, NULL = none)',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `expires_at` timestamp NULL DEFAULT NULL COMMENT 'Attempt expiry (TTL, lazy-evaluated)',
+  `recovery_attempts` smallint(5) unsigned NOT NULL DEFAULT 0 COMMENT 'Proactive v2/query recovery budget consumed (MOMO-03)',
+  `recovery_exhausted` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Operational-only marker: proactive queries stopped (a valid IPN/Return still resolves)',
+  PRIMARY KEY (`entity_id`),
+  UNIQUE KEY `SECOMM_MOMO_PAYMENT_ATTEMPT_ORDER_REF` (`order_ref`),
+  UNIQUE KEY `SECOMM_MOMO_PAYMENT_ATTEMPT_REQUEST_ID` (`request_id`),
+  UNIQUE KEY `SECOMM_MOMO_PAYMENT_ATTEMPT_ORDER_ID` (`order_id`),
+  KEY `SECOMM_MOMO_PAYMENT_ATTEMPT_QUOTE_ID` (`quote_id`),
+  KEY `SECOMM_MOMO_PAYMENT_ATTEMPT_RESERVED_ORDER_ID` (`reserved_order_id`),
+  KEY `SECOMM_MOMO_PAYMENT_ATTEMPT_PAYMENT_STATUS` (`payment_status`),
+  CONSTRAINT `SECOMM_MOMO_PAYMENT_ATTEMPT_ORDER_ID_SALES_ORDER_ENTITY_ID` FOREIGN KEY (`order_id`) REFERENCES `sales_order` (`entity_id`) ON DELETE SET NULL,
+  CONSTRAINT `SECOMM_MOMO_PAYMENT_ATTEMPT_QUOTE_ID_QUOTE_ENTITY_ID` FOREIGN KEY (`quote_id`) REFERENCES `quote` (`entity_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='MoMo payment-first initiation attempts'

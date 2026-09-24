@@ -9,6 +9,18 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- MOMO-01-HF1 (issue #13): payment-attempt repository contract. The
+         global QuoteManagement placeOrder guard and every payment-first
+         service (PaymentAttemptManagement, IpnProcessor, OrderFinalizer,
+         PaymentAttemptLifecycle, ReturnProcessor) resolve this interface
+         from ObjectManager; with no preference ANY place-order path —
+         including non-MoMo/ZaloPay — fatals at plugin instantiation. -->
+    <preference for="Secomm\MoMo\Api\PaymentAttemptRepositoryInterface" type="Secomm\MoMo\Model\PaymentAttemptRepository"/>
+
+    <!-- MOMO-02: durable refund request persistence (independent connection). -->
+    <preference for="Secomm\MoMo\Api\Data\RefundRequestInterface" type="Secomm\MoMo\Model\RefundRequest"/>
+    <preference for="Secomm\MoMo\Api\RefundRequestRepositoryInterface" type="Secomm\MoMo\Model\RefundRequestRepository"/>
+
     <!-- Gateway config reader (methodCode = momo_payment) -->
     <virtualType name="MoMoConfig" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
@@ -96,19 +108,33 @@
         </arguments>
     </virtualType>
 
-    <!-- Refund command (/v2/gateway/api/refund) -->
+    <!-- Refund command (/v2/gateway/api/refund) — MOMO-02: custom command
+         with durable identity + uncertainty-safe classification. The
+         transfer carries a 45s HTTP timeout (MoMo documents a 30s minimum
+         for refunds; the Laminas default ~10s would misclassify
+         slow-but-successful refunds as UNKNOWN). -->
     <virtualType name="MoMoRefundTransferFactory" type="Secomm\MoMo\Gateway\Http\TransferFactory">
         <arguments>
             <argument name="urlPath" xsi:type="const">Secomm\MoMo\Model\Config::PATH_REFUND</argument>
+            <argument name="clientConfig" xsi:type="array">
+                <item name="timeout" xsi:type="number">45</item>
+            </argument>
         </arguments>
     </virtualType>
-    <virtualType name="MoMoRefundCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+    <virtualType name="MoMoRefundQueryTransferFactory" type="Secomm\MoMo\Gateway\Http\TransferFactory">
         <arguments>
+            <argument name="urlPath" xsi:type="const">Secomm\MoMo\Model\Config::PATH_REFUND_QUERY</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MoMoRefundCommand" type="Secomm\MoMo\Gateway\Command\RefundCommand">
+        <arguments>
+            <argument name="manager" xsi:type="object">Secomm\MoMo\Service\RefundRequestManager</argument>
+            <argument name="classifier" xsi:type="object">Secomm\MoMo\Service\RefundResultClassifier</argument>
             <argument name="requestBuilder" xsi:type="object">Secomm\MoMo\Gateway\Request\RefundBuilder</argument>
             <argument name="transferFactory" xsi:type="object">MoMoRefundTransferFactory</argument>
             <argument name="client" xsi:type="object">MoMoHttpClient</argument>
             <argument name="handler" xsi:type="object">Secomm\MoMo\Gateway\Response\RefundHandler</argument>
-            <argument name="validator" xsi:type="object">Secomm\MoMo\Gateway\Validator\RefundValidator</argument>
+            <argument name="resultFactory" xsi:type="object">Magento\Payment\Gateway\Command\Result\ArrayResultFactory</argument>
         </arguments>
     </virtualType>
 
@@ -156,9 +182,19 @@
                 type="Secomm\MoMo\Plugin\Quote\CartManagementPlaceOrderGuard"
                 sortOrder="10"/>
     </type>
+    <!-- Construction isolation (issue #20 / BUG-QFR2AY): the guard plugin
+         is built for EVERY payment method's placeOrder (it is registered
+         globally on QuoteManagement), so its constructor must not build
+         anything MoMo-only before the quote is confirmed as MoMo. Method
+         discrimination uses the literal method code (the facade is not
+         needed to compare a string); the attempt repository is a generated
+         Proxy — the real repository and its ResourceConnection graph are
+         constructed on first use, i.e. only on the MoMo grant-validation
+         path. -->
     <type name="Secomm\MoMo\Plugin\Quote\CartManagementPlaceOrderGuard">
         <arguments>
-            <argument name="method" xsi:type="object">MoMoFacade</argument>
+            <argument name="methodCode" xsi:type="string">momo_payment</argument>
+            <argument name="attemptRepository" xsi:type="object">Secomm\MoMo\Model\PaymentAttemptRepository\Proxy</argument>
         </arguments>
     </type>
 
@@ -180,5 +216,27 @@
         <arguments>
             <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
         </arguments>
+    </type>
+
+    <!-- MOMO-02: operator refund tooling + creditmemo linkage backfill.
+         The resolve command queries /v2/gateway/api/refund/query (query
+         only — the refund itself is never re-posted with a new identity). -->
+    <type name="Secomm\MoMo\Console\Command\RefundResolveCommand">
+        <arguments>
+            <argument name="transferFactory" xsi:type="object">MoMoRefundQueryTransferFactory</argument>
+            <argument name="client" xsi:type="object">MoMoHttpClient</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="momoRefundList" xsi:type="object">Secomm\MoMo\Console\Command\RefundListCommand</item>
+                <item name="momoRefundResolve" xsi:type="object">Secomm\MoMo\Console\Command\RefundResolveCommand</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Sales\Model\Service\CreditmemoService">
+        <plugin name="momo_creditmemo_refund_linker"
+                type="Secomm\MoMo\Plugin\Sales\CreditmemoService"/>
     </type>
 </config>

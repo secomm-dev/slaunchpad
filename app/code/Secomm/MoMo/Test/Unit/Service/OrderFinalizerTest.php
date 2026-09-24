@@ -214,6 +214,70 @@ class OrderFinalizerTest extends TestCase
     }
 
     /**
+     * The admin-configured Payment Action gates the local capture
+     * (MOMO-05): any value other than `authorize_capture` finalizes the
+     * order WITHOUT capturing — the verified money still finalizes, the
+     * capture step is the only thing skipped.
+     *
+     * @return void
+     */
+    public function testNonCapturingPaymentActionFinalizesWithoutCapture(): void
+    {
+        $attempt = $this->attempt('paid');
+        $this->repository->method('lockByOrderRef')->willReturn($attempt);
+        $this->repository->method('save')->willReturnArgument(0);
+        $this->cartRepository->method('get')->with(42)->willReturn($this->quote());
+        $this->fingerprint->method('calculate')->willReturn('hash');
+        $this->fingerprint->method('matches')->with('hash', 'hash')->willReturn(true);
+        $order = $this->order();
+        $this->cartManagement->expects($this->once())->method('placeOrder')->with(42)->willReturn(5001);
+        $this->orderRepository->method('get')->with(5001)->willReturn($order);
+        $this->config->method('getValue')->with('payment_action')->willReturn('not_authorize_capture');
+        $payment = $this->payment();
+        $payment->expects($this->never())->method('capture');
+        $this->repository->method('claimEmailDispatch')->willReturn(true);
+        $this->orderSender->expects($this->once())->method('send')->with($order);
+        $this->connection->expects($this->once())->method('commit');
+
+        $placed = $this->finalizer->finalizeOrRecover($attempt, '987654321');
+
+        $this->assertSame($order, $placed);
+        $this->assertSame(PaymentAttemptInterface::STATUS_FINALIZED, $attempt->getPaymentStatus());
+        $this->assertSame(5001, $attempt->getOrderId());
+    }
+
+    /**
+     * A missing `payment_action` config value never captures (strict
+     * comparison — only the explicit `authorize_capture` captures), while
+     * finalization itself is unaffected (MOMO-05).
+     *
+     * @return void
+     */
+    public function testMissingPaymentActionDoesNotCapture(): void
+    {
+        $attempt = $this->attempt('paid');
+        $this->repository->method('lockByOrderRef')->willReturn($attempt);
+        $this->repository->method('save')->willReturnArgument(0);
+        $this->cartRepository->method('get')->with(42)->willReturn($this->quote());
+        $this->fingerprint->method('calculate')->willReturn('hash');
+        $this->fingerprint->method('matches')->with('hash', 'hash')->willReturn(true);
+        $order = $this->order();
+        $this->cartManagement->expects($this->once())->method('placeOrder')->with(42)->willReturn(5001);
+        $this->orderRepository->method('get')->with(5001)->willReturn($order);
+        $this->config->method('getValue')->with('payment_action')->willReturn(null);
+        $payment = $this->payment();
+        $payment->expects($this->never())->method('capture');
+        $this->repository->method('claimEmailDispatch')->willReturn(true);
+        $this->orderSender->expects($this->once())->method('send')->with($order);
+        $this->connection->expects($this->once())->method('commit');
+
+        $placed = $this->finalizer->finalizeOrRecover($attempt, '987654321');
+
+        $this->assertSame($order, $placed);
+        $this->assertSame(PaymentAttemptInterface::STATUS_FINALIZED, $attempt->getPaymentStatus());
+    }
+
+    /**
      * A quote whose contract no longer matches (same total, different
      * content) refuses finalization: ContractMismatchException, the
      * money-real state kept, evidence persisted (AC6).

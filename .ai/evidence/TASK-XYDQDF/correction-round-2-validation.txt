@@ -1,0 +1,96 @@
+MOMO-02 (TASK-XYDQDF) — correction round 2 validation evidence
+Date: 2026-09-21
+Tree: task worktree, base_sha c685e47968627eed2e17e2b450f389679098d148
+Scope of round 2: classifyQuery() top-level response identity binding + result code 1000
+(non-final) — no schema change, no signature change.
+
+1) php -l (syntax) — all changed PHP files
+   Files: Service/RefundResultClassifier.php, Console/Command/RefundResolveCommand.php,
+   Test/Unit/Service/RefundResultClassifierTest.php,
+   Test/Unit/Console/Command/RefundResolveCommandTest.php
+   Result: No syntax errors detected (4/4 files)
+
+2) phpunit (dev/tests/unit/phpunit-secomm.xml --filter "Secomm.MoMo")
+   OK (182 tests, 510 assertions), 5 pre-existing PHPUnit framework deprecations
+   (same baseline as round 1 / first submission; none from task code).
+   New round-2 regressions (all green):
+   - Query top-level echo binding: stale requestId echo -> UNKNOWN (echo_mismatch)
+   - Missing requestId echo -> UNKNOWN
+   - Top-level orderId mismatch -> UNKNOWN
+   - partnerCode conflict -> UNKNOWN; partnerCode absence tolerated
+   - result code 1000 -> UNKNOWN (provider_processing) on direct + query paths
+   - resolve command passes query_request_id == wire requestId + partner_code to classifier
+   Environment: docker m2r-php (markoshust/magento-php:8.3-fpm, PHP 8.3.20),
+   module rsynced to /tmp/m2r (main-checkout tree + task module), unit bootstrap
+   dev/tests/unit + phpunit-secomm.xml.
+
+3) PHPCS (Magento2 standard, severity >= 6) on the round-2 changed files
+   Result: 0 errors, 0 warnings.
+
+4) Fresh setup:install on an EMPTY database with the final tree — EXIT=0
+   Environment: /tmp/m2r = rsync of main checkout
+   (/home/thanhle/Sites/Secomm/slaunchpad/compose/src, excludes .git|var/*|generated/*|
+   pub/static/*|node_modules|.claude) + the exact final task module over it
+   (rsync -a --delete app/code/Secomm/MoMo/), app/etc/env.php removed,
+   database DROP/CREATE fresh (zt-mariadb106, mariadb:10.6, db `magento`),
+   var/* + generated/* cleared. opensearch zt-os:9200.
+   Command: setup:install --db-host=zt-mariadb106 --db-name=magento --db-user=root
+   --db-password=*** --admin-* ... --language=en_US --currency=VND
+   --timezone=Asia/Ho_Chi_Minh --use-rewrites=1 --backend-frontname=admin
+   --base-url=http://m2r.local/ --session-save=files --search-engine=opensearch
+   --opensearch-host=zt-os --opensearch-port=9200 --es-hosts=zt-os:9200
+   Result: EXIT=0, post-install, cache flush clean; DB check:
+     SELECT COUNT(*) FROM information_schema.tables
+     WHERE table_schema='magento' AND table_name='secomm_momo_refund'  -> 1
+   secomm_momo_refund DDL: identical to round 1 (schema unchanged in round 2).
+
+   ENVIRONMENT NOTE (upstream, not task-related): install attempts with ALL modules
+   enabled failed at "Installing database schema" (step 4/1944) with "The default
+   website isn't defined". Root cause (docker exec, -vvv stack trace + a temporary
+   per-command diagnostic patch of setup's ObjectManagerProvider in the throwaway
+   validation env, restored afterwards): the setup app eagerly instantiates ALL CLI
+   commands (ObjectManagerProvider::createCliCommands) BEFORE any schema table
+   exists. Two live-stack modules register CLI commands whose constructor chains
+   eagerly instantiate Magento\Framework\Session\Config (reads scoped config ->
+   StoreResolver -> empty store_website -> DomainException on ANY empty-DB fresh
+   install):
+     - Secomm\Ahamove\Console\Command\GenerateCityCommand
+       (-> Helper\Connection -> Helper\Data -> Magento\Checkout\Model\Session)
+     - Mageplaza\ExtraFee\Console\Command\RebuildStats
+   Both modules were added to the live stack after round 1's environment was built
+   (install steps grew 1456 -> 1944); the failure reproduces with all Secomm_MoMo
+   code removed — it is a fresh-install defect of the current main-checkout tree,
+   out of this task's scope (payment/checkout-adjacent modules were not modified
+   per the task boundary). For install validation ONLY, Secomm_Ahamove and
+   Mageplaza_ExtraFee were disabled in the VALIDATION environment's
+   app/etc/config.php (/tmp/m2r — not a git artifact; the task worktree and repo
+   are untouched). With them disabled: EXIT=0. bin/magento CLI itself boots fine
+   with all modules enabled.
+
+   Two further fresh-install blockers surfaced past the schema phase, both also
+   unrelated to Secomm_MoMo (all are data-install phase failures AFTER
+   secomm_momo_refund was created):
+     - Hyva_Koti*SampleData data patches fail on a bare stack
+       (e.g. Hyva_KotiSampleDataCustomer references customer_address attribute
+       'mposc_field_1' that no enabled module provides on a fresh DB); all 18
+       Hyva_KotiSampleData* demo-content modules disabled in the validation env.
+     - Smile_ElasticsuiteCatalog data install requires the phonetic analysis
+       plugin on OpenSearch ("Unknown filter type [phonetic]") — the recreated
+       zt-os container was missing it; installed analysis-phonetic (matching
+       opensearch:2.19.1) into the validation container, cluster green, retry.
+   Final attempt: EXIT=0 (see below); secomm_momo_refund created and verified.
+   Provenance: before the final install, the module tree in the validation env was
+   rsync -a --delete'd from the worktree again and md5-verified identical for the
+   changed files (classifier, resolve command, both test files) — the install ran
+   against the EXACT final tree. secomm_momo_refund DDL captured after install and
+   diffed against the round-1 capture (.ai/evidence/TASK-XYDQDF/
+   db-schema-after-install.txt): byte-identical — schema unchanged in round 2.
+
+5) setup:di:compile — EXIT=0
+   "Generated code and dependency injection configuration successfully"
+   (validate:di compares cleanly; no generated-code errors with the round-2 files).
+
+6) CLI smoke
+   - bin/magento list | grep momo -> momo:refund:list / momo:refund:resolve listed
+   - bin/magento momo:refund:list executed against the real DB (empty table:
+     "No refund requests found."), exit 0 — independent-connection read path OK.

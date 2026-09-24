@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="codrisk" translate="label" type="text" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="0">
+            <label>COD Risk</label>
+            <tab>secomm</tab>
+            <resource>Secomm_CodRisk::manage</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable COD Risk</label>
+                    <comment>Kill-switch. Default disabled — COD availability is untouched until enabled per website.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="historical" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Historical Risk</label>
+                <field id="lookback_days" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Lookback Days</label>
+                    <comment>Risk events counted within this many days for each phone.</comment>
+                    <frontend_class>validate-digits validate-greater-than-zero</frontend_class>
+                </field>
+                <field id="warning_threshold" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Warning Threshold</label>
+                    <comment>At this many included risk events, COD stays available but admins see WARNING.</comment>
+                    <frontend_class>validate-digits validate-greater-than-zero</frontend_class>
+                </field>
+                <field id="block_threshold" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Block Threshold</label>
+                    <comment>From this many included risk events, COD is hidden for the phone. Must be greater than Warning Threshold.</comment>
+                    <frontend_class>validate-digits validate-greater-than-zero</frontend_class>
+                    <backend_model>Secomm\CodRisk\Model\Config\Backend\BlockThreshold</backend_model>
+                </field>
+            </group>
+            <group id="spam" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Spam Order</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable Spam Order Rule</label>
+                    <comment>Blocks COD when customer-attributable risk events burst within the window. A spam match never auto-blacklists.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="lookback_days" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Spam Lookback Window (days)</label>
+                    <frontend_class>validate-digits validate-greater-than-zero</frontend_class>
+                </field>
+                <field id="threshold" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Spam Threshold</label>
+                    <comment>At this many attributable events within the window, the next COD checkout is blocked.</comment>
+                    <frontend_class>validate-digits validate-greater-than-zero</frontend_class>
+                </field>
+                <field id="attributable_reasons" translate="label comment" type="multiselect" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Customer-Attributable Reasons</label>
+                    <comment>Reason codes counted as customer-attributable for the spam burst.</comment>
+                    <source_model>Secomm\CodRisk\Model\Source\ReasonCodes</source_model>
+                </field>
+            </group>
+            <group id="reasons" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Reason Include Flags</label>
+                <comment>Whether each reason counts into the historical total. The flag is snapshotted onto events at record time — changing it later never reinterprets old events. Unset = catalog default (refused delivery / unreachable = yes, everything else = no).</comment>
+                <field id="include_customer_cancellation_pre_confirm" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "Customer cancelled before confirmation"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="include_customer_requested_cancel" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "Customer asked admin/CS to cancel"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="include_refused_delivery" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "Customer refused delivery"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="include_unreachable_customer" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "Customer unreachable during delivery"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="include_out_of_stock" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "Out of stock"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="include_wrong_price" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "Wrong price"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="include_damaged_in_transit" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "Damaged in transit"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="include_lost_shipment" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "Lost shipment"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="include_system_error" translate="label" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "System error"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="include_undetermined" translate="label" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Include "Undetermined cause"</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="checkout" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Checkout</label>
+                <field id="message" translate="label comment" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>COD Unavailable Message</label>
+                    <comment>Reserved for customer-facing display when COD is hidden (not rendered on checkout in P1 — wiring it requires a Mageplaza OSC change, tracked as a separate Tier-2 item).</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

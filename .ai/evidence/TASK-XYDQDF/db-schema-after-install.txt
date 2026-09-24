@@ -1,0 +1,32 @@
+*************************** 1. row ***************************
+       Table: secomm_momo_refund
+Create Table: CREATE TABLE `secomm_momo_refund` (
+  `entity_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Entity Id',
+  `order_id` int(10) unsigned DEFAULT NULL COMMENT 'Sales order entity id',
+  `order_increment_id` varchar(32) NOT NULL COMMENT 'Sales order increment id (operator-readable linkage)',
+  `invoice_id` int(10) unsigned DEFAULT NULL COMMENT 'Native invoice entity id when the creditmemo is invoiced',
+  `creditmemo_id` int(10) unsigned DEFAULT NULL COMMENT 'Creditmemo entity id (backfilled post-commit by the sales plugin)',
+  `momo_order_ref` varchar(64) NOT NULL COMMENT 'MoMo orderId of the ORIGINAL captured transaction (or legacy fallback)',
+  `momo_trans_id` varchar(64) NOT NULL COMMENT 'MoMo transId of the ORIGINAL captured transaction',
+  `refund_order_id` varchar(64) NOT NULL COMMENT 'MoMo orderId minted for the refund (must differ from the purchase orderId)',
+  `request_id` varchar(96) NOT NULL COMMENT 'MoMo requestId minted for the refund (provider idempotency key)',
+  `provider_transaction_id` varchar(64) DEFAULT NULL COMMENT 'MoMo transId of the refund itself (set on SUCCESS)',
+  `amount` int(10) unsigned NOT NULL COMMENT 'Snapshot refund amount in VND',
+  `currency` varchar(3) NOT NULL DEFAULT 'VND' COMMENT 'Currency',
+  `status` varchar(32) NOT NULL DEFAULT 'pending' COMMENT 'Refund lifecycle status (pending/success/failed/unknown)',
+  `response_code` varchar(32) DEFAULT NULL COMMENT 'Raw provider resultCode (when the provider answered)',
+  `response_message` varchar(255) DEFAULT NULL COMMENT 'Raw provider message (when the provider answered)',
+  `classification_reason` varchar(64) DEFAULT NULL COMMENT 'Machine-readable reason for the classification',
+  `last_error` text DEFAULT NULL COMMENT 'Last error detail (sanitized)',
+  `open_flag` tinyint(1) DEFAULT 1 COMMENT '1 = open operation (pending/unknown, blocks new refunds), NULL = terminal',
+  `store_id` smallint(5) unsigned NOT NULL DEFAULT 0 COMMENT 'Store Id',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `resolved_at` timestamp NULL DEFAULT NULL COMMENT 'When the operation reached a terminal state (success/failed)',
+  PRIMARY KEY (`entity_id`),
+  UNIQUE KEY `SECOMM_MOMO_REFUND_REQUEST_ID` (`request_id`),
+  UNIQUE KEY `SECOMM_MOMO_REFUND_MOMO_ORDER_REF_MOMO_TRANS_ID_OPEN_FLAG` (`momo_order_ref`,`momo_trans_id`,`open_flag`),
+  KEY `SECOMM_MOMO_REFUND_ORDER_ID` (`order_id`),
+  KEY `SECOMM_MOMO_REFUND_STATUS` (`status`),
+  CONSTRAINT `SECOMM_MOMO_REFUND_ORDER_ID_SALES_ORDER_ENTITY_ID` FOREIGN KEY (`order_id`) REFERENCES `sales_order` (`entity_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='MoMo native creditmemo refund requests'

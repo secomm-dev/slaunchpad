@@ -26,6 +26,7 @@ use Psr\Log\LoggerInterface;
 use Secomm\MoMo\Api\Data\PaymentAttemptInterface;
 use Secomm\MoMo\Api\PaymentAttemptRepositoryInterface;
 use Secomm\MoMo\Exception\ContractMismatchException;
+use Secomm\MoMo\Model\Config;
 use Secomm\MoMo\Model\QuoteContractFingerprint;
 
 /**
@@ -505,6 +506,12 @@ class OrderFinalizer
      * refund path resolves the provider transaction from there (legacy
      * orders fall back to the increment id inside RefundBuilder).
      *
+     * The capture gate reads the canonical Payment Action config key
+     * `payment/momo_payment/payment_action` (MOMO-05 — admin field and
+     * runtime read share ONE key; strict comparison: only
+     * `authorize_capture` captures, any other/missing value still
+     * finalizes the order without capture).
+     *
      * @param OrderInterface $order
      * @param string $orderRef
      * @param string $providerTransactionId
@@ -523,7 +530,7 @@ class OrderFinalizer
             $payment->setAdditionalInformation('momo_trans_id', $providerTransactionId);
         }
         $payment->setAdditionalInformation('momo_order_ref', $orderRef);
-        if ($this->config->getValue('payment_action') === MethodInterface::ACTION_AUTHORIZE_CAPTURE) {
+        if ($this->config->getValue(Config::KEY_PAYMENT_ACTION) === MethodInterface::ACTION_AUTHORIZE_CAPTURE) {
             $payment->capture();
         }
         $message = __('MoMo payment verified (order_ref: %1).', $orderRef);

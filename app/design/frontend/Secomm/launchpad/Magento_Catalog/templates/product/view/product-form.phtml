@@ -12,6 +12,12 @@
  *   - validate-one-required: bắt buộc chọn 1 option trong nhóm radio super_attribute
  *     (bubble cũ "Please select one of these options."; message dùng key có sẵn
  *     "Please select one of the options." trong theme CSV).
+ * SLP-264 / TASK-Y23EMS: override onSubmit của component hyva.formValidation (vendor
+ * advanced-form-validation.phtml hard-code event.target.submit() = native POST) — khi
+ * validate pass gọi window.ajaxSubmitCart(form) (Monsoon theme-override, AJAX) thay vì
+ * submit native; helper vắng mặt (flag enable_ajax_add_to_cart=0) → fallback native.
+ * isSubmitting reset trên nhánh AJAX vì page không navigate; chống double-submit lúc
+ * in-flight do ajaxSubmitCart disable button đồng bộ trước fetch đầu tiên.
  */
 
 declare(strict_types=1);
@@ -84,7 +90,39 @@ $hasMultiFormInputOption = (bool) array_filter($productOptions, fn($o) => $o->ge
                     : '<?= $escaper->escapeJs(__('Please select one of the options.')) ?>';
             });
 
-            return hyva.formValidation(this.$el);
+            const component = hyva.formValidation(this.$el);
+
+            // SLP-264 / TASK-Y23EMS: override onSubmit của hyva.formValidation (vendor
+            // advanced-form-validation.phtml:402-412 hard-code event.target.submit() = native POST).
+            // Validate pass → window.ajaxSubmitCart(form) (Monsoon theme-override) thay vì native;
+            // helper vắng (flag enable_ajax_add_to_cart=0) → fallback native submit.
+            // isSubmitting reset trên nhánh AJAX vì page không navigate; chống double-submit lúc
+            // in-flight do ajaxSubmitCart disable button đồng bộ trước fetch đầu tiên.
+            component.onSubmit = function (event) {
+                if (event.target.tagName !== 'FORM') {
+                    return;
+                }
+                event.preventDefault();
+                if (this.isSubmitting) {
+                    return;
+                }
+                this.isSubmitting = true;
+                this.validate()
+                    .then(() => {
+                        this.isSubmitting = false;
+                        if (typeof window.ajaxSubmitCart === 'function') {
+                            window.ajaxSubmitCart(event.target);
+                        } else {
+                            event.target.submit();
+                            return;
+                        }
+                    })
+                    .catch(() => {
+                        this.isSubmitting = false;
+                    });
+            };
+
+            return component;
         }
 
         window.addEventListener('alpine:init', () => {
