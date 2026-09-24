@@ -112,5 +112,68 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
         });
     });
 
+    // SLP-269 (BUG-KATJXW): "Everyday more value" = rail PB columns
+    // (overflow-x + scroll-snap) — touch vuốt native, chuột thì không kéo được.
+    // Drag-to-scroll cho chuột; thả → trượt tới mép card kế tiếp theo hướng
+    // kéo; đã kéo thì nuốt click để không mở link "→".
+    window.addEventListener('DOMContentLoaded', () => {
+        const firstCard = document.querySelector('.lp-promo-card');
+        const rail = firstCard && firstCard.parentElement;
+        if (!rail || rail.dataset.lpDrag) return;
+        rail.dataset.lpDrag = '1';
+        let drag = null;
+        let moved = false;
+        const cardOffsets = () => {
+            const start = rail.getBoundingClientRect().left + rail.clientLeft;
+            return Array.from(rail.children)
+                .filter((c) => c.classList.contains('lp-promo-card'))
+                .map((c) => c.getBoundingClientRect().left - start + rail.scrollLeft);
+        };
+        const settle = (target) => {
+            const done = () => drag || rail.classList.remove('lp-promo-dragging');
+            if (Math.abs(rail.scrollLeft - target) < 1) return done();
+            rail.addEventListener('scrollend', done, { once: true });
+            setTimeout(done, 700);
+            rail.scrollTo({ left: target, behavior: 'smooth' });
+        };
+        rail.addEventListener('pointerdown', (event) => {
+            if (event.pointerType !== 'mouse' || event.button !== 0) return;
+            drag = { x: event.clientX, left: rail.scrollLeft };
+            moved = false;
+        });
+        rail.addEventListener('pointermove', (event) => {
+            if (!drag) return;
+            const dx = event.clientX - drag.x;
+            if (!moved && Math.abs(dx) < 5) return;
+            if (!moved) {
+                moved = true;
+                rail.setPointerCapture(event.pointerId);
+                rail.classList.add('lp-promo-dragging');
+            }
+            rail.scrollLeft = drag.left - dx;
+        });
+        const release = () => {
+            if (!drag) return;
+            const from = drag.left;
+            drag = null;
+            if (!moved) return;
+            const current = rail.scrollLeft;
+            const offsets = cardOffsets();
+            const next = current > from
+                ? offsets.find((o) => o > current + 1)
+                : offsets.reverse().find((o) => o < current - 1);
+            const max = rail.scrollWidth - rail.clientWidth;
+            settle(Math.max(0, Math.min(next ?? current, max)));
+        };
+        rail.addEventListener('pointerup', release);
+        rail.addEventListener('pointercancel', release);
+        rail.addEventListener('dragstart', (event) => event.preventDefault());
+        rail.addEventListener('click', (event) => {
+            if (!moved) return;
+            moved = false;
+            event.preventDefault();
+            event.stopPropagation();
+        }, true);
+    });
 </script>
 <?php $hyvaCsp->registerInlineScript() ?>

@@ -1328,6 +1328,36 @@ body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content
     flex-shrink: 0 !important;
 }
 
+/* SLP-269 CR2 (BUG-KATJXW): class của <a> do field `button_type` của PB sở
+   hữu — Admin sửa link là class Tailwind viết tay bị thay bằng
+   `pagebuilder-button-primary` → mất nút tròn. Theme giữ hình nút cho MỌI
+   button type (primary/secondary/link), không phụ thuộc class trên <a>. */
+body.cms-index-index .lp-promo-card [data-content-type="button-item"] [data-element="link"] {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    border: 1px solid #fff !important;
+    border-radius: 9999px !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    transition: background-color 150ms ease;
+}
+
+body.cms-index-index .lp-promo-card [data-content-type="button-item"] [data-element="link"]:is(:hover, :focus-visible) {
+    background-color: rgb(255 255 255 / 0.1) !important;
+}
+
+body.cms-index-index .lp-promo-card [data-content-type="button-item"] [data-element="link"]::after {
+    content: none !important;
+}
+
 /* ---- newsletter band: centered title + centered form ---- */
 body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has(.lp-newsletter-form) {
     margin-block-start: 3rem !important;
@@ -1432,6 +1462,26 @@ body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content
 body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"] > [data-content-type="column"],
 body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"] > [data-content-type="column"] {
     flex: 0 0 auto !important;
+}
+
+/* SLP-269 (BUG-KATJXW): rail = slider — snap theo mép card + mouse drag
+   (sliders-init gắn .lp-promo-dragging khi kéo: tắt snap để rail theo tay). */
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    cursor: grab;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"] > [data-content-type="column"],
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"] > [data-content-type="column"] {
+    scroll-snap-align: start;
+}
+
+body.cms-index-index .lp-promo-dragging {
+    scroll-snap-type: none !important;
+    cursor: grabbing !important;
+    user-select: none !important;
 }
 
 @media (min-width: 48rem) {

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.3 (2026-09-24)
+
+- SLP-269 (BUG-KATJXW): "Everyday more value" (PB columns `.lp-promo-card`)
+  chạy như slider — `sliders-init.phtml` thêm mouse drag-to-scroll (thả → trượt
+  tới mép card kế tiếp; đã kéo thì không mở link "→"); `homepage.css` thêm
+  `scroll-snap` theo card + cursor grab/grabbing. Giữ nguyên columns/content.
+- SLP-269 CR1: seed template — 4 column `.lp-promo-card` thêm `width:25%` trong
+  `data-pb-style` (thiếu → PB stage tính 0%, section không chỉnh được trong Admin).
+- SLP-269 CR2: nút "→" card promo do theme CSS sở hữu (mọi PB button type) — Admin
+  sửa link không còn làm card mất nút tròn; seed template `<a>` = `pagebuilder-button-link`.
+
 ## 1.2.2 (2026-09-24)
 
 - SLP-268 (BUG-118Z8T): hero slider — autoplay không còn kẹt pause sau khi chạm
