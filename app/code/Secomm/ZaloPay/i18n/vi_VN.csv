@@ -51,3 +51,5 @@
 "Your ZaloPay payment is still being processed. Please check back shortly.","Thanh toán ZaloPay của bạn đang được xử lý. Vui lòng quay lại sau ít phút."
 "Payment not found.","Không tìm thấy thanh toán."
 "Refund for order #%1","Hoàn tiền cho đơn hàng #%1"
+"Your payment was successful, but an error occurred while finalizing your order. Please contact support with reference %1.","Thanh toán của bạn đã thành công, nhưng hệ thống gặp sự cố khi hoàn tất đơn hàng. Vui lòng liên hệ bộ phận hỗ trợ với mã giao dịch %1."
+"An error occurred while processing your transaction. Please contact support with reference %1.","Đã xảy ra lỗi khi xử lý giao dịch của bạn. Vui lòng liên hệ bộ phận hỗ trợ với mã giao dịch %1."

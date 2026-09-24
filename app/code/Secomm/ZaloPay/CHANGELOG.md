@@ -19,6 +19,16 @@
   ZaloPay checkout died before order creation because the MoMo-side
   repository could not be instantiated). No provider API, classifier,
   refund or schema change.
+- **Customer message accuracy on order finalization failures**: when payment
+  has been authoritatively verified as PAID on ZaloPay, but Magento order
+  finalization encounters an unexpected technical exception (e.g. database error,
+  message queue disconnection, mail failure), `ReturnProcessor` now catches
+  the exception, logs it critically with trace and context, and displays a
+  customer-safe message informing that payment succeeded but order creation
+  encountered an issue with the reference ID. Previously, uncaught exceptions
+  bubbled up to `ReturnAction`'s generic catch block which displayed
+  "Transaction has been declined. Please try again later.", misleading customers
+  into believing the transaction was refused and risking double-payment.
 
 ## [Unreleased] - ZLP-OPS-01 (TASK-MCHN2T — operator diagnostics, debug mode, configurable checkout branding)
 
