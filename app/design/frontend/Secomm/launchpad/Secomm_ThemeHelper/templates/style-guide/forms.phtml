@@ -1,0 +1,112 @@
+<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+?>
+<section id="forms" aria-labelledby="forms-title">
+    <h2 id="forms-title" class="mb-2 text-heading-2 font-semibold text-ink">
+        <?= $escaper->escapeHtml(__('Forms')) ?>
+    </h2>
+    <p class="mb-8 text-body-2 text-fg-secondary">
+        <?= $escaper->escapeHtml(__('Native controls using the production Global Style contract.')) ?>
+    </p>
+
+    <form class="grid gap-10 rounded-lg border border-border bg-surface p-6 lg:grid-cols-2"
+          action="" method="get">
+        <fieldset class="space-y-6">
+            <legend class="mb-4 text-heading-4 font-semibold text-ink"><?= $escaper->escapeHtml(__('Fields')) ?></legend>
+            <div class="field required">
+                <label for="showcase-name"><?= $escaper->escapeHtml(__('Name')) ?></label>
+                <input id="showcase-name" name="showcase-name" type="text" class="form-input w-full"
+                       placeholder="<?= $escaper->escapeHtmlAttr(__('Enter a value')) ?>">
+                <p class="note"><?= $escaper->escapeHtml(__('Default field with supporting text.')) ?></p>
+            </div>
+            <div class="field field-error">
+                <label for="showcase-error"><?= $escaper->escapeHtml(__('Error state')) ?></label>
+                <input id="showcase-error" name="showcase-error" type="email" class="form-input mage-error w-full"
+                       value="invalid@example" aria-invalid="true" aria-describedby="showcase-error-message">
+                <p id="showcase-error-message" class="messages"><?= $escaper->escapeHtml(__('Enter a valid email address.')) ?></p>
+            </div>
+            <div class="field" data-feedback="success">
+                <label for="showcase-success"><?= $escaper->escapeHtml(__('Success state')) ?></label>
+                <input id="showcase-success" name="showcase-success" type="text" class="form-input w-full"
+                       value="Validated value">
+                <p class="note"><?= $escaper->escapeHtml(__('The value has been validated.')) ?></p>
+            </div>
+            <div class="field">
+                <label for="showcase-select"><?= $escaper->escapeHtml(__('Select')) ?></label>
+                <select id="showcase-select" name="showcase-select" class="form-select w-full">
+                    <option><?= $escaper->escapeHtml(__('Choose an option')) ?></option>
+                    <option><?= $escaper->escapeHtml(__('Option one')) ?></option>
+                    <option><?= $escaper->escapeHtml(__('Option two')) ?></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="showcase-disabled"><?= $escaper->escapeHtml(__('Disabled field')) ?></label>
+                <input id="showcase-disabled" name="showcase-disabled" type="text" class="form-input w-full"
+                       value="Disabled value" disabled>
+            </div>
+            <div class="field">
+                <label for="showcase-textarea"><?= $escaper->escapeHtml(__('Textarea')) ?></label>
+                <textarea id="showcase-textarea" name="showcase-textarea" class="form-textarea w-full"
+                          rows="5" placeholder="<?= $escaper->escapeHtmlAttr(__('Enter a longer value')) ?>"></textarea>
+            </div>
+        </fieldset>
+
+        <fieldset class="space-y-8">
+            <legend class="mb-4 text-heading-4 font-semibold text-ink"><?= $escaper->escapeHtml(__('Selection controls')) ?></legend>
+            <div>
+                <h3 class="mb-4 text-label-l font-semibold text-ink"><?= $escaper->escapeHtml(__('Checkbox sizes')) ?></h3>
+                <div class="flex flex-wrap items-center gap-6">
+                    <label class="flex items-center gap-2 text-ink">
+                        <input type="checkbox" class="form-checkbox form-control-s" checked>
+                        <span>S</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-ink">
+                        <input type="checkbox" class="form-checkbox form-control-m" checked>
+                        <span>M</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-ink">
+                        <input type="checkbox" class="form-checkbox form-control-l" checked>
+                        <span>L</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-fg-tertiary">
+                        <input type="checkbox" class="form-checkbox form-control-m" checked disabled>
+                        <span><?= $escaper->escapeHtml(__('Disabled')) ?></span>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <h3 class="mb-4 text-label-l font-semibold text-ink"><?= $escaper->escapeHtml(__('Radio sizes')) ?></h3>
+                <div class="flex flex-wrap items-center gap-6">
+                    <label class="flex items-center gap-2 text-ink">
+                        <input type="radio" name="radio-size" class="form-radio form-control-s">
+                        <span>S</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-ink">
+                        <input type="radio" name="radio-size" class="form-radio form-control-m" checked>
+                        <span>M</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-ink">
+                        <input type="radio" name="radio-size" class="form-radio form-control-l">
+                        <span>L</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-fg-tertiary">
+                        <input type="radio" name="radio-disabled" class="form-radio form-control-m" checked disabled>
+                        <span><?= $escaper->escapeHtml(__('Disabled')) ?></span>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <h3 class="mb-4 text-label-l font-semibold text-ink"><?= $escaper->escapeHtml(__('Switch')) ?></h3>
+                <label class="flex items-center gap-3 text-ink">
+                    <input type="checkbox" role="switch" checked>
+                    <span><?= $escaper->escapeHtml(__('Enabled')) ?></span>
+                </label>
+            </div>
+        </fieldset>
+    </form>
+</section>

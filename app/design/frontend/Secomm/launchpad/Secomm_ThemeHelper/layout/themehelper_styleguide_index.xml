@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
+      layout="1column">
+    <body>
+        <attribute name="class" value="global-style-showcase"/>
+        <referenceContainer name="header.container" remove="true"/>
+        <referenceContainer name="footer-container" remove="true"/>
+        <referenceBlock name="global_notices" remove="true"/>
+        <referenceBlock name="page.main.title" remove="true"/>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="secomm.global.style.showcase"
+                   template="Secomm_ThemeHelper::style-guide/index.phtml">
+                <block class="Magento\Framework\View\Element\Template"
+                       name="secomm.global.style.showcase.foundations"
+                       as="foundations"
+                       template="Secomm_ThemeHelper::style-guide/foundations.phtml"/>
+                <block class="Magento\Framework\View\Element\Template"
+                       name="secomm.global.style.showcase.buttons"
+                       as="buttons"
+                       template="Secomm_ThemeHelper::style-guide/buttons.phtml"/>
+                <block class="Magento\Framework\View\Element\Template"
+                       name="secomm.global.style.showcase.forms"
+                       as="forms"
+                       template="Secomm_ThemeHelper::style-guide/forms.phtml"/>
+                <block class="Magento\Framework\View\Element\Template"
+                       name="secomm.global.style.showcase.icons"
+                       as="icons"
+                       template="Secomm_ThemeHelper::style-guide/icons.phtml"/>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

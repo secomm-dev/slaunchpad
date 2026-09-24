@@ -468,6 +468,7 @@ return [
         'Secomm_Promotion' => 1,
         'Secomm_PromotionMaxDiscount' => 1,
         'Launchpad_MageplazaTableRate' => 1,
+        'Secomm_ThemeHelper' => 1,
         'Secomm_Tracking' => 1,
         'Secomm_UiWidget' => 1,
         'Secomm_VNPAY' => 1,
