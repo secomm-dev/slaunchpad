@@ -1133,6 +1133,55 @@ body.cms-index-index [data-content-type="slide"] [data-content-type="button-item
     content: none;
 }
 
+/* SLP-268 (BUG-118Z8T): hero CTA = Figma "Button Variation" 2151:17112 —
+   DS size XL (h48, 24x12, Label L) + primary/brand-500. The unlayered
+   `.pagebuilder-button-primary { @apply btn btn-primary }` (page-builder.css)
+   beats the CMS utility classes, so SLP-246 defaults (size S, brand-600)
+   leaked in. Weight is set here because the generated DS weight tokens carry
+   a `px` unit (invalid → inherits 400). --btn-bg sits above the btn :hover
+   rule's specificity, so hover/active are restated. */
+body.cms-index-index [data-content-type="slide"] .pagebuilder-button-primary {
+    @apply btn-size-xl;
+    --btn-bg: var(--ds-primary-brand-500);
+    --btn-font-weight: var(--font-weight-medium);
+}
+
+body.cms-index-index [data-content-type="slide"] .pagebuilder-button-primary:is(:hover, :active) {
+    --btn-bg: var(--ds-primary-brand-600);
+}
+
+/* SLP-268: CMS JIT compiles `font-sans` to Tailwind's default stack, not the
+   theme's Inter — hero copy follows the theme font like the design. */
+body.cms-index-index [data-content-type="slide"] [data-element="content"] :is(h1, h2, h3, p) {
+    font-family: var(--font-sans);
+}
+
+/* SLP-268: hero mouse drag — hero-autoplay.phtml adds .lp-hero-dragging while
+   dragging/settling: snap + smooth scroll off so the track follows the mouse. */
+body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging {
+    scroll-snap-type: none !important;
+    scroll-behavior: auto !important;
+    user-select: none !important;
+}
+
+/* Mouse devices: open hand over the hero hints it can be dragged; the CTA
+   button keeps its pointer. */
+@media (hover: hover) and (pointer: fine) {
+    body.cms-index-index .lp-hero-slider [data-track],
+    body.cms-index-index .lp-hero-slider [data-track] a {
+        cursor: grab;
+    }
+
+    body.cms-index-index .lp-hero-slider [data-track] .pagebuilder-slide-button {
+        cursor: pointer;
+    }
+}
+
+body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging,
+body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging :is(a, button) {
+    cursor: grabbing !important;
+}
+
 /* ---- product sliders: mobile 2-up / desktop 4-up, bleed to viewport edge ---- */
 /* v4.9.4: pager rail đặt TRƯỚC track trong DOM (để thắng document-order
    querySelector "[data-pager]" của SnapSlider) nhưng hiển thị DƯỚI cards

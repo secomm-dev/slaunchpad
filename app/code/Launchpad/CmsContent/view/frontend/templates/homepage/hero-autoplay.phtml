@@ -5,13 +5,23 @@
  * Reads data-autoplay / data-autoplay-speed from the Page Builder slider
  * (.lp-hero-slider). The active pager dot fills left-to-right over the
  * autoplay duration; on completion the slider advances and the next dot arms.
- * Pauses on pointer hover, hidden tab and when the user prefers reduced
- * motion.
+ * Pauses on mouse hover, while a finger is on the hero and on a hidden tab;
+ * disabled when the user prefers reduced motion.
  *
  * v4.9.4: fill driven by rAF writing --lp-dot-progress (0→1) on the active
  * marker instead of a CSS animation — SnapSlider dispatches `slideChange` on
  * EVERY IntersectionObserver tick and its marker refresh paths cancel/restart
  * CSS animations, so the animation never progressed past scaleX(0).
+ *
+ * SLP-268: touch no longer pauses via pointerenter/pointerleave — iOS Safari
+ * does not always fire pointerleave after a touch (scroll / long-press
+ * cancels the pointer), which left autoplay paused for good. Touch pauses on
+ * touchstart and resumes when the last finger lifts (touchend/touchcancel on
+ * document). Pause reasons are tracked separately so one cannot clear another.
+ *
+ * SLP-268: mouse drag-to-swipe (touch keeps native swipe). Releasing past a
+ * small threshold moves one slide in the drag direction, otherwise snaps back;
+ * a drag never opens the slide link.
  *
  * @var \Magento\Framework\View\Element\Template $block
  * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
@@ -32,18 +42,36 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
         const speed = Math.max(2000, parseInt(slider.dataset.autoplaySpeed || '4000', 10));
+        const pauseReasons = new Set();
         let paused = false;
         let armedMarker = null;
         let fillRaf = 0;
         let fillElapsed = 0;
         let fillLast = 0;
 
-        slider.addEventListener('pointerenter', () => { paused = true; slider.classList.add('lp-dot-paused'); });
-        slider.addEventListener('pointerleave', () => { paused = false; slider.classList.remove('lp-dot-paused'); });
-        document.addEventListener('visibilitychange', () => {
-            paused = document.hidden;
+        const setPaused = (reason, on) => {
+            if (on) {
+                pauseReasons.add(reason);
+            } else {
+                pauseReasons.delete(reason);
+            }
+            paused = pauseReasons.size > 0;
             slider.classList.toggle('lp-dot-paused', paused);
+        };
+
+        slider.addEventListener('pointerenter', (event) => {
+            if (event.pointerType === 'mouse') setPaused('hover', true);
         });
+        slider.addEventListener('pointerleave', (event) => {
+            if (event.pointerType === 'mouse') setPaused('hover', false);
+        });
+        slider.addEventListener('touchstart', () => setPaused('touch', true), { passive: true });
+        const releaseTouch = (event) => {
+            if (event.touches.length === 0) setPaused('touch', false);
+        };
+        document.addEventListener('touchend', releaseTouch, { passive: true });
+        document.addEventListener('touchcancel', releaseTouch, { passive: true });
+        document.addEventListener('visibilitychange', () => setPaused('hidden', document.hidden));
 
         const startFill = (marker) => {
             window.cancelAnimationFrame(fillRaf);
@@ -111,6 +139,71 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
                 window.clearInterval(probe);
             }
         }, 250);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const slider = document.querySelector('.lp-hero-slider');
+        if (!slider || slider.dataset.lpHeroDrag) return;
+        slider.dataset.lpHeroDrag = '1';
+        const smooth = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+        let drag = null;
+        let moved = false;
+
+        const slideOffsets = (track) => {
+            const base = track.firstElementChild ? track.firstElementChild.offsetLeft : 0;
+            return Array.from(track.children).map((slide) => slide.offsetLeft - base);
+        };
+        const nearest = (offsets, left) => offsets.reduce(
+            (best, offset, i) => (Math.abs(offset - left) < Math.abs(offsets[best] - left) ? i : best),
+            0
+        );
+        const settle = (track, left) => {
+            const done = () => drag || track.classList.remove('lp-hero-dragging');
+            if (Math.abs(track.scrollLeft - left) < 1) return done();
+            track.addEventListener('scrollend', done, { once: true });
+            window.setTimeout(done, 700);
+            track.scrollTo({ left, behavior: smooth });
+        };
+
+        slider.addEventListener('pointerdown', (event) => {
+            if (event.pointerType !== 'mouse' || event.button !== 0) return;
+            const track = slider.querySelector('[data-track]');
+            if (!track) return;
+            drag = { track, x: event.clientX, left: track.scrollLeft };
+            moved = false;
+        });
+        slider.addEventListener('pointermove', (event) => {
+            if (!drag) return;
+            const dx = event.clientX - drag.x;
+            if (!moved && Math.abs(dx) < 5) return;
+            if (!moved) {
+                moved = true;
+                slider.setPointerCapture(event.pointerId);
+                drag.track.classList.add('lp-hero-dragging');
+            }
+            drag.track.scrollLeft = drag.left - dx;
+        });
+        const release = (event) => {
+            if (!drag) return;
+            const { track, x, left } = drag;
+            drag = null;
+            if (!moved) return;
+            const offsets = slideOffsets(track);
+            const dx = event.clientX - x;
+            const threshold = Math.min(80, track.clientWidth * 0.1);
+            let index = nearest(offsets, left);
+            if (Math.abs(dx) >= threshold) index += dx < 0 ? 1 : -1;
+            settle(track, offsets[Math.max(0, Math.min(index, offsets.length - 1))]);
+        };
+        slider.addEventListener('pointerup', release);
+        slider.addEventListener('pointercancel', release);
+        slider.addEventListener('dragstart', (event) => event.preventDefault());
+        slider.addEventListener('click', (event) => {
+            if (!moved) return;
+            moved = false;
+            event.preventDefault();
+            event.stopPropagation();
+        }, true);
     });
 </script>
 <?php $hyvaCsp->registerInlineScript() ?>
