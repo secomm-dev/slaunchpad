@@ -1,0 +1,145 @@
+ok:   registry YAML parses (pyyaml)
+--- specs (project) ---
+WARN: /var/www/projects/slaunchpad/.ai/records/features/FEAT-KQ6WC4.md: missing/invalid specification_level
+WARN: /var/www/projects/slaunchpad/.ai/records/features/FEAT-HEHJQ4.md: missing/invalid specification_level
+WARN: /var/www/projects/slaunchpad/.ai/records/features/FEAT-YESRCX.md: missing/invalid specification_level
+WARN: /var/www/projects/slaunchpad/.ai/records/features/FEAT-ZKD4VA.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-Z3DAH5.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-8TXS2P.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-YQSS3M.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-X0XKH4.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-AP6YXP.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-938NGT.md: missing/invalid specification_level
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-S0M7YC.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/PLAN-TASKN35E28-vietqr-payment.md: missing/invalid specification_level
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-H9R1HX.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-7RK8Q3.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-ZHFVRH.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-WXBQYZ.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-K09G8Y.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-CR4D1V.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-6TEBY6.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-E1YAHT.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-0NNZCW.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-XYDQDF.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/tasks/TASK-4F1K3N.md: spec_status is not VALID
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-D4QK1Q.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-K8T3WR.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-Q8L5RD.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-4TWFGD.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-V2N9DL.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Constraints / Rules
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-7M4KQX.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-5QN7T9.md: Mini-Spec missing Goal
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-5QN7T9.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-5QN7T9.md: Mini-Spec missing Out of Scope
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-5QN7T9.md: Mini-Spec missing Acceptance Criteria
+WARN: /var/www/projects/slaunchpad/.ai/records/bugs/BUG-NTQ0H2.md: Mini-Spec missing Expected Behavior
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-BRKHN4-ghtk-carrier-rate.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-2V0AEV-apply-address-dropdown-admin-msi-source.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-SQY42T-apply-address-dropdown-admin-order-form.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-KV328X-ghtk-order-sync.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-YJENM2-ghtk-address-mapping.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-NDASAD-shippingcore-origin-contract.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-4ZV5NG-apply-address-dropdown-admin-customer-form.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-N35E28-vietqr-payment.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-WN0PBT-abandoned-cart-email.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-E0SK0H-spec-naming-propagation.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-86NX9T-ghtk-carrier-tracking.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-H9R1HX-carrier-rate-fallback.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-KM6YAT-ghtk-native-label-flow.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-3F6QWZ-review-install-shipping-modules.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-KCBDDT-generalize-addressdropdown-remove-vn-leak.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-8WSERX-apply-address-dropdown-admin-store-information.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-Z132WA-spec-first-governance.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-N1VBSM-performance-engineering-baseline.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-88NDV5-apply-hyva-theme-addressdropdown.md: missing Specification reference
+WARN: /var/www/projects/slaunchpad/.ai/tickets/TASK-FD6A9X-hyva-cart-estimate-city-cascade.md: missing Specification reference
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-0F96X5.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-0F96X5.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-0F96X5.md: Mini-Spec missing Acceptance Criteria
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-JZXM66-city-admin-selfservice.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-JZXM66-city-admin-selfservice.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-JZXM66-city-admin-selfservice.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-JZXM66-city-admin-selfservice.md: Mini-Spec missing Acceptance Criteria
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-ZR2ZNS.md: spec_status is not VALID
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-AEZTTB.md: spec_status is not VALID
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-78PVR0-ghn-rate-classification-audit.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-78PVR0-ghn-rate-classification-audit.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-78PVR0-ghn-rate-classification-audit.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-78PVR0-ghn-rate-classification-audit.md: Mini-Spec missing Acceptance Criteria
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/tasks/TASK-BS91A3.md: spec_status is not VALID
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-4WYXCB.md: FULL specification_ref does not resolve: Embedded Full Spec
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-PWP31X.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-PWP31X.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-8G0WCT.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-8G0WCT.md: Mini-Spec missing Acceptance Criteria
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-MNEZ92.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-AMRBJR.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-AMRBJR.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-AMRBJR.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-EFWXPA.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-W3XTW4.md: Mini-Spec missing Acceptance Criteria
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-CW6KDK.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-CW6KDK.md: Mini-Spec missing Constraints / Rules
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-CW6KDK.md: Mini-Spec missing Out of Scope
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/records/bugs/BUG-H929MC.md: Mini-Spec missing Expected Behavior
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/specs/SPEC-FEAT-J06WXZ-secomm-ui-widgets.md: naming mismatch: filename owner requires header "Specification ID: SPEC-FEAT-J06WXZ"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/specs/SPEC-FEAT-ZKD4VA-vietqr-payment.md: naming mismatch: filename owner requires header "Specification ID: SPEC-FEAT-ZKD4VA"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/specs/SPEC-TASK-7AJ3K8-ghtk-shippingcore-alignment.md: naming mismatch: filename owner requires header "Specification ID: SPEC-TASK-7AJ3K8"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/specs/SPEC-TASK-EDS9T5-zalopay-payment-first-only.md: naming mismatch: filename owner requires header "Specification ID: SPEC-TASK-EDS9T5"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/specs/SPEC-TASK-N1VBSM-performance-engineering-baseline.md: naming mismatch: filename owner requires header "Specification ID: SPEC-TASK-N1VBSM"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/specs/SPEC-TASK-XYDQDF-momo-refund-idempotency.md: naming mismatch: filename owner requires header "Specification ID: SPEC-TASK-XYDQDF"
+FAIL: IMPLEMENTATION BLOCKED — /var/www/projects/slaunchpad/.ai/specs/SPEC-TASK-YPWH9B-cod-risk-control.md: naming mismatch: filename owner requires header "Specification ID: SPEC-TASK-YPWH9B"
+FAIL: /var/www/projects/slaunchpad/.ai/plans/plan-abandonedcart-email.md: plan missing required Specification reference
+FAIL: /var/www/projects/slaunchpad/.ai/plans/TASK-Z3DAH5-implementation-plan.md: plan missing required Specification reference
+FAIL: /var/www/projects/slaunchpad/.ai/plans/PLAN-TASK-EDS9T5-zalopay-payment-first.md: plan missing required Specification reference
+FAIL: /var/www/projects/slaunchpad/.ai/plans/TASK-N1VBSM-implementation-plan.md: plan missing required Specification reference
+--- hyva-integration (project) ---
+ok:   project Hyva dev-skills installed: 10
+ok:   integration metadata present: SECOMM_OVERLAY.md
+ok:   integration metadata present: provenance.yaml
+ok:   integration metadata present: version-lock.yaml
+ok:   integration metadata present: upstream-manifest.yaml
+ok:   Codex routing present (STATIC)
+ok:   Copilot routing present (STATIC)
+ok:   Codex/Copilot discoverability = STATIC VALIDATION ONLY (natural-language routing; runtime invocation not automated)
+ok:   toolkit-version hyva stamp present
+----------------------------------------
+result (project): 40 FAIL, 0 WARN
+INVALID

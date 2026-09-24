@@ -1,0 +1,80 @@
+{
+ "375": {
+  "before": {
+   "scrollLeft": 0,
+   "snappedToTile": true,
+   "arrows": false,
+   "dragging": false,
+   "cursor": "grab"
+  },
+  "midDrag": {
+   "scrollLeft": 250,
+   "snappedToTile": false,
+   "arrows": false,
+   "dragging": true,
+   "cursor": "grabbing"
+  },
+  "afterDrag": {
+   "scrollLeft": 180,
+   "snappedToTile": true,
+   "arrows": false,
+   "dragging": false,
+   "cursor": "grab"
+  },
+  "navigatedByDrag": false,
+  "clickOpens": true,
+  "pageErrors": []
+ },
+ "768": {
+  "before": {
+   "scrollLeft": 0,
+   "snappedToTile": true,
+   "arrows": false,
+   "dragging": false,
+   "cursor": "grab"
+  },
+  "midDrag": {
+   "scrollLeft": 250,
+   "snappedToTile": false,
+   "arrows": false,
+   "dragging": true,
+   "cursor": "grabbing"
+  },
+  "afterDrag": {
+   "scrollLeft": 180,
+   "snappedToTile": true,
+   "arrows": false,
+   "dragging": false,
+   "cursor": "grab"
+  },
+  "navigatedByDrag": false,
+  "clickOpens": true,
+  "pageErrors": []
+ },
+ "1440": {
+  "before": {
+   "scrollLeft": 0,
+   "snappedToTile": true,
+   "arrows": false,
+   "dragging": false,
+   "cursor": "grab"
+  },
+  "midDrag": {
+   "scrollLeft": 250,
+   "snappedToTile": false,
+   "arrows": false,
+   "dragging": true,
+   "cursor": "grabbing"
+  },
+  "afterDrag": {
+   "scrollLeft": 233,
+   "snappedToTile": true,
+   "arrows": false,
+   "dragging": false,
+   "cursor": "grab"
+  },
+  "navigatedByDrag": false,
+  "clickOpens": true,
+  "pageErrors": []
+ }
+}

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed inserting/editing a Secomm UI widget from a WYSIWYG (TinyMCE) editor: `ValidateWidgetParameters` typed `$asIs` as `bool`, but `BuildWidget` posts `as_is` only outside WYSIWYG, so TinyMCE inserts passed `null` and failed with a TypeError ("An error has happened during application run"). `$asIs` is now passed through untyped like the core method (SLP-267).
 - Fixed all schema-driven `media-image` controls to persist storefront media URLs instead of temporary Admin directive URLs.
 - Resolved portable widget media paths to the current store's absolute media base URL during storefront rendering.
 - Added schema-driven Admin validation for required fields, conditional required fields and minimum repeater item counts before widget insertion.

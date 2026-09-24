@@ -1,0 +1,153 @@
+{
+  "375": {
+    "heading": "Category",
+    "headingSize": "20px",
+    "tiles": 6,
+    "tileW": [
+      172,
+      172,
+      172,
+      172,
+      172,
+      172
+    ],
+    "tileBg": "rgb(231, 241, 232)",
+    "labels": [
+      "Chair",
+      "Table",
+      "Cabinet",
+      "Lighting",
+      "Bed",
+      "Nightstand"
+    ],
+    "labelTransform": "uppercase",
+    "hrefs": [
+      "/living-room/living-room-seating.html",
+      "/living-room/living-room-tables.html",
+      "/living-room/living-room-storage.html",
+      "/living-room/living-room-lighting.html",
+      "/bedroom/beds.html",
+      "/bedroom/nightstands.html"
+    ],
+    "imgsLoadedOrLazy": true,
+    "trackDisplay": "flex",
+    "overflowing": true,
+    "pagerVisible": true,
+    "markers": 6,
+    "pageHScroll": false,
+    "oldTiles": 0,
+    "dotClick": {
+      "scrollBefore": 0,
+      "scrollAfter": 360,
+      "active": 2
+    },
+    "pWrapped": {
+      "inTextElement": true,
+      "ps": 2,
+      "emptyPHeights": [
+        0,
+        0
+      ]
+    },
+    "pageErrors": []
+  },
+  "768": {
+    "heading": "Category",
+    "headingSize": "20px",
+    "tiles": 6,
+    "tileW": [
+      172,
+      172,
+      172,
+      172,
+      172,
+      172
+    ],
+    "tileBg": "rgb(231, 241, 232)",
+    "labels": [
+      "Chair",
+      "Table",
+      "Cabinet",
+      "Lighting",
+      "Bed",
+      "Nightstand"
+    ],
+    "labelTransform": "uppercase",
+    "hrefs": [
+      "/living-room/living-room-seating.html",
+      "/living-room/living-room-tables.html",
+      "/living-room/living-room-storage.html",
+      "/living-room/living-room-lighting.html",
+      "/bedroom/beds.html",
+      "/bedroom/nightstands.html"
+    ],
+    "imgsLoadedOrLazy": true,
+    "trackDisplay": "flex",
+    "overflowing": true,
+    "pagerVisible": true,
+    "markers": 6,
+    "pageHScroll": true,
+    "oldTiles": 0,
+    "dotClick": {
+      "scrollBefore": 0,
+      "scrollAfter": 360,
+      "active": 2
+    },
+    "pWrapped": {
+      "inTextElement": true,
+      "ps": 2,
+      "emptyPHeights": [
+        0,
+        0
+      ]
+    },
+    "pageErrors": []
+  },
+  "1440": {
+    "heading": "Category",
+    "headingSize": "20px",
+    "tiles": 6,
+    "tileW": [
+      210,
+      210,
+      210,
+      210,
+      210,
+      210
+    ],
+    "tileBg": "rgb(231, 241, 232)",
+    "labels": [
+      "Chair",
+      "Table",
+      "Cabinet",
+      "Lighting",
+      "Bed",
+      "Nightstand"
+    ],
+    "labelTransform": "uppercase",
+    "hrefs": [
+      "/living-room/living-room-seating.html",
+      "/living-room/living-room-tables.html",
+      "/living-room/living-room-storage.html",
+      "/living-room/living-room-lighting.html",
+      "/bedroom/beds.html",
+      "/bedroom/nightstands.html"
+    ],
+    "imgsLoadedOrLazy": true,
+    "trackDisplay": "grid",
+    "overflowing": false,
+    "pagerVisible": false,
+    "markers": 6,
+    "pageHScroll": false,
+    "oldTiles": 0,
+    "pWrapped": {
+      "inTextElement": true,
+      "ps": 2,
+      "emptyPHeights": [
+        0,
+        0
+      ]
+    },
+    "pageErrors": []
+  }
+}

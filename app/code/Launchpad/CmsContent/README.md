@@ -12,6 +12,7 @@ Theme layer giữ markup trong CMS PageBuilder content; module này chứa phầ
 | `FlashSaleList` | widget (extends `Magento\CatalogWidget\Block\Product\ProductsList`) | Product slider + countdown "Sale ending in". Option thêm: `sale_end` (store time, `YYYY-MM-DD HH:MM:SS`; rỗng = nửa đêm kế tiếp), `products_count`, `condition`. |
 | `Block\Blog\Journal` | block | Latest Magefan blog posts → slider mobile / grid desktop. Tham số `count` (default 3). |
 | Newsletter CMS block | data patch | `identifier=homepage-newsletter` — form subscribe, chèn qua `{{widget type="Magento\Cms\Block\Widget\Block" block_id="…"}}`. |
+| `Setup\Patch\Data\ConvertHomepageCategoryToSlider` | data patch | SLP-267: Category section PB columns → PB Text element chứa widget `Secomm UI` `categories_a` (slider quản lý bằng item). Idempotent. |
 
 ## Templates
 

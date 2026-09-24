@@ -935,9 +935,40 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
         background-color 0.3s ease !important;
 }
 
-/* v4.9.7 (user, Figma design): Category slider = HTML element (KHÔNG PB
-   column), track tràn ra mép phải viewport; dots SnapSlider autoPager —
-   CHỈ mobile/tablet (desktop design không có dot). */
+/* SLP-267 (TASK-HARDAR): Category = Secomm UI widget `categories_a` (theme
+   override Secomm_UiWidget/templates/components/categories/a.phtml) — admin
+   quản lý item trong form widget, KHÔNG còn PB columns (v4.9.8).
+   Mọi breakpoint = SnapSlider rail TRÀN ra mép phải viewport (như Flash /
+   Everyday more value; body có overflow-x: clip): margin âm = padding-end =
+   phần tràn → content box của track = đúng bề rộng section (% của tile tính
+   theo khung content), tile dư ló sang vùng tràn, cuộn hết thì tile cuối
+   dừng thẳng mép content. Mobile/tablet: tile 172px + 1 dot/tile. Desktop:
+   6 tile/khung, không dot. KHÔNG nút ‹ › (user tắt). Chuột kéo được
+   (sliders-init: .is-dragging).
+   Tile look giữ nguyên v4.9.8. */
+.lp-cat-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.lp-cat-heading {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 28px;
+    color: #000;
+}
+
+.lp-cat-browse {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: #588f60;
+}
+
 .lp-cat-track {
     display: flex;
     flex-wrap: nowrap;
@@ -945,40 +976,64 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
-    padding-block-end: 0.5rem;
     margin-inline-end: calc(50% - 50vw);
-    padding-inline-end: 2.5rem;
+    padding-block-end: 0.5rem;
+    padding-inline-end: calc(50vw - 50%);
 }
 
 .lp-cat-track::-webkit-scrollbar {
     display: none;
 }
 
+@media (pointer: fine) {
+    .lp-cat-track {
+        cursor: grab;
+    }
+}
+
+.lp-cat-track.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+    user-select: none;
+}
+
+.lp-cat-track.is-dragging .lp-cat-tile {
+    pointer-events: none;
+}
+
 .lp-cat-tile {
     display: flex;
-    flex: 0 0 auto;
+    flex: 0 0 172px;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
     align-items: center;
-    width: 172px;
     scroll-snap-align: start;
-    background-color: #fff;
-    border-radius: 0.5rem;
-    padding: 0.75rem 0.5rem 0.625rem;
+    background-color: #e7f1e8;
+    border-radius: 1rem;
+    padding: 1rem;
+    text-decoration: none;
 }
 
 .lp-cat-tile img {
-    width: 120px;
-    height: 120px;
+    display: block;
+    width: 100%;
+    height: 6rem;
     object-fit: contain;
+    border-radius: 0.5rem;
 }
 
 .lp-cat-tile-label {
-    font-size: 0.75rem;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
     font-weight: 500;
-    line-height: 1rem;
-    letter-spacing: 0.02em;
-    color: #1e293b;
+    line-height: 20px;
+    text-transform: uppercase;
+    color: #293e2d;
+}
+
+.lp-cat-tile:hover .lp-cat-tile-label {
+    color: #588f60;
 }
 
 .lp-cat-slider nav[data-pager] {
@@ -991,6 +1046,7 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
 .lp-cat-slider nav[data-pager] .snap-marker {
     width: 8px;
     height: 8px;
+    padding: 0;
     border: 0;
     border-radius: 9999px;
     background-color: #a9ccae;
@@ -1004,7 +1060,35 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
     opacity: 1;
 }
 
+/* SnapSlider đánh aria-current cho MỌI tile đang hiện (2+ tile/khung) — chỉ
+   dot đầu tiên là pill active, các dot "current" sau trông như inactive. */
+.lp-cat-slider nav[data-pager] .snap-marker[aria-current='true'] ~ .snap-marker[aria-current='true'] {
+    width: 8px;
+    background-color: #a9ccae;
+    opacity: 0.8;
+}
+
+/* mobile_slider = No: mobile/tablet grid 2 cột, không rail/tràn. */
+@media (max-width: 63.98rem) {
+    .lp-cat-slider--static .lp-cat-track {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: visible;
+        margin-inline-end: 0;
+        padding-inline-end: 0;
+    }
+}
+
 @media (min-width: 64rem) {
+    .lp-cat-track {
+        gap: 1.5rem;
+        padding-block-end: 0;
+    }
+
+    .lp-cat-tile {
+        flex-basis: calc((100% - 7.5rem) / 6);
+    }
+
     .lp-cat-slider nav[data-pager] {
         display: none;
     }
@@ -1215,53 +1299,14 @@ body.cms-index-index [data-content-type="row"][data-appearance="contained"] {
     margin-inline: auto !important;
 }
 
-/* ---- category slider section spacing (v4.9.7: HTML slider thay columns) ---- */
-/* v4.9.8 (user: Admin stage không render khi content có html-slider element →
-   quay lại PB columns; bleeding + dots làm bằng CSS/JS trên columns):
-   mobile/tablet = flex rail swipe; desktop = grid 6 cột tĩnh, không dot. */
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
-    margin-block-start: 2rem !important;
-    padding-inline: 0.5rem !important;
+/* SLP-267: widget nằm trong PB Text element (TinyMCE) — sau admin Save,
+   TinyMCE bọc directive trong <p>; <section> đóng <p> sớm → 2 <p> chỉ chứa
+   whitespace quanh slider (không khớp :empty) → bỏ margin, p cao 0. */
+body.cms-index-index [data-content-type="text"]:has(> .lp-cat-slider) > p {
+    margin-block: 0;
 }
 
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 0.5rem !important;
-    overflow-x: auto !important;
-    padding-block-end: 0.5rem !important;
-}
-
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
-    flex: 0 0 auto !important;
-}
-
-@media (max-width: 63.98rem) {
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
-        width: 172px !important;
-    }
-}
-
-@media (min-width: 64rem) {
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
-        margin-block-start: 2.5rem !important;
-        padding-inline: 2.5rem !important;
-    }
-
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
-        display: grid !important;
-        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-        gap: 1.5rem !important;
-        overflow: visible !important;
-        padding-block-end: 0 !important;
-    }
-}
-
-/* ---- category slider section spacing (v4.9.7: HTML slider thay columns) ---- */
+/* ---- category slider section spacing (SLP-267: widget categories_a) ---- */
 body.cms-index-index [data-content-type="row"]:has(.lp-cat-slider) {
     margin-block-start: 2rem !important;
     padding-inline: 0.5rem !important;
@@ -1271,80 +1316,6 @@ body.cms-index-index [data-content-type="row"]:has(.lp-cat-slider) {
     body.cms-index-index [data-content-type="row"]:has(.lp-cat-slider) {
         margin-block-start: 2.5rem !important;
         padding-inline: 2.5rem !important;
-    }
-}
-
-/* ---- category slider (v4.9.8 FINAL): tiles = PB columns — mobile/tablet
-   flex rail swipe 172px + dots; desktop grid 6 cột tĩnh KHÔNG dot (design).
-   Dots tạo bằng JS sliders-init (.lp-tiles-dots) — SnapSlider không khởi tạo
-   được trên columns (thiếu [data-track] con). ---- */
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
-    margin-block-start: 2rem !important;
-    padding-inline: 0.5rem !important;
-}
-
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 0.5rem !important;
-    overflow-x: auto !important;
-    padding-block-end: 0.5rem !important;
-}
-
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
-    flex: 0 0 auto !important;
-}
-
-@media (max-width: 63.98rem) {
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
-        width: 172px !important;
-    }
-}
-
-.lp-tiles-dots {
-    display: flex;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1rem;
-}
-
-.lp-tiles-dots .lp-tiles-dot {
-    width: 8px;
-    height: 8px;
-    padding: 0;
-    border: 0;
-    border-radius: 9999px;
-    background-color: #a9ccae;
-    opacity: 0.8;
-    cursor: pointer;
-}
-
-.lp-tiles-dots .lp-tiles-dot[aria-current='true'] {
-    width: 24px;
-    background-color: #588f60;
-    opacity: 1;
-}
-
-@media (min-width: 64rem) {
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
-        margin-block-start: 2.5rem !important;
-        padding-inline: 2.5rem !important;
-    }
-
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
-        display: grid !important;
-        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-        gap: 1.5rem !important;
-        overflow: visible !important;
-        padding-block-end: 0 !important;
-    }
-
-    .lp-tiles-dots {
-        display: none !important;
     }
 }
 
@@ -1494,19 +1465,19 @@ body.cms-index-index [data-content-type="row"]:has([data-content-type="products"
 }
 
 /* ---- REAL SPACES copy (contained row: heading + button, no columns/modules) ---- */
-body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-tile)) {
+body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-cat-slider)) {
     margin-block-start: 1rem !important;
     padding-inline: 0.5rem !important;
 }
 
 @media (min-width: 48rem) {
-    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-tile)) {
+    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-cat-slider)) {
         padding-inline: 1.5rem !important;
     }
 }
 
 @media (min-width: 64rem) {
-    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-tile)) {
+    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-cat-slider)) {
         margin-block-start: 1.5rem !important;
         padding-inline: 2.5rem !important;
     }
