@@ -15,3 +15,5 @@
 "Giao dịch đang refund!","Transaction in progress."
 "Dữ liệu yêu cầu không hợp lệ","Invalid request data."
 "Chữ ký không hợp lệ","Invalid signature."
+"Your payment was successful, but an error occurred while finalizing your order. Please contact support with reference %1.","Your payment was successful, but an error occurred while finalizing your order. Please contact support with reference %1."
+"An error occurred while processing your transaction. Please contact support with reference %1.","An error occurred while processing your transaction. Please contact support with reference %1."

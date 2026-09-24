@@ -491,6 +491,27 @@ class ReturnProcessorTest extends TestCase
         $this->processor->process($this->params(['status' => '1']));
     }
 
+    /**
+     * Technical failure during finalization after verified PAID:
+     * surfaces customer-safe message informing payment succeeded but order failed,
+     * while keeping the attempt in PAID state for background recovery.
+     *
+     * @return void
+     */
+    public function testOrderFinalizationFailureSurfacesPaymentSuccessfulOrderFailedMessage(): void
+    {
+        $attempt = $this->newActiveAttempt();
+        $this->stubAttempt($attempt);
+        $this->stubSave();
+        $this->stubPaidQuery();
+        $this->orderFinalizer->method('finalizeOrRecover')
+            ->willThrowException(new \RuntimeException('Connection to queue service failed'));
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('Your payment was successful, but an error occurred while finalizing your order');
+        $this->processor->process($this->params(['status' => '1']));
+    }
+
     // ---- lookup / transport failures ----
 
     /**
