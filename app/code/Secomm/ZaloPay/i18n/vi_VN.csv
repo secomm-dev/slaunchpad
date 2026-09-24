@@ -49,6 +49,7 @@
 "Invalid ZaloPay return payload.","Dữ liệu trả về từ ZaloPay không hợp lệ."
 "Your ZaloPay payment was not completed.","Thanh toán ZaloPay của bạn chưa hoàn tất."
 "Your ZaloPay payment is still being processed. Please check back shortly.","Thanh toán ZaloPay của bạn đang được xử lý. Vui lòng quay lại sau ít phút."
+"The transaction has not been completed.","Giao dịch chưa được thực hiện"
 "Payment not found.","Không tìm thấy thanh toán."
 "Refund for order #%1","Hoàn tiền cho đơn hàng #%1"
 "Your payment was successful, but an error occurred while finalizing your order. Please contact support with reference %1.","Thanh toán của bạn đã thành công, nhưng hệ thống gặp sự cố khi hoàn tất đơn hàng. Vui lòng liên hệ bộ phận hỗ trợ với mã giao dịch %1."
