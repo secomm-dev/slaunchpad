@@ -17,8 +17,27 @@
         </arguments>
 
     </virtualType>
+    <!-- TASK-MCHN2T: the HTTP client's payment method logger. The core
+         Magento\Payment\Model\Method\Logger only writes when the Admin Debug
+         Mode flag (`payment/zalopay/debug`) is on; when it writes, records go
+         to the module's var/log/zalo-pay.log via the DEBUG handler below
+         instead of the global system.log. -->
+    <virtualType name="ZaloPayHttpDebugLogger" type="Secomm\ZaloPay\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">zalo-pay-http-debug</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="debug" xsi:type="object">ZaloPayDebugHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ZaloPayDebugHandler" type="Secomm\ZaloPay\Logger\DebugHandler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </virtualType>
     <virtualType name="ZaloPayLogger" type="Magento\Payment\Model\Method\Logger">
         <arguments>
+            <argument name="logger" xsi:type="object">ZaloPayHttpDebugLogger</argument>
             <argument name="config" xsi:type="object">ZaloPayConfig</argument>
         </arguments>
     </virtualType>
@@ -166,9 +185,19 @@
                 type="Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard"
                 sortOrder="10"/>
     </type>
+    <!-- Construction isolation (issue #20 / BUG-QFR2AY): the guard plugin
+         is built for EVERY payment method's placeOrder (it is registered
+         globally on QuoteManagement), so its constructor must not build
+         anything ZaloPay-only before the quote is confirmed as ZaloPay.
+         Method discrimination uses the literal method code (the facade is
+         not needed to compare a string); the attempt repository is a
+         generated Proxy — the real repository and its ResourceConnection
+         graph are constructed on first use, i.e. only on the ZaloPay
+         grant-validation path. -->
     <type name="Secomm\ZaloPay\Plugin\Quote\CartManagementPlaceOrderGuard">
         <arguments>
-            <argument name="method" xsi:type="object">ZaloPayFacade</argument>
+            <argument name="methodCode" xsi:type="string">zalopay</argument>
+            <argument name="attemptRepository" xsi:type="object">Secomm\ZaloPay\Model\PaymentAttemptRepository\Proxy</argument>
         </arguments>
     </type>
 
@@ -315,6 +344,28 @@
     <type name="Secomm\ZaloPay\Plugin\Model\Service\CreditmemoRefundPlugin">
         <arguments>
             <argument name="method" xsi:type="object">ZaloPayFacade</argument>
+        </arguments>
+    </type>
+
+    <!-- TASK-MCHN2T: read-only operator diagnostics CLI
+         (`zalopay:diagnose`). Reuses the canonical gateway commands - no
+         duplicated signing or HTTP logic, no lifecycle mutation. -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="zalopay_diagnose_command" xsi:type="object">
+                    Secomm\ZaloPay\Console\Command\DiagnoseCommand
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\ZaloPay\Console\Command\DiagnoseCommand">
+        <arguments>
+            <argument name="config" xsi:type="object">ZaloPayConfig</argument>
+            <argument name="commandPool" xsi:type="object">ZaloPayCommandPool</argument>
+            <argument name="refundQueryCommand" xsi:type="object">
+                Secomm\ZaloPay\Gateway\Command\RefundQueryCommand
+            </argument>
         </arguments>
     </type>
 

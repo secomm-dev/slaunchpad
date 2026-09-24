@@ -43,7 +43,7 @@
                     <label>Notify URL (IPN)</label>
                     <comment><![CDATA[MoMo POSTs the authoritative payment result here. Use your public URL, e.g. https://yourdomain.com/momo/payment/notify]]></comment>
                 </field>
-                <field id="momo_payment_action" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="payment_action" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Payment Action</label>
                     <source_model>Secomm\MoMo\Model\Adminhtml\Source\PaymentAction</source_model>
                 </field>

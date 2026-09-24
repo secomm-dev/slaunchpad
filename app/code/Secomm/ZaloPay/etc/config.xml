@@ -19,6 +19,10 @@
                 <order_status>pending_payment</order_status>
                 <title>ZaloPay</title>
                 <sandbox_flag>0</sandbox_flag>
+                <!-- TASK-MCHN2T: provider request/response debug payload logging
+                     (masked) - default OFF. Real error/critical incident logging
+                     is independent of this flag and always stays on. -->
+                <debug>0</debug>
                 <!-- Payment-first is the ONLY flow: the ZaloPay transaction is
                      created from the ACTIVE QUOTE and the Magento order is
                      placed only after the payment is verified (IPN/Return ->

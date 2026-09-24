@@ -1,12 +1,22 @@
 <?php
 /**
- * MoMo Notify (IPN) controller.
+ * MoMo Notify (IPN) controller — payment-first (MOMO-01).
  *
- * MoMo POSTs the authoritative payment result here. We verify the signature,
- * finalize the order, and reply HTTP 200 so MoMo stops retrying.
+ * MoMo POSTs the authoritative payment result here. The controller is THIN:
+ * parse the payload, delegate to IpnProcessor (outcomes only), serialize the
+ * MoMo HTTP/JSON contract. NO order lookup, NO signature checks, NO state
+ * mutations in the controller.
+ *
+ * HTTP mapping (spec §4.2):
+ *  - SUCCESS / ACK_RECONCILIATION -> 200 {"resultCode": 0} (stop retry);
+ *  - INVALID_CALLBACK             -> 200 resultCode 1 (stop retry);
+ *  - UNKNOWN_REFERENCE            -> 404 resultCode 1;
+ *  - RETRYABLE_FAILURE            -> 500 resultCode 1 — MoMo's retry
+ *    policy is the AC9 money-real-but-not-finalized recovery driver (no
+ *    local recovery cron in scope).
  *
  * @author    Secomm Teams
- * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
+ * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
  * @package   Secomm_MoMo
  */
 declare(strict_types=1);
@@ -19,48 +29,37 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Serialize\Serializer\Json as SerializerJson;
-use Magento\Payment\Gateway\Command\CommandPoolInterface;
-use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
-use Magento\Payment\Gateway\Helper\ContextHelper;
-use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
+use Secomm\MoMo\Service\IpnProcessor;
 
 /**
- * MoMo Notify (IPN) controller — composition style.
+ * MoMo Notify (IPN) controller — thin delegate, composition style.
  */
 class Notify implements CsrfAwareActionInterface, HttpPostActionInterface, HttpGetActionInterface
 {
     /**
-     * Constructor
+     * Notify controller constructor.
      *
      * @param Http $request
      * @param JsonFactory $resultJsonFactory
-     * @param CommandPoolInterface $commandPool
-     * @param PaymentDataObjectFactory $paymentDataObjectFactory
-     * @param OrderRepositoryInterface $orderRepository
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param SerializerJson $serializer
+     * @param IpnProcessor $ipnProcessor
      * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly Http $request,
         private readonly JsonFactory $resultJsonFactory,
-        private readonly CommandPoolInterface $commandPool,
-        private readonly PaymentDataObjectFactory $paymentDataObjectFactory,
-        private readonly OrderRepositoryInterface $orderRepository,
-        private readonly SearchCriteriaBuilder $searchCriteriaBuilder,
         private readonly SerializerJson $serializer,
+        private readonly IpnProcessor $ipnProcessor,
         private readonly LoggerInterface $logger
     ) {
     }
 
     /**
-     * Handle the MoMo IPN POST.
+     * Handle the MoMo IPN POST/GET.
      *
      * @return Json
      */
@@ -68,67 +67,46 @@ class Notify implements CsrfAwareActionInterface, HttpPostActionInterface, HttpG
     {
         $resultJson = $this->resultJsonFactory->create();
 
-        $rawBody = $this->request->getContent();
-        $response = $rawBody ? (array)$this->serializer->unserialize($rawBody) : $this->request->getParams();
+        $rawBody = (string)$this->request->getContent();
+        $payload = $rawBody !== ''
+            ? (array)$this->serializer->unserialize($rawBody)
+            : $this->request->getParams();
 
         try {
-            $incrementId = (string)($response['orderId'] ?? '');
-            $order = $this->loadOrderByIncrementId($incrementId);
-
-            if ($order === null) {
-                // Unknown order — do not acknowledge as success (could be spam/probe).
-                $resultJson->setHttpResponseCode(404);
-
-                return $resultJson->setData(['resultCode' => 1, 'message' => 'Order not found']);
-            }
-
-            if ($order->getState() !== Order::STATE_PENDING_PAYMENT) {
-                // Already processed (idempotent) — acknowledge so MoMo stops retrying.
-                return $resultJson->setData(['resultCode' => 0]);
-            }
-
-            $payment = $order->getPayment();
-            ContextHelper::assertOrderPayment($payment);
-            $paymentDataObject = $this->paymentDataObjectFactory->create($payment);
-
-            $this->commandPool->get('notify')->execute([
-                'payment' => $paymentDataObject,
-                'response' => $response,
-            ]);
-
-            return $resultJson->setData(['resultCode' => 0]);
+            $outcome = $this->ipnProcessor->process($payload);
         } catch (\Exception $e) {
-            $this->logger->error('MoMo notify failed: ' . $e->getMessage(), ['exception' => get_class($e)]);
-
-            // Non-2xx makes MoMo retry the IPN.
+            // Defensive: the processor returns outcomes and should not throw,
+            // but a crash here must not leak internals and must be retryable
+            // (MoMo retries on 5xx).
+            $this->logger->critical('MoMo IPN processing crashed: ' . $e->getMessage());
             $resultJson->setHttpResponseCode(500);
 
-            return $resultJson->setData(['resultCode' => 1, 'message' => $e->getMessage()]);
+            return $resultJson->setData(['resultCode' => 1, 'message' => 'Temporary failure']);
+        }
+
+        switch ($outcome) {
+            case IpnProcessor::OUTCOME_SUCCESS:
+            case IpnProcessor::OUTCOME_ACK_RECONCILIATION:
+                return $resultJson->setData(['resultCode' => 0]);
+            case IpnProcessor::OUTCOME_UNKNOWN_REFERENCE:
+                $resultJson->setHttpResponseCode(404);
+
+                return $resultJson->setData(['resultCode' => 1, 'message' => 'Reference not found']);
+            case IpnProcessor::OUTCOME_INVALID_CALLBACK:
+                return $resultJson->setData(['resultCode' => 1, 'message' => 'Invalid callback']);
+            case IpnProcessor::OUTCOME_RETRYABLE_FAILURE:
+            default:
+                $resultJson->setHttpResponseCode(500);
+
+                return $resultJson->setData(['resultCode' => 1, 'message' => 'Temporary failure']);
         }
     }
 
     /**
-     * Load an order by increment id via the repository (no deprecated ->load()).
+     * Create exception in case CSRF validation failed.
      *
-     * @param string $incrementId
-     * @return \Magento\Sales\Api\Data\OrderInterface|null
-     */
-    private function loadOrderByIncrementId(string $incrementId)
-    {
-        if ($incrementId === '') {
-            return null;
-        }
-
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', $incrementId)
-            ->create();
-        $orders = $this->orderRepository->getList($searchCriteria)->getItems();
-
-        return $orders ? reset($orders) : null;
-    }
-
-    /**
-     * @inheritdoc
+     * @param RequestInterface $request
+     * @return InvalidRequestException|null
      */
     public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
     {
@@ -136,7 +114,10 @@ class Notify implements CsrfAwareActionInterface, HttpPostActionInterface, HttpG
     }
 
     /**
-     * @inheritdoc
+     * Perform custom request validation.
+     *
+     * @param RequestInterface $request
+     * @return bool|null
      */
     public function validateForCsrf(RequestInterface $request): ?bool
     {

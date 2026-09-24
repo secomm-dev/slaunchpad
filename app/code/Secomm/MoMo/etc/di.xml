@@ -1,14 +1,26 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Secomm MoMo DI (gateway facade + config). Commands wired incrementally per milestone.
+ * Secomm MoMo DI — payment-first order finalization (MOMO-01).
  *
  * @author    Secomm Teams
- * @copyright Copyright (c) 2024 Secomm (https://www.secomm.vn)
+ * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- MOMO-01-HF1 (issue #13): payment-attempt repository contract. The
+         global QuoteManagement placeOrder guard and every payment-first
+         service (PaymentAttemptManagement, IpnProcessor, OrderFinalizer,
+         PaymentAttemptLifecycle, ReturnProcessor) resolve this interface
+         from ObjectManager; with no preference ANY place-order path —
+         including non-MoMo/ZaloPay — fatals at plugin instantiation. -->
+    <preference for="Secomm\MoMo\Api\PaymentAttemptRepositoryInterface" type="Secomm\MoMo\Model\PaymentAttemptRepository"/>
+
+    <!-- MOMO-02: durable refund request persistence (independent connection). -->
+    <preference for="Secomm\MoMo\Api\Data\RefundRequestInterface" type="Secomm\MoMo\Model\RefundRequest"/>
+    <preference for="Secomm\MoMo\Api\RefundRequestRepositoryInterface" type="Secomm\MoMo\Model\RefundRequestRepository"/>
+
     <!-- Gateway config reader (methodCode = momo_payment) -->
     <virtualType name="MoMoConfig" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
@@ -66,7 +78,7 @@
         </arguments>
     </virtualType>
 
-    <!-- Create order command (/v2/gateway/api/create) -->
+    <!-- Create order command (/v2/gateway/api/create) — attempt-based payload -->
     <virtualType name="MoMoCreateOrderCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
             <argument name="requestBuilder" xsi:type="object">Secomm\MoMo\Gateway\Request\CreateOrderBuilder</argument>
@@ -77,57 +89,71 @@
         </arguments>
     </virtualType>
 
-    <!-- Refund command (/v2/gateway/api/refund) -->
+    <!-- v2/query command (server-side authoritative status for the Return
+         path). QueryValidator validates merchant identity + orderId/
+         requestId echoes against the EXACT request just sent (MoMo signs
+         the query request; the response carries no signature) — a
+         mismatch fails the command before any caller sees it. -->
+    <virtualType name="MoMoQueryTransferFactory" type="Secomm\MoMo\Gateway\Http\TransferFactory">
+        <arguments>
+            <argument name="urlPath" xsi:type="const">Secomm\MoMo\Model\Config::PATH_QUERY</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MoMoQueryCommand" type="Secomm\MoMo\Gateway\Command\QueryTransactionCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Secomm\MoMo\Gateway\Request\QueryDataBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">MoMoQueryTransferFactory</argument>
+            <argument name="client" xsi:type="object">MoMoHttpClient</argument>
+            <argument name="validator" xsi:type="object">Secomm\MoMo\Gateway\Validator\QueryValidator</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Refund command (/v2/gateway/api/refund) — MOMO-02: custom command
+         with durable identity + uncertainty-safe classification. The
+         transfer carries a 45s HTTP timeout (MoMo documents a 30s minimum
+         for refunds; the Laminas default ~10s would misclassify
+         slow-but-successful refunds as UNKNOWN). -->
     <virtualType name="MoMoRefundTransferFactory" type="Secomm\MoMo\Gateway\Http\TransferFactory">
         <arguments>
             <argument name="urlPath" xsi:type="const">Secomm\MoMo\Model\Config::PATH_REFUND</argument>
+            <argument name="clientConfig" xsi:type="array">
+                <item name="timeout" xsi:type="number">45</item>
+            </argument>
         </arguments>
     </virtualType>
-    <virtualType name="MoMoRefundCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+    <virtualType name="MoMoRefundQueryTransferFactory" type="Secomm\MoMo\Gateway\Http\TransferFactory">
         <arguments>
+            <argument name="urlPath" xsi:type="const">Secomm\MoMo\Model\Config::PATH_REFUND_QUERY</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MoMoRefundCommand" type="Secomm\MoMo\Gateway\Command\RefundCommand">
+        <arguments>
+            <argument name="manager" xsi:type="object">Secomm\MoMo\Service\RefundRequestManager</argument>
+            <argument name="classifier" xsi:type="object">Secomm\MoMo\Service\RefundResultClassifier</argument>
             <argument name="requestBuilder" xsi:type="object">Secomm\MoMo\Gateway\Request\RefundBuilder</argument>
             <argument name="transferFactory" xsi:type="object">MoMoRefundTransferFactory</argument>
             <argument name="client" xsi:type="object">MoMoHttpClient</argument>
             <argument name="handler" xsi:type="object">Secomm\MoMo\Gateway\Response\RefundHandler</argument>
-            <argument name="validator" xsi:type="object">Secomm\MoMo\Gateway\Validator\RefundValidator</argument>
+            <argument name="resultFactory" xsi:type="object">Magento\Payment\Gateway\Command\Result\ArrayResultFactory</argument>
         </arguments>
     </virtualType>
 
-    <!-- Command pool: get_pay_url (M2); refund/complete wired in M3-M4 -->
+    <!-- Command pool. NO `notify` entry: the IPN is processed by
+         IpnProcessor (outcomes + lifecycle), not a gateway command.
+         capture/cancel stay NullCommand: the local capture runs inside the
+         OrderFinalizer transaction, local only, no HTTP in TX. -->
     <virtualType name="MoMoCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="initialize" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
+                <item name="initialize" xsi:type="string">Secomm\MoMo\Gateway\Command\InitializeCommand</item>
                 <item name="get_pay_url" xsi:type="string">MoMoCreateOrderCommand</item>
-                <item name="notify" xsi:type="string">MoMoNotifyCommand</item>
+                <item name="query_transaction" xsi:type="string">MoMoQueryCommand</item>
                 <item name="refund" xsi:type="string">MoMoRefundCommand</item>
                 <item name="capture" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
                 <item name="cancel_order" xsi:type="string">Magento\Payment\Gateway\Command\NullCommand</item>
             </argument>
         </arguments>
     </virtualType>
-
-    <!-- Redirect controller needs the command pool -->
-    <type name="Secomm\MoMo\Controller\Payment\Redirect">
-        <arguments>
-            <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
-        </arguments>
-    </type>
-
-    <!-- Notify (IPN) command: validate signature + finalize order -->
-    <virtualType name="MoMoNotifyCommand" type="Secomm\MoMo\Gateway\Command\NotifyCommand">
-        <arguments>
-            <argument name="validator" xsi:type="object">Secomm\MoMo\Gateway\Validator\NotifyValidator</argument>
-            <argument name="handler" xsi:type="object">Secomm\MoMo\Gateway\Response\TransactionHandler</argument>
-        </arguments>
-    </virtualType>
-
-    <!-- Notify controller needs the command pool -->
-    <type name="Secomm\MoMo\Controller\Payment\Notify">
-        <arguments>
-            <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
-        </arguments>
-    </type>
 
     <!-- Payment method facade (Adapter — required by spec §10) -->
     <virtualType name="MoMoFacade" type="Magento\Payment\Model\Method\Adapter">
@@ -140,4 +166,77 @@
             <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
         </arguments>
     </virtualType>
+
+    <!--
+        Server-side guard: a MoMo quote may only become a Sales Order
+        through the exact internal authorization opened by OrderFinalizer
+        (OrderPlacementAuthorization). Registered on the concrete
+        QuoteManagement (the single CartManagementInterface implementation
+        and the interface preference) so the plugin compiles for frontend,
+        webapi_rest, graphql and webapi_soap. Admin order creation is
+        unaffected: it places orders via QuoteManagement::submit()
+        (AdminOrder\Create::createOrder), which is not intercepted.
+    -->
+    <type name="Magento\Quote\Model\QuoteManagement">
+        <plugin name="momo_place_order_guard"
+                type="Secomm\MoMo\Plugin\Quote\CartManagementPlaceOrderGuard"
+                sortOrder="10"/>
+    </type>
+    <!-- Construction isolation (issue #20 / BUG-QFR2AY): the guard plugin
+         is built for EVERY payment method's placeOrder (it is registered
+         globally on QuoteManagement), so its constructor must not build
+         anything MoMo-only before the quote is confirmed as MoMo. Method
+         discrimination uses the literal method code (the facade is not
+         needed to compare a string); the attempt repository is a generated
+         Proxy — the real repository and its ResourceConnection graph are
+         constructed on first use, i.e. only on the MoMo grant-validation
+         path. -->
+    <type name="Secomm\MoMo\Plugin\Quote\CartManagementPlaceOrderGuard">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">momo_payment</argument>
+            <argument name="attemptRepository" xsi:type="object">Secomm\MoMo\Model\PaymentAttemptRepository\Proxy</argument>
+        </arguments>
+    </type>
+
+    <!-- Payment-first services -->
+    <type name="Secomm\MoMo\Model\PaymentAttemptManagement">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
+            <argument name="method" xsi:type="object">MoMoFacade</argument>
+            <argument name="config" xsi:type="object">MoMoConfig</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\MoMo\Service\OrderFinalizer">
+        <arguments>
+            <argument name="method" xsi:type="object">MoMoFacade</argument>
+            <argument name="config" xsi:type="object">MoMoConfig</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\MoMo\Service\ReturnProcessor">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
+        </arguments>
+    </type>
+
+    <!-- MOMO-02: operator refund tooling + creditmemo linkage backfill.
+         The resolve command queries /v2/gateway/api/refund/query (query
+         only — the refund itself is never re-posted with a new identity). -->
+    <type name="Secomm\MoMo\Console\Command\RefundResolveCommand">
+        <arguments>
+            <argument name="transferFactory" xsi:type="object">MoMoRefundQueryTransferFactory</argument>
+            <argument name="client" xsi:type="object">MoMoHttpClient</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="momoRefundList" xsi:type="object">Secomm\MoMo\Console\Command\RefundListCommand</item>
+                <item name="momoRefundResolve" xsi:type="object">Secomm\MoMo\Console\Command\RefundResolveCommand</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Sales\Model\Service\CreditmemoService">
+        <plugin name="momo_creditmemo_refund_linker"
+                type="Secomm\MoMo\Plugin\Sales\CreditmemoService"/>
+    </type>
 </config>

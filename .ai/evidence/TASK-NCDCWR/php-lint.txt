@@ -1,0 +1,3 @@
+No syntax errors detected in /var/www/html/app/code/Secomm/MoMo/Model/Config.php
+No syntax errors detected in /var/www/html/app/code/Secomm/MoMo/Service/OrderFinalizer.php
+No syntax errors detected in /var/www/html/app/code/Secomm/MoMo/Test/Unit/Service/OrderFinalizerTest.php

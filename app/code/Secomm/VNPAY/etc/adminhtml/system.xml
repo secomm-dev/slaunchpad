@@ -39,6 +39,10 @@
                                        sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Payment URL</label>
                 </field>
+                <field id="api_url" translate="label" type="text"
+                       sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>API URL (QueryDR / Refund)</label>
+                </field>
                 <field id="tmn_code" translate="label" type="text"
                        sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Terminal Code</label>
@@ -46,6 +50,19 @@
                 <field id="hash_code" translate="label" type="text"
                        sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Hash Code</label>
+                </field>
+                <field id="version" translate="label" type="text"
+                       sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>API Version</label>
+                    <comment>vnp_Version sent to VNPAY (e.g. 2.1.0). Change only when VNPAY updates the protocol.</comment>
+                </field>
+                <field id="logo" translate="label comment" type="image" sortOrder="17" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Checkout Logo</label>
+                    <backend_model>Secomm\VNPAY\Model\System\Config\Backend\Logo</backend_model>
+                    <upload_dir config="system/filesystem/media" scope_info="1">vnpay</upload_dir>
+                    <base_url type="media" scope_info="1">vnpay</base_url>
+                    <comment><![CDATA[Allowed file types: png, jpg, jpeg, webp (SVG is not allowed). Overrides the bundled VNPAY logo at checkout. Leave empty to use the default module logo.]]></comment>
                 </field>
                 <field id="min_order_total" translate="label" type="text"
                        sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">

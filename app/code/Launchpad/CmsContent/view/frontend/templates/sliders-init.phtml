@@ -1,0 +1,102 @@
+<?php
+/**
+ * One shared SnapSlider init (TASK-0NNZCW v4.3): card gallery sliders
+ * ([data-lp-card-slider], auto pager = design mini dots) and section sliders
+ * ([data-lp-slider], auto pager + grouped markers). Idempotent per element.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+?>
+<script>
+    'use strict';
+    window.addEventListener('DOMContentLoaded', () => {
+        if (typeof SnapSlider === 'undefined') return;
+        document.querySelectorAll('[data-lp-slider], [data-lp-card-slider], [data-lp-tiles-slider]').forEach((el) => {
+            if (el.dataset.lpSliderInit) return;
+            el.dataset.lpSliderInit = '1';
+            new SnapSlider(el, { autoPager: true, groupPager: true });
+            // v4.9.2 (user): bấm dot của card gallery làm trượt cả product slider
+            // ngoài. 2 nguyên nhân: (1) click bubble lên root slider ngoài,
+            // SnapSlider ngoài cũng xử lý pager; (2) SnapSlider scroll bằng
+            // `scrollIntoView` — cuộn MỌI ancestor cuộn được, kể cả track ngoài.
+            // stopPropagation không chặn được (2) → chặn ở CAPTURE phase trên
+            // root gallery, tự scroll track gallery bằng scrollTo (chỉ cuộn đúng
+            // element đó), để SnapSlider không chạy handler gốc.
+            if (el.matches('[data-lp-card-slider]')) {
+                const scrollToSlide = (slideId) => {
+                    const track = el.querySelector('[data-track]');
+                    const slide = slideId && el.querySelector(`[id="${CSS.escape(slideId)}"]`);
+                    if (!track || !slide) return;
+                    const delta = slide.getBoundingClientRect().left - track.getBoundingClientRect().left;
+                    track.scrollTo({ left: track.scrollLeft + delta, behavior: 'smooth' });
+                };
+                el.addEventListener('click', (event) => {
+                    const marker = event.target.closest('[data-pager] a, [data-pager] button');
+                    if (!marker) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    scrollToSlide(marker.getAttribute('href')?.slice(1) || marker.getAttribute('data-target-id'));
+                }, true);
+                el.addEventListener('keydown', (event) => {
+                    if (!event.target.closest('[data-pager]')) return;
+                    const keys = { ArrowRight: 'next', ArrowDown: 'next', ArrowLeft: 'prev', ArrowUp: 'prev' };
+                    if (!keys[event.key]) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const markers = Array.from(el.querySelectorAll('[data-pager] a, [data-pager] button'));
+                    const current = markers.findIndex((m) => m.getAttribute('aria-current') === 'true');
+                    const next = keys[event.key] === 'next' ? Math.min(current + 1, markers.length - 1) : Math.max(current - 1, 0);
+                    if (markers[next]) scrollToSlide(markers[next].getAttribute('href')?.slice(1) || markers[next].getAttribute('data-target-id'));
+                }, true);
+            }
+        });
+
+        // v4.9.8 (user, Figma 2151:16924): Category = slider ngang mobile + dots;
+        // desktop grid 6 cột tĩnh ẩn dot. Tiles là PB columns nên SnapSlider
+        // không khởi tạo được (thiếu [data-track] con) — dots viết tay,
+        // scrollTo cục bộ để không trượt ancestor.
+        const tilesRow = (() => {
+            const tile = document.querySelector('.lp-tile');
+            return tile ? tile.closest('[data-content-type="row"]') : null;
+        })();
+        const tilesHolder = tilesRow && (tilesRow.querySelector('[data-content-type="column-line"]:has(> [data-content-type="column"])') || tilesRow.querySelector('[data-content-type="column-group"]'));
+        if (tilesHolder && !tilesHolder.dataset.lpTilesDots) {
+            tilesHolder.dataset.lpTilesDots = '1';
+            const tiles = Array.from(tilesHolder.children).filter((c) => c.classList.contains('lp-tile'));
+            const nav = document.createElement('nav');
+            nav.className = 'lp-tiles-dots';
+            nav.setAttribute('aria-label', 'Category tiles');
+            const dots = tiles.map((tile, i) => {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'lp-tiles-dot';
+                dot.setAttribute('aria-label', 'Go to category ' + (i + 1));
+                dot.addEventListener('click', () => {
+                    tilesHolder.scrollTo({ left: tile.offsetLeft - tilesHolder.offsetLeft, behavior: 'smooth' });
+                });
+                nav.appendChild(dot);
+                return dot;
+            });
+            tilesHolder.after(nav);
+            const updateDots = () => {
+                let active = 0;
+                tiles.forEach((tile, i) => {
+                    if (tile.offsetLeft - tilesHolder.offsetLeft <= tilesHolder.scrollLeft + 8) active = i;
+                });
+                dots.forEach((d, i) => d.setAttribute('aria-current', i === active ? 'true' : 'false'));
+            };
+            tilesHolder.addEventListener('scroll', updateDots, { passive: true });
+            window.addEventListener('resize', updateDots);
+            updateDots();
+        }
+    });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

@@ -1,0 +1,155 @@
+<?php
+/**
+ * Hyvä Themes / Monsoon Consulting — see module LICENSE.
+ *
+ * Secomm override (TASK-Y23EMS / SLP-264): copy của Monsoon_HyvaAjaxAddToCart::hyva/script/addtocart.phtml
+ * (module source-committed, pattern Mageplaza — không sửa vendor in-place).
+ * Đổi khác so với module:
+ *   - Tách logic submit AJAX ra window.ajaxSubmitCart(form, recursive) để PDP gọi trực tiếp
+ *     từ success path của hyva.formValidation (Magento_Catalog::product/view/product-form.phtml).
+ *     PDP form KHÔNG bị setAjaxCart bind listener (selector DB chỉ còn .product_addtocart_form —
+ *     TASK-Z3DAH5) nên không xảy ra double-intercept (root cause count ×2 của TASK-Z3DAH5).
+ *   - Form có input type="file" → body FormData (multipart) thay vì URLSearchParams.
+ *   - window.setAjaxCart(selectors, recursive) giữ nguyên signature/behavior (bind form card PLP).
+ * Giữ nguyên so với module: loader/disable button/delay, events (product-addtocart-success,
+ * toggle-cart theo config checkout/options/ajax_cart_open_after_add_to_cart,
+ * reload-customer-section-data), đọc mage-messages cookie trong finally, error message.
+ */
+
+declare(strict_types=1);
+
+use Monsoon\HyvaAjaxAddToCart\Block\AddToCart;
+use Magento\Framework\Escaper;
+
+/**
+ * @var AddToCart $block
+ * @var Escaper $escaper
+ */
+
+$selectors = $block->getSelectors() ?? '.product_addtocart_form, #product_addtocart_form';
+?>
+<style>
+.is-loading > :not(.loader) {
+    visibility: hidden;
+}
+</style>
+<script>
+window.ajaxSubmitCart = async (form, recursive = true) => {
+    const delay = parseInt('<?= $escaper->escapeJs($block->getDelay()) ?>', 10);
+    const button = form.querySelector('button') ?
+            form.querySelector('button') :
+            document.getElementById('product-addtocart-button');
+    const loader = document.createElement('div');
+
+    loader.className = 'absolute inset-0 flex justify-center items-center loader';
+    loader.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" xml:space="preserve" width="32" height="32">
+            <path fill="#fff"
+                d="M73 50c0-12.7-10.3-23-23-23S27 37.3 27 50m3.9 0c0-10.5 8.5-19.1 19.1-19.1S69.1 39.5 69.1 50">
+                <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s"
+                    from="0 50 50" to="360 50 50"
+                    repeatCount="indefinite"/>
+            </path>
+        </svg>
+    `;
+
+    button.prepend(loader);
+    button.classList.add('relative', 'is-loading');
+    button.disabled = true;
+
+    <?php /* URLSearchParams (như module) cho form thường; FormData cho form có file option */ ?>
+    const hasFileInput = !!form.querySelector('input[type="file"]');
+    const body = hasFileInput ?
+            new FormData(form) :
+            new URLSearchParams(new FormData(form));
+    const headers = hasFileInput ?
+            {'X-Requested-With': 'XMLHttpRequest'} :
+            {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest'
+            };
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: body,
+            headers: headers
+        });
+
+        if (!response.ok) {
+            return form.submit();
+        }
+
+        if (response.redirected) {
+            return window.location.href = response.url;
+        }
+
+        const data = await response.json();
+
+        if (data.backUrl) {
+            return window.location.href = data.backUrl;
+        }
+
+        if (recursive) {
+            window.dispatchEvent(new CustomEvent('product-addtocart-success'));
+        }
+
+        <?php if ($block->isCartOpenAfterAddToCart()): ?>
+            window.dispatchEvent(new CustomEvent('toggle-cart', {
+                detail: {
+                    isOpen: true
+                }
+            }));
+        <?php endif; ?>
+
+        return window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+    } catch (err) {
+        console.warn(err);
+        window.dispatchEvent(new CustomEvent('product-addtocart-error'));
+
+        setMessage({
+            text:'<?= $escaper->escapeJs(__('There was a problem adding your item to the cart.')) ?>',
+            type: 'error'
+        });
+    } finally {
+        try {
+            var messages = hyva.getCookie('mage-messages');
+            messages = messages ? JSON.parse(decodeURIComponent(messages).replace(/\+/g, ' ')) : [];
+            document.cookie = 'mage-messages=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
+        } catch (error) {
+            console.warn('Error parsing Cookie Messages:', error);
+            return;
+        }
+
+        setTimeout(() => {
+            loader.remove();
+            button.classList.remove('is-loading');
+            button.disabled = false;
+        }, delay);
+    }
+}
+
+/**
+ * Set Message
+ */
+function setMessage(message) {
+    typeof window.dispatchMessages !== "undefined" &&
+        window.dispatchMessages([message], 5000);
+}
+
+window.setAjaxCart = (selectors = '<?= $escaper->escapeJs($selectors) ?>', recursive = true) => {
+    const forms = document.querySelectorAll(selectors);
+
+    forms.forEach(form => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            window.ajaxSubmitCart(form, recursive);
+        });
+    });
+}
+
+/** Init on pageload */
+window.setAjaxCart();
+</script>

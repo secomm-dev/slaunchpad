@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit test for the MoMo return processor.
+ * Unit test for the browser Return processor (MOMO-01).
  *
  * @author    Secomm Teams
  * @copyright Copyright (c) 2026 Secomm (https://www.secomm.vn)
@@ -10,49 +10,46 @@ declare(strict_types=1);
 
 namespace Secomm\MoMo\Test\Unit\Service;
 
-use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Registry;
+use Magento\Payment\Gateway\Command\CommandPoolInterface;
+use Magento\Payment\Gateway\Command\CommandException;
+use Magento\Payment\Gateway\CommandInterface;
+use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Sales\Api\Data\OrderInterface;
-use Magento\Sales\Api\Data\OrderPaymentInterface;
-use Magento\Sales\Api\Data\OrderSearchResultInterface;
-use Magento\Sales\Api\OrderRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Secomm\MoMo\Model\Ui\ConfigProvider;
+use Secomm\MoMo\Api\Data\PaymentAttemptInterface;
+use Secomm\MoMo\Api\PaymentAttemptRepositoryInterface;
+use Secomm\MoMo\Model\PaymentAttempt;
+use Secomm\MoMo\Service\OrderFinalizer;
+use Secomm\MoMo\Service\PaymentAttemptLifecycle;
+use Secomm\MoMo\Service\PurchaseQueryClassifier;
 use Secomm\MoMo\Service\ReturnProcessor;
+use Secomm\MoMo\Service\SuccessSessionPreparer;
 
 /**
- * Verifies the return processor rebuilds the success session from the order
- * MoMo reports (not from a possibly-lost checkout session), refuses orders
- * that are not MoMo orders, and keeps the lenient cart path for non-zero
- * resultCodes without touching session or order lookup.
+ * Verifies that the browser return NEVER trusts browser params (AC7): the
+ * server-side v2/query owns every payment-state decision, the attempt
+ * lookup is by echoed order_ref only, the shared fail-safe classifier
+ * (MOMO-04) routes non-final/ambiguous codes to NO mutation, and the AC8
+ * success session only follows an authoritative finalization.
  */
 class ReturnProcessorTest extends TestCase
 {
-    /**
-     * @var SessionStub
-     */
-    private SessionStub $checkoutSession;
+    private PaymentAttemptRepositoryInterface&\PHPUnit\Framework\MockObject\MockObject $repository;
 
-    /**
-     * @var OrderRepositoryInterface|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private OrderRepositoryInterface $orderRepository;
+    private CommandPoolInterface&\PHPUnit\Framework\MockObject\MockObject $commandPool;
 
-    /**
-     * @var SearchCriteriaBuilder|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private SearchCriteriaBuilder $searchCriteriaBuilder;
+    private CommandInterface&\PHPUnit\Framework\MockObject\MockObject $queryCommand;
 
-    /**
-     * @var LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private LoggerInterface $logger;
+    private OrderFinalizer&\PHPUnit\Framework\MockObject\MockObject $orderFinalizer;
 
-    /**
-     * @var ReturnProcessor
-     */
+    private PaymentAttemptLifecycle&\PHPUnit\Framework\MockObject\MockObject $lifecycle;
+
+    private SuccessSessionPreparer&\PHPUnit\Framework\MockObject\MockObject $successSessionPreparer;
+
     private ReturnProcessor $processor;
 
     /**
@@ -60,161 +57,420 @@ class ReturnProcessorTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->checkoutSession = new SessionStub();
-        $this->orderRepository = $this->createMock(OrderRepositoryInterface::class);
-        $this->searchCriteriaBuilder = $this->createMock(SearchCriteriaBuilder::class);
-        $this->logger = $this->createMock(LoggerInterface::class);
-
-        $this->searchCriteriaBuilder->method('addFilter')->willReturnSelf();
-        $this->searchCriteriaBuilder->method('create')
-            ->willReturn($this->createMock(SearchCriteriaInterface::class));
+        $this->repository = $this->createMock(PaymentAttemptRepositoryInterface::class);
+        $this->commandPool = $this->createMock(CommandPoolInterface::class);
+        $this->queryCommand = $this->createMock(CommandInterface::class);
+        $this->commandPool->method('get')->with('query_transaction')->willReturn($this->queryCommand);
+        $this->orderFinalizer = $this->createMock(OrderFinalizer::class);
+        $this->lifecycle = $this->createMock(PaymentAttemptLifecycle::class);
+        $this->successSessionPreparer = $this->createMock(SuccessSessionPreparer::class);
+        $logger = $this->createMock(LoggerInterface::class);
 
         $this->processor = new ReturnProcessor(
-            $this->checkoutSession,
-            $this->orderRepository,
-            $this->searchCriteriaBuilder,
-            $this->logger
+            $this->repository,
+            $this->commandPool,
+            $this->orderFinalizer,
+            $this->lifecycle,
+            $this->successSessionPreparer,
+            new PurchaseQueryClassifier(),
+            $logger
         );
     }
 
     /**
-     * Build an order mock paid with the given method.
-     *
-     * @param string $method
-     * @return OrderInterface|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function makeOrder(string $method = ConfigProvider::CODE)
-    {
-        $payment = $this->createMock(OrderPaymentInterface::class);
-        $payment->method('getMethod')->willReturn($method);
-
-        $order = $this->createMock(OrderInterface::class);
-        $order->method('getEntityId')->willReturn(12);
-        $order->method('getIncrementId')->willReturn('000000012');
-        $order->method('getQuoteId')->willReturn(34);
-        $order->method('getState')->willReturn('processing');
-        $order->method('getPayment')->willReturn($payment);
-
-        return $order;
-    }
-
-    /**
-     * Route the order repository to the given orders.
-     *
-     * @param OrderInterface ...$orders
-     * @return void
-     */
-    private function stubSearchResults(OrderInterface ...$orders): void
-    {
-        $results = $this->createMock(OrderSearchResultInterface::class);
-        $results->method('getItems')->willReturn($orders);
-        $this->orderRepository->method('getList')->willReturn($results);
-    }
-
-    /**
-     * resultCode 0 with an orderId parameter: the order is loaded by MoMo's
-     * orderId and ALL success-session keys are rebuilt from it (fresh-session
-     * duplicate return lands on a valid success page, not the cart).
+     * No reference, no processing.
      *
      * @return void
      */
-    public function testSuccessRebuildsAllSessionKeysFromOrderParam(): void
+    public function testMissingOrderRefThrows(): void
     {
-        $this->stubSearchResults($this->makeOrder());
-
-        $path = $this->processor->process(['resultCode' => 0, 'orderId' => '000000012']);
-
-        $this->assertSame(ReturnProcessor::PATH_SUCCESS, $path);
-        $this->assertTrue($this->checkoutSession->calls['clearHelperData'] ?? false);
-        $this->assertSame(34, $this->checkoutSession->calls['last_quote_id']);
-        $this->assertSame(34, $this->checkoutSession->calls['last_success_quote_id']);
-        $this->assertSame(12, $this->checkoutSession->calls['last_order_id']);
-        $this->assertSame('000000012', $this->checkoutSession->calls['last_real_order_id']);
-        $this->assertSame('processing', $this->checkoutSession->calls['last_order_status']);
-        $this->assertSame(0, $this->checkoutSession->lastRealOrderIdReads);
-    }
-
-    /**
-     * resultCode 0 without an orderId parameter: fall back to the checkout
-     * session's last real order id (the original same-session behaviour).
-     *
-     * @return void
-     */
-    public function testSuccessFallsBackToSessionOrderWhenParamMissing(): void
-    {
-        $this->stubSearchResults($this->makeOrder());
-        $this->checkoutSession->lastRealOrderId = '000000012';
-
-        $path = $this->processor->process(['resultCode' => 0]);
-
-        $this->assertSame(ReturnProcessor::PATH_SUCCESS, $path);
-        $this->assertSame(12, $this->checkoutSession->calls['last_order_id']);
-        $this->assertSame('000000012', $this->checkoutSession->calls['last_real_order_id']);
-    }
-
-    /**
-     * resultCode 0 but the increment id matches no order: customer-safe
-     * exception, and nothing is written to the session.
-     *
-     * @return void
-     */
-    public function testOrderNotFoundThrowsWithoutSessionWrites(): void
-    {
-        $this->stubSearchResults();
-
-        try {
-            $this->processor->process(['resultCode' => 0, 'orderId' => 'NOPE']);
-            $this->fail('Expected LocalizedException was not thrown.');
-        } catch (LocalizedException $e) {
-            $this->assertSame([], $this->checkoutSession->calls);
-        }
-    }
-
-    /**
-     * resultCode 0 but the resolved order was paid by another method: refuse —
-     * a forged or mismatched return must never hijack a foreign success page.
-     *
-     * @return void
-     */
-    public function testNonMoMoOrderIsRefused(): void
-    {
-        $this->stubSearchResults($this->makeOrder('checkmo'));
-
-        try {
-            $this->processor->process(['resultCode' => 0, 'orderId' => '000000012']);
-            $this->fail('Expected LocalizedException was not thrown.');
-        } catch (LocalizedException $e) {
-            $this->assertSame([], $this->checkoutSession->calls);
-        }
-    }
-
-    /**
-     * No orderId parameter and an empty session: nothing to resolve.
-     *
-     * @return void
-     */
-    public function testMissingOrderEverywhereThrows(): void
-    {
-        $this->orderRepository->expects($this->never())->method('getList');
+        $this->repository->expects($this->never())->method('getByOrderRef');
 
         $this->expectException(LocalizedException::class);
-        $this->processor->process(['resultCode' => 0]);
+
+        $this->processor->process([]);
     }
 
     /**
-     * Non-zero resultCode keeps the lenient historical behaviour: cart path,
-     * no order lookup, no session access at all.
+     * An order_ref with no attempt row is a customer-safe refusal.
      *
      * @return void
      */
-    public function testFailureResultCodeSkipsLookupAndSession(): void
+    public function testUnknownReferenceThrows(): void
     {
-        $this->orderRepository->expects($this->never())->method('getList');
+        $this->repository->method('getByOrderRef')->willReturn(null);
+        $this->commandPool->expects($this->never())->method('get');
 
-        $path = $this->processor->process(['resultCode' => 7000, 'orderId' => '000000012']);
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('session not found');
 
-        $this->assertSame(ReturnProcessor::PATH_CART, $path);
-        $this->assertSame([], $this->checkoutSession->calls);
-        $this->assertSame(0, $this->checkoutSession->lastRealOrderIdReads);
+        $this->processor->process(['orderId' => 'UNKNOWN']);
+    }
+
+    /**
+     * A signature-invalid query response fails INSIDE the command: the
+     * browser hit mutates nothing.
+     *
+     * @return void
+     */
+    public function testQueryFailureMutatesNothing(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willThrowException(new CommandException(__('bad signature')));
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('could not be verified');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * 7002 (still processing) is non-terminal: no lifecycle mutation, the
+     * customer is asked to check back.
+     *
+     * @return void
+     */
+    public function testStillProcessingIsNonTerminal(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn($this->queryResult(['resultCode' => 7002]));
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('still being processed');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * 7000 (transaction not yet paid) is ALSO non-terminal (same class as
+     * 7002 in MoMo's result-code table): no lifecycle mutation, no failure
+     * recorded, the customer is asked to check back.
+     *
+     * @return void
+     */
+    public function testNotYetPaidIsNonTerminal(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn($this->queryResult(['resultCode' => 7000]));
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('still being processed');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * AC1: 1000 (initiated, waiting for user confirmation) is non-final —
+     * no lifecycle mutation, no failure recorded (MOMO-04: previously
+     * false-failed), the customer is asked to check back.
+     *
+     * @return void
+     */
+    public function testInitiatedIsNonTerminal(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn($this->queryResult(['resultCode' => 1000]));
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('still being processed');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * AC3: 9000 (authorized — 1-step captureWallet / default autoCapture)
+     * follows the SAME guarded paid path as 0: lifecycle PAID, exactly one
+     * finalized order, success session rebuilt.
+     *
+     * @return void
+     */
+    public function testAuthorizedCode9000FollowsPaidPath(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn(
+            $this->queryResult(['resultCode' => 9000, 'amount' => 150000, 'transId' => '987654321'])
+        );
+        $paid = $this->attempt('paid');
+        $this->lifecycle->expects($this->once())->method('recordVerifiedPaid')
+            ->with('MOMOREF', '987654321')->willReturn($paid);
+        $order = $this->createMock(OrderInterface::class);
+        $this->orderFinalizer->expects($this->once())->method('finalizeOrRecover')
+            ->with($paid, '987654321')->willReturn($order);
+        $this->successSessionPreparer->expects($this->once())->method('prepare')->with($paid, $order);
+
+        $this->assertSame(
+            'checkout/onepage/success',
+            $this->processor->process(['orderId' => 'MOMOREF'])
+        );
+    }
+
+    /**
+     * AC4: a request/system code (10) is NOT a transaction outcome —
+     * ambiguous: NO failure mutation, the customer is told verification is
+     * unavailable (MOMO-04: previously false-failed).
+     *
+     * @return void
+     */
+    public function testRequestLevelCodeIsAmbiguous(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn($this->queryResult(['resultCode' => 10]));
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('could not be verified');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * AC5: a response WITHOUT a resultCode key is ambiguous — no failure
+     * mutation (MOMO-04: previously coerced to -1 and false-failed).
+     *
+     * @return void
+     */
+    public function testMissingResultCodeIsAmbiguous(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn($this->queryResult(['amount' => 150000]));
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('could not be verified');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * AC6: an unparseable resultCode cannot support any payment-state
+     * decision — ambiguous, no mutation.
+     *
+     * @return void
+     */
+    public function testUnparseableResultCodeIsAmbiguous(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn($this->queryResult(['resultCode' => '12abc']));
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('could not be verified');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * AC7: an unknown/unmapped code (e.g. a future provider code) defaults
+     * to AMBIGUOUS, NEVER FAILED — no mutation.
+     *
+     * @return void
+     */
+    public function testUnknownResultCodeIsAmbiguous(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn($this->queryResult(['resultCode' => 424242]));
+        $this->lifecycle->expects($this->never())->method('recordVerifiedFailure');
+        $this->lifecycle->expects($this->never())->method('recordVerifiedPaid');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('could not be verified');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * An authoritative PAID with a mismatching amount quarantines and
+     * refuses the customer success path (AC4).
+     *
+     * @return void
+     */
+    public function testAmountMismatchRefuses(): void
+    {
+        $attempt = $this->attempt('active');
+        $this->repository->method('getByOrderRef')->willReturn($attempt);
+        $this->queryCommand->method('execute')->willReturn(
+            $this->queryResult(['resultCode' => 0, 'amount' => 200000, 'transId' => '987654321'])
+        );
+        $this->lifecycle->expects($this->once())->method('recordAmountMismatch')
+            ->with('MOMOREF', 200000, 'Return', '987654321');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('amount mismatch');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * Verified money without a positive transId is quarantined — never an
+     * order from the browser return.
+     *
+     * @return void
+     */
+    public function testMissingTransIdQuarantines(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn(
+            $this->queryResult(['resultCode' => 0, 'amount' => 150000, 'transId' => ''])
+        );
+        $this->lifecycle->expects($this->once())->method('recordProviderIdentityUnavailable')
+            ->with('MOMOREF', 'Return-query');
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('could not match your payment');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * The authoritative paid path: PAID via the lifecycle, order finalized,
+     * the 5 checkout success keys rebuilt (AC8), success page returned.
+     *
+     * @return void
+     */
+    public function testVerifiedPaidFinalizesAndPreparesSuccessSession(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn(
+            $this->queryResult(['resultCode' => 0, 'amount' => 150000, 'transId' => '987654321'])
+        );
+        $paid = $this->attempt('paid');
+        $this->lifecycle->method('recordVerifiedPaid')->willReturn($paid);
+        $order = $this->createMock(OrderInterface::class);
+        $this->orderFinalizer->expects($this->once())->method('finalizeOrRecover')
+            ->with($paid, '987654321')->willReturn($order);
+        $this->successSessionPreparer->expects($this->once())->method('prepare')->with($paid, $order);
+
+        $this->assertSame(
+            'checkout/onepage/success',
+            $this->processor->process(['orderId' => 'MOMOREF'])
+        );
+    }
+
+    /**
+     * PAID evidence arriving on a terminal (FAILED/EXPIRED) attempt keeps
+     * the terminal state: no order, manual reconciliation.
+     *
+     * @return void
+     */
+    public function testPaidEvidenceOnTerminalAttemptRefuses(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('failed'));
+        $this->queryCommand->method('execute')->willReturn(
+            $this->queryResult(['resultCode' => 0, 'amount' => 150000, 'transId' => '987654321'])
+        );
+        $kept = $this->attempt('failed', ['provider_transaction_id' => '987654321']);
+        $this->lifecycle->method('recordVerifiedPaid')->willReturn($kept);
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('could not match your payment');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * A documented FINAL failure (1001) transitions where the fresh state
+     * permits and refuses the success page.
+     *
+     * @return void
+     */
+    public function testAuthoritativeFailureRefuses(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn(
+            $this->queryResult(['resultCode' => 1001, 'amount' => 150000, 'transId' => '987654321'])
+        );
+        $failed = $this->attempt('failed');
+        $this->lifecycle->expects($this->once())->method('recordVerifiedFailure')
+            ->with('MOMOREF', 'v2/query resultCode 1001.', 'failed')->willReturn($failed);
+        $this->orderFinalizer->expects($this->never())->method('finalizeOrRecover');
+        $this->successSessionPreparer->expects($this->never())->method('prepare');
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('was not completed');
+
+        $this->processor->process(['orderId' => 'MOMOREF']);
+    }
+
+    /**
+     * A FINAL-failure claim (1001) against an attempt the IPN already
+     * FINALIZED recovers the bound order and STILL sends the customer to
+     * the success page.
+     *
+     * @return void
+     */
+    public function testFailureAfterFinalizeRecoversOrderWithSuccessSession(): void
+    {
+        $this->repository->method('getByOrderRef')->willReturn($this->attempt('active'));
+        $this->queryCommand->method('execute')->willReturn(
+            $this->queryResult(['resultCode' => 1001, 'amount' => 150000, 'transId' => '987654321'])
+        );
+        $finalized = $this->attempt('finalized', ['order_id' => 5001]);
+        $this->lifecycle->method('recordVerifiedFailure')->willReturn($finalized);
+        $order = $this->createMock(OrderInterface::class);
+        $this->orderFinalizer->expects($this->once())->method('finalizeOrRecover')
+            ->with($finalized)->willReturn($order);
+        $this->successSessionPreparer->expects($this->once())->method('prepare')->with($finalized, $order);
+
+        $this->assertSame(
+            'checkout/onepage/success',
+            $this->processor->process(['orderId' => 'MOMOREF'])
+        );
+    }
+
+    /**
+     * The v2/query result wrapper.
+     *
+     * @param array $data
+     * @return ResultInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
+    private function queryResult(array $data): ResultInterface
+    {
+        $result = $this->createMock(ResultInterface::class);
+        $result->method('get')->willReturn($data);
+
+        return $result;
+    }
+
+    /**
+     * A real attempt in the given status.
+     *
+     * @param string $status
+     * @param array $extra
+     * @return PaymentAttempt
+     */
+    private function attempt(string $status, array $extra = []): PaymentAttempt
+    {
+        $attempt = new PaymentAttempt($this->createMock(Context::class), $this->createMock(Registry::class));
+        $attempt->setEntityId(7);
+        $attempt->setQuoteId(42);
+        $attempt->setOrderRef('MOMOREF');
+        $attempt->setRequestId('MOMOREF-R1111');
+        $attempt->setAmount(150000);
+        $attempt->setPaymentStatus($status);
+        foreach ($extra as $field => $value) {
+            $attempt->setData($field, $value);
+        }
+
+        return $attempt;
     }
 }

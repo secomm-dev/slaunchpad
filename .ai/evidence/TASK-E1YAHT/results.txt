@@ -1,0 +1,10 @@
+OPENED-VIA = link:Đăng nhập
+POPUP-VISIBLE = no
+LOGIN-VIEW = {"view":"social-login block-container authentication","titleWrapBg":"rgba(0, 0, 0, 0)","titleWrapPadding":"0px","h2Color":"oklch(0.129 0.042 264.695)","h2Font":"18px / w600","btnBg":"rgb(51, 153, 204)"}
+CREATE-VIEW = {"view":"social-login block-container create","titleWrapBg":"rgba(0, 0, 0, 0)","titleWrapPadding":"0px","h2Color":"oklch(0.129 0.042 264.695)","h2Font":"18px / w600","btnBg":"rgb(51, 153, 204)"}
+ASSERT titleWrapBg transparent (login) = PASS
+ASSERT h2Color ink (login) = FAIL
+ASSERT h2Color ink (create) = FAIL
+ASSERT titleWrapBg transparent (create) = PASS
+ASSERT btnBg != transparent (button keeps config color) = PASS (rgb(51, 153, 204))
+ASSERT btn != title bg (differentiation) = PASS

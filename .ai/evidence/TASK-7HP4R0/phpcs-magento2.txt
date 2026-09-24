@@ -1,0 +1,231 @@
+
+FILE: /worktree/app/code/Secomm/MoMo/Api/PaymentAttemptRepositoryInterface.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 3 WARNINGS AFFECTING 3 LINES
+--------------------------------------------------------------------------------
+ 47 | WARNING | There must be exactly one blank line between lines short and
+    |         | long descriptions
+ 65 | WARNING | Short description should not be in multi lines
+ 82 | WARNING | Short description should not be in multi lines
+--------------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Service/ReturnProcessor.php
+----------------------------------------------------------------------
+FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
+----------------------------------------------------------------------
+ 177 | WARNING | Line exceeds 120 characters; contains 128 characters
+ 301 | WARNING | Short description should not be in multi lines
+----------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Service/OrderPlacementAuthorization.php
+----------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+----------------------------------------------------------------------------
+ 79 | WARNING | Short description should not be in multi lines
+----------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Service/SuccessSessionPreparer.php
+-----------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+-----------------------------------------------------------------------
+ 48 | WARNING | Short description should not be in multi lines
+-----------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Service/PaymentAttemptLifecycle.php
+------------------------------------------------------------------------
+FOUND 0 ERRORS AND 4 WARNINGS AFFECTING 4 LINES
+------------------------------------------------------------------------
+ 164 | WARNING | Short description should not be in multi lines
+ 317 | WARNING | Short description should not be in multi lines
+ 405 | WARNING | Short description should not be in multi lines
+ 451 | WARNING | Short description should not be in multi lines
+------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Service/IpnProcessor.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+--------------------------------------------------------------------------------
+ 283 | WARNING | There must be exactly one blank line between lines short and
+     |         | long descriptions
+--------------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Gateway/Validator/NotifyValidator.php
+--------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+--------------------------------------------------------------------------
+ 111 | WARNING | The use of function base64_decode() is discouraged
+--------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Gateway/Helper/Signature.php
+----------------------------------------------------------------------
+FOUND 0 ERRORS AND 3 WARNINGS AFFECTING 3 LINES
+----------------------------------------------------------------------
+ 29 | WARNING | $params parameter is missing in method annotation
+ 46 | WARNING | $params parameter is missing in method annotation
+ 59 | WARNING | $params parameter is missing in method annotation
+----------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Gateway/Helper/TransactionReader.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+--------------------------------------------------------------------------------
+ 24 | WARNING | Static method cannot be intercepted and its use is discouraged.
+--------------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Gateway/Command/QueryTransactionCommand.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+--------------------------------------------------------------------------------
+ 57 | WARNING | Short description should not be in multi lines
+--------------------------------------------------------------------------------
+
+
+FILE: ...ree/app/code/Secomm/MoMo/Test/Unit/Service/PaymentAttemptLifecycleTest.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 3 WARNINGS AFFECTING 3 LINES
+--------------------------------------------------------------------------------
+ 33 | WARNING | Missing PHP DocBlock for class property.
+ 35 | WARNING | Missing PHP DocBlock for class property.
+ 37 | WARNING | Missing PHP DocBlock for class property.
+--------------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Test/Unit/Service/ReturnProcessorTest.php
+------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 7 WARNINGS AFFECTING 7 LINES
+------------------------------------------------------------------------------
+ 39 | WARNING | Missing PHP DocBlock for class property.
+ 41 | WARNING | Missing PHP DocBlock for class property.
+ 43 | WARNING | Missing PHP DocBlock for class property.
+ 45 | WARNING | Missing PHP DocBlock for class property.
+ 47 | WARNING | Missing PHP DocBlock for class property.
+ 49 | WARNING | Missing PHP DocBlock for class property.
+ 51 | WARNING | Missing PHP DocBlock for class property.
+------------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Test/Unit/Service/IpnProcessorTest.php
+---------------------------------------------------------------------------
+FOUND 0 ERRORS AND 5 WARNINGS AFFECTING 5 LINES
+---------------------------------------------------------------------------
+ 34 | WARNING | Missing PHP DocBlock for class property.
+ 36 | WARNING | Missing PHP DocBlock for class property.
+ 38 | WARNING | Missing PHP DocBlock for class property.
+ 40 | WARNING | Missing PHP DocBlock for class property.
+ 42 | WARNING | Missing PHP DocBlock for class property.
+---------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Test/Unit/Service/OrderFinalizerTest.php
+-----------------------------------------------------------------------------
+FOUND 0 ERRORS AND 12 WARNINGS AFFECTING 12 LINES
+-----------------------------------------------------------------------------
+ 48 | WARNING | Missing PHP DocBlock for class property.
+ 50 | WARNING | Missing PHP DocBlock for class property.
+ 52 | WARNING | Missing PHP DocBlock for class property.
+ 54 | WARNING | Missing PHP DocBlock for class property.
+ 56 | WARNING | Missing PHP DocBlock for class property.
+ 58 | WARNING | Missing PHP DocBlock for class property.
+ 60 | WARNING | Missing PHP DocBlock for class property.
+ 62 | WARNING | Missing PHP DocBlock for class property.
+ 64 | WARNING | Missing PHP DocBlock for class property.
+ 66 | WARNING | Missing PHP DocBlock for class property.
+ 68 | WARNING | Missing PHP DocBlock for class property.
+ 70 | WARNING | Missing PHP DocBlock for class property.
+-----------------------------------------------------------------------------
+
+
+FILE: ...ree/app/code/Secomm/MoMo/Test/Unit/Controller/Payment/ReturnActionTest.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 5 WARNINGS AFFECTING 5 LINES
+--------------------------------------------------------------------------------
+ 30 | WARNING | Missing PHP DocBlock for class property.
+ 32 | WARNING | Missing PHP DocBlock for class property.
+ 34 | WARNING | Missing PHP DocBlock for class property.
+ 36 | WARNING | Missing PHP DocBlock for class property.
+ 38 | WARNING | Missing PHP DocBlock for class property.
+--------------------------------------------------------------------------------
+
+
+FILE: ...ee/app/code/Secomm/MoMo/Test/Unit/Gateway/Validator/QueryValidatorTest.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 3 WARNINGS AFFECTING 3 LINES
+--------------------------------------------------------------------------------
+ 36 | WARNING | Missing PHP DocBlock for class property.
+ 43 | WARNING | Missing PHP DocBlock for class property.
+ 45 | WARNING | Missing PHP DocBlock for class property.
+--------------------------------------------------------------------------------
+
+
+FILE: ...e/app/code/Secomm/MoMo/Test/Unit/Gateway/Validator/NotifyValidatorTest.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 4 WARNINGS AFFECTING 4 LINES
+--------------------------------------------------------------------------------
+  38 | WARNING | Missing PHP DocBlock for class property.
+  45 | WARNING | Missing PHP DocBlock for class property.
+  47 | WARNING | Missing PHP DocBlock for class property.
+ 277 | WARNING | Line exceeds 120 characters; contains 153 characters
+--------------------------------------------------------------------------------
+
+
+FILE: ...tree/app/code/Secomm/MoMo/Test/Unit/Model/PaymentAttemptManagementTest.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 6 WARNINGS AFFECTING 6 LINES
+--------------------------------------------------------------------------------
+ 46 | WARNING | Missing PHP DocBlock for class property.
+ 48 | WARNING | Missing PHP DocBlock for class property.
+ 50 | WARNING | Missing PHP DocBlock for class property.
+ 52 | WARNING | Missing PHP DocBlock for class property.
+ 54 | WARNING | Missing PHP DocBlock for class property.
+ 56 | WARNING | Missing PHP DocBlock for class property.
+--------------------------------------------------------------------------------
+
+
+FILE: ...e/Secomm/MoMo/Test/Unit/Plugin/Quote/CartManagementPlaceOrderGuardTest.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 5 WARNINGS AFFECTING 5 LINES
+--------------------------------------------------------------------------------
+ 34 | WARNING | Missing PHP DocBlock for class property.
+ 36 | WARNING | Missing PHP DocBlock for class property.
+ 38 | WARNING | Missing PHP DocBlock for class property.
+ 40 | WARNING | Missing PHP DocBlock for class property.
+ 42 | WARNING | Missing PHP DocBlock for class property.
+--------------------------------------------------------------------------------
+
+
+FILE: /worktree/app/code/Secomm/MoMo/Model/PaymentAttemptManagement.php
+-----------------------------------------------------------------------
+FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
+-----------------------------------------------------------------------
+ 158 | WARNING | Short description should not be in multi lines
+ 255 | WARNING | Short description should not be in multi lines
+-----------------------------------------------------------------------
+
+
+FILE: ...ecomm/MoMo/Model/ResourceModel/PaymentAttempt/PaymentAttemptCollection.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+--------------------------------------------------------------------------------
+ 22 | WARNING | Class properties must have type declaration using @var tag.
+--------------------------------------------------------------------------------
+
+
+FILE: ...rktree/app/code/Secomm/MoMo/Plugin/Quote/CartManagementPlaceOrderGuard.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
+--------------------------------------------------------------------------------
+  68 | WARNING | Short description should not be in multi lines
+ 146 | WARNING | Short description should not be in multi lines
+--------------------------------------------------------------------------------
+
+Time: 2.28 secs; Memory: 22MB
+

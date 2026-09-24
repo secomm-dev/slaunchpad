@@ -4,6 +4,18 @@ All notable changes to this project layer module are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- BUG-F8R4E8 (SLP-214): `view/frontend/requirejs-config.js` +
+  `view/frontend/web/js/model/shipping-rate-service-mixin.js` — collapse duplicate
+  init-time shipping-rate estimations. Mageplaza OSC fires two estimations on
+  checkout load (`shipping.js afterResolveDocument` + `shipping-rates-validator`
+  200 ms field timer) and the rate processor only caches into `rateRegistry` after
+  the first response, so the duplicate re-POSTed the same payload to
+  `POST /V1/carts/mine/estimate-shipping-methods` (double loading-spinner flicker).
+  Mixin on `Mageplaza_Osc/js/model/shipping-rate-service` skips same-address
+  (`getCacheKey()`) requests while one is in flight; address changes still refetch.
+
 ### Added
 
 - TASK-8TXS2P (SLP-203): `view/frontend/web/css/osc-checkout-ui.css` + head entry in

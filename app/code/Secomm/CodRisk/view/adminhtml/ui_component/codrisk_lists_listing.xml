@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">codrisk_lists_listing.codrisk_lists_listing_data_source</item>
+            <item name="deps" xsi:type="string">codrisk_lists_listing.codrisk_lists_listing_data_source</item>
+        </item>
+        <item name="spinner" xsi:type="string">codrisk_lists_columns</item>
+    </argument>
+    <dataSource name="codrisk_lists_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Secomm_CodRisk::manage</aclResource>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider"
+                      name="codrisk_lists_listing_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_toolbar">
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="codrisk_lists_columns">
+        <column name="entity_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="normalized_phone">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Phone</label>
+            </settings>
+        </column>
+        <column name="list_type">
+            <settings>
+                <filter>select</filter>
+                <label translate="true">Type</label>
+                <options class="Secomm\CodRisk\Model\Source\ListTypes"/>
+            </settings>
+        </column>
+        <column name="website_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Website</label>
+            </settings>
+        </column>
+        <column name="reason">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Reason</label>
+            </settings>
+        </column>
+        <column name="is_active" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <filter>select</filter>
+                <label translate="true">Status</label>
+                <options class="Secomm\CodRisk\Model\Source\ActivationStatus"/>
+                <dataType>text</dataType>
+            </settings>
+        </column>
+        <column name="effective_from" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Effective From</label>
+            </settings>
+        </column>
+        <column name="effective_to" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Effective To</label>
+            </settings>
+        </column>
+        <column name="created_by">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Created By</label>
+            </settings>
+        </column>
+        <column name="updated_at" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Updated At</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Secomm\CodRisk\Ui\Component\Listing\Columns\ListActions">
+            <settings>
+                <indexField>entity_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

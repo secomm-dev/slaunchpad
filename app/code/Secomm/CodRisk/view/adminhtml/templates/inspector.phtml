@@ -1,0 +1,176 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+/** @var \Secomm\CodRisk\Block\Adminhtml\Inspector $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$result = $block->getResult();
+$decision = $result['decision'] ?? null;
+$decisionClass = $decision !== null
+    ? [
+        'BLOCK' => 'message message-error error',
+        'WARNING' => 'message message-warning warning',
+        'ALLOW' => 'message message-success success',
+    ][$decision->getDecision()] ?? 'message'
+    : '';
+?>
+<form method="get" action="<?= $escaper->escapeUrl($block->getUrl('codrisk/inspector/index')) ?>"
+      style="max-width: 780px;">
+    <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+        <div style="flex:1; min-width:260px;">
+            <label for="phone" style="display:block; margin-bottom:5px; font-weight:600;">
+                <?= $escaper->escapeHtml(__('Phone (any format)')) ?>
+            </label>
+            <input class="input-text admin__control-text" type="text" id="phone" name="phone"
+                   style="width:100%;"
+                   value="<?= $escaper->escapeHtml($block->getSubmittedPhone()) ?>"
+                   placeholder="0901 234 567 / 84901234567 / +84 901 234 567"/>
+        </div>
+        <div style="width:220px;">
+            <label for="website_id" style="display:block; margin-bottom:5px; font-weight:600;">
+                <?= $escaper->escapeHtml(__('Website')) ?>
+            </label>
+            <select class="select admin__control-select" id="website_id" name="website_id" style="width:100%;">
+                <?php foreach ($block->getWebsiteOptions() as $option): ?>
+                    <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>"
+                        <?= $block->getSelectedWebsiteId() === (string)$option['value'] ? 'selected' : '' ?>>
+                        <?= $escaper->escapeHtml((string)$option['label']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <button class="action primary" type="submit">
+            <?= $escaper->escapeHtml(__('Check Phone')) ?>
+        </button>
+    </div>
+</form>
+
+<?php if ($result !== null): ?>
+    <section class="admin__page-section" style="margin-top: 20px;">
+        <?php if ($result['normalized_phone'] === null): ?>
+            <div class="message message-warning warning">
+                <?= $escaper->escapeHtml(__('Not a usable Vietnamese phone number — invalid phones are an address validation concern, never a risk decision.')) ?>
+            </div>
+        <?php else: ?>
+            <div class="<?= $escaper->escapeHtml($decisionClass) ?>">
+                <b><?= $escaper->escapeHtml((string)$result['normalized_phone']) ?></b> —
+                <?= $escaper->escapeHtml(__('Decision')) ?>:
+                <b><?= $escaper->escapeHtml($decision !== null ? $decision->getDecision() : '') ?></b>
+                <?php if ($decision !== null && $decision->getMatchedRule() !== null): ?>
+                    · <?= $escaper->escapeHtml(__('Matched Source')) ?>:
+                    <b><?= $escaper->escapeHtml((string)$decision->getMatchedRule()) ?></b>
+                <?php endif; ?>
+                · <?= $escaper->escapeHtml(__('Historical Count')) ?>:
+                <b><?= $escaper->escapeHtml((string)$result['historical_count']) ?></b>
+                · <?= $escaper->escapeHtml(__('Spam Match')) ?>:
+                <b><?= $result['spam_matched'] ? __('Yes') : __('No') ?></b>
+            </div>
+
+            <?php $blacklist = $result['blacklist']; ?>
+            <?php if ($blacklist !== null): ?>
+                <div class="message message-error error" style="margin-top: 10px;">
+                    <?= $escaper->escapeHtml(__('Active Blacklist — reason %1, created by %2.',
+                        (string)$blacklist->getData('reason'), (string)($blacklist->getData('created_by') ?? ''))) ?>
+                    <a href="<?= $escaper->escapeUrl($block->getUrl('codrisk/lists/deactivate',
+                        ['id' => (int)$blacklist->getId(), 'active' => 0])) ?>">
+                        <?= $escaper->escapeHtml(__('Deactivate Blacklist')) ?>
+                    </a>
+                </div>
+            <?php endif; ?>
+
+            <h3 style="margin-top: 20px;"><?= $escaper->escapeHtml(__('Risk Events')) ?></h3>
+            <table class="admin__table-secondary">
+                <thead>
+                <tr>
+                    <th><?= $escaper->escapeHtml(__('Date')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Reason')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Source')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Order')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('In Count')) ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($result['events'] as $event): ?>
+                    <?php $eventId = (int)($event->getData('order_id') ?? 0); ?>
+                    <tr>
+                        <td><?= $escaper->escapeHtml((string)$event->getData('created_at')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$event->getData('reason_code')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$event->getData('source')) ?></td>
+                        <td>
+                            <?php if ($eventId > 0): ?>
+                                <a href="<?= $escaper->escapeUrl($block->getUrl('sales/order/view',
+                                    ['order_id' => $eventId])) ?>">
+                                    #<?= $escaper->escapeHtml((string)($result['order_increments'][$eventId] ?? $eventId)) ?>
+                                </a>
+                            <?php else: ?>
+                                —
+                            <?php endif; ?>
+                        </td>
+                        <td><?= $escaper->escapeHtml(((int)$event->getData('include_snapshot') === 1) ? __('Yes') : __('No')) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if ($result['events'] === []): ?>
+                    <tr><td colspan="5"><?= $escaper->escapeHtml(__('No risk events recorded.')) ?></td></tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
+
+            <h3 style="margin-top: 24px;"><?= $escaper->escapeHtml(__('Evaluations (WARNING/BLOCK log)')) ?></h3>
+            <table class="admin__table-secondary">
+                <thead>
+                <tr>
+                    <th><?= $escaper->escapeHtml(__('Time')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Decision')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Matched Source')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Historical Count')) ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($result['evaluations'] as $evaluation): ?>
+                    <tr>
+                        <td><?= $escaper->escapeHtml((string)$evaluation->getData('created_at')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$evaluation->getData('decision')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$evaluation->getData('matched_rule')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$evaluation->getData('historical_count')) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if ($result['evaluations'] === []): ?>
+                    <tr><td colspan="4"><?= $escaper->escapeHtml(__('No WARNING/BLOCK evaluations logged.')) ?></td></tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
+
+            <h3 style="margin-top: 24px;"><?= $escaper->escapeHtml(__('Audit')) ?></h3>
+            <table class="admin__table-secondary">
+                <thead>
+                <tr>
+                    <th><?= $escaper->escapeHtml(__('Time')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Entity')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Action')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Admin')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Old Value')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('New Value')) ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($result['audit'] as $entry): ?>
+                    <tr>
+                        <td><?= $escaper->escapeHtml((string)$entry->getData('created_at')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$entry->getData('entity_type')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$entry->getData('action')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$entry->getData('admin_username')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$entry->getData('old_value')) ?></td>
+                        <td><?= $escaper->escapeHtml((string)$entry->getData('new_value')) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if ($result['audit'] === []): ?>
+                    <tr><td colspan="6"><?= $escaper->escapeHtml(__('No audit entries matched this phone.')) ?></td></tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </section>
+<?php endif; ?>

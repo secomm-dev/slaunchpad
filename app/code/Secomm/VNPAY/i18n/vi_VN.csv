@@ -20,3 +20,5 @@
 "An error occurred during the transaction","Có lỗi xảy ra trong quá trình thực hiện giao dịch"
 "Invalid signature","Chữ ký không hợp lệ"
 "Your payment was received but the order could not be created. Please contact us for assistance.","Thanh toán đã được ghi nhận nhưng không thể tạo đơn hàng. Vui lòng liên hệ với chúng tôi để được hỗ trợ."
+"Missing original VNPAY transaction data (vnp_TransactionNo / vnp_PayDate) — online refund is not possible for this order.","Thiếu dữ liệu giao dịch gốc VNPAY (vnp_TransactionNo / vnp_PayDate) — không thể hoàn tiền online cho đơn hàng này."
+"VNPAY refund failed: %1 (code %2).","Hoàn tiền VNPAY thất bại: %1 (mã %2)."

@@ -1,5 +1,79 @@
 # Changelog
 
+## [Unreleased] - ZLP-HF-01 (issue #20 / BUG-QFR2AY — cross-payment placeOrder guard construction isolation)
+
+### Fixed
+- **The `QuoteManagement::placeOrder` guard no longer couples every payment
+  method's placement to ZaloPay-only DI**: the guard is a GLOBAL plugin, so
+  Magento constructed it — with its eagerly-built `ZaloPayFacade` Adapter
+  and `PaymentAttemptRepositoryInterface` implementation — for EVERY
+  payment method's placeOrder, including MoMo's. The guard now depends on
+  nothing ZaloPay-only before the quote is confirmed as ZaloPay: method
+  discrimination uses an ObjectManager-injected `zalopay` code string (the
+  facade is not needed to compare a string), and the attempt repository is
+  wired as a generated Proxy — the real repository and its
+  ResourceConnection graph are constructed only on the ZaloPay
+  grant-validation path. Guard semantics (persisted-attempt triple,
+  single-use grant, block messaging) unchanged. `Secomm_MoMo` applies the
+  identical pattern (this also fixes the production incident where a paid
+  ZaloPay checkout died before order creation because the MoMo-side
+  repository could not be instantiated). No provider API, classifier,
+  refund or schema change.
+- **Customer message accuracy on order finalization failures**: when payment
+  has been authoritatively verified as PAID on ZaloPay, but Magento order
+  finalization encounters an unexpected technical exception (e.g. database error,
+  message queue disconnection, mail failure), `ReturnProcessor` now catches
+  the exception, logs it critically with trace and context, and displays a
+  customer-safe message informing that payment succeeded but order creation
+  encountered an issue with the reference ID. Previously, uncaught exceptions
+  bubbled up to `ReturnAction`'s generic catch block which displayed
+  "Transaction has been declined. Please try again later.", misleading customers
+  into believing the transaction was refused and risking double-payment.
+
+## [Unreleased] - ZLP-OPS-01 (TASK-MCHN2T — operator diagnostics, debug mode, configurable checkout branding)
+
+### Added
+- **CLI diagnostics** `zalopay:diagnose` (read-only): configuration health
+  report (mode, gateway URL, enabled, debug logging, credential presence
+  only — values are never printed — and derived start/return/IPN endpoints),
+  non-zero exit on invalid/incomplete configuration, `--json` output, and
+  optional `--query-payment=<app_trans_id>` / `--query-refund=<m_refund_id>`
+  status queries through the canonical gateway commands
+  (`query_transaction` pool entry / `RefundQueryCommand` with the same
+  stored-payload re-signing path the refund cron uses). No transaction is
+  created, no refund initiated, no refund row mutated.
+- **Debug Mode** `payment/zalopay/debug` (default OFF): provider
+  request/response payloads are logged masked to `var/log/zalo-pay.log` via
+  the core payment method logger (which gates on this flag); keys
+  (key1/key2), MAC and signatures are never logged — the HTTP client now
+  hands its sensitive-key list to the core logger so the recursive filter
+  also covers the nested response payload, and `key1` was added to the
+  pre-mask list (previously only `key2` was masked). Error/critical logging
+  is unaffected by the flag.
+- **Configurable checkout logo** `payment/zalopay/logo`: image upload
+  (PNG/JPG/JPEG/WEBP only, SVG rejected) stored in media storage
+  (`media/zalopay/...`, survives static content deploy, per-website
+  supported); overrides the bundled `Secomm_ZaloPay::images/logo.png`,
+  which remains the fallback when empty. The renderer keeps the single
+  `logoSrc` contract.
+
+### Changed
+- `RefundCronjob::buildQuerySubject()` extracted behavior-preserving into
+  the shared `Secomm\ZaloPay\Gateway\Helper\RefundQuerySubjectBuilder` so
+  the CLI reuses it instead of duplicating signing logic. Cron semantics
+  are unchanged.
+
+### Fixed (correction round 1 — coordinator review)
+- `zalopay:diagnose` now reports the CANONICAL return route
+  `zalopay/payment/returnaction` (per `OrderAdditionalInformationDataBuilder`)
+  instead of the stale `zalopay/payment/return` path.
+- `app_user` is part of the required config health check: ZaloPay's v2
+  create contract requires it (`ZaloAppInfoDataBuilder` always emits it), so
+  an empty `app_user` is reported missing and fails the report (exit 1).
+- Debug logging masks the merchant-side user identifier `app_user`
+  (flat request pre-mask AND the recursive response mask) — no unnecessary
+  PII in provider debug output.
+
 ## [1.3.0] - 2026-09-10 (TASK-EDS9T5 corrective round 4 — strict callback payment identity + double-payment guard + sticky conflicts + explicit recovery exhaustion)
 
 ### Fixed (review blockers)

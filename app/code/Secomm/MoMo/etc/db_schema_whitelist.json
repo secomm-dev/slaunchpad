@@ -1,0 +1,81 @@
+[
+    {
+        "name": "secomm_momo_payment_attempt",
+        "column": [
+            "entity_id",
+            "quote_id",
+            "reserved_order_id",
+            "order_ref",
+            "request_id",
+            "provider_transaction_id",
+            "pay_url",
+            "provider_status",
+            "payment_status",
+            "amount",
+            "currency",
+            "contract_hash",
+            "order_id",
+            "last_error",
+            "requires_reconciliation",
+            "reconciliation_code",
+            "retry_count",
+            "recovery_attempts",
+            "recovery_exhausted",
+            "store_id",
+            "email_dispatch",
+            "created_at",
+            "updated_at",
+            "expires_at"
+        ],
+        "index": [
+            "SECOMM_MOMO_PAYMENT_ATTEMPT_QUOTE_ID",
+            "SECOMM_MOMO_PAYMENT_ATTEMPT_RESERVED_ORDER_ID",
+            "SECOMM_MOMO_PAYMENT_ATTEMPT_PAYMENT_STATUS"
+        ],
+        "constraint": [
+            "PRIMARY",
+            "SECOMM_MOMO_PAYMENT_ATTEMPT_ORDER_REF",
+            "SECOMM_MOMO_PAYMENT_ATTEMPT_REQUEST_ID",
+            "SECOMM_MOMO_PAYMENT_ATTEMPT_ORDER_ID",
+            "SECOMM_MOMO_PAYMENT_ATTEMPT_QUOTE_ID_QUOTE_ENTITY_ID",
+            "SECOMM_MOMO_PAYMENT_ATTEMPT_ORDER_ID_SALES_ORDER_ENTITY_ID"
+        ]
+    },
+    {
+        "name": "secomm_momo_refund",
+        "column": [
+            "entity_id",
+            "order_id",
+            "order_increment_id",
+            "invoice_id",
+            "creditmemo_id",
+            "momo_order_ref",
+            "momo_trans_id",
+            "refund_order_id",
+            "request_id",
+            "provider_transaction_id",
+            "amount",
+            "currency",
+            "status",
+            "response_code",
+            "response_message",
+            "classification_reason",
+            "last_error",
+            "open_flag",
+            "store_id",
+            "created_at",
+            "updated_at",
+            "resolved_at"
+        ],
+        "index": [
+            "SECOMM_MOMO_REFUND_ORDER_ID",
+            "SECOMM_MOMO_REFUND_STATUS"
+        ],
+        "constraint": [
+            "PRIMARY",
+            "SECOMM_MOMO_REFUND_REQUEST_ID",
+            "SECOMM_MOMO_REFUND_OPEN",
+            "SECOMM_MOMO_REFUND_ORDER_ID_SALES_ORDER_ENTITY_ID"
+        ]
+    }
+]

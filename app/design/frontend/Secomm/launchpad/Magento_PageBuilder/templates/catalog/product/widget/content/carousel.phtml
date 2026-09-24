@@ -1,0 +1,73 @@
+<?php
+/**
+ * Hyvä adaptation for the PageBuilder products carousel (TASK-0NNZCW, SLP-213).
+ * Verbatim wrapper contract from Magento_PageBuilder carousel.phtml
+ * ([data-content-type="products"] root, [data-slider-type] slider for the
+ * Hyvä PB carousel widget) but items render through the shared
+ * product_list_item pipeline (Hyva\Theme\ViewModel\ProductListItem) so the
+ * card matches PLP and the rest of the storefront.
+ *
+ * @var \Magento\CatalogWidget\Block\Product\ProductsList $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\ProductListItem;
+use Magento\Catalog\Block\Product\ReviewRendererInterface;
+
+/** @var ProductListItem $productListItemViewModel */
+$productListItemViewModel = $viewModels->require(ProductListItem::class);
+
+?>
+<?php if ($exist = ($block->getProductCollection() && $block->getProductCollection()->count())): ?>
+    <?php
+    $image = 'new_products_content_widget_grid';
+    $galleryCollection = $block->getProductCollection();
+    if (!$galleryCollection->isLoaded()) {
+        $galleryCollection->load();
+    }
+    $galleryCollection->addMediaGalleryData();
+    $items = $galleryCollection->getItems();
+    ?>
+    <div class="hp-pb-products lp-pb-products">
+        <div data-slider-type="product-carousel"
+             class="snap-slider hp-pb-slider"
+             data-pager-class="snap-pager hp-pb-pager lp-pb-pager"
+             data-marker-class="snap-marker hp-pb-marker">
+            <?php /* v4.9.4 (user): pager riêng của RAIL đặt TRƯỚC track — rỗng,
+                SnapSlider chỉ đổ markers vào đây. Không có nó, querySelector
+                ["data-pager"] của SnapSlider quét toàn bộ hậu duệ và nhặt nhầm
+                pager mini-dot gallery của card ĐẦU TIÊN (tạo bởi sliders-init)
+                → mini-dots card biến mất, thay bằng 8 markers của rail.
+                ĐẶT TRƯỚC track để thắng document-order query; hiển thị xuống
+                dưới cards bằng flex order trong homepage.css (.hp-pb-slider). */ ?>
+            <nav data-pager class="snap-pager hp-pb-pager lp-pb-pager" aria-label="<?= $escaper->escapeHtmlAttr(__('Product pages')) ?>"></nav>
+            <div data-track class="snap-track hp-pb-track lp-pb-track">
+                <?php foreach ($items as $product) : ?>
+                    <div class="w-full">
+                        <?= /* @noEscape */ $productListItemViewModel->getItemHtml(
+                            $product,
+                            $block,
+                            'grid',
+                            ReviewRendererInterface::SHORT_VIEW,
+                            $image,
+                            false
+                        ) ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <?php /* Design rail nav (TASK-0NNZCW v4): absolute above the track,
+                    aligned with the Page Builder heading; hidden on mobile
+                    (mobile = swipe + pager dots only). SnapSlider disables/
+                    enables these via data-prev/data-next. */ ?>
+            <div data-page-builder-slider-nav class="lp-pb-nav flex">
+                <button type="button" class="lp-nav-btn" aria-label="Previous products" data-prev
+                        disabled><?= /* @noEscape */ $viewModels->require(\Hyva\Theme\ViewModel\LucideIcons::class)->arrowLeftHtml('rtl:rotate-180', 18, 18, ['aria-hidden' => 'true']) ?></button>
+                <button type="button" class="lp-nav-btn" aria-label="Next products" data-next
+                        disabled><?= /* @noEscape */ $viewModels->require(\Hyva\Theme\ViewModel\LucideIcons::class)->arrowRightHtml('rtl:rotate-180', 18, 18, ['aria-hidden' => 'true']) ?></button>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>

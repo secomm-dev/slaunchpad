@@ -1,0 +1,63 @@
+TASK-4ZW0WG (MOMO-03) — CORRECTION ROUND 1 validation evidence, 2026-09-21
+Review being corrected: coordinator CORRECTION_REQUIRED on TIP 7601df05
+(unsafe "non-zero = failure" resultCode classification) + OWNER_AUTHORIZATION
+= GRANTED (same branch, validate, commit, non-force push to GitHub).
+
+Correction scope (delta vs 7601df05)
+- app/code/Secomm/MoMo/Service/PaymentRecovery.php
+    * "any parseable non-zero -> recordVerifiedFailure" REPLACED by explicit
+      provider-documented allowlists (developers.momo.vn result-code table,
+      verified 2026-09-21):
+        QUERY_PAID          = [0, 9000]         (both still pass amount +
+          positive-transId + identity guards; 9000 = authorized, success for
+          the module's 1-step captureWallet / default autoCapture contract)
+        QUERY_PENDING       = [1000, 7000, 7002]
+        QUERY_REQUEST_ERROR = [10,11,12,13,20,21,22,40,41,42,43,45,47]
+        QUERY_FAILURE       = [98, 99, 1001, 1002, 1003, 1004, 1005, 1006,
+          1007, 1017, 1026, 2019, 4001, 4002, 4100]  (documented Final
+          Status = Yes transaction failures — the ONLY codes allowed to
+          call recordVerifiedFailure)
+      Fail-safe default: request/system codes AND any unmapped code are
+      AMBIGUOUS (logged with code + context, NO mutation, never FAILED).
+    * paid path extracted to applyPaidOutcome(); recoverAttempt() now reads
+      as the explicit 5-branch classifier.
+- app/code/Secomm/MoMo/Test/Unit/Service/PaymentRecoveryTest.php
+    * testDefinitiveFailureRecordsVerifiedFailure (-1, now an unmapped
+      code) replaced by testDocumentedFinalFailureRecordsVerifiedFailure
+      (1001).
+    * NEW: testInitiated1000IsPendingNoMutation,
+      testAuthorized9000FinalizesThroughPaidPath,
+      testRequestLevelCode10IsAmbiguousNoMutation,
+      testUnknownResultCodeIsAmbiguousNoMutation. 11 -> 16 tests.
+- Docs: README.md outcome list, CHANGELOG.md correction entry, spec
+  classification/flow/AC2 sections, record execution notes.
+- NON_SCOPE (per directive): ReturnProcessor untouched; its `-1`->failure
+  pattern recorded as a separate follow-up risk for TL.
+
+Validation (container m2r-php, PHP 8.3.20, throwaway copy /tmp/m2r, DB
+zt-mariadb106 — same env as the original round)
+1) php -l PaymentRecovery.php + PaymentRecoveryTest.php -> EXIT=0 (both).
+2) PHPUnit full Secomm\MoMo:
+     Tests: 204, Assertions: 576  (round-1 baseline 200/562 + 5 new tests /
+     14 new assertions - 1 renamed test; the 5 PHPUnit deprecations are the
+     PRE-EXISTING framework-level ones, identical to the TASK-Y6SGHE and
+     round-1 baselines). No regression.
+3) PHPCS Magento2, severity >= 6, both changed PHP files -> EXIT=0
+   (0 errors / 0 warnings).
+4) setup:di:compile (generated/code wiped first) -> COMPILE_EXIT=0.
+5) Schema unchanged by this round (no setup:upgrade needed).
+
+Result-code table verification
+- Source: https://developers.momo.vn/v3/docs/payment/api/result-handling/
+  resultcode/ (fetched 2026-09-21).
+- Final Status = No: 10, 11, 12, 13, 20, 21, 22, 40, 41, 42, 43, 45, 47
+  (request/system), 1000 (initiated), 7000, 7002 (processing), 9000
+  (authorized; "For 1-step payment, please mark this transaction as
+  success" — the module's captureWallet/default autoCapture=true contract).
+- Final Status = Yes failures: 98, 99, 1001, 1002, 1003, 1004, 1005, 1006,
+  1007, 1017, 1026, 2019, 4001, 4002, 4100. (0 = successful.)
+- Consistency cross-check: the Final-Status=No set matches
+  RefundResultClassifier::NON_FINAL_RESULT_CODES (MOMO-02 correction
+  rounds, same table); 9000 is treated as PAID here (not UNKNOWN) because
+  the recovery finalizes a 1-step purchase, unlike the refund classifier
+  where 9000 cannot occur for a refund operation.

@@ -1,0 +1,41 @@
+<?php
+/**
+ * Journal slider (TASK-0NNZCW v4, SLP-213): latest Magefan blog posts.
+ * Mobile = snap-slider with peek, desktop = exact 3-up (no overflow → no dots,
+ * SnapSlider hides the pager automatically).
+ *
+ * @var \Launchpad\CmsContent\Block\Blog\Journal $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+declare(strict_types=1);
+
+$posts = $block->getPosts();
+?>
+<?php if ($posts): ?>
+    <div class="lp-journal">
+        <div data-lp-slider class="lp-journal-slider">
+            <div data-track class="snap-track lp-journal-track">
+                <?php foreach ($posts as $post) : ?>
+                    <article class="lp-journal-card">
+                        <a href="<?= $escaper->escapeUrl($post->getUrl()) ?>"
+                           class="lp-journal-media block overflow-hidden"
+                           aria-hidden="true" tabindex="-1">
+                            <?php if ($image = $post->getFeaturedImage()) : ?>
+                                <img src="<?= $escaper->escapeUrl($image) ?>"
+                                     alt="<?= $escaper->escapeHtmlAttr($post->getTitle()) ?>"
+                                     title="<?= $escaper->escapeHtmlAttr($post->getTitle()) ?>"
+                                     loading="lazy">
+                            <?php endif; ?>
+                        </a>
+                        <h3 class="lp-journal-title">
+                            <a href="<?= $escaper->escapeUrl($post->getUrl()) ?>"
+                               ><?= $escaper->escapeHtml($post->getTitle()) ?></a>
+                        </h3>
+                        <p class="lp-journal-excerpt"><?= $escaper->escapeHtml($block->getExcerpt($post)) ?></p>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>

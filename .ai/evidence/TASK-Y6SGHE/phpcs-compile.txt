@@ -1,0 +1,7 @@
+
+Deprecated sniffs are still run, but will stop working at some point in the
+future.
+
+PHPCS_EXIT=0
+Generated code and dependency injection configuration successfully.
+COMPILE_EXIT=0
