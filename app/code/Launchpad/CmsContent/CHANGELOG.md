@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.4 (2026-09-25)
+
+- SLP-271 (BUG-3XJSQG): "Living, Reimagined" — text đúng vị trí Figma. Ảnh
+  (asset vuông, `height:auto`) không lấp cột media nên text bị đẩy xa ảnh
+  (375: trống 175px dưới ảnh; 1920: trống 251px bên phải ảnh). `homepage.css`:
+  ảnh `object-fit: cover` (crop giữ đáy như design) — mobile cao 535px, desktop
+  tỉ lệ 940:620; cột text desktop bỏ padding/margin đáy → đáy button trùng đáy
+  ảnh, text cách ảnh 32px. Chỉ theme CSS, không đổi content / seed.
+
 ## 1.2.3 (2026-09-24)
 
 - SLP-269 (BUG-KATJXW): "Everyday more value" (PB columns `.lp-promo-card`)

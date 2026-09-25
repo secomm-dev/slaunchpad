@@ -1572,6 +1572,52 @@ body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has
     padding: 0 2.5rem 0 0 !important;
 }
 
+/* SLP-271 (BUG-3XJSQG): text Living, Reimagined đúng vị trí Figma 2151:17164 /
+   2151:16941. Ảnh (asset vuông) giữ height:auto nên không lấp cột media →
+   trống giữa ảnh và text (375: 175px dưới ảnh, 1920: 251px bên phải ảnh).
+   Ảnh cover khung: mobile cao 535, desktop tỉ lệ 940:620 và giãn theo hàng
+   nếu text cao hơn. Không đặt display cho img — giữ mobile-hidden/only. */
+body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]) [data-content-type="column"]:has(> [data-content-type="image"]) > [data-content-type="image"] {
+    position: relative !important;
+    height: 535px !important;
+    overflow: hidden;
+}
+
+body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]) [data-content-type="column"]:has(> [data-content-type="image"]) > [data-content-type="image"] img {
+    position: absolute !important;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover;
+    /* Figma crop phần trên, giữ sofa + bàn trà ở đáy */
+    object-position: center bottom;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]) [data-content-type="column"]:has(> [data-content-type="image"]) > [data-content-type="image"] {
+        flex: 1 1 auto;
+        height: auto !important;
+        aspect-ratio: 940 / 620;
+    }
+
+    /* page-builder.css `button-item { mb-2 }` đẩy button lên 8px khỏi đáy */
+    body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]):has([data-content-type="image"]) [data-content-type="column"]:has(> [data-content-type="heading"]) [data-content-type="button-item"] {
+        margin-bottom: 0;
+    }
+}
+
+/* Cột text: bỏ padding-bottom để đáy button trùng đáy ảnh. Class CMS JIT
+   `lg:!pb-6` ở @layer utilities + !important → rule unlayered không đè được
+   (important layered thắng); override cùng layer, specificity cao hơn. */
+@layer utilities {
+    @media (min-width: 64rem) {
+        body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]):has([data-content-type="image"]) [data-content-type="column"]:has(> [data-content-type="heading"]) {
+            padding-bottom: 0 !important;
+        }
+    }
+}
+
 /* ---- product rails (3x) ---- */
 body.cms-index-index [data-content-type="row"]:has([data-content-type="products"]) {
     margin-block-start: 1.5rem !important;
