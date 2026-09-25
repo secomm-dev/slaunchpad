@@ -9,10 +9,10 @@ Theme layer giữ markup trong CMS PageBuilder content; module này chứa phầ
 
 | Component | Loại | Ghi chú |
 |---|---|---|
-| `FlashSaleList` | widget (extends `Magento\CatalogWidget\Block\Product\ProductsList`) | Product slider + countdown "Sale ending in". Option thêm: `sale_end` (store time, `YYYY-MM-DD HH:MM:SS`; rỗng = nửa đêm kế tiếp), `products_count`, `condition`. |
+| `FlashSaleList` | widget (extends `Magento\CatalogWidget\Block\Product\ProductsList`) | Product slider + countdown "Sale ending in". Option: `title` (tuỳ chọn, heading cùng hàng countdown; rỗng = không heading), `sale_end` (store time, `YYYY-MM-DD HH:MM:SS`; rỗng = nửa đêm kế tiếp), `products_count`, `template`, `condition`. |
 | `Block\Blog\Journal` | block | Latest Magefan blog posts → slider mobile / grid desktop. Tham số `count` (default 3). |
 | Newsletter CMS block | data patch | `identifier=homepage-newsletter` — form subscribe, chèn qua `{{widget type="Magento\Cms\Block\Widget\Block" block_id="…"}}`. |
-| `Setup\Patch\Data\ConvertHomepageCategoryToSlider` | data patch | SLP-267: Category section PB columns → PB Text element chứa widget `Secomm UI` `categories_a` (slider quản lý bằng item). Idempotent. |
+| `Setup\Patch\Data\ConvertHomepageCategoryToSlider` | data patch | SLP-267: Category section PB columns → PB Text element chứa widget `Secomm UI` `categories_a` (slider quản lý bằng item). Chạy trên **mọi** page `home` (mỗi store view một page), widget dựng từ chính section của page đó (heading, label/ảnh/alt/URL/new-tab từng tile, đủ số lượng & thứ tự) — không thay bằng giá trị seed. Page không convert được (thiếu ảnh/URL, > 12 tile) giữ nguyên + log warning. Idempotent. |
 | `Setup\Patch\Data\EnableShowOutOfStockProducts` | data patch | SLP-272: bật `cataloginventory/options/show_out_of_stock=1` (default scope) để card / PDP / Quick View giữ option hết hàng (Hyvä disable theo `jsonConfig.salable`) + invalidate indexer EAV / price / stock / inventory / catalogsearch. Hệ quả: sản phẩm OOS hiện trên PLP/search/widget. Admin vẫn đổi được (không pin `config.php`). |
 
 ## Templates

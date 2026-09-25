@@ -22,8 +22,11 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
         // SLP-267: kéo chuột để cuộn category slider (scroll gốc chỉ nhận
         // touch/trackpad). Tắt snap khi kéo, thả ra thì trượt mượt về tile gần
         // nhất; chặn click link + native image drag sau khi đã kéo.
+        // Dùng chung cho slider có [data-lp-drag] (flash sale, PB products
+        // carousel — carousel do widget PB khởi tạo SnapSlider, không qua đây).
         const enableMouseDrag = (track) => {
-            if (!track) return;
+            if (!track || track.dataset.lpMouseDrag) return;
+            track.dataset.lpMouseDrag = '1';
             let startX = 0;
             let startLeft = 0;
             let dragging = false;
@@ -37,6 +40,12 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
             });
             track.addEventListener('pointermove', (event) => {
                 if (!dragging) return;
+                // Nhả chuột ngoài track trước khi kịp kéo (chưa capture) →
+                // không nhận pointerup; bỏ drag để hover sau đó không cuộn track.
+                if (!(event.buttons & 1)) {
+                    dragging = false;
+                    return;
+                }
                 const dx = event.clientX - startX;
                 if (!moved && Math.abs(dx) < 5) return;
                 if (!moved) {
@@ -110,6 +119,7 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
                 }, true);
             }
         });
+        document.querySelectorAll('[data-lp-drag] > [data-track]').forEach(enableMouseDrag);
     });
 
     // SLP-269 (BUG-KATJXW): "Everyday more value" = rail PB columns

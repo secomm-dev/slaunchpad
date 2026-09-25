@@ -669,6 +669,8 @@
 "Remove product ""%1"" from the comparison","Remove product ""%1"" from the comparison"
 "Could not remove item from compare.","Could not remove item from compare."
 "Could not remove all item from compare.","Could not remove all item from compare."
+"Could not add item to compare.","Could not add item to compare."
+"You added product %1 to the comparison list.","You added product %1 to the comparison list."
 "Are you sure you want to remove this item from your Compare Products list?","Are you sure you want to remove this item from your Compare Products list?"
 "Are you sure you want to remove all items from your Compare Products list?","Are you sure you want to remove all items from your Compare Products list?"
 "You removed product %1 from the comparison list","You removed product %1 from the comparison list"

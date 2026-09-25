@@ -15,6 +15,70 @@
   Quick View), viền selected là vòng tròn ôm quanh dot (card trước đó bo 6px
   do `.hp-card .swatch-option` → vuông bo góc).
 
+## 1.2.6 (2026-09-25)
+
+- BUG-QJWCNG: CTA các section homepage (Flash sale, Living Reimagined, rail
+  "Go to Collection", video, editorial, blog) khớp Figma `2-10`: DS
+  `btn-size-xl` (h48, padding 12/24, 22 bên phải vì có mũi tên), weight 500,
+  mũi tên 16px nằm sau chữ (trước đó `::after` vùng chạm của `btn` làm mũi tên
+  đè lên chữ). Variant theo section, không theo `button_type` PB: mặc định nền
+  brand-500; rail brand-600; video outline brand-900; editorial nền trắng.
+  Khôi phục `box-shadow` (outline + focus ring) mà `shadow-none` của
+  `page-builder.css` đã tắt. Bỏ `color: #588f60 !important` của secondary
+  (v4.10). Chỉ theme CSS (`homepage.css`), không đổi content / seed.
+- BUG-QJWCNG CR1: nút ‹ › product rail (`.lp-nav-btn`) theo Figma — viền +
+  chevron `--ds-primary-brand-500`, nền trong suốt, hover `--ds-primary-brand-50`,
+  icon Heroicons outline `chevron-left/right` 24px (theme `carousel.phtml`, thay
+  Lucide arrow 18px). Nút "Đăng ký" newsletter = DS `btn-size-l` (h44) + weight
+  500 trên `btn btn-primary` sẵn có; bỏ màu `hp-*` / hex của hai nút — chỉ dùng
+  token `--ds-*` trên `:root`.
+
+## 1.2.5 (2026-09-25)
+
+- Widget Flash Sale insert từ Admin không hiện: `widget.xml` không có parameter
+  `template` (container trỏ tới option không tồn tại) → directive thiếu
+  `template="…"`, block render rỗng. Thêm param `template` (default
+  `Launchpad_CmsContent::product/widget/flash-sale.phtml`). Widget đã insert
+  trước đó (thiếu `template`) cần mở lại form widget và Save/insert lại.
+- Widget Flash Sale thêm option `title` (tuỳ chọn): heading nằm cùng hàng với
+  countdown (`.lp-flash-head` / `.lp-flash-title` trong `homepage.css`, type
+  scale giống PB heading homepage). Để trống = không render heading — homepage
+  hiện tại (PB heading riêng) giữ nguyên.
+- Flash Sale kéo được bằng chuột (desktop): root slider thêm `data-lp-drag` →
+  `sliders-init.phtml` dùng chung `enableMouseDrag` của category slider (thả →
+  trượt về mép card gần nhất; đã kéo thì không mở link card). `homepage.css`:
+  cursor grab/grabbing, tắt snap + smooth scroll khi đang kéo. `enableMouseDrag`
+  bỏ trạng thái kéo khi chuột đã nhả ngoài track (tránh hover làm cuộn track).
+- Rail product widget (PB products carousel — theme override `carousel.phtml`)
+  kéo được bằng chuột: root thêm `data-lp-drag`; `sliders-init.phtml` bật
+  `enableMouseDrag` cho mọi `[data-lp-drag] > [data-track]` (idempotent). CSS
+  drag chuyển sang `.hp-pb-track` (chung flash + rails).
+- "Everyday more value": ẩn scroll track của rail ở mọi màn hình
+  (`scrollbar-width: none` + `::-webkit-scrollbar`) — trước đó scrollbar
+  classic 15px hiện dưới card (Chrome/Edge Windows).
+- Hero slider: lớp mờ đáy ảnh theo Figma "Filter" (mobile `2151:16907`:
+  trong suốt 65.5% → đen 48% ở đáy; desktop `2151:17108`: trong suốt 62.6% →
+  đen 75% tại 84.9%) — `background-image` trên `.pagebuilder-overlay` của mọi
+  slide (`homepage.css`), làm rõ title / description / CTA. Chưa áp lớp mờ
+  đỉnh của design (dành cho header trong suốt đè hero — header hiện chưa đè).
+- Product card: icon wishlist góc trên phải theo design (Product card
+  `2151:17180` "Icon button"): sát góc (top/end 0), padding 8px, heart 24px,
+  không nền / không bo tròn. Theme override
+  `Magento_Catalog::product/list/wishlist/button.phtml` bỏ `btn p-2 rounded-full`
+  (`btn` là @utility nên `.hp-card-wishlist .btn` ở layer components không đè
+  được nền `--ds-bg-brand-soft-primary`) → class `.hp-card-wishlist-btn`.
+- SLP-267 data patch `ConvertHomepageCategoryToSlider` giữ nguyên content từng
+  store view (staging có page `home` riêng cho vi — store 1 — và en — store 4,
+  đã dịch; patch chưa chạy trên staging). Trước: chỉ `getFirstItem()` (1 page),
+  widget dựng từ 6 item seed cứng (label EN, URL `.html`, ảnh `.webp`) → page vi
+  mất bản dịch + 4 tile admin thêm, còn heading "Danh Mục" (regex chỉ khớp
+  "Category"), page còn lại giữ `.lp-tile` trong khi CSS/JS đã xoá. Nay: mọi page
+  `home`; heading + items trích từ section của page; xoá heading theo vị trí
+  (ngay trước column group); lỗi schema → giữ nguyên page + log. Kiểm chứng trên
+  content staging (var/staging-home): vi 10 item / en 6 item khớp từng tile,
+  phần ngoài Category byte-identical, 0 orphan style rule; apply() trong
+  transaction (rollback) giữ store assignment, render đúng từng store.
+
 ## 1.2.4 (2026-09-25)
 
 - SLP-271 (BUG-3XJSQG): "Living, Reimagined" — text đúng vị trí Figma. Ảnh

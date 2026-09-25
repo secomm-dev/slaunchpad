@@ -138,12 +138,15 @@
         @apply absolute start-0 top-0 z-10 bg-hp-brand px-3 py-1 text-xs font-medium text-[#cfe3d1];
     }
 
+    /* Design Product card 2151:17180 "Icon button": sát góc trên phải media,
+       padding 8px, heart outline 24px, không nền / không bo tròn.
+       Markup: theme Magento_Catalog::product/list/wishlist/button.phtml. */
     .hp-card-wishlist {
-        @apply absolute end-1 top-1 z-10;
+        @apply absolute end-0 top-0 z-10;
     }
 
-    .hp-card-wishlist .btn {
-        @apply bg-transparent text-ink shadow-none hover:bg-transparent hover:text-hp-brand;
+    .hp-card-wishlist-btn {
+        @apply flex items-center justify-center p-2 text-ink transition-colors hover:text-hp-brand focus-visible:text-hp-brand focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-hp-brand;
     }
 
     /* Action row overlaid on the media bottom: always visible on touch,
@@ -585,8 +588,21 @@
         @apply absolute bottom-full end-0 z-10 items-center justify-end gap-4;
     }
 
+    /* BUG-QJWCNG: Figma 2151:17177 — outline primary/brand-500, chevron 24px. */
     .lp-nav-btn {
-        @apply flex h-12 w-12 items-center justify-center rounded-md border border-[#d1d5dc] bg-white text-[#293e2d] transition hover:bg-hp-soft disabled:cursor-default disabled:opacity-40;
+        @apply flex h-12 w-12 items-center justify-center rounded-md border transition disabled:cursor-default disabled:opacity-40;
+        border-color: var(--ds-primary-brand-500);
+        background-color: var(--ds-bg-white-transparent);
+        color: var(--ds-primary-brand-500);
+
+        &:hover {
+            background-color: var(--ds-primary-brand-50);
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 4px var(--ds-effects-focus-ring-primary);
+        }
     }
 
     /* Pager dots (design: 8px dot #a9ccae, active 24x8 pill #588f60). */
@@ -680,6 +696,28 @@
         }
     }
 
+    /* Widget option `title`: heading rendered by the widget itself (insert
+       without a PB heading). Same type scale as the homepage PB heading;
+       countdown sits in the head row instead of floating above the widget. */
+    .lp-flash-head {
+        @apply mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6;
+    }
+
+    .lp-flash-title {
+        @apply !m-0 font-sans text-[20px] font-medium leading-[28px] text-black lg:text-[36px] lg:font-bold lg:leading-[40px] lg:tracking-[-0.5px] lg:text-[#293e2d];
+    }
+
+    .lp-flash-head .lp-flash-countdown {
+        @apply mb-0;
+    }
+
+    @media (min-width: 64rem) {
+        .lp-flash-head .lp-flash-countdown {
+            position: static;
+            flex-shrink: 0;
+        }
+    }
+
     /* ---------------- REAL SPACES video (PB video element) ---------------- */
 
     /* REAL SPACES video lives in a PB html element (.lp-video): the native
@@ -748,10 +786,6 @@
 
     .lp-newsletter-input {
         @apply h-11 w-full rounded-md border border-[#d1d5dc] bg-white px-4 text-base leading-6 text-hp-ink placeholder:text-[#99a1af] focus:border-hp-brand focus:outline-none;
-    }
-
-    .lp-newsletter-btn {
-        @apply h-11 shrink-0 rounded-md bg-hp-brand-dark px-6 text-base font-medium text-white transition hover:bg-hp-ink;
     }
 
     .lp-journal-media img {
@@ -828,6 +862,21 @@ body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay [d
 @media (min-width: 64rem) {
     body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay {
         padding-inline: 2.5rem !important;
+    }
+}
+
+/* Design "Filter" dưới ảnh hero (mobile 2151:16907, desktop 2151:17108): nền
+   tối dần xuống đáy để title / description / CTA trắng đọc rõ trên mọi ảnh.
+   Gắn lên overlay của MỌI slide (PB chỉ đặt background-color lên overlay —
+   ảnh slide nằm ở .pagebuilder-slide-wrapper — nên background-image rảnh;
+   overlay color do Admin chọn vẫn chồng bên dưới gradient). */
+body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] .pagebuilder-overlay {
+    background-image: linear-gradient(180deg, rgb(0 0 0 / 0) 65.518%, rgb(0 0 0 / 0.48) 99.952%) !important;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] .pagebuilder-overlay {
+        background-image: linear-gradient(180deg, rgb(0 0 0 / 0) 62.646%, rgb(0 0 0 / 0.75) 84.863%) !important;
     }
 }
 
@@ -1089,30 +1138,28 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
     }
 }
 
-/* v4.10 (user): CTA arrows — secondary button: text + arrow CÙNG màu
-   primary xanh (design); mọi CTA một dòng (arrow khôngwrap xuống line). */
-body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary {
-    color: #588f60 !important;
-}
-
+/* v4.10 (user): mọi CTA một dòng (arrow không wrap xuống line).
+   BUG-QJWCNG: màu chữ + gap do biến --btn-* của từng section (bên dưới). */
 body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary,
 body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-primary {
     display: inline-flex !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0.5rem !important;
     width: auto !important;
     white-space: nowrap !important;
 }
 
 /* v4.10 (user): mũi tên CTA bằng CSS ::after + mask currentColor —
    KHÔNG nhúng svg vào content (PB round-trip strip inline svg trong button).
-   Màu arrow tự theo màu chữ button (primary=trắng, secondary=xanh #588f60).
-   Hero slide KHÔNG arrow (override riêng). */
+   Màu arrow tự theo màu chữ button. Hero slide KHÔNG arrow (override riêng).
+   BUG-QJWCNG: `btn` (SLP-246) dùng ::after làm vùng chạm absolute ở giữa nút
+   → arrow đè chữ; đưa arrow về flow (nút h48 đã ≥ 44px vùng chạm). */
 body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-primary::after,
 body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary::after {
     content: '';
+    position: static;
+    transform: none;
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -1151,6 +1198,71 @@ body.cms-index-index [data-content-type="slide"] [data-element="content"] :is(h1
     font-family: var(--font-sans);
 }
 
+/* BUG-QJWCNG: section CTAs (all but hero + promo card) = Figma "Button
+   Variation" size XL with trailing arrow (h48, 24/22 x 12, Label L, 500).
+   Same cause as the hero: the unlayered `.pagebuilder-button-*` rule beats
+   the CMS utility classes. The variant follows the section, not the PB
+   button_type, so changing the type in Admin keeps the design (see SLP-269).
+   Sections set --lp-cta-* on the row; default = brand-500 filled.
+   box-shadow is restated because page-builder.css `shadow-none` on links
+   inside [data-content-type="buttons"] wins over the btn box-shadow (outline
+   ring + focus ring). No hover shadow, like the hero CTA. */
+body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *) {
+    @apply btn-size-xl;
+    --btn-font-weight: var(--font-weight-medium);
+    --btn-bg: var(--lp-cta-bg, var(--ds-primary-brand-500));
+    --btn-color: var(--lp-cta-color, var(--ds-text-white));
+    --btn-shadow: var(--lp-cta-ring, inset 0 0 0 0 transparent);
+    box-shadow: var(--btn-shadow);
+}
+
+body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *):is(:hover, :active) {
+    --btn-bg: var(--lp-cta-hover-bg, var(--ds-primary-brand-600));
+    --btn-shadow: var(--lp-cta-ring, inset 0 0 0 0 transparent);
+}
+
+body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *):focus-visible {
+    --btn-shadow: var(--lp-cta-ring, inset 0 0 0 0 transparent), 0 0 0 4px var(--ds-effects-focus-ring-primary);
+}
+
+/* btn-icon-trailing (24 → 22px end padding). The CMS `!px-6` is an
+   important utility, so the override has to be important in the same layer. */
+@layer utilities {
+    body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *) {
+        padding-inline-end: calc(var(--btn-padding-x) - 2px) !important;
+    }
+}
+
+/* Rail "Go to Collection": bg/brand-solid-primary. */
+body.cms-index-index [data-content-type="row"]:has([data-content-type="products"]) {
+    --lp-cta-bg: var(--ds-bg-brand-solid-primary);
+    --lp-cta-hover-bg: var(--ds-primary-brand-700);
+}
+
+/* Video copy (REAL SPACES row): outline border/brand-primary. */
+body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-cat-slider)) {
+    --lp-cta-bg: var(--ds-bg-white-transparent);
+    --lp-cta-hover-bg: var(--ds-primary-brand-50);
+    --lp-cta-color: var(--ds-text-brand-primary);
+    --lp-cta-ring: inset 0 0 0 1px var(--ds-border-brand-primary);
+}
+
+/* Editorial banner (full-bleed row, copy + button, no columns): white. */
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])) {
+    --lp-cta-bg: var(--ds-bg-white);
+    --lp-cta-hover-bg: var(--ds-primary-brand-50);
+    --lp-cta-color: var(--ds-text-brand-primary);
+}
+
+/* BUG-QJWCNG: newsletter "Đăng ký" = Figma 2717:85947 — DS size L (h44,
+   20x10, Label L) on the template's `btn btn-primary` (bg/brand-solid-primary,
+   hover brand-700). Unlayered: `btn` lives in the utilities layer. */
+.lp-newsletter-btn {
+    @apply btn-size-l;
+    --btn-font-weight: var(--font-weight-medium);
+    flex-shrink: 0;
+}
+
 /* SLP-268: hero mouse drag — hero-autoplay.phtml adds .lp-hero-dragging while
    dragging/settling: snap + smooth scroll off so the track follows the mouse. */
 body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging {
@@ -1175,6 +1287,28 @@ body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging {
 body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging,
 body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging :is(a, button) {
     cursor: grabbing !important;
+}
+
+/* Product sliders (Flash sale + PB products rails, cùng .hp-pb-track): chuột
+   kéo được track (sliders-init enableMouseDrag, root [data-lp-drag]). Khi kéo:
+   tắt snap + smooth scroll của .snap-track (không thì scrollLeft bị animate/
+   snap lại → giật), không chọn text, card không nhận hover/click. Flash mobile
+   = grid 2 cột, không cuộn → không áp dụng. */
+@media (hover: hover) and (pointer: fine) {
+    .hp-pb-track {
+        cursor: grab;
+    }
+}
+
+.hp-pb-track.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none !important;
+    scroll-behavior: auto !important;
+    user-select: none;
+}
+
+.hp-pb-track.is-dragging > * {
+    pointer-events: none;
 }
 
 /* ---- product sliders: mobile 2-up / desktop 4-up, bleed to viewport edge ---- */
@@ -1460,12 +1594,19 @@ body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content
 }
 
 /* SLP-269 (BUG-KATJXW): rail = slider — snap theo mép card + mouse drag
-   (sliders-init gắn .lp-promo-dragging khi kéo: tắt snap để rail theo tay). */
+   (sliders-init gắn .lp-promo-dragging khi kéo: tắt snap để rail theo tay).
+   Không hiện scroll track ở mọi màn hình (cuộn bằng vuốt / kéo chuột). */
 body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"]:has(> [data-content-type="column"]),
 body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
     scroll-snap-type: x mandatory;
     overscroll-behavior-x: contain;
+    scrollbar-width: none;
     cursor: grab;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"]:has(> [data-content-type="column"])::-webkit-scrollbar,
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"]:has(> [data-content-type="column"])::-webkit-scrollbar {
+    display: none;
 }
 
 body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"] > [data-content-type="column"],
