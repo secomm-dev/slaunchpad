@@ -23,9 +23,12 @@
             );
         }
 
+        /* SLP-272 CR1: colour/image swatch — no white disc behind the dot;
+           the (selected) ring is the round label border around the dot. */
         &[data-swatch-type="visual"] {
             --swatch-radius: 5rem;
             --swatch-px: 3px;
+            background-color: transparent;
         }
 
         &:hover {
@@ -48,13 +51,44 @@
             outline-offset: var(--outline-offset, 2px);
         }
 
+        /* SLP-272 (design): unavailable / out-of-stock option — solid light
+           border, muted label and a thin diagonal strike (bottom-left to
+           top-right). Colour/image swatches keep their full colour; the
+           strike sits on the colour dot itself (its inline style only sets
+           background-color) or, for image swatches, on ::after in the
+           image's grid cell. */
         &:is(:has(:disabled), [aria-disabled="true"]) {
-            border-color: color-mix(in srgb, var(--form-stroke) 80%, #0000);
-            border-style: dashed;
+            --swatch-strike: linear-gradient(
+                to bottom right,
+                #0000 calc(50% - 0.5px),
+                var(--swatch-strike-color, var(--ds-border-gray-secondary)) 0 calc(50% + 0.5px),
+                #0000 0
+            );
+            border-color: var(--ds-border-gray-secondary);
+            color: var(--ds-text-gray-quinary);
             cursor: not-allowed;
 
-            > :is(span, img) {
-                opacity: 80%;
+            &:not([data-swatch-type="visual"]) {
+                background-image: var(--swatch-strike);
+            }
+
+            &[data-swatch-type="visual"] {
+                --swatch-strike-color: var(--ds-border-gray-primary);
+
+                > span {
+                    background-image: var(--swatch-strike);
+                }
+
+                &:has(> img)::after {
+                    content: "";
+                    grid-area: 1/1;
+                    place-self: stretch;
+                    border-radius: calc(
+                        var(--swatch-radius, 0.5em) - var(--swatch-px, 6px)
+                    );
+                    background-image: var(--swatch-strike);
+                    pointer-events: none;
+                }
             }
         }
     }

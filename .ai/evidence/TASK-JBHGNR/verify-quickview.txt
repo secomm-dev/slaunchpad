@@ -1,0 +1,68 @@
+{
+ "options": [
+  {
+   "label": "Cream",
+   "disabled": false,
+   "border": "rgb(209, 213, 220)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "strike": false,
+   "cursor": "pointer"
+  },
+  {
+   "label": "Sage",
+   "disabled": false,
+   "border": "rgb(209, 213, 220)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "strike": false,
+   "cursor": "pointer"
+  },
+  {
+   "label": "Charcoal",
+   "disabled": false,
+   "border": "rgb(41, 62, 45)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "strike": false,
+   "cursor": "pointer"
+  },
+  {
+   "label": "2 Seat",
+   "disabled": false,
+   "border": "rgb(209, 213, 220)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "strike": false,
+   "cursor": "pointer"
+  },
+  {
+   "label": "3 Seat",
+   "disabled": true,
+   "border": "rgb(229, 231, 235)",
+   "color": "rgb(153, 161, 175)",
+   "opacity": "1",
+   "strike": true,
+   "cursor": "not-allowed"
+  },
+  {
+   "label": "Corner",
+   "disabled": true,
+   "border": "rgb(229, 231, 235)",
+   "color": "rgb(153, 161, 175)",
+   "opacity": "1",
+   "strike": true,
+   "cursor": "not-allowed"
+  },
+  {
+   "label": "Ottoman",
+   "disabled": false,
+   "border": "rgb(209, 213, 220)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "strike": false,
+   "cursor": "pointer"
+  }
+ ],
+ "pageerrors": []
+}

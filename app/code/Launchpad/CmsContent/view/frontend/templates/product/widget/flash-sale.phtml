@@ -4,6 +4,8 @@
  *
  * "Sale ending in" countdown + product snap-slider (dots on mobile per design;
  * desktop shows no pager). Card pipeline = product_list_item (PLP parity).
+ * Optional `title` option renders the heading in a row with the countdown;
+ * empty = no heading (homepage keeps its own Page Builder heading).
  *
  * @var \Launchpad\CmsContent\Block\Product\FlashSaleList $block
  * @var \Magento\Framework\Escaper $escaper
@@ -32,9 +34,14 @@ if ($collection) {
 }
 $items = $collection ? $collection->getItems() : [];
 $endMillis = (int) $block->getSaleEndMillis();
+$title = trim((string) $block->getTitle());
 ?>
 <?php if ($items): ?>
     <div class="lp-flash relative">
+        <?php if ($title !== ''): ?>
+        <div class="lp-flash-head">
+            <h2 class="lp-flash-title"><?= $escaper->escapeHtml($title) ?></h2>
+        <?php endif; ?>
         <div class="lp-flash-countdown" x-data="lpFlashCountdown(<?= (int) $endMillis ?>)">
             <div class="lp-countdown-pill">
                 <span class="lp-countdown-label">
@@ -46,7 +53,10 @@ $endMillis = (int) $block->getSaleEndMillis();
                 <span class="lp-countdown-value" x-text="left">00:00:00</span>
             </div>
         </div>
-        <div data-lp-slider class="hp-pb-slider">
+        <?php if ($title !== ''): ?>
+        </div>
+        <?php endif; ?>
+        <div data-lp-slider data-lp-drag class="hp-pb-slider">
             <div data-track class="snap-track hp-pb-track lp-flash-track">
                 <?php foreach ($items as $product) : ?>
                     <div class="w-full">

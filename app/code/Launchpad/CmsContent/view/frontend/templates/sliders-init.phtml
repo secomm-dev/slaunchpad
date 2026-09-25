@@ -19,10 +19,71 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
     'use strict';
     window.addEventListener('DOMContentLoaded', () => {
         if (typeof SnapSlider === 'undefined') return;
+        // SLP-267: kéo chuột để cuộn category slider (scroll gốc chỉ nhận
+        // touch/trackpad). Tắt snap khi kéo, thả ra thì trượt mượt về tile gần
+        // nhất; chặn click link + native image drag sau khi đã kéo.
+        // Dùng chung cho slider có [data-lp-drag] (flash sale, PB products
+        // carousel — carousel do widget PB khởi tạo SnapSlider, không qua đây).
+        const enableMouseDrag = (track) => {
+            if (!track || track.dataset.lpMouseDrag) return;
+            track.dataset.lpMouseDrag = '1';
+            let startX = 0;
+            let startLeft = 0;
+            let dragging = false;
+            let moved = false;
+            track.addEventListener('pointerdown', (event) => {
+                if (event.pointerType !== 'mouse' || event.button !== 0) return;
+                dragging = true;
+                moved = false;
+                startX = event.clientX;
+                startLeft = track.scrollLeft;
+            });
+            track.addEventListener('pointermove', (event) => {
+                if (!dragging) return;
+                // Nhả chuột ngoài track trước khi kịp kéo (chưa capture) →
+                // không nhận pointerup; bỏ drag để hover sau đó không cuộn track.
+                if (!(event.buttons & 1)) {
+                    dragging = false;
+                    return;
+                }
+                const dx = event.clientX - startX;
+                if (!moved && Math.abs(dx) < 5) return;
+                if (!moved) {
+                    moved = true;
+                    track.classList.add('is-dragging');
+                    track.setPointerCapture(event.pointerId);
+                }
+                track.scrollLeft = startLeft - dx;
+            });
+            const endDrag = () => {
+                if (!dragging) return;
+                dragging = false;
+                if (!moved) return;
+                const base = track.firstElementChild ? track.firstElementChild.offsetLeft : 0;
+                const target = Array.from(track.children)
+                    .map((tile) => tile.offsetLeft - base)
+                    .reduce((best, left) => (Math.abs(left - track.scrollLeft) < Math.abs(best - track.scrollLeft) ? left : best), 0);
+                track.scrollTo({ left: target, behavior: 'smooth' });
+                setTimeout(() => track.classList.remove('is-dragging'), 450);
+            };
+            track.addEventListener('pointerup', endDrag);
+            track.addEventListener('pointercancel', endDrag);
+            track.addEventListener('click', (event) => {
+                if (!moved) return;
+                event.preventDefault();
+                event.stopPropagation();
+                moved = false;
+            }, true);
+            track.addEventListener('dragstart', (event) => event.preventDefault());
+        };
         document.querySelectorAll('[data-lp-slider], [data-lp-card-slider], [data-lp-tiles-slider]').forEach((el) => {
             if (el.dataset.lpSliderInit) return;
             el.dataset.lpSliderInit = '1';
-            new SnapSlider(el, { autoPager: true, groupPager: true });
+            // SLP-267: category tiles = 1 dot / tile (design) — không group.
+            new SnapSlider(el, { autoPager: true, groupPager: !el.matches('[data-lp-tiles-slider]') });
+            if (el.matches('[data-lp-tiles-slider]')) {
+                enableMouseDrag(el.querySelector('[data-track]'));
+            }
             // v4.9.2 (user): bấm dot của card gallery làm trượt cả product slider
             // ngoài. 2 nguyên nhân: (1) click bubble lên root slider ngoài,
             // SnapSlider ngoài cũng xử lý pager; (2) SnapSlider scroll bằng
@@ -58,45 +119,71 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
                 }, true);
             }
         });
+        document.querySelectorAll('[data-lp-drag] > [data-track]').forEach(enableMouseDrag);
+    });
 
-        // v4.9.8 (user, Figma 2151:16924): Category = slider ngang mobile + dots;
-        // desktop grid 6 cột tĩnh ẩn dot. Tiles là PB columns nên SnapSlider
-        // không khởi tạo được (thiếu [data-track] con) — dots viết tay,
-        // scrollTo cục bộ để không trượt ancestor.
-        const tilesRow = (() => {
-            const tile = document.querySelector('.lp-tile');
-            return tile ? tile.closest('[data-content-type="row"]') : null;
-        })();
-        const tilesHolder = tilesRow && (tilesRow.querySelector('[data-content-type="column-line"]:has(> [data-content-type="column"])') || tilesRow.querySelector('[data-content-type="column-group"]'));
-        if (tilesHolder && !tilesHolder.dataset.lpTilesDots) {
-            tilesHolder.dataset.lpTilesDots = '1';
-            const tiles = Array.from(tilesHolder.children).filter((c) => c.classList.contains('lp-tile'));
-            const nav = document.createElement('nav');
-            nav.className = 'lp-tiles-dots';
-            nav.setAttribute('aria-label', 'Category tiles');
-            const dots = tiles.map((tile, i) => {
-                const dot = document.createElement('button');
-                dot.type = 'button';
-                dot.className = 'lp-tiles-dot';
-                dot.setAttribute('aria-label', 'Go to category ' + (i + 1));
-                dot.addEventListener('click', () => {
-                    tilesHolder.scrollTo({ left: tile.offsetLeft - tilesHolder.offsetLeft, behavior: 'smooth' });
-                });
-                nav.appendChild(dot);
-                return dot;
-            });
-            tilesHolder.after(nav);
-            const updateDots = () => {
-                let active = 0;
-                tiles.forEach((tile, i) => {
-                    if (tile.offsetLeft - tilesHolder.offsetLeft <= tilesHolder.scrollLeft + 8) active = i;
-                });
-                dots.forEach((d, i) => d.setAttribute('aria-current', i === active ? 'true' : 'false'));
-            };
-            tilesHolder.addEventListener('scroll', updateDots, { passive: true });
-            window.addEventListener('resize', updateDots);
-            updateDots();
-        }
+    // SLP-269 (BUG-KATJXW): "Everyday more value" = rail PB columns
+    // (overflow-x + scroll-snap) — touch vuốt native, chuột thì không kéo được.
+    // Drag-to-scroll cho chuột; thả → trượt tới mép card kế tiếp theo hướng
+    // kéo; đã kéo thì nuốt click để không mở link "→".
+    window.addEventListener('DOMContentLoaded', () => {
+        const firstCard = document.querySelector('.lp-promo-card');
+        const rail = firstCard && firstCard.parentElement;
+        if (!rail || rail.dataset.lpDrag) return;
+        rail.dataset.lpDrag = '1';
+        let drag = null;
+        let moved = false;
+        const cardOffsets = () => {
+            const start = rail.getBoundingClientRect().left + rail.clientLeft;
+            return Array.from(rail.children)
+                .filter((c) => c.classList.contains('lp-promo-card'))
+                .map((c) => c.getBoundingClientRect().left - start + rail.scrollLeft);
+        };
+        const settle = (target) => {
+            const done = () => drag || rail.classList.remove('lp-promo-dragging');
+            if (Math.abs(rail.scrollLeft - target) < 1) return done();
+            rail.addEventListener('scrollend', done, { once: true });
+            setTimeout(done, 700);
+            rail.scrollTo({ left: target, behavior: 'smooth' });
+        };
+        rail.addEventListener('pointerdown', (event) => {
+            if (event.pointerType !== 'mouse' || event.button !== 0) return;
+            drag = { x: event.clientX, left: rail.scrollLeft };
+            moved = false;
+        });
+        rail.addEventListener('pointermove', (event) => {
+            if (!drag) return;
+            const dx = event.clientX - drag.x;
+            if (!moved && Math.abs(dx) < 5) return;
+            if (!moved) {
+                moved = true;
+                rail.setPointerCapture(event.pointerId);
+                rail.classList.add('lp-promo-dragging');
+            }
+            rail.scrollLeft = drag.left - dx;
+        });
+        const release = () => {
+            if (!drag) return;
+            const from = drag.left;
+            drag = null;
+            if (!moved) return;
+            const current = rail.scrollLeft;
+            const offsets = cardOffsets();
+            const next = current > from
+                ? offsets.find((o) => o > current + 1)
+                : offsets.reverse().find((o) => o < current - 1);
+            const max = rail.scrollWidth - rail.clientWidth;
+            settle(Math.max(0, Math.min(next ?? current, max)));
+        };
+        rail.addEventListener('pointerup', release);
+        rail.addEventListener('pointercancel', release);
+        rail.addEventListener('dragstart', (event) => event.preventDefault());
+        rail.addEventListener('click', (event) => {
+            if (!moved) return;
+            moved = false;
+            event.preventDefault();
+            event.stopPropagation();
+        }, true);
     });
 </script>
 <?php $hyvaCsp->registerInlineScript() ?>

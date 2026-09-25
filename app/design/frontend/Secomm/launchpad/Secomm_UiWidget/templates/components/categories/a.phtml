@@ -1,0 +1,59 @@
+<?php
+/**
+ * Launchpad override of Secomm UI `categories_a` (TASK-HARDAR, SLP-267):
+ * homepage Category slider managed as widget items instead of PB columns.
+ * Every breakpoint = SnapSlider rail bleeding to the right viewport edge,
+ * mouse-draggable (init in Launchpad_CmsContent::sliders-init.phtml).
+ * Mobile/tablet: 172px tiles + 1 dot per tile; desktop: 6 tiles per view,
+ * no dots. No prev/next buttons (SLP-267 user decision).
+ * Styles: web/tailwind/theme/homepage.css (.lp-cat-*).
+ *
+ * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$data = (array)$block->getData('component_data');
+$items = (array)($data['items'] ?? []);
+$instanceId = $block->getInstanceId();
+$headingId = $instanceId . '-heading';
+$mobileSlider = (bool)($data['mobile_slider'] ?? true);
+?>
+<?php if ($items): ?>
+    <section id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
+             class="lp-cat-slider<?= $mobileSlider ? '' : ' lp-cat-slider--static' ?>"
+             aria-labelledby="<?= $escaper->escapeHtmlAttr($headingId) ?>"
+             data-secomm-ui-component="categories_a">
+        <div data-lp-tiles-slider>
+            <div class="lp-cat-head">
+                <h2 id="<?= $escaper->escapeHtmlAttr($headingId) ?>" class="lp-cat-heading">
+                    <?= $escaper->escapeHtml((string)$data['heading']) ?>
+                </h2>
+                <?php if (!empty($data['browse_url'])): ?>
+                    <a href="<?= $escaper->escapeUrl((string)$data['browse_url']) ?>"
+                       class="lp-cat-browse"
+                        <?php if (!empty($data['browse_open_in_new'])): ?>
+                            target="_blank" rel="noopener noreferrer"
+                        <?php endif; ?>>
+                        <?= $escaper->escapeHtml((string)$data['browse_label']) ?>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <div data-track class="lp-cat-track">
+                <?php foreach ($items as $item): ?>
+                    <a href="<?= $escaper->escapeUrl((string)$item['url']) ?>"
+                       class="lp-cat-tile"
+                        <?php if (!empty($item['open_in_new'])): ?>
+                            target="_blank" rel="noopener noreferrer"
+                        <?php endif; ?>>
+                        <img alt="<?= $escaper->escapeHtmlAttr((string)$item['image_alt']) ?>"
+                             src="<?= $escaper->escapeUrl($block->getMediaUrl((string)$item['image'])) ?>"
+                             width="140"
+                             height="96"
+                             loading="<?= $escaper->escapeHtmlAttr((string)($item['loading'] ?? 'lazy')) ?>">
+                        <span class="lp-cat-tile-label"><?= $escaper->escapeHtml((string)$item['label']) ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>

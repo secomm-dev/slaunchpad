@@ -3,6 +3,9 @@
     Flash Sale Products widget (TASK-0NNZCW v4): product slider with a
     "Sale ending in" countdown. sale_end accepts a store-local datetime
     (YYYY-MM-DD HH:MM:SS); when empty the countdown targets the next midnight.
+    `template` must be a real parameter: the Admin insert form only writes
+    template="..." into the directive from it (FlashSaleList is also the
+    ProductsList preference, so the class carries no default _template).
 -->
 <widgets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Widget:etc/widget.xsd">
@@ -13,6 +16,10 @@
         <label translate="true">Flash Sale Products (slider + countdown)</label>
         <description translate="true">Product slider with sale countdown for the LAUNCHPAD homepage</description>
         <parameters>
+            <parameter name="title" xsi:type="text" required="false" visible="true">
+                <label translate="true">Title</label>
+                <description translate="true">Section heading shown next to the countdown. Leave empty when the page already has its own heading.</description>
+            </parameter>
             <parameter name="products_count" xsi:type="text" required="true" visible="true">
                 <label translate="true">Number of Products to Display</label>
                 <value>8</value>
@@ -20,6 +27,14 @@
             <parameter name="sale_end" xsi:type="text" required="false" visible="true">
                 <label translate="true">Sale End (YYYY-MM-DD HH:MM:SS, store time)</label>
                 <description translate="true">Countdown target. Leave empty to count down to the next midnight.</description>
+            </parameter>
+            <parameter name="template" xsi:type="select" required="true" visible="true">
+                <label translate="true">Template</label>
+                <options>
+                    <option name="default" value="Launchpad_CmsContent::product/widget/flash-sale.phtml" selected="true">
+                        <label translate="true">Flash Sale Slider Template</label>
+                    </option>
+                </options>
             </parameter>
             <parameter name="cache_lifetime" xsi:type="text" visible="true">
                 <label translate="true">Cache Lifetime (Seconds)</label>
@@ -31,7 +46,7 @@
         </parameters>
         <containers>
             <container name="content">
-                <template name="flash-sale" value="default"/>
+                <template name="default" value="default"/>
             </container>
         </containers>
     </widget>

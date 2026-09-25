@@ -47,6 +47,11 @@ HTML;
 
         $block = $this->blockFactory->create();
         $this->blockResource->load($block, self::BLOCK_IDENTIFIER, 'identifier');
+        if ($block->getId()) {
+            // Keep an existing (possibly Admin-edited / translated) block — the
+            // module rename re-runs this patch under its new class name.
+            return $this;
+        }
         $block->setData([
             'identifier' => self::BLOCK_IDENTIFIER,
             'title' => 'Homepage Newsletter Form',

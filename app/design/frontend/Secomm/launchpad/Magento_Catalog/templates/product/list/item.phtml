@@ -204,10 +204,10 @@ if (!$isProductGroupedOrBundle) {
         </div>
     </div>
     <div class="product-info flex flex-col grow <?= $viewIsGrid ? 'pt-3 px-1' : 'md:pl-5 md:w-4/6 md:pt-0' ?>">
-        <?php if ($brand): ?>
-            <span class="hp-card-brand"><?= $escaper->escapeHtml($brand) ?></span>
-        <?php endif; ?>
-        <div class="<?= $brand ? 'mt-1' : 'mt-2' ?> mb-0 <?= $viewIsGrid ? 'text-start' : 'md:text-left' ?>">
+        <?php /* Brand line (SLP-270): always rendered — empty when the product has
+               no brand — so names/prices line up across cards in a row. */ ?>
+        <span class="hp-card-brand"<?= $brand ? '' : ' aria-hidden="true"' ?>><?= $escaper->escapeHtml((string) $brand) ?></span>
+        <div class="mt-2 mb-0 <?= $viewIsGrid ? 'text-start' : 'md:text-left' ?>">
             <a
                 class="product-item-link hp-card-name"
                 href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
