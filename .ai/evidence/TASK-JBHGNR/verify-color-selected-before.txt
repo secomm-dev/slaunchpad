@@ -1,0 +1,30 @@
+{
+ "card": {
+  "label": "32x32",
+  "dot": "24x24",
+  "radius": "6px",
+  "bg": "rgb(255, 255, 255)",
+  "border": "1px rgba(41, 62, 45, 0.114)",
+  "shadow": "rgb(41, 62, 45) 0px 0px 0px 1px inset",
+  "padding": "2px"
+ },
+ "quickview": {
+  "label": "38x38",
+  "dot": "0x0",
+  "radius": "80px",
+  "bg": "rgb(255, 255, 255)",
+  "border": "1px rgb(41, 62, 45)",
+  "shadow": "rgb(41, 62, 45) 0px 0px 0px 1px inset",
+  "padding": "3px"
+ },
+ "pdp": {
+  "label": "38x38",
+  "dot": "30x30",
+  "radius": "80px",
+  "bg": "rgb(255, 255, 255)",
+  "border": "1px rgb(41, 62, 45)",
+  "shadow": "rgb(41, 62, 45) 0px 0px 0px 1px inset",
+  "padding": "3px"
+ },
+ "pageerrors": []
+}

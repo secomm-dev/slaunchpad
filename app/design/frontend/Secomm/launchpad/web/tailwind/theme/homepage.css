@@ -107,7 +107,11 @@
         --swatch-radius: 9999px;
         --swatch-px: 2px;
         --swatch-py: 2px;
+        /* SLP-272 CR1: the card box radius / white bg above made the selected
+           ring a rounded square on a white tile — keep it a circle round the dot. */
         border-color: transparent;
+        border-radius: var(--swatch-radius);
+        background-color: transparent;
     }
 
     .hp-card .swatch-option[data-swatch-type="visual"] > span {
@@ -121,9 +125,12 @@
         box-shadow: inset 0 0 0 1px #293e2d;
     }
 
-    .hp-card .swatch-option:is(:has(:disabled), [aria-disabled="true"]) {
-        border-style: dashed;
-        opacity: 0.45;
+    /* SLP-272: out-of-stock option — the card overrides border/colour above,
+       so re-apply the disabled tokens here (strike itself: swatches.css).
+       Colour dots keep the transparent ring. */
+    .hp-card .swatch-option:not([data-swatch-type="visual"]):is(:has(:disabled), [aria-disabled="true"]) {
+        border-color: var(--ds-border-gray-secondary);
+        color: var(--ds-text-gray-quinary);
     }
 
     .hp-card-badge {
@@ -196,24 +203,6 @@
     .hp-card-discount {
         /* Design discount chip: red, square, white 12/16 medium. */
         @apply bg-[#c10007] px-3 py-1 text-xs font-medium leading-4 text-white;
-    }
-
-    .hp-card-swatches {
-        @apply mt-2 flex items-center gap-1.5;
-    }
-
-    .hp-card-swatch {
-        @apply h-4 w-4 rounded-full border border-slate-300;
-    }
-
-    .hp-card-swatch-out {
-        background-image: linear-gradient(
-            to bottom right,
-            transparent calc(50% - 0.5px),
-            var(--color-red-700) calc(50% - 0.5px),
-            var(--color-red-700) calc(50% + 0.5px),
-            transparent calc(50% + 0.5px)
-        );
     }
 
     /* Design meta row: "In stock" left + rating right, single line. */

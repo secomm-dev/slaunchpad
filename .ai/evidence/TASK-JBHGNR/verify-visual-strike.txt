@@ -1,0 +1,16 @@
+{
+ "card": {
+  "after": null,
+  "spanBg": "linear-gradient(to right bottom, rgba(0, 0, 0, 0) calc(50% - 0.5px), rgb(209, 213, 220) 0p",
+  "spanSize": "24x24",
+  "spanOpacity": "1",
+  "border": "rgba(0, 0, 0, 0)"
+ },
+ "pdp": {
+  "after": null,
+  "spanBg": "linear-gradient(to right bottom, rgba(0, 0, 0, 0) calc(50% - 0.5px), rgb(209, 213, 220) 0p",
+  "spanSize": "30x30",
+  "spanOpacity": "1",
+  "border": "rgb(229, 231, 235)"
+ }
+}

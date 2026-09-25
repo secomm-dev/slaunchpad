@@ -147,9 +147,9 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                             </legend>
                             <div class="flex flex-wrap gap-2">
                                 <template x-for="value in option.values" :key="value.value_index">
+                                    <?php /* SLP-272: unavailable (OOS) value styled by .swatch-option:has(:disabled) — swatches.css */ ?>
                                     <label
-                                        class="swatch-option my-0 cursor-pointer"
-                                        :class="!isValueAvailable(option, value.value_index) && 'opacity-40 pointer-events-none'"
+                                        class="swatch-option my-0"
                                         :data-swatch-type="swatchType(value) === 'text' ? 'text' : 'visual'"
                                     >
                                         <span

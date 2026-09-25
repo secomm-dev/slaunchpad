@@ -1,0 +1,202 @@
+[
+    {
+        "parent": "bed-haven",
+        "entity_id": "2138",
+        "sku": "bed-haven-queen-cream",
+        "source_code": "default",
+        "quantity": "50.0000",
+        "status": "1",
+        "qty": "50.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "bed-haven",
+        "entity_id": "2139",
+        "sku": "bed-haven-queen-oatmeal",
+        "source_code": "default",
+        "quantity": "50.0000",
+        "status": "1",
+        "qty": "50.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "bed-haven",
+        "entity_id": "2140",
+        "sku": "bed-haven-queen-sage",
+        "source_code": "default",
+        "quantity": "49.0000",
+        "status": "1",
+        "qty": "49.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "bed-haven",
+        "entity_id": "2141",
+        "sku": "bed-haven-king-cream",
+        "source_code": "default",
+        "quantity": "50.0000",
+        "status": "1",
+        "qty": "50.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "bed-haven",
+        "entity_id": "2142",
+        "sku": "bed-haven-king-oatmeal",
+        "source_code": "default",
+        "quantity": "50.0000",
+        "status": "1",
+        "qty": "50.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "bed-haven",
+        "entity_id": "2143",
+        "sku": "bed-haven-king-sage",
+        "source_code": "default",
+        "quantity": "50.0000",
+        "status": "1",
+        "qty": "50.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2164",
+        "sku": "sofa-meridian-2seat-cream",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2165",
+        "sku": "sofa-meridian-2seat-sage",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2166",
+        "sku": "sofa-meridian-2seat-charcoal",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2167",
+        "sku": "sofa-meridian-3seat-cream",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2168",
+        "sku": "sofa-meridian-3seat-sage",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2169",
+        "sku": "sofa-meridian-3seat-charcoal",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2170",
+        "sku": "sofa-meridian-corner-cream",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2171",
+        "sku": "sofa-meridian-corner-sage",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2172",
+        "sku": "sofa-meridian-corner-charcoal",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2173",
+        "sku": "sofa-meridian-ottoman-cream",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2174",
+        "sku": "sofa-meridian-ottoman-sage",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "sofa-meridian",
+        "entity_id": "2175",
+        "sku": "sofa-meridian-ottoman-charcoal",
+        "source_code": "default",
+        "quantity": "100.0000",
+        "status": "1",
+        "qty": "100.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "table-ovale",
+        "entity_id": "2155",
+        "sku": "table-ovale-4seat",
+        "source_code": "default",
+        "quantity": "30.0000",
+        "status": "1",
+        "qty": "30.0000",
+        "is_in_stock": "1"
+    },
+    {
+        "parent": "table-ovale",
+        "entity_id": "2156",
+        "sku": "table-ovale-8seat",
+        "source_code": "default",
+        "quantity": "30.0000",
+        "status": "1",
+        "qty": "30.0000",
+        "is_in_stock": "1"
+    }
+]

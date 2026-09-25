@@ -13,6 +13,7 @@ Theme layer giữ markup trong CMS PageBuilder content; module này chứa phầ
 | `Block\Blog\Journal` | block | Latest Magefan blog posts → slider mobile / grid desktop. Tham số `count` (default 3). |
 | Newsletter CMS block | data patch | `identifier=homepage-newsletter` — form subscribe, chèn qua `{{widget type="Magento\Cms\Block\Widget\Block" block_id="…"}}`. |
 | `Setup\Patch\Data\ConvertHomepageCategoryToSlider` | data patch | SLP-267: Category section PB columns → PB Text element chứa widget `Secomm UI` `categories_a` (slider quản lý bằng item). Idempotent. |
+| `Setup\Patch\Data\EnableShowOutOfStockProducts` | data patch | SLP-272: bật `cataloginventory/options/show_out_of_stock=1` (default scope) để card / PDP / Quick View giữ option hết hàng (Hyvä disable theo `jsonConfig.salable`) + invalidate indexer EAV / price / stock / inventory / catalogsearch. Hệ quả: sản phẩm OOS hiện trên PLP/search/widget. Admin vẫn đổi được (không pin `config.php`). |
 
 ## Templates
 
@@ -22,6 +23,7 @@ Theme layer giữ markup trong CMS PageBuilder content; module này chứa phầ
 ## Liên quan theme
 
 - Card product: `Secomm/launchpad/Magento_Catalog/templates/product/list/item.phtml` (`hp-card-*`).
+- Option hết hàng (SLP-272): style `.swatch-option:has(:disabled)` trong `web/tailwind/components/swatches.css` (card / PDP / Quick View) + override màu card trong `homepage.css`.
 - PB products carousel override: `Secomm/launchpad/Magento_PageBuilder/templates/catalog/product/widget/content/carousel.phtml`.
 - CSS: `web/tailwind/theme/homepage.css` (lp-* section classes) + safelist `web/tailwind/safelist/launchpad-cms.html`.
 

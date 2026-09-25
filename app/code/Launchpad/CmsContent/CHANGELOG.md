@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.7 (2026-09-25)
+
+- SLP-272 (TASK-JBHGNR): product card / PDP / Quick View hiển thị option hết
+  hàng theo design. Data patch `EnableShowOutOfStockProducts` bật
+  `cataloginventory/options/show_out_of_stock=1` (default scope) + invalidate
+  indexer EAV / price / stock / inventory / catalogsearch — Hyvä disable option
+  theo `jsonConfig.salable`. Theme: `swatches.css` style disabled = viền
+  `--ds-border-gray-secondary`, chữ `--ds-text-gray-quinary`, gạch chéo 1px
+  (dot màu giữ nguyên màu, gạch chéo trong dot); `homepage.css` override card
+  theo cùng token, gỡ class mock-up `.hp-card-swatch*`; Quick View bỏ
+  `opacity-40 pointer-events-none` để dùng chung style.
+- SLP-272 CR1: color swatch selected — bỏ nền trắng sau dot (card / PDP /
+  Quick View), viền selected là vòng tròn ôm quanh dot (card trước đó bo 6px
+  do `.hp-card .swatch-option` → vuông bo góc).
+
 ## 1.2.4 (2026-09-25)
 
 - SLP-271 (BUG-3XJSQG): "Living, Reimagined" — text đúng vị trí Figma. Ảnh
