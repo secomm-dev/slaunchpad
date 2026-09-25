@@ -18,6 +18,8 @@
 | CMP-PROMOTIONMAXDISCOUNT | Per-rule Maximum Discount Cap cho by_percent Sales Rules — cap collector sort 310 + LRM redistribution; scaffold landed (TASK-3R6X8E), data model/engine/UI pending (TASK-33J3RP..025) | proposed | app/code/Secomm/PromotionMaxDiscount | FEAT-JKZM68 | DEC-FEATJKZM68-001 | Secomm BE | d871a85f | 2026-08-19 |
 | CMP-SECOMM-UI | Shared Hyvä-only `Secomm UI` Magento widget capability — explicit registry, dynamic Admin fields and 21 Batch 1 components with product-theme override extension point | current | app/code/Secomm/UiWidget; app/design/frontend/Secomm/launchpad | FEAT-J06WXZ · TASK-ZQ9ZE1 · TASK-XY9RZF | DEC-FEATJ06WXZ-001 · DEC-FEATJ06WXZ-002 | Secomm FE | 2b5e01c5 | 2026-08-29 |
 
+| CMP-SHIPPING | Secomm shipping stack — `Secomm_ShippingCore` (rate execution/eligibility + canonical zones + fallback policy + CoverageTarget abstraction) + carrier adoption; zone persistence `secomm_shipping_zone` + admin Secomm → Shipping → [Shipping Zones, Shipping Coverage] (CARRIER-only P1, METHOD reserved; Add/Configure/Edit/Reset lifecycle; core ui-select selectors) (FEAT-QA23PZ; TASK-G3K9V2 + TASK-WY6WP5) | current | app/code/Secomm/ShippingCore; app/code/Secomm/Ghn (adoption) | FEAT-QA23PZ | DEC-FEATQA23PZ-001; DEC-TASKWY6WP5-001 | Secomm BE | working-tree 2026-09-23 | 2026-09-23 |
+
 ## Notes
 
 - **CMP-VNPAY = `suspect`**: hardening (FEAT-HEHJQ4 / DEC-FEATHEHJQ4-001..006) is `proposed`, not yet implemented — re-audit the IPN flow before relying on it. Flip to `current` after FEAT-HEHJQ4 lands + QC L3 passes.

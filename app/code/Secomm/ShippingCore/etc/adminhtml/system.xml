@@ -1,24 +1,25 @@
 <?xml version="1.0"?>
 <!--
-  ~ TASK-STC3NB — COD payment identification configuration (architecture v4 §4.1).
-  ~ Comma-separated Magento payment method codes treated as COD. Empty = nothing is COD.
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<!--
+  ~ TASK-DFGFZ9 (DEC-TASKDFGFZ9-001/003): COD identification moved OUT of ShippingCore —
+  ~ owned by Secomm_Cod (P1 default `cashondelivery` hardcoded; the former "COD Settings"
+  ~ admin section no longer exists).
+  ~ This section keeps ShippingCore-owned configuration only (Physical Package Defaults).
   -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="secomm_shippingcore" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
             <label>Secomm Shipping Core</label>
+            <tab>secomm</tab>
             <resource>Magento_Backend::stores</resource>
-            <group id="cod" translate="label" type="text" sortOrder="10" showInDefault="1">
-                <label>COD Payment Identification</label>
-                <field id="payment_methods" translate="label comment" type="text" sortOrder="10" showInDefault="1" canRestore="1">
-                    <label>COD Payment Method Codes</label>
-                    <comment><![CDATA[Comma-separated Magento payment method codes treated as Cash On Delivery, e.g. "cashondelivery, custom_cod". Exact code match (case-sensitive). Leave empty = no payment method is COD. Carriers use this via Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface when building shipment/order requests.]]></comment>
-                </field>
-            </group>
-                    <group id="physical" translate="label" type="text" sortOrder="20" showInDefault="1">
+                <group id="physical" translate="label" type="text" sortOrder="20" showInDefault="1">
                 <label>Physical Package Defaults</label>
-                <comment>DEC-TASK9Q5ZAK-001 — merchant default package dimensions (cm), used ONLY to prefill the shipment package-information input. The confirmed values on the shipment are what carriers receive.</comment>
+                <comment>Merchant default package dimensions (cm), used ONLY to prefill the shipment package-information input. The confirmed values on the shipment are what carriers receive.</comment>
                 <field id="default_package_length" translate="label" type="text" sortOrder="10" showInDefault="1">
                     <label>Default Package Length (cm)</label>
                     <validate>integer</validate>

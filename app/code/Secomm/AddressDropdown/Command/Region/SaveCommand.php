@@ -16,6 +16,7 @@ use Psr\Log\LoggerInterface;
 use Secomm\AddressDropdown\Api\Data\RegionInterface;
 use Secomm\AddressDropdown\Helper\Data;
 use Secomm\AddressDropdown\Model\Constant;
+use Secomm\AddressDropdown\Model\CanonicalDataGuard;
 use Secomm\AddressDropdown\Model\Region;
 use Secomm\AddressDropdown\Model\RegionFactory;
 use Secomm\AddressDropdown\Model\ResourceModel\RegionModel as RegionModelResourceModel;
@@ -66,7 +67,8 @@ class SaveCommand
         RegionModelResourceModel $resource,
         RegionCollectionFactory  $collectionFactory,
         ResourceConnection       $resourceConnection,
-        Data                     $data
+        Data                     $data,
+        private readonly CanonicalDataGuard $canonicalDataGuard
     )
     {
         $this->logger = $logger;
@@ -87,6 +89,13 @@ class SaveCommand
      */
     public function execute(RegionInterface $region): int
     {
+        // TASK-SEC-A4: canonical VN rows are import-workflow-only — reject BEFORE any write.
+        // RegionInterface DTO carries country_id for creates; for edits we consult the row.
+        $this->canonicalDataGuard->assertRegionMutatable(
+            (int) $region->getData(RegionInterface::REGION_ID),
+            (string) $region->getData(RegionInterface::COUNTRY_ID)
+        );
+
         try {
             $this->validate($region);
         } catch (Exception $e) {
@@ -205,7 +214,8 @@ class SaveCommand
             }
 
             foreach ($diff as $locale) {
-                $where = ["`locale` = '" . $locale . "' AND `region_id` =" . $regionId];
+                // TASK-SEC-A1: bound where conditions — no SQL text concatenation.
+                $where = ['locale = ?' => (string) $locale, 'region_id = ?' => (int) $regionId];
                 $this->resourceConnection->getConnection()
                     ->delete(
                         $this->resourceConnection->getTableName(Constant::DIRECTORY_COUNTRY_REGION_NAME),

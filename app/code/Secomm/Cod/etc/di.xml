@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager:etc/config.xsd">
+    <!-- TASK-DFGFZ9 / DEC-TASKDFGFZ9-001/003 — single owner of COD payment-method
+         identification. P1 default: Magento core `cashondelivery` (Magento_OfflinePayments).
+         Override via preference for per-client policies (CODRisk future). -->
+    <preference for="Secomm\Cod\Api\CodPaymentMethodResolverInterface"
+                type="Secomm\Cod\Model\DefaultCodPaymentMethodResolver"/>
+    <!-- TASK-DFGFZ9 phase 2/3 / DEC-TASKDFGFZ9-002/003 — P1 collection policy (one COD
+         collection per order, full grand_total in order currency, VND-only, partial and
+         second-collection rejected). Per-client policies replace this via a preference — the
+         contract is policy-agnostic. -->
+    <preference for="Secomm\Cod\Api\CodCollectionResolverInterface"
+                type="Secomm\Cod\Model\SingleCollectionCodResolver"/>
+    <!-- TASK-DFGFZ9 phase 3 / DEC-TASKDFGFZ9-003 — the cross-carrier collection ledger:
+         carriers report attempts, the resolver consults it (frozen + one-collection rule). -->
+    <preference for="Secomm\Cod\Api\CodCollectionLedgerInterface"
+                type="Secomm\Cod\Model\CollectionLedger"/>
+</config>

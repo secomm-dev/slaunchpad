@@ -181,10 +181,13 @@ final class CarrierAddressHandoffService implements CarrierAddressHandoffService
                 );
             }
 
-            // PICK_PRIMARY: deterministic curated-primary selection via the shared
-            // Secomm_VietNamAddress selector. NO_DESIGNATED_PRIMARY / MULTIPLE_PRIMARY /
-            // NOT_APPLICABLE fail closed to an unresolved, non-textual-fallback handoff
-            // (never a first-candidate guess — DEC-FEATYA2C0W-006 amendment).
+            // PICK_PRIMARY: deterministic selection via the shared Secomm_VietNamAddress
+            // selector. FROZEN semantics (TASK-KQCX3A, directive 2026-09-25): sole candidate
+            // → select; >1 candidates + exactly one primary → primary; >1 + zero/multiple
+            // primary → deterministic first (code ASC — multiple primary only logs a
+            // MULTIPLE_PRIMARY_CANDIDATES diagnostic, never fails the rate flow); zero
+            // candidates → fail closed. Any non-SELECTED selection still lands in the
+            // defensive fail-closed branch below (other selector implementations only).
             $selection = $this->primaryCandidateSelector->selectPrimary(
                 (string) $context->getSourceScheme(),
                 (string) $context->getSourceUnitCode(),

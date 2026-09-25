@@ -10,6 +10,10 @@ declare(strict_types=1);
 namespace Secomm\Ghn\Model\Shipment;
 
 use Magento\Sales\Model\Order\Shipment;
+use Secomm\Cod\Api\CodCollectionLedgerInterface;
+use Secomm\Cod\Api\CodCollectionResolverInterface;
+use Secomm\Cod\Model\CodClaimConflictException;
+use Secomm\Cod\Model\CodCollectionAttempt;
 use Secomm\Ghn\Model\Config;
 use Secomm\ShippingCore\Api\Physical\ShipmentPhysicalDataInterface;
 use Secomm\ShippingCore\Model\Physical\PhysicalPackage;
@@ -55,8 +59,14 @@ use Secomm\VietNamAddress\Model\Scheme\VnSchemes;
  * - type 5 (>=20kg OR multi-package) ships as items[] = one entry per physical package
  *   (r2 physical-facts interpretation — DEC-TASK9Q5ZAK-001); per-package provider limits are
  *   fail-closed BEFORE the call, never clamped or split;
- * - COD: the collection amount is an upstream concern — GHN-D sends no cod_amount at all and
- *   never inspects the Magento payment method.
+ * - COD (TASK-DFGFZ9 phase 2/3, DEC-TASKDFGFZ9-002/003): the collection decision comes from
+ *   Secomm_Cod (`CodCollectionResolverInterface`) — this service never reads
+ *   grand_total/base_total_due and never inspects the payment method itself. A REJECTED
+ *   decision stops before any write or the POST (surface = COD_REJECTED outcome); a
+ *   COLLECTIBLE amount is REPORTED to the Secomm_Cod ledger (frozen replay + the
+ *   cross-carrier one-collection rule are ledger-owned) and mapped to `cod_amount` in the
+ *   payload AND the anchor row (audit-only). Amounts above the GHN provider cap are
+ *   UNAVAILABLE before any write.
  */
 class GhnShipmentCreationService
 {
@@ -64,6 +74,9 @@ class GhnShipmentCreationService
 
     /** Prefix of the shipment-scoped, retry-stable provider idempotency key (SPEC §19). */
     public const CLIENT_ORDER_CODE_PREFIX = 'GHNS';
+
+    /** Reason token for a mapped decision above the GHN provider cap (GhnCreateRequestBuilder::MAX_COD_AMOUNT). */
+    public const REASON_COD_AMOUNT_EXCEEDS_PROVIDER_LIMIT = 'COD_AMOUNT_EXCEEDS_PROVIDER_LIMIT';
 
     public function __construct(
         private readonly RuntimeAddressContextBuilderInterface $contextBuilder,
@@ -77,6 +90,8 @@ class GhnShipmentCreationService
         private readonly StoreWeightConverter $weightConverter,
         private readonly Config $config,
         private readonly GhnShipmentRepository $shipmentRepository,
+        private readonly CodCollectionResolverInterface $codCollectionResolver,
+        private readonly CodCollectionLedgerInterface $collectionLedger,
         private readonly GhnLogger $logger
     ) {
     }
@@ -111,25 +126,78 @@ class GhnShipmentCreationService
             );
         }
 
+        // COD collection decision (DEC-TASKDFGFZ9-002/003) — BEFORE any write or POST. Frozen
+        // replay and the cross-carrier one-collection rule live in the Secomm_Cod ledger.
+        $codAttempt = new CodCollectionAttempt('ghn', $clientOrderCode);
+        $decision = $this->resolveCodDecision($shipment, $codAttempt);
+        if ($decision->isRejected()) {
+            return GhnCreateOutcome::codRejected(
+                (string) $decision->getRejectionReason(),
+                (string) $decision->getRejectionMessage(),
+                $clientOrderCode
+            );
+        }
+
+        $codAmount = $decision->isCollectible() ? (float) $decision->getAmount() : 0.0;
+
+        // Currency SUPPORT is the carrier's concern (DEC-TASKDFGFZ9-004): GHN collects VND
+        // only — rejected BEFORE the ledger is armed or anything is written; no conversion.
+        if ($decision->isCollectible() && (string) $decision->getCurrencyCode() !== 'VND') {
+            return GhnCreateOutcome::codRejected(
+                \Secomm\Cod\Api\CodCollectionDecisionInterface::REASON_CURRENCY_UNSUPPORTED,
+                (string) __('COD currency unsupported (%1): GHN collects VND only and no conversion is performed — collect the order in VND or decline COD for this order.', $decision->getCurrencyCode()),
+                $clientOrderCode
+            );
+        }
+
+        if ($codAmount > GhnCreateRequestBuilder::MAX_COD_AMOUNT) {
+            // Provider cap — fail-closed BEFORE any write, never clamped.
+            return GhnCreateOutcome::unavailable(self::REASON_COD_AMOUNT_EXCEEDS_PROVIDER_LIMIT, $clientOrderCode);
+        }
+
+        if ($codAmount > 0.0) {
+            // Report the attempt to the Secomm_Cod ledger BEFORE the anchor insert and the
+            // POST — a crash in between leaves the ledger PENDING row armed (safe direction).
+            try {
+                $this->collectionLedger->recordPending(
+                    $codAttempt,
+                    (int) $shipment->getOrderId(),
+                    $codAmount,
+                    (string) $decision->getCurrencyCode()
+                );
+            } catch (CodClaimConflictException $claimConflict) {
+                // Engine-enforced one-collection rule: another (carrier, reference) holds
+                // this order's active claim — nothing was written or POSTed by us.
+                return GhnCreateOutcome::codRejected(
+                    \Secomm\Cod\Api\CodCollectionDecisionInterface::REASON_COD_ALREADY_COLLECTED,
+                    (string) $claimConflict->getMessage(),
+                    $clientOrderCode
+                );
+            }
+        }
+
         if ($existing === null) {
-            // PENDING anchor BEFORE the provider call (SPEC §28 recovery design point).
+            // PENDING anchor BEFORE the provider call (SPEC §28 recovery design point). The
+            // anchor holds PROVIDER FACTS for recovery; `cod_amount` stays written for audit
+            // only — the ledger owns the frozen amount and the one-collection rule.
             $this->shipmentRepository->insertPending([
                 'shipping_reference' => $clientOrderCode,
                 'magento_order_id' => (int) $shipment->getOrderId(),
                 'magento_shipment_id' => $shipmentId,
                 'shop_id' => '',
                 'client_order_code' => $clientOrderCode,
-                'cod_amount' => 0.0,
+                'cod_amount' => $codAmount,
             ]);
         }
 
         try {
-            return $this->resolveAndCreate($shipment, $clientOrderCode, $postedRawPackages);
+            // GHN money on the wire = integer VND; the decision amount is a float per contract.
+            return $this->resolveAndCreate($shipment, $clientOrderCode, $postedRawPackages, (int) round($codAmount), $codAttempt, $codAmount);
         } catch (GhnMappingNotFoundException) {
             // Stage-2 domain: canonical unit exists, no APPROVED GHN mapping — never CANONICAL_UNRESOLVED.
-            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_FAILED, ShippingFailureReason::PROVIDER_MAPPING_MISSING);
+            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_FAILED, ShippingFailureReason::PROVIDER_MAPPING_MISSING, $codAttempt, $codAmount);
         } catch (GhnCreateValidationException $validation) {
-            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_FAILED, $validation->getReasonToken());
+            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_FAILED, $validation->getReasonToken(), $codAttempt, $codAmount);
         } catch (
             ProviderTimeoutException
             | ProviderRemoteException
@@ -139,7 +207,7 @@ class GhnShipmentCreationService
             // reconciliation (same client_order_code), never a blind second order.
             $this->logger->warning('GHN create technical failure', ['reason' => $technicalException->getMessage()]);
 
-            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_UNKNOWN, ShippingFailureReason::TECHNICAL_ERROR);
+            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_UNKNOWN, ShippingFailureReason::TECHNICAL_ERROR, $codAttempt, $codAmount);
         } catch (
             ProviderAuthenticationException
             | ProviderInvalidAddressException
@@ -148,12 +216,28 @@ class GhnShipmentCreationService
         ) {
             $this->logger->warning('GHN create unavailable', ['reason' => $businessException->getMessage()]);
 
-            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_FAILED, ShippingFailureReason::SERVICE_UNAVAILABLE);
+            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_FAILED, ShippingFailureReason::SERVICE_UNAVAILABLE, $codAttempt, $codAmount);
         }
     }
 
-    private function resolveAndCreate(Shipment $shipment, string $clientOrderCode, ?array $postedRawPackages): GhnCreateOutcome
+    /**
+     * COD decision for this shipment: frozen replay and the cross-carrier one-collection rule
+     * live in Secomm_Cod (ledger-backed — a caller cannot bypass them). A REJECTED decision
+     * stops the create before any write or POST.
+     */
+    private function resolveCodDecision(Shipment $shipment, CodCollectionAttempt $codAttempt): \Secomm\Cod\Api\CodCollectionDecisionInterface
     {
+        return $this->codCollectionResolver->resolve($shipment->getOrder(), $shipment, $codAttempt);
+    }
+
+    private function resolveAndCreate(
+        Shipment $shipment,
+        string $clientOrderCode,
+        ?array $postedRawPackages,
+        int $codAmount,
+        CodCollectionAttempt $codAttempt,
+        float $codAmountFloat
+    ): GhnCreateOutcome {
         $storeId = $shipment->getStoreId() !== null ? (int) $shipment->getStoreId() : null;
         $physical = $this->resolvePhysicalData($shipment, $postedRawPackages, $storeId);
         $plan = $this->interpreter->interpret($physical);
@@ -175,7 +259,9 @@ class GhnShipmentCreationService
             return $this->fail(
                 $clientOrderCode,
                 GhnShipmentRepository::STATUS_FAILED,
-                $handoff->getFailureReason() ?? ShippingFailureReason::UNSUPPORTED_DESTINATION
+                $handoff->getFailureReason() ?? ShippingFailureReason::UNSUPPORTED_DESTINATION,
+                $codAttempt,
+                $codAmountFloat
             );
         }
 
@@ -184,7 +270,9 @@ class GhnShipmentCreationService
             return $this->fail(
                 $clientOrderCode,
                 GhnShipmentRepository::STATUS_FAILED,
-                $handoff->getFailureReason() ?? ShippingFailureReason::CANONICAL_UNRESOLVED
+                $handoff->getFailureReason() ?? ShippingFailureReason::CANONICAL_UNRESOLVED,
+                $codAttempt,
+                $codAmountFloat
             );
         }
 
@@ -192,7 +280,7 @@ class GhnShipmentCreationService
         // is a clean mapping miss, never silently reinterpreted.
         $location = $this->mappingResolver->resolve(VnSchemes::VN_ADMIN_2025, (string) $resolved->getUnitCode());
         if (!$location->hasNewAddressNames()) {
-            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_FAILED, ShippingFailureReason::PROVIDER_MAPPING_MISSING);
+            return $this->fail($clientOrderCode, GhnShipmentRepository::STATUS_FAILED, ShippingFailureReason::PROVIDER_MAPPING_MISSING, $codAttempt, $codAmountFloat);
         }
 
         $payload = $this->requestBuilder->build(
@@ -203,7 +291,8 @@ class GhnShipmentCreationService
             $address,
             $this->resolvePaymentTypeId($storeId),
             $this->resolveRequiredNote($storeId),
-            $this->buildContent($shipment)
+            $this->buildContent($shipment),
+            $codAmount
         );
 
         $response = $this->apiClient->post(self::OPERATION, GhnEndpoints::CREATE_ORDER, $payload);
@@ -229,6 +318,9 @@ class GhnShipmentCreationService
             $totalFee,
             $expectedDeliveryAt
         );
+        if ($codAmountFloat > 0.0) {
+            $this->collectionLedger->markSubmitted($codAttempt, false);
+        }
         $this->logger->call('GHN create submitted', [
             'client_order_code' => $clientOrderCode,
             'order_code' => $orderCode,
@@ -238,11 +330,20 @@ class GhnShipmentCreationService
     }
 
     /**
-     * Persist the terminal non-success state and return the matching outcome.
+     * Persist the terminal non-success state and return the matching outcome. Mirrors the
+     * close-out onto the Secomm_Cod ledger when a COD attempt was armed this run.
      */
-    private function fail(string $clientOrderCode, string $status, string $reasonToken): GhnCreateOutcome
-    {
+    private function fail(
+        string $clientOrderCode,
+        string $status,
+        string $reasonToken,
+        ?CodCollectionAttempt $codAttempt = null,
+        float $codAmount = 0.0
+    ): GhnCreateOutcome {
         $this->shipmentRepository->markNotSubmitted($clientOrderCode, $status, $reasonToken);
+        if ($codAttempt !== null && $codAmount > 0.0) {
+            $this->collectionLedger->markNotSubmitted($codAttempt, $status, $reasonToken);
+        }
 
         return $status === GhnShipmentRepository::STATUS_UNKNOWN
             ? GhnCreateOutcome::technicalFailure($reasonToken, $clientOrderCode)

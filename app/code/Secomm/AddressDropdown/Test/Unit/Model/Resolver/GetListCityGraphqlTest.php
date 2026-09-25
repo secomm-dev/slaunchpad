@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Secomm\AddressDropdown\Test\Unit\Model\Resolver;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\AddressDropdown\Model\DataStorage;
@@ -33,9 +34,14 @@ class GetListCityGraphqlTest extends TestCase
             fn (): \Iterator => new \ArrayIterator($this->items)
         );
 
+        // Default-enabled fixture: these tests exercise the resolver behavior, not the switch.
+        $scopeConfig = $this->createMock(ScopeConfigInterface::class);
+        $scopeConfig->method('isSetFlag')->willReturn(true);
+
         $this->resolver = new GetListCityGraphql(
             $this->collectionFactory,
-            $this->createMock(DataStorage::class)
+            $this->createMock(DataStorage::class),
+            $scopeConfig
         );
     }
 

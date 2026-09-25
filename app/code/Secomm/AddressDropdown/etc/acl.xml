@@ -10,8 +10,17 @@
     <acl>
         <resources>
             <resource id="Magento_Backend::admin">
-                <resource id="Secomm_AddressDropdown::listing" title="Manage VN Address">
-                    <resource id="Secomm_AddressDropdown::management" title="City Name Management"/>
+                <!-- TASK-SEC-A2 — complete ACL tree. BC: the two pre-existing resources
+                     (listing, management) keep their identity and their parent/child order
+                     (a role that already granted management implicitly granted listing).
+                     Newly declared: the menu root, the country-listing node and the config
+                     section — previously referenced but undeclarable. -->
+                <resource id="Secomm_AddressDropdown::AddressDropdown" title="Address Dropdown">
+                    <resource id="Secomm_AddressDropdown::listing" title="VN Address Listings">
+                        <resource id="Secomm_AddressDropdown::country" title="Country Listing"/>
+                        <resource id="Secomm_AddressDropdown::management" title="City Name Management"/>
+                    </resource>
+                    <resource id="Secomm_AddressDropdown::config" title="Address Dropdown Configuration"/>
                 </resource>
             </resource>
         </resources>

@@ -25,7 +25,7 @@ define([
             let self = this;
 
             let regionInterval = setInterval(() => {
-                if ($('[name="region_id"]')){
+                if ($('[name="region_id"]').length){
                     // Event binding for region_id change
                     $('#region_id').change(function () {
                         let selectedRegionId = $(this).val();
@@ -79,7 +79,7 @@ define([
             $('body').loader('show');
 
             $.ajax({
-                url: '/graphql',  // Update the URL to your Magento GraphQL endpoint
+                url: window.BASE_URL.replace(/index\.php\/?$/, '') + 'graphql',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ query: query }),
@@ -87,12 +87,14 @@ define([
                     if (response.data && response.data.GetListCity) {
                         self._updateCityDropdown(response.data.GetListCity, currentCity);
                     } else {
+                        let citySelect = $('#city-select');
                         let cityInput = $('#city-input');
                         citySelect.hide();
                         cityInput.show();
                     }
                 },
                 error: function(xhr, status, error) {
+                    console.error('City request failed:', status, error);
                 },
                 complete: function() {
                     // Hide loader
@@ -122,7 +124,7 @@ define([
             $('body').loader('show');
 
             $.ajax({
-                url: '/graphql',  // Update the URL to your Magento GraphQL endpoint
+                url: window.BASE_URL.replace(/index\.php\/?$/, '') + 'graphql',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ query: query }),

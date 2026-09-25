@@ -18,6 +18,15 @@ use Secomm\ShippingCore\Model\Physical\StoreWeightConverter;
  * PRODUCT_UNIT_AS_PACKAGE: 1 sellable unit = 1 estimated package. Transient by design — the
  * estimate is never persisted and never becomes CREATE physical truth.
  *
+ * TASK-RT50KH (DEC-TASKRT50KH-001) — SUPERSEDES the "Dimensions: NOT read at RATE" stance:
+ * the Secomm_Base shipping-dimension contract is now the upstream unit-aware source the
+ * original docblock reserved this slot for. Per-unit dims are read through
+ * {@link ShippingDimensionsReaderInterface} (complete-and-valid only, ceil to int cm) and
+ * feed EXCLUSIVELY the 150cm hard-limit gate ({@see QuoteParcelEstimate::
+ * findHardLimitViolation()} — UNAVAILABLE before any provider call). They are still omitted
+ * from the fee payload (unproven dimensions distort pricing). Units without authoritative
+ * dims keep null dims and are never dimension-rejected.
+ *
  * Item expansion is Magento parent-parity (AbstractCarrierOnline::getAllItems, the same
  * expansion `processAdditionalValidation` runs today): virtual products and child items with a
  * parent are skipped; configurable/bundle parents either expand to their children
@@ -45,7 +54,8 @@ class QuoteParcelEstimator
     private const SOURCE_QUOTE_ITEM_WEIGHT = 'quote_item_weight';
 
     public function __construct(
-        private readonly StoreWeightConverter $weightConverter
+        private readonly StoreWeightConverter $weightConverter,
+        private readonly \Secomm\Base\Api\ShippingDimensionsReaderInterface $dimensionsReader
     ) {
     }
 
@@ -92,13 +102,24 @@ class QuoteParcelEstimator
                 );
             }
 
+            // TASK-RT50KH — authoritative packed dims per sellable unit (null = missing:
+            // never dimension-rejected, never defaulted). Read ONCE per expanded item and
+            // replicated to every unit — dimensions are NEVER multiplied by quantity.
+            $dimensions = $this->dimensionsReader->read($item);
+            $lengthCm = $dimensions?->getLengthCm();
+            $widthCm = $dimensions?->getWidthCm();
+            $heightCm = $dimensions?->getHeightCm();
+
             $unitCount = (int) $qty;
             for ($unit = 1; $unit <= $unitCount; $unit++) {
                 $packages[] = new EstimatedPackage(
                     (int) $item->getItemId(),
                     (string) $item->getSku(),
                     $unitWeightGrams,
-                    self::SOURCE_QUOTE_ITEM_WEIGHT
+                    self::SOURCE_QUOTE_ITEM_WEIGHT,
+                    $lengthCm,
+                    $widthCm,
+                    $heightCm
                 );
             }
         }

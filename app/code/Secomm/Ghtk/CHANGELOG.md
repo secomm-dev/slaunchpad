@@ -1,5 +1,76 @@
 # Changelog — Secomm_Ghtk
 
+## 2.6.0 — 2026-09-23 (TASK-DFGFZ9 phase 3 closure — carrier currency gate + arm-after-map)
+
+### Changed
+- `OrderSubmitService::resolveCod` trả decision (không ghi ledger); currency gate mới: order
+  currency ≠ VND → LocalizedException "COD currency unsupported" — TRƯỚC khi arm ledger,
+  viết anchor hay POST (không convert; DEC-TASKDFGFZ9-004).
+- Ledger claim (`recordPending`) chuyển xuống SAU payload mapping (buildProducts/map throw
+  không để lại PENDING claim kẹt) — vẫn TRƯỚC anchor insert + POST.
+- `CodClaimConflictException` (engine-enforced one-collection claim) propagate native —
+  native label flow abort với message cite holder.
+
+## 2.5.0 — 2026-09-23 (TASK-DFGFZ9 phase 3 — ledger report + xoá frozen/prior khỏi anchor)
+
+### Changed
+- `OrderSubmitService`: attempt được REPORT vào Secomm_Cod ledger `secomm_cod_collection`
+  (`recordPending` khi amount > 0 — TRƯỚC anchor insert + POST; mirror markSubmitted/
+  markNotSubmitted trên mọi outcome). Frozen replay + one-collection rule (cross-carrier,
+  bypass-proof) do ledger/resolver sở hữu — DEC-TASKDFGFZ9-003.
+- `ShipmentAnchorRepository`: XOÁ `findFrozenAmount` + `findCollectedPrior` (bảng giữ provider
+  facts: label/tracking/weight/idempotency; `cod_amount` audit-only).
+- Identification mặc định = `cashondelivery` hardcode (không admin field).
+
+## 2.4.0 — 2026-09-23 (TASK-DFGFZ9 phase 2 — COD amount decision từ Secomm_Cod + anchor table)
+
+### Added
+- Table `secomm_ghtk_shipment` (schema + whitelist): submit idempotency anchor
+  (`partner_order_code` UNIQUE = `ghtk-{inc}-{seq}`) + **frozen COD amount** (`cod_amount`)
+  + `provider_status` PENDING|SUBMITTED|RECOVERED|FAILED|UNKNOWN. PENDING insert ngay trước
+  POST (parity Secomm_Ghn); `magento_shipment_id` luôn NULL (submit trước shipment save).
+- `Model\OrderSubmit\ShipmentAnchorRepository` — findByPartnerCode / findFrozenAmount /
+  findCollectedPrior (prior COD qua partner code KHÁC của cùng order) / insertPending /
+  markSubmitted (guard `<> SUBMITTED`) / markNotSubmitted (FAILED|UNKNOWN).
+- COD amount giữ nguyên giá trị qua retry: frozen replay từ anchor (không re-decide); shipment
+  COD thứ hai của cùng order bị từ chối (decision REJECTED `COD_ALREADY_COLLECTED`); amount =
+  `grand_total` theo order currency VND-only (≠ VND / partial → rejection rõ ràng).
+
+### Changed
+- `OrderSubmitService` inject `Secomm\Cod\Api\CodCollectionResolverInterface` + anchor
+  repository; anchor lifecycle đầy đủ theo kết quả submit (business → FAILED, technical/
+  malformed/identity-conflict → UNKNOWN, success → SUBMITTED/RECOVERED).
+- **Removed** `Model\OrderSubmit\{CodAmountResolverInterface, DefaultCodAmountResolver}` +
+  preference + test (carrier KHÔNG còn tự tính COD amount — seam duy nhất là Secomm_Cod;
+  DEC-TASKDFGFZ9-002 §6). Amount semantics: `base_total_due` → `grand_total` (supersede
+  DEC-SL016-001 §4 một phần — deposit KHÔNG còn implicit support).
+- Payload `pick_money` KHÔNG đổi shape: `(int) round($codAmount)`; `is_freeship = 1` giữ nguyên.
+
+### Tests
+`OrderSubmitServiceTest` 17 tests (frozen replay / rejection aborts trước API + anchor /
+anchor call-order / FAILED-vs-UNKNOWN mapping / RECOVERED / prior blocking);
+`DefaultCodAmountResolverTest` xoá theo file.
+
+## 2.3.0 — 2026-09-23 (TASK-DFGFZ9 — COD identification owner move sang Secomm_Cod)
+
+### Changed
+- `DefaultCodAmountResolver` inject `Secomm\Cod\Api\CodPaymentMethodResolverInterface` (trước
+  đây là `Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface` — đã bị xoá không
+  adapter, DEC-TASKDFGFZ9-001). Runtime behavior KHÔNG đổi: cùng `isCod()` semantics, chỉ đổi
+  owner + config path.
+- Config path đọc (gián tiếp qua shared resolver): `secomm_shippingcore/cod/payment_methods` →
+  `secomm_cod/payment_identification/payment_methods`. Merchant cần cấu hình list COD ở path mới
+  (DataPatch trong Secomm_Cod copy tự động từ path cũ khi path mới chưa có giá trị).
+- `etc/module.xml`: sequence += `Secomm_Cod` (carrier cần nhận diện COD phải khai báo dependency
+  tường minh).
+
+### Không đổi
+Amount conversion vẫn carrier-owned (DEC-SL016-001 §4-5: base_total_due, partial-shipment
+fail-fast) · `OrderSubmitService`/`OrderRequestMapper`/payload `pick_money` · mọi flow khác.
+
+### Tests
+`DefaultCodAmountResolverTest` đổi import + docblock (7 tests giữ nguyên assertions).
+
 ## 2.2.0 — 2026-09-15 (TASK-3HPB76 — Pickup/TestConnection operational tooling)
 
 ### Added

@@ -9,7 +9,7 @@ Versioned Vietnam administrative datasets, historical reference and scheme mappi
 - **Unit codes**: dataset-supplied, immutable (`VNA25-…` / `VNAP25-…`); internal Secomm identity — not government codes, not carrier codes, never parsed for the scheme.
 - **Runtime = swap model (DEC-002, retained)**: `directory_country_region` + `directory_region_city` hold exactly ONE scheme at a time; `secomm_vietnam_address/general/active_scheme` says which. Manual admin flips are rejected (backend model) unless the target scheme is installed.
 - **Historical reference layer**: `secomm_vietnam_address_unit` keeps EVERY scheme ever imported (portable codes, no FKs to runtime tables) — old administrative knowledge survives runtime swaps.
-- **Mapping layer**: `secomm_vietnam_address_mapping` — directed edges between scheme unit codes (`SAME_AS|RENAMED_TO|MERGED_INTO|SPLIT_INTO`); resolution via `VnAdminAddressResolverInterface` returns `EXACT|MAPPED|AMBIGUOUS|UNMAPPED` and never auto-picks (a merge A→C + B→C is deterministic forward, AMBIGUOUS backwards with both candidates). Baseline `VN_ADMIN_PRE_2025_TO_2025_mapping.csv` (10.064 edges, 2026-09-04 reviewed production set — TASK-NDSZ7V) tự import qua setup:upgrade; outcome resolver suy từ candidate cardinality của graph (1=MAPPED, >1=AMBIGUOUS, 0=UNMAPPED) — `relation_type` chỉ là metadata; 924 PRE wards không có edge resolve `UNMAPPED` (hợp lệ, không đoán).
+- **Mapping layer**: `secomm_vietnam_address_mapping` — directed edges between scheme unit codes (`SAME_AS|RENAMED_TO|MERGED_INTO|SPLIT_INTO`); resolution via `VnAdminAddressResolverInterface` returns `EXACT|MAPPED|AMBIGUOUS|UNMAPPED` and never auto-picks (a merge A→C + B→C is deterministic forward, AMBIGUOUS backwards with both candidates). Authoritative `VN_ADMIN_PRE_2025_TO_2025_SNAPSHOT_2024_mapping.csv` (10.418 edges, end-of-2024 snapshot — TASK-NDSZ7V + TASK-SEC-B1) tự import qua setup:upgrade; outcome resolver suy từ candidate cardinality của graph (1=MAPPED, >1=AMBIGUOUS, 0=UNMAPPED) — `relation_type` chỉ là metadata; 924 PRE wards không có edge resolve `UNMAPPED` (hợp lệ, không đoán).
 
 ## Datasets (`Files/`)
 
@@ -24,7 +24,13 @@ VN-01,An Giang,An Giang,VNAP25-515AFEF59D,VNAP25-B70EDA95D6,An Phú,An Phu
 
 - `region_code` is the dataset region identity `VN-XX` (`VnSchemes::REGION_CODE_PATTERN`) — alphabetical sequence per scheme (VN-01 = An Giang), NOT the bare official government numbering (`01` = Hà Nội) used by the legacy sources.
 - `VN_ADMIN_2025_import.csv` — 34 regions + 3.321 wards (all depth-1). Default for fresh installs.
-- `VN_ADMIN_PRE_2025_import.csv` — 63 regions + 699 districts + 10.595 wards; 19 collision groups keep the type suffix (e.g. `Yên Viên (Thị trấn)` / `Yên Viên (Xã)`).
+- **Authoritative PRE-2025 dataset (TASK-B1):** `VN_ADMIN_PRE_2025_SNAPSHOT_2024_import.csv` —
+  63 regions + 696 districts + 10.035 wards; 18 collision groups keep the type suffix
+  (e.g. `Yên Viên (Thị trấn)` / `Yên Viên (Xã)`); md5 `574e6242cbb0b9e5ce63ef9fe40f7ee0`
+  (checksum-guarded at import). `VN_ADMIN_PRE_2025_import.csv` (63/699/10.595) is SUPERSEDED —
+  kept in `Files/` as archived history only, referenced by nothing; CLI import /
+  `--reference-only` / dry-run and the setup-patch chain all resolve to the snapshot file
+  through `VnSchemes::CATALOG`.
 - Name hygiene: cleaned of administrative type prefixes; `name_en` MAY legitimately be non-ASCII (ethnolinguistic names); invisible/zero-width characters are rejected by the validator.
 - Fresh installs bootstrap entirely from `VN_ADMIN_2025_import.csv` via `ImportVnAdmin2025SchemePatch` (regions + units + membership + `address/profiles/mapping` + `active_scheme` in one transaction); `SeedVnProfileMembership` runs after it as an idempotent belt-and-braces pass. `ImportVnAdminPre2025ReferencePatch` (TASK-F9XJ5G) then populates the historical `VN_ADMIN_PRE_2025` into the reference layer (units + registry HISTORICAL) — runtime keeps `VN_ADMIN_2025`, no manual CLI needed. The legacy `VN_Address_2Level.csv` source and its `InstallVietNamAddressPatch` bootstrap were removed with the sub_city retirement (TASK-6MKF0V / DEC-TASK6MKF0V-001) — databases that still carry the legacy-format rows keep upgrading in place through the re-key bridges (`CurrentDatasetRekeyMatcher`, region_id/city_id preserved). The 3-level `VN_Address.csv` (sub_city dataset) was removed in the same retirement; the pre-2025 3-level structure is now sourced from `VN_ADMIN_PRE_2025_import.csv` (depth-2 city rows, no sub_city).
 
@@ -34,7 +40,7 @@ VN-01,An Giang,An Giang,VNAP25-515AFEF59D,VNAP25-B70EDA95D6,An Phú,An Phu
 bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_2025 [--dry-run]                   # refresh (idempotent upsert)
 bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_PRE_2025 --swap                    # switch scheme
 bin/magento secomm:vietnam-address:import --scheme VN_ADMIN_PRE_2025 --reference-only [--dry-run]  # reference layer only (TASK-F9XJ5G)
-bin/magento secomm:vietnam-address:import-mapping <file> [--dry-run]           # mapping edges — baseline PRE_2025→2025 (10.064 edges) tự import qua setup:upgrade (TASK-NDSZ7V)
+bin/magento secomm:vietnam-address:import-mapping <file> [--dry-run]           # mapping edges — authoritative snapshot PRE_2025→2025 (10.418 edges) tự import qua setup:upgrade (TASK-NDSZ7V + TASK-SEC-B1)
 bin/magento secomm:vietnam-address:validate-mapping [--file <path>]            # orphans + reverse-ambiguity report
 ```
 

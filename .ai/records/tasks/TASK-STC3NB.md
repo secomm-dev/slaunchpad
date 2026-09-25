@@ -26,6 +26,15 @@ related_tickets: [TASK-M3ME32, TASK-NQT782]
 
 # [SLP][FEAT-YA2C0W][TASK-STC3NB] ShippingCore COD payment identification — architecture v4 §4.1 delta (resolver + config)
 
+> **AMENDED BY TASK-DFGFZ9 (2026-09-23, DEC-TASKDFGFZ9-001):** ownership COD identification
+> chuyển sang module `Secomm_Cod` — interface `Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface`,
+> resolver, config path `secomm_shippingcore/cod/payment_methods`, group `cod` (system.xml) và
+> preference di.xml bị XOÁ; consumer Ghtk đổi sang `Secomm\Cod\Api\CodPaymentMethodResolverInterface`
+> + path mới `secomm_cod/payment_identification/payment_methods` (migration patch copy-only).
+> Record này giữ làm history — các AC về contract/config bên dưới KHÔNG còn phản ánh reality sau
+> TASK-DFGFZ9. Contract semantics (identification only, safe-false, exact match) giữ nguyên, chỉ
+> đổi owner + path.
+
 ## Embedded Mini-Spec
 
 *(đầy đủ tại specs/SPEC-TASK-STC3NB-shippingcore-cod-payment-identification.md, FULL)*

@@ -31,7 +31,7 @@ class MethodSettingsProvider
     public const TABLE_RATE_CITY = 'launchpad_mptablerate_rate_city';
 
     /** TASK-JZXM66 — label of the always-present wildcard select entry (empty `city_code`). */
-    public const WILDCARD_OPTION_LABEL = 'All / *';
+    public const WILDCARD_OPTION_LABEL = 'All';
 
     /** @var array<int, MethodSettings>|null keyed by method_id */
     private ?array $settings = null;

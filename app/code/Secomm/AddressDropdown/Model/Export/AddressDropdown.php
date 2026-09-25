@@ -11,7 +11,7 @@ use Exception;
 use Magento\Directory\Model\ResourceModel\Country\Collection as CountryCollection;
 use Magento\Directory\Model\ResourceModel\Country\CollectionFactory as CountryCollectionFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\ObjectManager;
+use Psr\Log\LoggerInterface;
 use Magento\Framework\Data\Collection;
 use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Exception\LocalizedException;
@@ -130,6 +130,7 @@ class AddressDropdown extends AbstractEntity
         AttributeCollectionProvider      $attributeCollectionProvider,
         RegionFactory                    $regionFactory,
         RegionModel                      $regionModel,
+        private readonly LoggerInterface $logger,
         array                            $data = []
     )
     {
@@ -222,11 +223,10 @@ class AddressDropdown extends AbstractEntity
 
     protected function prepareCollection($collection, $exportFilter)
     {
-        $logger = ObjectManager::getInstance()->get('\Psr\Log\LoggerInterface');
+        // TASK-SEC-A6: one debug-level diagnostic line — never error-level raw filter dumps
+        // (log flooding + potential log injection of admin-submitted values).
+        $this->logger->debug('address_dropdown export filters.', ['filters' => $exportFilter]);
         foreach ($exportFilter as $columnName => $columnValue) {
-            $logger->error('$exportFilter ' . json_encode($exportFilter));
-            $logger->error('$columnName ' . json_encode($columnName));
-            $logger->error('$columnValue ' . json_encode($columnValue));
             if ($columnName == self::COLUMN_COUNTRY_ID && $columnValue !== '') {
                 $collection->addFieldToFilter("main_table." . $columnName, ['like' => '%' . $columnValue . '%']);
             }

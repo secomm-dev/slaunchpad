@@ -24,6 +24,8 @@ final class GhnCreateOutcome
     public const STATUS_SUCCESS = 'SUCCESS';
     public const STATUS_UNAVAILABLE = 'UNAVAILABLE';
     public const STATUS_TECHNICAL_FAILURE = 'TECHNICAL_FAILURE';
+    /** TASK-DFGFZ9 phase 2 — the Secomm_Cod decision rejected the collection (no POST, no anchor row). */
+    public const STATUS_COD_REJECTED = 'COD_REJECTED';
 
     /**
      * @param string|null $orderCode provider order code (= tracking number), SUCCESS only
@@ -35,7 +37,8 @@ final class GhnCreateOutcome
         private readonly string $clientOrderCode,
         private readonly ?string $orderCode = null,
         private readonly ?float $totalFee = null,
-        private readonly ?string $expectedDeliveryAt = null
+        private readonly ?string $expectedDeliveryAt = null,
+        private readonly ?string $rejectionMessage = null
     ) {
     }
 
@@ -63,6 +66,15 @@ final class GhnCreateOutcome
     public static function technicalFailure(string $reason, string $clientOrderCode): self
     {
         return new self(self::STATUS_TECHNICAL_FAILURE, $reason, $clientOrderCode);
+    }
+
+    /**
+     * COD_REJECTED never carries an order code (nothing was submitted) and never reaches the
+     * anchor table; the message is the Secomm_Cod decision detail surfaced to admin.
+     */
+    public static function codRejected(string $reason, string $message, string $clientOrderCode): self
+    {
+        return new self(self::STATUS_COD_REJECTED, $reason, $clientOrderCode, null, null, null, $message);
     }
 
     public function getStatus(): string
@@ -93,6 +105,11 @@ final class GhnCreateOutcome
     public function getExpectedDeliveryAt(): ?string
     {
         return $this->expectedDeliveryAt;
+    }
+
+    public function getRejectionMessage(): ?string
+    {
+        return $this->rejectionMessage;
     }
 
     public function isSuccessful(): bool

@@ -87,8 +87,9 @@
             </argument>
         </arguments>
     </type>
-    <!-- TASK-MD2BD3 (architecture v10 §35.4): deterministic curated-primary selector cho
-         resolution key AMBIGUOUS — directional, dataset-versioned, không fuzzy/first-candidate. -->
+    <!-- TASK-KQCX3A (v10 §35.4): deterministic primary selector — FROZEN semantics:
+         sole candidate → select; >1 + exactly one primary → primary; >1 + zero/multiple
+         primary → deterministic first (code ASC); 0 candidates → fail closed. -->
     <preference for="Secomm\VietNamAddress\Api\VnPrimaryCandidateSelectorInterface"
                 type="Secomm\VietNamAddress\Model\VnPrimaryCandidateSelector"/>
 </config>

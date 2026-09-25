@@ -27,6 +27,7 @@ use Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeCollectorInterface;
 use Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeInterface;
 use Secomm\ShippingCore\Model\Fallback\SafeDegradationEligibilityPolicy;
 use Secomm\ShippingCore\Api\Address\AddressResolutionPolicy;
+use Secomm\ShippingCore\Api\Failure\ShippingFailureReason;
 use Secomm\ShippingCore\Api\Rate\RateSourceMode;
 use Secomm\ShippingCore\Model\Rate\CarrierRateOutcome;
 
@@ -125,6 +126,7 @@ class FallbackCoordinatorTest extends TestCase
                     'AMBIGUOUS' => CarrierRateOutcome::unavailable('CANONICAL_AMBIGUOUS'),
                     'UNMAPPED' => CarrierRateOutcome::unavailable('CANONICAL_UNMAPPED'),
                     'MAPPING_MISSING' => CarrierRateOutcome::unavailable('PROVIDER_MAPPING_MISSING'),
+                    'OUT_OF_SCOPE' => CarrierRateOutcome::unavailable(ShippingFailureReason::DESTINATION_NOT_IN_SCOPE),
                     default => CarrierRateOutcome::unavailable('SERVICE_UNAVAILABLE'),
                 };
             }
@@ -349,6 +351,52 @@ class FallbackCoordinatorTest extends TestCase
 
         // only the pre-existing native rate — nothing appended
         $this->assertCount(1, $result->getAllRates());
+    }
+
+    public function testCarrierInactiveStillAllowsFallbackAppend(): void
+    {
+        // TASK-SEC-C2 — `carriers/mptablerate/active=0`: the Mageplaza carrier bails before
+        // producing ANY native rate, so the result carries no native copy. The fallback-only
+        // method (show=0 + use_as_fallback=1) is still appended — compose, not collect.
+        $this->givenFallbackMethod([
+            ['carrier_code' => 'secomm_ghn', 'method_code' => 'secomm_ghn'],
+        ]);
+        $this->givenOutcomes(['secomm_ghn' => ['secomm_ghn' => 'TECHNICAL']]);
+        // carrier inactive → empty result (no native mptablerate rate at all)
+        $result = $this->makeResult([]);
+
+        $fallbackRate = $this->createMock(\Secomm\ShippingCore\Api\Fallback\FallbackRateInterface::class);
+        $fallbackRate->method('getAmount')->willReturn(45000.0);
+        $this->provider->expects($this->once())->method('calculate')->willReturn($fallbackRate);
+        $this->coordinator->appendFallbackRates(new RateRequest(), $result);
+
+        $this->assertCount(1, $result->getAllRates(), 'Fallback must append when the carrier is inactive');
+    }
+
+    public function testVisibilityFilterRunsBeforeAppendInComposition(): void
+    {
+        // TASK-SEC-C2 — seam ordering: CollectRatesPlugin filters visibility FIRST, then the
+        // coordinator appends. With a hidden fallback-only method the visible result is empty
+        // (filtered) and the fallback copy is the ONLY mptablerate entry afterwards.
+        $this->givenFallbackMethod([
+            ['carrier_code' => 'secomm_ghn', 'method_code' => 'secomm_ghn'],
+        ]);
+        $this->givenOutcomes(['secomm_ghn' => ['secomm_ghn' => 'TECHNICAL']]);
+        $hiddenNative = $this->getMockBuilder(Method::class)
+            ->addMethods(['getCarrier', 'getMethod'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $hiddenNative->method('getCarrier')->willReturn('mptablerate');
+        $hiddenNative->method('getMethod')->willReturn('10');
+        $result = $this->makeResult([$hiddenNative]);
+        $result->reset(); // simulate the visibility filter having removed the hidden method
+
+        $fallbackRate = $this->createMock(\Secomm\ShippingCore\Api\Fallback\FallbackRateInterface::class);
+        $fallbackRate->method('getAmount')->willReturn(42000.0);
+        $this->provider->expects($this->once())->method('calculate')->willReturn($fallbackRate);
+        $this->coordinator->appendFallbackRates(new RateRequest(), $result);
+
+        $this->assertCount(1, $result->getAllRates(), 'Exactly the fallback copy — no duplicate');
     }
 
     public function testNoOutcomesIsCheapNoOp(): void

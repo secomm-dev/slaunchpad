@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Secomm\Ghn\Model\Shipment;
 
+use Secomm\Ghn\Model\GhnShipmentConstraints;
 use Secomm\ShippingCore\Api\Physical\CarrierPhysicalLimitInterface;
 
 /**
@@ -26,8 +27,8 @@ use Secomm\ShippingCore\Api\Physical\CarrierPhysicalLimitInterface;
  */
 final class GhnPhysicalLimit implements CarrierPhysicalLimitInterface
 {
-    public const MAX_WEIGHT_G = 50000;
-    public const MAX_SIDE_CM = 200;
+    public const MAX_WEIGHT_G = GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G;
+    public const MAX_SIDE_CM = GhnShipmentConstraints::MAX_SIDE_CM;
 
     public function getMaxPackageWeightG(): int
     {

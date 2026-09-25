@@ -115,7 +115,7 @@ define( [
             $('body').loader('show');
 
             $.ajax({
-                url: '/graphql',
+                url: (window.BASE_URL || '/').replace(/index\.php\/?$/, '') + 'graphql',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ query: query }),

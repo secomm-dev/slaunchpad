@@ -25,5 +25,24 @@ interface VnAddressUnitProviderInterface
      */
     public function getChildren(string $schemeCode, string $parentCode): array;
 
+    /**
+     * TASK-G3K9V2 — all units of one hierarchy level (e.g. level 1 = provinces). Serves
+     * level listings that have no parent anchor; independent of `parent_code` (seeded rows
+     * may carry NULL parent codes on child levels — the region_code/level columns are the
+     * reliable access path).
+     *
+     * @return VnAddressUnitInterface[] ordered by name (vi) ASC
+     */
+    public function getByLevel(string $schemeCode, int $level): array;
+
+    /**
+     * TASK-G3K9V2 — units of one level attributed to a region code (e.g. level-2 wards of
+     * province `VN-15` via the ward row's `region_code`). Independent of `parent_code`
+     * (seeded rows may carry NULL parent codes on child levels).
+     *
+     * @return VnAddressUnitInterface[] ordered by name (vi) ASC
+     */
+    public function getByRegion(string $schemeCode, string $regionCode, int $level): array;
+
     public function countByScheme(string $schemeCode): int;
 }

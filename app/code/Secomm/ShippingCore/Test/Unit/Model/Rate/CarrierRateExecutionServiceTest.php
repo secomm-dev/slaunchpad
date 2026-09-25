@@ -303,6 +303,41 @@ class CarrierRateExecutionServiceTest extends TestCase
         $this->assertSame([], $decision->getFallbackEligibility()->getSources());
     }
 
+    public function testRateRequestUnrepresentableWithFallbackModeEmitsIntegrationLimitation(): void
+    {
+        // TASK-MQ2DRG: capability-unsupported (§35.5 materialized) — outcome stays
+        // UNAVAILABLE (never reclassified), eligibility source is INTEGRATION_LIMITATION.
+        $this->givenHappyPathUntilRealtime();
+        $outcome = CarrierRateOutcome::unavailable(ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE);
+        $this->contributor->method('contribute')->willReturn($outcome);
+
+        $decision = $this->service->execute($this->makeRequest(RateSourceMode::CARRIER_WITH_FALLBACK));
+
+        $this->assertTrue($decision->shouldInvokeRealtime());
+        $this->assertSame($outcome, $decision->getRealtimeOutcome());
+        $this->assertSame(CarrierRateOutcomeInterface::STATUS_UNAVAILABLE, $decision->getRealtimeOutcome()->getStatus());
+        $this->assertTrue($decision->getFallbackEligibility()->hasIntegrationLimitationEligibility());
+        $this->assertFalse($decision->getFallbackEligibility()->hasTechnicalFallbackEligibility());
+        $this->assertFalse($decision->getFallbackEligibility()->hasLegacyAddressFallbackEligibility());
+        $this->assertSame(
+            [FallbackEligibilitySource::INTEGRATION_LIMITATION],
+            $decision->getFallbackEligibility()->getSources()
+        );
+    }
+
+    public function testCarrierOnlyRateRequestUnrepresentableEmitsNoFallback(): void
+    {
+        $this->givenHappyPathUntilRealtime();
+        $this->contributor->method('contribute')
+            ->willReturn(CarrierRateOutcome::unavailable(ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE));
+
+        $decision = $this->service->execute($this->makeRequest(RateSourceMode::CARRIER_ONLY));
+
+        $this->assertTrue($decision->shouldInvokeRealtime());
+        $this->assertFalse($decision->getFallbackEligibility()->isEligible());
+        $this->assertSame([], $decision->getFallbackEligibility()->getSources());
+    }
+
     public function testServiceUnavailableNeverEmitsIntegrationLimitation(): void
     {
         // Carrier business/service rejection is never masked as an integration limitation.

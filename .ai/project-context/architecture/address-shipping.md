@@ -82,6 +82,10 @@
 > provenance: selection_policy/selection_reason (minimal; selected candidate đã có qua
 > resolved_pre2025). DATA_INTEGRITY_DEFECT không được auto-select. Launchpad default vẫn FALLBACK;
 > PICK_PRIMARY = merchant explicit opt-in per applicable carrier RATE.Core invariant (layered ownership, two-stage mapping, status vs failureReason, fallback-as-price-only, bridge isolation) không đổi.
+> **Revision v11 (COD identification ownership → Secomm_Cod) — MATERIAL AMENDMENT, partial supersede v4 §4.1:** audit 2026-09-23 chứng minh ShippingCore **không hề tự consume** COD identification (duy nhất 1 call-site production: `Secomm_Ghtk\...\DefaultCodAmountResolver` tại shipment-submit → `pick_money`). Quyết định DEC-TASKDFGFZ9-001 (user acting SA/TL): tạo module nhỏ **`Secomm_Cod`** làm **owner duy nhất** của COD payment identification — contract `Secomm\Cod\Api\CodPaymentMethodResolverInterface::isCod` + config `secomm_cod/payment_identification/payment_methods` + admin section `secomm_cod` "COD Settings" (tab Sales, global-only) + ACL `Secomm_Cod::config` + DataPatch copy-only dest-wins migration từ path cũ. **Supersede:** mệnh đề ownership của §4.1 (trước: ShippingCore own) và forbidden edges `Secomm_Ghn/Ghtk -X-> Secomm_Cod` của §22 (giờ: carrier CẦN nhận diện COD thì KHAI BÁO dependency `Secomm_Cod`; hiện tại chỉ `Secomm_Ghtk`). **Giữ nguyên:** fence identification-only (không COD framework — §4.1/§28), safe-false/exact-match semantics, carrier-không-quyết-COD-policy, amount conversion carrier-owned (DEC-SL016-001), GHN deliberately-no-COD. **Forbidden edges mới:** `Secomm_ShippingCore -X-> Secomm_Cod` (orchestration ShippingCore không đọc COD), `Secomm_Cod -X-> carriers`. Chi tiết §4.1; implementation TASK-DFGFZ9; interface ShippingCore bị XOÁ không adapter.
+> **Revision v12 (COD amount decision ownership → Secomm_Cod) — MATERIAL AMENDMENT, partial supersede v11 + DEC-SL016-001 items 4-5:** product decision Launchpad P1 (DEC-TASKDFGFZ9-002, user acting SA/TL): **Secomm_Cod own quyết định COD amount** khi carrier tạo đơn provider — contract `CodCollectionResolverInterface::resolve(Order, Shipment, ?Prior)` trả MỘT quyết định (COLLECTIBLE|NOT_COD|REJECTED + amount + currency + reason); P1 policy = thu **một lần** mỗi order bằng **`order.grand_total` theo `order.order_currency_code`**, prior-collection (shipment provider khác) → REJECTED, order currency ≠ VND → REJECTED (GHTK/GHN là provider VND-only facts — KHÔNG convert), partial shipment → REJECTED, non-COD shipment không bao giờ bị chặn. **Carrier chỉ MAP kết quả** (GHTK `pick_money`, GHN `cod_amount`) — không đọc order totals, không tự nhận diện; `Ghtk\{CodAmountResolverInterface, DefaultCodAmountResolver}` bị XOÁ. **Retry freeze:** GHN anchor `secomm_ghn_shipment.cod_amount` persisted-wins; GHTK anchor table MỚI `secomm_ghtk_shipment` (partner_code UNIQUE, insertPending trước POST, retry vẫn POST + ORDER_ID_EXIST recovery). **GHN consume Secomm_Cod** (sequence +=, đảo ngược forbidden edge v11); builder luôn emit `cod_amount` (0 = non-COD — sandbox-verified shape; non-zero CHƯA sandbox verify — QC), cap 50M VND fail-closed; rejection surface = outcome `COD_REJECTED` (observer log + comment VISIBLE, không anchor không POST). **Supersede:** DEC-SL016-001 §4 (base_total_due — deposit implicit support BỎ; merchant không dùng COD method cho đơn trả một phần) + §5 (partial fail-fast → decision reason); v11 "amount conversion carrier-owned". **Giữ nguyên:** identification contract + safe-false semantics (v11), `Secomm_ShippingCore -X-> Secomm_Cod`, `Secomm_Cod -X-> carriers`, KHÔNG allocation framework P2. Chi tiết §4.1; implementation TASK-DFGFZ9 phase 2.
+> **Revision v13 (COD product final state — pre-release) — MATERIAL AMENDMENT, partial supersede v11/v12 + DEC-001/002:** Launchpad chưa phát hành cho client; staging = dữ liệu dev → trạng thái product cuối: (1) `isCod()` mặc định **hardcode `cashondelivery`** (`DefaultCodPaymentMethodResolver`, Magento core method của `Magento_OfflinePayments` — merchant tự bật; KHÔNG admin field, KHÔNG config path, KHÔNG DataPatch migration — supersedes config surface v11 + migration v12/DEC-001 items 5/6); (2) **collection ledger `secomm_cod_collection` do Secomm_Cod sở hữu** — carriers chỉ REPORT attempt identity (carrier + provider reference), resolver TỰ đọc ledger cho frozen replay + prior check → cross-carrier one-collection rule chống bypass by construction (audit 2026-09-23 CONFIRMED 2 holes của caller-supplied prior: cross-carrier blind spot + null-prior bypass); (3) anchor tables = provider facts only (`cod_amount` audit-only); (4) fresh-install là trạng thái chuẩn — staging cleanup bằng SQL manual riêng, không patch. Giữ nguyên: P1 policy một-thu-một-lần grand_total VND-only + reject partial/second (v12), contract policy-agnostic (policy swappable qua preference), ShippingCore ↛ Cod, Cod ↛ carriers, không allocation framework. Chi tiết §4.1/§4.1.1; DEC-TASKDFGFZ9-003; implementation TASK-DFGFZ9 phase 3.
+> **v13 closure amendment (atomic per-order claim + carrier-enforced currency + zero-amount COD) — DEC-TASKDFGFZ9-004, TASK-DFGFZ9 phase 3 closure:** (1) claim **engine-enforced** — `secomm_cod_collection.active_order_claim` (nullable, application-managed) + UNIQUE: INSERT-first `recordPending`, losing concurrent attempt nhận `CodClaimConflictException`; `markNotSubmitted(FAILED)` releases claim, UNKNOWN giữ; (2) currency SUPPORT = carrier concern — decision trả ORDER currency, GHTK/GHN gate VND trước recordPending/POST (không convert); (3) zero-amount COD giữ classification COD (COLLECTIBLE 0.0; âm → `invalid_order_amount`). Integration proof: 2 PDO connections cạnh tranh thực (contest / release / re-arm / transaction-blocked). OPEN gates: fresh-install full-flow (third-party Session\Config blocker), GHN sandbox non-zero cod_amount probe.
 ---
 
 ## 1. Architecture tổng thể
@@ -418,34 +422,55 @@ Secomm_ShippingCore
 
 ShippingCore foundation hiện được xem là **COMPLETE / HARD STOP** cho scope Launchpad hiện tại.
 
-### 4.1 ShippingCore — COD Payment Identification
+### 4.1 Secomm_Cod — COD Payment Identification (Rev v11 — ownership chuyển khỏi ShippingCore)
 
-Gap cụ thể: carrier (GHN/GHTK) khi build CREATE-order request cần biết order là COD hay
-non-COD (GHN `cod_amount`; GHTK `pick_money` + `pick_option: cod`). Nếu mỗi carrier tự
-hardcode `cashondelivery`… thì danh sách COD methods bị trùng lặp và lệch nhau giữa các carrier.
+> **Rev v4 → v11:** v4 đặt ownership ở `Secomm_ShippingCore` (vì carrier đã depend sẵn).
+> Audit 2026-09-23 (TASK-DFGFZ9) chứng minh ShippingCore **không hề tự consume** identification
+> (duy nhất 1 call-site production: `Secomm_Ghtk\...\DefaultCodAmountResolver` tại
+> shipment-submit) — ownership là coupling không có consumer nội bộ. Rev v11 chuyển ownership
+> sang module **`Secomm_Cod`** (DEC-TASKDFGFZ9-001); interface `Secomm\ShippingCore\Api\Cod\...`
+> bị xoá không adapter (chưa từng TL-accept, consumer duy nhất đổi typehint cùng change).
 
-Ownership chốt:
+Gap cụ thể: consumer (carrier build CREATE-order request, future COD risk evaluation) cần biết
+order là COD hay non-COD (GHN `cod_amount`; GHTK `pick_money` + `pick_option: cod`). Nếu mỗi
+consumer tự hardcode `cashondelivery`… thì danh sách COD methods bị trùng lặp và lệch nhau giữa
+các module.
+
+Ownership chốt (Rev v11):
 
 ```text
-Secomm_ShippingCore own:
-- configuration khai báo Magento payment method codes nào được xem là COD
-  (ví dụ: cashondelivery, custom_cod — declare qua configuration, không hardcode trong code);
+Secomm_Cod own (module nghiệp vụ, Rev v13):
+- mặc định identification = Magento core method code `cashondelivery`
+  (Magento_OfflinePayments; merchant tự bật method — KHÔNG admin field, KHÔNG config path,
+  KHÔNG hardcode trong carrier code);
 - shared, provider-neutral resolver:
-      isCod(paymentMethodCode): bool
-- expose một contract nhỏ cho downstream carrier modules consume.
+      isCod(paymentMethodCode): bool   (DefaultCodPaymentMethodResolver, DI-preference seam)
+- expose các contract cho downstream modules consume.
 ```
 
-Contract (shape scalar-in/bool-out — không kéo Magento order model vào ShippingCore):
+Contract (shape scalar-in/bool-out — không kéo Magento order model vào contract):
 
 ```text
-Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface
+Secomm\Cod\Api\CodPaymentMethodResolverInterface        (trước v11: Secomm\ShippingCore\Api\Cod\...)
 
 isCod(string $paymentMethodCode): bool
 ```
 
-Carrier đã có order trong tay qua Magento contract (`Magento\Sales\Api\Data\OrderInterface`) —
-carrier tự đọc `order.getPayment().getMethod()` rồi gọi resolver. ShippingCore đọc/chấp nhận
+Config: KHÔNG còn — Rev v13 xoá path `secomm_cod/payment_identification/payment_methods`,
+section "COD Settings" và ACL `Secomm_Cod::config` cùng DataPatch migration (pre-release: chưa
+có client, staging là dữ liệu dev; isCod mặc định hardcode — xem ownership block trên).
+Runtime Secomm_Cod không phụ thuộc row config nào; dependency tường minh
+`Magento_OfflinePayments` (module cung cấp `cashondelivery`).
+
+Consumer đã có order trong tay qua Magento contract (`Magento\Sales\Api\Data\OrderInterface`) —
+consumer tự đọc `order.getPayment().getMethod()` rồi gọi resolver. Contract đọc/chấp nhận
 payment method code qua Magento contracts, KHÔNG coupling vào payment implementation cụ thể.
+
+**Dependency rules (Rev v11):** consumer nào trực tiếp cần nhận diện COD thì KHAI BÁO dependency
+`Secomm_Cod` (module.xml sequence) và inject contract — hiện tại chỉ `Secomm_Ghtk`. KHÔNG dùng
+dependency ngầm hay ObjectManager để né khai báo. Forbidden: `Secomm_ShippingCore -X-> Secomm_Cod`
+(orchestration ShippingCore không đọc COD), `Secomm_Cod -X-> carriers`, consumer tự đọc config
+path / giữ list riêng. Future `CODRisk` (khi tồn tại) PHẢI dùng resolver chung.
 
 Runtime flow:
 
@@ -454,17 +479,16 @@ Magento Order
     ↓
 order.payment.method
     ↓
-isCod(paymentMethodCode)     (ShippingCore, config-owned)
+isCod(paymentMethodCode)     (Secomm_Cod, config-owned)
     ↓
 true | false
     ↓
-carrier build provider-specific request
+consumer build provider-specific request / áp policy
 ```
 
 Scope fence — KHÔNG build (chỉ reopen khi có business requirement/consumer thật):
 
 ```text
-Secomm_Cod standalone module
 COD eligibility engine
 min/max COD order value
 customer blacklist / risk scoring
@@ -478,8 +502,69 @@ partial-payment / deposit framework
 generic COD policy framework
 ```
 
+(`Secomm_Cod` **tồn tại từ Rev v11** — từ v13 là identification + collection-decision owner,
+KHÔNG phải COD framework. "Silence in configuration = nothing is COD" (safe-false v11) bị
+supersede: mặc định `cashondelivery` là COD — đổi policy qua DI preference.)
+
 Đây là **identification thuần**: "payment method này có được coi là COD không?" — KHÔNG phải
 COD framework. (`enabled`/visibility của payment method vẫn là việc của Magento + composition.)
+(Từ Rev v12: identification là LỚP ĐẦU của quyết định COD; lớp amount/policy xem dưới đây —
+cả hai đều thuộc `Secomm_Cod`, identification contract giữ nguyên shape.)
+
+### 4.1.1 Secomm_Cod — COD Collection Decision (Rev v12)
+
+Contract DUY NHẤT trả lời "khi shipment provider này được tạo, provider có thu tiền cửa không,
+bao nhiêu, loại tiền nào — hay bị từ chối?":
+
+```text
+Secomm\Cod\Api\CodCollectionResolverInterface
+    resolve(Magento\Sales\Model\Order $order,
+            Magento\Sales\Model\Order\Shipment $shipment,
+            ?CodCollectionAttemptInterface $attempt): CodCollectionDecisionInterface
+
+Decision: STATUS_COLLECTIBLE | STATUS_NOT_COD | STATUS_REJECTED
+          + amount + currencyCode  (collectible only)
+          + rejectionReason (CURRENCY_UNSUPPORTED | PARTIAL_SHIPMENT | COD_ALREADY_COLLECTED)
+          + rejectionMessage
+Attempt (caller-supplied VO — Rev v13): carrierCode + providerReference — ĐỊNH DANH attempt
+          hiện tại; frozen replay + prior check do RESOLVER tự đọc LEDGER
+          `secomm_cod_collection` (cross-carrier, bypass-proof by construction; null attempt
+          an toàn — prior check vẫn chạy không exclusion)
+```
+
+P1 policy (`Model\SingleCollectionCodResolver`, swappable qua preference — chỉ nới lỏng khi có
+DEC mới), evaluation order:
+
+0. THIS attempt đã freeze amount trong ledger (status ≠ FAILED) → COLLECTIBLE amount frozen
+   verbatim (retry không bao giờ re-decide — persisted-wins, cross-carrier);
+1. ledger có prior collection > 0 của order qua (carrier, reference) KHÁC → `REJECTED
+   COD_ALREADY_COLLECTED` (ledger do Secomm_Cod sở hữu — carriers chỉ report; caller không thể
+   bypass); FAILED không chặn (definitive rejection — không thu gì);
+2. payment method không phải COD (identification §4.1, mặc định `cashondelivery`) → `NOT_COD`
+   — non-COD shipment không bao giờ bị rule COD chặn;
+3. `order_currency_code` ≠ VND → `REJECTED CURRENCY_UNSUPPORTED` (GHTK/GHN là provider
+   VND-only facts, integer VND, không có currency field — KHÔNG convert âm thầm);
+4. `grand_total` ≤ 0 → `NOT_COD`;
+5. partial shipment (qty-incomplete) → `REJECTED PARTIAL_SHIPMENT` (thu cả đơn một lần →
+   COD order phải ship đủ trong 1 shipment);
+6. else `COLLECTIBLE grand_total` theo order currency.
+
+Consumer: **carrier chỉ MAP kết quả** sang provider field (GHTK `pick_money`, GHN `cod_amount`)
+— KHÔNG đọc `grand_total`/`base_total_due`, KHÔNG tự nhận diện COD, KHÔNG convert currency
+(gate currency hỗ trợ trước recordPending/POST). Carriers REPORT attempt vào ledger
+(`recordPending` khi amount > 0 — GHTK: SAU payload mapping; GHN: ngay sau decision — TRƯỚC
+anchor insert + POST; mirror markSubmitted/markNotSubmitted trên mọi outcome). Retry cùng yêu cầu: resolver replay frozen
+amount từ ledger (persisted-wins); retry vẫn POST lại (GHTK label flow cần PDF) +
+ORDER_ID_EXIST recovery giữ nguyên; GHTK UNKNOWN giữ trạng thái chặn cross-carrier cho đến
+khi reconcile. Second-COD-shipment (cùng carrier HAY khác carrier): ledger chặn conservative
+(PENDING/SUBMITTED/RECOVERED/UNKNOWN chặn; FAILED không). GHTK surface = LocalizedException
+(native label flow abort), GHN surface = outcome `COD_REJECTED` (observer log + comment
+VISIBLE, không anchor không POST). Provider cap: GHN `cod_amount` ≤ 50,000,000 VND
+fail-closed; GHTK không có cap (chưa có provider fact).
+
+Scope fence (giữ nguyên từ v11, bổ sung rõ): KHÔNG deposit/partial-payment support (đơn COD
+trả một phần vẫn thu cả `grand_total` — merchant không dùng COD method cho đơn trả một phần),
+KHÔNG allocation giữa nhiều shipment, KHÔNG conversion, KHÔNG surcharge/risk/reconciliation.
 
 ---
 
@@ -771,7 +856,7 @@ GHN rate API
 - Mageplaza integration;
 - common shipping policy;
 - external address-disambiguation provider orchestration;
-- COD identification/policy. Carrier KHÔNG hardcode Magento COD payment method codes, KHÔNG tự maintain danh sách COD methods, KHÔNG tự quyết method nào là COD, KHÔNG introduce COD policy riêng, KHÔNG depend vào một hypothetical `Secomm_Cod`. Carrier hỏi ShippingCore — `CodPaymentMethodResolverInterface::isCod(paymentMethodCode)` (§4.1) — rồi tự map kết quả sang provider-specific COD fields theo API contract của carrier (GHN `cod_amount`; GHTK `pick_money` + `pick_option: cod`). Collect amount của order được carrier đọc từ order tại thời điểm build request theo API contract của provider — không có COD amount abstraction riêng ở layer này.
+- COD identification/policy (Rev v11/v12): Carrier KHÔNG hardcode Magento COD payment method codes, KHÔNG tự maintain danh sách COD methods, KHÔNG tự quyết method nào là COD, KHÔNG introduce COD policy riêng, KHÔNG tự đọc `grand_total`/`base_total_due` để tính tiền thu. Carrier cần nhận diện COD hoặc quyết định tiền thu thì KHAI BÁO dependency `Secomm_Cod` (module.xml sequence) và hỏi contract dùng chung — identification: `Secomm\Cod\Api\CodPaymentMethodResolverInterface::isCod(paymentMethodCode)` (mặc định `cashondelivery`); collection decision: `Secomm\Cod\Api\CodCollectionResolverInterface::resolve(Order, Shipment, ?Attempt)` (§4.1.1) — rồi **chỉ map kết quả** sang provider-specific COD fields theo API contract của carrier (GHN `cod_amount`; GHTK `pick_money` + `is_freeship: 1`). Collect amount KHÔNG được carrier tự tính từ order totals — amount/currency/rejection là kết quả của contract; carrier không là owner của phép tính này (Rev v12 supersedes wording cũ "carrier đọc từ order tại thời điểm build request").
 
 ### Dependency
 
@@ -1456,19 +1541,24 @@ Không có:
 Secomm_ShippingCore → Launchpad_MageplazaTableRate
 ```
 
-### COD identification — không tạo cạnh dependency mới
+### COD identification — cạnh dependency tường minh sang Secomm_Cod (Rev v11)
 
-Resolver COD nằm trong `Secomm_ShippingCore` (§4.1); carrier đã depend ShippingCore sẵn nên
-graph không thay đổi:
+> Rev v4: resolver nằm trong `Secomm_ShippingCore`, graph không thay đổi. **Rev v11
+> (DEC-TASKDFGFZ9-001)**: audit chứng minh ShippingCore không tự consume identification →
+> ownership chuyển `Secomm_Cod`; consumer nào cần nhận diện COD thì khai báo dependency
+> tường minh — KHÔNG dependency ngầm, KHÔNG ObjectManager:
 
 ```text
-Secomm_Ghn  → Secomm_ShippingCore  (isCod qua CodPaymentMethodResolverInterface)
-Secomm_Ghtk → Secomm_ShippingCore  (isCod qua CodPaymentMethodResolverInterface)
+Secomm_Ghtk → Secomm_Cod            (isCod + collection decision qua Secomm\Cod\Api\...)
+Secomm_Ghn  → Secomm_Cod            (Rev v12: CREATE collection decision — ĐẢO NGƯỢC forbidden edge v11)
+Secomm_ShippingCore -X-> Secomm_Cod (orchestration ShippingCore KHÔNG đọc COD identification/amount)
+Secomm_Cod   -X-> carriers          (contract owner không bao giờ depend ngược consumer)
 ```
 
-ShippingCore đọc Magento payment method code qua Magento contracts (ví dụ
+Consumer đọc Magento payment method code / order context qua Magento contracts (ví dụ
 `Magento\Sales\Api\Data\OrderInterface` ở phía caller) — không coupling vào một payment
-implementation cụ thể, không có cạnh `Secomm_ShippingCore → Secomm_Ghn`.
+implementation cụ thể. Config path cũ lẫn path mới ĐÃ BỎ (Rev v13 — pre-release xoá config surface + DataPatch;
+isCod mặc định hardcode `cashondelivery`).
 
 ---
 
@@ -1523,15 +1613,17 @@ Carrier
 -X-> VietMap / Google
 ```
 
-Không được để carrier depend vào một COD module riêng — COD identification thuộc
-`Secomm_ShippingCore` (§4.1), không có `Secomm_Cod` trong architecture hiện tại:
+COD identification (Rev v11/v12 — DEC-TASKDFGFZ9-001/002): `Secomm_Cod` là owner duy nhất của
+identification VÀ collection decision. Consumer cần nhận diện COD hoặc quyết định tiền thu thì
+KHAI BÁO dependency `Secomm_Cod` và inject contract (hiện tại: `Secomm_Ghtk`, `Secomm_Ghn`);
+KHÔNG consumer nào được tự đọc config path COD hay tự tính amount từ order totals. Forbidden:
 
 ```text
-Secomm_Ghn
--X-> Secomm_Cod
+Secomm_ShippingCore
+-X-> Secomm_Cod        (orchestration ShippingCore không đọc COD identification/amount)
 
-Secomm_Ghtk
--X-> Secomm_Cod
+Secomm_Cod
+-X-> Secomm_Ghn / Secomm_Ghtk / Secomm_Ahamove   (contract owner không depend ngược consumer)
 ```
 
 ---
@@ -1849,9 +1941,10 @@ aggregate → hasSuccessfulRate = true
 |---|---|---|
 | `Secomm_AddressDropdown` | Generic hierarchical address UI/data | Magento Directory |
 | `Secomm_VietNamAddress` | VN canonical schemes, units, mapping graph | `Secomm_AddressDropdown` |
-| `Secomm_ShippingCore` | Shared address/rate orchestration + COD payment identification + shipment physical facts + physical-limit capability boundary (§33) + carrier eligibility/zones/rate-source/address-policy (§35) | `Secomm_VietNamAddress` |
-| `Secomm_Ghn` | GHN provider mapping/API + physical-data interpretation (type 2/5 — §33.16) | `Secomm_ShippingCore` |
-| `Secomm_Ghtk` | GHTK provider mapping/API | `Secomm_ShippingCore` |
+| `Secomm_ShippingCore` | Shared address/rate orchestration + shipment physical facts + physical-limit capability boundary (§33) + carrier eligibility/zones/rate-source/address-policy (§35) | `Secomm_VietNamAddress` |
+| `Secomm_Cod` | COD identification + collection decision duy nhất — config `secomm_cod/payment_identification/payment_methods`, resolver `isCod` (§4.1) + `CodCollectionResolverInterface` P1 policy (§4.1.1, Rev v12) | (không phụ thuộc module nào) |
+| `Secomm_Ghn` | GHN provider mapping/API + physical-data interpretation (type 2/5 — §33.16) + CREATE COD amount mapping (§4.1.1, Rev v12) | `Secomm_ShippingCore`, `Secomm_Cod` |
+| `Secomm_Ghtk` | GHTK provider mapping/API + submit anchor `secomm_ghtk_shipment` (frozen COD, Rev v12) | `Secomm_ShippingCore`, `Secomm_Cod` |
 | `Secomm_ViettelPost` / `_Jt` / `_NinjaVan` | Type A carrier (Growth) provider mapping/API | `Secomm_ShippingCore` |
 | `Secomm_Ahamove` | Type B on-demand carrier (P2), lat/lng | `Secomm_ShippingCore` |
 | `Secomm_Grab` / `_Lalamove` | Type B on-demand carrier (P2) | `Secomm_ShippingCore` |
@@ -1896,8 +1989,9 @@ chứng minh một contract gap cụ thể.
 > - External resolver **chỉ cho AMBIGUOUS**, là selector trên candidate set đã biết.
 >
 > **Contract amendment v4 (COD identification)** — gap nhỏ do consumer thật (GHN/GHTK create-order) yêu cầu, scope tối thiểu:
-> - `Secomm_ShippingCore` own configuration khai báo COD payment method codes + resolver
->   `isCod(paymentMethodCode)` cho carrier consume (§4.1). Không mở rộng thêm gì khác của COD.
+> - ~~`Secomm_ShippingCore` own configuration khai báo COD payment method codes + resolver~~
+>   **supersede Rev v11**: ownership chuyển `Secomm_Cod` (§4.1) — contract `isCod(paymentMethodCode)`
+>   giữ nguyên shape. Không mở rộng thêm gì khác của COD.
 >
 > **Contract P1 đã chốt (address resolution)** — gồm đúng các gap consumer thật đã chứng minh:
 > - `requiredScheme(op)` / `supportedRepresentations(op)` **per-operation**, scope RATE + CREATE (GHN chứng minh).
@@ -1905,8 +1999,9 @@ chứng minh một contract gap cụ thể.
 > - External resolver **chỉ cho AMBIGUOUS**, là selector trên candidate set đã biết.
 >
 > **Contract amendment v4 (COD identification)** — gap nhỏ do consumer thật (GHN/GHTK create-order) yêu cầu, scope tối thiểu:
-> - `Secomm_ShippingCore` own configuration khai báo COD payment method codes + resolver
->   `isCod(paymentMethodCode)` cho carrier consume (§4.1). Không mở rộng thêm gì khác của COD.
+> - ~~`Secomm_ShippingCore` own configuration khai báo COD payment method codes + resolver~~
+>   **supersede Rev v11**: ownership chuyển `Secomm_Cod` (§4.1) — contract `isCod(paymentMethodCode)`
+>   giữ nguyên shape. Không mở rộng thêm gì khác của COD.
 >
 > **v5 amendment (partial supersede — Legacy RATE strategy):** rule *"chỉ TECHNICAL_FAILURE mới
 > fallback eligible"* được supersede MỘT PHẦN — thêm nguồn eligibility **LEGACY_ADDRESS_FALLBACK**
@@ -1933,13 +2028,36 @@ chứng minh một contract gap cụ thể.
 > curated-primary selection (KHÔNG $candidates[0]/alphabetical/db-order); DATA_INTEGRITY_DEFECT
 > không auto-select; Launchpad default vẫn FALLBACK. Chi tiết §35.4.
 >
+> **v11 amendment (COD identification ownership → Secomm_Cod):** partial supersede v4 §4.1 —
+> audit 2026-09-23 chứng minh ShippingCore không tự consume identification (1 call-site:
+> Ghtk shipment-submit) → ownership chuyển module `Secomm_Cod` (DEC-TASKDFGFZ9-001, §4.1).
+> Interface ShippingCore xoá sạch không adapter; path config move có DataPatch copy-only
+> dest-wins; fence identification-only + carrier-no-COD-policy giữ nguyên. ShippingCore KHÔNG
+> reopen vì việc này (không thêm abstraction nào).
+>
+>
+> **v13 amendment (COD product final state — pre-release):** partial supersede v11/v12 + DEC-001
+> items 5/6 + DEC-002 decision-1 prior clause — isCod mặc định hardcode `cashondelivery`
+> (Magento_OfflinePayments), config surface + DataPatch migration XÓÁ; collection LEDGER
+> `secomm_cod_collection` do Secomm_Cod sở hữu (caller chỉ report attempt — bypass-proof,
+> cross-carrier); anchor tables = provider facts; fresh-install là trạng thái chuẩn
+> (staging cleanup = SQL manual riêng). Chi tiết §4.1/§4.1.1; DEC-TASKDFGFZ9-003.
+> **v12 amendment (COD amount decision ownership → Secomm_Cod):** partial supersede v11 +
+> DEC-SL016-001 items 4-5 — Secomm_Cod own collection decision (`CodCollectionResolverInterface`,
+> §4.1.1); P1 policy một-thu-một-lần + grand_total/order-currency + VND-only + reject
+> partial/second-shipment; carrier chỉ map (GHTK seam cũ xoá; GHN consume — đảo ngược forbidden
+> edge v11); retry freeze qua anchor persistence (GHTK bảng mới `secomm_ghtk_shipment`);
+> contract vẫn KHÔNG hardcode single-shipment (policy swappable qua preference); KHÔNG allocation
+> framework P2; ShippingCore vẫn KHÔNG reopen (0 COD edge). Chi tiết §4.1.1; DEC-TASKDFGFZ9-002.
+>
 > **Deferred — KHÔNG build ở P1 (giữ hard stop):**
 > - `GEOPOINT` / `GeocodeHandoff` (Type B: Ahamove/Grab) → reopen khi consumer Type B chứng minh.
 > - Address representation cho `CANCEL` / `TRACK` → thêm khi carrier chứng minh cần scheme.
 > - Resolver cho `UNMAPPED` → chỉ mở khi có evidence volume + cách deterministic.
-> - `Secomm_Cod` module / COD framework (surcharge, eligibility, reconciliation, settlement…) →
->   KHÔNG tồn tại trong architecture hiện tại; COD identification thuần thuộc ShippingCore (§4.1),
->   mọi phần mở rộng chỉ reopen khi có business requirement/consumer thật.
+> - ~~`Secomm_Cod` module~~ **supersede Rev v11** (module tồn tại từ 2026-09-23 nhưng CHỈ là
+>   identification owner — §4.1); COD framework (surcharge, eligibility, reconciliation,
+>   settlement…) → vẫn KHÔNG build, mọi phần mở rộng chỉ reopen khi có business
+>   requirement/consumer thật.
 
 ---
 
@@ -1973,8 +2091,11 @@ Khi dùng Project Tool audit code, review từng module theo các câu hỏi sau
 - Snapshot có `failure_class` phân biệt AMBIGUOUS/UNMAPPED (→UNAVAILABLE) vs TECHNICAL (→fallback) không?
 - External resolver có bị giới hạn ở **AMBIGUOUS + selector trên candidate đã biết** không (không xử lý UNMAPPED, không mint canonical)?
 - Có sinh `GEOPOINT`/`GeocodeHandoff`/`CarrierType` enum khi chưa có consumer Type B không?
-- COD payment methods có được **config-owned** (không hardcode trong code) và expose qua
-  provider-neutral `isCod(paymentMethodCode)` (§4.1) không — thay vì mỗi nơi một danh sách?
+- COD identification có thuộc **duy nhất `Secomm_Cod`** (mặc định `cashondelivery` hardcode,
+  Rev v13; không admin field, không config row) và expose qua provider-neutral
+  `isCod(paymentMethodCode)` (§4.1) không — thay vì mỗi nơi một danh sách? Consumer có KHAI BÁO
+  dependency `Secomm_Cod` (không ngầm, không ObjectManager) không? `Secomm_ShippingCore` có
+  KHÔNG đọc COD identification không?
 - Có lấn sang COD framework (surcharge/eligibility/reconciliation/settlement) không — ngoài
   identification thuần thì phải có business requirement/consumer thật?
 - **v9:** Zone eligibility có dùng **canonical codes** (không localized name như "Quận 1") và
@@ -2008,7 +2129,13 @@ Khi dùng Project Tool audit code, review từng module theo các câu hỏi sau
 - Provider mapping và API logic có được giữ carrier-owned không?
 - Raw provider errors có được classify đúng thành `SUCCESS` / `UNAVAILABLE` / `TECHNICAL_FAILURE` không?
 - RATE và CREATE có dùng đúng scheme/representation **riêng theo operation** không (vd GHN: RATE=ID/PRE_2025, CREATE=text/2025 + `is_new_to_address`)?
-- COD: carrier có hardcode/tự maintain danh sách COD payment methods, hoặc tự áp COD policy, hoặc depend `Secomm_Cod` không? (Phải hỏi `CodPaymentMethodResolverInterface::isCod(...)` từ ShippingCore — §4.1 — rồi tự map provider-specific COD fields; collect amount đọc từ order tại thời điểm build request theo provider API contract.)
+- COD: carrier có hardcode/tự maintain danh sách COD payment methods, tự áp COD policy, tự đọc
+  config COD, hoặc TỰ TÍNH collect amount từ order totals (`grand_total`/`base_total_due`)
+  không? (Phải KHAI BÁO dependency `Secomm_Cod`, hỏi `Secomm\Cod\Api\CodCollectionResolverInterface::resolve(...)`
+  — §4.1.1, Rev v13 — rồi **chỉ map** decision sang provider fields; carrier CHỈ REPORT attempt
+  vào ledger `secomm_cod_collection`, frozen replay + one-collection rule do ledger/resolver
+  sở hữu — retry replay frozen, shipment COD thứ hai (cùng carrier hay khác carrier) bị từ chối
+  rõ ràng.)
 - **v5:** Legacy RATE strategy (RATE cần legacy scheme) có được đọc từ configuration (không
   hardcode, §15.1) không? Khi fallback eligible, carrier có bị bypass bridge (gọi thẳng
   Mageplaza calculator) không — bắt buộc đi qua `FallbackRateProviderInterface`?
@@ -2110,6 +2237,9 @@ Chỉ sau khi flow trên chứng minh **thêm** gap cụ thể mới xem xét am
 | Claim | Status | Verified date | Source / cách confirm |
 |---|---|---|---|
 | GHN có public self-serve API, COD đầy đủ (`cod_amount`, `updateCOD`, callback) | Search | 2026-09-11 | api.ghn.vn/home/docs (create order, COD APIs) |
+| GHN create-order `cod_amount`: Int VND, optional, **max 50,000,000**, default 0; shape `cod_amount=0` sandbox-verified (L8TL6B); **non-zero tại create CHƯA sandbox-verified** (updateCOD OTP-gated, NOT_USED) | Docs + sandbox | 2026-09-11/23 | `.ai/evidence/TASK-FMBBSD/ghn-api-contract-matrix.md` §5 + sandbox-validation.md (QC gate: `.ai/evidence/TASK-DFGFZ9/ghn-cod-sandbox-gate.md` — BLOCKED_BY_CREDENTIAL) |
+| COD one-collection rule chạy trên LEDGER `secomm_cod_collection` do Secomm_Cod sở hữu (cross-carrier, bypass-proof); anchors `secomm_{ghn,ghtk}_shipment.cod_amount` chỉ là audit | Code | 2026-09-23 | DEC-TASKDFGFZ9-003 + `.ai/evidence/TASK-DFGFZ9/phase3.md` |
+| GHTK create payload KHÔNG có currency field; `pick_money` = int VND (provider fact VND-only) | Docs + audit | 2026-09-23 | docs.giaohangtietkiem.vn + TASK-DFGFZ9 phase-2 audit (§4.1.1 CURRENCY_UNSUPPORTED rejection) |
 | GHN create-order nhận **địa chỉ theo tên** (`to_ward_name`/`to_district_name`/`to_province_name`) | Search | 2026-09-11 | api.ghn.vn/home/docs id=122, id=123 (field note "You can input to_ward_name / to_district_name") |
 | GHN create có cờ **`is_new_to_address`** switch sang tên **2 cấp mới** | NEEDS_VERIFICATION | — | Field KHÔNG thấy trong docs public id=122/id=123 đã fetch; do team đọc từ live API. Ping-test sandbox để confirm semantics (§31.1) |
 | GHN **fee/rate API vẫn dùng địa chỉ cũ + ID cũ** (`district_id`+`ward_code`) | NEEDS_VERIFICATION | — | Reported từ team + search; chưa confirm bằng fetch định danh. Ping-test sandbox (§31.1) |
@@ -2611,10 +2741,38 @@ thuộc work-item records, không phải architecture contract.)
 
 ### 35.1 CarrierEligibility + DestinationScope
 
+> **v10 coverage amendment (TASK-R8WR1R, không thuộc v10 frozen baseline ban đầu):**
+> `ALL_EXCEPT_SELECTED_ZONES` là scope cộng thêm vào coverage model; mọi semantics gốc
+> ALL/SELECTED_ZONES của §35 giữ nguyên.
+
 ```text
-DestinationScope::ALL              → eligible cho mọi canonical destination hợp lệ
-DestinationScope::SELECTED_ZONES   → eligible khi destination thuộc ≥1 configured canonical zone
+DestinationScope::ALL                        → eligible cho mọi canonical destination hợp lệ (zone list bị bỏ qua)
+DestinationScope::SELECTED_ZONES             → eligible khi destination thuộc ≥1 configured canonical zone
+DestinationScope::ALL_EXCEPT_SELECTED_ZONES  → eligible khi destination KHÔNG thuộc zone nào (TASK-R8WR1R)
 ```
+
+Empty-zone semantics (locked):
+```text
+SELECTED_ZONES + empty list            → ineligible (fail closed)
+ALL_EXCEPT_SELECTED_ZONES + empty list → eligible (≡ ALL — không exclude gì cả)
+ALL                                    → zone list ignored
+```
+
+Invalid persisted scope (TASK-R8WR1R r2 — fail-closed lock):
+```text
+missing / empty config value → documented default ALL (silent — missing value ≠ invalid value)
+valid scope                  → pass-through
+non-empty UNKNOWN scope      → returned VERBATIM (không bao giờ coerce về scope hợp lệ nào)
+                             → CarrierEligibilityEvaluator unknown-scope branch → ineligible cho
+                               mọi destination (không realtime, không fallback; reason
+                               DESTINATION_NOT_IN_SCOPE — không TECHNICAL_FAILURE) + warning diagnostic
+```
+
+ALL_EXCEPT_SELECTED_ZONES: exclusion ở zone-assignment level qua cùng CanonicalZoneRegistry +
+CanonicalZoneMatcher — chỉ **valid enabled matching zone** mới exclude; unknown/disabled zone
+reference KHÔNG tự exclude (stale config log qua diagnostics seam của
+CarrierDestinationScopeConfig, hint "does not exclude"). Unknown-zone fail-closed behavior của
+SELECTED_ZONES giữ nguyên. `matchedZoneCode` chỉ là diagnostic metadata — không ranking/priority.
 
 Evaluate bằng **canonical address identity TRƯỚC provider conversion** (không provider IDs
 trong zone logic). Merchant eligibility config per carrier — KHÔNG phải provider/API health
@@ -2693,6 +2851,29 @@ business rejection → fallback KHÔNG được mask. Outcome taxonomy `CarrierR
 eligibility; mapping-missing KHÔNG reclassify thành TECHNICAL_FAILURE. Auth/config fallback
 phải kèm mandatory high-severity diagnostic/admin warning seam (không mask lỗi cấu hình).
 
+> **TASK-RT50KH amendment (2026-09-23 — dimension pre-validation ACTIVATED):** product
+> shipping-dimension contract P1 ở `Secomm_Base` (attrs `length/width/height` upgraded:
+> decimal/GLOBAL/cm — reuse qua delete+recreate; reader
+> `Secomm\Base\Api\ShippingDimensionsReaderInterface`, complete-only-authoritative + ceil
+> int cm; configurable→selected child, bundle ship-together→parent). Estimator fill
+> `EstimatedPackage` dims (same per unit — không nhân qty) → 150cm hard-limit gate
+> (`RATE_MAX_SIDE_CM` SANDBOX_OBSERVED) LIVE: longest side > 150 → UNAVAILABLE
+> `GHN_PACKAGE_{L|W|H}_LIMIT_EXCEEDED` (carrier-owned, không fallback), không API call.
+> Missing/partial dims → không reject (provider final authority). Fee payload vẫn omit dims.
+> `ShipmentPhysicalData` vẫn authoritative tại shipment creation — checkout dims chỉ là
+> pre-validation data.
+
+> **TASK-MQ2DRG amendment (2026-09-23, TL-approved — KHÔNG tạo v11):** dòng
+> "capability unsupported → fallback YES" của §35.5 được materialize bằng constant mới
+> `ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE` (additive: constant + policy default map
+> + `outcomeDrivenEligibility()` branch → `integrationLimitation()`, mode-gated như cũ). Emitted
+> as UNAVAILABLE — status never reclassified. Consumer đầu tiên: Secomm_Ghn >50kg aggregate
+> pre-validation (supersede TASK-WAWNDS ">50kg not rejected" stance — DEC-TASKMQ2DRG-001;
+> hard unit >50kg = `GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED`, carrier-owned, KHÔNG fallback-eligible —
+> business rejection không được mask). Thresholds: `GhnShipmentConstraints` (20000/50000/200/150,
+> provenance riêng). Dimension pre-validation DEFERRED (không có attribute source có unit
+> contract).
+
 > **Phase C contract amendment (TASK-8MQHJX, 2026-09-18, TL-approved — KHÔNG tạo v11):**
 > `FallbackEligibilitySource.INTEGRATION_LIMITATION` được thêm vào contract, đóng một
 > representational gap phát hiện khi implement (frozen §35.5 đã named nguồn này từ Rev v9 —
@@ -2764,3 +2945,123 @@ provider address rendering, provider mapping, provider rate request, provider ca
 types, provider physical limits, provider-specific pricing adjustment (buffer/rounding — KHÔNG
 move vào ShippingCore), provider errors → common classification. ShippingCore KHÔNG được mọc
 carrier-specific conditionals.
+
+> **OPERATIONAL COMPLETION — FEAT-QA23PZ / DEC-FEATQA23PZ-001 (2026-09-21, TL-approved):**
+> CanonicalZone domain semantics KHÔNG đổi — đây là operational completion của v10, KHÔNG tạo v11.
+> - **Persistent admin-backed zone registry:** table `secomm_shipping_zone` (JSON code lists,
+>   canonical `VN-XX`/`VNA25-*` only — provider IDs forbidden) + `CanonicalZoneRepositoryInterface`
+>   (validation-gated write path, reject-don't-drop) + `PersistentCanonicalZoneRegistry` là DI
+>   preference cho `CanonicalZoneRegistryInterface` — **precedence: persisted authoritative cho
+>   code của nó; DI/static zone (`canonicalZones` item entries) chỉ fallback khi DB chưa có code
+>   đó**; duplicate trong từng nguồn vẫn fail-fast; lazy-load + cache type `secomm_shippingcore_zones`
+>   (flush khi create/update/enable-disable/delete). Zero zone cả hai nguồn = state hợp lệ.
+> - **Carriers reference shared zone codes:** `carriers/<code>/destination_scope` (ALL default |
+>   SELECTED_ZONES) + `carriers/<code>/allowed_zone_codes` qua shared reader
+>   `Api\Config\CarrierDestinationScopeConfigInterface` (diagnostics unknown/disabled §16/§22);
+>   carrier config KHÔNG bao giờ duplicate province/ward lists. Consumer đầu tiên: `carriers/secomm_ghn`.
+> - **Production wiring:** `Secomm_Ghn` `Ghn::collect()` đi qua `CarrierRateExecutionService`
+>   (audit 2026-09-21 trước đó: TEST_ONLY — 0 production invocation). `RealtimeRateContributor`
+>   (TASK-WAWNDS) chuyển dead → LIVE; tail `quoteWithHandoff` giữ nguyên; `calculate()` thành
+>   standalone-only (docblock, không xoá). ALL-mode behavior unchanged (Magento default
+>   `shipping/origin/country_id=US` ⇒ origin-readiness gate pass).
+> - **Fallback boundary (§20) lock:** `ShippingFailureReason::DESTINATION_NOT_IN_SCOPE` (additive,
+>   KHÔNG vào SafeDegradationEligibilityPolicy defaults — merchant service-area restriction
+>   fail-closed); `FallbackCoordinator` guard reason này TRƯỚC mode branches — kể cả member
+>   FALLBACK_ONLY không được mở fallback trên zone miss. Zone-miss outcome = UNAVAILABLE +
+>   DESTINATION_NOT_IN_SCOPE (carrier report; decision-level eligibility không đổi).
+> - GHTK: regression-only trong FEAT này — không field, không provider change; generic pattern
+>   sẵn sàng cho adoption sau.
+
+ShippingCore owns: CarrierEligibility, Destination Scope, canonical Zones, Rate Source Mode,
+Address Resolution Policy, Fallback Eligibility Policy, generic rate orchestration. Carrier owns:
+provider address rendering, provider mapping, provider rate request, provider capabilities/service
+types, provider physical limits, provider-specific pricing adjustment (buffer/rounding — KHÔNG
+move vào ShippingCore), provider errors → common classification. ShippingCore KHÔNG được mọc
+carrier-specific conditionals.
+
+### 35.10 Admin surfaces — Shipping Zones + Shipping Coverage (TASK-G3K9V2, 2026-09-22; amended TASK-WY6WP5, 2026-09-23)
+
+> **TASK-WY6WP5 amendment (2026-09-23, TL directive "Shipping Coverage P1 Admin UX"):**
+> (1) IA đổi thành **Secomm → Shipping → [Shipping Zones, Shipping Coverage]** (menu container
+> mới; user approval 2026-09-23 — amend placement flat của DEC-FEATQA23PZ-001 §5; ACL ids +
+> route `secomm_shippingcore/coverage/*` GIỮ NGUYÊN, chỉ đổi label). (2) **CoverageTarget
+> abstraction** (`Api\CoverageTarget\{CoverageTargetType, CoverageTargetIdentity}` +
+> `Model\CoverageTarget\CoverageTarget[Registry]`): coverage policy được đánh địa chỉ bằng
+> `(type, code)` — P1 chỉ type **CARRIER** được produce; **METHOD là reserved constant** (no
+> producer/admin/runtime — §23); registry = DI opt-in `{type, code, label}` (CarrierRegistry
+> cũ xoá; thiếu `type` normalize CARRIER). **Registration ≠ persisted coverage** — không
+> auto-create; không explicit config → runtime defaults (scope missing → ALL), admin hiển thị
+> "Not Configured". (3) `PolicyConfig` → **`CarrierCoverageConfigAdapter`** (API nhận identity;
+> paths byte-identical, zero migration; + `load/hasExplicitConfig (any-scope, đọc thẳng
+> core_config_data)/reset/nonDefaultScopeRows`). (4) **Lifecycle Add/Configure → Edit →
+> Reset to Defaults** trên listing grid (rows = registered targets × persisted state, không
+> fabricate data); duplicate type+code bị chặn cả UI lẫn Save (storage là upsert). Reset xoá
+> 4 rows DEFAULT, target vẫn registered, scoped rows còn lại được warning. (5) Zone form
+> **geography-only** — bỏ "Carriers Referencing This Zone" (CarrierOptions xoá);
+> CarrierZoneIndex + ZoneReferenceGuard giữ nguyên cho delete/mass-delete/disable protection.
+> (6) **Selector rebuild trên core ui-select** (recipe `new_category_form.xml`): Province,
+> Coverage Zones, Create-Carrier = core component; Included Wards = subclass `ward-select`
+> (chỉ thêm cascade AJAX + prune); XOÁ custom `searchable-multiselect` component+template.
+> Root-cause render defect của G3K9V2 (browser-verified, evidence TASK-WY6WP5): meta injection
+> dead-code trên 2.4.8 (framework không truyền meta vào form DataProvider → guard isset không
+> bao giờ true → ward optionsUrl chưa từng được inject), record-key contract của form hydration
+> (`$data[$requestParamValue]`), và import-link path `data.general.*` sai (data flat).
+> Availability=ALL → zones field ẩn qua core `switcherConfig`; Validator (server) vẫn là
+> correctness boundary. METHOD-level coverage KHÔNG implement; future rule (document-only):
+> method policy overrides carrier policy cho method đó, nếu không → inherit carrier-level.
+
+Bề mặt admin của §35 (ownership boundary §10 directive — ShippingCore owns zone definitions +
+carrier↔zone assignment + DestinationScope/policy admin config; carrier modules giữ credential/
+environment/shop/pickup/rate-adjustment/log):
+
+```text
+MenuSecomm_Base::menu
+├── Shipping Zones        secomm_shippingcore/zone  (ACL Secomm_ShippingCore::zones[_manage])
+│     form: code, label, Country=VN (fixed display, không persist), enabled,
+│           include_province_codes  ← searchable multiselect, source = VN_ADMIN_2025 level-1
+│                                      (VnAddressUnitProviderInterface::getByLevel)
+│           include_ward_codes      ← searchable cascading multiselect, AJAX wardOptions →
+│                                      getByRegion(scheme, province, 2); đổi province auto-clear
+│                                      ward stale (deterministic; Validator = save boundary)
+│           (exclude_ward_codes: KHÔNG có trên UI — contract schema/matcher/validator giữ
+│            nguyên; loại trừ địa chỉ thuộc carrier coverage scope)
+│           assigned_carriers       ← read-only derive (CarrierZoneIndex — persisted refs
+│                                      MỌI scope: core_config_data DEFAULT/WEBSITE/STORE)
+└── [TASK-WY6WP5 renamed "Shipping Coverage", registry → Model\CoverageTarget\CoverageTargetRegistry]
+    └── Carrier Coverage      secomm_shippingcore/coverage (ACL ::carrier_coverage[_manage])
+      per registered carrier (Model\CarrierCoverage\CarrierRegistry — DI opt-in, GHN registers
+      secomm_ghn):
+        availability   ALL | SELECTED_ZONES | ALL_EXCEPT_SELECTED_ZONES (string-aligned runtime
+                       DestinationScope; admin chặt hơn runtime: zone mode + 0 zone → reject)
+        allowed_zone_codes  ← ReferencableZoneCodes (enabled + disabled-referenced marked
+                              "— Disabled"; disabled-unreferenced not offered), searchable
+        rate_source_mode | address_resolution_policy  (relocated từ GHN system.xml)
+      persist: WriterInterface → CÙNG paths carriers/<code>/... (§5), DEFAULT scope P1,
+      cleanType('config'); validation Model\CarrierCoverage\Validator (zone mode cần ≥1 zone
+      TỒN TẠI — deleted reject, disabled allowed). ZERO data migration khi relocate UI.
+```
+
+Ward options defect note: seeded `secomm_vietnam_address_unit` có `parent_code = NULL` trên mọi
+cấp con → `getChildren(scheme, parent)` trả 0 row trên DB thật; admin lookups dùng
+`getByLevel`/`getByRegion` (region_code + level) — method additive trên
+`VnAddressUnitProviderInterface` (CanonicalCsvProvider của GHN bổ sung cùng semantics).
+
+### 35.11 v10 Coverage Amendment (consolidated — integration review 2026-09-22, TASK-R8WR1R + TASK-G3K9V2)
+
+Giữ nguyên architecture version v10 — amendment này KHÔNG tạo v11:
+
+1. **ALL_EXCEPT_SELECTED_ZONES** — giá trị scope thứ 3 (§35.1 semantics locked; invalid explicit
+   scope fail-closed verbatim qua evaluator unknown-scope branch — KHÔNG coercion).
+2. **Centralized ShippingCore Carrier (→ Shipping, TASK-WY6WP5) Coverage admin** — màn hình duy nhất edit availability +
+   zones + RateSourceMode + AddressResolutionPolicy (§35.10); carrier module chỉ pointer note.
+3. **Scoped persisted reference protection** — delete guard đọc persisted references MỌI scope
+   (DEFAULT/WEBSITE/STORE) thẳng từ `core_config_data`; runtime proven store-scoped fallback ⇒
+   scoped values live ⇒ guard phải all-scope (never effective/merged).
+4. **P1 Vietnam-only zone UX** — Country fixed display, không multi-country architecture.
+5. **Included Wards UI only** — Excluded Wards không có trên admin UI; loại trừ địa chỉ thuộc
+   carrier coverage scope (`ALL_EXCEPT_SELECTED_ZONES`).
+6. **excludeWardCodes backend compatibility retained** — schema/matcher/validator giữ nguyên;
+   UI save preserve persisted excludes khi POST thiếu field (explicit POST vẫn thắng).
+
+Intentional admin/runtime divergence (documented + tested): ALL_EXCEPT + empty list = runtime
+ALL-equivalent; admin reject save (admin phải chọn "All Vietnam" thay vì lưu exclusion rỗng).

@@ -4,6 +4,8 @@
     <module name="Secomm_Base">
         <sequence>
             <module name="Magento_Catalog"/>
+            <!-- TASK-RT50KH — the shipping-dimension read API is typed on Quote\Item. -->
+            <module name="Magento_Quote"/>
         </sequence>
     </module>
 </config>

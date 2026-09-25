@@ -1,0 +1,5 @@
+PASS — admin login succeeded
+FAIL — fields render with (cm) labels
+FAIL — 3 dimension inputs render
+FAIL — frontend validation classes attached
+PASS — GLOBAL scope (no store-view override checkbox)

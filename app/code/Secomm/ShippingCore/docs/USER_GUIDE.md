@@ -18,6 +18,7 @@
 8. [Bảng dữ liệu tổng hợp](#8-bảng-dữ-liệu-tổng-hợp)
 9. [Playbook theo case](#9-playbook-theo-case)
 10. [Kết quả audit — trạng thái & lưu ý](#10-kết-quả-audit--trạng-thiệu--lưu-ý)
+11. [Shipping Zones — hướng dẫn BA/admin](#11-shipping-zones--hướng-dẫn-baadmin)
 
 ---
 
@@ -47,7 +48,7 @@ address handoff (Stage 1, canonical)
 
 | Module | Vai trò | Sở hữu chính |
 |---|---|---|
-| `Secomm_ShippingCore` | Contract + orchestration dùng chung cho mọi carrier | Rate outcome/aggregate/orchestrator, fallback policy, address handoff, tracking processor, HTTP primitives, COD resolver |
+| `Secomm_ShippingCore` | Contract + orchestration dùng chung cho mọi carrier | Rate outcome/aggregate/orchestrator, fallback policy, address handoff, tracking processor, HTTP primitives |
 | `Secomm_VietNamAddress` | SSOT dữ liệu hành chính VN versioned | Schemes `VN_ADMIN_2025` (2 cấp) / `VN_ADMIN_PRE_2025` (3 cấp), mapping edges, resolver + bridge |
 | `Secomm_AddressDropdown` | Dropdown phân cấp AJAX cho address form | `directory_region_city` (đệ quy `parent_city_id`), Address Profile engine, GraphQL `addressLocations`/`addressSchema` |
 | `Secomm_Ghn` | Carrier adapter GHN trên ShippingCore | `secomm_ghn_*` tables, GHN API client, rate/create/cancel/return, webhook + cron tracking |
@@ -61,7 +62,7 @@ address handoff (Stage 1, canonical)
 
 **Rate pipeline (hard-ordered), owner `Model\Rate\CarrierRateExecutionService`:**
 
-1. **Eligibility theo destination-scope** — `CarrierEligibilityEvaluator`: `DestinationScope::ALL` → eligible ngay; `SELECTED_ZONES` → đối chiếu canonical destination với zone trong `CanonicalZoneRegistry` (matcher fail-closed: disabled → false, exclude-ward thắng, so sánh strict case-sensitive). Không khớp zone nào → ineligible `DESTINATION_NOT_IN_SCOPE` (mất cả realtime lẫn fallback).
+1. **Eligibility theo destination-scope** — `CarrierEligibilityEvaluator`: `DestinationScope::ALL` → eligible ngay; `SELECTED_ZONES` → đối chiếu canonical destination với zone trong `CanonicalZoneRegistry` (matcher fail-closed: disabled → false, exclude-ward thắng, so sánh strict case-sensitive). Không khớp zone nào → ineligible `DESTINATION_NOT_IN_SCOPE` (mất cả realtime lẫn fallback). `ALL_EXCEPT_SELECTED_ZONES` (TASK-R8WR1R) → nghịch SELECTED_ZONES: destination khớp ≥1 zone enabled → ineligible; không khớp zone nào (kể cả list rỗng, chỉ unknown/disabled) → eligible như `ALL`; chỉ valid enabled matching zone mới exclude.
 2. **RateSourceMode** — `CARRIER_ONLY` / `CARRIER_WITH_FALLBACK` / `FALLBACK_ONLY`. `FALLBACK_ONLY` bỏ qua origin/handoff/realtime, giữ eligibility legacy-address.
 3. **Origin readiness** — `OriginProviderInterface` (mặc định `ShippingOriginProvider` đọc Magento Shipping Origin theo store). Origin thiếu country → `INVALID_CONFIGURATION`, fail-closed.
 4. **AddressResolutionPolicy** qua MỘT đường handoff dùng chung `CarrierAddressHandoffServiceInterface` — policy `STRICT` (ẩn khi ambiguous) / `FALLBACK` (mặc định, để lớp fallback xử lý) / `PICK_PRIMARY` (opt-in, chọn candidate `is_primary=1` qua `VnPrimaryCandidateSelectorInterface`). Handoff UNMAPPED nhưng carrier khai báo textual fallback → vẫn vào realtime.
@@ -70,14 +71,17 @@ address handoff (Stage 1, canonical)
 7. **Aggregate (E-SL1)** — `ServiceLevelRateAggregator` gom outcome theo service-level code (validate qua `ShippingServiceLevelRegistry`, DI `serviceLevels`).
 8. **Decision (E-SL2)** — `ServiceLevelRateOrchestrator`: bất kỳ realtime SUCCESS nào → suppress fallback; level disabled → UNAVAILABLE; fallback tối đa gọi 1 provider (`FallbackRateProviderPool`, đúng 0 hoặc 1 provider — >1 → fail-fast); provider trả `null` → UNAVAILABLE; **rate 0 là fallback hợp lệ**.
 
-> ⚠️ Hiện trạng (audit): `CarrierRateExecutionService` **chưa có consumer runtime** — `Secomm_Ghn` đang tự gọi handoff → calculator và ghi outcome qua `CarrierRateOutcomeCollectorInterface`; phần "composition" chạy execution service chờ freeze upstream.
+> ✅ **Đã wire production (FEAT-QA23PZ, 2026-09-21):** `Secomm_Ghn` `Ghn::collect()` đi qua `CarrierRateExecutionService` (eligibility → mode → origin → policy → `RealtimeRateContributor` → `quoteWithHandoff`); scope `ALL` giữ nguyên behavior cũ. Zone-miss report `DESTINATION_NOT_IN_SCOPE` — reason mà `FallbackCoordinator` dùng để KHÔNG mở fallback (kể cả member `FALLBACK_ONLY`). `Secomm_Ghtk` chưa wire (regression-only).
 
 **Tracking pipeline** — `ShipmentTrackingProcessor` là ĐÚNG MỘT đường cho webhook + API fetch + cron:
 tìm track theo `carrier_code + track_number` → duplicate no-op; terminal sticky (DELIVERED/RETURNED/CANCELLED/LOST/DAMAGED không bao giờ downgrade; `DELIVERY_FAILED → IN_TRANSIT` = reattempt hợp lệ); guard timestamp out-of-order → persist `secomm_carrier_tracking_state` (normalized + raw) → cập nhật `Track.description` + shipment comment → dispatch `secomm_shipping_tracking_updated`, `secomm_shipment_carrier_{delivered,returned,delivery_failed}`. **Không bao giờ** đụng Magento order state. Cron engine dùng chung: `TrackingReconciliationService` (virtualType per carrier: fetcher + `carrierCode` + `batchSize`).
 
 **Physical** — `StoreWeightConverter` chuyển store weight (`general/locale/weight_unit`: `kgs` ×1000, `lbs` ×453.59237, khác → exception) sang **gram** cho carrier; `ConfiguredDefaultPackageDimensions` (cm) chỉ dùng để **prefill** form package; snapshot vật lý persist vào `sales_shipment.packages` dưới key `secomm_physical` — retry replay snapshot, không tính lại.
 
-**COD** — `ConfiguredCodPaymentMethodResolver` đọc `secomm_shippingcore/cod/payment_methods` (comma-separated, match exact case-sensitive, rỗng = không có gì là COD). Chỉ **identification** — carrier tự map tiền (`cod_amount`, `pick_money`).
+**COD** — sở hữu bởi `Secomm_Cod` (TASK-DFGFZ9, Rev v13): identification mặc định = Magento
+core `cashondelivery` (merchant bật trong admin Payment Methods); collection decision
+(amount/currency/rejection) qua `CodCollectionResolverInterface` với ledger
+`secomm_cod_collection` — carrier chỉ map (`cod_amount`, `pick_money`).
 
 **HTTP** — `CurlCarrierHttpClient` (connect 5s / total 15s, 1 exchange/call, không retry, không log payload) + `RetryPolicy` (`safeRead` retry NETWORK/SERVER_ERROR/TIMEOUT; create-order luôn single-attempt; 429 classify nhưng không retry). Lưu ý: `Secomm_Ghn` **chưa** dùng stack này (xem §10).
 
@@ -87,7 +91,6 @@ Admin: **Stores → Configuration → General → tab `Secomm` → Secomm Shippi
 
 | Config path | Type | Default | Ý nghĩa |
 |---|---|---|---|
-| `secomm_shippingcore/cod/payment_methods` | text | (rỗng) | Danh sách payment method code coi là COD, vd `cashondelivery` |
 | `secomm_shippingcore/physical/default_package_length` | text (integer) | (rỗng) | Prefill chiều dài package (cm) |
 | `secomm_shippingcore/physical/default_package_width` | text (integer) | (rỗng) | Prefill chiều rộng (cm) |
 | `secomm_shippingcore/physical/default_package_height` | text (integer) | (rỗng) | Prefill chiều cao (cm) |
@@ -96,7 +99,18 @@ Admin: **Stores → Configuration → General → tab `Secomm` → Secomm Shippi
 
 ### 2.3 Bảng DB
 
-`secomm_carrier_tracking_state` — `entity_id` PK; `carrier_code` + `tracking_number` (UNIQUE); `shipment_entity_id`; `normalized_status` (index); `carrier_status_code/message/updated_at`; `last_synced_at` (index); `source` (`webhook|api`); timestamps.
+- `secomm_carrier_tracking_state` — `entity_id` PK; `carrier_code` + `tracking_number` (UNIQUE); `shipment_entity_id`; `normalized_status` (index); `carrier_status_code/message/updated_at`; `last_synced_at` (index); `source` (`webhook|api`); timestamps.
+- `secomm_shipping_zone` (FEAT-QA23PZ) — `zone_id` PK; `code` (UNIQUE, merchant identity vd `HCM_INNER`); `label`; `enabled`; 3 cột JSON `include_province_codes` / `include_ward_codes` / `exclude_ward_codes` (canonical `VN-XX` / `VNA25-*`); timestamps. Cache type riêng `secomm_shippingcore_zones` — flush tự động khi create/update/enable-disable/delete qua repository.
+
+### 2.4 Shipping Zones & Destination Scope (FEAT-QA23PZ)
+
+**Runtime:** `CanonicalZoneRegistryInterface` giờ là `PersistentCanonicalZoneRegistry` (DB-backed): zone persist **authoritative** cho code của nó; zone DI/static (item entry `canonicalZones`) chỉ là bootstrap khi DB chưa có code đó. Load lazy per request + cache. Zero zone cả hai nguồn = state hợp lệ (không cản carrier nào).
+
+**Shared config reader:** `Api\Config\CarrierDestinationScopeConfigInterface` đọc `carriers/<code>/destination_scope` (`ALL` mặc định / `SELECTED_ZONES` / `ALL_EXCEPT_SELECTED_ZONES` — TASK-R8WR1R) + `carriers/<code>/allowed_zone_codes`. Value **thiếu/rỗng** → default `ALL` (im lặng — thiếu giá trị ≠ giá trị sai). Value persist **sai enum** (non-empty unknown) → trả nguyên văn + warning, **không bao giờ** coerce về scope hợp lệ (TASK-R8WR1R r2: fail closed — evaluator unknown-scope branch giữ carrier ineligible cho mọi destination, không realtime/không fallback; coercion cũ về `ALL` là fail-open đã bỏ). Scope `SELECTED_ZONES`/`ALL_EXCEPT_SELECTED_ZONES` có code unknown/disabled → warning per code (diagnostic §16/§22 — mode ALL_EXCEPT dùng hint "does not exclude"), evaluator vẫn xử lý theo semantics riêng của từng mode. Carrier consumer đầu tiên: `Secomm_Ghn` (`GhnConfig::getDestinationScope/getAllowedZoneCodes`).
+
+**Source model multiselect:** `Model\Config\Source\ReferencableZoneCodes` (TASK-G3K9V2 final verification — zone enabled được offer; zone **disabled nhưng còn được tham chiếu** vẫn hiện rõ "— Disabled" để không mất nhìn thấy khi edit; disabled chưa tham chiếu không offer). Save-time validation cho zone references thuộc **Shipping Coverage screen** (`Model\CarrierCoverage\Validator` — chặn khi mode cần zone mà rỗng hoặc có zone đã bị xoá; zone disabled vẫn cho phép, fail-safe runtime có diagnostic). Delete guard đọc **persisted references MỌI scope** (DEFAULT/WEBSITE/STORE thẳng từ `core_config_data` — không phụ thuộc effective config).
+
+**Admin surface (TASK-G3K9V2, amended TASK-WY6WP5):** hai màn hình dưới menu **Secomm → Shipping** — *Shipping Zones* (geography only) và *Shipping Coverage* (availability + zones + Rate Source Mode + Address Resolution Policy cho từng target đã đăng ký qua `Model\CoverageTarget\CoverageTargetRegistry` — P1 chỉ CARRIER, METHOD reserved; registration ≠ persisted config). GHN page trong Delivery Methods chỉ còn note trỏ sang Shipping Coverage; config paths giữ nguyên `carriers/<code>/...` nên không có data migration.
 
 ---
 
@@ -192,7 +206,7 @@ Bảng: `secomm_vietnam_address_scheme` (registry + status label), `secomm_vietn
 Secomm_Ghn → Secomm_ShippingCore → Secomm_VietNamAddress   (KHÔNG depend legacy Secomm_GiaoHangNhanh/GhnAddressMapper)
 ```
 
-- **Rating**: destination canonical (`VN_ADMIN_2025`) → ShippingCore handoff về `VN_ADMIN_PRE_2025` (capability RATE = PRE-2025 + UNIT_ID) → mapping → `district_id + ward_code` legacy → GHN Calculate Fee. `service_type_id`: < 20.000 g single package → `2` (light), ngược lại `5` (heavy, kèm `items[]` per package).
+- **Rating**: destination canonical (`VN_ADMIN_2025`) → ShippingCore handoff về `VN_ADMIN_PRE_2025` (capability RATE = PRE-2025 + UNIT_ID) → mapping → `district_id + ward_code` legacy → GHN Calculate Fee. **Weight pre-validation TRƯỚC fee call (TASK-MQ2DRG — DEC-TASKMQ2DRG-001)**: ≤ 19.999 g single package → `2` (light) · 20.000–50.000 g (hoặc multi-parcel) → `5` (heavy, kèm `items[]` per package) · **tổng > 50.000 g với từng unit hợp lệ → KHÔNG gọi API — `RATE_REQUEST_UNREPRESENTABLE` (INTEGRATION_LIMITATION)**: GHN ẩn, TableRate fallback khi `CARRIER_WITH_FALLBACK`, ẩn hoàn toàn khi `CARRIER_ONLY` · **bất kỳ unit đơn > 50.000 g → UNAVAILABLE `GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED` — không fallback ở mọi mode** (hard carrier rejection). Lưu ý: limitation nghĩa là "checkout không thể represent request một cách authoritative (thiếu packing)", KHÔNG nghĩa là GHN không vận chuyển được đơn. Legacy `carriers/secomm_ghn/max_package_weight` (nếu merchant set) vẫn ẩn method ở validation như cũ. **Shipping dimensions (TASK-RT50KH — contract P1)**: attrs `length/width/height` (decimal, GLOBAL, cm, labels "Shipping … (cm)") — authoritative CHỈ khi cả 3 present + numeric + > 0 (ceil int cm); partial/malformed/blank → treated as missing → KHÔNG dimension rejection, provider remains final authority. Longest side > 150cm (SANDBOX_OBSERVED) → hard UNAVAILABLE `GHN_PACKAGE_{LENGTH|WIDTH|HEIGHT}_LIMIT_EXCEEDED` không API call, không fallback mọi mode (carrier-owned rejection). Configurable → selected child dims; bundle ship-together → bundle-level dims. Dims KHÔNG nhân với qty và KHÔNG gửi fee API. `ShipmentPhysicalData` vẫn authoritative tại shipment creation.
 - **Create Order**: handoff `VN_ADMIN_2025` + TEXT_NAME → mapping sang tên GHN 2025 → `is_new_to_address=true`. Rating và create **không reuse** resolution path.
 - **Fail closed**: mapping miss = exception (`GhnMappingNotFoundException`), không fuzzy name runtime, không magic fallback rate, empty body = exception.
 
@@ -260,8 +274,9 @@ Admin: **Stores → Configuration → Sales → Delivery Methods → GHN (Giao H
 | `carriers/secomm_ghn/debug` | `0` | Default-only. Log payload đã scrub (token luôn bị xoá) → `var/log/secomm_ghn.log` |
 | `carriers/secomm_ghn/connection_timeout` | `10` | Default-only (giây) |
 | `carriers/secomm_ghn/request_timeout` | `30` | Default-only (giây) |
-| `carriers/secomm_ghn/rate_source_mode` | `CARRIER_WITH_FALLBACK` | `CARRIER_ONLY` / `CARRIER_WITH_FALLBACK` / `FALLBACK_ONLY` (không gọi GHN RATE API) |
-| `carriers/secomm_ghn/address_resolution_policy` | `FALLBACK` | RATE-only: `STRICT` / `FALLBACK` / `PICK_PRIMARY` (opt-in dùng candidate primary PRE-2025) |
+| `carriers/secomm_ghn/rate_source_mode` | `CARRIER_WITH_FALLBACK` | `CARRIER_ONLY` / `CARRIER_WITH_FALLBACK` / `FALLBACK_ONLY` (không gọi GHN RATE API). **Cấu hình tại Secomm → Shipping → Shipping Coverage** (TASK-G3K9V2/WY6WP5 — không còn trên trang GHN) |
+| `carriers/secomm_ghn/address_resolution_policy` | `FALLBACK` | RATE-only: `STRICT` / `FALLBACK` / `PICK_PRIMARY` (opt-in dùng candidate primary PRE-2025). **Cấu hình tại Secomm → Shipping → Shipping Coverage** |
+| `carriers/secomm_ghn/destination_scope` | `ALL` | `ALL` / `SELECTED_ZONES` / `ALL_EXCEPT_SELECTED_ZONES` (TASK-R8WR1R). **Cấu hình tại Secomm → Shipping → Shipping Coverage** cùng `carriers/secomm_ghn/allowed_zone_codes` |
 | `carriers/secomm_ghn/rate_adjustment_enabled` | `0` | Buffer giá sau khi có rate thành công |
 | `carriers/secomm_ghn/rate_adjustment_type` | `fixed` | `fixed` (VND) / `percent` |
 | `carriers/secomm_ghn/rate_adjustment_value` | `0` | Giá trị điều chỉnh |
@@ -492,10 +507,19 @@ Row `UNKNOWN` (timeout/5xx lúc create) — kiểm tra trên GHN portal trước
 3. Cron: `tracking_refresh_enabled=1`, kiểm tra `bin/magento cron:run` / cron schedule `secomm_ghn_tracking_refresh` mỗi phút; row stale > `tracking_refresh_threshold_hours` mới được re-sync, batch 50/lượt.
 4. Trạng thái terminal (DELIVERED/RETURNED/CANCELLED/LOST/DAMAGED) là sticky — webhook/cron sẽ không đổi nữa (by design).
 
-### Case 10 — Khai báo COD
+### Case 10 — COD (owner `Secomm_Cod`, Rev v13 product final state)
 
-- `secomm_shippingcore/cod/payment_methods` = các code payment COD (vd `cashondelivery`), comma-separated, exact match.
-- ⚠️ Hiện tại **chưa carrier nào gửi tiền COD sang GHN/GHTK** (`cod_amount`/`pick_money` chưa implement) — config chỉ dùng để identification.
+- Identification: Magento core **`cashondelivery`** (merchant bật trong admin
+  Stores → Configuration → Sales → Payment Methods → Cash On Delivery). KHÔNG có admin field
+  "COD Payment Method Codes" — đã xoá (pre-release; đổi policy = DI preference).
+- Collection decision: carrier hỏi `Secomm_Cod` rồi chỉ map (`pick_money` GHTK /
+  `cod_amount` GHN). P1 policy: COD thu **một lần** mỗi order = `grand_total` theo order
+  currency (VND-only — khác VND → từ chối); partial shipment → từ chối; shipment COD thứ hai
+  (cùng/khác carrier) → từ chối (guard qua ledger `secomm_cod_collection` — cross-carrier).
+- Retry tạo đơn provider **giữ nguyên số tiền** (ledger frozen replay).
+- ⚠️ Đơn COD đã trả một phần vẫn thu CẢ `grand_total` tại cửa — KHÔNG dùng COD method cho đơn
+  trả một phần. Provider nhận đơn COD ≠ Magento đã nhận tiền.
+- Fresh install: KHÔNG cần config gì thêm — cài module + bật `cashondelivery` là đủ.
 
 ### Case 11 — Zone chặn carrier theo destination (nâng cao, DI)
 
@@ -538,6 +562,57 @@ php vendor/bin/phpunit -c dev/tests/unit/phpunit-secomm.xml --filter 'Secomm\\Gh
 vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist --testsuite Magento_Unit_Tests_App_Code --filter 'Secomm\\ShippingCore'
 # Launchpad_MageplazaTableRate: suite 67 green (TASK-JZXM66)
 ```
+
+---
+
+## 11. Shipping Zones — hướng dẫn BA/admin
+
+### 11.1 Canonical Zone là gì?
+
+**Canonical Zone** = một vùng phục vụ (service area) định nghĩa bằng **địa chỉ hành chính VN chuẩn** của chính bạn: chọn tỉnh/thành (`VN-XX`), chọn phường/xã thuộc tỉnh đó (`VNA25-…`). Zone KHÔNG chứa bất kỳ mã nội bộ nhà vận chuyển nào (không district_id GHN, không mã GHTK) — một zone định nghĩa một lần, **dùng chung cho mọi carrier**.
+
+Cấu trúc một zone:
+
+| Thành phần | Ý nghĩa |
+|---|---|
+| Country | **Vietnam (VN)** — hiển thị cố định (P1 Vietnam-only, không persist: mã canonical `VN-XX`/`VNA25-…` đã mang identity VN) |
+| Code | Tên máy, bất biến sau tạo (vd `HCM_INNER`) — chữ A-Z, số, `_`, `-` |
+| Label | Tên hiển thị (vd "Nội thành TP.HCM") |
+| Enabled | Zone tắt = không bao giờ khớp. **Cảnh báo impact:** disable zone đang được tham chiếu sẽ thay đổi vùng phục vụ carrier — với carrier dùng "All Except Selected Zones", tắt một zone bị loại trừ sẽ **MỞ RỘNG** vùng phục vụ của carrier đó (cảnh báo sẽ nêu tên carrier + scope) |
+| Province(s) | Ràng buộc tỉnh, searchable multi-select. Rỗng = không ràng buộc tỉnh (chỉ dùng danh sách phường) |
+| Included Wards | Rỗng = cả tỉnh khớp; có danh sách = chỉ các phường đó khớp |
+
+*Lưu ý (TASK-G3K9V2):* **Excluded Wards** không còn trên admin UI — loại trừ địa chỉ thuộc về cấu hình **carrier coverage** (availability `ALL_EXCEPT_SELECTED_ZONES`), không phải việc của zone. Backend contract (`exclude_ward_codes`: cột DB / matcher / validator) vẫn giữ nguyên cho tương thích.
+
+Ví dụ `HCM_INNER`: Country = Vietnam, Province = TP.HCM, Included Wards = các phường nội thành (chọn bằng search, không cần gõ mã). Địa chỉ khách thuộc phường trong include → khớp; phường khác trong cùng tỉnh → không khớp (khi include list ≠ rỗng).
+
+### 11.2 Tạo / sửa / xoá zone
+
+Menu **Secomm → Shipping Zones** (quyền *View Shipping Zones* để xem, *Manage Shipping Zones* để thao tác). Bấm **Add New Zone**, điền Code/Label/Enabled. **Province(s)** là searchable multi-select từ dữ liệu canonical (gõ để tìm "Hồ Chí Minh (…)" — không cần biết mã); **Included Wards** tự nạp theo tỉnh đã chọn, cũng searchable, hiển thị `Tên (mã)` và chọn phường bằng search. **Đổi tỉnh → phường không còn thuộc tỉnh mới bị gạch khỏi lựa chọn ngay** (deterministic; server-side vẫn kiểm tra lại và từ chối lưu nếu còn code lạ). Lưu: hệ thống **kiểm tra mã thật** (tỉnh/phường phải tồn tại trong dữ liệu hành chính VN_ADMIN_2025; phường include phải thuộc tỉnh đã include; code không trùng) — dữ liệu sai bị **từ chối rõ ràng**, không tự lược bỏ. Zone form là **geography-only** (TASK-WY6WP5 — không còn khối "Carriers Referencing This Zone"; tham chiếu vẫn được index nội bộ cho delete/disable protection). Ảnh hưởng tới carrier reference (TL decision 2026-09-22): **xoá** zone đang được carrier tham chiếu bị **CHẶN** (error nêu tên carrier — bỏ tham chiếu ở Secomm → Shipping Coverage trước; mass delete bị chặn toàn batch nếu có bất kỳ zone được tham chiếu); **disable** zone được tham chiếu vẫn thực hiện nhưng hiện **cảnh báo impact** nêu rõ các carrier bị ảnh hưởng (zone ngừng khớp đến khi bật lại); sửa zone qua form **không bao giờ mất** danh sách Excluded Wards đã lưu (field không còn trên UI nhưng dữ liệu được bảo toàn).
+
+### 11.3 Gán target cho zone — Shipping Coverage (Secomm → Shipping → Shipping Coverage)
+
+Màn hình **Shipping Coverage** (TASK-WY6WP5 — thay "Carrier Coverage") là bề mặt cấu hình duy nhất cho target ↔ zone + policy điều phối giá. Grid liệt kê mọi registered target với Configuration Status (**Not Configured** — chạy theo documented defaults, scope missing → ALL; hoặc **Configured**). Nút **Add Coverage** → Applies To: Carrier (P1) → chọn carrier từ registry (searchable; target đã configured bị loại trừ — một type+code chỉ có một explicit config) → Availability + Zones + Rate Source Mode + Address Resolution Policy → Save. Availability = All Vietnam ẩn trường Zones (switcherConfig); hai zone mode yêu cầu ≥1 zone (server-side Validator chặn cả zone đã xoá). **Edit** (carrier readonly) cập nhật config hiện có. **Reset to Defaults** xoá 4 giá trị DEFAULT-scope — target vẫn registered, quay về runtime defaults; nếu còn overrides WEBSITE/STORE sẽ có warning rõ ràng. Fields đã chuyển khỏi trang GHN trong Delivery Methods — trang đó chỉ còn note trỏ sang đây; credential/environment/shop vẫn ở trang GHN:
+
+| Availability | Ý nghĩa | Zones |
+|---|---|---|
+| `ALL` — All Vietnam (mặc định) | Carrier phục vụ mọi địa chỉ VN hợp lệ — hành vi như trước khi có zone | Không cần |
+| `SELECTED_ZONES` — Only Selected Zones | Carrier chỉ chạy khi địa chỉ thuộc ≥1 zone được chọn | Bắt buộc ≥1 zone (enabled zones, searchable multi-select) |
+| `ALL_EXCEPT_SELECTED_ZONES` — All Except Selected Zones | Carrier phục vụ mọi địa chỉ **trừ** những địa chỉ thuộc zone được chọn (TASK-R8WR1R) | Bắt buộc ≥1 zone (danh sách bị loại trừ) |
+
+Cùng màn hình có **Rate Orchestration Policy** (Rate Source Mode + Address Resolution Policy — đã chuyển từ trang GHN; runtime đọc cùng paths nên hành vi không đổi).
+
+Khi `SELECTED_ZONES` + địa chỉ **ngoài** mọi zone, hoặc `ALL_EXCEPT_SELECTED_ZONES` + địa chỉ **thuộc** một zone được chọn: carrier bị ẩn khỏi checkout **và không bao giờ có giá fallback thay thế** (`DESTINATION_NOT_IN_SCOPE` — giới hạn vùng phục vụ do bạn cấu hình, không phải lỗi kỹ thuật). Zone được tham chiếu nhưng bị **disable** hoặc đã **xoá**: không khớp (và trong mode loại trừ: không loại trừ ai), log cảnh báo runtime. Lưu ý admin: nếu chọn mode cần zone mà không chọn zone nào → **lưu bị từ chối** (không cho tạo cấu hình mơ hồ).
+
+### 11.4 Khác biệt giữa Canonical Zone và TableRate City/Area
+
+| | **Canonical Zone** (ShippingCore) | **TableRate City/Area** (Launchpad_MageplazaTableRate) |
+|---|---|---|
+| Trả lời câu hỏi | Carrier có được phục vụ địa chỉ này không? | Giá bảng tính cho địa chỉ này là bao nhiêu? |
+| Dùng cho | Mọi carrier (dùng chung) | Riêng bảng giá TableRate |
+| Không bao giờ | Định giá | Mở/đóng carrier |
+
+Hai mô tả riêng biệt, không phụ thuộc dữ liệu nhau — có thể trùng vùng địa lý nhưng tự quản lý.
 
 ---
 

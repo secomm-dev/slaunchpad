@@ -1,0 +1,25 @@
+{
+    "secomm_cod_collection": {
+        "column": {
+            "entity_id": true,
+            "magento_order_id": true,
+            "carrier_code": true,
+            "provider_reference": true,
+            "amount": true,
+            "currency": true,
+            "status": true,
+            "reason_code": true,
+            "created_at": true,
+            "updated_at": true,
+            "active_order_claim": true
+        },
+        "index": {
+            "SECOMM_COD_COLLECTION_MAGENTO_ORDER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_COD_COLLECTION_CARRIER_CODE_PROVIDER_REFERENCE": true,
+            "SECOMM_COD_COLLECTION_ACTIVE_ORDER_CLAIM": true
+        }
+    }
+}

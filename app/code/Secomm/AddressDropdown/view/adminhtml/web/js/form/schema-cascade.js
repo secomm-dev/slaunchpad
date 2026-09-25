@@ -51,7 +51,8 @@ define(['jquery'], function ($) {
             }
 
             return payload.data || null;
-        }).catch(function () {
+        }).catch(function (error) {
+            console.error('[Secomm_AddressDropdown] schema fetch failed:', error);
             return null;
         });
     }

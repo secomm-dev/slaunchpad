@@ -22,5 +22,22 @@
             "PRIMARY": true,
             "SECOMM_CARRIER_TRACKING_STATE_CARRIER_NUMBER": true
         }
+    },
+    "secomm_shipping_zone": {
+        "column": {
+            "zone_id": true,
+            "code": true,
+            "label": true,
+            "enabled": true,
+            "include_province_codes": true,
+            "include_ward_codes": true,
+            "exclude_ward_codes": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_SHIPPING_ZONE_CODE": true
+        }
     }
 }

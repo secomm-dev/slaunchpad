@@ -33,13 +33,21 @@ use Magento\Shipping\Model\Tracking\ResultFactory as TrackingResultFactory;
 use Magento\Shipping\Model\Tracking\Result\ErrorFactory as TrackingErrorFactory;
 use Magento\Shipping\Model\Tracking\Result\StatusFactory as TrackingStatusFactory;
 use Psr\Log\LoggerInterface;
+use Secomm\Ghn\Model\Capability\GhnAddressCapability;
+use Secomm\Ghn\Model\Capability\GhnRateCapabilityAdapter;
 use Secomm\Ghn\Model\Logger\GhnLogger;
 use Secomm\Ghn\Model\Config;
-use Secomm\Ghn\Model\Exception\GhnRateEstimationException;
-use Secomm\Ghn\Model\Rate\GhnRateCalculator;
-use Secomm\ShippingCore\Api\Rate\RateSourceMode;
-use Secomm\Ghn\Model\Rate\GhnRateRequestMapper;
+use Secomm\Ghn\Model\Rate\RealtimeRateContributorFactory;
+use Secomm\ShippingCore\Api\Address\RuntimeAddressContextBuilderInterface;
+use Secomm\ShippingCore\Api\Fallback\FallbackEligibilityInterface;
+use Secomm\ShippingCore\Model\Fallback\FallbackEligibility;
 use Secomm\ShippingCore\Api\Failure\ShippingFailureReason;
+use Secomm\ShippingCore\Api\Rate\CarrierRateExecutionRequestInterface;
+use Secomm\ShippingCore\Api\Rate\RateSourceMode;
+use Secomm\ShippingCore\Api\Rate\CarrierRateExecutionServiceInterface;
+use Secomm\ShippingCore\Model\Rate\CarrierRateExecutionRequest;
+use Secomm\ShippingCore\Model\ShippingContextFactory;
+use Secomm\VietNamAddress\Api\VnOperationalAddressResolverInterface;
 use Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeCollectorInterface;
 use Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeInterface;
 use Secomm\ShippingCore\Model\Rate\CarrierRateOutcome;
@@ -101,13 +109,17 @@ final class Ghn extends AbstractCarrierOnline implements CarrierInterface
         CurrencyFactory $currencyFactory,
         DirectoryHelper $directoryData,
         StockRegistryInterface $stockRegistry,
-        private readonly GhnRateCalculator $rateCalculator,
-        private readonly GhnRateRequestMapper $requestMapper,
         private readonly GhnLogger $ghnLogger,
         private readonly CarrierRateOutcomeCollectorInterface $outcomeCollector,
         private readonly \Secomm\Ghn\Model\Tracking\GhnTrackingResultBuilder $trackingResultBuilder,
         private readonly \Secomm\Ghn\Model\Rate\GhnRateAdjuster $rateAdjuster,
         private readonly \Secomm\Ghn\Model\Config $ghnConfig,
+        private readonly CarrierRateExecutionServiceInterface $executionService,
+        private readonly RuntimeAddressContextBuilderInterface $runtimeContextBuilder,
+        private readonly VnOperationalAddressResolverInterface $operationalAddressResolver,
+        private readonly ShippingContextFactory $shippingContextFactory,
+        private readonly RealtimeRateContributorFactory $contributorFactory,
+        private readonly GhnAddressCapability $addressCapability,
         array $data = []
     ) {
         parent::__construct(
@@ -144,11 +156,25 @@ final class Ghn extends AbstractCarrierOnline implements CarrierInterface
         try {
             return $this->collect($request);
         } catch (\Throwable $exception) {
+            // TASK-SEC-D r4 (TL/SA decision): unexpected programming/runtime defects are
+            // FAIL-CLOSED — explicit transported NONE (UNEXPECTED_RUNTIME_FAILURE), never
+            // TECHNICAL_FALLBACK, never a legacy policy re-judge. Classified provider
+            // failures (timeout/5xx/malformed/auth) were already translated inside the
+            // contributor/calculator and never reach this catch-all. The decision is
+            // recorded exactly once (success-terminal merge keeps an earlier record whole).
             $this->ghnLogger->error(
-                'GHN collectRates failed; returning no rate (graceful).',
-                ['exception' => $exception->getMessage()]
+                'GHN collectRates failed; unexpected runtime failure — fail closed (no fallback).',
+                [
+                    'exception_class' => $exception::class,
+                    'message' => $exception->getMessage(),
+                    'carrier' => self::CARRIER_CODE,
+                    'method' => self::METHOD_CODE,
+                ]
             );
-            $this->recordOutcome(CarrierRateOutcome::technicalFailure(ShippingFailureReason::TECHNICAL_ERROR));
+            $this->recordDecision(
+                CarrierRateOutcome::technicalFailure(ShippingFailureReason::UNEXPECTED_RUNTIME_FAILURE),
+                FallbackEligibility::none()
+            );
 
             return $this->hide();
         }
@@ -164,27 +190,45 @@ final class Ghn extends AbstractCarrierOnline implements CarrierInterface
     }
 
     /**
-     * @return Result|Error|false
+     * TASK-SEC-D-transport — record the SHARED EXECUTION's decision atomically: the outcome
+     * and the exact transported fallback eligibility of the SAME execution (never re-judged
+     * here). Pre-execution carrier facts (VN destination gate) stay legacy records — the
+     * composition judges those through the frozen reason contract.
+     */
+    private function recordDecision(CarrierRateOutcomeInterface $outcome, FallbackEligibilityInterface $eligibility): void
+    {
+        $this->outcomeCollector->recordDecision(self::CARRIER_CODE, self::METHOD_CODE, $outcome, $eligibility);
+    }
+
+    /**
+     * FEAT-QA23PZ / DEC-FEATQA23PZ-001 — the production RATE entry goes through the shared
+     * `CarrierRateExecutionService` (v10 §35.6 frozen order: eligibility → mode → origin
+     * readiness → address policy → realtime contributor). GHN keeps only carrier-specific
+     * entry gates (VN destination, VND base currency); eligibility, mode short-circuit,
+     * origin readiness, address policy and the realtime dispatch are the shared service's.
+     * The realtime tail is `RealtimeRateContributor` → `GhnRateCalculator::quoteWithHandoff`
+     * — identical pricing tail as the pre-wiring path (§25 ALL-parity).
+     *
+     * @return Result|Error|Result
      * @throws \Throwable re-thrown to the catch-all in collectRates on unexpected failure
      */
     private function collect(RateRequest $request): bool|Error|Result
     {
         // VN only (mirrors specificcountry=VN so direct collectRates() callers behave the same).
         if ((string) $request->getDestCountryId() !== 'VN') {
-            $this->recordOutcome(CarrierRateOutcome::unavailable(ShippingFailureReason::UNSUPPORTED_DESTINATION));
+            // TASK-SEC-D-transport: explicit NONE — unsupported destination never degrades.
+            $this->recordDecision(
+                CarrierRateOutcome::unavailable(ShippingFailureReason::UNSUPPORTED_DESTINATION),
+                FallbackEligibility::none()
+            );
 
             return $this->hide();
         }
 
-        // TASK-MD2BD3 (v10) — RateSourceMode thin adapter read at the carrier ENTRY only:
-        // FALLBACK_ONLY means ShippingCore short-circuits realtime RATE — GHN must not run
-        // canonical mapping or the provider API at all (orchestration misuse otherwise).
-        $rateSourceMode = $this->ghnConfig->getRateSourceMode($this->getData("store") !== null ? (int) $this->getData("store") : null);
-        if ($rateSourceMode === RateSourceMode::FALLBACK_ONLY) {
-            $this->recordOutcome(CarrierRateOutcome::unavailable(self::REASON_RATE_SKIPPED_FALLBACK_ONLY));
-
-            return $this->hide();
-        }
+        $storeId = $this->getData("store") !== null ? (int) $this->getData("store") : null;
+        $destinationScope = $this->ghnConfig->getDestinationScope($storeId);
+        $allowedZoneCodes = $this->ghnConfig->getAllowedZoneCodes($storeId);
+        $rateSourceMode = $this->ghnConfig->getRateSourceMode($storeId);
 
         // The fee is quoted in VND; a non-VND base would silently show a mis-scaled price.
         // VND-only rate slice — conversion is a recorded deviation, not a silent fallback.
@@ -195,49 +239,87 @@ final class Ghn extends AbstractCarrierOnline implements CarrierInterface
                 'GHN rate: store base currency is not VND; method hidden.',
                 ['base_currency' => $baseCurrencyCode]
             );
-            $this->recordOutcome(CarrierRateOutcome::unavailable(ShippingFailureReason::INVALID_CONFIGURATION));
+            // TASK-SEC-D-transport: explicit NONE — merchant configuration is fail-closed.
+            $this->recordDecision(
+                CarrierRateOutcome::unavailable(ShippingFailureReason::INVALID_CONFIGURATION),
+                FallbackEligibility::none()
+            );
 
             return $this->hide();
         }
 
-        try {
-            $outcome = $this->rateCalculator->calculate($this->requestMapper->map($request));
-        } catch (GhnRateEstimationException $estimationException) {
-            // TASK-WAWNDS — quote-time parcel estimation could not produce a safe estimate
-            // (adapter/data limitation or invalid parcel data): the structured reason code is
-            // surfaced verbatim, NEVER misfiled as a store misconfiguration.
-            $this->ghnLogger->call('GHN rate unavailable; no rate.', [
-                'status' => CarrierRateOutcomeInterface::STATUS_UNAVAILABLE,
-                'reason' => $estimationException->getReasonCode(),
-                'detail' => $estimationException->getMessage(),
-            ]);
-            $this->recordOutcome(CarrierRateOutcome::unavailable($estimationException->getReasonCode()));
+        $decision = $this->executionService->execute(
+            $this->buildExecutionRequest($request, $storeId, $destinationScope, $allowedZoneCodes, $rateSourceMode)
+        );
 
-            return $this->hide();
-        } catch (LocalizedException $configurationException) {
-            // Fail-closed store configuration (e.g. unusable weight unit) — an UNAVAILABLE-shaped
-            // refusal with a diagnostic reason, never a guessed rate.
-            $this->ghnLogger->warning('GHN rate unavailable; no rate.', [
-                'status' => CarrierRateOutcomeInterface::STATUS_UNAVAILABLE,
-                'reason' => ShippingFailureReason::INVALID_CONFIGURATION,
-                'exception' => $configurationException->getMessage(),
-            ]);
-            $this->recordOutcome(CarrierRateOutcome::unavailable(ShippingFailureReason::INVALID_CONFIGURATION));
+        if (!$decision->shouldInvokeRealtime()) {
+            if ($decision->getRealtimeOutcome() === null
+                && $decision->getReason() === ShippingFailureReason::DESTINATION_NOT_IN_SCOPE
+            ) {
+                // §20/§22 — merchant-configured service-area restriction: fail closed; the
+                // reported reason is what keeps the fallback coordinator from opening pricing.
+                $this->ghnLogger->warning(
+                    'GHN rate unavailable; destination outside configured zones.',
+                    ['destination_scope' => $destinationScope, 'allowed_zone_codes' => $allowedZoneCodes]
+                );
+                $this->recordDecision(
+                    CarrierRateOutcome::unavailable(ShippingFailureReason::DESTINATION_NOT_IN_SCOPE),
+                    $decision->getFallbackEligibility()
+                );
+
+                return $this->hide();
+            }
+
+            if ($rateSourceMode === RateSourceMode::FALLBACK_ONLY) {
+                // Eligible FALLBACK_ONLY short-circuit (§35.6): the composition's fallback
+                // coordinator owns the fallback dispatch — GHN only reports the skip fact.
+                $this->recordDecision(
+                    CarrierRateOutcome::unavailable(self::REASON_RATE_SKIPPED_FALLBACK_ONLY),
+                    $decision->getFallbackEligibility()
+                );
+
+                return $this->hide();
+            }
+
+            // Realtime mode, realtime blocked upstream (address policy / origin). Report the
+            // ACTUAL canonical fact: an AMBIGUOUS block retains candidates on the handoff and
+            // MUST surface as CANONICAL_AMBIGUOUS — that is the reason the shared fallback
+            // policy judges as legacy-address-eligible (pre-wiring parity). Everything else
+            // keeps its decision reason.
+            $handoff = $decision->getCarrierFacingHandoff();
+            $reason = $handoff !== null && $handoff->getCandidateCodes() !== []
+                ? ShippingFailureReason::CANONICAL_AMBIGUOUS
+                : ($decision->getReason() ?? ShippingFailureReason::CANONICAL_UNRESOLVED);
+            $this->ghnLogger->call('GHN rate unavailable; realtime blocked upstream.', ['reason' => $reason]);
+            // TASK-SEC-D-transport: the shared decision's eligibility is transported verbatim
+            // (AMBIGUOUS block → legacy-address eligible per frozen policy — no re-judge).
+            $this->recordDecision(CarrierRateOutcome::unavailable($reason), $decision->getFallbackEligibility());
 
             return $this->hide();
         }
 
-        $this->recordOutcome($outcome);
+        $outcome = $decision->getRealtimeOutcome();
+        if ($outcome === null) {
+            throw new \LogicException('Realtime execution decision without an outcome.');
+        }
 
         if ($outcome->isSuccessful()) {
-            // TASK-WAWNDS — GHN buffer AFTER a successful rate only (never eligibility);
-            // providerRate stays observable in the adjuster log.
-            // CarrierFactory injects the store as DataObject data (magic getStore()).
-            $store = $this->getData("store") !== null ? (int) $this->getData("store") : null;
-            $adjusted = $this->rateAdjuster->adjust((float) $outcome->getRate()->getAmount(), $store);
+            // TASK-SEC-D r5 — SUCCESS COMMIT POINT: the transported SUCCESS is recorded only
+            // AFTER a usable Magento rate result exists (adjust once + method/result built).
+            // An adjuster/factory failure lands in the carrier catch-all as
+            // UNEXPECTED_RUNTIME_FAILURE/NONE — the collector can never keep a stale SUCCESS
+            // that contradicts a no-rate customer result (invariant: transported SUCCESS IFF
+            // the carrier produced a usable method for this execution).
+            $adjusted = $this->rateAdjuster->adjust((float) $outcome->getRate()->getAmount(), $storeId);
+            $result = $this->buildResult($adjusted);
+            $this->recordDecision($outcome, $decision->getFallbackEligibility());
 
-            return $this->buildResult($adjusted);
+            return $result;
         }
+
+        // Non-success: record the exact transported decision BEFORE returning the hidden
+        // result — adjustment/build never run on this path (recorded exactly once).
+        $this->recordDecision($outcome, $decision->getFallbackEligibility());
 
         $context = ['status' => $outcome->getStatus(), 'reason' => $outcome->getFailureReason()];
         if ($outcome->getStatus() === CarrierRateOutcomeInterface::STATUS_TECHNICAL_FAILURE) {
@@ -250,6 +332,48 @@ final class Ghn extends AbstractCarrierOnline implements CarrierInterface
 
         return $this->hide();
     }
+
+    /**
+     * FEAT-QA23PZ — composes the shared execution request. Eligibility scalars come from the
+     * canonical identity bridges ONLY (region-only id bridge for the province; the SAME
+     * resolution context the handoff consumes for the ward — id-bridge first, name-bridge
+     * fallback). Unresolved identity leads to empty/null scalars: fail-closed under
+     * SELECTED_ZONES, harmless under ALL (the handoff classifies UNMAPPED as before).
+     */
+    private function buildExecutionRequest(
+        RateRequest $request,
+        ?int $storeId,
+        string $destinationScope,
+        array $allowedZoneCodes,
+        string $rateSourceMode
+    ): CarrierRateExecutionRequestInterface {
+        $capability = new GhnRateCapabilityAdapter($this->addressCapability);
+        $regionId = (int) $request->getDestRegionId();
+        $localityName = trim((string) $request->getDestCity());
+        $resolutionContext = $this->runtimeContextBuilder->build(
+            $request->getDestCountryId() !== null ? (string) $request->getDestCountryId() : null,
+            $regionId,
+            null,
+            $localityName !== '' ? $localityName : null,
+            $capability
+        );
+        $identity = $this->operationalAddressResolver->resolveFromRuntime($regionId, 0)->getIdentity();
+
+        return new CarrierRateExecutionRequest(
+            carrierCode: self::CARRIER_CODE,
+            destinationScope: $destinationScope,
+            allowedZoneCodes: $allowedZoneCodes,
+            destinationProvinceCode: $identity?->getRegionCode() ?? '',
+            destinationWardCode: $resolutionContext->getSourceUnitCode(),
+            rateSourceMode: $rateSourceMode,
+            addressResolutionPolicy: $this->ghnConfig->getAddressResolutionPolicy($storeId),
+            capability: $this->addressCapability,
+            resolutionContext: $resolutionContext,
+            shippingContext: $this->shippingContextFactory->fromRateRequest($request, self::CARRIER_CODE),
+            realtimeContributor: $this->contributorFactory->create($request)
+        );
+    }
+
 
     /**
      * SUCCESS outcome → the single stable Magento method (price = cost = GHN total fee).

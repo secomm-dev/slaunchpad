@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Secomm\Ghn\Model\Shipment;
 
+use Secomm\Ghn\Model\GhnShipmentConstraints;
+
 use Secomm\Ghn\Model\Rate\GhnParcel;
 use Secomm\Ghn\Model\Shipment\GhnCreateValidationException;
 use Secomm\ShippingCore\Api\Physical\PhysicalPackageInterface;
@@ -39,7 +41,7 @@ use Secomm\ShippingCore\Api\Physical\ShipmentPhysicalDataInterface;
 class GhnPhysicalParcelInterpreter
 {
     /** GHN weight-class boundary in grams (<= this → type 2). */
-    private const HEAVY_BOUNDARY_G = 20000;
+    private const HEAVY_BOUNDARY_G = GhnShipmentConstraints::TYPE_2_MAX_WEIGHT_G;
 
     public function __construct(private readonly GhnPhysicalLimit $limit)
     {

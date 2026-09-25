@@ -11,6 +11,10 @@ namespace Secomm\Ghtk\Model\OrderSubmit;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Shipping\Model\Shipment\Request;
+use Secomm\Cod\Api\CodCollectionDecisionInterface;
+use Secomm\Cod\Api\CodCollectionLedgerInterface;
+use Secomm\Cod\Api\CodCollectionResolverInterface;
+use Secomm\Cod\Model\CodCollectionAttempt;
 use Secomm\Ghtk\Model\Address\GhtkAddressAdapter;
 use Secomm\Ghtk\Model\Address\PickupAddressResolver;
 use Secomm\Ghtk\Model\Config\GhtkConfig;
@@ -25,13 +29,20 @@ use Secomm\ShippingCore\Model\ShippingContextFactory;
 
 /**
  * Orchestrates the Create-Shipping-Label submission to GHTK (SL-016 /
- * DEC-SL016-001). Runs INSIDE the native Magento label flow, before the
- * shipment is saved — any LocalizedException aborts the shipment creation
- * (native "no false success").
+ * DEC-SL016-001, COD amended by DEC-TASKDFGFZ9-002). Runs INSIDE the native
+ * Magento label flow, before the shipment is saved — any LocalizedException
+ * aborts the shipment creation (native "no false success").
  *
  * Origin resolves through the SAME provider chain as the rate path
- * (DEC-SL015-001 §2); COD through CodAmountResolverInterface (never
- * grand_total); the submitted snapshot is persisted on the shipment comment.
+ * (DEC-SL015-001 §2); the COD collection DECISION comes from Secomm_Cod
+ * (`CodCollectionResolverInterface` — identification + amount + currency +
+ * rejection; this service never reads grand_total/base_total_due itself and
+ * only maps the result to `pick_money`). Every COD attempt is REPORTED to the
+ * Secomm_Cod collection ledger (recordPending BEFORE the anchor insert and the
+ * POST) — the ledger is the cross-carrier one-collection-per-order source of
+ * truth, and its frozen amount is replayed verbatim on retry (persisted-wins,
+ * resolver-side); ORDER_ID_EXIST recovers the same provider order. The GHTK
+ * anchor table keeps the provider facts (label/tracking/weight/idempotency).
  */
 class OrderSubmitService
 {
@@ -39,7 +50,9 @@ class OrderSubmitService
         private GhtkOriginProvider $originProvider,
         private PickupAddressResolver $pickupResolver,
         private GhtkAddressAdapter $destResolver,
-        private CodAmountResolverInterface $codResolver,
+        private CodCollectionResolverInterface $codCollectionResolver,
+        private CodCollectionLedgerInterface $collectionLedger,
+        private ShipmentAnchorRepository $anchorRepository,
         private OrderRequestMapper $requestMapper,
         private OrderResponseMapper $responseMapper,
         private GhtkApiClient $apiClient,
@@ -51,7 +64,8 @@ class OrderSubmitService
     }
 
     /**
-     * @throws LocalizedException Unusable pickup/destination, unsafe COD, or GHTK rejection.
+     * @throws LocalizedException Unusable pickup/destination, COD-collection rejection
+     *         (Secomm_Cod decision), or GHTK rejection.
      */
     public function submit(Request $request): OrderSubmitResult
     {
@@ -81,8 +95,10 @@ class OrderSubmitService
         }
 
         $weightGram = $this->resolveWeight($request, $shipment, $storeId);
-        $codAmount = $this->codResolver->resolve($order, $shipment); // fail-fast on partial + COD
         $partnerOrderId = $this->buildPartnerOrderId($order);
+        $codAttempt = new CodCollectionAttempt('ghtk', $partnerOrderId);
+        $codDecision = $this->resolveCod($order, $shipment, $codAttempt); // decision rejection/currency → abort (native flow)
+        $codAmount = $codDecision->isCollectible() ? (float) $codDecision->getAmount() : 0.0;
         $products = $this->buildProducts($shipment, $storeId);
 
         $payload = $this->requestMapper->map(
@@ -96,6 +112,28 @@ class OrderSubmitService
             $this->config->getTransport($storeId)
         );
 
+        // Arm the ledger claim AFTER payload mapping (a mapping throw must not leave a
+        // PENDING claim behind) and BEFORE the anchor + POST — a crash in between leaves the
+        // ledger PENDING row armed, which blocks a second collection: the safe direction.
+        if ($codAmount > 0.0) {
+            $this->collectionLedger->recordPending(
+                $codAttempt,
+                (int) $order->getEntityId(),
+                $codAmount,
+                (string) $codDecision->getCurrencyCode()
+            );
+        }
+
+        // POST-boundary anchor (parity with Secomm_Ghn): provider facts for recovery; the
+        // collection amount itself is REPORTED to the Secomm_Cod ledger, which owns the
+        // frozen replay and the one-collection rule.
+        $this->anchorRepository->insertPending([
+            'partner_order_code' => $partnerOrderId,
+            'magento_order_id' => (int) $order->getEntityId(),
+            'cod_amount' => $codAmount,
+            'weight_gram' => $weightGram,
+        ]);
+
         try {
             $response = $this->apiClient->submitOrder($payload, $storeId);
         } catch (GhtkApiException $e) {
@@ -103,7 +141,8 @@ class OrderSubmitService
             // single submission attempt (never an automatic POST retry). A technical
             // failure is deliberately "uncertain" (the provider may have created the
             // order): retrying with the SAME deterministic order.id is safe because
-            // ORDER_ID_EXIST recovers the existing provider order.
+            // ORDER_ID_EXIST recovers the existing provider order — and the frozen
+            // anchor amount replays the original decision.
             $technical = in_array(
                 $e->getCategory(),
                 [
@@ -114,6 +153,18 @@ class OrderSubmitService
                 ],
                 true
             );
+            $this->anchorRepository->markNotSubmitted(
+                $partnerOrderId,
+                $technical ? ShipmentAnchorRepository::STATUS_UNKNOWN : ShipmentAnchorRepository::STATUS_FAILED,
+                $e->getCategory()
+            );
+            if ($codAmount > 0.0) {
+                $this->collectionLedger->markNotSubmitted(
+                    $codAttempt,
+                    $technical ? ShipmentAnchorRepository::STATUS_UNKNOWN : ShipmentAnchorRepository::STATUS_FAILED,
+                    $e->getCategory()
+                );
+            }
             $this->logger->warning(
                 'GHTK order submit failed.',
                 ['order_id' => $partnerOrderId, 'classification' => $technical ? 'TECHNICAL' : 'BUSINESS', 'exception' => $e->getMessage()]
@@ -128,6 +179,10 @@ class OrderSubmitService
         $parsed = $this->responseMapper->parse($response);
 
         if ($parsed->getKind() === GhtkCreateResponse::KIND_MALFORMED) {
+            $this->anchorRepository->markNotSubmitted($partnerOrderId, ShipmentAnchorRepository::STATUS_UNKNOWN, 'MALFORMED_RESPONSE');
+            if ($codAmount > 0.0) {
+                $this->collectionLedger->markNotSubmitted($codAttempt, ShipmentAnchorRepository::STATUS_UNKNOWN, 'MALFORMED_RESPONSE');
+            }
             $this->logger->warning(
                 'GHTK order submit returned an unusable response.',
                 ['order_id' => $partnerOrderId, 'classification' => 'TECHNICAL', 'detail' => $parsed->getMessage()]
@@ -138,6 +193,10 @@ class OrderSubmitService
         }
 
         if ($parsed->getKind() === GhtkCreateResponse::KIND_BUSINESS_REJECTION) {
+            $this->anchorRepository->markNotSubmitted($partnerOrderId, ShipmentAnchorRepository::STATUS_FAILED, (string) $parsed->getErrorCode());
+            if ($codAmount > 0.0) {
+                $this->collectionLedger->markNotSubmitted($codAttempt, ShipmentAnchorRepository::STATUS_FAILED, (string) $parsed->getErrorCode());
+            }
             $this->logger->warning(
                 'GHTK order submit rejected.',
                 ['order_id' => $partnerOrderId, 'classification' => 'BUSINESS', 'error_code' => $parsed->getErrorCode(), 'reason' => $parsed->getMessage()]
@@ -146,12 +205,26 @@ class OrderSubmitService
         }
 
         if ($parsed->getKind() === GhtkCreateResponse::KIND_DUPLICATE_EXISTING) {
-            $parsed = $this->validateDuplicate($parsed, $partnerOrderId);
+            try {
+                $parsed = $this->validateDuplicate($parsed, $partnerOrderId);
+            } catch (LocalizedException $identityConflict) {
+                // Identity unproven — the provider order may exist; the anchor row stays
+                // UNKNOWN so the P1 prior-collection rule keeps blocking a second collection.
+                $this->anchorRepository->markNotSubmitted($partnerOrderId, ShipmentAnchorRepository::STATUS_UNKNOWN, 'IDENTITY_CONFLICT');
+                if ($codAmount > 0.0) {
+                    $this->collectionLedger->markNotSubmitted($codAttempt, ShipmentAnchorRepository::STATUS_UNKNOWN, 'IDENTITY_CONFLICT');
+                }
+                throw $identityConflict;
+            }
         }
 
         $labelId = $parsed->getLabel();
         $tracking = $parsed->getTrackingNumber();
         if ($labelId === null || $tracking === null) {
+            $this->anchorRepository->markNotSubmitted($partnerOrderId, ShipmentAnchorRepository::STATUS_UNKNOWN, 'INCOMPLETE_IDENTITY');
+            if ($codAmount > 0.0) {
+                $this->collectionLedger->markNotSubmitted($codAttempt, ShipmentAnchorRepository::STATUS_UNKNOWN, 'INCOMPLETE_IDENTITY');
+            }
             $this->logger->warning(
                 'GHTK order succeeded without complete identity.',
                 ['order_id' => $partnerOrderId, 'label' => $labelId, 'tracking' => $tracking]
@@ -162,6 +235,10 @@ class OrderSubmitService
         }
 
         $recovered = $parsed->getKind() === GhtkCreateResponse::KIND_DUPLICATE_EXISTING;
+        $this->anchorRepository->markSubmitted($partnerOrderId, $labelId, $tracking, $recovered);
+        if ($codAmount > 0.0) {
+            $this->collectionLedger->markSubmitted($codAttempt, $recovered);
+        }
         $result = new OrderSubmitResult(
             $partnerOrderId,
             $labelId,
@@ -172,7 +249,8 @@ class OrderSubmitService
             $parsed->getProviderStatus()
         );
 
-        // Submitted-amount snapshot — later reads never re-derive COD from grand_total.
+        // Submitted-amount snapshot (audit trail — the authoritative frozen amount lives in
+        // the anchor row).
         $shipment->addComment(
             (string) __(
                 $recovered
@@ -189,6 +267,40 @@ class OrderSubmitService
         );
 
         return $result;
+    }
+
+    /**
+     * The COD collection decision for THIS submit attempt: frozen replay and the
+     * one-collection rule live in Secomm_Cod (ledger-backed — cross-carrier safe, cannot be
+     * bypassed by the caller). A REJECTED decision aborts the native label flow with an
+     * explicit message. Currency SUPPORT is the carrier's concern: GHTK collects VND only —
+     * a non-VND collectible decision is rejected HERE, before the ledger is armed or any
+     * payload is built (no conversion is ever performed). The caller arms the ledger AFTER
+     * payload mapping; a CodClaimConflictException (engine-enforced one-collection rule)
+     * propagates as-is — the native label flow aborts with the holder detail.
+     *
+     * @throws LocalizedException when the Secomm_Cod decision rejects the collection or the
+     *         order currency is unsupported by GHTK
+     * @throws \Secomm\Cod\Model\CodClaimConflictException when another attempt holds the
+     *         order's active collection claim
+     */
+    private function resolveCod(\Magento\Sales\Model\Order $order, \Magento\Sales\Model\Order\Shipment $shipment, CodCollectionAttempt $attempt): CodCollectionDecisionInterface
+    {
+        $decision = $this->codCollectionResolver->resolve($order, $shipment, $attempt);
+
+        if ($decision->isRejected()) {
+            throw new LocalizedException(
+                __('COD collection rejected (%1): %2', $decision->getRejectionReason(), $decision->getRejectionMessage())
+            );
+        }
+
+        if ($decision->isCollectible() && (string) $decision->getCurrencyCode() !== 'VND') {
+            throw new LocalizedException(
+                __('COD currency unsupported (%1): GHTK collects VND only and no conversion is performed — collect the order in VND or decline COD for this order.', $decision->getCurrencyCode())
+            );
+        }
+
+        return $decision;
     }
 
     /**

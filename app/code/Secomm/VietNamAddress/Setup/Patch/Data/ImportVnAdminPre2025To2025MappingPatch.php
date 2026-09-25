@@ -13,9 +13,10 @@ use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Secomm\VietNamAddress\Model\Import\VnMappingImporter;
 
 /**
- * TASK-NDSZ7V (seed per TASK-J9AVGK / DEC-FEATYA2C0W-003 §5) — import the reviewed canonical
- * mapping baseline VN_ADMIN_PRE_2025 → VN_ADMIN_2025 (10,064 edges: 63 regions + 10,001 wards)
- * via setup:upgrade — no manual CLI run needed.
+ * TASK-NDSZ7V (seed per TASK-J9AVGK / DEC-FEATYA2C0W-003 §5); TASK-B1 — import the
+ * AUTHORITATIVE end-of-2024 snapshot mapping VN_ADMIN_PRE_2025 → VN_ADMIN_2025 (10,418 edges)
+ * via setup:upgrade — no manual CLI run needed. (The superseded 10,064-edge baseline file
+ * stays in Files/ as archived history only.)
  *
  * Delegates to the existing VnMappingImporter (validate ALL rows first — scheme/catalog checks,
  * relation types, duplicate canonical edges, orphan codes against secomm_vietnam_address_unit —
@@ -30,7 +31,7 @@ use Secomm\VietNamAddress\Model\Import\VnMappingImporter;
  */
 class ImportVnAdminPre2025To2025MappingPatch implements DataPatchInterface
 {
-    private const MAPPING_FILE = 'VN_ADMIN_PRE_2025_TO_2025_mapping.csv';
+    private const MAPPING_FILE = 'VN_ADMIN_PRE_2025_TO_2025_SNAPSHOT_2024_mapping.csv';
 
     public function __construct(
         private readonly VnMappingImporter $mappingImporter,

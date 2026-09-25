@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Secomm\Ghn\Model\Rate;
 
+use Secomm\Ghn\Model\GhnShipmentConstraints;
+
 /**
  * TASK-FMBBSD — parcel the GHN fee API is asked to price (current official contract,
  * developer.ghn.vn/en/docs/order/calculate-fee, fetched 2026-09-11):
@@ -24,7 +26,7 @@ final class GhnParcel
 {
     public const SERVICE_TYPE_LIGHT_PARCEL = 2;
     public const SERVICE_TYPE_HEAVY_GOODS = 5;
-    public const HEAVY_WEIGHT_THRESHOLD_GRAMS = 20000;
+    public const HEAVY_WEIGHT_THRESHOLD_GRAMS = GhnShipmentConstraints::TYPE_2_MAX_WEIGHT_G;
 
     public function __construct(
         private readonly float $weightGrams,

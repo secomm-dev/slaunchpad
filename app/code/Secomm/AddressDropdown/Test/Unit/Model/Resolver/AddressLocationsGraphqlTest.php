@@ -11,6 +11,7 @@ use Secomm\AddressDropdown\Api\Data\LocationNodeInterface;
 use Secomm\AddressDropdown\Api\LocationHierarchyProviderInterface;
 use Secomm\AddressDropdown\Api\NoSuchProfileException;
 use Secomm\AddressDropdown\Model\Profile\ProfilePool;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Secomm\AddressDropdown\Model\Resolver\AddressLocationsGraphql;
 
 class AddressLocationsGraphqlTest extends TestCase
@@ -19,13 +20,18 @@ class AddressLocationsGraphqlTest extends TestCase
 
     private ProfilePool&MockObject $profilePool;
 
+    private ScopeConfigInterface&MockObject $scopeConfig;
+
     private AddressLocationsGraphql $resolver;
 
     protected function setUp(): void
     {
         $this->provider = $this->createMock(LocationHierarchyProviderInterface::class);
         $this->profilePool = $this->createMock(ProfilePool::class);
-        $this->resolver = new AddressLocationsGraphql($this->provider, $this->profilePool);
+        // Default-enabled fixture: these tests exercise the resolver behavior, not the switch.
+        $this->scopeConfig = $this->createMock(ScopeConfigInterface::class);
+        $this->scopeConfig->method('isSetFlag')->willReturn(true);
+        $this->resolver = new AddressLocationsGraphql($this->provider, $this->profilePool, $this->scopeConfig);
     }
 
     private function resolve(array $input): array

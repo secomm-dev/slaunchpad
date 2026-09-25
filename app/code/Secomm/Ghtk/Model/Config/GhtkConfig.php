@@ -124,9 +124,9 @@ class GhtkConfig
         return array_values(array_filter(array_map('trim', explode(',', $value))));
     }
 
-    // TASK-6YG3HP: carriers/ghtk/cod_method_codes REMOVED — COD payment-method
-    // identification is owned by Secomm_ShippingCore
-    // (`secomm_shippingcore/cod/payment_methods` + CodPaymentMethodResolverInterface).
+    // TASK-6YG3HP / TASK-DFGFZ9: carriers/ghtk/cod_method_codes REMOVED — COD
+    // identification is owned by Secomm_Cod (P1 default: Magento core `cashondelivery`,
+    // `DefaultCodPaymentMethodResolver` — no admin field; DEC-TASKDFGFZ9-003).
 
     /**
      * Decrypted webhook secret (SL-017 / DEC-SL017-001 §4 — GHTK has no

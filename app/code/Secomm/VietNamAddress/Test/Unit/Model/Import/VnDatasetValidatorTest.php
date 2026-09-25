@@ -12,7 +12,7 @@ use Secomm\VietNamAddress\Model\Scheme\VnSchemes;
 /**
  * DEC-FEATYA2C0W-003 — dataset contract validation: counts, per-scheme code patterns,
  * uniqueness, hierarchy integrity, region coverage, collision suffix preservation
- * (19 groups / 38 rows on VN_ADMIN_PRE_2025), name hygiene (invisible chars rejected,
+ * (18 groups / 36 rows on VN_ADMIN_PRE_2025), name hygiene (invisible chars rejected,
  * non-ASCII name_en ACCEPTED — ethnolinguistic names).
  */
 class VnDatasetValidatorTest extends TestCase
@@ -59,7 +59,7 @@ class VnDatasetValidatorTest extends TestCase
 
         $datasetPre = $reader->read(VnSchemes::VN_ADMIN_PRE_2025);
         $this->assertCount(63, $datasetPre['regions']);
-        $this->assertCount(11294, $datasetPre['units']);
+        $this->assertCount(10731, $datasetPre['units']);
         $this->assertSame(
             [],
             $this->validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $datasetPre['regions'], $datasetPre['units'])
@@ -208,8 +208,8 @@ class VnDatasetValidatorTest extends TestCase
     public function testRejectsCollisionCountDeviation(): void
     {
         $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
-        // Strip the suffix from one collision row -> 37 suffix rows (its group keeps 1 row,
-        // so the group count stays 19 — the row count is what catches the drift).
+        // Strip the suffix from one collision row -> 35 suffix rows (its group keeps 1 row,
+        // so the group count stays 18 — the row count is what catches the drift).
         foreach ($dataset['units'] as $index => $row) {
             if ($row['code'] === 'VNAP25-0000002710') { // first collision row (i=0)
                 $dataset['units'][$index]['name_vi'] = 'Yên Viên';
@@ -218,7 +218,7 @@ class VnDatasetValidatorTest extends TestCase
 
         $errors = $this->validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
 
-        $this->assertStringContainsString('Collision rows: expected 38, got 37', implode('; ', $errors));
+        $this->assertStringContainsString('Collision rows: expected 36, got 35', implode('; ', $errors));
     }
 
     public function testRejectsSuffixIn2025Scheme(): void
@@ -243,13 +243,13 @@ class VnDatasetValidatorTest extends TestCase
     {
         $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
 
-        $stringValidator = new VnDatasetValidator($this->overrides('63', '699', '10595', '19', '38'));
+        $stringValidator = new VnDatasetValidator($this->overrides('63', '696', '10035', '18', '36'));
         $this->assertSame(
             [],
             $stringValidator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units'])
         );
 
-        $intValidator = new VnDatasetValidator($this->overrides(63, 699, 10595, 19, 38));
+        $intValidator = new VnDatasetValidator($this->overrides(63, 696, 10035, 18, 36));
         $this->assertSame(
             [],
             $intValidator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units'])
@@ -259,7 +259,7 @@ class VnDatasetValidatorTest extends TestCase
     public function testReportsOnlyRegionCountMismatch(): void
     {
         $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
-        $validator = new VnDatasetValidator($this->overrides('62', '699', '10595', '19', '38'));
+        $validator = new VnDatasetValidator($this->overrides('62', '696', '10035', '18', '36'));
 
         $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
 
@@ -269,55 +269,55 @@ class VnDatasetValidatorTest extends TestCase
     public function testReportsOnlyDepthOneCountMismatch(): void
     {
         $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
-        $validator = new VnDatasetValidator($this->overrides('63', '698', '10595', '19', '38'));
+        $validator = new VnDatasetValidator($this->overrides('63', '695', '10035', '18', '36'));
 
         $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
 
-        $this->assertSame(['Depth-1 rows: expected 698, got 699.'], $errors);
+        $this->assertSame(['Depth-1 rows: expected 695, got 696.'], $errors);
     }
 
     public function testReportsOnlyDepthTwoCountMismatch(): void
     {
         $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
-        $validator = new VnDatasetValidator($this->overrides('63', '699', '10594', '19', '38'));
+        $validator = new VnDatasetValidator($this->overrides('63', '696', '10034', '18', '36'));
 
         $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
 
-        $this->assertSame(['Depth-2 rows: expected 10594, got 10595.'], $errors);
+        $this->assertSame(['Depth-2 rows: expected 10034, got 10035.'], $errors);
     }
 
     public function testReportsOnlyCollisionRowCountMismatch(): void
     {
         $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
-        $validator = new VnDatasetValidator($this->overrides('63', '699', '10595', '19', '37'));
+        $validator = new VnDatasetValidator($this->overrides('63', '696', '10035', '18', '35'));
 
         $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
 
-        $this->assertSame(['Collision rows: expected 37, got 38.'], $errors);
+        $this->assertSame(['Collision rows: expected 35, got 36.'], $errors);
     }
 
     public function testReportsOnlyCollisionGroupCountMismatch(): void
     {
         $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
-        $validator = new VnDatasetValidator($this->overrides('63', '699', '10595', '18', '38'));
+        $validator = new VnDatasetValidator($this->overrides('63', '696', '10035', '17', '36'));
 
         $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
 
-        $this->assertSame(['Collision groups: expected 18, got 19.'], $errors);
+        $this->assertSame(['Collision groups: expected 17, got 18.'], $errors);
     }
 
     public function testReportsExactlyTheMismatchingChecks(): void
     {
         $dataset = $this->dataset(VnSchemes::VN_ADMIN_PRE_2025);
         // depth2 and collision rows match; the other three checks must be the only errors.
-        $validator = new VnDatasetValidator($this->overrides('62', '698', '10595', '18', '38'));
+        $validator = new VnDatasetValidator($this->overrides('62', '695', '10035', '17', '36'));
 
         $errors = $validator->validate(VnSchemes::VN_ADMIN_PRE_2025, $dataset['regions'], $dataset['units']);
 
         $this->assertSame([
             'Region rows: expected 62, got 63.',
-            'Depth-1 rows: expected 698, got 699.',
-            'Collision groups: expected 18, got 19.',
+            'Depth-1 rows: expected 695, got 696.',
+            'Collision groups: expected 17, got 18.',
         ], $errors);
     }
 
@@ -359,8 +359,8 @@ class VnDatasetValidatorTest extends TestCase
     {
         $isPre = $scheme === VnSchemes::VN_ADMIN_PRE_2025;
         $regionCount = $isPre ? 63 : 34;
-        $depth1 = $isPre ? 699 : 3321;
-        $depth2 = $isPre ? 10595 : 0;
+        $depth1 = $isPre ? 696 : 3321;
+        $depth2 = $isPre ? 10035 : 0;
         $prefix = $isPre ? 'VNAP25' : 'VNA25';
         // Unique 10-char uppercase-hex suffix per index (code contract [0-9A-F]{10}).
         $hex = static fn (int $i): string => strtoupper(str_pad(dechex($i), 10, '0', STR_PAD_LEFT));
@@ -391,11 +391,11 @@ class VnDatasetValidatorTest extends TestCase
         }
 
         for ($i = 0; $i < $depth2; $i++) {
-            $isCollision = $i < 38;
+            $isCollision = $i < 36;
             // Both rows of a collision pair share the parent district (and thus its region).
             $parentCode = $isCollision
                 ? sprintf('VNAP25-%s', $hex(intdiv($i, 2)))
-                : sprintf('VNAP25-%s', $hex(($i - 38) % 699));
+                : sprintf('VNAP25-%s', $hex(($i - 36) % 696));
             $nameVi = sprintf('Xã thường %04d', $i);
             if ($isCollision) {
                 $base = sprintf('Yên Viên %02d', intdiv($i, 2));

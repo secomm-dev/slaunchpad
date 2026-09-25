@@ -1,5 +1,230 @@
 # Changelog — Secomm_ShippingCore
 
+## 0.25.0 — 2026-09-23 (TASK-DFGFZ9 phase 3 — COD docs về trạng thái product cuối)
+
+### Changed
+- README/USER_GUIDE: COD section phản ánh trạng thái cuối — identification mặc định
+  `cashondelivery` (Magento core), collection decision + ledger `secomm_cod_collection` thuộc
+  `Secomm_Cod` (DEC-TASKDFGFZ9-003); bỏ mô tả config field/migration đã bị xoá.
+- 0 ShippingCore code đổi (docs-only cho COD; COD owned by Secomm_Cod từ phase 1/2).
+
+## 0.24.0 — 2026-09-23 (TASK-WY6WP5 — Shipping Coverage P1 Admin UX + CoverageTarget abstraction)
+
+### Added
+- `Api\CoverageTarget\{CoverageTargetType, CoverageTargetIdentity, CoverageTargetInterface}` +
+  `Model\CoverageTarget\{CoverageTarget, CoverageTargetRegistry}` — target-generic coverage
+  model (P1: CARRIER only; METHOD reserved, không producer/runtime; DEC-TASKWY6WP5-001).
+  Registration ≠ persisted coverage — không config → runtime defaults (scope missing → ALL).
+- `Model\CarrierCoverage\CarrierCoverageConfigAdapter` (thay `PolicyConfig`; API nhận
+  `CoverageTargetIdentity`): thêm `load()`, `hasExplicitConfig()` (mọi scope, đọc thẳng
+  `core_config_data`), `reset()`, `nonDefaultScopeRows()`.
+- Shipping Coverage listing grid (`secomm_shippingcore_coverage_listing`) +
+  `CoverageListingDataProvider` (collection-less, stub-collection pattern) — cột Target/Type/
+  Configuration Status/Availability/Zones/Action; nút **Add Coverage**.
+- Lifecycle controllers: `Coverage\NewAction`, `Coverage\Edit` (create/edit chung form,
+  METHOD refuse), `Coverage\Save` (duplicate type+code guard), `Coverage\Reset` (POST-only,
+  scoped-rows warning) + buttons `GenericButton`/`ResetButton` (confirm POST 3-arg).
+- Source models: `RegisteredCarrierOptions` (registry minus configured),
+  `CoverageTargetTypeOptions`, `ConfigurationStatusOptions`.
+- Selector rebuild trên **core `ui-select`** (recipe `new_category_form.xml`): Province(s),
+  Coverage Zones, Create-Carrier (JS-less custom surface); Included Wards qua subclass
+  `view/adminhtml/web/js/form/element/ward-select` (cascade AJAX + race guard + prune).
+- Menu container **Secomm → Shipping** (Shipping Zones + Shipping Coverage).
+- Structural UI-contract tests (`View\AdminFormStructureTest`) + 51 unit tests mới
+  (CoverageTarget/*, adapter, listing provider, Save/Edit/Reset controllers).
+
+### Changed
+- Menu/labels "Carrier Coverage" → **"Shipping Coverage"** (ACL ids `::carrier_coverage[_manage]`
+  + route `secomm_shippingcore/coverage/*` giữ nguyên). Zone form **geography-only** (bỏ
+  "Carriers Referencing This Zone"; `CarrierZoneIndex`/`ZoneReferenceGuard` giữ nguyên cho
+  delete/mass-delete/disable protection — migrate dependency sang CoverageTargetRegistry).
+- FORM-HYDRATION + META-INJECTION FIX (root cause "selector không render" của G3K9V2,
+  browser-verified): record key = giá trị request param (`Magento\Ui\Component\Form::
+  getDataSourceData()` hydrate `$data[$id]`); meta injection build unconditional (framework
+  2.4.8 KHÔNG truyền meta vào form DataProvider — guard isset cũ là dead code); ward cascade
+  import link `data.include_province_codes` (flat, không `general.`).
+
+### Removed
+- `Model\CarrierCoverage\CarrierRegistry` (thay bằng CoverageTargetRegistry),
+  `Model\Config\Source\CarrierOptions`, custom `searchable-multiselect` JS + KO template
+  (chưa từng render đúng trong browser), `Block\Adminhtml\Coverage\CarrierList` +
+  `templates/coverage/index.phtml` (thay bằng UiComponent listing).
+
+## 0.23.0 — 2026-09-23 (TASK-DFGFZ9 — COD identification ownership move sang Secomm_Cod)
+
+### Removed
+- `Api\Cod\CodPaymentMethodResolverInterface` + `Model\Cod\ConfiguredCodPaymentMethodResolver`
+  + unit tests (8) + DI preference + group `cod` trong system.xml + default `cod` trong
+  config.xml. **Không adapter** (DEC-TASKDFGFZ9-001 §4): consumer duy nhất (Secomm_Ghtk) đổi
+  typehint sang `Secomm\Cod\Api\CodPaymentMethodResolverInterface` trong cùng change; contract
+  TASK-STC3NB chưa từng được TL-accept.
+- Config path `secomm_shippingcore/cod/payment_methods` ngừng được đọc. Secomm_Cod ship
+  DataPatch `MigrateLegacyCodPaymentMethodConfig` copy giá trị merchant sang
+  `secomm_cod/payment_identification/payment_methods` (copy-only, dest-wins, preserve scope,
+  không xoá legacy rows).
+
+### Không đổi
+Section `secomm_shippingcore` vẫn trên tab `sales` với group `physical` (Physical Package
+Defaults) nguyên vẹn · KHÔNG thêm dependency `Secomm_Cod` (orchestration ShippingCore không
+đọc COD identification — audit 2026-09-23) · mọi contract rate/fallback/handoff/tracking khác.
+
+## 0.22.0 — 2026-09-22 (TASK-G3K9V2 — Zone & Carrier Coverage Admin UX)
+
+### Added — Carrier Coverage screen (Secomm menu)
+- Menu **Secomm → Carrier Coverage** (`Secomm_ShippingCore::carrier_coverage` ACL, edit gated by
+  `::carrier_coverage_manage`): per registered carrier — Availability (`ALL` / `SELECTED_ZONES` /
+  `ALL_EXCEPT_SELECTED_ZONES`), Zones (enabled zones, searchable multi-select), Rate Source Mode
+  and Address Resolution Policy (relocated from the GHN system.xml group; labels preserved).
+  Writes the SAME generic `carriers/<code>/...` paths via `Model\CarrierCoverage\PolicyConfig`
+  (WriterInterface, DEFAULT scope, `cleanType('config')`) — zero data migration, runtime readers
+  untouched.
+- `Model\CarrierCoverage\{Availability, Validator, CarrierRegistry, CarrierZoneIndex}`: admin
+  availability vocabulary (string-aligned 1:1 with the runtime DestinationScope enum),
+  save-time validation (zone-requiring modes need ≥1 EXISTING zone — deleted rejected, disabled
+  allowed; contract enums for mode/policy), DI carrier registry (carriers opt in from their own
+  module — Secomm_Ghn registers `secomm_ghn`), and the read-only zone → carriers reverse index.
+- Source models `AvailabilityOptions`, `RateSourceModeOptions`, `AddressResolutionPolicyOptions`,
+  `CarrierOptions`, `CountryOptions`.
+
+### Changed — Shipping Zone form (business-friendly, directive §1–§6)
+- **Country**: fixed disabled display "Vietnam (VN)" — nothing persisted (canonical codes carry
+  the VN identity; no multi-country architecture).
+- **Province(s)**: searchable multi-select sourced straight from the VietNamAddress canonical
+  reference layer (VN_ADMIN_2025 level 1, label `Name (VN-XX)`) via the new additive
+  `VnAddressUnitProviderInterface::getByLevel()` — no directory-region sync dependency, no
+  hardcoded geography.
+- **Included Wards**: searchable cascading multi-select (`Name (CODE)` labels) resolved by
+  `getByRegion()` over `region_code` — fixes the AJAX endpoint returning 0 options against the
+  seeded DB (child rows carry `parent_code = NULL`). Changing provinces now REMOVES ward
+  selections that no longer belong (deterministic auto-clear; server-side validation stays the
+  correctness boundary).
+- **Excluded Wards removed from the UI** (P1 decision: exclusion belongs to carrier-coverage
+  zone scopes). Backend contract intact: `exclude_ward_codes` column / matcher / validator all
+  unchanged; the grid `exclude_ward_count` column is gone (UI only).
+- Zone edit shows read-only **"Carriers Referencing This Zone"** (derived from carrier config
+  paths — one source of truth; assignment is edited ONLY in Carrier Coverage).
+- Admin JS: `Secomm_ShippingCore/js/form/element/searchable-multiselect` (+ element template)
+  replaces `ward-multiselect` — search box + selection summary + cascade auto-clear, no new
+  frontend libraries.
+
+### Changed — TL conditional-approval fixes (2026-09-22, trước integration)
+- **Zone save preserves `exclude_ward_codes`** (`Controller\Adminhtml\Zone\Save`): an edit
+  save WITHOUT the `exclude_ward_codes` key (the UI no longer posts it) keeps the persisted
+  list; a POST carrying the key still sets it explicitly (intentional clear included). A UI
+  save can never silently wipe excluded wards.
+- **Delete of a referenced zone BLOCKED** (`Zone\Delete` + `Zone\MassDelete` via new
+  `Model\CarrierCoverage\ZoneReferenceGuard`): single delete refused with the referencing
+  carriers named; mass delete blocks the WHOLE batch (no partial delete) when any selected
+  zone is referenced. Dangling carrier references can no longer be produced from admin.
+- **Disable referenced zone = explicit impact warning** (`Zone\Save` disabled save +
+  `Zone\MassStatus` disable): the disable proceeds (soft state) and a warning names the
+  affected zones + carriers; static notices on the form field + grid confirms updated to
+  describe both behaviors.
+
+### Changed — final TL verification: scope integrity + disabled-reference visibility (2026-09-22)
+- **Reference guard is now PERSISTED-PER-SCOPE**: runtime proven to honor scoped values
+  (`Ghn::collect()` passes the rate-request storeId into store-scoped readers — Magento
+  single-parent fallback store → website → default; legacy fields were website/store enabled),
+  so `CarrierZoneIndex` r2 reads the persisted rows straight from `core_config_data` across
+  DEFAULT + every WEBSITE + every STORE (one query, registered carriers only) — NEVER ScopeConfig
+  effective resolution, which merges/shadows and could hide a layered reference; no runtime
+  diagnostics involved. `ZoneReferenceGuard` r2 exposes `findReferences()` metadata
+  {carrier, carrier_label, scope, scope_id, scope_label} and scope-aware messages
+  ("GHN (… ) (Website: vietnam_store)") for the delete BLOCK / mass-delete block / disable
+  warning surfaces. A zone referenced in ANY supported scope is undeletable.
+- **Disabled-referenced zones stay visible** in the coverage picker: new source model
+  `ReferencableZoneCodes` (enabled zones; disabled-but-persisted-referenced zones marked
+  "— Disabled"; disabled-unreferenced zones not offered). `EnabledZoneCodes` removed (orphaned).
+  Runtime unchanged: a disabled zone never matches.
+
+## 0.21.0 — 2026-09-22 (TASK-R8WR1R — DestinationScope ALL_EXCEPT_SELECTED_ZONES)
+
+### Added — third destination scope ("serve everywhere except")
+- `Api\Address\DestinationScope::ALL_EXCEPT_SELECTED_ZONES`: carrier serves every canonical
+  destination that matches NONE of the configured zones. Empty zone list ≡ ALL (nothing
+  excluded); `SELECTED_ZONES` + empty list stays fail-closed ineligible; `ALL` ignores the list.
+- `CarrierEligibilityEvaluator` — ALL_EXCEPT branch reusing the shared CanonicalZoneRegistry +
+  CanonicalZoneMatcher (zone-assignment level, no ward-exclusion/DSL/carrier-specific logic):
+  only a VALID ENABLED matching zone excludes the carrier; unknown/disabled references never
+  exclude on their own (evaluator skips them exactly like SELECTED_ZONES does — no behavior
+  broadening for SELECTED_ZONES). Eligible result carries no matched zone code; exclusion miss
+  keeps `DESTINATION_NOT_IN_SCOPE` (never fallback-eligible — same merchant-restriction policy).
+- `CarrierDestinationScopeConfig` — accepts the new scope value; missing/empty config → the
+  documented default ALL (backward compatible, silent); invalid EXPLICIT value → returned
+  VERBATIM + warning, NEVER coerced to a valid scope (r2: the old coercion to ALL was fail-OPEN);
+  §16/§22 stale-config diagnostics now also run under ALL_EXCEPT with a truthful "does not
+  exclude" hint.
+- Fail-closed enforcement (r2): `CarrierRateExecutionRequest` no longer throws on unknown
+  scopes — the unknown value reaches `CarrierEligibilityEvaluator`, whose unknown-scope branch
+  keeps the carrier ineligible for every destination (no realtime, no fallback; reason stays
+  `DESTINATION_NOT_IN_SCOPE`, never TECHNICAL_FAILURE, never fallback-eligible). The
+  RateSourceMode / AddressResolutionPolicy construction guards are unchanged.
+- Runtime ordering untouched (CarrierEligibility → RateSourceMode → AddressResolutionPolicy →
+  CarrierRateExecution); no admin UI (system.xml) option in this task — set via
+  `carriers/<code>/destination_scope` config directly until a UI follow-up.
+
+## 0.20.0 — 2026-09-21 (TASK-SEC — atomic eligibility transport + decision records)
+
+### Added — atomic decision transport (collector contract extension)
+- `Api\Rate\CarrierRateDecisionRecordInterface` + `Model\Rate\CarrierRateDecisionRecord`:
+  ONE record per (carrier_code, method_code) carrying the outcome AND the fallback-eligibility
+  of the SAME execution, with an EXPLICIT transport-presence flag — absent (legacy
+  compatibility) vs present+NONE (fail closed) vs present+sources (consume verbatim) are
+  three distinct states, never confused through nullability.
+- `CarrierRateOutcomeCollectorInterface::recordDecision()` + `getDecisionRecords()`:
+  deterministic merge rules — SUCCESS terminal (later non-success ignored; success after
+  non-success wins); identical duplicates idempotent; conflicting non-success statuses →
+  first status wins + diagnostic; transported eligibility SOURCES merged (union of flags);
+  legacy `record()` never downgrades a transported record; bracket lifetime unchanged.
+- Launchpad `FallbackCoordinator` consumes transported eligibility verbatim; carriers without
+  transport keep the explicit legacy re-judge path (debug-telemetry, documented removal plan).
+- D3 matrix: `Launchpad/…/Integration/RateCollectionMatrixTest` — outer-seam composition, per
+  case contributor/provider call-count asserts (never a double execution).
+
+## 0.19.0 — 2026-09-21 (FEAT-QA23PZ / DEC-FEATQA23PZ-001 — canonical zone persistence + carrier destination-scope config + shared reason)
+
+### Added — zone persistence (operational completion of v10 §35; no new architecture version)
+- `secomm_shipping_zone` (declarative schema + whitelist): `zone_id` PK, `code` UNIQUE, `label`,
+  `enabled`, JSON code lists `include_province_codes`/`include_ward_codes`/`exclude_ward_codes`
+  (canonical `VN-XX`/`VNA25-*` only — provider IDs forbidden), timestamps.
+- `Api\Address\CanonicalZoneRepositoryInterface` + `Model\Zone\ZoneRepository`: the ONLY write
+  path — full saves run `Model\Zone\Validator` (code normalize + uniqueness, VN_ADMIN_2025
+  reference existence via `VnAddressUnitProviderInterface`, include-ward province membership,
+  normalize-and-return) and REJECT invalid data (never silently drop); every mutation flushes
+  the new `secomm_shippingcore_zones` cache type; `setEnabled` flips the flag without code
+  re-validation (mass actions).
+- `Model\Address\PersistentCanonicalZoneRegistry` — new DI preference for
+  `CanonicalZoneRegistryInterface`: persisted zones are authoritative for their code, DI/static
+  zones (`canonicalZones` item entries) fall back only for codes with no persisted authority;
+  duplicate codes within one source still fail fast; lazy load (no DB at construction) through
+  the `secomm_shippingcore_zones` cache type (plain-array payload, rebuilt VOs).
+- `Cache\Type\Zone` + `etc/cache.xml`: dedicated cache type, invalidated ONLY by repository
+  mutations (create/update/enable-disable/delete).
+- `Api\Config\CarrierDestinationScopeConfigInterface` + `Model\Config\CarrierDestinationScopeConfig`:
+  generic per-carrier reader for `carriers/<code>/destination_scope|allowed_zone_codes` —
+  unset → ALL; persisted-but-unrecognized scope → ALL + warning; SELECTED_ZONES diagnostics
+  warn per unknown/disabled configured zone (§16/§22). The domain evaluator still never reads
+  config.
+- `Model\Config\Source\EnabledZoneCodes` (enabled zones multiselect source) +
+  `Model\Config\Source\ProvinceOptions` (VN provinces from `directory_country_region` —
+  runtime rows carry canonical `VN-XX` codes).
+- `Api\Failure\ShippingFailureReason::DESTINATION_NOT_IN_SCOPE` — ONE canonical owner,
+  string-aligned with `CarrierEligibilityResultInterface::REASON_DESTINATION_NOT_IN_SCOPE`;
+  deliberately NOT added to `SafeDegradationEligibilityPolicy` defaults (a merchant service-area
+  restriction must never open fallback).
+- Admin surface: ACL `Secomm_ShippingCore::zones` / `::zones_manage`, menu
+  `MenuSecomm_Base::menu → Shipping Zones`, grid + form UiComponents, AJAX ward options
+  (`secomm_shippingcore/zone/wardOptions`), `Model\ResourceModel\Zone\Grid\Collection`
+  (JSON_LENGTH counters) registered into the global CollectionFactory.
+
+### Changed
+- DI: `CanonicalZoneRegistryInterface` preference moved from `CanonicalZoneRegistry` to
+  `PersistentCanonicalZoneRegistry` (same interface; the plain registry remains for tests).
+
+### Tests
+- PersistentCanonicalZoneRegistry (precedence/cache/lazy/fail-fast), Validator, ZoneRepository,
+  CarrierDestinationScopeConfig, admin controller tests; ShippingCore suite green.
+
 ## 0.18.0 — 2026-09-18 (TASK-8MQHJX Phase A+B+C — destination-scope eligibility + execution gating + fallback source amendment)
 
 ### Added — shared carrier rate execution gating (Phase C, architecture v10 §35)

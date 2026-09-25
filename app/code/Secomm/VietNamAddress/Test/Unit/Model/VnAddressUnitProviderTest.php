@@ -104,6 +104,70 @@ class VnAddressUnitProviderTest extends TestCase
     }
 
     /**
+     * TASK-G3K9V2 — level listings (provinces) query by scheme + level only.
+     */
+    public function testGetByLevelQueriesSchemeAndLevel(): void
+    {
+        $this->fetchAllQueue = [[
+            ['scheme_code' => 's', 'code' => 'VN-01', 'parent_code' => null, 'region_code' => 'VN-01', 'level' => 1, 'name_vi' => 'An Giang', 'name_en' => 'An Giang'],
+            ['scheme_code' => 's', 'code' => 'VN-15', 'parent_code' => null, 'region_code' => 'VN-15', 'level' => 1, 'name_vi' => 'Hồ Chí Minh', 'name_en' => 'Ho Chi Minh'],
+        ]];
+
+        $units = $this->provider->getByLevel(VnSchemes::VN_ADMIN_2025, 1);
+
+        $this->assertCount(2, $units);
+        $this->assertSame('Hồ Chí Minh', $units[1]->getNameVi());
+        $this->assertSame(1, $units[1]->getLevel());
+    }
+
+    /**
+     * TASK-G3K9V2 — ward listings address children by `region_code` + level: seeded rows
+     * carry NULL parent codes, so region attribution is the reliable hierarchy edge here
+     * (complementary to BUG-ZTGGYZ's parent_code contract for getChildren()).
+     */
+    public function testGetByRegionQueriesRegionCodeColumn(): void
+    {
+        $capturedWhere = [];
+        $select = $this->createMock(Select::class);
+        $select->method('from')->willReturnSelf();
+        $select->method('where')->willReturnCallback(function (string $column, mixed $value = null) use (&$capturedWhere, $select) {
+            $capturedWhere[] = [$column, $value];
+
+            return $select;
+        });
+        $select->method('order')->willReturnSelf();
+
+        $adapter = $this->createMock(Mysql::class);
+        $adapter->method('select')->willReturn($select);
+        $adapter->method('fetchAll')->willReturn([]);
+        $resource = $this->createMock(ResourceConnection::class);
+        $resource->method('getConnection')->willReturn($adapter);
+        $resource->method('getTableName')->willReturnCallback(static fn (string $name): string => $name);
+        $provider = new VnAddressUnitProvider($resource);
+
+        $provider->getByRegion(VnSchemes::VN_ADMIN_2025, 'VN-15', 2);
+
+        $this->assertContains(['scheme_code = ?', 'VN_ADMIN_2025'], $capturedWhere);
+        $this->assertContains(['region_code = ?', 'VN-15'], $capturedWhere);
+        $this->assertContains(['level = ?', 2], $capturedWhere);
+        $this->assertNotContains(['parent_code = ?', 'VN-15'], $capturedWhere);
+    }
+
+    public function testGetByRegionHydratesList(): void
+    {
+        $this->fetchAllQueue = [[
+            ['scheme_code' => 's', 'code' => 'VNA25-A', 'parent_code' => null, 'region_code' => 'VN-15', 'level' => 2, 'name_vi' => 'Bến Nghé', 'name_en' => 'Ben Nghe'],
+            ['scheme_code' => 's', 'code' => 'VNA25-B', 'parent_code' => null, 'region_code' => 'VN-15', 'level' => 2, 'name_vi' => 'Bến Thành', 'name_en' => 'Ben Thanh'],
+        ]];
+
+        $wards = $this->provider->getByRegion(VnSchemes::VN_ADMIN_2025, 'VN-15', 2);
+
+        $this->assertCount(2, $wards);
+        $this->assertSame('VNA25-A', $wards[0]->getCode());
+        $this->assertSame('VN-15', $wards[0]->getRegionCode());
+    }
+
+    /**
      * BUG-ZTGGYZ (U1) — lock the hierarchy CONTRACT: children are addressed by the
      * canonical `parent_code` column (portable unit_code), never by runtime ids.
      */

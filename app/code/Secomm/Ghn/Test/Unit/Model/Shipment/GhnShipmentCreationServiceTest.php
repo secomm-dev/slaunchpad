@@ -32,6 +32,11 @@ use Secomm\Ghn\Model\Shipment\GhnShipmentCreationService;
 use Secomm\Ghn\Model\Shipment\GhnShipmentRepository;
 use Secomm\Ghn\Model\Shipment\GhnPhysicalParcelInterpreter;
 use Secomm\Ghn\Model\Shipment\GhnPhysicalLimit;
+use Secomm\Cod\Api\CodCollectionLedgerInterface;
+use Secomm\Cod\Api\CodCollectionResolverInterface;
+use Secomm\Cod\Model\CodClaimConflictException;
+use Secomm\Cod\Model\CodCollectionAttempt;
+use Secomm\Cod\Model\CodCollectionDecision;
 use Secomm\Ghn\Model\Config;
 use Secomm\ShippingCore\Api\Address\CarrierAddressHandoffInterface;
 use Secomm\ShippingCore\Api\Address\CarrierAddressHandoffServiceInterface;
@@ -82,6 +87,16 @@ class GhnShipmentCreationServiceTest extends TestCase
     /** @var array<int, array> payloads captured from the create POST */
     private array $postedPayloads = [];
 
+    /** COD decision the mocked Secomm_Cod resolver returns (default: non-COD order). */
+    private CodCollectionDecision $codDecision;
+
+    private CodCollectionLedgerInterface&MockObject $ledger;
+
+    /** @var array<int, string> ledger lifecycle calls in order */
+    private array $ledgerCalls = [];
+
+    private CodCollectionResolverInterface&MockObject $codResolver;
+
     private GhnShipmentCreationService $service;
 
     protected function setUp(): void
@@ -99,6 +114,23 @@ class GhnShipmentCreationServiceTest extends TestCase
             $this->callOrder[] = 'persist';
         });
         $this->callOrder = [];
+        $this->codDecision = CodCollectionDecision::notCod();
+        $this->ledgerCalls = [];
+        $this->ledger = $this->createMock(CodCollectionLedgerInterface::class);
+        $this->ledger->method('recordPending')->willReturnCallback(function (CodCollectionAttempt $attempt, int $orderId, float $amount, string $currency): void {
+            $this->callOrder[] = 'recordPending:' . (string) $amount;
+            $this->ledgerCalls[] = 'recordPending:' . (string) $amount;
+        });
+        $this->ledger->method('markSubmitted')->willReturnCallback(function (CodCollectionAttempt $attempt, bool $recovered): void {
+            $this->ledgerCalls[] = 'markSubmitted';
+        });
+        $this->ledger->method('markNotSubmitted')->willReturnCallback(function (CodCollectionAttempt $attempt, string $status, string $reason): void {
+            $this->ledgerCalls[] = 'markNotSubmitted:' . $status . ':' . $reason;
+        });
+        $this->codResolver = $this->createMock(CodCollectionResolverInterface::class);
+        $this->codResolver->method('resolve')->willReturnCallback(
+            fn (): CodCollectionDecision => $this->codDecision
+        );
 
         $this->config = $this->createMock(Config::class);
         $this->config->method('getPaymentType')->willReturn(1);
@@ -133,6 +165,8 @@ class GhnShipmentCreationServiceTest extends TestCase
             new StoreWeightConverter($this->scopeConfig),
             $this->config,
             $this->repository,
+            $this->codResolver,
+            $this->ledger,
             new GhnLogger($this->psrLogger)
         );
     }
@@ -340,6 +374,200 @@ class GhnShipmentCreationServiceTest extends TestCase
 
     // ---------- helpers ----------
 
+    public function testCodCollectibleDecisionFlowsIntoPayloadAndAnchor(): void
+    {
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::collectible(1250000.0, 'VND');
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame(1250000, $this->postedPayloads[0]['cod_amount'], 'payload carries the mapped decision');
+    }
+
+    public function testNonCodDecisionSendsZeroAndSkipsResolverOnlyOnce(): void
+    {
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::notCod();
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame(0, $this->postedPayloads[0]['cod_amount']);
+    }
+
+    public function testCodRejectionStopsBeforeAnchorRowAndPost(): void
+    {
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::rejected(
+            CodCollectionDecision::REASON_COD_ALREADY_COLLECTED,
+            'already collected elsewhere'
+        );
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertSame(GhnCreateOutcome::STATUS_COD_REJECTED, $outcome->getStatus());
+        $this->assertSame(CodCollectionDecision::REASON_COD_ALREADY_COLLECTED, $outcome->getReason());
+        $this->assertSame('already collected elsewhere', $outcome->getRejectionMessage());
+        $this->assertNull($outcome->getOrderCode(), 'a rejected decision never submits anything');
+        $this->assertNotContains('insertPending', $this->callOrder, 'no anchor row is written for a rejection');
+        $this->assertNotContains('post', $this->callOrder, 'no POST for a rejection');
+    }
+
+    public function testCodAmountAboveProviderCapIsUnavailableBeforeAnyWrite(): void
+    {
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::collectible(50000001.0, 'VND');
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertSame(GhnCreateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
+        $this->assertSame('COD_AMOUNT_EXCEEDS_PROVIDER_LIMIT', $outcome->getReason());
+        $this->assertNotContains('insertPending', $this->callOrder, 'no anchor row above the provider cap');
+        $this->assertNotContains('post', $this->callOrder);
+    }
+
+    public function testNonVndCollectibleDecisionIsCodRejectedBeforeAnyWrite(): void
+    {
+        // DEC-TASKDFGFZ9-004: currency SUPPORT is the carrier's concern — GHN rejects a
+        // non-VND COD order before the ledger is armed, the anchor written or the POST.
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::collectible(99.9, 'USD');
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertSame(GhnCreateOutcome::STATUS_COD_REJECTED, $outcome->getStatus());
+        $this->assertSame(CodCollectionDecision::REASON_CURRENCY_UNSUPPORTED, $outcome->getReason());
+        $this->assertStringContainsString('USD', (string) $outcome->getRejectionMessage());
+        $this->assertNotContains('insertPending', $this->callOrder);
+        $this->assertNotContains('post', $this->callOrder);
+        $this->assertSame([], $this->ledgerCalls);
+    }
+
+    public function testZeroAmountCodDecisionShipsWithZeroAndNeverClaimsTheLedger(): void
+    {
+        // DEC-TASKDFGFZ9-004: zero-total COD order STAYS COD — cod_amount 0 on the wire;
+        // nothing to collect → no ledger claim.
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::collectible(0.0, 'VND');
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame(0, $this->postedPayloads[0]['cod_amount']);
+        $this->assertSame([], $this->ledgerCalls);
+    }
+
+    public function testClaimConflictBecomesCodRejectedWithoutAnchorOrPost(): void
+    {
+        // The engine-enforced one-collection claim lives in Secomm_Cod — a losing attempt
+        // surfaces COD_REJECTED (admin-visible comment via the observer), never a POST.
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::collectible(1250000.0, 'VND');
+        $this->ledger->method('recordPending')->willReturnCallback(
+            function (CodCollectionAttempt $attempt, int $orderId, float $amount, string $currency): void {
+                throw new CodClaimConflictException(
+                    __('Order #7 already has an active COD collection claim (held by ghtk shipment "ghtk-100000001-1") — P1 collects COD once per order.')
+                );
+            }
+        );
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertSame(GhnCreateOutcome::STATUS_COD_REJECTED, $outcome->getStatus());
+        $this->assertSame(CodCollectionDecision::REASON_COD_ALREADY_COLLECTED, $outcome->getReason());
+        $this->assertStringContainsString('ghtk-100000001-1', (string) $outcome->getRejectionMessage());
+        $this->assertNotContains('insertPending', $this->callOrder);
+        $this->assertNotContains('post', $this->callOrder);
+    }
+
+    public function testPrePostFailuresReleaseTheLedgerClaimAsFailed(): void
+    {
+        // Recovery fix: a handoff failure happens BEFORE the POST — the attempt definitively
+        // never collected → the ledger claim must be RELEASED (FAILED), never left PENDING.
+        $this->codDecision = CodCollectionDecision::collectible(1250000.0, 'VND');
+        $notApplicable = new CarrierAddressHandoff(
+            applicable: false,
+            resolvedAddress: null,
+            textualFallbackEligible: false,
+            failureReason: ShippingFailureReason::UNSUPPORTED_DESTINATION
+        );
+        $this->givenHandoff($notApplicable);
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertSame(GhnCreateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
+        $this->assertContains('markNotSubmitted:FAILED:' . ShippingFailureReason::UNSUPPORTED_DESTINATION, $this->ledgerCalls);
+    }
+
+    public function testLedgerArmedBeforeAnchorAndPostThenMirrorsSuccess(): void
+    {
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::collectible(1250000.0, 'VND');
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame(
+            ['recordPending:1250000', 'insertPending', 'persist', 'post'],
+            $this->callOrder,
+            'ledger armed BEFORE the anchor insert and the POST'
+        );
+        $this->assertSame(['recordPending:1250000', 'markSubmitted'], $this->ledgerCalls, 'success mirrors onto the ledger');
+    }
+
+    public function testNonCodDecisionNeverTouchesTheLedger(): void
+    {
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::notCod();
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame([], $this->ledgerCalls, 'non-COD orders never enter the ledger');
+    }
+
+    public function testRejectedDecisionNeverArmsTheLedger(): void
+    {
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::rejected(
+            CodCollectionDecision::REASON_COD_ALREADY_COLLECTED,
+            'already collected elsewhere'
+        );
+
+        $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertSame([], $this->ledgerCalls, 'a rejected attempt never arms the ledger');
+    }
+
+    public function testCodAmountAboveCapNeverArmsTheLedger(): void
+    {
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::collectible(50000001.0, 'VND');
+
+        $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertSame([], $this->ledgerCalls, 'above-cap amounts never arm the ledger');
+    }
+
+    public function testTechnicalFailureMirrorsUnknownOntoLedger(): void
+    {
+        $this->givenResolvedCurrentNames();
+        $this->codDecision = CodCollectionDecision::collectible(1250000.0, 'VND');
+        $this->apiClient->method('post')->willReturnCallback(
+            function (string $operation, string $path, array $payload): array {
+                $this->callOrder[] = 'post';
+                $this->postedPayloads[] = $payload;
+                throw new ProviderTimeoutException(__('GHN timeout'));
+            }
+        );
+
+        $outcome = $this->service->createForShipment($this->shipment(), $this->posted());
+
+        $this->assertSame(GhnCreateOutcome::STATUS_TECHNICAL_FAILURE, $outcome->getStatus());
+        $this->assertContains('markNotSubmitted:UNKNOWN:TECHNICAL_ERROR', $this->ledgerCalls);
+    }
+
     private function givenResolvedCurrentNames(): void
     {
         $this->givenHandoff($this->handoff(applicable: true, unitCode: 'VNA25-F2118484F0'));
@@ -381,13 +609,38 @@ class GhnShipmentCreationServiceTest extends TestCase
         return [['weight' => 1.5, 'length' => 30, 'width' => 20, 'height' => 10]];
     }
 
+    private function rebuildService(): GhnShipmentCreationService
+    {
+        return new GhnShipmentCreationService(
+            $this->contextBuilder,
+            $this->handoffService,
+            new GhnAddressCapability(),
+            $this->mappingResolver,
+            $this->apiClient,
+            new GhnCreateRequestBuilder(),
+            new GhnPhysicalParcelInterpreter(new GhnPhysicalLimit()),
+            $this->physicalPersister,
+            new StoreWeightConverter($this->scopeConfig),
+            $this->config,
+            $this->repository,
+            $this->codResolver,
+            $this->ledger,
+            new GhnLogger($this->psrLogger)
+        );
+    }
+
     private function shipment(?float $totalWeight = null): Shipment&MockObject
     {
+        $order = $this->createMock(\Magento\Sales\Model\Order::class);
+        $order->method('getOrderCurrencyCode')->willReturn('VND');
+        $order->method('getIncrementId')->willReturn('100000007');
+
         $shipment = $this->createMock(Shipment::class);
         $shipment->method('getEntityId')->willReturn(42);
         $shipment->method('getOrderId')->willReturn(7);
         $shipment->method('getStoreId')->willReturn(1);
         $shipment->method('getTotalWeight')->willReturn($totalWeight);
+        $shipment->method('getOrder')->willReturn($order);
 
         $item = $this->createMock(Item::class);
         $item->method('getWeight')->willReturn($totalWeight ?? 1.5);

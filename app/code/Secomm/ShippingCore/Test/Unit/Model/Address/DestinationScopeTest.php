@@ -14,20 +14,24 @@ use PHPUnit\Framework\TestCase;
 use Secomm\ShippingCore\Api\Address\DestinationScope;
 
 /**
- * TASK-8MQHJX (Phase B) — destination scope domain values: exactly ALL/SELECTED_ZONES;
- * ShippingCore never hardcodes zone identities.
+ * TASK-8MQHJX (Phase B) — destination scope domain values: exactly ALL/SELECTED_ZONES/
+ * ALL_EXCEPT_SELECTED_ZONES (TASK-R8WR1R); ShippingCore never hardcodes zone identities.
  */
 class DestinationScopeTest extends TestCase
 {
-    public function testExactlyTwoKnownScopes(): void
+    public function testExactlyThreeKnownScopes(): void
     {
-        $this->assertSame(['ALL', 'SELECTED_ZONES'], DestinationScope::all());
+        $this->assertSame(
+            ['ALL', 'SELECTED_ZONES', 'ALL_EXCEPT_SELECTED_ZONES'],
+            DestinationScope::all()
+        );
     }
 
     public function testExistsAcceptsKnownScopes(): void
     {
         $this->assertTrue(DestinationScope::exists(DestinationScope::ALL));
         $this->assertTrue(DestinationScope::exists(DestinationScope::SELECTED_ZONES));
+        $this->assertTrue(DestinationScope::exists(DestinationScope::ALL_EXCEPT_SELECTED_ZONES));
     }
 
     public function testExistsRejectsUnknownAndZoneIdentities(): void
@@ -36,12 +40,16 @@ class DestinationScopeTest extends TestCase
         $this->assertFalse(DestinationScope::exists('HCM_INNER'));
         $this->assertFalse(DestinationScope::exists(''));
         $this->assertFalse(DestinationScope::exists('all'));
+        // truncated / misspelled variants of the new scope stay unknown
+        $this->assertFalse(DestinationScope::exists('ALL_EXCEPT'));
+        $this->assertFalse(DestinationScope::exists('ALL_EXCEPT_SELECTED_ZONE'));
     }
 
     public function testAssertKnownPassesForKnownScopes(): void
     {
         DestinationScope::assertKnown(DestinationScope::ALL);
         DestinationScope::assertKnown(DestinationScope::SELECTED_ZONES);
+        DestinationScope::assertKnown(DestinationScope::ALL_EXCEPT_SELECTED_ZONES);
 
         $this->expectNotToPerformAssertions();
     }
