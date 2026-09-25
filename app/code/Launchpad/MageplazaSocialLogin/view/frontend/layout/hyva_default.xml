@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Launchpad_MageplazaSocialLogin — Hyvä pages wiring. The hyva_default handle
+ * only exists on Hyvä themes, so the luma popup of the OSC checkout (LL-0011)
+ * is untouched.
+ *
+ * - Show/hide password toggle (TASK-YHCJ79) on the password inputs of the
+ *   Mageplaza popups: the sign-in / create / request-info modal and the
+ *   checkout authentication popup.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="before.body.end">
+            <block name="launchpad.sociallogin.password.toggle"
+                   template="Launchpad_MageplazaSocialLogin::password-toggle.phtml">
+                <arguments>
+                    <argument name="root_selectors" xsi:type="array">
+                        <item name="popup" xsi:type="string">#social-login-popup</item>
+                        <item name="checkout_auth" xsi:type="string">#authentication-popup</item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

@@ -4,6 +4,14 @@ All notable changes to this module are documented here (append-only).
 
 ## [Unreleased]
 
+### Added — 2026-09-25
+
+- `i18n/vi_VN.csv` +2 phrase: `Show Password` → `Hiện mật khẩu`, `Hide Password` → `Ẩn mật khẩu`
+  — aria-label/title of the show/hide password toggle
+  (`Launchpad_MageplazaSocialLogin::password-toggle.phtml`) on the OSC checkout page
+  (luma scope: the theme CSV that already carries them is not in the fallback).
+  Identity rows in `i18n/en_US.csv` (BR-001). TASK-YHCJ79.
+
 ### Added — 2026-09-09
 
 - `i18n/vi_VN.csv` +2 phrase: `%1 day(s)` → `%1 ngày`, `%1 - %2 day(s)` → `%1 - %2 ngày`

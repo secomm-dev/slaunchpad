@@ -1,0 +1,8 @@
+{"config_id":927,"scope":"default","scope_id":0,"path":"customer\/startup\/redirect_dashboard","value":"1"}
+{"config_id":124,"scope":"default","scope_id":0,"path":"sociallogin\/general\/authentication_popup","value":"1"}
+{"config_id":125,"scope":"default","scope_id":0,"path":"sociallogin\/general\/check_mode","value":"0"}
+{"config_id":61,"scope":"default","scope_id":0,"path":"sociallogin\/general\/information_require","value":null}
+{"config_id":126,"scope":"default","scope_id":0,"path":"sociallogin\/general\/popup_effect","value":"mfp-zoom-in"}
+{"config_id":128,"scope":"default","scope_id":0,"path":"sociallogin\/general\/popup_login","value":"popup_login"}
+{"config_id":924,"scope":"default","scope_id":0,"path":"sociallogin\/general\/redirect_url","value":"1"}
+{"config_id":127,"scope":"default","scope_id":0,"path":"sociallogin\/general\/style_management","value":"#3399cc"}

@@ -279,6 +279,12 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
     line-height: 24px;
 }
 
+/* password inputs carry the show/hide toggle (TASK-YHCJ79, password-toggle.phtml):
+   keep the typed text clear of the 44px button */
+#social-login-popup .social-login .input-text.lp-password-toggle-input {
+    padding-right: 44px;
+}
+
 #social-login-popup .social-login .input-text:focus {
     border-color: var(--color-primary, #36563a);
     box-shadow: none;
