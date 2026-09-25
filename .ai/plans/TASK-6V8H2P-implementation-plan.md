@@ -136,7 +136,7 @@ All paths under `web/tailwind/` above are relative to
 ### Phase D — Button and Form foundation
 
 10. Apply the approved Button decisions before code.
-    - Q-010: use current Button set `2410:25972` and Base Button `2410:26973`; exclude Legacy groups.
+    - Q-010: treat Button page `2410:25885` as the parent inventory; use current Button `2410:25972` and Base Button `2410:26973`; exclude Legacy Button `2410:25890` and Legacy Icon Button `2410:25923`.
     - Q-011: implement all five master sizes; reuse exported values only where exact and do not invent a one-to-one mode-name mapping.
     - Q-012: preserve 32/36/40px visual controls with a minimum 44×44px interaction area.
     - Verify decisions are recorded in spec/input.

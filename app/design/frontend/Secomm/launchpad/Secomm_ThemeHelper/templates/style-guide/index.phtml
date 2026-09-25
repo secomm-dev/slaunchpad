@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+?>
+<div class="container mx-auto py-8 lg:py-12" aria-labelledby="style-guide-title">
+    <header class="mb-12 border-b border-border pb-8">
+        <p class="mb-2 text-overline font-semibold uppercase tracking-wider text-fg-tertiary">
+            <?= $escaper->escapeHtml(__('Secomm Launchpad')) ?>
+        </p>
+        <h1 id="style-guide-title" class="text-heading-1 font-semibold text-ink">
+            <?= $escaper->escapeHtml(__('Global Style Showcase')) ?>
+        </h1>
+        <p class="mt-4 max-w-3xl text-body-1 text-fg-secondary">
+            <?= $escaper->escapeHtml(
+                __('A development-only regression page for the active theme global foundations.')
+            ) ?>
+        </p>
+    </header>
+
+    <nav class="mb-12 flex flex-wrap gap-3" aria-label="<?= $escaper->escapeHtmlAttr(__('Showcase sections')) ?>">
+        <a class="btn btn-tertiary btn-size-s" href="#foundations"><?= $escaper->escapeHtml(__('Foundations')) ?></a>
+        <a class="btn btn-tertiary btn-size-s" href="#buttons"><?= $escaper->escapeHtml(__('Buttons')) ?></a>
+        <a class="btn btn-tertiary btn-size-s" href="#forms"><?= $escaper->escapeHtml(__('Forms')) ?></a>
+        <a class="btn btn-tertiary btn-size-s" href="#icons"><?= $escaper->escapeHtml(__('Icons')) ?></a>
+    </nav>
+
+    <div class="space-y-16">
+        <?= $block->getChildHtml('foundations') ?>
+        <?= $block->getChildHtml('buttons') ?>
+        <?= $block->getChildHtml('forms') ?>
+        <?= $block->getChildHtml('icons') ?>
+    </div>
+</div>

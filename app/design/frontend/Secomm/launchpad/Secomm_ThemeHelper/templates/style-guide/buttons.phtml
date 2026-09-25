@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+$icons = $viewModels->require(SvgIcons::class);
+?>
+<section id="buttons" aria-labelledby="buttons-title">
+    <h2 id="buttons-title" class="mb-2 text-heading-2 font-semibold text-ink">
+        <?= $escaper->escapeHtml(__('Buttons')) ?>
+    </h2>
+    <p class="mb-8 text-body-2 text-fg-secondary">
+        <?= $escaper->escapeHtml(__('Use Tab, hover and pointer press to inspect real interaction states.')) ?>
+    </p>
+
+    <div class="space-y-8 rounded-lg border border-border bg-surface p-6">
+        <div>
+            <h3 class="mb-4 text-label-l font-semibold text-ink"><?= $escaper->escapeHtml(__('Variants')) ?></h3>
+            <div class="flex flex-wrap items-center gap-5">
+                <button type="button" class="btn btn-primary btn-size-l"><?= $escaper->escapeHtml(__('Primary')) ?></button>
+                <button type="button" class="btn btn-secondary btn-size-l"><?= $escaper->escapeHtml(__('Secondary')) ?></button>
+                <button type="button" class="btn btn-tertiary btn-size-l"><?= $escaper->escapeHtml(__('Tertiary')) ?></button>
+                <button type="button" class="btn btn-transparent btn-size-l"><?= $escaper->escapeHtml(__('Transparent')) ?></button>
+                <button type="button" class="btn btn-primary btn-size-l" disabled><?= $escaper->escapeHtml(__('Disabled')) ?></button>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="mb-4 text-label-l font-semibold text-ink"><?= $escaper->escapeHtml(__('Sizes')) ?></h3>
+            <div class="flex flex-wrap items-center gap-5">
+                <button type="button" class="btn btn-primary btn-size-s">S</button>
+                <button type="button" class="btn btn-primary btn-size-m">M</button>
+                <button type="button" class="btn btn-primary btn-size-l">L</button>
+                <button type="button" class="btn btn-primary btn-size-xl">XL</button>
+                <button type="button" class="btn btn-primary btn-size-2xl">2XL</button>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="mb-4 text-label-l font-semibold text-ink"><?= $escaper->escapeHtml(__('Icon structures')) ?></h3>
+            <div class="flex flex-wrap items-center gap-5">
+                <button type="button" class="btn btn-primary btn-size-l btn-icon-leading">
+                    <?= $icons->renderHtml('outline/search', '', 24, 24, ['aria-hidden' => 'true']) ?>
+                    <span><?= $escaper->escapeHtml(__('Leading icon')) ?></span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-size-l btn-icon-trailing">
+                    <span><?= $escaper->escapeHtml(__('Trailing icon')) ?></span>
+                    <?= $icons->renderHtml('outline/chevron-down', '', 24, 24, ['aria-hidden' => 'true']) ?>
+                </button>
+                <button type="button" class="btn btn-tertiary btn-size-l btn-icon-only"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Search')) ?>">
+                    <?= $icons->renderHtml('outline/search', '', 24, 24, ['aria-hidden' => 'true']) ?>
+                </button>
+                <button type="button" class="btn btn-primary btn-size-2xl btn-icon-round"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('View cart')) ?>">
+                    <?= $icons->renderHtml('outline/shopping-cart', '', 32, 32, ['aria-hidden' => 'true']) ?>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>

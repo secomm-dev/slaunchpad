@@ -155,8 +155,11 @@ future selector contract, but no unused dark CSS is shipped as approved output.
 - Final Textarea source is component set `2410:14352`, with the same state and
   feedback model, optional label/hint, 160px designed field height and semantic
   label/body typography.
-- Checkbox `2174:32588` and Radio `2174:30745` remain approved native-control
-  sources. Legacy Input sets `2410:14324` and `2410:14331` are excluded.
+- Button page `2410:25885` is the parent inventory. Current Button
+  `2410:25972`, Base Button `2410:26973`, Checkbox `2174:32588`, Radio
+  `2174:30745` and Base CheckRadio `2174:33021` are approved sources. Legacy
+  Button `2410:25890`, Legacy Icon Button `2410:25923` and Legacy Input sets
+  `2410:14324`/`2410:14331` are excluded.
 - No standalone Select master exists in `2410:14322`. Native Select may consume
   the shared field/token contract, but Select-specific visuals remain gated.
 - Implementation maps the design matrix into semantic CSS hooks and native
@@ -203,7 +206,7 @@ The executable AC set is the embedded Mini-Spec AC-001…AC-011 in
 | ID | Risk/decision | Implementation effect | Owner |
 |---|---|---|---|
 | R-01 | Native export alias IDs do not match local IDs | Transformer must resolve unambiguously by collection/name fallback | Tech Lead |
-| R-02 | Older Button nodes were superseded by the current Button page | Use current Button set `2410:25972` and Base Button `2410:26973`; exclude Legacy groups | Designer |
+| R-02 | Button page `2410:25885` contains current and Legacy groups | Use current Button `2410:25972` and Base Button `2410:26973`; exclude Legacy Button `2410:25890` and Legacy Icon Button `2410:25923` | Designer |
 | R-03 | Five component sizes do not map one-to-one by name to four applications modes | Final Master Component owns S/M/L/XL/2XL dimensions; reuse matching exported values without inventing a name mapping | Designer/TL |
 | R-04 | Button controls at 32/36/40px conflict with project 44px touch baseline | Preserve visual size and provide a minimum 44×44px interaction area | Designer/TL |
 | R-05 | Select must be resolved within the supplied Form Elements page | Audit the Select component child under `2410:14322` before finalizing its semantic API | Designer |

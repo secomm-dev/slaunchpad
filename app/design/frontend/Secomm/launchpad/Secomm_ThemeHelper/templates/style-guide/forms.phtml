@@ -1,0 +1,191 @@
+<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+?>
+<section id="forms" aria-labelledby="forms-title">
+    <h2 id="forms-title" class="mb-2 text-heading-2 font-semibold text-ink">
+        <?= $escaper->escapeHtml(__('Forms')) ?>
+    </h2>
+    <p class="mb-8 text-body-2 text-fg-secondary">
+        <?= $escaper->escapeHtml(__('Design-backed Input, Textarea and selection-control contracts.')) ?>
+    </p>
+
+    <form class="space-y-10 rounded-lg border border-border bg-surface p-4 sm:p-6" action="" method="get">
+        <fieldset>
+            <legend class="mb-6 text-heading-4 font-semibold text-ink"><?= $escaper->escapeHtml(__('Input types')) ?></legend>
+            <div class="grid gap-6 lg:grid-cols-2">
+                <div class="field">
+                    <label for="showcase-default"><?= $escaper->escapeHtml(__('Default')) ?></label>
+                    <input id="showcase-default" name="showcase-default" type="text" class="form-input w-full"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Placeholder')) ?>">
+                    <p class="note"><?= $escaper->escapeHtml(__('Label and hint text are optional in the component.')) ?></p>
+                </div>
+                <div class="field">
+                    <label for="showcase-leading-dropdown"><?= $escaper->escapeHtml(__('Leading dropdown')) ?></label>
+                    <div class="input-group">
+                        <select id="showcase-leading-dropdown" name="showcase-leading-dropdown"
+                                class="form-select w-24 shrink-0" aria-label="<?= $escaper->escapeHtmlAttr(__('Country code')) ?>">
+                            <option>+84</option>
+                            <option>+61</option>
+                        </select>
+                        <input name="showcase-phone" type="tel" class="form-input min-w-0 flex-1"
+                               placeholder="<?= $escaper->escapeHtmlAttr(__('Phone number')) ?>">
+                    </div>
+                    <p class="note"><?= $escaper->escapeHtml(__('Composite input with a leading dropdown addon.')) ?></p>
+                </div>
+                <div class="field">
+                    <label for="showcase-trailing-dropdown"><?= $escaper->escapeHtml(__('Trailing dropdown')) ?></label>
+                    <div class="input-group">
+                        <input id="showcase-trailing-dropdown" name="showcase-amount" type="number"
+                               class="form-input min-w-0 flex-1" placeholder="<?= $escaper->escapeHtmlAttr(__('Amount')) ?>">
+                        <select name="showcase-currency" class="form-select w-24 shrink-0"
+                                aria-label="<?= $escaper->escapeHtmlAttr(__('Currency')) ?>">
+                            <option>USD</option>
+                            <option>VND</option>
+                        </select>
+                    </div>
+                    <p class="note"><?= $escaper->escapeHtml(__('Composite input with a trailing dropdown addon.')) ?></p>
+                </div>
+                <div class="field">
+                    <label for="showcase-leading-text"><?= $escaper->escapeHtml(__('Leading text')) ?></label>
+                    <div class="input-group">
+                        <span class="flex h-11 shrink-0 items-center border border-border bg-subtle px-3.5 text-body-2 text-fg-secondary">https://</span>
+                        <input id="showcase-leading-text" name="showcase-url" type="text"
+                               class="form-input min-w-0 flex-1" placeholder="<?= $escaper->escapeHtmlAttr(__('example.com')) ?>">
+                    </div>
+                    <p class="note"><?= $escaper->escapeHtml(__('Composite input with a fixed text prefix.')) ?></p>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend class="mb-6 text-heading-4 font-semibold text-ink"><?= $escaper->escapeHtml(__('Input states and feedback')) ?></legend>
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                <div class="field">
+                    <label for="showcase-filled"><?= $escaper->escapeHtml(__('Filled')) ?></label>
+                    <input id="showcase-filled" name="showcase-filled" type="text" class="form-input w-full"
+                           value="<?= $escaper->escapeHtmlAttr(__('Filled value')) ?>">
+                </div>
+                <div class="field">
+                    <label for="showcase-focus"><?= $escaper->escapeHtml(__('Interactive focus')) ?></label>
+                    <input id="showcase-focus" name="showcase-focus" type="text" class="form-input w-full"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Tab or click to inspect')) ?>">
+                </div>
+                <div class="field">
+                    <label for="showcase-disabled"><?= $escaper->escapeHtml(__('Disabled')) ?></label>
+                    <input id="showcase-disabled" name="showcase-disabled" type="text" class="form-input w-full"
+                           value="<?= $escaper->escapeHtmlAttr(__('Disabled value')) ?>" disabled>
+                </div>
+                <div class="field field-error">
+                    <label for="showcase-error"><?= $escaper->escapeHtml(__('Error')) ?></label>
+                    <input id="showcase-error" name="showcase-error" type="email" class="form-input mage-error w-full"
+                           value="invalid@example" aria-invalid="true" aria-describedby="showcase-error-message">
+                    <p id="showcase-error-message" class="messages"><?= $escaper->escapeHtml(__('Enter a valid email address.')) ?></p>
+                </div>
+                <div class="field" data-feedback="warning">
+                    <label for="showcase-warning"><?= $escaper->escapeHtml(__('Warning')) ?></label>
+                    <input id="showcase-warning" name="showcase-warning" type="text" class="form-input w-full"
+                           value="<?= $escaper->escapeHtmlAttr(__('Value needs review')) ?>" aria-describedby="showcase-warning-message">
+                    <p id="showcase-warning-message" class="note"><?= $escaper->escapeHtml(__('Review this value before continuing.')) ?></p>
+                </div>
+                <div class="field" data-feedback="success">
+                    <label for="showcase-success"><?= $escaper->escapeHtml(__('Success')) ?></label>
+                    <input id="showcase-success" name="showcase-success" type="text" class="form-input w-full"
+                           value="<?= $escaper->escapeHtmlAttr(__('Validated value')) ?>" aria-describedby="showcase-success-message">
+                    <p id="showcase-success-message" class="note"><?= $escaper->escapeHtml(__('The value has been validated.')) ?></p>
+                </div>
+            </div>
+            <p class="mt-5 text-body-3 text-fg-secondary">
+                <?= $escaper->escapeHtml(__('Hover, active and focus are demonstrated by interacting with enabled controls; they are not frozen presentation-only states.')) ?>
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <legend class="mb-6 text-heading-4 font-semibold text-ink"><?= $escaper->escapeHtml(__('Textarea feedback')) ?></legend>
+            <div class="grid gap-6 lg:grid-cols-2">
+                <?php
+                $textareaStates = [
+                    'default' => [__('Default textarea'), __('Textarea hint text.')],
+                    'error' => [__('Textarea error'), __('Correct the content before continuing.')],
+                    'warning' => [__('Textarea warning'), __('Review this content before continuing.')],
+                    'success' => [__('Textarea success'), __('The content has been validated.')],
+                ];
+                foreach ($textareaStates as $state => [$label, $message]):
+                    $isError = $state === 'error';
+                    $feedback = in_array($state, ['warning', 'success'], true) ? $state : null;
+                    ?>
+                    <div class="field<?= $isError ? ' field-error' : '' ?>"
+                         <?= $feedback ? 'data-feedback="' . $escaper->escapeHtmlAttr($feedback) . '"' : '' ?>>
+                        <label for="showcase-textarea-<?= $escaper->escapeHtmlAttr($state) ?>"><?= $escaper->escapeHtml($label) ?></label>
+                        <textarea id="showcase-textarea-<?= $escaper->escapeHtmlAttr($state) ?>"
+                                  name="showcase-textarea-<?= $escaper->escapeHtmlAttr($state) ?>"
+                                  class="form-textarea w-full<?= $isError ? ' mage-error' : '' ?>" rows="5"
+                                  <?= $isError ? 'aria-invalid="true"' : '' ?>
+                                  placeholder="<?= $escaper->escapeHtmlAttr(__('Placeholder')) ?>"></textarea>
+                        <p class="<?= $isError ? 'messages' : 'note' ?>"><?= $escaper->escapeHtml($message) ?></p>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </fieldset>
+
+        <fieldset class="grid gap-10 lg:grid-cols-2">
+            <legend class="mb-6 text-heading-4 font-semibold text-ink"><?= $escaper->escapeHtml(__('Selection controls')) ?></legend>
+            <div class="space-y-8">
+                <?php foreach (['checkbox' => __('Checkbox sizes'), 'radio' => __('Radio sizes')] as $type => $title): ?>
+                    <div>
+                        <h3 class="mb-4 text-label-l font-semibold text-ink"><?= $escaper->escapeHtml($title) ?></h3>
+                        <div class="flex flex-wrap items-center gap-6">
+                            <?php foreach (['s' => 'S', 'm' => 'M', 'l' => 'L'] as $size => $label): ?>
+                                <label class="flex items-center gap-2 text-ink">
+                                    <input type="<?= $escaper->escapeHtmlAttr($type) ?>" name="showcase-<?= $escaper->escapeHtmlAttr($type) ?>"
+                                           class="form-<?= $escaper->escapeHtmlAttr($type) ?> form-control-<?= $escaper->escapeHtmlAttr($size) ?>"
+                                           <?= $size === 'm' ? 'checked' : '' ?>>
+                                    <span><?= $escaper->escapeHtml($label) ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                            <label class="flex items-center gap-2 text-fg-tertiary">
+                                <input type="<?= $escaper->escapeHtmlAttr($type) ?>"
+                                       class="form-<?= $escaper->escapeHtmlAttr($type) ?> form-control-m" checked disabled>
+                                <span><?= $escaper->escapeHtml(__('Disabled')) ?></span>
+                            </label>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div>
+                <h3 class="mb-4 text-label-l font-semibold text-ink"><?= $escaper->escapeHtml(__('Switch')) ?></h3>
+                <div class="space-y-4">
+                    <label class="flex items-center gap-3 text-ink">
+                        <input type="checkbox" role="switch" checked>
+                        <span><?= $escaper->escapeHtml(__('Enabled')) ?></span>
+                    </label>
+                    <label class="flex items-center gap-3 text-fg-tertiary">
+                        <input type="checkbox" role="switch" disabled>
+                        <span><?= $escaper->escapeHtml(__('Disabled')) ?></span>
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+
+        <aside class="rounded-md border border-warning bg-subtle p-4" aria-labelledby="provisional-select-title">
+            <h3 id="provisional-select-title" class="mb-2 text-label-l font-semibold text-ink">
+                <?= $escaper->escapeHtml(__('Provisional native Select')) ?>
+            </h3>
+            <p class="mb-4 text-body-3 text-fg-secondary">
+                <?= $escaper->escapeHtml(__('This control inherits the shared form foundation. It is not yet a design-approved standalone Select component.')) ?>
+            </p>
+            <div class="field max-w-80">
+                <label for="showcase-select"><?= $escaper->escapeHtml(__('Select')) ?></label>
+                <select id="showcase-select" name="showcase-select" class="form-select w-full">
+                    <option><?= $escaper->escapeHtml(__('Choose an option')) ?></option>
+                    <option><?= $escaper->escapeHtml(__('Option one')) ?></option>
+                    <option><?= $escaper->escapeHtml(__('Option two')) ?></option>
+                </select>
+            </div>
+        </aside>
+    </form>
+</section>
