@@ -1,6 +1,18 @@
 # Secomm_VNPAY — Changelog
 
-## [Unreleased] — Configurable checkout logo
+## [Unreleased]
+
+### Fixed
+- **Online Refund button unreachable**: the invoice created by the IPN had
+  no `transaction_id`, so the credit memo creation page always showed only
+  "Refund Offline" (core gate `Creditmemo\Create\Items`:
+  `$creditmemo->getInvoice()->getTransactionId()`). The IPN now binds
+  `vnp_TransactionNo` to the invoice before `register()`. Refund online is
+  issued from the invoice view (Invoices tab → invoice → Credit Memo) —
+  creating a credit memo from the order view never binds an invoice and
+  keeps showing "Refund Offline" (core behavior for all gateway modules).
+  Orders paid BEFORE this fix keep their invoice without `transaction_id`
+  (Refund Offline only, or backfill manually).
 
 ### Added
 - **Configurable checkout logo** `payment/vnpay/logo`: image upload

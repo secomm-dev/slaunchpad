@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Tiktok_Tiktok:etc/tiktok_product_mapping.xsd">
+    <product_headers>
+        <header name="sku_id">
+            <attribute>sku</attribute>
+            <required>both</required>
+        </header>
+        <header name="title">
+            <attribute>name</attribute>
+            <required>both</required>
+        </header>
+        <header name="description">
+            <attribute>short_description</attribute>
+        </header>
+        <header name="price">
+            <attribute>price</attribute>
+            <formatter>getFormattedPrice</formatter>
+            <required>both</required>
+            <parent>price_info</parent>
+        </header>
+        <header name="sale_price">
+            <attribute>special_price</attribute>
+            <attribute>price</attribute>
+            <formatter>getFormattedSalePrice</formatter>
+            <parent>price_info</parent>
+        </header>
+        <header name="availability">
+            <formatter>getAvailabilityStatus</formatter>
+        </header>
+        <header name="link" json_name="landing_page_url">
+            <attribute>product_url</attribute>
+            <required>both</required>
+            <parent>landing_page</parent>
+        </header>
+        <header name="image_link" json_name="image_url">
+            <attribute>image</attribute>
+            <formatter>getFullImageUrl</formatter>
+        </header>
+        <header name="additional_image_link">
+            <attribute>media_gallery</attribute>
+            <formatter>formatAdditionalImages</formatter>
+        </header>
+        <header name="item_group_id">
+            <attribute>tiktok_product_group_id</attribute>
+            <attribute>sku</attribute>
+            <attribute>parent_data</attribute>
+            <formatter>getFormattedProductGroupId</formatter>
+            <required>both</required>
+        </header>
+        <header name="sale_price_effective_date">
+            <attribute>special_from_date</attribute>
+            <attribute>special_to_date</attribute>
+            <formatter>getSalePriceEffectiveDate</formatter>
+            <parent>price_info</parent>
+        </header>
+        <header name="brand">
+            <attribute>tiktok_brand</attribute>
+            <required>both</required>
+            <default>default_brand</default>
+        </header>
+        <header name="condition">
+            <attribute>tiktok_condition</attribute>
+            <required>both</required>
+            <default>NEW</default>
+            <parent>product_detail</parent>
+        </header>
+        <header name="shipping_weight">
+            <attribute>weight</attribute>
+            <formatter>getFormattedWeight</formatter>
+            <required>both</required>
+            <parent>product_detail</parent>
+        </header>
+    </product_headers>
+</config>

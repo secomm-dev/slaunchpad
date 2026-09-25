@@ -1,0 +1,38 @@
+<?php
+/**
+ * @var \Tiktok\Tiktok\Block\Adminhtml\System\Config\SyncNowButton $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+?>
+<button id="sync-now-button" class="action-primary" type="button">
+    <?= /* @noEscape */ __('Sync Now') ?>
+</button>
+
+<?php
+$syncUrl = $escaper->escapeUrl($block->getSyncUrl());
+$msg = __(
+    'Are you sure you want to sync now? This may take some time. This will override your existing catalog.'
+);
+$scriptString = <<<script
+    require([
+        'jquery',
+        'Magento_Ui/js/modal/confirm'
+    ], function ($, confirm) {
+        $('#sync-now-button').on('click', function () {
+            confirm({
+                content: '{$msg}',
+                actions: {
+                    confirm: function () {
+                        window.location.href = '{$syncUrl}';
+                    },
+                    cancel: function () {
+                        // Action on cancel
+                    }
+                }
+            });
+        });
+    });
+script;
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false); ?>

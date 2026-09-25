@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="styles"/>
+    <body>
+        <referenceContainer name="header">
+            <referenceBlock name="header" remove="true"/>
+        </referenceContainer>
+        <referenceContainer name="content">
+            <block class="Tiktok\Tiktok\Block\Adminhtml\SplashPage"
+                   name="tiktok.splashpage"
+                   template="Tiktok_Tiktok::splashpage.phtml" cacheable="false"/>
+            <block class="Tiktok\Tiktok\Block\Adminhtml\ConnectButton"
+                   name="tiktok.connect.button"
+                   template="Tiktok_Tiktok::connect_button.phtml"/>
+        </referenceContainer>
+        <referenceContainer name="page.main.actions">
+            <block class="Magento\Backend\Block\Store\Switcher" name="store_switcher">
+                <action method="setUseConfirm">
+                    <argument name="params" xsi:type="string">1</argument>
+                </action>
+                <arguments>
+                    <argument name="switch_websites" xsi:type="string">1</argument>
+                    <argument name="switch_store_groups" xsi:type="string">0</argument>
+                    <argument name="switch_store_views" xsi:type="string">0</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

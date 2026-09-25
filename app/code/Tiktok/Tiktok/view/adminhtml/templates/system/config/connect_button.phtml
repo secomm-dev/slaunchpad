@@ -1,0 +1,12 @@
+<?php
+/**
+ * @var \Tiktok\Tiktok\Block\Adminhtml\System\Config\ConnectButton $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
+<!-- Render the button -->
+<button id="connect_button"
+        class="action-default scalable"
+        data-mage-init='{"tiktokConnect":{"url": "<?= $escaper->escapeUrl($block->getConnectUrl()) ?>"}}'>
+    <?= /* @noEscape */ __('Connect to TikTok') ?>
+</button>

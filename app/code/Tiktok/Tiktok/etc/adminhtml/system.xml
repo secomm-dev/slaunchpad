@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="tiktok_tab" translate="label" sortOrder="100">
+            <label>TikTok</label>
+        </tab>
+        <section id="tiktok" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Configuration</label>
+            <tab>tiktok_tab</tab>
+            <resource>Tiktok_Tiktok::general</resource> <!-- ACL resource for restricting access -->
+
+            <group id="wrong_scope_group" translate="label" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="1">
+                <label>Configuration</label>
+                <field id="wrong_scope_message" translate="label" type="label" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="1">
+                    <label>NOTE:</label>
+                    <comment>Tiktok is only configurable on the website level.</comment>
+                </field>
+            </group>
+
+            <group id="general" translate="label" sortOrder="10" showInDefault="0" showInWebsite="1" showInStore="0">
+                <label>Configuration</label>
+
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="0" showInWebsite="1" showInStore="0">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <backend_model>Tiktok\Tiktok\Model\Config\Backend\CleanCronTask</backend_model>
+                    <comment>Enable or disable the TikTok API integration.</comment>
+                </field>
+            </group>
+
+            <group id="account" translate="label" sortOrder="20" showInDefault="0" showInWebsite="1" showInStore="0">
+                <label>Account Settings</label>
+
+                <field id="connect_button" translate="label" type="button" sortOrder="10" showInDefault="0"
+                       showInWebsite="1" showInStore="0">
+                    <label>Connect</label>
+                    <frontend_model>Tiktok\Tiktok\Block\Adminhtml\System\Config\ConnectButton</frontend_model>
+                    <comment>Click to initiate connection with TikTok via OAuth2.</comment>
+                </field>
+
+                <field id="disconnect_button" translate="label" type="button" sortOrder="20" showInDefault="0"
+                       showInWebsite="1" showInStore="0">
+                    <label>Disconnect</label>
+                    <frontend_model>Tiktok\Tiktok\Block\Adminhtml\System\Config\DisconnectButton</frontend_model>
+                    <comment>Click to disconnect the current TikTok API integration.</comment>
+                </field>
+            </group>
+
+            <group id="sync" translate="label" showInDefault="0" sortOrder="30" showInWebsite="1" showInStore="0">
+                <label>Sync Settings</label>
+
+                <field id="sync_frequency" translate="label" type="select" sortOrder="10" showInDefault="0" showInWebsite="1" showInStore="0">
+                    <label>Catalog Sync Frequency</label>
+                    <source_model>Tiktok\Tiktok\Model\Config\Source\SyncFrequency</source_model>
+                    <backend_model>Tiktok\Tiktok\Model\Config\Backend\UpsertCronTask</backend_model>
+                    <comment>Select how often the catalog should sync with TikTok.</comment>
+                </field>
+
+                <field id="sync_now_button" translate="label" type="button" sortOrder="20" showInDefault="0"
+                       showInWebsite="1" showInStore="0">
+                    <label>Sync Now</label>
+                    <frontend_model>Tiktok\Tiktok\Block\Adminhtml\System\Config\SyncNowButton</frontend_model>
+                    <comment>Click to manually sync the catalog with TikTok immediately.</comment>
+                </field>
+
+                <group id="custom_labels" translate="label" sortOrder="40" showInDefault="0" showInWebsite="1"
+                       showInStore="0">
+                    <label>Custom Labels Mapping</label>
+
+                    <field id="custom_label_1" translate="label" type="select" sortOrder="10" showInDefault="0"
+                           showInWebsite="1" showInStore="0">
+                        <label>Custom Label 1</label>
+                        <source_model>Tiktok\Tiktok\Model\Config\Source\ProductAttributes</source_model>
+                    </field>
+                    <field id="custom_label_2" translate="label" type="select" sortOrder="20" showInDefault="0"
+                           showInWebsite="1" showInStore="0">
+                        <label>Custom Label 2</label>
+                        <source_model>Tiktok\Tiktok\Model\Config\Source\ProductAttributes</source_model>
+                    </field>
+                    <field id="custom_label_3" translate="label" type="select" sortOrder="30" showInDefault="0"
+                           showInWebsite="1" showInStore="0">
+                        <label>Custom Label 3</label>
+                        <source_model>Tiktok\Tiktok\Model\Config\Source\ProductAttributes</source_model>
+                    </field>
+                    <field id="custom_label_4" translate="label" type="select" sortOrder="40" showInDefault="0"
+                           showInWebsite="1" showInStore="0">
+                        <label>Custom Label 4</label>
+                        <source_model>Tiktok\Tiktok\Model\Config\Source\ProductAttributes</source_model>
+                    </field>
+                    <field id="custom_label_5" translate="label" type="select" sortOrder="50" showInDefault="0"
+                           showInWebsite="1" showInStore="0">
+                        <label>Custom Label 5</label>
+                        <source_model>Tiktok\Tiktok\Model\Config\Source\ProductAttributes</source_model>
+                    </field>
+                </group>
+            </group>
+
+            <!-- Logging Settings Group -->
+            <group id="logging" translate="label" sortOrder="40" showInDefault="0" showInWebsite="1" showInStore="0">
+                <label>Logging Settings</label>
+
+                <!-- Log Level Configuration for TikTok API Interactions -->
+                <field id="log_level" translate="label" type="select" sortOrder="10" showInDefault="0" showInWebsite="1"
+                       showInStore="0">
+                    <label>Log Level</label>
+                    <source_model>Tiktok\Tiktok\Model\Config\Source\LogLevel</source_model>
+                    <comment>Choose the log level for TikTok API interaction logging</comment>
+                </field>
+            </group>
+
+            <group id="pixel_tracking" translate="label" sortOrder="35" showInDefault="0" showInWebsite="1" showInStore="0">
+                <label>Pixel Tracking</label>
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="0" showInWebsite="1" showInStore="0">
+                    <label>Enable Pixel Tracking</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="enable_tp_cookie" translate="label" type="select" sortOrder="20" showInDefault="0" showInWebsite="1" showInStore="0">
+                    <label>Enable Third-Party Cookie</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Allow TikTok 3rd party cookies to be tracked on your Website</comment>
+                </field>
+                <field id="advanced_user_tracking" translate="label" type="select" sortOrder="30" showInDefault="0" showInWebsite="1" showInStore="0">
+                    <label>Advanced User Tracking</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Send detailed user information to TikTok.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

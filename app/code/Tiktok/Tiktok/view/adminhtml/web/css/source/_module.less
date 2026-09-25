@@ -1,0 +1,96 @@
+/****************************
+ * Tiktok Ads Platform > Start
+ ****************************/
+
+.tiktok-iframe-container {
+    embed {
+        overflow: hidden;
+        height: 100vh;
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+.tiktok-account-splashpage {
+    .page-content {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .page-main-actions {
+        margin: 0;
+    }
+}
+
+.tiktok-extension-notification {
+    padding: 3rem;
+
+    .note {
+        color: #303030;
+        font-size: 12px;
+        margin: 5px 0;
+    }
+
+    .extension-description {
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        margin-bottom: 3rem;
+        padding: 2.5rem 0;
+
+        .description-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .content {
+            line-height: 1.7;
+            width: 85%;
+        }
+    }
+
+    .extension-actions {
+        -webkit-flex-basis: auto;
+        flex-basis: auto;
+        -webkit-flex-grow: 1;
+        flex-grow: 1;
+        -webkit-flex-shrink: 1;
+        flex-shrink: 1;
+        align-self: center;
+        margin-left: 2.5rem;
+        margin-right: 1.5rem;
+        text-align: left;
+
+        #connect_button {
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
+            white-space: nowrap;
+            font-size: 1.6rem;
+            letter-spacing: .025em;
+            padding-bottom: 0.6875em;
+            padding-top: 0.6875em;
+        }
+    }
+}
+
+.tiktok-extension-error {
+    padding: 3rem;
+}
+
+/****************************
+ * Menu
+ ****************************/
+.admin__menu {
+    .level-0.item-tiktok-general {
+        > a {
+            &:before {
+                content: url("@{baseDir}Tiktok_Tiktok/images/tiktok-logo.svg");
+                height: 28px;
+                margin: 0 auto;
+                width: 30px;
+            }
+        }
+    }
+}
+

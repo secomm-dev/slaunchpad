@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Stash the vendor-published S2S AddToCart payload so the next page render can
+         track it client-side with the same event_id (TikTok dedupes pixel + S2S). -->
+    <type name="Tiktok\Tiktok\Observer\AddToCartObserver">
+        <plugin name="secomm_tiktok_hyva_pending_addtocart"
+                type="Secomm\TiktokHyva\Plugin\AddToCartPendingEvent"/>
+    </type>
+
+    <!-- CompleteRegistration via the account service (covers SocialLogin popup,
+         CreatePost form and GraphQL — none but CreatePost dispatches the core event).
+         Hooked on the CONCRETE class (the preference target) — interface-type plugin
+         inheritance is unreliable here. -->
+    <type name="Magento\Customer\Model\AccountManagement">
+        <plugin name="secomm_tiktok_hyva_complete_registration"
+                type="Secomm\TiktokHyva\Plugin\AccountManagementPlugin"/>
+    </type>
+
+    <!-- CompleteRegistration carries an explicit value=0 (no monetary value by design)
+         so TikTok diagnostics don't flag a missing "value" field. -->
+    <type name="Tiktok\Tiktok\Model\Event\TiktokEvent">
+        <plugin name="secomm_tiktok_hyva_value_defaults"
+                type="Secomm\TiktokHyva\Plugin\TiktokEventValueDefaults"/>
+    </type>
+
+    <!-- Guest advanced matching: fall back to quote billing address data when the
+         customer session has none (hashing stays inside the vendor TiktokEvent). -->
+    <type name="Tiktok\Tiktok\Model\Event\Context\EventContext">
+        <plugin name="secomm_tiktok_hyva_guest_matching"
+                type="Secomm\TiktokHyva\Plugin\EventContextGuestData"/>
+    </type>
+
+    <!-- Extend the vendor event pool (di argument merge by item name). -->
+    <type name="Tiktok\Tiktok\Model\Event\Pool">
+        <arguments>
+            <argument name="pool" xsi:type="array">
+                <item name="Search" xsi:type="object">Secomm\TiktokHyva\Model\Event\Pool\Search</item>
+                <item name="AddPaymentInfo" xsi:type="object">Secomm\TiktokHyva\Model\Event\Pool\AddPaymentInfo</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Search: swap the base collection factory for the CatalogSearch fulltext one
+         (virtualType — cannot be constructor type-hinted directly). -->
+    <type name="Secomm\TiktokHyva\Model\Event\Pool\Search">
+        <arguments>
+            <argument name="fulltextCollectionFactory" xsi:type="object">
+                Magento\CatalogSearch\Model\ResourceModel\Fulltext\CollectionFactory
+            </argument>
+        </arguments>
+    </type>
+</config>

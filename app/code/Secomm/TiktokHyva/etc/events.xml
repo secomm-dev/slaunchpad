@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="wishlist_add_product">
+        <observer name="secomm_tiktok_add_to_wishlist" instance="Secomm\TiktokHyva\Observer\WishlistObserver"/>
+    </event>
+    <event name="sales_model_service_quote_submit_success">
+        <observer name="secomm_tiktok_place_order" instance="Secomm\TiktokHyva\Observer\PlaceOrderObserver"/>
+    </event>
+</config>

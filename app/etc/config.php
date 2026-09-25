@@ -469,6 +469,7 @@ return [
         'Secomm_PromotionMaxDiscount' => 1,
         'Launchpad_MageplazaTableRate' => 1,
         'Secomm_ThemeHelper' => 1,
+        'Tiktok_Tiktok' => 1,
         'Secomm_Tracking' => 1,
         'Secomm_UiWidget' => 1,
         'Secomm_VNPAY' => 1,
@@ -488,7 +489,8 @@ return [
         'Smile_ElasticsuiteIndices' => 1,
         'Smile_ElasticsuiteAnalytics' => 1,
         'Smile_ElasticsuiteVirtualCategory' => 1,
-        'Snowdog_Menu' => 1
+        'Snowdog_Menu' => 1,
+        'Secomm_TiktokHyva' => 1
     ],
     'system' => [
         'default' => [
