@@ -1,0 +1,42 @@
+PASS home@375 every card has .hp-card-brand (32 cards)
+PASS home@375 AC2 empty brand line 20px + aria-hidden — {"h":20,"ariaHidden":"true"}
+PASS home@375 AC1 brand 14/20 500 rgb(153,161,175) no transform — {"fontSize":"14px","lineHeight":"20px","fontWeight":"500","color":"rgb(153, 161, 175)","textTransform":"none","h":20,"gap":8}
+PASS home@375 AC1 name 8px below brand — gap=8
+PASS home@375 AC3 long brand 1 line ellipsis — {"h":20,"overflow":true,"textOverflow":"ellipsis"}
+PASS home@375 AC2 names aligned per row (brand vs no brand) — spread=0
+PASS home@375 AC4 no h-scroll
+PASS home@375 AC4 0 pageerror
+PASS home@1440 every card has .hp-card-brand (32 cards)
+PASS home@1440 AC2 empty brand line 20px + aria-hidden — {"h":20,"ariaHidden":"true"}
+PASS home@1440 AC1 brand 14/20 500 rgb(153,161,175) no transform — {"fontSize":"14px","lineHeight":"20px","fontWeight":"500","color":"rgb(153, 161, 175)","textTransform":"none","h":20,"gap":8}
+PASS home@1440 AC1 name 8px below brand — gap=8
+PASS home@1440 AC3 long brand 1 line ellipsis — {"h":20,"overflow":true,"textOverflow":"ellipsis"}
+PASS home@1440 AC2 names aligned per row (brand vs no brand) — spread=0
+PASS home@1440 AC4 no h-scroll
+PASS home@1440 AC4 0 pageerror
+PASS plp@375 every card has .hp-card-brand (12 cards)
+PASS plp@375 AC2 empty brand line 20px + aria-hidden — {"h":20,"ariaHidden":"true"}
+PASS plp@375 AC1 brand 14/20 500 rgb(153,161,175) no transform — {"fontSize":"14px","lineHeight":"20px","fontWeight":"500","color":"rgb(153, 161, 175)","textTransform":"none","h":20,"gap":8}
+PASS plp@375 AC1 name 8px below brand — gap=8
+PASS plp@375 AC3 long brand 1 line ellipsis — {"h":20,"overflow":true,"textOverflow":"ellipsis"}
+PASS plp@375 AC2 names aligned per row (brand vs no brand) — spread=0
+PASS plp@375 AC4 no h-scroll
+PASS plp@375 AC4 0 pageerror
+PASS plp@1440 every card has .hp-card-brand (12 cards)
+PASS plp@1440 AC2 empty brand line 20px + aria-hidden — {"h":20,"ariaHidden":"true"}
+PASS plp@1440 AC1 brand 14/20 500 rgb(153,161,175) no transform — {"fontSize":"14px","lineHeight":"20px","fontWeight":"500","color":"rgb(153, 161, 175)","textTransform":"none","h":20,"gap":8}
+PASS plp@1440 AC1 name 8px below brand — gap=8
+PASS plp@1440 AC3 long brand 1 line ellipsis — {"h":20,"overflow":true,"textOverflow":"ellipsis"}
+PASS plp@1440 AC2 names aligned per row (brand vs no brand) — spread=0.015625
+PASS plp@1440 AC4 no h-scroll
+PASS plp@1440 AC4 0 pageerror
+PASS plp-list@1440 every card has .hp-card-brand (10 cards)
+PASS plp-list@1440 AC2 empty brand line 20px + aria-hidden — {"h":20,"ariaHidden":"true"}
+PASS plp-list@1440 AC1 brand 14/20 500 rgb(153,161,175) no transform — {"fontSize":"14px","lineHeight":"20px","fontWeight":"500","color":"rgb(153, 161, 175)","textTransform":"none","h":20,"gap":8}
+PASS plp-list@1440 AC1 name 8px below brand — gap=8
+PASS plp-list@1440 AC3 long brand 1 line ellipsis — {"h":20,"overflow":true,"textOverflow":"ellipsis"}
+PASS plp-list@1440 AC2 names aligned per row (brand vs no brand) — spread=0
+PASS plp-list@1440 AC4 no h-scroll
+PASS plp-list@1440 AC4 0 pageerror
+
+ALL PASS

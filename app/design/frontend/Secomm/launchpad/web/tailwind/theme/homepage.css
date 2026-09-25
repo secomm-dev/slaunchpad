@@ -192,8 +192,14 @@
         @apply line-clamp-2 text-base font-medium leading-6 text-hp-ink hover:text-hp-brand-dark lg:text-[18px] lg:leading-7;
     }
 
+    /* SLP-270 (Figma 2151:17146 "Brand Name"): Label M, one line; the empty
+       line is kept (min-height) when a product has no brand. Weight via
+       font-medium: --ds-type-label-m-font-weight resolves to "500px". */
     .hp-card-brand {
-        @apply text-sm font-medium leading-5 text-[#99a1af];
+        @apply block min-h-5 truncate font-medium;
+        color: var(--ds-text-gray-quinary);
+        font-size: var(--ds-type-label-m-font-size);
+        line-height: var(--ds-type-label-m-line-height);
     }
 
     .hp-card-price {
