@@ -1,0 +1,80 @@
+==== login 1280  home.view=social-login block-container authentication checkout.view=social-login block-container authentication
+   title {'fs': ('12.8px', '14px'), 'lh': ('18.2857px', '20px'), 'bd': ('0px solid rgb(51, 51, 51)', '0px none rgb(51, 51, 51)'), 'bb': ('0px solid', '0px none'), 'w': (391, 403)}
+   h2 {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'w': (391, 403)}
+   blockTitle {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (15, 17), 'w': (125, 121)}
+   blockTitleBox {'fs': ('12.8px', '14px'), 'lh': ('18.2857px', '20px'), 'h': (18, 20), 'w': (391, 403)}
+   label {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (20, 21), 'w': (51, 49)}
+   labelSpan {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (17, 19), 'w': (36, 37)}
+   input {'w': (391, 403)}
+   primary {'w': (106, 107)}
+   socialTitle {'bd': ('0px solid rgb(74, 85, 101)', '0px none rgb(74, 85, 101)'), 'bb': ('0px solid', '0px none'), 'w': (269, 257)}
+   social {'w': (227, 215), 'sh': ('rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0', 'rgba(10, 13, 18, 0.2) 0px 1px 3px 0px, r')}
+   close {'fs': ('22px', '14px'), 'fw': ('600', '400'), 'lh': ('22px', '14px')}
+   link 0 {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(0, 107, 180)', '0px none rgb(0, 107, 180)'), 'bb': ('0px solid', '0px none'), 'h': (15, 17), 'w': (98, 100)}
+   link 1 {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(0, 107, 180)', '0px none rgb(0, 107, 180)'), 'bb': ('0px solid', '0px none'), 'h': (15, 18), 'w': (113, 114)}
+==== login 375  home.view=social-login block-container authentication checkout.view=social-login block-container authentication
+   title {'fs': ('12.8px', '14px'), 'lh': ('18.2857px', '20px'), 'bd': ('0px solid rgb(51, 51, 51)', '0px none rgb(51, 51, 51)'), 'bb': ('0px solid', '0px none')}
+   h2 {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none')}
+   blockTitle {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (15, 17), 'w': (125, 121)}
+   blockTitleBox {'fs': ('12.8px', '14px'), 'lh': ('18.2857px', '20px'), 'h': (18, 20)}
+   label {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (20, 21), 'w': (51, 49)}
+   labelSpan {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (17, 19), 'w': (36, 37)}
+   input OK
+   primary OK
+   socialTitle {'bd': ('0px solid rgb(74, 85, 101)', '0px none rgb(74, 85, 101)'), 'bb': ('0px solid', '0px none')}
+   social {'sh': ('rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0', 'rgba(10, 13, 18, 0.2) 0px 1px 3px 0px, r')}
+   close {'fs': ('22px', '14px'), 'fw': ('600', '400'), 'lh': ('22px', '14px')}
+   link 0 {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(0, 107, 180)', '0px none rgb(0, 107, 180)'), 'bb': ('0px solid', '0px none'), 'h': (15, 17), 'w': (98, 100)}
+   link 1 {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(0, 107, 180)', '0px none rgb(0, 107, 180)'), 'bb': ('0px solid', '0px none'), 'h': (15, 18), 'w': (113, 114)}
+==== create 1280  home.view=social-login block-container create checkout.view=social-login block-container create
+   title {'fs': ('12.8px', '14px'), 'lh': ('18.2857px', '20px'), 'bd': ('0px solid rgb(51, 51, 51)', '0px none rgb(51, 51, 51)'), 'bb': ('0px solid', '0px none'), 'w': (391, 403)}
+   h2 {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'w': (391, 403)}
+   blockTitle - -
+   blockTitleBox - -
+   label {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (20, 21), 'w': (43, 39)}
+   labelSpan {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (17, 19), 'w': (29, 24)}
+   input {'w': (391, 403)}
+   primary {'bd': ('0px none rgb(51, 153, 204)', '0px none rgb(255, 255, 255)')}
+   socialTitle {'bd': ('0px solid rgb(74, 85, 101)', '0px none rgb(74, 85, 101)'), 'bb': ('0px solid', '0px none'), 'w': (269, 257)}
+   social {'w': (227, 215), 'sh': ('rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0', 'rgba(10, 13, 18, 0.2) 0px 1px 3px 0px, r')}
+   close {'fs': ('22px', '14px'), 'fw': ('600', '400'), 'lh': ('22px', '14px')}
+   link 0 {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(0, 107, 180)', '0px none rgb(0, 107, 180)'), 'bb': ('0px solid', '0px none'), 'h': (15, 17)}
+==== create 375  home.view=social-login block-container create checkout.view=social-login block-container create
+   title {'fs': ('12.8px', '14px'), 'lh': ('18.2857px', '20px'), 'bd': ('0px solid rgb(51, 51, 51)', '0px none rgb(51, 51, 51)'), 'bb': ('0px solid', '0px none')}
+   h2 {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none')}
+   blockTitle - -
+   blockTitleBox - -
+   label {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (20, 21), 'w': (43, 39)}
+   labelSpan {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (17, 19), 'w': (29, 24)}
+   input OK
+   primary {'bd': ('0px none rgb(51, 153, 204)', '0px none rgb(255, 255, 255)')}
+   socialTitle {'bd': ('0px solid rgb(74, 85, 101)', '0px none rgb(74, 85, 101)'), 'bb': ('0px solid', '0px none')}
+   social {'sh': ('rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0', 'rgba(10, 13, 18, 0.2) 0px 1px 3px 0px, r')}
+   close {'fs': ('22px', '14px'), 'fw': ('600', '400'), 'lh': ('22px', '14px')}
+   link 0 {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(0, 107, 180)', '0px none rgb(0, 107, 180)'), 'bb': ('0px solid', '0px none'), 'h': (15, 17)}
+==== forgot 1280  home.view=social-login block-container forgot checkout.view=social-login block-container forgot
+   title {'fs': ('12.8px', '14px'), 'lh': ('18.2857px', '20px'), 'bd': ('0px solid rgb(51, 51, 51)', '0px none rgb(51, 51, 51)'), 'bb': ('0px solid', '0px none'), 'w': (391, 403)}
+   h2 {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'w': (391, 403)}
+   blockTitle - -
+   blockTitleBox - -
+   label {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (20, 21), 'w': (51, 49)}
+   labelSpan {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (17, 19), 'w': (36, 37)}
+   input {'w': (391, 403)}
+   primary {'bd': ('0px none rgb(51, 153, 204)', '0px none rgb(255, 255, 255)')}
+   socialTitle {'bd': ('0px solid rgb(74, 85, 101)', '0px none rgb(74, 85, 101)'), 'bb': ('0px solid', '0px none'), 'w': (269, 257)}
+   social {'w': (227, 215), 'sh': ('rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0', 'rgba(10, 13, 18, 0.2) 0px 1px 3px 0px, r')}
+   close {'fs': ('22px', '14px'), 'fw': ('600', '400'), 'lh': ('22px', '14px')}
+   link 0 {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(0, 107, 180)', '0px none rgb(0, 107, 180)'), 'bb': ('0px solid', '0px none'), 'h': (15, 17)}
+==== forgot 375  home.view=social-login block-container forgot checkout.view=social-login block-container forgot
+   title {'fs': ('12.8px', '14px'), 'lh': ('18.2857px', '20px'), 'bd': ('0px solid rgb(51, 51, 51)', '0px none rgb(51, 51, 51)'), 'bb': ('0px solid', '0px none')}
+   h2 {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none')}
+   blockTitle - -
+   blockTitleBox - -
+   label {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (20, 21), 'w': (51, 49)}
+   labelSpan {'bd': ('0px solid rgb(16, 24, 40)', '0px none rgb(16, 24, 40)'), 'bb': ('0px solid', '0px none'), 'h': (17, 19), 'w': (36, 37)}
+   input OK
+   primary {'bd': ('0px none rgb(51, 153, 204)', '0px none rgb(255, 255, 255)')}
+   socialTitle {'bd': ('0px solid rgb(74, 85, 101)', '0px none rgb(74, 85, 101)'), 'bb': ('0px solid', '0px none')}
+   social {'sh': ('rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0', 'rgba(10, 13, 18, 0.2) 0px 1px 3px 0px, r')}
+   close {'fs': ('22px', '14px'), 'fw': ('600', '400'), 'lh': ('22px', '14px')}
+   link 0 {'lh': ('18.2857px', '18.304px'), 'bd': ('0px solid rgb(0, 107, 180)', '0px none rgb(0, 107, 180)'), 'bb': ('0px solid', '0px none'), 'h': (15, 17)}

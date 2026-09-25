@@ -1,0 +1,99 @@
+PASS | 1280 login view switched | view=authentication
+PASS | 1280 login no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":760}
+PASS | 1280 login title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 1280 login primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 1280 login link centered on button row | dy=0
+PASS | 1280 login social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 1280 login validation messages shown (vi), no overlap | n=2 "Đây là một trường bắt buộc."
+PASS | 1280 create view switched | view=create
+PASS | 1280 create no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":760}
+PASS | 1280 create title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 1280 create primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 1280 create link centered on button row | dy=0
+PASS | 1280 create social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 1280 create validation messages shown (vi), no overlap | n=5 "Đây là một trường bắt buộc."
+PASS | 1280 forgot view switched | view=forgot
+PASS | 1280 forgot no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":760}
+PASS | 1280 forgot title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 1280 forgot primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 1280 forgot link centered on button row | dy=0
+PASS | 1280 forgot social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 1280 forgot validation messages shown (vi), no overlap | n=1 "Đây là một trường bắt buộc."
+PASS | 1280 close button closes popup
+PASS | 1280 checkout CSS loaded (social/ui/discount) | [true,true,true]
+PASS | 1280 no console errors
+PASS | 768 login view switched | view=authentication
+PASS | 768 login no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":736}
+PASS | 768 login title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 768 login primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 768 login link centered on button row | dy=0
+PASS | 768 login social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 768 login validation messages shown (vi), no overlap | n=2 "Đây là một trường bắt buộc."
+PASS | 768 create view switched | view=create
+PASS | 768 create no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":736}
+PASS | 768 create title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 768 create primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 768 create link centered on button row | dy=0
+PASS | 768 create social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 768 create validation messages shown (vi), no overlap | n=5 "Đây là một trường bắt buộc."
+PASS | 768 forgot view switched | view=forgot
+PASS | 768 forgot no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":736}
+PASS | 768 forgot title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 768 forgot primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 768 forgot link centered on button row | dy=0
+PASS | 768 forgot social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 768 forgot validation messages shown (vi), no overlap | n=1 "Đây là một trường bắt buộc."
+PASS | 768 close button closes popup
+PASS | 768 checkout CSS loaded (social/ui/discount) | [true,true,true]
+PASS | 768 no console errors
+PASS | 745 login view switched | view=authentication
+PASS | 745 login no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":713}
+PASS | 745 login title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 745 login primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 745 login link below full-width button | below=true
+PASS | 745 login social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 745 login validation messages shown (vi), no overlap | n=2 "Đây là một trường bắt buộc."
+PASS | 745 create view switched | view=create
+PASS | 745 create no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":713}
+PASS | 745 create title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 745 create primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 745 create link below full-width button | below=true
+PASS | 745 create social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 745 create validation messages shown (vi), no overlap | n=5 "Đây là một trường bắt buộc."
+PASS | 745 forgot view switched | view=forgot
+PASS | 745 forgot no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":713}
+PASS | 745 forgot title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 745 forgot primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 745 forgot link below full-width button | below=true
+PASS | 745 forgot social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 745 forgot validation messages shown (vi), no overlap | n=1 "Đây là một trường bắt buộc."
+PASS | 745 close button closes popup
+PASS | 745 checkout CSS loaded (social/ui/discount) | [true,true,true]
+PASS | 745 no console errors
+PASS | 375 login view switched | view=authentication
+PASS | 375 login no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":343}
+PASS | 375 login title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 375 login primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 375 login link below full-width button | below=true
+PASS | 375 login columns stacked
+PASS | 375 login social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 375 login validation messages shown (vi), no overlap | n=2 "Đây là một trường bắt buộc."
+PASS | 375 create view switched | view=create
+PASS | 375 create no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":343}
+PASS | 375 create title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 375 create primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 375 create link below full-width button | below=true
+PASS | 375 create columns stacked
+PASS | 375 create social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 375 create validation messages shown (vi), no overlap | n=5 "Đây là một trường bắt buộc."
+PASS | 375 forgot view switched | view=forgot
+PASS | 375 forgot no horizontal overflow (page/popup/social) | {"doc":false,"pop":false,"soc":false,"wrapW":343}
+PASS | 375 forgot title plain ink heading | bg=rgba(0, 0, 0, 0) h2=rgb(16, 24, 40)
+PASS | 375 forgot primary config color 42px r8 | bg=rgb(51, 153, 204) h=42 r=8px
+PASS | 375 forgot link below full-width button | below=true
+PASS | 375 forgot columns stacked
+PASS | 375 forgot social btn surface + SVG, no FontAwesome | bg=oklch(0.995 0.002 155)
+PASS | 375 forgot validation messages shown (vi), no overlap | n=1 "Đây là một trường bắt buộc."
+PASS | 375 close button closes popup
+PASS | 375 checkout CSS loaded (social/ui/discount) | [true,true,true]
+PASS | 375 no console errors

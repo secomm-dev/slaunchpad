@@ -6,6 +6,22 @@ vendor code untouched.
 
 ## [Unreleased]
 
+### Changed (2026-09-25) — TASK-NWV2MQ (SLP-211)
+
+- `view/frontend/web/css/social-login-checkout.css`: re-synced the OSC checkout
+  social-login popup (luma fallback) with the Hyvä popup as it ships today
+  (SLP-259 plain title + SLP-246 global style), measured element by element on
+  the home page: title banner `#3399cc` removed (plain ink heading), block-title
+  rule removed, label/input/primary button/link/close button/social buttons and
+  the two-column layout match the Hyvä sizes, spacing and colors (≤7px position
+  delta at 1280/375). The checkout keeps its own font family (Open Sans) until
+  a checkout design exists; primary buttons keep the `style_management` config
+  color. Beats the page-wide OSC `border-radius: 4px !important`, the vendor
+  `.modal-content .secondary a.action { margin: -20px 0 25px !important }` (the
+  old 6px/2px link nudge is gone — the link is centered on the button row) and
+  luma's modal-slide offset under 768px. CSS-only, every vendor JS/class hook
+  preserved.
+
 ### Added (2026-09-16) — TASK-8TXS2P (SLP-203)
 
 - `view/frontend/layout/onestepcheckout_index_index.xml` +

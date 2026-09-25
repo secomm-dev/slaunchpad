@@ -1,51 +1,60 @@
 /**
  * Launchpad_MageplazaSocialLogin — restyle the OSC social-login modal to the
- * Hyvä UI look (TASK-8TXS2P / SLP-203).
+ * Hyvä UI look (TASK-8TXS2P / SLP-203; synced to the current Hyvä modal by
+ * TASK-NWV2MQ / SLP-211).
  *
  * The OSC checkout runs in the Magento/luma scope (LL-0011): the vendor
- * hyva_default template swap and the child-theme overrides of SLP-160 never
- * load here, so the auth-link modal renders the legacy luma popup
- * (.btn-social + FontAwesome + the duplicated #3399cc title bars). This file
- * is attached at module level on onestepcheckout_index_index only and
- * restyles that legacy markup to the SLP-160 target — display-only, every
- * JS/class hook the vendor widget relies on (#social-login-popup,
- * #mp-popup-social-content, .actions-toolbar.social-btn, <provider>-login,
- * .btn-social, .action.login.primary ...) is preserved 1:1.
+ * hyva_default template swap and the child-theme overlay
+ * (web/tailwind/theme/social-login.css) never load here, so the auth-link
+ * modal renders the legacy luma popup (.btn-social + FontAwesome + the
+ * #3399cc title bars). This file is attached at module level on
+ * onestepcheckout_index_index only and restyles that legacy markup to match
+ * the Hyvä modal on theme pages — display-only, every JS/class hook the
+ * vendor widget relies on (#social-login-popup, #mp-popup-social-content,
+ * .actions-toolbar.social-btn, <provider>-login, .btn-social,
+ * .action.login.primary ...) is preserved 1:1.
+ *
+ * Target = the Hyvä modal as it ships today (SLP-160 + SLP-259 plain title +
+ * SLP-246 global style), measured element by element on the home page
+ * (evidence .ai/evidence/TASK-NWV2MQ). The checkout keeps its own font
+ * family (Open Sans) until a checkout design exists — sizes, weights,
+ * spacing, colors and shapes follow the Hyvä modal.
  *
  * Selectors are id-anchored (#social-login-popup / .modal-popup.osc-social-
  * login-popup): id specificity beats both the vendor stylesheet and the
- * vendor css.phtml inline <style> that re-injects #3399cc after external
- * stylesheets (same beat-injection problem SLP-160 solved with specificity).
- *
- * Colors follow the Hyvä modal as it ships today (SLP-160 round 9): the
- * banner title and the primary buttons take the Mageplaza style_management
- * config color via the vendor css.phtml inline <style> — this file only
- * normalizes shape. Ink #020617, ink-muted #475569, border gray-300
- * #d1d5db (hover #9ca3af).
+ * vendor css.phtml inline <style> that re-injects the style_management color
+ * after external stylesheets. The primary buttons KEEP that config color
+ * (same as the Hyvä modal); every other color is the theme token with its
+ * value resolved on the Hyvä modal as fallback — the tokens do not exist in
+ * the luma scope.
  */
 
 /* ---- card ---- */
 
 /* Vendor OSC css pins the wrap at `width: 600px !important`
    ((0,3,0) Mageplaza_Osc style.css ~line 555) — body.checkout-index-index
-   climbs to (0,4,0); min() keeps 760px on desktop and fits small screens. */
+   climbs to (0,4,0); min() keeps 760px on desktop and the Hyvä 16px gutter
+   on small screens. */
 body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap {
-    width: min(760px, calc(100vw - 16px)) !important;
-    max-width: min(760px, calc(100vw - 16px)) !important;
-    margin: 8px auto !important;
+    width: min(760px, calc(100vw - 32px)) !important;
+    max-width: min(760px, calc(100vw - 32px)) !important;
+    margin: 0 auto !important;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 8px;
+    background: var(--color-surface, #fcfefd);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-.modal-popup.osc-social-login-popup .modal-header {
-    padding: 24px 24px 0;
+/* The Hyvä card has no header row: the close button floats in the corner and
+   the panel title starts 39px below the card top. The header collapses; the
+   absolutely-positioned close button stays anchored to the card. */
+body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap .modal-header {
+    min-height: 0;
+    height: 0;
+    padding: 0 !important;
     border: none;
     background: none;
-}
-
-/* The h1 is hidden below, so the header would collapse to its 24px padding
-   while the absolutely-positioned close button hangs ~30px lower and the
-   content paints over it — reserve the close button's row. */
-.modal-popup.osc-social-login-popup .modal-header {
-    min-height: 54px;
 }
 
 /* The panel title below is the real heading; the modal h1 duplicates it. */
@@ -53,14 +62,17 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
     display: none;
 }
 
-.modal-popup.osc-social-login-popup .modal-content {
-    padding: 0 16px 24px;
+body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap .modal-content {
+    padding: 0 !important;
 }
+
+/* ---- close button (Hyvä: 36px round, no border, muted × glyph) ---- */
 
 /* The vendor desktop block styles this very button with
    `.checkout-index-index ... header .action-close { padding: 15px !important }`
    ((0,5,1)) — the body prefix climbs to (0,6,1); without it the padding
-   squeezes the content box to 6px and the × collapses. */
+   squeezes the content box to 6px and the × collapses. Luma also adds a
+   15px margin, which pushed the button 27px from the card edge. */
 body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap header .action-close {
     z-index: 5;
     top: 12px;
@@ -70,35 +82,42 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
     justify-content: center;
     width: 36px;
     height: 36px;
+    margin: 0;
     padding: 0 !important;
-    border: 1px solid #d1d5db;
+    border: none;
     border-radius: 9999px !important;
-    background: #fff;
+    background: transparent;
+    color: var(--color-ink-muted, #4a5565);
     line-height: 1;
+    transition: background-color 150ms ease, color 150ms ease;
 }
 
-.modal-popup.osc-social-login-popup .action-close:hover,
-.modal-popup.osc-social-login-popup .action-close:focus {
-    background: #fff;
-    border-color: #9ca3af;
+.modal-popup.osc-social-login-popup .action-close:hover {
+    background: var(--color-gray-100, #f3f6f4);
+    color: var(--color-ink, #101828);
 }
 
-/* the vendor glyph (font-icons) renders inconsistently here — the SVG on the
-   span above is the visible × */
+.modal-popup.osc-social-login-popup .action-close:focus-visible {
+    outline: 2px solid var(--color-primary, #36563a);
+    outline-offset: 2px;
+}
+
+/* the vendor glyph (font-icons) renders inconsistently here — the bars on
+   the span below are the visible × */
 .modal-popup.osc-social-login-popup .action-close::before {
     display: none;
 }
 
 /* luma keeps a visible "Close" label — the Hyvä modal shows only the ×.
-   Pure-CSS × (2 rotated bars): font-icons and the SVG data-URI both proved
-   unreliable on this page. */
+   Pure-CSS × (2 rotated bars, currentColor): font-icons and the SVG data-URI
+   both proved unreliable on this page. */
 .modal-popup.osc-social-login-popup .action-close span {
     display: block;
     position: relative;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     font-size: 0;
-    color: transparent;
+    color: inherit;
 }
 
 .modal-popup.osc-social-login-popup .action-close span::before,
@@ -108,9 +127,10 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
     top: 50%;
     left: 0;
     width: 100%;
-    height: 1.5px;
+    height: 2px;
+    margin-top: -1px;
     border-radius: 1px;
-    background: #020617;
+    background: currentColor;
 }
 
 .modal-popup.osc-social-login-popup .action-close span::before {
@@ -121,40 +141,62 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
     transform: rotate(-45deg);
 }
 
-body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap {
-    top: 50%;
-    transform: translateY(-50%);
+/* ---- two-column layout (Hyvä: forms flex 1 + social column 240px) ---- */
+
+/* Vendor OSC css forces `.mfp-hide { display: block !important }` ((0,5,0))
+   on this node inside the modal — the id climbs over it. Scoped to the modal
+   so the source node outside it keeps its vendor hiding. */
+.modal-popup.osc-social-login-popup #social-login-popup.white-popup {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 32px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 24px;
+    background: transparent; /* legacy .white-popup #fff over the card surface */
 }
 
-#social-login-popup.white-popup {
-    max-width: 100%;
+/* Form column — padding-top 15px is the Hyvä title offset (the inline
+   style="padding-top: 15px" loses to legacy `.col-mp { padding: 0
+   !important }` here); the col-mp float/percent width is dropped. */
+.modal-popup.osc-social-login-popup #social-login-popup > .mp-social-popup {
+    float: none;
+    width: auto;
+    flex: 1 1 0;
+    min-width: 280px;
+    padding: 15px 0 0 !important;
 }
 
-/* Vendor OSC css styles the X white for the removed blue bar
-   (`header .action-close:before { color: #fff !important }` — (0,5,1),
-   desktop block); on the white card it disappears — body prefix climbs to
-   (0,5,2). */
-body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap header .action-close::before {
-    color: #020617 !important;
+/* Social column — beats legacy `#mp-popup-social-content { padding-top: 75px }`
+   and the full-row width it had in the float layout. */
+.modal-popup.osc-social-login-popup #social-login-popup > #mp-popup-social-content {
+    float: none;
+    width: auto;
+    max-width: none;
+    flex: 0 0 240px;
+    margin: 0;
+    padding-top: 15px;
 }
 
-/* ---- panel titles (banner with the Mageplaza config color, like the Hyvä
-   modal on theme pages — SLP-160 round 9 respects style_management) ---- */
+/* ---- panel titles (SLP-259: plain ink heading, no config-color banner) ---- */
 
-/* The vendor css.phtml inline <style> sets the banner background-color from
-   the style_management config — KEEP it (do not touch background) and only
-   normalize the shape/typography. The extra .social-login class wins the
-   shape rules over the vendor stylesheet. */
+/* The vendor css.phtml inline <style> paints the style_management color on
+   `#social-login-popup .social-login-title` (1,1,0) — (1,2,0) removes it; the
+   config color stays on the buttons only. */
 #social-login-popup .social-login .social-login-title {
     /* vendor stretches the title across both columns with
        `#social-login-popup > div.mp-social-popup... div.social-login-title
        { width: 200% }` (1,4,2) — !important is the reliable beat here
        (SLP-160 F5 pattern) */
     width: auto !important;
-    padding: 10px 0;
-    margin: 0 0 12px;
+    margin: 0 0 16px;
+    padding: 0;
+    border-radius: 0;
+    background: none;
     text-align: center;
-    border-radius: 8px;
 }
 
 /* the legacy per-panel PNG icon rides the h2 background (padding-left 40px);
@@ -166,42 +208,103 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
 
 #social-login-popup .social-login-title h2 {
     margin: 0;
-    padding-left: 0;
+    padding: 0;
     background: none;
+    width: auto; /* legacy .forgot-pass-title { width: 80% } */
     font-size: 18px;
     font-weight: 600;
-    color: #fff;
+    line-height: 1.4;
+    color: var(--color-ink, #101828);
 }
 
 /* ---- forms ---- */
 
-#social-login-popup .mp-social-popup {
-    padding-top: 0 !important; /* vendor inline style="padding-top: 15px" */
+/* legacy `#social-login-popup .block-container .block { padding: 20px 25px
+   !important }` (1,2,0) indents every form by 25px — Hyvä keeps only the
+   vertical 20px. */
+#social-login-popup .social-login.block-container .block {
+    padding: 20px 0 !important;
 }
 
-#social-login-popup .block-title span {
+/* legacy block title carries a #ccc rule + 10px padding */
+#social-login-popup .social-login.block-container .block .block-title {
+    margin: 0 0 12px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+#social-login-popup .social-login.block-container .block .block-title span {
+    font-size: 12.8px;
+    font-weight: 500;
+    line-height: 1.43;
+    color: var(--color-ink, #101828);
+}
+
+#social-login-popup .social-login .fieldset > .field {
+    margin: 4px 0 0;
+}
+
+#social-login-popup .social-login .fieldset > .field:not(.choice) > .label {
+    display: inline-block;
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--color-ink, #101828);
+}
+
+#social-login-popup .social-login .fieldset .field .control {
+    margin: 0 0 10px;
+}
+
+/* forgot view intro text */
+#social-login-popup .social-login .fieldset > .field.note {
+    font-size: 12.8px;
+    line-height: 1.43;
+}
+
+/* OSC design css pins `button, input, select, textarea { border-radius: 4px
+   !important }` page-wide — the id-anchored !important wins inside the popup
+   only. */
+#social-login-popup .social-login .input-text {
+    box-sizing: border-box;
+    height: 44px;
+    padding: 10px 14px;
+    border: 1px solid var(--ds-border-gray-primary, #d1d5dc);
+    border-radius: 6px !important;
+    background: #fff;
+    color: var(--color-ink, #101828);
+    font-size: 16px;
+    line-height: 24px;
+}
+
+#social-login-popup .social-login .input-text:focus {
+    border-color: var(--color-primary, #36563a);
+    box-shadow: none;
+}
+
+/* Newsletter checkbox — legacy `#social-login-popup .social-login .fieldset
+   .field { display: block }` (1,3,0) splits input/label; +1 class */
+#social-login-popup .social-login .fieldset .field.choice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+}
+
+#social-login-popup .social-login .fieldset .field.choice .checkbox {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+}
+
+#social-login-popup .social-login .fieldset .field.choice .label {
+    margin: 0;
     font-size: 14px;
     font-weight: 400;
-    color: #475569;
-}
-
-#social-login-popup label.label {
-    font-size: 14px;
-    font-weight: 500;
-    color: #020617;
-}
-
-#social-login-popup .input-text {
-    height: auto;
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background: #fff;
-}
-
-#social-login-popup .input-text:focus {
-    border-color: #14532d;
-    box-shadow: none;
+    line-height: 20px;
+    color: var(--color-ink, #101828);
 }
 
 /* primary action — the color comes from the Mageplaza config via the vendor
@@ -209,120 +312,190 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
    normalized here. */
 #social-login-popup .action.login.primary,
 #social-login-popup .action.send.primary,
-#social-login-popup .action.create.primary,
-#social-login-popup .action.remind.primary {
+#social-login-popup .action.create.primary {
     display: inline-block;
-    padding: 10px 20px;
+    margin: 0;
+    padding: 8px 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px !important; /* OSC 4px !important, see .input-text */
     color: #fff;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 12.8px;
+    font-weight: 500;
+    line-height: 25.6px;
     box-shadow: none;
+    cursor: pointer;
 }
 
-/* ---- actions toolbar (round 6): gap between the submit button and the
-   back/forgot link ---- */
+#social-login-popup .action.login.primary:hover,
+#social-login-popup .action.send.primary:hover,
+#social-login-popup .action.create.primary:hover {
+    filter: brightness(0.92);
+}
 
-/* The vendor templates nest .secondary (the "Quay lại"/"Quên mật khẩu?"
-   link) inside .primary next to the button, so luma's float toolbar layout
-   never applies: the link sits flush against the button (gap 0 measured in
-   the create/forgot views). Flex row + fixed gap normalizes all three views
-   and vertically centers the link against the 36px button. The social-btn
-   toolbars have no .primary wrapper — untouched. */
-#social-login-popup .actions-toolbar .primary {
+/* ---- actions toolbar: button + secondary link on one centered row ---- */
+
+/* Two markup variants: the login view has .secondary ("Quên mật khẩu?") as a
+   SIBLING of .primary; the create/forgot views nest .secondary ("Quay lại")
+   INSIDE .primary next to the button. Both become a centered flex row, so
+   the link sits on the button's center line without margin nudges. luma's
+   clearfix ::before/::after would turn into flex items — dropped. */
+#social-login-popup .social-login.block-container .actions-toolbar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
+    margin: 7px 0 0;
+    padding: 0 0 12px;
 }
 
-/* The login view follows the luma markup instead — .secondary is a SIBLING
-   of .primary inside the toolbar, and there the whitespace between the
-   inline-blocks is the only gap (10px measured). Flex the toolbar itself;
-   scoped to the form views (the social-btn toolbars live outside
-   .block-container and stack their full-width buttons vertically) and to
-   ≥768px only — luma stacks the toolbar under 768px (button full-width,
-   link below) and flexing there squeezed the button (measured at 745px).
-   .secondary rides luma's `margin: 10px`, which would stack on top of the
-   flex gap (22px measured) — neutralize it inside the flexed toolbar;
-   flex-wrap keeps a wrapped link below the button if a column ever runs
-   narrow. */
-@media (min-width: 768px) {
-    #social-login-popup .social-login.block-container .actions-toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 12px;
+#social-login-popup .social-login.block-container .actions-toolbar::before,
+#social-login-popup .social-login.block-container .actions-toolbar::after,
+#social-login-popup .social-login.block-container .actions-toolbar .primary::before,
+#social-login-popup .social-login.block-container .actions-toolbar .primary::after {
+    display: none;
+}
+
+#social-login-popup .social-login.block-container .actions-toolbar .primary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    float: none;
+    margin: 0;
+}
+
+/* measured on the Hyvä modal: link starts 24px after the login/send button,
+   15px after the create button */
+#social-login-popup .social-login.block-container .actions-toolbar > .secondary {
+    float: none;
+    margin: 0 0 0 24px;
+}
+
+#social-login-popup .social-login.block-container .actions-toolbar .primary > .secondary {
+    float: none;
+    margin: 0 0 0 15px;
+}
+
+#social-login-popup .social-login.block-container.forgot .actions-toolbar .primary > .secondary {
+    margin-left: 24px;
+}
+
+/* Vendor `.modal-content .secondary a.action { margin: -20px 0 25px
+   !important }` lifts the link above the button row (the old 6px/2px nudge
+   compensated for it) and floats it right; legacy `.action.back { display:
+   block }` and luma mobile `.actions-toolbar .action { width: 100% }`
+   stretch it. */
+#social-login-popup .social-login.block-container .actions-toolbar a.action {
+    display: inline;
+    float: none !important;
+    width: auto;
+    margin: 0 !important;
+    font-size: 12.8px;
+    line-height: 1.43;
+}
+
+/* Hyvä stacks under 768px: full-width button, link centered below (24px
+   gap; the create view's "Quay lại" sits right under its button) */
+@media (max-width: 767px) {
+    #social-login-popup .social-login.block-container .actions-toolbar .primary {
+        width: 100%;
+        justify-content: center;
     }
 
-    #social-login-popup .social-login.block-container .actions-toolbar .secondary {
+    #social-login-popup .social-login.block-container .actions-toolbar .primary > .action.primary {
+        width: 100%;
+    }
+
+    /* vendor `.actions-toolbar > .secondary:last-child { margin-top: 0
+       !important }` */
+    #social-login-popup .social-login.block-container .actions-toolbar > .secondary {
+        flex: 0 0 calc(100% - 8px);
+        margin: 24px 0 0 8px !important;
+        text-align: center;
+    }
+
+    #social-login-popup .social-login.block-container .actions-toolbar .primary > .secondary {
+        flex: 0 0 100%;
         margin: 0;
+        text-align: center;
     }
 
-    #social-login-popup .social-login.block-container .actions-toolbar .secondary .action {
-        margin-top: 0;
+    #social-login-popup .social-login.block-container.forgot .actions-toolbar .primary > .secondary {
+        margin: 24px 0 0;
     }
 }
 
 /* ---- social channel column ---- */
 
-/* "Or sign in with" divider with rules on both sides (SLP-160 look) */
+#mp-popup-social-content .social-login-authentication-channel {
+    float: none;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 12px;
+    padding: 10px !important; /* legacy mobile `.col-mp { padding: 0 !important }` */
+}
+
+/* "Or sign in with" divider with rules on both sides (Hyvä look) */
 #mp-popup-social-content .block-title {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin: 0 0 16px;
+    justify-content: center;
+    gap: 12px;
+    margin: 0 0 12px;
     font-size: 14px;
     font-weight: 500;
-    color: #475569;
+    line-height: 20px;
+    color: var(--color-ink-muted, #4a5565);
+    text-align: center;
 }
 
 #mp-popup-social-content .block-title::before,
 #mp-popup-social-content .block-title::after {
     content: "";
-    flex: 1;
+    flex: 1 1 0;
     height: 1px;
-    background: #e2e8f0;
+    background: var(--color-gray-200, #e3e7e3);
 }
 
+#mp-popup-social-content .social-login-authentication-channel .block-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* the Hyvä toolbar keeps the legacy 15px/27px side offsets */
 #mp-popup-social-content .actions-toolbar.social-btn {
-    margin: 0 0 12px;
+    width: auto;
+    max-width: none;
+    margin: 7px 0 0 15px;
+    padding: 0 27px 12px 0;
 }
 
-.modal-content .secondary a.action {
-    margin-bottom: 0 !important;
-    margin-top: 6px !important;
-}
-
-#mp-popup-social-content a.btn.btn-social {
-    box-sizing: border-box;
-}
-
-/* white bordered brand button (SLP-160 Tailwind target:
+/* white bordered brand button (Hyvä Tailwind target:
    w-full items-center justify-center gap-3 rounded-md border border-gray-300
-   bg-surface px-4 py-2.5 text-sm font-medium text-ink shadow-sm) */
+   bg-surface px-3 py-2.5 text-sm font-medium text-ink shadow-sm) */
 #mp-popup-social-content a.btn.btn-social {
     display: inline-flex;
+    box-sizing: border-box;
     width: 100%;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    padding: 10px 16px;
-    border: 1px solid #d1d5db;
+    padding: 10px 12px;
+    border: 1px solid var(--color-gray-300, #d0d5d1);
     border-radius: 6px;
-    background: #fff;
-    color: #020617;
+    background: var(--color-surface, #fcfefd);
+    color: var(--color-ink, #101828);
     font-size: 14px;
     font-weight: 500;
+    white-space: nowrap;
     text-shadow: none;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px 0 rgb(10 13 18 / 0.2), 0 1px 2px -1px rgb(10 13 18 / 0.2);
 }
 
 #mp-popup-social-content a.btn.btn-social:hover,
 #mp-popup-social-content a.btn.btn-social:focus {
-    border-color: #9ca3af;
-    background: #fff;
-    color: #020617;
+    border-color: var(--color-gray-400, #9ca39d);
+    background: var(--color-surface, #fcfefd);
+    color: var(--color-ink, #101828);
 }
 
 /* FontAwesome glyph out, inline-SVG-equivalent data URI in */
@@ -333,6 +506,7 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
 #mp-popup-social-content a.btn.btn-social::before {
     content: "";
     display: inline-block;
+    flex-shrink: 0;
     width: 24px;
     height: 24px;
     background: no-repeat center / contain;
@@ -346,41 +520,40 @@ body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap 
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%231877F2'/%3E%3Cpath fill='%23ffffff' d='M16.67 15.47l.53-3.47h-3.33V9.75c0-.95.46-1.87 1.96-1.87h1.52V4.94s-1.38-.23-2.7-.23c-2.74 0-4.53 1.66-4.53 4.67v2.62H7.08v3.47h3.04v8.38a12.2 12.2 0 0 0 3.75 0v-8.38h2.48z'/%3E%3C/svg%3E");
 }
 
-/* ---- stack to one column on narrow screens (SLP-160 breakpoint 640px) ---- */
+/* ---- narrow screens ---- */
 
-@media (max-width: 639px) {
-    #social-login-popup .mp-social-popup.col-mp.mp-7,
-    #social-login-popup .mp-social-popup {
-        width: 100%;
-        float: none;
-    }
-
-    #mp-popup-social-content {
-        width: 100%;
-        float: none;
-        margin-top: 16px;
-    }
-
-    #mp-popup-social-content .social-login-authentication-channel.col-mp.mp-5,
-    #mp-popup-social-content .social-login-authentication-channel {
-        width: 100%;
-        float: none;
-    }
-
-    .modal-popup.modal-slide._inner-scroll._show {
+/* luma turns the popup into a modal-slide under 768px (`left: 44px`, full
+   height) — keep the centered Hyvä card instead. */
+@media (max-width: 767px) {
+    .modal-popup.modal-slide.osc-social-login-popup._inner-scroll._show {
         left: 0 !important;
     }
 
     body.checkout-index-index .modal-popup.osc-social-login-popup .modal-inner-wrap {
         position: fixed;
+        right: 0;
+        left: 0;
+        min-height: 0; /* luma modal-slide _inner-scroll: min-height 100% */
         max-height: 90dvh;
     }
+}
 
-    #social-login-popup #social-login-authentication {
-        padding: 0 !important;
+/* stack to one column (Hyvä breakpoint 640px) */
+@media (max-width: 640px) {
+    .modal-popup.osc-social-login-popup #social-login-popup.white-popup {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 16px;
+        padding: 16px;
     }
 
-    #social-login-popup .social-btn {
+    .modal-popup.osc-social-login-popup #social-login-popup > .mp-social-popup,
+    .modal-popup.osc-social-login-popup #social-login-popup > #mp-popup-social-content {
+        flex: none;
         width: 100%;
+    }
+
+    .modal-popup.osc-social-login-popup #social-login-popup > .mp-social-popup {
+        margin-top: 20px;
     }
 }
