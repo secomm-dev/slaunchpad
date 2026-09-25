@@ -18,6 +18,10 @@
  * submit native; helper vắng mặt (flag enable_ajax_add_to_cart=0) → fallback native.
  * isSubmitting reset trên nhánh AJAX vì page không navigate; chống double-submit lúc
  * in-flight do ajaxSubmitCart disable button đồng bộ trước fetch đầu tiên.
+ * SLP-278: bọc rule `required` cho radio/checkbox — option bundle render ngoài <form> (gắn qua
+ * attribute form="product_addtocart_form") nên vendor getCheckedValues() (form.querySelectorAll)
+ * không thấy option đã chọn → báo "bắt buộc" và chặn add to cart. Value tính lại qua
+ * form.elements (gồm cả form-associated element); message/rule vendor giữ nguyên.
  */
 
 declare(strict_types=1);
@@ -89,6 +93,27 @@ $hasMultiFormInputOption = (bool) array_filter($productOptions, fn($o) => $o->ge
                     ? true
                     : '<?= $escaper->escapeJs(__('Please select one of the options.')) ?>';
             });
+
+            // SLP-278: vendor getCheckedValues() (advanced-form-validation.phtml:316-320) query
+            // form.querySelectorAll → bỏ sót radio/checkbox bundle nằm ngoài <form> (attribute form=).
+            // Tính lại value qua form.elements rồi giao cho rule vendor (giữ nguyên message).
+            // Guard để không bọc lồng nhiều lần nếu component init lại.
+            if (!hyva.formValidation.rules.required.includesFormAssociated) {
+                const vendorRequired = hyva.formValidation.rules.required;
+                const required = (value, options, field, context) => {
+                    const el = field.element;
+                    if ((el.type === 'radio' || el.type === 'checkbox') && el.form) {
+                        const items = el.form.elements.namedItem(el.name);
+                        const checked = (items instanceof RadioNodeList ? Array.from(items) : [items || el])
+                            .filter(item => item.checked)
+                            .map(item => item.value);
+                        value = el.type === 'radio' ? checked[0] : checked;
+                    }
+                    return vendorRequired(value, options, field, context);
+                };
+                required.includesFormAssociated = true;
+                hyva.formValidation.addRule('required', required);
+            }
 
             const component = hyva.formValidation(this.$el);
 
