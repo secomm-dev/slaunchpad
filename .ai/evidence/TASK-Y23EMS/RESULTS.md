@@ -33,3 +33,40 @@ Flag đã restore `=1` + `cache:flush` + re-run T1–T4 PASS xác nhận trạng
 3. Native fallback ATC redirect về chính PDP → assert "URL đổi" sai; assert bằng POST count.
 4. Form card PLP có 3 button; ATC = `button[data-addto="cart"]`, không phải button đầu tiên.
 5. Configurable PDP có 2 nhóm radio super_attribute — phải chọn đủ cả 2 nhóm trước ATC.
+
+---
+
+## Follow-up bug 2026-09-25 — double success message sau ATC (SLP-264)
+
+### Reproduce (trước fix)
+
+PDP `joust-duffle-bag`, guest: ATC #1 → 1 message; đóng drawer, đợi 8s (message vẫn còn); ATC #2 → **2 message "Bạn đã thêm Joust Duffle Bag vào giỏ hàng của bạn." chồng nhau** (2 POST, mỗi click đúng 1 POST — không phải double-submit). N lần ATC = N message.
+Single ATC không repro trên: PDP simple/configurable, PLP card, Quick View, logged-in customer, mobile 390px.
+
+### Root cause
+
+- PDP ATC chuyển sang AJAX (TASK-Y23EMS) → page không reload, message cũ không bị xóa như khi full-page POST.
+- Hyvä `Magento_Theme::messages.phtml` `addMessages()` **concat** message mới vào mảng, không replace.
+- `hyva_theme_general/messages/success_message_timeout` trống (`window.defaultSuccessMessageTimeout = undefined`) → success message không auto-hide.
+
+### Fix
+
+- `Monsoon_HyvaAjaxAddToCart/templates/hyva/script/addtocart.phtml` — success path của `ajaxSubmitCart` dispatch `clear-messages` trước `reload-customer-section-data` (dùng chung PDP + PLP card). Error path giữ nguyên.
+- `Magento_Theme/templates/html/quickview/modal.phtml` — `addToCart()` success dispatch `clear-messages` trước reload section.
+- Hành vi tương đương Luma (messages section replace, không append). Không đổi config DB.
+
+### Verify (sau fix, `cache:flush`, Chrome 150 — `probe-double-msg.js`, `probe-error.js`)
+
+| Test | Kịch bản | Kết quả |
+|---|---|---|
+| T1 | PDP simple ATC ×3 | mỗi click: 1 POST, qty +1, drawer mở, **1 message** |
+| T2 | PDP configurable (đủ option) ATC ×2 | mỗi click: 1 POST, qty +1, **1 message** |
+| T3 | PDP configurable thiếu option | 0 POST, inline field-error (regression AC-002 PASS) |
+| T4 | PLP card `/gear/bags.html` ×2 (2 SP khác nhau) | mỗi click 1 POST, **1 message** (message SP mới thay message cũ) |
+| T5 | Quick View ×2 | mỗi click 1 POST, drawer mở, **1 message** |
+| T6 | Error path (route cart/add trả non-JSON) | `message error` "Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng." vẫn hiện |
+
+### Ghi chú
+
+- Ngoài scope: `/mpextrafee/product/extrafee/` set cookie `mage-messages` error "Khóa biểu mẫu không hợp lệ. Vui lòng tải lại trang." khi load PDP — cần ticket riêng.
+- Nếu sau này cấu hình `success_message_timeout`: timer ẩn của message cũ có thể trùng index message mới (Hyvä `setHideTimeOut` theo index) → message mới có thể ẩn sớm. Hiện config trống nên không ảnh hưởng.

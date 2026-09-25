@@ -12,9 +12,9 @@ specification_level: MINI
 spec_status: VALID
 specification_ref: Embedded Mini-Spec
 risk: medium
-status: in_review  # 2026-09-22: dev + verify Playwright 5/5 AC live PASS (AC-004 code-path only, AC-007 VI live + EN via CSV) — chờ TL review
+status: in_review  # 2026-09-22: dev + verify Playwright 5/5 AC live PASS (AC-004 code-path only, AC-007 VI live + EN via CSV) — chờ TL review; 2026-09-25: fix follow-up bug double success message (AC-008 PASS)
 created: 2026-09-22
-updated: 2026-09-22
+updated: 2026-09-25
 ticket_ref:
 affects_version: Magento 2.4.8-p5 + Hyvä 3.x (default theme 1.5.2)
 decisions: []
@@ -29,7 +29,7 @@ changes_architecture: false
 changes_integration: false
 changes_known_limitations: true
 verified_against_commit:
-last_verified: 2026-09-22
+last_verified: 2026-09-25
 supersedes: []
 ---
 
@@ -74,6 +74,7 @@ ATC trên PDP submit bằng fetch AJAX (không reload page) sau khi form pass va
 - AC-005: Regression — card PLP ATC vẫn AJAX; Quick View modal vẫn +1-only (baseline TASK-Z3DAH5 T1/T2).
 - AC-006: Flag `enable_ajax_add_to_cart=0` — PDP fallback native POST, validation vẫn hoạt động.
 - AC-007: 2 store vi_VN/en_US — messages đúng locale.
+- AC-008 (follow-up bug 2026-09-25): ATC liên tiếp trên cùng page (PDP / PLP card / Quick View) chỉ hiện 1 success message — không stack.
 
 ## Approach
 
@@ -86,6 +87,14 @@ ATC trên PDP submit bằng fetch AJAX (không reload page) sau khi form pass va
 - `app/design/frontend/Secomm/launchpad/Monsoon_HyvaAjaxAddToCart/templates/hyva/script/addtocart.phtml` — MỚI (theme override, copy + refactor từ module template).
 - `app/design/frontend/Secomm/launchpad/Magento_Catalog/templates/product/view/product-form.phtml` — override `onSubmit`, cập nhật header comment.
 
+### Follow-up bug 2026-09-25 — double success message
+
+- Root cause: AJAX ATC không reload page + Hyvä `messages.phtml` `addMessages()` concat (không replace) + `hyva_theme_general/messages/success_message_timeout` trống → message lần ATC trước không bao giờ ẩn, ATC lần sau stack thêm 1 message.
+- Fix: dispatch `clear-messages` trước `reload-customer-section-data` ở success path:
+  - `Monsoon_HyvaAjaxAddToCart/templates/hyva/script/addtocart.phtml` (`ajaxSubmitCart` — PDP + PLP card).
+  - `Magento_Theme/templates/html/quickview/modal.phtml` (`addToCart()` Quick View).
+- Error path giữ nguyên. Không đổi config DB. Việc bật `success_message_timeout` (auto-hide) để PO quyết định — chưa làm.
+
 ## Verification
 
 - [x] AC-001 verified — evidence: `.ai/evidence/TASK-Y23EMS/RESULTS.md` (T1: noNav, 1 POST, cart 0→1, drawer mở)
@@ -95,6 +104,7 @@ ATC trên PDP submit bằng fetch AJAX (không reload page) sau khi form pass va
 - [x] AC-005 verified — (T4 card PLP `/gear/bags.html` 1 POST noNav PASS; Quick View: path không đụng — review-code verified theo baseline TASK-Z3DAH5 T2)
 - [x] AC-006 verified — (T5: flag=0 → helper undefined, native POST ×1, redirect về PDP; restore flag=1 + flush + re-run PASS)
 - [x] AC-007 verified — *VI live* (T2); *EN via CSV* (`i18n/en_US.csv:873` có sẵn key — local không switch store được, LL-0011)
+- [x] AC-008 verified — evidence: `.ai/evidence/TASK-Y23EMS/RESULTS.md` §Follow-up bug (T1–T6: PDP simple ×3, configurable ×2, PLP card ×2, Quick View ×2 → 1 message/click; validation + error path không đổi)
 
 ## Related records
 

@@ -11,6 +11,8 @@
  *     TASK-Z3DAH5) nên không xảy ra double-intercept (root cause count ×2 của TASK-Z3DAH5).
  *   - Form có input type="file" → body FormData (multipart) thay vì URLSearchParams.
  *   - window.setAjaxCart(selectors, recursive) giữ nguyên signature/behavior (bind form card PLP).
+ *   - Success path dispatch `clear-messages` trước `reload-customer-section-data` (SLP-264 bug
+ *     double message): ATC liên tiếp không reload page → message cũ stack với message mới.
  * Giữ nguyên so với module: loader/disable button/delay, events (product-addtocart-success,
  * toggle-cart theo config checkout/options/ajax_cart_open_after_add_to_cart,
  * reload-customer-section-data), đọc mage-messages cookie trong finally, error message.
@@ -101,6 +103,10 @@ window.ajaxSubmitCart = async (form, recursive = true) => {
                 }
             }));
         <?php endif; ?>
+
+        <?php /* SLP-264: xóa message cũ — page không reload nên success message lần ATC trước
+                 (không auto-hide khi success_message_timeout trống) bị stack với message mới */ ?>
+        window.dispatchEvent(new CustomEvent('clear-messages'));
 
         return window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
     } catch (err) {

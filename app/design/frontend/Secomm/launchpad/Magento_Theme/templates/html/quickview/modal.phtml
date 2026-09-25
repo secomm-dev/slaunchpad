@@ -453,6 +453,8 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                             window.location.href = data.backUrl;
                             return;
                         }
+                        // SLP-264: xóa global message cũ để ATC liên tiếp không stack success message
+                        window.dispatchEvent(new CustomEvent('clear-messages'));
                         window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
                         this.status = 'success';
                         this.statusMessage = '<?= $escaper->escapeJs(__('You added %1 to your shopping cart.')) ?>'.replace('%1', this.product.name);
