@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+?>
+<section id="foundations" aria-labelledby="foundations-title">
+    <h2 id="foundations-title" class="mb-2 text-heading-2 font-semibold text-ink">
+        <?= $escaper->escapeHtml(__('Foundations')) ?>
+    </h2>
+    <p class="mb-8 text-body-2 text-fg-secondary">
+        <?= $escaper->escapeHtml(__('Semantic color, typography, radius and elevation contracts.')) ?>
+    </p>
+
+    <h3 class="mb-4 text-heading-4 font-semibold text-ink"><?= $escaper->escapeHtml(__('Semantic colors')) ?></h3>
+    <div class="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="overflow-hidden rounded-lg border border-border">
+            <div class="h-24 bg-primary"></div>
+            <p class="bg-surface p-4 text-label-m font-medium text-ink">primary</p>
+        </div>
+        <div class="overflow-hidden rounded-lg border border-border">
+            <div class="h-24 bg-surface"></div>
+            <p class="border-t border-border bg-surface p-4 text-label-m font-medium text-ink">surface</p>
+        </div>
+        <div class="overflow-hidden rounded-lg border border-border">
+            <div class="flex h-24 items-center justify-center bg-surface text-error">Error</div>
+            <p class="border-t border-border bg-surface p-4 text-label-m font-medium text-ink">error</p>
+        </div>
+        <div class="overflow-hidden rounded-lg border border-border">
+            <div class="flex h-24 items-center justify-center bg-surface text-success">Success</div>
+            <p class="border-t border-border bg-surface p-4 text-label-m font-medium text-ink">success</p>
+        </div>
+    </div>
+
+    <h3 class="mb-4 text-heading-4 font-semibold text-ink"><?= $escaper->escapeHtml(__('Typography')) ?></h3>
+    <div class="mb-10 space-y-5 rounded-lg border border-border bg-surface p-6">
+        <p class="text-display font-semibold text-ink">Display</p>
+        <p class="text-heading-1 font-semibold text-ink">Heading 1</p>
+        <p class="text-heading-2 font-semibold text-ink">Heading 2</p>
+        <p class="text-heading-3 font-semibold text-ink">Heading 3</p>
+        <p class="text-body-1 text-ink">Body 1 — The quick brown fox jumps over the lazy dog.</p>
+        <p class="text-body-2 text-ink">Body 2 — The quick brown fox jumps over the lazy dog.</p>
+        <p class="text-body-3 text-fg-secondary">Body 3 — Supporting content and compact descriptions.</p>
+        <p class="text-label-m font-medium text-ink">Label M</p>
+        <p class="text-caption text-fg-tertiary">Caption</p>
+    </div>
+
+    <h3 class="mb-4 text-heading-4 font-semibold text-ink"><?= $escaper->escapeHtml(__('Radius and elevation')) ?></h3>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-sm border border-border bg-surface p-6 shadow-xs">radius-sm / shadow-xs</div>
+        <div class="rounded-md border border-border bg-surface p-6 shadow-sm">radius-md / shadow-sm</div>
+        <div class="rounded-lg border border-border bg-surface p-6 shadow-md">radius-lg / shadow-md</div>
+        <div class="rounded-xl border border-border bg-surface p-6 shadow-lg">radius-xl / shadow-lg</div>
+    </div>
+</section>

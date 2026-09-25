@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+$icons = $viewModels->require(SvgIcons::class);
+$iconNames = [
+    'outline/search' => __('Search'),
+    'outline/user' => __('Account'),
+    'outline/heart' => __('Wishlist'),
+    'outline/shopping-cart' => __('Cart'),
+    'outline/menu' => __('Menu'),
+    'outline/chevron-down' => __('Chevron down'),
+];
+?>
+<section id="icons" aria-labelledby="icons-title">
+    <h2 id="icons-title" class="mb-2 text-heading-2 font-semibold text-ink">
+        <?= $escaper->escapeHtml(__('Custom icons')) ?>
+    </h2>
+    <p class="mb-8 text-body-2 text-fg-secondary">
+        <?= $escaper->escapeHtml(__('Theme-owned SVG assets rendered through the Hyvä SvgIcons ViewModel.')) ?>
+    </p>
+
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <?php foreach ($iconNames as $iconName => $label): ?>
+            <div class="flex min-h-32 flex-col items-center justify-center gap-4 rounded-lg border border-border bg-surface p-4 text-center text-ink">
+                <?= $icons->renderHtml($iconName, '', 24, 24, ['aria-hidden' => 'true']) ?>
+                <div>
+                    <p class="text-label-m font-medium"><?= $escaper->escapeHtml($label) ?></p>
+                    <code class="mt-1 block text-caption text-fg-tertiary"><?= $escaper->escapeHtml($iconName) ?></code>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</section>

@@ -5,9 +5,11 @@
 - Final form documentation page: `2410:14322`.
 - Input component set: `2410:14473`; Base Input: `2410:15699`.
 - Textarea component set: `2410:14352`; Base Textarea: `2410:15674`.
-- Checkbox component set: `2174:32588`.
-- Radio component set: `2174:30745`.
-- Legacy component sets were excluded.
+- Button page/inventory: `2410:25885`.
+- Checkbox component set: `2174:32588`; Radio component set: `2174:30745`;
+  shared Base CheckRadio primitive: `2174:33021`.
+- Legacy Button `2410:25890`, Legacy Icon Button `2410:25923` and Legacy Input
+  component sets were excluded.
 - Select has no approved standalone final master. This phase therefore applies
   only the shared native field foundation to select and does not invent a
   select-specific visual contract.
@@ -63,3 +65,17 @@ Validated on the local Magento customer account creation page:
 - Standalone native-radio visual/keyboard QA remains pending because current
   representative product radios are component-owned swatch/rating controls.
 - Safari/Firefox/Edge/iOS/Android and forced-colors matrices remain external QA.
+
+## 2026-09-24 control-state revision
+
+Checkbox `2174:32588` and Radiobutton `2174:30745` were read again from Figma
+and compared with the compiled native-control foundation. The revision aligns:
+
+- S/M/L control dimensions at 16/20/24px and mark dimensions per size.
+- 4px Checkbox radius and fully rounded Radio geometry.
+- brand-400 focused border with the exported 4px primary focus ring.
+- brand-600 checked background retained on hover.
+- component-specific checked and disabled mark colors from the master assets.
+- dedicated Hyvä `role="switch"` geometry remains separate.
+
+Implementation and validation record: `TASK-4JY7CV`.

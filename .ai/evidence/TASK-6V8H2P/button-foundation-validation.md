@@ -2,9 +2,9 @@
 
 ## Source evidence
 
-- Canonical Button page: `2410:25885`.
-- Current Button set: `2410:25972`; Base Button set: `2410:26973`.
-- Legacy Button groups on the page are excluded.
+- Parent Button page/inventory: `2410:25885`.
+- Current Button set: `2410:25972`; Base Button `2410:26973` owns size/icon geometry.
+- Legacy Button `2410:25890` and Legacy Icon Button `2410:25923` are excluded.
 - Verified variants: Primary, Secondary, Tertiary and Transparent.
 - Verified states: Default, Hover, Focus, Active and Disabled.
 - Verified master sizes:
@@ -13,6 +13,14 @@
   - L: 44px; 20px × 10px padding; Label L; 16px icon.
   - XL: 48px; 24px × 12px padding; Label L; 16px icon.
   - 2XL: 60px; 32px × 16px padding; Label XL; 24px icon.
+
+Icon-only and round icon-only geometry was revalidated on 2026-09-24:
+
+- S: 32px control / 16px glyph.
+- M: 40px control / 16px glyph.
+- L: 44px control / 24px glyph.
+- XL: 48px control / 24px glyph.
+- 2XL: 60px control / 32px glyph.
 
 ## Conflict disposition
 
