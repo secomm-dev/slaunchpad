@@ -17,6 +17,29 @@ result; non-string values pass through unchanged. The main OAuth login flow is
 unaffected — `Mageplaza_SocialLogin/Helper/Social.php` already trims the same
 config path.
 
+## Fix 2 — Popup login honors "Redirect to Account Dashboard" (BUG-C97F09 / SLP-207)
+
+The Hyvä sign-in popup (header "Sign In", `sociallogin/general/authentication_popup = 1`)
+logs in over AJAX (`customer/ajax/login` or `sociallogin/popup/login`). Both
+endpoints return no dashboard URL when `customer/startup/redirect_dashboard = 1`
+(core treats AJAX login as a checkout flow), and the vendor script
+`Mageplaza_SocialLogin::hyva/popup/form/authentication.phtml` reloads the page
+after every successful login. So the setting only worked on the full-page
+login form (`Magento\Customer\Model\Account\Redirect`).
+
+`view/frontend/layout/hyva_default.xml` swaps the block
+`social-login-popup-authentication` to the module copy
+`view/frontend/templates/hyva/popup/form/authentication.phtml`. The copy
+reads `ViewModel/LoginRedirect` (store-scope flag + `customer/account/` URL)
+and adds `launchpadLoginSuccessRedirect()`, called from both success branches:
+Yes → dashboard, No → `window.location.reload()` as before. Errors, markup and
+classes are unchanged. `hyva_default` exists only on Hyvä themes, so the luma
+popup on the OSC checkout is not affected.
+
+The template is a full copy of the vendor file: **re-diff it against
+`app/code/Mageplaza/SocialLogin/view/frontend/templates/hyva/popup/form/authentication.phtml`
+after every Mageplaza upgrade.** Regression: `.ai/evidence/BUG-C97F09/verify.js`.
+
 ## Show/hide password toggle (TASK-YHCJ79)
 
 `view/frontend/templates/password-toggle.phtml` adds an eye-icon toggle to every

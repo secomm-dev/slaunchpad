@@ -23,6 +23,18 @@ vendor code untouched.
   the password inputs of the luma social-login modal (the modal's
   `#social-login-popup .social-login .input-text` padding outranks the toggle's).
 
+### Fixed (2026-09-25) — BUG-C97F09 (SLP-207)
+
+- `view/frontend/layout/hyva_default.xml` + `view/frontend/templates/hyva/popup/form/authentication.phtml`
+  + `ViewModel/LoginRedirect.php`: the Hyvä sign-in popup now honors
+  `customer/startup/redirect_dashboard` (Customer Configuration › Login Options ›
+  Redirect Customer to Account Dashboard after Logging in). Yes → a successful
+  popup login goes to `customer/account/`; No → the page reloads as before. The
+  vendor script always reloaded, so the setting only worked on the full-page
+  login form. Module copy of the vendor template; the only change is
+  `launchpadLoginSuccessRedirect()` in both success branches. Luma OSC popup
+  untouched.
+
 ### Changed (2026-09-25) — TASK-NWV2MQ (SLP-211)
 
 - `view/frontend/web/css/social-login-checkout.css`: re-synced the OSC checkout

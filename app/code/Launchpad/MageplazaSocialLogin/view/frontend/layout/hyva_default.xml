@@ -8,6 +8,9 @@
  * - Show/hide password toggle (TASK-YHCJ79) on the password inputs of the
  *   Mageplaza popups: the sign-in / create / request-info modal and the
  *   checkout authentication popup.
+ * - Popup login redirect (BUG-C97F09 / SLP-207): swaps the vendor Hyvä sign-in
+ *   form template for the module copy that honors
+ *   customer/startup/redirect_dashboard after a successful popup login.
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -24,5 +27,7 @@
                 </arguments>
             </block>
         </referenceContainer>
+        <referenceBlock name="social-login-popup-authentication"
+                        template="Launchpad_MageplazaSocialLogin::hyva/popup/form/authentication.phtml"/>
     </body>
 </page>
