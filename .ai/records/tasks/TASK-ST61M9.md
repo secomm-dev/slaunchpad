@@ -36,6 +36,8 @@ Tạo một trang kỹ thuật để kiểm tra trực quan các foundation và 
 - [x] Route chỉ truy cập được trong Magento developer mode.
 - [x] Trang không render Header, Footer, Menu hoặc component cấp page.
 - [x] Hiển thị semantic colors, typography, radius/shadow, Button, Form và icon.
+- [x] Form Showcase phản ánh bốn Input types và feedback matrix đã có trong Figma.
+- [x] Standalone Select được đánh dấu provisional, không trình bày như design-approved.
 - [x] Các control tương tác dùng markup native và Global Style API thật.
 - [x] Tailwind build, PHP lint và XML validation thành công.
 

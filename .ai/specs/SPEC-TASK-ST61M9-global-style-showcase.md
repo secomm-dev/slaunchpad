@@ -34,8 +34,19 @@ Lead kiểm tra Global Style contract của Launchpad core và các theme con.
 - Typography scale.
 - Radius và shadow.
 - Button variants, sizes, icon structures và disabled state.
-- Input, Textarea, Select, Checkbox, Radio và Switch.
+- Input matrix (Default, Leading dropdown, Trailing dropdown, Leading text).
+- Input/Textarea feedback (None, Error, Warning, Success) và interactive states.
+- Checkbox, Radio và Switch.
+- Native Select ở trạng thái provisional cho đến khi có standalone Select
+  master được designer approve.
 - Custom icons hiện đã được import vào theme.
+
+## Design traceability
+
+- Form overview: 2410:14322.
+- Input: 2410:14473; Base Input: 2410:15699.
+- Textarea: 2410:14352; Base Textarea: 2410:15674.
+- Design gaps: ../project/design/secomm-launchpad-form-design-gaps.md.
 
 ## Scope boundary
 
