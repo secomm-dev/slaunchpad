@@ -5,6 +5,9 @@
      a small interval-based scroller scoped to .lp-hero-slider. -->
 <page xmlns:xsi="http://www.w3.org/2000/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <!-- hyva.formValidation for the homepage newsletter form (newsletter/subscribe.phtml).
+         Declared here instead of relying on a third-party hyva_default handle. -->
+    <update handle="hyva_form_validation"/>
     <body>
         <referenceContainer name="content">
             <block name="launchpad.homepage.hero-autoplay"

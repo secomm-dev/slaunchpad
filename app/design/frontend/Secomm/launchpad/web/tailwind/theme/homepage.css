@@ -781,11 +781,25 @@
        app/code templates are NOT in the theme's @source — utility classes used
        only there would never compile. Style them via these lp-* classes. */
     .lp-newsletter-form {
-        @apply mx-auto flex w-full max-w-[1136px] flex-col gap-3 lg:flex-row lg:items-center lg:gap-4;
+        @apply mx-auto flex w-full max-w-[1136px] flex-col gap-3 lg:flex-row lg:items-start lg:gap-4;
+    }
+
+    /* hyva.formValidation message container: the error list renders under the
+       input (left-aligned inside the centered band), the button stays on the row. */
+    .lp-newsletter-field {
+        @apply mt-0 w-full text-start lg:flex-1;
+
+        .messages {
+            @apply mt-1;
+        }
     }
 
     .lp-newsletter-input {
         @apply h-11 w-full rounded-md border border-[#d1d5dc] bg-white px-4 text-base leading-6 text-hp-ink placeholder:text-[#99a1af] focus:border-hp-brand focus:outline-none;
+
+        &[aria-invalid="true"] {
+            border-color: var(--ds-border-error-primary);
+        }
     }
 
     .lp-journal-media img {
@@ -869,15 +883,20 @@ body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay [d
    tối dần xuống đáy để title / description / CTA trắng đọc rõ trên mọi ảnh.
    Gắn lên overlay của MỌI slide (PB chỉ đặt background-color lên overlay —
    ảnh slide nằm ở .pagebuilder-slide-wrapper — nên background-image rảnh;
-   overlay color do Admin chọn vẫn chồng bên dưới gradient). */
-body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] .pagebuilder-overlay {
-    background-image: linear-gradient(180deg, rgb(0 0 0 / 0) 65.518%, rgb(0 0 0 / 0.48) 99.952%) !important;
+   overlay color do Admin chọn vẫn chồng bên dưới gradient).
+   --lp-media-filter dùng chung với editorial banner (New Sofa for Autumn). */
+body.cms-index-index {
+    --lp-media-filter: linear-gradient(180deg, rgb(0 0 0 / 0) 65.518%, rgb(0 0 0 / 0.48) 99.952%);
 }
 
 @media (min-width: 64rem) {
-    body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] .pagebuilder-overlay {
-        background-image: linear-gradient(180deg, rgb(0 0 0 / 0) 62.646%, rgb(0 0 0 / 0.75) 84.863%) !important;
+    body.cms-index-index {
+        --lp-media-filter: linear-gradient(180deg, rgb(0 0 0 / 0) 62.646%, rgb(0 0 0 / 0.75) 84.863%);
     }
+}
+
+body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] .pagebuilder-overlay {
+    background-image: var(--lp-media-filter) !important;
 }
 
 @layer base {
@@ -886,8 +905,11 @@ body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] .p
     }
 }
 
-/* hero dots: story-style progress fill, armed by hero-autoplay.phtml */
+/* hero dots: story-style progress fill, armed by hero-autoplay.phtml
+   --snap-gap: 0 — base .snap-track has a 16px gap, which showed as a white
+   strip between two full-bleed slides while they slide. */
 body.cms-index-index [data-content-type="slider"] [data-track] {
+    --snap-gap: 0px;
     padding-block: 0 !important;
 }
 
@@ -1814,6 +1836,30 @@ body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has
         margin-block-start: 4rem !important;
         min-height: 800px !important;
         padding: 2.5rem 2.5rem 4rem !important;
+    }
+}
+
+/* Editorial banner (New Sofa for Autumn): same "Filter" as the hero slides.
+   Full-bleed PB rows paint the background image on the row itself (no overlay
+   element like a slide), so the gradient is a ::before under the copy.
+   Structural selector (as the CTA rule above) — row classes may not survive
+   an Admin save; copy is lifted by CSS, not by its `relative z-10` classes. */
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])) {
+    position: relative !important;
+    isolation: isolate;
+
+    &::before {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        content: "";
+        background-image: var(--lp-media-filter);
+        pointer-events: none;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
     }
 }
 
