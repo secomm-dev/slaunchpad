@@ -100,3 +100,5 @@ Discount (%1),Discount (%1)
 "Please enter a valid email address (Ex: johndoe@domain.com).","Please enter a valid email address (Ex: johndoe@domain.com)."
 "Please enter 6 or more characters. Leading and trailing spaces will be ignored.","Please enter 6 or more characters. Leading and trailing spaces will be ignored."
 "Please enter the same value again.","Please enter the same value again."
+"Show Password","Show Password"
+"Hide Password","Hide Password"

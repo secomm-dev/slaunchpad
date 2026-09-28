@@ -1,0 +1,40 @@
+PASS | en | hyva 1280 popup login #social_login_pass [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 1280 popup login validation | message=true centerΔ=0.0 padR=44 insideRight=true
+PASS | en | hyva 1280 popup create #password-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 1280 popup create #password-confirmation-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 1280 popup create independent | text/password
+PASS | en | hyva 1280 popup request-info #request-password-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 1280 popup request-info #request-password-confirmation [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 1280 checkout-auth popup (x-if) #form-login-password [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 1280 console errors | []
+PASS | en | osc 1280 all password inputs have a toggle | login-password:true customer-password:true osc-password:true osc-password-confirmation:true request-password-social:true request-password-confirmation:true social_login_pass:true password-social:true password-confirmation-social:true
+PASS | en | osc 1280 create-account #osc-password [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 1280 create-account #osc-password-confirmation [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 1280 create-account validation | centerΔ=0.0 padR=44 insideRight=true
+PASS | en | osc 1280 email step #customer-password [lang=vi] (attached, not visible) | type=password
+PASS | en | osc 1280 social popup login #social_login_pass [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 1280 social popup create #password-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 1280 social popup create #password-confirmation-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 1280 OSC Sign In popup #login-password [lang=vi] (attached, not visible) | type=password
+PASS | en | osc 1280 console errors | []
+PASS | en | hyva 375 popup login #social_login_pass [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 375 popup login validation | message=true centerΔ=0.0 padR=44 insideRight=true
+PASS | en | hyva 375 popup create #password-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 375 popup create #password-confirmation-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 375 popup create independent | text/password
+PASS | en | hyva 375 popup request-info #request-password-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 375 popup request-info #request-password-confirmation [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 375 checkout-auth popup (x-if) #form-login-password [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | hyva 375 console errors | []
+PASS | en | osc 375 all password inputs have a toggle | login-password:true customer-password:true osc-password:true osc-password-confirmation:true request-password-social:true request-password-confirmation:true social_login_pass:true password-social:true password-confirmation-social:true
+PASS | en | osc 375 create-account #osc-password [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 375 create-account #osc-password-confirmation [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 375 create-account validation | centerΔ=0.0 padR=44 insideRight=true
+PASS | en | osc 375 email step #customer-password [lang=vi] (attached, not visible) | type=password
+PASS | en | osc 375 social popup login #social_login_pass [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 375 social popup create #password-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 375 social popup create #password-confirmation-social [lang=vi] | onTop=true insideRight=true centerΔ=0.0 hΔ=0.0 padR=44 btnW=44 label="Hiện mật khẩu"→"Ẩn mật khẩu" type password→text→password kb=text/password bg=rgba(0, 0, 0, 0) border=0px
+PASS | en | osc 375 OSC Sign In popup #login-password [lang=vi] (attached, not visible) | type=password
+PASS | en | osc 375 console errors | []
+
+38/38 PASS

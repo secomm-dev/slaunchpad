@@ -8,6 +8,10 @@
  * load here, so the social-login modal renders the legacy luma markup. This
  * handle exists only when OSC is enabled and attaches the restyle CSS at
  * module level — a theme stylesheet never loads on this page.
+ *
+ * The show/hide password toggle (TASK-YHCJ79) covers every password input of
+ * the page — OSC email step, create-account, Sign In popup and the social-login
+ * modal. Root is body: luma moves its modals to the end of body.
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -15,4 +19,16 @@
     <head>
         <css src="Launchpad_MageplazaSocialLogin::css/social-login-checkout.css"/>
     </head>
+    <body>
+        <referenceContainer name="before.body.end">
+            <block name="launchpad.sociallogin.password.toggle.checkout"
+                   template="Launchpad_MageplazaSocialLogin::password-toggle.phtml">
+                <arguments>
+                    <argument name="root_selectors" xsi:type="array">
+                        <item name="page" xsi:type="string">body</item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
 </page>

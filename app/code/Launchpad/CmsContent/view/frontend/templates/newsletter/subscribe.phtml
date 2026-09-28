@@ -3,30 +3,56 @@
  * Newsletter subscribe form — LAUNCHPAD CORE homepage (TASK-0NNZCW v4.3).
  * Design 2151:17272: one-line form (input + brand button), centered.
  *
+ * Validation: hyva.formValidation (sets novalidate — the HTML5 native bubble uses the
+ * browser locale and cannot be translated), so required/email messages come from the
+ * store locale i18n. The `.field.field-reserved` wrapper is the message container —
+ * without it the component wraps the input in an unstyled div inside the flex row.
+ *
  * @var \Launchpad\CmsContent\Block\Newsletter\Subscribe $block
  * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
  */
 
 declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
 ?>
 <form class="lp-newsletter-form"
       action="<?= $escaper->escapeUrl($block->getFormActionUrl()) ?>"
       method="post"
       id="homepage-newsletter-form"
+      x-data="initHomepageNewsletterForm"
+      @submit="onSubmit"
+      @change="onChange"
       aria-label="<?= $escaper->escapeHtmlAttr(__('Subscribe to our newsletter')) ?>">
     <label class="sr-only" for="homepage-newsletter-email">
         <?= $escaper->escapeHtml(__('Email Address')) ?>
     </label>
     <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>">
-    <input class="lp-newsletter-input"
-           id="homepage-newsletter-email"
-           name="email"
-           type="email"
-           required
-           autocomplete="email"
-           placeholder="<?= $escaper->escapeHtmlAttr(__('Enter your email address')) ?>">
+    <div class="field field-reserved lp-newsletter-field">
+        <input class="lp-newsletter-input"
+               id="homepage-newsletter-email"
+               name="email"
+               type="email"
+               required
+               autocomplete="email"
+               placeholder="<?= $escaper->escapeHtmlAttr(__('Enter your email address')) ?>">
+    </div>
     <button class="btn btn-primary lp-newsletter-btn"
             type="submit">
         <?= $escaper->escapeHtml(__('Subscribe')) ?>
     </button>
 </form>
+<script>
+    function initHomepageNewsletterForm() {
+        return hyva.formValidation(this.$el);
+    }
+
+    window.addEventListener('alpine:init', () => {
+        Alpine.data('initHomepageNewsletterForm', initHomepageNewsletterForm);
+    }, { once: true });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
