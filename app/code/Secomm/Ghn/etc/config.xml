@@ -45,6 +45,9 @@
                      fresh merchant config resolves deterministically without a save. -->
                 <rate_source_mode>CARRIER_WITH_FALLBACK</rate_source_mode>
                 <address_resolution_policy>FALLBACK</address_resolution_policy>
+                <!-- FEAT-QA23PZ / DEC-FEATQA23PZ-001 — ALL keeps the pre-zone behavior exactly. -->
+                <destination_scope>ALL</destination_scope>
+                <allowed_zone_codes/>
                 <rate_adjustment_enabled>0</rate_adjustment_enabled>
                 <rate_adjustment_type>fixed</rate_adjustment_type>
                 <rate_adjustment_rounding>none</rate_adjustment_rounding>

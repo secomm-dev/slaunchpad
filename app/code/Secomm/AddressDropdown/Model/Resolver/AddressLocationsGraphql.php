@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Secomm\AddressDropdown\Model\Resolver;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
+
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Framework\GraphQl\Exception\GraphQlNoSuchEntityException;
@@ -33,7 +35,8 @@ class AddressLocationsGraphql implements ResolverInterface
 {
     public function __construct(
         private readonly LocationHierarchyProviderInterface $hierarchyProvider,
-        private readonly ProfilePool $profilePool
+        private readonly ProfilePool $profilePool,
+        private readonly ScopeConfigInterface $scopeConfig
     ) {
     }
 
@@ -46,7 +49,16 @@ class AddressLocationsGraphql implements ResolverInterface
         ResolveInfo $info,
         array $value = null,
         array $args = null
-    ): array {
+        ): array {
+        // TASK-SEC-A5: master switch off for this store scope — empty result = native Magento
+        // address fields (the documented native-fallback contract of both surfaces).
+        if (!$this->scopeConfig->isSetFlag(
+            \Secomm\AddressDropdown\Helper\Data::XML_PATH_ADDRESS,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        )) {
+            return [];
+        }
+
         $input = $args['input'] ?? [];
         $regionId = isset($input['region_id']) ? (int)$input['region_id'] : null;
         $parentCityId = isset($input['parent_city_id']) ? (int)$input['parent_city_id'] : null;

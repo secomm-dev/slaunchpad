@@ -24,7 +24,8 @@ use Secomm\ShippingCore\Api\Rate\CarrierEligibilityResultInterface;
 interface CarrierEligibilityEvaluatorInterface
 {
     /**
-     * @param string $destinationScope DestinationScope::ALL | DestinationScope::SELECTED_ZONES
+     * @param string $destinationScope DestinationScope::ALL | DestinationScope::SELECTED_ZONES |
+     *        DestinationScope::ALL_EXCEPT_SELECTED_ZONES
      * @param string[] $allowedZoneCodes zone codes từ carrier configuration
      * @param string $destinationProvinceCode canonical VN province code
      * @param string|null $destinationWardCode canonical VN ward code; null khi không có

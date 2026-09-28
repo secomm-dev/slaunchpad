@@ -11,6 +11,7 @@ define([
     'Magento_Checkout/js/model/full-screen-loader',
     'Magento_Checkout/js/action/select-billing-address',
     'Magento_Checkout/js/model/shipping-rate-registry',
+    'Secomm_AddressDropdown/js/model/master-switch',
 ], function(
     wrapper,
     $,
@@ -23,11 +24,16 @@ define([
     errorProcessor,
     fullScreenLoader,
     selectBillingAddressAction,
-    rateRegistry
+    rateRegistry,
+    isEnabled
 ) {
     'use strict';
 
     return function (shippingSaveProcessor) {
+        if (!isEnabled()) {
+            // TASK-SEC-A5: module disabled for this store scope — keep native behavior intact.
+            return shippingSaveProcessor;
+        }
         shippingSaveProcessor.saveShippingInformation = wrapper.wrapSuper(shippingSaveProcessor.saveShippingInformation, function () {
             var payload;
 

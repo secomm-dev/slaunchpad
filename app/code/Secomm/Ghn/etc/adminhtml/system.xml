@@ -102,32 +102,17 @@
                     <validate>integer validate-greater-than-zero</validate>
                     <comment>Re-sync rows whose last sync is older than this many hours.</comment>
                 </field>
-                <field id="address_dataset" type="note" sortOrder="140" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Address Dataset (bundled)</label>
-                    <frontend_model>Secomm\Ghn\Block\Adminhtml\System\Config\DatasetInfo</frontend_model>
-                </field>
-                <field id="rate_source_mode" translate="label" type="select" sortOrder="145" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Rate Source Mode</label>
-                    <options>
-                        <option label="Carrier Only (realtime GHN rate, no fallback)">CARRIER_ONLY</option>
-                        <option label="Carrier With Fallback (realtime GHN rate, shared fallback for eligible outcomes)">CARRIER_WITH_FALLBACK</option>
-                        <option label="Fallback Only (ShippingCore short-circuits realtime GHN rate)">FALLBACK_ONLY</option>
-                    </options>
-                    <comment>ShippingCore v10 contract — consumed by the shared rate orchestration. FALLBACK_ONLY never calls the GHN RATE API.</comment>
-                </field>
-                <field id="address_resolution_policy" translate="label" type="select" sortOrder="146" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Address Resolution Policy (RATE)</label>
-                    <options>
-                        <option label="Strict (hide GHN when the canonical destination is ambiguous)">STRICT</option>
-                        <option label="Fallback (hide GHN; leave resolution to the fallback layer)">FALLBACK</option>
-                        <option label="Pick Primary (merchant opt-in: use the curated primary PRE-2025 candidate)">PICK_PRIMARY</option>
-                    </options>
-                    <comment>Applies to GHN RATE only (legacy PRE-2025 scheme consumer). Selection is performed by the shared VietNamAddress selector — never by GHN. Not applicable when Rate Source Mode = Fallback Only.</comment>
+                <!-- FEAT-QA23PZ / TASK-G3K9V2 — rate source mode + address resolution policy
+                     (shared orchestration policy) moved to Secomm → Shipping Coverage together
+                     with destination scope/allowed zones. Config paths are UNCHANGED. -->
+                <field id="coverage_pointer" type="note" sortOrder="147" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Destination Coverage &amp; Rate Orchestration</label>
+                    <frontend_model>Secomm\Ghn\Block\Adminhtml\System\Config\CoveragePointer</frontend_model>
                 </field>
                 <field id="rate_adjustment_enabled" translate="label" type="select" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Rate Adjustment</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>TASK-WAWNDS — applies to a SUCCESSFUL provider/fallback rate only. Never affects parcel eligibility.</comment>
+                    <comment>Applies to a SUCCESSFUL provider/fallback rate only. Never affects parcel eligibility.</comment>
                 </field>
                 <field id="rate_adjustment_type" translate="label" type="select" sortOrder="151" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Adjustment Type</label>
@@ -154,7 +139,7 @@
                         <option label="Carrier Rate Only">carrier_rate_only</option>
                         <option label="Carrier + Fallback">carrier_and_fallback</option>
                     </options>
-                    <comment>Launchpad note: Secomm_Ghn adjusts the GHN carrier rate only; adjusting the fallback rate happens in the Launchpad bridge composition (ShippingCore owns orchestration).</comment>
+                    <comment>Adjusts the GHN carrier rate only; adjusting the fallback rate happens in the composition.</comment>
                 </field>
             </group>
         </section>

@@ -1,5 +1,169 @@
 # Changelog — Secomm_Ghn
 
+## 0.13.0 — 2026-09-23 (TASK-RT50KH — product shipping-dimension contract + dimension pre-validation live)
+
+### Added
+- `QuoteParcelEstimator` đọc per-unit shipping dims qua `Secomm\Base\Api\ShippingDimensionsReaderInterface`
+  (Secomm_Base owns contract; Ghn sequence += Secomm_Base): complete-and-valid only (ceil int
+  cm), replicated identically per unit — KHÔNG nhân với qty. Dims feed CHỈ 150cm hard-limit
+  gate (`findHardLimitViolation` — live: longest side > 150 → UNAVAILABLE
+  `GHN_PACKAGE_{LENGTH|WIDTH|HEIGHT}_LIMIT_EXCEEDED`, không API, không fallback); fee payload
+  vẫn omit dims.
+- `QuoteParcelEstimatorTest` (7 tests — dim wiring + qty parity + violation anchor).
+
+### Changed
+- **SUPERSEDE docblock** "Dimensions deliberately NOT read at RATE" (mapper + estimator +
+  EstimatedPackage) — contract nguồn: `Secomm\Base` shipping attributes (decimal/GLOBAL/cm).
+- `GhnPackageLimits::MAX_DIMENSION_CM` → alias `GhnShipmentConstraints::RATE_MAX_SIDE_CM`
+  (150 de-dup — sửa silent-failure MQ2DRG; grep gap ghi nhận DEC-TASKRT50KH-001).
+- Missing/partial/malformed dims → KHÔNG dimension rejection (provider remains final authority).
+
+## 0.12.0 — 2026-09-23 (TASK-MQ2DRG — GHN checkout weight pre-validation + >50kg INTEGRATION_LIMITATION fallback)
+
+### Added
+- Deterministic weight pre-validation TRƯỚC fee call (cả hai calculator entry points — dual-home
+  idiom giữ nguyên): `Model\GhnShipmentConstraints` (20000/50000/200/150 — provenance riêng từng
+  giá trị) + `QuoteParcelEstimate::findWeightLimitViolation()` + `GhnWeightConstraintViolation` VO
+  + reason `GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED` (hard unit >50kg — GHN-owned, KHÔNG bao giờ
+  fallback-eligible).
+- **SUPERSEDE** (DEC-TASKMQ2DRG-001, TL + user approval 2026-09-23): TASK-WAWNDS stance
+  ">50kg aggregate NOT rejected at RATE / provider remains the final authority" — >50kg tổng với
+  từng unit hợp lệ giờ KHÔNG gọi fee API, trả UNAVAILABLE + `ShippingFailureReason::
+  RATE_REQUEST_UNREPRESENTABLE` (ShippingCore amendment TL-approved) → INTEGRATION_LIMITATION →
+  fallback theo RateSourceMode (CARRIER_WITH_FALLBACK: fallback TableRate; CARRIER_ONLY: GHN ẩn;
+  FALLBACK_ONLY: unchanged). Sandbox fact "fee API quotes >50kg" giữ nguyên là history — việc
+  quote là business NO vì checkout không có packing truth (CREATE per-package 50kg cap không đổi).
+- Test rewrite (test-locked change): `GhnRateCalculatorTest::
+  testAggregateWeightAboveDocumentedRootCapIsNotRejectedByAggregate` →
+  `testAggregateOverFiftyKgIsUnavailableAsUnrepresentableWithoutApiCall`.
+
+### Không đổi
+`QuoteParcelEstimator` / `GhnRateRequestMapper` / `RealtimeRateContributor` (outcome
+pass-through verbatim) / CREATE path (per-package 50000g + 200cm enforcement nguyên vẹn) /
+`Ghn::processAdditionalValidation` (legacy `max_package_weight`) / 429→TECHNICAL classification.
+`GHN_HEAVY_RATE_ESTIMATION_UNAVAILABLE` giữ reserved. Dimension pre-validation DEFERRED (gap:
+không có attribute source có unit contract — missing dims không reject).
+
+## 0.11.0 — 2026-09-23 (TASK-DFGFZ9 phase 3 — COD qua collection ledger)
+
+### Changed
+- `GhnShipmentCreationService`: attempt REPORT vào Secomm_Cod ledger `secomm_cod_collection`
+  (`recordPending` khi amount > 0 — TRƯỚC anchor insert + POST; mirror marks mọi outcome);
+  frozen replay + one-collection rule (cross-carrier với GHTK) do ledger/resolver sở hữu —
+  DEC-TASKDFGFZ9-003. Bỏ frozen-branch dựa anchor row + `GhnShipmentRepository::updateCodAmount`.
+- `GhnShipmentRepository`: XOÁ `findCollectedPrior` + `updateCodAmount` (bảng giữ provider
+  facts; `cod_amount` audit-only).
+
+## 0.10.0 — 2026-09-23 (TASK-DFGFZ9 phase 2 — CREATE gửi cod_amount từ Secomm_Cod decision)
+
+### Added
+- `GhnShipmentCreationService` resolve COD collection decision qua
+  `Secomm\Cod\Api\CodCollectionResolverInterface` (module.xml sequence += `Secomm_Cod` —
+  đảo ngược forbidden edge cũ; DEC-TASKDFGFZ9-002): COLLECTIBLE → `cod_amount` vào payload
+  VÀ anchor row `secomm_ghn_shipment.cod_amount` (frozen — retry non-SUBMITTED row amount > 0
+  replay persisted-wins, resolver không gọi); NOT_COD → 0; REJECTED → outcome mới
+  `COD_REJECTED` — KHÔNG insertPending, KHÔNG POST.
+- `GhnCreateOutcome::codRejected()` + observer surface: log error + shipment comment VISIBLE
+  "GHN COD collection rejected (reason): message" + save (không attach track).
+- Guard provider cap: amount > 50,000,000 VND → UNAVAILABLE `COD_AMOUNT_EXCEEDS_PROVIDER_LIMIT`
+  trước mọi write; builder guard [0, 50M] fail-closed.
+- `GhnShipmentRepository::findCollectedPrior(orderId, excludeShipmentId)` (PENDING/SUBMITTED/
+  UNKNOWN chặn conservative; FAILED không) + `updateCodAmount` (guard `<> SUBMITTED`).
+
+### Changed
+- `GhnCreateRequestBuilder::build()` + param `int $codAmount` — payload LUÔN emit
+  `cod_amount` (0 = non-COD — shape sandbox-verified; **non-zero CHƯA sandbox verify — QC**).
+  `cod_failed_amount`/`insurance_value`/`order_value` vẫn absent (test forbidden-list cập nhật).
+- Flip behavior cũ: đơn COD qua GHN giờ gửi tiền thu thật (trước đây `cod_amount` không gửi —
+  "GHN-D sends no cod_amount" được supersede; DEC-TASKDFGFZ9-002).
+
+### Tests
+Builder 9 (+2 cap cases); service 16 (+7: COD flows payload+anchor / frozen replay /
+rejection dừng trước anchor+POST / prior reference / cap); observer 8 (+COD_REJECTED surface).
+
+## Shipping Coverage rename + registry metadata (TASK-WY6WP5, 2026-09-23 — metadata-only, runtime freeze intact)
+
+### Changed
+- `etc/di.xml`: registration block đổi sang `Secomm\ShippingCore\Model\CoverageTarget\
+  CoverageTargetRegistry` với item `{type=CARRIER, code=secomm_ghn, label="GHN (Giao Hàng
+  Nhanh)"}` (metadata addition — registration vẫn không tạo config).
+- `Block\Adminhtml\System\Config\CoveragePointer`: text trỏ sang
+  "Secomm → Shipping → Shipping Coverage" + link params `target_type`/`target_code`.
+
+### Không đổi
+GHN runtime, rate/create/tracking/cancel, system.xml fields, config paths `carriers/secomm_ghn/*`,
+defaults — nguyên vẹn theo v10 freeze (§26 directive).
+
+## Freeze verification B1 (TL-approved 2026-09-22): 429 throttle classifies as transient technical on RATE
+
+### Fixed
+- `RealtimeRateContributor` catches `ProviderRateLimitException` (HTTP/envelope 429 — split from
+  5xx by TASK-GKHXY1 r2) in the TECHNICAL group: 429 → `CarrierRateOutcome` TECHNICAL_FAILURE +
+  `TECHNICAL_ERROR`, so the shared policy may grant TECHNICAL_FALLBACK under
+  CARRIER_WITH_FALLBACK. Previously 429 escaped to the carrier catch-all as
+  UNEXPECTED_RUNTIME_FAILURE + explicit NONE (fail-closed but lost fallback eligibility). No
+  fallback-taxonomy, 401/403, or business-classification changes; no local fallback dispatch.
+
+### Added
+- Regression: `RealtimeRateContributorTest` data set "rate limit 429 → TECHNICAL" (client-level
+  429 → `ProviderRateLimitException` was already pinned in `GhnErrorTranslatorTest`).
+
+## FEAT-QA23PZ (TASK-G3K9V2) — 2026-09-22: coverage/policy admin UX chuyển sang Secomm → Carrier Coverage
+
+### Removed
+- system.xml fields `rate_source_mode`, `address_resolution_policy`, `destination_scope`,
+  `allowed_zone_codes` — chuyển lên màn hình dùng chung **Secomm → Carrier Coverage**
+  (ShippingCore owns the carrier-coverage UX; directive §7/§11/§12). Config paths GIỮ NGUYÊN
+  (`carriers/secomm_ghn/...`) nên giá trị đã persist và các runtime readers
+  (`GhnConfig` → `CarrierDestinationScopeConfig`) không thay đổi hành vi — zero migration.
+  Trang GHN để lại note field `coverage_pointer` dẫn sang màn hình mới.
+
+### Removed — dead code
+- `Model\Config\Backend\AllowedZoneCodes` (validation chuyển vào ShippingCore
+  `Model\CarrierCoverage\Validator`) + bản copy misplaced
+  `Model\ConfigBackendAllowedZoneCodes.php` (namespace PSR-4 mismatch, không reference).
+
+### Added
+- Đăng ký `secomm_ghn` vào shared `Secomm\ShippingCore\Model\CarrierCoverage\CarrierRegistry`
+  (di.xml array item — carrier tự opt-in vào màn hình coverage; ShippingCore không hardcode
+  carrier identity).
+- `Block\Adminhtml\System\Config\CoveragePointer` — note trỏ sang Secomm → Carrier Coverage.
+
+### Unchanged — runtime
+- `Ghn::collect()` wiring, `GhnConfig` readers, eligibility/policy semantics: KHÔNG đổi
+  (TASK-G3K9V2 chỉ dịch bề mặt admin; giá trị runtime thứ 3 `ALL_EXCEPT_SELECTED_ZONES`
+  thuộc TASK-R8WR1R).
+
+## FEAT-QA23PZ (TASK-BYT2WK) — 2026-09-21: production RATE wiring qua CarrierRateExecutionService + Destination Scope
+
+### Changed
+- `Ghn::collect()` — production RATE entry now runs the SHARED `CarrierRateExecutionService`
+  (v10 §35.6: eligibility → RateSourceMode → origin readiness → address policy → realtime
+  contributor). Carrier-specific gates kept: `active`, VN destination, VND base currency.
+  Realtime tail: `RealtimeRateContributor` (dead seam → LIVE) → `GhnRateCalculator::
+  quoteWithHandoff` — identical pricing tail; `calculate()/resolveAndQuote()` remain the
+  standalone path (behavior unchanged, no removal per DEC-FEATQA23PZ-001 decision 5).
+- Ineligible destination (merchant-configured zone scope) → reported
+  `unavailable(DESTINATION_NOT_IN_SCOPE)` — the reason the Launchpad FallbackCoordinator guard
+  keys on so a zone miss NEVER opens fallback (§20). Eligible FALLBACK_ONLY keeps reporting
+  `GHN_RATE_SKIPPED_FALLBACK_ONLY` (composition owns fallback dispatch).
+- Outcome recording semantics preserved (every terminal state reported through
+  `CarrierRateOutcomeCollectorInterface`).
+
+### Added
+- Config `carriers/secomm_ghn/destination_scope` (select ALL default | SELECTED_ZONES) +
+  `carriers/secomm_ghn/allowed_zone_codes` (multiselect of enabled shared Shipping Zones via
+  `Secomm\ShippingCore\Model\Config\Source\EnabledZoneCodes`; `<depends>` hides the field
+  under ALL) + backend model `Model\Config\Backend\AllowedZoneCodes` (SELECTED_ZONES requires
+  ≥1 existing zone; deleted references rejected at save — disabled ones allowed, fail-safe).
+- `GhnConfig::getDestinationScope()/getAllowedZoneCodes()` delegating to the shared ShippingCore
+  reader (`Api\Config\CarrierDestinationScopeConfigInterface`).
+- Tests: `GhnTest` reworked for the execution seam (+ineligible-reason case);
+  `GhnZoneExecutionTest` — REAL execution chain over the real
+  CarrierRateExecutionService/evaluator/matcher/registry/handoff with an API-call counter
+  proving §29: ALL → 1 call; zone hit → 1; miss/no-zones → 0 calls +
+  `DESTINATION_NOT_IN_SCOPE`; FALLBACK_ONLY skip vs miss.
+
 ## 0.9.0-draft (2026-09-18, UNCOMMITTED — TASK-WAWNDS / GHN RATE Type-5 — PAUSED chờ v10-aligned TL prompt)
 
 > **Trạng thái: DRAFT/PAUSED — chưa đóng; các mốc contract + estimator GHN-specific được giữ

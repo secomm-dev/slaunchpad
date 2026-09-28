@@ -1,0 +1,10 @@
+ app/code/Secomm/VietNamAddress/CHANGELOG.md        | 35 ++++++++++++++++
+ .../Model/Import/VnDatasetReader.php               | 22 ++++++++++-
+ .../VietNamAddress/Model/Scheme/VnSchemes.php      | 29 ++++++++++++--
+ app/code/Secomm/VietNamAddress/README.md           | 12 ++++--
+ .../ImportVnAdminPre2025To2025MappingPatch.php     |  9 +++--
+ .../Test/Unit/Model/Import/VnDatasetReaderTest.php | 28 +++++++++++++
+ .../Unit/Model/Import/VnDatasetValidatorTest.php   | 46 +++++++++++-----------
+ .../Test/Unit/Model/Scheme/VnSchemesTest.php       |  4 +-
+ .../ImportVnAdminPre2025To2025MappingPatchTest.php |  2 +-
+ 9 files changed, 148 insertions(+), 39 deletions(-)

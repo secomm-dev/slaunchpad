@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Secomm\Ghn\Model\Rate;
 
+use Secomm\Ghn\Model\GhnShipmentConstraints;
+
 /**
  * TASK-WAWNDS — transient quote-time GHN rate estimation: the estimated packages plus the
  * derived GHN weight class. NOT `ShipmentPhysicalData`/`PhysicalPackage` (CREATE); never
@@ -20,7 +22,7 @@ namespace Secomm\Ghn\Model\Rate;
  */
 final class QuoteParcelEstimate
 {
-    public const HEAVY_WEIGHT_THRESHOLD_GRAMS = 20000;
+    public const HEAVY_WEIGHT_THRESHOLD_GRAMS = GhnShipmentConstraints::TYPE_2_MAX_WEIGHT_G;
     public const SERVICE_TYPE_LIGHT_PARCEL = 2;
     public const SERVICE_TYPE_HEAVY_GOODS = 5;
 
@@ -90,6 +92,47 @@ final class QuoteParcelEstimate
                     return [$reason, $index, $dimension, (int) $value, GhnPackageLimits::MAX_DIMENSION_CM];
                 }
             }
+        }
+
+        return null;
+    }
+
+    /**
+     * TASK-MQ2DRG — deterministic weight pre-validation (TL directive 2026-09-23; SUPERSEDES
+     * the TASK-WAWNDS "no weight pre-rejection at RATE" stance — DEC-TASKMQ2DRG-001). Pure,
+     * idempotent, no I/O; consumed by BOTH calculator entry points.
+     *
+     * Order: HARD_UNIT_OVER_WEIGHT first (directive A before E) — a single unit above the
+     * per-package limit is a REAL carrier rejection and must never be masked as a
+     * representational gap. AGGREGATE_UNREPRESENTABLE is reachable only when every unit is
+     * individually valid but the total exceeds the representable request weight.
+     *
+     * Boundary semantics: limits are STRICTLY greater-than — exactly 50000g (single unit or
+     * total) is representable; the 20000g type boundary (`<` in getServiceTypeId) is
+     * untouched. Dimensions are not read here (no unit contract at RATE — see
+     * {@see GhnPackageLimits}).
+     */
+    public function findWeightLimitViolation(): ?GhnWeightConstraintViolation
+    {
+        $limit = GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G;
+        foreach ($this->packages as $index => $package) {
+            if ($package->getWeightGrams() > $limit) {
+                return new GhnWeightConstraintViolation(
+                    GhnWeightConstraintViolation::KIND_HARD_UNIT_OVER_WEIGHT,
+                    $index,
+                    $package->getWeightGrams(),
+                    $limit
+                );
+            }
+        }
+        $total = $this->getTotalWeightGrams();
+        if ($total > $limit) {
+            return new GhnWeightConstraintViolation(
+                GhnWeightConstraintViolation::KIND_AGGREGATE_UNREPRESENTABLE,
+                -1,
+                $total,
+                $limit
+            );
         }
 
         return null;

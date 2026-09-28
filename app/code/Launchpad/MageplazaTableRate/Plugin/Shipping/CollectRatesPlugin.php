@@ -27,7 +27,10 @@ use Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeCollectorInterface;
  *      once per Quote\Address::requestShippingRates() call, so state must never be assumed
  *      request-wide),
  *   2. lets proceed() run the normal carrier collection,
- *   3. filters per-method customer visibility from the completed result,
+ *   3. filters per-method customer visibility from the completed result — customer-facing
+ *      collects only (TASK-1WKX9C: a carrier-limited collect is Magento's checkout
+ *      save/validation re-collect; hidden methods must stay visible there or the
+ *      fallback-presented rate the customer selected fails core's validation),
  *   4. appends eligible fallback rates, and
  *   5. closes the bracket.
  *
@@ -59,7 +62,23 @@ class CollectRatesPlugin
 
             $result = $subject->getResult();
             if ($result instanceof Result) {
-                $this->visibilityFilter->filter($result);
+                // TASK-1WKX9C — hidden-method stripping is a customer-facing PRESENTATION
+                // rule; a carrier-limited collect is not customer-facing. Magento's checkout
+                // save/validation flows (ShippingInformationManagement, PaymentInformation-
+                // Management, GuestPaymentInformationManagement) set limitCarrier on the
+                // address and re-collect ONLY the requested carrier, and their result is
+                // never rendered. When the primary carrier failed on the customer-facing
+                // estimate, the offered rate may be a fallback copy of a hidden method
+                // (show_to_customer=0, e.g. mptablerate Standard) — but a limited collect
+                // never runs the primary carrier, so the outcome collector stays empty and
+                // appendFallbackRates() cannot re-append the copy. Stripping the hidden
+                // method here as well would make core's rate check reject exactly the rate
+                // we offered → HTTP 404 "Carrier with such method not found" on
+                // shipping-information / payment-information (reproduced 2026-09-25,
+                // outer-district address, mptablerate_8 → 404 vs mptablerate_7 → 200).
+                if (!$request->getLimitCarrier()) {
+                    $this->visibilityFilter->filter($result);
+                }
                 $this->fallbackCoordinator->appendFallbackRates($request, $result);
             }
         } finally {

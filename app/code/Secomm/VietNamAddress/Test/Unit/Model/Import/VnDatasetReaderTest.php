@@ -110,4 +110,32 @@ class VnDatasetReaderTest extends TestCase
 
         return $row;
     }
+
+    /**
+     * TASK-B1 — checksum guard: an explicit checksum override that does not match the
+     * overridden file must abort the read (dataset drift never reaches the importer).
+     */
+    public function testRejectsChecksumMismatchOnOverriddenFile(): void
+    {
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('checksum mismatch');
+
+        (new VnDatasetReader(
+            $this->registrar,
+            [VnSchemes::VN_ADMIN_2025 => 'fixture_units_7col.csv'],
+            [VnSchemes::VN_ADMIN_2025 => 'deadbeef000000000000000000000000']
+        ))->read(VnSchemes::VN_ADMIN_2025);
+    }
+
+    public function testAcceptsOverriddenFileWithMatchingChecksum(): void
+    {
+        $actual = hash_file('sha256', self::FIXTURE_DIR . '/Files/fixture_units_7col.csv');
+        $dataset = (new VnDatasetReader(
+            $this->registrar,
+            [VnSchemes::VN_ADMIN_2025 => 'fixture_units_7col.csv'],
+            [VnSchemes::VN_ADMIN_2025 => $actual]
+        ))->read(VnSchemes::VN_ADMIN_2025);
+
+        $this->assertCount(4, $dataset['units']);
+    }
 }

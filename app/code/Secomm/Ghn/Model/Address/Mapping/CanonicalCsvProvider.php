@@ -74,6 +74,29 @@ class CanonicalCsvProvider implements VnAddressUnitProviderInterface
     /**
      * @inheritDoc
      */
+    public function getByLevel(string $schemeCode, int $level): array
+    {
+        return array_values(array_filter(
+            $this->load($schemeCode),
+            static fn (VnAddressUnitInterface $unit): bool => $unit->getLevel() === $level
+        ));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getByRegion(string $schemeCode, string $regionCode, int $level): array
+    {
+        return array_values(array_filter(
+            $this->load($schemeCode),
+            static fn (VnAddressUnitInterface $unit): bool =>
+                $unit->getLevel() === $level && $unit->getRegionCode() === $regionCode
+        ));
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function countByScheme(string $schemeCode): int
     {
         return count($this->load($schemeCode));

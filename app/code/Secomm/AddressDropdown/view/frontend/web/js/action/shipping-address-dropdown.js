@@ -4,14 +4,15 @@ define([
     'Magento_Checkout/js/model/quote',
     'Magento_Checkout/js/action/set-shipping-information',
     'mage/loader', // Ensure loader is included
-    'knockout'
-], function (
-    $,
+    'knockout',
+        'Secomm_AddressDropdown/js/model/master-switch'
+], function ($,
     Component,
     quote,
     setShippingInformationAction,
     loader,
-    ko
+    ko,
+        isEnabled
 ) {
     'use strict';
 
@@ -23,6 +24,12 @@ define([
     const SHIPPING_ADDRESS_CITY = '.shipping-address-city';
     const CITY_ERROR = '#co-shipping-form #custom-city-error';
     const CITY_DEFAULT = '#co-shipping-form [name="shippingAddress.city"]';
+    // TASK-SEC-A5: when the module is disabled for this store scope the component is empty —
+    // no initialize, no events, no DOM mutation; native Magento checkout behavior takes over.
+    if (!isEnabled()) {
+        return Component.extend({});
+    }
+
     return Component.extend({
         isRegionChanging: false,
 
@@ -156,7 +163,7 @@ define([
             }
             this._vnSchemaLoading = true;
             $.ajax({
-                url: '/graphql',
+                url: (window.BASE_URL || '/').replace(/index\.php\/?$/, '') + 'graphql',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -388,7 +395,7 @@ define([
             $('body').loader('show');
 
             $.ajax({
-                url: '/graphql',
+                url: (window.BASE_URL || '/').replace(/index\.php\/?$/, '') + 'graphql',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ query: query }),

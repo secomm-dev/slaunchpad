@@ -35,7 +35,9 @@ class VnDatasetReader
     public function __construct(
         private readonly ComponentRegistrarInterface $componentRegistrar,
         /** @var array<string, string> scheme => file name override (alternate datasets/tests) */
-        private readonly array $files = []
+        private readonly array $files = [],
+        /** @var array<string, string> scheme => expected md5 override (matches a file override) */
+        private readonly array $checksums = []
     ) {
     }
 
@@ -74,11 +76,27 @@ class VnDatasetReader
     {
         VnSchemes::assertKnown($scheme);
         $moduleDir = $this->componentRegistrar->getPath('module', 'Secomm_VietNamAddress');
-        $path = rtrim($moduleDir, '/') . '/Files/' . $this->getFileForScheme($scheme);
+        $file = $this->getFileForScheme($scheme);
+        $path = rtrim($moduleDir, '/') . '/Files/' . $file;
         if (!is_readable($path)) {
             throw new LocalizedException(
                 __('Dataset file not readable: %1 (regenerate it per the DEC-FEATYA2C0W-003 canonical 7-column spec).', $path)
             );
+        }
+
+        // TASK-B1 — dataset integrity guard: the bundled contract file must match its
+        // registered checksum. Explicit checksum overrides pair with file overrides; a file
+        // override WITHOUT one (test fixtures) is exempt, while the canonical file itself is
+        // always checked against the catalog contract.
+        $expectedChecksum = $this->checksums[$scheme]
+            ?? ($file === VnSchemes::unitFile($scheme) ? VnSchemes::checksumSha256($scheme) : null);
+        if ($expectedChecksum !== null) {
+            $actual = hash_file('sha256', $path);
+            if ($actual !== $expectedChecksum) {
+                throw new LocalizedException(
+                    __('Dataset %1 checksum mismatch (scheme %2): expected sha256 %3, got %4. The bundled dataset does not match its version contract.', $file, $scheme, $expectedChecksum, $actual)
+                );
+            }
         }
 
         return $path;

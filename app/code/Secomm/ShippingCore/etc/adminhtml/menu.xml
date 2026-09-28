@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <!-- FEAT-QA23PZ / DEC-FEATQA23PZ-001 — Secomm menu convention (DEC decision 5):
+             every Secomm admin grid hangs under MenuSecomm_Base::menu.
+             TASK-WY6WP5 — shipping screens grouped under a "Shipping" node (TL directive
+             §1 IA, user approval 2026-09-23). -->
+        <add id="Secomm_ShippingCore::shipping"
+             title="Shipping"
+             module="Secomm_ShippingCore"
+             sortOrder="65"
+             resource="Secomm_ShippingCore::shipping_zones"
+             parent="MenuSecomm_Base::menu"/>
+        <add id="Secomm_ShippingCore::zones"
+             title="Shipping Zones"
+             module="Secomm_ShippingCore"
+             sortOrder="10"
+             action="secomm_shippingcore/zone/index"
+             resource="Secomm_ShippingCore::zones"
+             parent="Secomm_ShippingCore::shipping"/>
+        <!-- TASK-WY6WP5 — Shipping Coverage (generalized from Carrier Coverage): the single
+             editing surface for target ↔ zone assignment. ACL id/route stay stable. -->
+        <add id="Secomm_ShippingCore::carrier_coverage"
+             title="Shipping Coverage"
+             module="Secomm_ShippingCore"
+             sortOrder="20"
+             action="secomm_shippingcore/coverage/index"
+             resource="Secomm_ShippingCore::carrier_coverage"
+             parent="Secomm_ShippingCore::shipping"/>
+    </menu>
+</config>

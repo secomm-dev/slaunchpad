@@ -1,0 +1,40 @@
+TASK-WY6WP5 — directive §32 browser/admin smoke (Playwright/Chromium, real admin session, 2026-09-23)
+Environment: local dev (fashion-launchpad.localhost), temporary admin user created via CLI and DELETED after the run.
+Final run result: 27/27 PASS
+
+PASS — admin login succeeded
+PASS — keyed menu URL found for Shipping Coverage
+PASS — menu shows "Shipping" group
+PASS — menu shows "Shipping Coverage" item
+PASS — Add Coverage button visible
+PASS — GHN registered target row visible
+PASS — Type column shows Carrier
+PASS — Not Configured status shown
+PASS — Applies To = Carrier shown
+PASS — Carrier ui-select (searchable) rendered
+PASS — Availability select rendered
+PASS — carrier option GHN offered
+PASS — Zone selector visible under SELECTED_ZONES
+PASS — zone options load (HCM_INNER/Nội Thành)
+PASS — Zone selector hidden under ALL (switcherConfig)
+PASS — zone selection persists through ALL↔SELECTED switch
+PASS — Save succeeded message shown
+PASS — Edit page shows GHN label
+PASS — persisted zone retained on edit (field value has HCM_INNER)
+PASS — Reset to Defaults button visible on configured target
+PASS — Reset success message
+PASS — grid back to Not Configured after reset
+PASS — Zone form: NO "Carriers Referencing This Zone" block
+PASS — Province searchable multiselect rendered
+PASS — Included Wards field rendered
+PASS — province search filters options (type-to-search works)
+PASS — ward options cascade-load after province selection
+
+Real backend messages captured during the run:
+- Save:    'Shipping coverage for "GHN (Giao Hàng Nhanh)" has been saved (1 zone(s)).'
+- Reset:   'Shipping coverage for "GHN (Giao Hàng Nhanh)" was reset to defaults (4 configuration value(s) removed) — the target remains registered.'
+- Rejected: 'Availability "SELECTED_ZONES" requires at least one selected zone.' (server-side validator, captured while debugging the script's own double-toggle)
+
+Extra configured-state exclusion proof (earlier run, while GHN was Configured):
+- FAIL-intentional: 'carrier option GHN offered' → GHN correctly EXCLUDED from the Add Coverage carrier options (directive §6E).
+- Grid row showed "Configured" and the row action switched Configure → Edit.

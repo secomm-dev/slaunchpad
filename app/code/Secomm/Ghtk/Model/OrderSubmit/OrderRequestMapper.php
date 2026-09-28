@@ -32,7 +32,8 @@ use Secomm\Ghtk\Model\Address\PickupAddress;
  *   it from products.weight;
  * - `is_freeship = 1`: Magento charged shipping at checkout → the recipient
  *   pays ONLY pick_money at the door (no double charge);
- * - `pick_money` = the RESOLVED COD amount only (CodAmountResolverInterface) —
+ * - `pick_money` = the RESOLVED COD amount only (Secomm_Cod collection decision,
+ *   DEC-TASKDFGFZ9-002) — this mapper never derives it from order totals;
  *   never grand_total. `pick_option` deliberately omitted: official default
  *   `cod` is correct (it is a LOGISTICS pickup mode, not a payment selector);
  * - `hamlet = "Khác"` per the official docs ("use Khác when not applicable")

@@ -47,17 +47,33 @@
                 type="Launchpad\MageplazaTableRate\Block\Adminhtml\Method\Edit\Tab\Rate\CityForm"/>
     <preference for="Mageplaza\TableRateShipping\Block\Adminhtml\Method\Edit\Tab\Rate\Grid"
                 type="Launchpad\MageplazaTableRate\Block\Adminhtml\Method\Edit\Tab\Rate\CityGrid"/>
+    <!-- TASK-RT50KH — import modal sample link points at the Launchpad import template
+         (city_code + city_name columns) instead of Mageplaza's Google Drive sample. -->
+    <preference for="Mageplaza\TableRateShipping\Block\Adminhtml\Import\Edit\Form"
+                type="Launchpad\MageplazaTableRate\Block\Adminhtml\Import\Edit\Form"/>
     <preference for="Mageplaza\TableRateShipping\Model\Import"
                 type="Launchpad\MageplazaTableRate\Model\MptablerateImport"/>
 
-    <type name="Mageplaza\TableRateShipping\Controller\Adminhtml\Method\Save">
-        <plugin name="launchpadMptablerateSettingsPersist"
-                type="Launchpad\MageplazaTableRate\Plugin\Adminhtml\MethodSavePlugin"
-                sortOrder="10"/>
-    </type>
     <type name="Mageplaza\TableRateShipping\Model\ResourceModel\Rate">
         <plugin name="launchpadMptablerateRateCityPersist"
                 type="Launchpad\MageplazaTableRate\Plugin\Rate\ResourceRateSavePlugin"
                 sortOrder="10"/>
     </type>
+    <!-- TASK-SEC-C1 — CREATE-safe settings persistence: the controller plugin captures the
+         posted payload; the resource plugin persists it against the JUST-SAVED method id
+         (canonical identity — no latest-row guess) and cascades extension-row deletion. -->
+    <type name="Mageplaza\TableRateShipping\Controller\Adminhtml\Method\Save">
+        <plugin name="launchpadMptablerateSettingsCapture"
+                type="Launchpad\MageplazaTableRate\Plugin\Adminhtml\MethodSavePlugin"
+                sortOrder="10"/>
+    </type>
+    <type name="Mageplaza\TableRateShipping\Model\ResourceModel\Method">
+        <plugin name="launchpadMptablerateSettingsPersistOnSave"
+                type="Launchpad\MageplazaTableRate\Plugin\ResourceModel\MethodResourcePlugin"
+                sortOrder="10"/>
+    </type>
+    <!-- TASK-SEC-C3 — stateless-channel customer group: the Launchpad method override adds
+         an optional explicit group to isActive(); vendor session semantics stay the default. -->
+    <preference for="Mageplaza\TableRateShipping\Model\Method"
+                type="Launchpad\MageplazaTableRate\Model\LaunchpadMethod"/>
 </config>

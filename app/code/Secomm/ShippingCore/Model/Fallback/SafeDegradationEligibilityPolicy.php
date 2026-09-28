@@ -39,12 +39,14 @@ class SafeDegradationEligibilityPolicy implements FallbackEligibilityPolicyInter
     /**
      * @param array<int, string> $eligibleUnavailableReasons ShippingFailureReason::* values that
      *        make an UNAVAILABLE outcome fallback-eligible (default per v10 §35.5:
-     *        CANONICAL_AMBIGUOUS + PROVIDER_MAPPING_MISSING)
+     *        CANONICAL_AMBIGUOUS + PROVIDER_MAPPING_MISSING + RATE_REQUEST_UNREPRESENTABLE
+     *        [capability-unsupported — TASK-MQ2DRG])
      */
     public function __construct(
         private readonly array $eligibleUnavailableReasons = [
             ShippingFailureReason::CANONICAL_AMBIGUOUS,
             ShippingFailureReason::PROVIDER_MAPPING_MISSING,
+            ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE,
         ]
     ) {
     }

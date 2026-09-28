@@ -17,10 +17,11 @@ use Secomm\Ghn\Model\Shipment\GhnCreateValidationException;
 use Secomm\Ghn\Model\Shipment\GhnParcelPlan;
 
 /**
- * TASK-9Q5ZAK r2 (DEC-TASK9Q5ZAK-001) — the Create Order payload contract: the interpreter's
- * plan decides root fields vs items[]; config enums validated fail-closed; and every
- * architecture-mandated ABSENCE asserted (no COD, no insurance/order value, no sender/return,
- * no service_id).
+ * TASK-9Q5ZAK r2 + TASK-DFGFZ9 phase 2 (DEC-TASKDFGFZ9-002) — the Create Order payload
+ * contract: the interpreter's plan decides root fields vs items[]; config enums validated
+ * fail-closed; `cod_amount` is ALWAYS emitted (the mapped Secomm_Cod decision — 0 for
+ * non-COD, provider-capped above); every other architecture-mandated ABSENCE asserted
+ * (no insurance/order value, no sender/return, no service_id).
  */
 class GhnCreateRequestBuilderTest extends TestCase
 {
@@ -53,7 +54,8 @@ class GhnCreateRequestBuilderTest extends TestCase
             $this->address,
             1,
             'CHOXEMHANGKHONGTHU',
-            'Waffle Blanket x1'
+            'Waffle Blanket x1',
+            125000
         );
 
         $this->assertSame([
@@ -68,6 +70,7 @@ class GhnCreateRequestBuilderTest extends TestCase
             'service_type_id' => 2,
             'payment_type_id' => 1,
             'required_note' => 'CHOXEMHANGKHONGTHU',
+            'cod_amount' => 125000,
             'weight' => 1500,
             'length' => 30,
             'width' => 20,
@@ -90,10 +93,12 @@ class GhnCreateRequestBuilderTest extends TestCase
             $this->address,
             1,
             'KHONGCHOXEMHANG',
-            'ignored when items present'
+            'ignored when items present',
+            0
         );
 
         $this->assertSame(5, $payload['service_type_id']);
+        $this->assertSame(0, $payload['cod_amount'], 'non-COD order still emits cod_amount = 0 (provider default shape)');
         $this->assertSame($items, $payload['items']);
         $this->assertArrayNotHasKey('length', $payload, 'type-5 root dims omitted');
         $this->assertArrayNotHasKey('width', $payload);
@@ -114,7 +119,8 @@ class GhnCreateRequestBuilderTest extends TestCase
             $this->address,
             1,
             'KHONGCHOXEMHANG',
-            'ignored'
+            'ignored',
+            0
         );
 
         $this->assertSame(60000, $payload['weight'], 'root weight (factual Σ) is provider-mandatory');
@@ -134,16 +140,20 @@ class GhnCreateRequestBuilderTest extends TestCase
             $this->address,
             1,
             'KHONGCHOXEMHANG',
-            'content'
+            'content',
+            0
         );
 
+        // TASK-DFGFZ9 phase 2: cod_amount is ALWAYS emitted (mapped Secomm_Cod decision; 0 = nothing to collect).
+        $this->assertSame(0, $payload['cod_amount']);
+
         foreach ([
-            'cod_amount', 'cod_failed_amount', 'insurance_value', 'order_value',
+            'cod_failed_amount', 'insurance_value', 'order_value',
             'from_name', 'from_phone', 'from_address', 'from_ward_name',
             'from_district_name', 'from_province_name', 'return_name', 'return_phone',
             'return_address', 'return_district_name', 'service_id', 'coupon',
         ] as $forbidden) {
-            $this->assertArrayNotHasKey($forbidden, $payload, "$forbidden must never be sent by GHN-D");
+            $this->assertArrayNotHasKey($forbidden, $payload, "$forbidden must never be sent");
         }
     }
 
@@ -160,7 +170,8 @@ class GhnCreateRequestBuilderTest extends TestCase
             $this->address,
             3,
             'KHONGCHOXEMHANG',
-            'content'
+            'content',
+            0
         );
     }
 
@@ -175,12 +186,51 @@ class GhnCreateRequestBuilderTest extends TestCase
                 $this->address,
                 1,
                 'CHOXEMHANGDUOC',
-                'content'
+                'content',
+                0
             );
             $this->fail('Expected GhnCreateValidationException');
         } catch (GhnCreateValidationException $exception) {
             $this->assertSame(GhnCreateValidationException::REASON_INVALID_CONFIGURATION, $exception->getReasonToken());
         }
+    }
+
+    public function testCodAmountAboveProviderCapFailsClosed(): void
+    {
+        try {
+            $this->builder->build(
+                'GHNS1',
+                'Lạng Sơn',
+                'Xã Tân Thanh',
+                new GhnParcelPlan(2, 1000, 10, 10, 10, null),
+                $this->address,
+                1,
+                'KHONGCHOXEMHANG',
+                'content',
+                GhnCreateRequestBuilder::MAX_COD_AMOUNT + 1
+            );
+            $this->fail('Expected GhnCreateValidationException');
+        } catch (GhnCreateValidationException $exception) {
+            $this->assertSame(GhnCreateValidationException::REASON_INVALID_CONFIGURATION, $exception->getReasonToken());
+        }
+    }
+
+    public function testNegativeCodAmountFailsClosed(): void
+    {
+        $this->expectException(GhnCreateValidationException::class);
+        $this->expectExceptionMessage('cod_amount');
+
+        $this->builder->build(
+            'GHNS1',
+            'Lạng Sơn',
+            'Xã Tân Thanh',
+            new GhnParcelPlan(2, 1000, 10, 10, 10, null),
+            $this->address,
+            1,
+            'KHONGCHOXEMHANG',
+            'content',
+            -1
+        );
     }
 
     public function testIncompleteRecipientFailsClosed(): void
@@ -196,7 +246,8 @@ class GhnCreateRequestBuilderTest extends TestCase
                 $this->address,
                 1,
                 'KHONGCHOXEMHANG',
-                'content'
+                'content',
+                0
             );
             $this->fail('Expected GhnCreateValidationException');
         } catch (GhnCreateValidationException $exception) {

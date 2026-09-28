@@ -14,6 +14,7 @@ use Magento\Quote\Model\Quote\Address\RateRequest;
 use Secomm\Ghn\Api\Exception\ProviderAuthenticationException;
 use Secomm\Ghn\Api\Exception\ProviderInvalidAddressException;
 use Secomm\Ghn\Api\Exception\ProviderInvalidRequestException;
+use Secomm\Ghn\Api\Exception\ProviderRateLimitException;
 use Secomm\Ghn\Api\Exception\ProviderRateUnavailableException;
 use Secomm\Ghn\Api\Exception\ProviderRemoteException;
 use Secomm\Ghn\Api\Exception\ProviderServiceUnavailableException;
@@ -127,10 +128,15 @@ class RealtimeRateContributor implements RealtimeCarrierRateContributorInterface
         } catch (
             ProviderTimeoutException
             | ProviderRemoteException
+            | ProviderRateLimitException
             | ProviderServiceUnavailableException $technicalException
         ) {
-            // Temporary transport/provider outage (429/5xx included — the client classifies
-            // them together): TECHNICAL_FAILURE keeps the shared fallback path reachable.
+            // Temporary transport/provider outage: timeout, transport error, 5xx — and HTTP/
+            // envelope 429, which TASK-GKHXY1 r2 split into its own typed exception (definitive
+            // not-applied throttle). A throttle is a transient provider failure, so the RATE
+            // seam keeps translating it as TECHNICAL_FAILURE and the shared fallback policy
+            // stays reachable (TECHNICAL_FALLBACK when RateSourceMode permits). Never a
+            // business UNAVAILABLE, never local fallback dispatch.
             $this->logger->call('GHN rate technical failure', [
                 'reason' => ShippingFailureReason::TECHNICAL_ERROR,
                 'exception_class' => $technicalException::class,

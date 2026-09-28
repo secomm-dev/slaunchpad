@@ -103,7 +103,10 @@ class FallbackRateProvider implements FallbackRateProviderInterface
         $method = $this->loadMethod($methodId);
 
         $storeId = (int) ($rateRequest->getStoreId() ?? 0);
-        if (!$method->isActive($storeId)) {
+        // TASK-SEC-C3 — group authority: the quote carried by THIS rate request (trustworthy
+        // on every channel incl. plain REST), falling back to the vendor session semantics
+        // when the request carries no items.
+        if (!$method->isActive($storeId, $this->resolveCustomerGroupId($rateRequest))) {
             return null;
         }
 
@@ -158,6 +161,25 @@ class FallbackRateProvider implements FallbackRateProviderInterface
      *
      * @return array{weight: float, subtotal: float, qty: float}
      */
+    /**
+     * Customer group of the quote behind THIS rate request — session-free authority that is
+     * correct for storefront, REST token and GraphQL token contexts alike.
+     */
+    private function resolveCustomerGroupId(RateRequest $rateRequest): ?int
+    {
+        $items = $rateRequest->getAllItems() ?? [];
+        foreach ($items as $item) {
+            $quote = $item->getQuote();
+            if ($quote !== null) {
+                $groupId = $quote->getCustomerGroupId();
+
+                return $groupId === null ? null : (int) $groupId;
+            }
+        }
+
+        return null;
+    }
+
     private function aggregateCartData(RateRequest $rateRequest): array
     {
         return [

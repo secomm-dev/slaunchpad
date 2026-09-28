@@ -167,7 +167,8 @@ class DeleteAddressImport
             }
 
             foreach ($listLocaleExist as $locale) {
-                $where = ["`locale` = '" . $locale . "' AND `region_id` =" . $regionId];
+                // TASK-SEC-A1: bound where conditions — no SQL text concatenation.
+                $where = ['locale = ?' => (string) $locale, 'region_id = ?' => (int) $regionId];
                 $this->resourceConnection->getConnection()
                     ->delete(
                         $this->resourceConnection->getTableName(Constant::DIRECTORY_COUNTRY_REGION_NAME),

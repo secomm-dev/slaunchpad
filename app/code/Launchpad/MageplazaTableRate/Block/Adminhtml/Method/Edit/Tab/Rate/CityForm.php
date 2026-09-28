@@ -27,7 +27,14 @@ use Magento\Framework\Escaper;
  * — the stored code with its resolved label (or the raw code + warning when it no longer
  * resolves); `view/adminhtml/web/js/city-selector.js` fills the options per selected region
  * through the launchpad_mptablerate/city/options feed. The name stays `city_code`, the
- * persisted identity stays the raw code — labels are display-only.
+ * persisted identity stays the raw code — labels are display-only. The field is inserted
+ * DIRECTLY AFTER `region` (addField $after) — it belongs to the geographic condition group.
+ *
+ * TASK-RT50KH UX round — the "City / Area Data — Download & Import" note sits right below the
+ * field and explains the CSV roundtrip: download the current rates CSV (city_code pre-filled,
+ * directly importable), the City Reference code list, and where to upload (Import Rates
+ * button on the Shipping Rates tab — the importer validates existence + region consistency
+ * and persists atomically).
  */
 class CityForm extends MageplazaRateForm
 {
@@ -69,7 +76,7 @@ class CityForm extends MageplazaRateForm
 
         $values = [['value' => '', 'label' => __(MethodSettingsProvider::WILDCARD_OPTION_LABEL)]];
         $note = __(
-            'Pick a City / Area to narrow this rate, or keep "All / *" to apply it everywhere. '
+            'Pick a City / Area to narrow this rate, or keep "All" to apply it everywhere. '
             . 'The list follows the selected State/Region. Unknown codes are rejected on save.'
         );
         $staleWarning = '';
@@ -87,6 +94,8 @@ class CityForm extends MageplazaRateForm
             $values[] = ['value' => $cityCode, 'label' => $label];
         }
 
+        // $after 'region' — the City / Area constraint belongs to the geographic condition
+        // group (country → region → city), NOT at the end of the fieldset (TASK-RT50KH UX).
         $fieldset->addField('city_code', 'select', [
             'name' => 'city_code',
             'label' => __('City / Area'),
@@ -95,14 +104,14 @@ class CityForm extends MageplazaRateForm
             'value' => $cityCode,
             'note' => $note,
             'after_element_html' => $staleWarning . $this->getCitySelectorHtml(),
-        ]);
+        ], 'region');
 
         $fieldset->addField('launchpad_city_reference', 'note', [
             'name' => 'launchpad_city_reference',
-            'label' => __('City / Area Downloads'),
-            'title' => __('City / Area Downloads'),
+            'label' => __('City / Area Data — Download & Import'),
+            'title' => __('City / Area Data — Download & Import'),
             'text' => $this->getDownloadLinksHtml(),
-        ]);
+        ], 'city_code');
 
         return $this;
     }
@@ -136,18 +145,50 @@ class CityForm extends MageplazaRateForm
 
     private function getDownloadLinksHtml(): string
     {
-        return sprintf(
-            '<a href="%s">%s</a> · <a href="%s">%s</a><br/>%s',
-            $this->escaper->escapeHtmlAttr($this->getUrl('launchpad_mptablerate/city/referenceCsv')),
-            $this->escaper->escapeHtml(__('Download: City Reference CSV')),
-            $this->escaper->escapeHtmlAttr($this->getUrl('launchpad_mptablerate/city/importTemplate')),
-            $this->escaper->escapeHtml(__('Download: Import Template')),
-            $this->escaper->escapeHtml(
-                __(
-                    'The reference lists every City / Area code (identity for the CSV '
-                    . '`city_code` column); the template comes pre-filled with a valid example.'
-                )
-            )
-        );
+        $method = $this->_coreRegistry->registry(RegistryConstants::METHOD);
+        $methodId = $method instanceof \Mageplaza\TableRateShipping\Model\Method ? (int) $method->getId() : 0;
+
+        $links = [];
+        // if ($methodId > 0) {
+        //     $links[] = [
+        //         $this->getUrl('mptablerate/method/rateExportCsv', ['id' => $methodId]),
+        //         __('Download: Current Rates CSV — pre-filled, edit the city_code column and import back'),
+        //         __('All rates of this method with their current City / Area in the last column.'),
+        //     ];
+        // }
+        $links[] = [
+            $this->getUrl('launchpad_mptablerate/city/referenceCsv'),
+            __('Download: City Reference CSV — every valid City / Area code'),
+            __('The identity for the CSV `city_code` column.'),
+        ];
+        // $links[] = [
+        //     $this->getUrl('launchpad_mptablerate/city/importTemplate'),
+        //     __('Download: Import Template — empty CSV with a worked example'),
+        //     __('Same columns as the importer expects.'),
+        // ];
+        // if ($methodId > 0) {
+        //     $links[] = [
+        //         $this->getUrl('mptablerate/method/importGrid', ['id' => $methodId]),
+        //         __('Import: upload the edited CSV (validates + persists City / Area per row)'),
+        //         __('Opens the import page of this method; unknown codes are rejected.'),
+        //     ];
+        // }
+
+        $html = '<div class="launchpad-city-downloads"><p class="note">'
+            . (string) __('Update City / Area in bulk: download, edit the city_code column, import back. '
+                . 'The import APPENDS new rate rows (native Mageplaza semantics) — review the Rates '
+                . 'grid afterwards and remove superseded rows.')
+            . '</p>';
+        foreach ($links as [$url, $label, $purpose]) {
+            $html .= sprintf(
+                '<div><a href="%s">%s</a><br/><span class="note">%s</span></div>',
+                $this->escaper->escapeHtmlAttr($url),
+                $this->escaper->escapeHtml((string) $label),
+                $this->escaper->escapeHtml((string) $purpose)
+            );
+        }
+        $html .= '</div>';
+
+        return $html;
     }
 }

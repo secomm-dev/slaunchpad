@@ -335,15 +335,13 @@ address handoff (E-C0)
 is added without evidence from real carrier/bridge integration; the next phase validates these
 contracts with real consumers (carrier adoption + the Launchpad TableRate bridge).
 
-## COD payment identification (TASK-STC3NB, architecture v4 §4.1)
+## COD — owned by Secomm_Cod (TASK-DFGFZ9, DEC-TASKDFGFZ9-001/002/003)
 
-`Api\Cod\CodPaymentMethodResolverInterface` + `Model\Cod\ConfiguredCodPaymentMethodResolver` —
-ShippingCore owns the CONFIGURATION declaring which Magento payment method codes are treated as
-Cash On Delivery (`secomm_shippingcore/cod/payment_methods`, comma-separated, default empty =
-nothing is COD) plus a provider-neutral resolver: `isCod(paymentMethodCode): bool`.
-
-- Exact, case-sensitive match on trimmed codes — prefix/similar codes are NOT matches.
-- Empty/malformed config → `false`; no default COD method exists (explicit declaration only).
+COD identification (`isCod`, P1 default = Magento core `cashondelivery`) and the per-shipment
+collection decision (amount + currency + rejection, ledger-backed one-collection rule) are
+owned by `Secomm_Cod`. Carriers declare a dependency on `Secomm_Cod` and only MAP the decision
+to provider fields; ShippingCore itself has no COD dependency — its orchestration never reads
+COD identification or amounts.
 
 ## Per-operation address capability + resolution snapshot (TASK-Y3X6H5, architecture v4 §5/§5.1/§6)
 
@@ -478,3 +476,47 @@ Consumer runtime đầu tiên của pipeline E-A/E-B/E-C0 là `Secomm_Ghtk`. Ba 
 Engineering rule: ShippingCore không biết carrier internals; carrier không query directory
 datasets; profile (`CarrierApiProfileInterface`) là bundle hoàn chỉnh của carrier (code +
 addressScheme + endpoints), không có default preference (reverse dependency bị cấm).
+
+## Shipping Zones & Shipping Coverage admin (TASK-ZA10BT + TASK-G3K9V2 + TASK-WY6WP5, FEAT-QA23PZ)
+
+Admin surface cho §35 cấu hình — menu **Secomm → Shipping → [Shipping Zones, Shipping
+Coverage]**; ShippingCore owns zone definitions (geography) + target↔zone assignment +
+coverage/policy config; carrier modules giữ credential/environment/shop/pickup/rate adjustment:
+
+- **Shipping Zones** (`secomm_shippingcore/zone`, ACL `Secomm_ShippingCore::zones[_manage]`):
+  UiComponent grid (JSON_LENGTH counters) + form. Form **geography-only**: code (immutable khi
+  edit), label, Country = Vietnam (fixed disabled display — canonical codes mang VN identity,
+  không persist), enabled, Province(s) + Included Wards là **core ui-select searchable
+  multiselect** (`Magento_Ui/js/form/element/ui-select`, recipe `new_category_form.xml`;
+  Included Wards dùng subclass `Secomm_ShippingCore/js/form/element/ward-select` — chỉ thêm
+  cascade AJAX `secomm_shippingcore/zone/wardOptions` (ACL-guarded, `getByRegion` region_code +
+  level 2 — seeded DB có `parent_code = NULL` nên parent-based lookup không dùng được) +
+  race-guard + prune stale selection khi đổi province; server-side `Model\Zone\Validator` là
+  correctness boundary). Province options: `getByLevel(…, 1)` — straight từ canonical reference
+  layer. Excluded Wards KHÔNG có trên UI (P1: exclusion thuộc carrier coverage scope; contract
+  `exclude_ward_codes` giữ nguyên, POST thiếu key = preserve). "Carriers Referencing This Zone"
+  đã BỎ khỏi form (geography-only) — reference index nội bộ (`CarrierZoneIndex` — persisted
+  per-scope scan của `core_config_data`: DEFAULT + mọi WEBSITE + mọi STORE; không ScopeConfig
+  effective) vẫn chạy cho delete/mass-delete/disable protection qua `ZoneReferenceGuard`.
+- **Shipping Coverage** (`secomm_shippingcore/coverage`, ACL
+  `Secomm_ShippingCore::carrier_coverage[_manage]` — ids/route ổn định, chỉ label đổi): grid
+  liệt kê mọi registered coverage target (`Model\CoverageTarget\CoverageTargetRegistry` — DI
+  array opt-in `{type, code, label}`, P1 chỉ CARRIER — GHN tự đăng ký từ module của nó; METHOD
+  reserved, không auto-discovery) với Configuration Status từ
+  `CarrierCoverageConfigAdapter::hasExplicitConfig()` (mọi scope, đọc thẳng `core_config_data`;
+  registration ≠ persisted config — không config = "Not Configured" = runtime defaults, scope
+  missing → ALL). **Add Coverage** (Applies To: Carrier; carrier select = registry minus
+  configured — một type+code một explicit config, duplicate bị chặn ở Save) → Availability
+  `ALL | SELECTED_ZONES | ALL_EXCEPT_SELECTED_ZONES` (string-aligned runtime
+  `Api\Address\DestinationScope`; ALL ẩn trường Zones qua switcherConfig) + Zones (enabled
+  only + disabled-referenced visible "— Disabled", searchable core ui-select) + Rate Source
+  Mode + Address Resolution Policy. Persist qua `CarrierCoverageConfigAdapter::save`
+  (WriterInterface, DEFAULT scope, `cleanType('config')`) vào **cùng paths**
+  `carriers/<code>/{destination_scope,allowed_zone_codes,rate_source_mode,address_resolution_
+  policy}` — runtime readers (`CarrierDestinationScopeConfig`, `GhnConfig`) không đổi, ZERO data
+  migration. **Edit** (carrier readonly) cập nhật config; **Reset to Defaults** xoá 4 giá trị
+  DEFAULT (target vẫn registered; scoped rows còn lại → warning qua `nonDefaultScopeRows()`).
+  `Model\CarrierCoverage\Validator`: zone mode cần ≥1 zone TỒN TẠI (deleted reject, disabled
+  allowed — fail-safe + diagnostic); admin chặt hơn runtime một điểm: zone mode + list rỗng bị
+  reject ở save dù runtime ALL_EXCEPT + rỗng ≡ ALL.
+

@@ -44,9 +44,11 @@ collectRates(RateRequest)
 
 Rate and label-submit resolve the origin through the same
 `OriginProviderInterface` (`ShippingContextFactory::fromRateRequest()` /
-`fromShipment()`) — no rate/submit origin drift. COD (`pick_money`) is resolved
-by `CodAmountResolverInterface` (prepaid → 0; COD → `base_total_due`; partial
-+ COD → fail-fast); `is_freeship = 1` (Magento charged shipping at checkout).
+`fromShipment()`) — no rate/submit origin drift. COD (`pick_money`) is the
+`Secomm_Cod` collection DECISION (DEC-TASKDFGFZ9-002): one collection per order =
+`grand_total` in order currency (VND-only, ≠ VND / partial / second-COD-shipment → explicit
+rejection aborts the label flow); the amount is FROZEN in `secomm_ghtk_shipment` before the
+POST so retries replay it; `is_freeship = 1` (Magento charged shipping at checkout).
 Submitted snapshot (partner id / label / pick_money / weight) is stored on the
 shipment comment; tracking + label PDF persist through the native flow.
 

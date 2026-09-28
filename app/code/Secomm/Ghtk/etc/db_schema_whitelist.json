@@ -27,7 +27,31 @@
             "PRIMARY": true,
             "SECOMM_GHTK_ADDRESS_MAP_COUNTRY_REGION_WARD": true,
             "SECOMM_GHTK_ADDRESS_MAP_COUNTRY_ID_REGION_ID_WARD_ID": true,
-            "SECOMM_GHTK_ADDR_OVERRIDE_SCHEME_PROV_WARD": true
+            "SECOMM_GHTK_ADDR_OVERRIDE_SCHEME_PROV_WARD": true,
+            "SECOMM_GHTK_ADDRESS_MAP_SCHEME_CODE_PROVINCE_CODE_WARD_CODE": true
+        }
+    },
+    "secomm_ghtk_shipment": {
+        "column": {
+            "entity_id": true,
+            "partner_order_code": true,
+            "magento_order_id": true,
+            "magento_shipment_id": true,
+            "provider_status": true,
+            "provider_reason_code": true,
+            "cod_amount": true,
+            "weight_gram": true,
+            "label_id": true,
+            "tracking_number": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "SECOMM_GHTK_SHIPMENT_MAGENTO_ORDER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SECOMM_GHTK_SHIPMENT_PARTNER_ORDER_CODE": true
         }
     }
 }

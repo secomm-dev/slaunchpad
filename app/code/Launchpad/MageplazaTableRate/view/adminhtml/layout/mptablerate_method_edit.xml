@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  ~ TASK-5XQXZK (DEC-TASK5XQXZK-001) — layout update: append the Launchpad Settings tab block
+  ~ TASK-5XQXZK (DEC-TASK5XQXZK-001) — layout update: append the Fallback Settings tab block
   ~ as a child of the (preference-subclassed) Mageplaza tabs block.
   -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

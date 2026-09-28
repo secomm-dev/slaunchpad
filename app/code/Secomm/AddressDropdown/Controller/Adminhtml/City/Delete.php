@@ -9,7 +9,6 @@ namespace Secomm\AddressDropdown\Controller\Adminhtml\City;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
@@ -23,7 +22,7 @@ use Secomm\AddressDropdown\Helper\Data;
 /**
  * Delete City controller.
  */
-class Delete extends Action implements HttpPostActionInterface, HttpGetActionInterface
+class Delete extends Action implements HttpPostActionInterface
 {
     /**
      * Authorization level of a basic admin session.
@@ -72,6 +71,13 @@ class Delete extends Action implements HttpPostActionInterface, HttpGetActionInt
         $resultRedirect->setPath('*/*/', [
             CityInterface::REGION_ID => $regionId,
         ]);
+
+        // TASK-SEC-A3: destructive actions are POST-only (form-key validated) — a GET
+        // navigation to this URL must never mutate data, even where the dispatcher allows it.
+        if (!$this->getRequest()->isPost()) {
+            $this->messageManager->addErrorMessage(__('Invalid request method. Delete requires POST.'));
+            return $resultRedirect;
+        }
 
         try {
             $this->deleteByIdCommand->execute($entityId);

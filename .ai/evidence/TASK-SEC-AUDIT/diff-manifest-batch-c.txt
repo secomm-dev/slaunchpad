@@ -1,0 +1,8 @@
+ app/code/Launchpad/MageplazaTableRate/CHANGELOG.md |  9 ++++
+ .../Model/Adminhtml/SettingsPersister.php          | 43 ++++++++++++-------
+ .../Model/FallbackCoordinator.php                  | 36 ++++++++++++++--
+ .../Model/FallbackRateProvider.php                 | 24 ++++++++++-
+ .../Plugin/Adminhtml/MethodSavePlugin.php          | 40 ++++++++++--------
+ .../Test/Unit/Model/FallbackCoordinatorTest.php    | 48 ++++++++++++++++++++++
+ app/code/Launchpad/MageplazaTableRate/etc/di.xml   | 20 +++++++--
+ 7 files changed, 180 insertions(+), 40 deletions(-)

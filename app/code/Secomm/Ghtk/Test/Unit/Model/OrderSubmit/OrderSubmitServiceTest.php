@@ -15,6 +15,7 @@ use Magento\Sales\Model\Order\Address;
 use Magento\Sales\Model\Order\Shipment;
 use Magento\Sales\Model\ResourceModel\Order\Shipment\Collection as ShipmentCollection;
 use Magento\Shipping\Model\Shipment\Request;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\Ghtk\Model\Address\GhtkAddressAdapter;
 use Secomm\Ghtk\Model\Address\GhtkAddress;
@@ -25,8 +26,13 @@ use Secomm\Ghtk\Model\Config\Source\WeightUnit;
 use Secomm\Ghtk\Model\GhtkApiClient;
 use Secomm\Ghtk\Model\GhtkApiException;
 use Secomm\Ghtk\Model\Log\MaskingLogger;
-use Secomm\Ghtk\Model\OrderSubmit\CodAmountResolverInterface;
+use Secomm\Cod\Api\CodCollectionLedgerInterface;
+use Secomm\Cod\Api\CodCollectionResolverInterface;
+use Secomm\Cod\Model\CodClaimConflictException;
+use Secomm\Cod\Model\CodCollectionAttempt;
+use Secomm\Cod\Model\CodCollectionDecision;
 use Secomm\Ghtk\Model\OrderSubmit\OrderRequestMapper;
+use Secomm\Ghtk\Model\OrderSubmit\ShipmentAnchorRepository;
 use Secomm\Ghtk\Model\OrderSubmit\OrderResponseMapper;
 use Secomm\Ghtk\Model\OrderSubmit\OrderSubmitService;
 use Secomm\Ghtk\Model\Origin\GhtkOriginProvider;
@@ -46,6 +52,16 @@ class OrderSubmitServiceTest extends TestCase
     private GhtkAddressAdapter $destResolver;
     private GhtkApiClient $apiClient;
     private MaskingLogger $logger;
+    private ShipmentAnchorRepository&MockObject $anchorRepo;
+    private CodCollectionLedgerInterface&MockObject $ledger;
+    private CodCollectionDecision $codDecision;
+    /** @var array<int, string> anchor lifecycle calls in order */
+    private array $anchorCalls = [];
+    /** @var array<int, string> ledger lifecycle calls in order */
+    private array $ledgerCalls = [];
+    /** @var array<int, string> unified anchor+ledger timeline (ordering asserts) */
+    private array $flow = [];
+    private string $anchorFinalStatus = '';
 
     protected function setUp(): void
     {
@@ -75,12 +91,58 @@ class OrderSubmitServiceTest extends TestCase
 
         $this->apiClient = $this->createMock(GhtkApiClient::class);
         $this->logger = $this->createMock(MaskingLogger::class);
+
+        $this->codDecision = CodCollectionDecision::notCod();
+        $this->anchorCalls = [];
+        $this->ledgerCalls = [];
+        $this->flow = [];
+        $this->anchorFinalStatus = '';
+        $this->anchorRepo = $this->createMock(ShipmentAnchorRepository::class);
+        $this->anchorRepo->method('insertPending')->willReturnCallback(function (array $row): void {
+            $this->anchorCalls[] = $this->flow[] = 'insertPending:' . $row['partner_order_code'] . ':' . (string) $row['cod_amount'];
+        });
+        $this->anchorRepo->method('markSubmitted')->willReturnCallback(function (string $code, string $label, string $tracking, bool $recovered): void {
+            $this->anchorCalls[] = $this->flow[] = 'anchorMarkSubmitted';
+            $this->anchorFinalStatus = $recovered ? 'RECOVERED' : 'SUBMITTED';
+        });
+        $this->anchorRepo->method('markNotSubmitted')->willReturnCallback(function (string $code, string $status, string $reason): void {
+            $this->anchorCalls[] = $this->flow[] = 'anchorMarkNotSubmitted:' . $status . ':' . $reason;
+            $this->anchorFinalStatus = $status;
+        });
+        $this->ledger = $this->createMock(CodCollectionLedgerInterface::class);
+        $this->ledger->method('recordPending')->willReturnCallback(function (CodCollectionAttempt $attempt, int $orderId, float $amount, string $currency): void {
+            $this->ledgerCalls[] = $this->flow[] = 'recordPending:' . $amount;
+        });
+        $this->ledger->method('markSubmitted')->willReturnCallback(function (CodCollectionAttempt $attempt, bool $recovered): void {
+            $this->ledgerCalls[] = $this->flow[] = 'ledgerMarkSubmitted';
+        });
+        $this->ledger->method('markNotSubmitted')->willReturnCallback(function (CodCollectionAttempt $attempt, string $status, string $reason): void {
+            $this->ledgerCalls[] = $this->flow[] = 'ledgerMarkNotSubmitted:' . $status . ':' . $reason;
+        });
     }
 
+    /**
+     * `$codAmount > 0` configures a collectible decision; `0.0` configures notCod —
+     * matching the legacy helper semantics so existing call sites stay meaningful.
+     */
     private function service(float $codAmount, Shipment $shipment): OrderSubmitService
     {
-        $codResolver = $this->createMock(CodAmountResolverInterface::class);
-        $codResolver->method('resolve')->willReturn($codAmount);
+        return $this->serviceWith(
+            $codAmount > 0.0
+                ? CodCollectionDecision::collectible($codAmount, 'VND')
+                : CodCollectionDecision::notCod()
+        );
+    }
+
+    private function serviceWith(
+        CodCollectionDecision $decision,
+        ?ShipmentWeightCalculator $weightCalculator = null
+    ): OrderSubmitService {
+        $this->codDecision = $decision;
+        $codResolver = $this->createMock(CodCollectionResolverInterface::class);
+        $codResolver->method('resolve')->willReturnCallback(
+            fn (): CodCollectionDecision => $this->codDecision
+        );
 
         $config = $this->createMock(GhtkConfig::class);
         $config->method('getTransport')->willReturn('road');
@@ -92,10 +154,12 @@ class OrderSubmitServiceTest extends TestCase
             $this->pickupResolver,
             $this->destResolver,
             $codResolver,
+            $this->ledger,
+            $this->anchorRepo,
             new OrderRequestMapper(),
             new OrderResponseMapper(),
             $this->apiClient,
-            $this->createMock(ShipmentWeightCalculator::class),
+            $weightCalculator ?? $this->createMock(ShipmentWeightCalculator::class),
             new ShippingContextFactory(),
             $config,
             $this->logger
@@ -130,6 +194,7 @@ class OrderSubmitServiceTest extends TestCase
         $order = $this->createMock(Order::class);
         $order->method('getStoreId')->willReturn(1);
         $order->method('getIncrementId')->willReturn('100000001');
+        $order->method('getEntityId')->willReturn(7);
         $order->method('getShippingAddress')->willReturn($address);
         $order->method('getShipmentsCollection')->willReturn($shipments);
 
@@ -361,35 +426,212 @@ class OrderSubmitServiceTest extends TestCase
         $this->assertSame('S1.A1.17373471', $result->labelId);
     }
 
-    public function testPartialCodFailFastPropagatesBeforeApiCall(): void
+    public function testCodRejectionDecisionAbortsBeforeApiCallAndAnchor(): void
     {
         $shipment = $this->shipment();
-        $codResolver = $this->createMock(CodAmountResolverInterface::class);
-        $codResolver->method('resolve')
-            ->willThrowException(new LocalizedException(__('Partial COD shipments are not supported yet.')));
+        $service = $this->serviceWith(CodCollectionDecision::rejected(
+            CodCollectionDecision::REASON_PARTIAL_SHIPMENT,
+            'Order #100000001 still has unshipped items.'
+        ));
 
-        $config = $this->createMock(GhtkConfig::class);
-        $config->method('getTransport')->willReturn('road');
-        $config->method('getWeightUnit')->willReturn('kg');
-        $config->method('getMinWeight')->willReturn(0.1);
+        $this->apiClient->expects($this->never())->method('submitOrder');
+        $this->anchorRepo->expects($this->never())->method('insertPending');
 
-        $service = new OrderSubmitService(
-            $this->originProvider,
-            $this->pickupResolver,
-            $this->destResolver,
-            $codResolver,
-            new OrderRequestMapper(),
-            new OrderResponseMapper(),
-            $this->apiClient,
-            $this->createMock(ShipmentWeightCalculator::class),
-            new ShippingContextFactory(),
-            $config,
-            $this->logger
+        try {
+            $service->submit($this->request($shipment));
+            $this->fail('A rejected COD decision must abort the label flow.');
+        } catch (LocalizedException $e) {
+            $this->assertStringContainsString('COD collection rejected', $e->getMessage());
+            $this->assertStringContainsString('partial_shipment', $e->getMessage());
+        }
+    }
+
+    public function testRejectedDecisionStillAbortsAndNoLedgerCall(): void
+    {
+        // The prior-collection/one-collection rule itself lives in the resolver (ledger-backed);
+        // the carrier only sees the rejection and never arms anything.
+        $shipment = $this->shipment();
+        $service = $this->serviceWith(CodCollectionDecision::rejected(
+            CodCollectionDecision::REASON_COD_ALREADY_COLLECTED,
+            'Order #100000001 already has a COD collection via ghn shipment "GHNS41"'
+        ));
+
+        $this->apiClient->expects($this->never())->method('submitOrder');
+        $this->anchorRepo->expects($this->never())->method('insertPending');
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('GHNS41');
+        $service->submit($this->request($shipment));
+        $this->assertSame([], $this->ledgerCalls, 'a rejected attempt never arms the ledger');
+    }
+
+    public function testLedgerArmedBeforeAnchorAndPostThenSubmitted(): void
+    {
+        $shipment = $this->shipment();
+        $service = $this->serviceWith(CodCollectionDecision::collectible(1250000.0, 'VND'));
+
+        $this->apiClient->expects($this->once())->method('submitOrder')
+            ->with($this->callback(fn (array $p): bool => $p['order']['pick_money'] === 1250000), 1)
+            ->willReturn(['success' => true, 'order' => ['label' => 'SL1', 'tracking_code' => 'SL1.T']]);
+
+        $result = $service->submit($this->request($shipment));
+
+        $this->assertSame('SL1', $result->labelId);
+        $this->assertSame(
+            [
+                'recordPending:1250000',                  // ledger armed FIRST (safe direction)
+                'insertPending:ghtk-100000001-1:1250000',
+                'anchorMarkSubmitted',
+                'ledgerMarkSubmitted',
+            ],
+            $this->flow,
+            'ledger recordPending must precede the anchor insert and the POST; the ledger mirrors the submitted outcome'
+        );
+    }
+
+    public function testNonCodOrderNeverTouchesTheLedger(): void
+    {
+        $shipment = $this->shipment();
+        $service = $this->serviceWith(CodCollectionDecision::notCod());
+
+        $this->apiClient->expects($this->once())->method('submitOrder')
+            ->willReturn(['success' => true, 'order' => ['label' => 'SN1', 'tracking_code' => 'SN1.T']]);
+
+        $service->submit($this->request($shipment));
+
+        $this->assertSame([], $this->ledgerCalls, 'non-COD orders never enter the ledger');
+    }
+
+    public function testTechnicalFailureMirrorsUnknownOntoLedger(): void
+    {
+        $shipment = $this->shipment();
+        $service = $this->serviceWith(CodCollectionDecision::collectible(1250000.0, 'VND'));
+        $this->apiClient->method('submitOrder')->willThrowException(new GhtkApiException(
+            'GHTK order request failed (status 503).',
+            false, 0, null,
+            \Secomm\ShippingCore\Api\Http\CarrierHttpErrorCategory::SERVER_ERROR
+        ));
+
+        try {
+            $service->submit($this->request($shipment));
+            $this->fail('expected abort');
+        } catch (LocalizedException) {
+            // expected
+        }
+
+        $this->assertContains('ledgerMarkNotSubmitted:UNKNOWN:SERVER_ERROR', $this->ledgerCalls);
+    }
+
+    public function testUsdCollectibleDecisionIsRejectedBeforeAnyWrite(): void
+    {
+        // DEC-TASKDFGFZ9-004: currency SUPPORT is a carrier concern — GHTK rejects non-VND
+        // after the decision but BEFORE the ledger is armed, the anchor written or the POST.
+        $shipment = $this->shipment();
+        $service = $this->serviceWith(CodCollectionDecision::collectible(99.9, 'USD'));
+
+        $this->apiClient->expects($this->never())->method('submitOrder');
+        $this->anchorRepo->expects($this->never())->method('insertPending');
+
+        try {
+            $service->submit($this->request($shipment));
+            $this->fail('A non-VND COD order must be rejected by the carrier.');
+        } catch (LocalizedException $e) {
+            $this->assertStringContainsString('COD currency unsupported', $e->getMessage());
+            $this->assertStringContainsString('USD', $e->getMessage());
+        }
+        $this->assertSame([], $this->ledgerCalls);
+        $this->assertSame([], $this->anchorCalls);
+    }
+
+    public function testClaimConflictPropagatesWithoutAnchorOrPost(): void
+    {
+        // The engine-enforced one-collection claim lives in Secomm_Cod; a losing attempt
+        // surfaces CodClaimConflictException (extends LocalizedException) to the admin.
+        $shipment = $this->shipment();
+        $service = $this->serviceWith(CodCollectionDecision::collectible(1250000.0, 'VND'));
+        $this->ledger->method('recordPending')->willReturnCallback(
+            function (CodCollectionAttempt $attempt, int $orderId, float $amount, string $currency): void {
+                throw new CodClaimConflictException(
+                    __('Order #100000001 already has an active COD collection claim (held by ghn shipment "GHNS41") — P1 collects COD once per order.')
+                );
+            }
         );
 
         $this->apiClient->expects($this->never())->method('submitOrder');
-        $this->expectException(LocalizedException::class);
+        $this->anchorRepo->expects($this->never())->method('insertPending');
+
+        try {
+            $service->submit($this->request($shipment));
+            $this->fail('Expected the claim conflict to abort the label flow.');
+        } catch (LocalizedException $e) {
+            $this->assertStringContainsString('GHNS41', $e->getMessage());
+        }
+    }
+
+    public function testZeroAmountCodOrderStaysCodWithNoLedgerClaim(): void
+    {
+        // DEC-TASKDFGFZ9-004: zero-total COD order → collectible 0.0 → pick_money 0 —
+        // never claims the ledger (nothing to collect), never classified NOT_COD.
+        $shipment = $this->shipment();
+        $service = $this->serviceWith(CodCollectionDecision::collectible(0.0, 'VND'));
+
+        $this->apiClient->expects($this->once())->method('submitOrder')
+            ->with($this->callback(fn (array $p): bool => $p['order']['pick_money'] === 0), 1)
+            ->willReturn(['success' => true, 'order' => ['label' => 'SZ1', 'tracking_code' => 'SZ1.T']]);
+
+        $result = $service->submit($this->request($shipment));
+
+        $this->assertSame('SZ1', $result->labelId);
+        $this->assertSame(0.0, $result->pickMoney);
+        $this->assertSame([], $this->ledgerCalls);
+    }
+
+    public function testAnchorWrittenPendingBeforePostThenSubmittedOnSuccess(): void
+    {
+        $shipment = $this->shipment();
+        $service = $this->serviceWith(CodCollectionDecision::collectible(1250000.0, 'VND'));
+
+        $this->apiClient->expects($this->once())->method('submitOrder')
+            ->willReturn(['success' => true, 'order' => ['label' => 'SA1', 'tracking_code' => 'SA1.T']]);
+
         $service->submit($this->request($shipment));
+
+        $this->assertSame(['insertPending:ghtk-100000001-1:1250000', 'anchorMarkSubmitted'], $this->anchorCalls);
+        $this->assertSame('SUBMITTED', $this->anchorFinalStatus);
+    }
+
+    public function testAnchorMappingBusinessFailedTechnicalUnknown(): void
+    {
+        $shipment = $this->shipment();
+        $this->apiClient->method('submitOrder')->willThrowException(new GhtkApiException(
+            'boom', false, 0, null,
+            \Secomm\ShippingCore\Api\Http\CarrierHttpErrorCategory::CLIENT_ERROR
+        ));
+
+        try {
+            $this->service(0.0, $shipment)->submit($this->request($shipment));
+            $this->fail('expected abort');
+        } catch (LocalizedException) {
+            // expected
+        }
+
+        $this->assertSame(['insertPending:ghtk-100000001-1:0', 'anchorMarkNotSubmitted:FAILED:CLIENT_ERROR'], $this->anchorCalls);
+        $this->assertSame('FAILED', $this->anchorFinalStatus);
+    }
+
+    public function testRecoveredSubmitMarksAnchorRecovered(): void
+    {
+        $shipment = $this->shipment();
+        $this->apiClient->method('submitOrder')->willReturn([
+            'success' => false,
+            'error_code' => 'ORDER_ID_EXIST',
+            'partner_id' => 'ghtk-100000001-1',
+            'ghtk_label' => 'S1.A1.17373471',
+            'status' => 1,
+        ]);
+
+        $this->service(0.0, $shipment)->submit($this->request($shipment));
+
+        $this->assertSame('RECOVERED', $this->anchorFinalStatus);
     }
 
     public function testNoPackageWeightFallsBackToShipmentItems(): void
@@ -401,9 +643,6 @@ class OrderSubmitServiceTest extends TestCase
             ->with($this->callback(fn (array $p) => $p['order']['total_weight'] === 0.7), 1) // calculator mock below
             ->willReturn(['success' => true, 'order' => ['label' => 'S2', 'tracking_code' => 'S2.T']]);
 
-        $codResolver = $this->createMock(CodAmountResolverInterface::class);
-        $codResolver->method('resolve')->willReturn(0.0);
-
         $config = $this->createMock(GhtkConfig::class);
         $config->method('getTransport')->willReturn('road');
         $config->method('getWeightUnit')->willReturn('kg');
@@ -412,19 +651,7 @@ class OrderSubmitServiceTest extends TestCase
         $weightCalculator = $this->createMock(ShipmentWeightCalculator::class);
         $weightCalculator->method('calculateForShipment')->willReturn(700);
 
-        $service = new OrderSubmitService(
-            $this->originProvider,
-            $this->pickupResolver,
-            $this->destResolver,
-            $codResolver,
-            new OrderRequestMapper(),
-            new OrderResponseMapper(),
-            $this->apiClient,
-            $weightCalculator,
-            new ShippingContextFactory(),
-            $config,
-            $this->logger
-        );
+        $service = $this->serviceWith(CodCollectionDecision::notCod(), $weightCalculator);
 
         $service->submit($this->request($shipment, [['params' => ['weight' => 0]]]));
     }

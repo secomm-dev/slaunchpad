@@ -71,11 +71,10 @@
                 type="Secomm\ShippingCore\Model\Fallback\ConfigurableFallbackPolicy"/>
     <preference for="Secomm\ShippingCore\Api\ServiceLevelRateOrchestratorInterface"
                 type="Secomm\ShippingCore\Model\ServiceLevel\ServiceLevelRateOrchestrator"/>
-    <!-- TASK-STC3NB (architecture v4 §4.1): COD payment identification — ShippingCore owns the
-         configuration declaring which Magento payment method codes are COD; carriers consume
-         isCod(paymentMethodCode) when building provider requests. Empty config = nothing is COD. -->
-    <preference for="Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface"
-                type="Secomm\ShippingCore\Model\Cod\ConfiguredCodPaymentMethodResolver"/>
+    <!-- TASK-DFGFZ9 (DEC-TASKDFGFZ9-001/003): COD identification + collection decision moved
+         OUT of ShippingCore — owned by Secomm_Cod (P1 default `cashondelivery` hardcoded;
+         ledger-backed). ShippingCore deliberately has NO dependency on Secomm_Cod: its own
+         orchestration never reads COD. -->
     <type name="Secomm\ShippingCore\Model\Fallback\ConfigurableFallbackPolicy">
         <arguments>
             <argument name="fallbackEnabledByLevel" xsi:type="array"/>
@@ -123,13 +122,22 @@
          hardcodes zone identities). The matcher is deterministic and stateless. -->
     <preference for="Secomm\ShippingCore\Api\Address\CanonicalZoneMatcherInterface"
                 type="Secomm\ShippingCore\Model\Address\CanonicalZoneMatcher"/>
+    <!-- FEAT-QA23PZ / DEC-FEATQA23PZ-001: the runtime registry is DB-backed — persisted
+         merchant zones are authoritative for their code, DI/static zones (item entries below)
+         stay a bootstrap/fallback source only for codes with no persisted authority.
+         Zero persisted + zero DI zones is a valid state; loading is lazy (no DB at
+         construction) and cached via the secomm_shippingcore_zones cache type. -->
     <preference for="Secomm\ShippingCore\Api\Address\CanonicalZoneRegistryInterface"
-                type="Secomm\ShippingCore\Model\Address\CanonicalZoneRegistry"/>
-    <type name="Secomm\ShippingCore\Model\Address\CanonicalZoneRegistry">
+                type="Secomm\ShippingCore\Model\Address\PersistentCanonicalZoneRegistry"/>
+    <preference for="Secomm\ShippingCore\Api\Address\CanonicalZoneRepositoryInterface"
+                type="Secomm\ShippingCore\Model\Zone\ZoneRepository"/>
+    <type name="Secomm\ShippingCore\Model\Address\PersistentCanonicalZoneRegistry">
         <arguments>
             <argument name="canonicalZones" xsi:type="array"/>
         </arguments>
     </type>
+    <preference for="Secomm\ShippingCore\Api\Config\CarrierDestinationScopeConfigInterface"
+                type="Secomm\ShippingCore\Model\Config\CarrierDestinationScopeConfig"/>
     <preference for="Secomm\ShippingCore\Api\Rate\CarrierEligibilityEvaluatorInterface"
                 type="Secomm\ShippingCore\Model\Rate\CarrierEligibilityEvaluator"/>
     <!-- TASK-8MQHJX (Phase C): shared execution gating — eligibility → mode → origin → address
@@ -142,4 +150,14 @@
                 type="Secomm\ShippingCore\Model\Rate\CarrierRateExecutionDecision"/>
     <preference for="Secomm\ShippingCore\Api\Rate\CarrierRateExecutionServiceInterface"
                 type="Secomm\ShippingCore\Model\Rate\CarrierRateExecutionService"/>
+    <!-- FEAT-QA23PZ / DEC-FEATQA23PZ-001: admin zone grid data source. Registered in GLOBAL
+         di.xml on purpose — the CollectionFactory `collections` array does not merge across
+         scopes (Secomm_Tracking precedent). -->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="secomm_shippingcore_zone_listing_data_source" xsi:type="string">Secomm\ShippingCore\Model\ResourceModel\Zone\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

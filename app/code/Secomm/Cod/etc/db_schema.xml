@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!--
+        TASK-DFGFZ9 phase 3 (DEC-TASKDFGFZ9-003) — COD collection ledger, owned by Secomm_Cod.
+        One row per carrier submit attempt that armed a collection (amount > 0). THE source of
+        truth for the P1 one-collection-per-order rule across carriers: every carrier reports
+        its attempt here (recordPending before the provider POST) and the resolver reads prior
+        collections from this table — a caller cannot bypass the rule by skipping its own
+        lookup. Amounts are FROZEN at decision time (retry replays them verbatim).
+        Ledger rows NEVER reconcile money: a provider accepting a COD order does not mean
+        Magento received it — never mark an order paid from ledger state.
+    -->
+    <table name="secomm_cod_collection" resource="default" engine="innodb"
+           comment="COD collection ledger — one ACTIVE collection claim per order, engine-enforced via active_order_claim UNIQUE (Secomm_Cod owns)">
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Entity ID"/>
+        <column xsi:type="int" name="magento_order_id" padding="10" unsigned="true" nullable="false"
+                comment="sales_order.entity_id"/>
+        <column xsi:type="varchar" name="carrier_code" nullable="false" length="16"
+                comment="Attempt carrier (ghtk | ghn)"/>
+        <column xsi:type="varchar" name="provider_reference" nullable="false" length="64"
+                comment="Provider shipment identity: GHTK partner_order_code / GHN client_order_code"/>
+        <column xsi:type="decimal" name="amount" scale="4" precision="12" unsigned="true" nullable="false"
+                comment="Frozen collection amount in `currency`"/>
+        <column xsi:type="varchar" name="currency" nullable="false" length="3" default="VND"
+                comment="ISO 4217 — the decision carries the ORDER currency; carriers gate their supported currency before reporting (P1 rows are VND-only)"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="16" default="PENDING"
+                comment="PENDING | SUBMITTED | RECOVERED | FAILED | UNKNOWN"/>
+        <column xsi:type="varchar" name="reason_code" nullable="true" length="64"
+                comment="FAILED/UNKNOWN reason token"/>
+        <column xsi:type="bigint" name="active_order_claim" padding="20" unsigned="true" nullable="true"
+                comment="Application-managed per-order claim = magento_order_id while this attempt is live (PENDING | UNKNOWN | SUBMITTED | RECOVERED); NULL once FAILED releases it. The UNIQUE index lets MySQL enforce AT MOST ONE active claim per order — the engine-level P1 invariant (DEC-TASKDFGFZ9-004)."/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"
+                comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP"
+                comment="Updated At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_COD_COLLECTION_CARRIER_REFERENCE">
+            <column name="carrier_code"/>
+            <column name="provider_reference"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_COD_COLLECTION_ACTIVE_ORDER_CLAIM">
+            <column name="active_order_claim"/>
+        </constraint>
+        <index referenceId="SECOMM_COD_COLLECTION_ORDER_ID" indexType="btree">
+            <column name="magento_order_id"/>
+        </index>
+    </table>
+</schema>

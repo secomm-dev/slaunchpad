@@ -14,6 +14,7 @@ use Magento\Framework\Encryption\EncryptorInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\Ghn\Model\Config;
+use Secomm\ShippingCore\Api\Config\CarrierDestinationScopeConfigInterface;
 
 /**
  * TASK-RJFTPZ / AC-A2 — config reader: defaults, encrypted token handling, environment → base URL,
@@ -31,7 +32,13 @@ class ConfigTest extends TestCase
     {
         $this->scopeConfig = $this->createMock(ScopeConfigInterface::class);
         $this->encryptor = $this->createMock(EncryptorInterface::class);
-        $this->config = new Config($this->scopeConfig, $this->encryptor);
+        // FEAT-QA23PZ: the shared destination-scope reader is a new ctor dependency —
+        // a mock keeps these config tests focused on the GHN-owned accessors.
+        $this->config = new Config(
+            $this->scopeConfig,
+            $this->encryptor,
+            $this->createMock(CarrierDestinationScopeConfigInterface::class)
+        );
     }
 
     public function testEmptyTokenReturnsEmptyStringWithoutDecrypting(): void

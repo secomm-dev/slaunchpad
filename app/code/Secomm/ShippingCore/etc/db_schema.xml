@@ -37,4 +37,25 @@
             <column name="last_synced_at"/>
         </index>
     </table>
+    <!-- FEAT-QA23PZ / DEC-FEATQA23PZ-001: persistent merchant-managed canonical shipping zones
+         (carrier destination-scope eligibility, architecture v10 §35). Code lists are JSON
+         arrays of canonical VN_ADMIN_2025 codes (VN-XX province / VNA25-* ward) — never
+         provider-specific identities. UNIQUE(code); admin CRUD via CanonicalZoneRepository. -->
+    <table name="secomm_shipping_zone" resource="default" engine="innodb" comment="Secomm canonical shipping zone (FEAT-QA23PZ)">
+        <column xsi:type="int" name="zone_id" unsigned="false" nullable="false" identity="true" comment="Zone ID"/>
+        <column xsi:type="varchar" name="code" nullable="false" length="64" comment="Stable zone code (merchant identity, e.g. HCM_INNER)"/>
+        <column xsi:type="varchar" name="label" nullable="false" length="255" comment="Human-readable zone label"/>
+        <column xsi:type="smallint" name="enabled" unsigned="false" nullable="false" default="1" comment="Enabled flag (disabled zones never match)"/>
+        <column xsi:type="json" name="include_province_codes" nullable="false" comment="Canonical province codes (VN-XX) array"/>
+        <column xsi:type="json" name="include_ward_codes" nullable="false" comment="Canonical ward codes (VNA25-*) array"/>
+        <column xsi:type="json" name="exclude_ward_codes" nullable="false" comment="Canonical ward codes (VNA25-*) array — exclude always wins"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="zone_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_SHIPPING_ZONE_CODE">
+            <column name="code"/>
+        </constraint>
+    </table>
 </schema>

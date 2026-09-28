@@ -290,6 +290,16 @@ class RoundTripTest extends TestCase
                 return [];
             }
 
+            public function getByLevel(string $schemeCode, int $level): array
+            {
+                return [];
+            }
+
+            public function getByRegion(string $schemeCode, string $regionCode, int $level): array
+            {
+                return [];
+            }
+
             public function countByScheme(string $schemeCode): int
             {
                 return count(self::UNITS);

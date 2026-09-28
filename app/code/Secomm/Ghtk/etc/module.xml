@@ -13,6 +13,7 @@
             <module name="Magento_Directory"/>
             <module name="Magento_Shipping"/>
             <module name="Secomm_AddressDropdown"/>
+            <module name="Secomm_Cod"/>
             <module name="Secomm_ShippingCore"/>
             <module name="Secomm_VietNamAddress"/>
         </sequence>

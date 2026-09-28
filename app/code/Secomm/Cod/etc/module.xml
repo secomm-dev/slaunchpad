@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Secomm_Cod">
+        <!-- TASK-DFGFZ9 / DEC-TASKDFGFZ9-001/003: single owner of COD payment-method
+             identification + collection decision (ledger-backed). Carriers that need COD
+             declare dependency on THIS module (never the reverse).
+             P3: the P1 default COD method is Magento core `cashondelivery`, provided by
+             Magento_OfflinePayments — the code references that method code, so the dependency
+             is declared explicitly. -->
+        <sequence>
+            <module name="Magento_OfflinePayments"/>
+        </sequence>
+    </module>
+</config>

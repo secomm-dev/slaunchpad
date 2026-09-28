@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">secomm_shippingcore_coverage_listing.secomm_shippingcore_coverage_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="add">
+                <url path="*/*/new"/>
+                <class>primary</class>
+                <label translate="true">Add Coverage</label>
+            </button>
+        </buttons>
+        <spinner>secomm_shippingcore_coverage_columns</spinner>
+        <deps>
+            <dep>secomm_shippingcore_coverage_listing.secomm_shippingcore_coverage_listing_data_source</dep>
+        </deps>
+    </settings>
+    <!-- TASK-WY6WP5 — rows are synthesized from the CoverageTargetRegistry × persisted
+         config state (a target is not a DB row). No filter toolbar, static columns. -->
+    <dataSource name="secomm_shippingcore_coverage_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">target_key</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Secomm_ShippingCore::carrier_coverage</aclResource>
+        <dataProvider class="Secomm\ShippingCore\Ui\DataProvider\CoverageListingDataProvider" name="secomm_shippingcore_coverage_listing_data_source">
+            <settings>
+                <requestFieldName>target_key</requestFieldName>
+                <primaryFieldName>target_key</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="secomm_shippingcore_coverage_columns">
+        <column name="target_label" sortOrder="20">
+            <settings>
+                <filter>false</filter>
+                <sortable>false</sortable>
+                <label translate="true">Target</label>
+            </settings>
+        </column>
+        <column name="target_type_label" sortOrder="30">
+            <settings>
+                <filter>false</filter>
+                <sortable>false</sortable>
+                <label translate="true">Type</label>
+            </settings>
+        </column>
+        <column name="configuration_status_label" sortOrder="40">
+            <settings>
+                <filter>false</filter>
+                <sortable>false</sortable>
+                <label translate="true">Configuration Status</label>
+            </settings>
+        </column>
+        <column name="availability_label" sortOrder="50">
+            <settings>
+                <filter>false</filter>
+                <sortable>false</sortable>
+                <label translate="true">Availability</label>
+            </settings>
+        </column>
+        <column name="zones_label" sortOrder="60">
+            <settings>
+                <filter>false</filter>
+                <sortable>false</sortable>
+                <label translate="true">Zones</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Secomm\ShippingCore\Ui\Component\Listing\Column\CoverageActions" sortOrder="70">
+            <settings>
+                <indexField>target_key</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

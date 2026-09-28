@@ -28,7 +28,7 @@ interface CarrierRateExecutionRequestInterface
 {
     public function getCarrierCode(): string;
 
-    /** DestinationScope::ALL | DestinationScope::SELECTED_ZONES. */
+    /** DestinationScope::ALL | DestinationScope::SELECTED_ZONES | DestinationScope::ALL_EXCEPT_SELECTED_ZONES. */
     public function getDestinationScope(): string;
 
     /** @return string[] allowed canonical zone codes (empty for ALL). */

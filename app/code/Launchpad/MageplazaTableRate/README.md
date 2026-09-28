@@ -39,7 +39,7 @@ message parsing. Membership NEVER changes carrier visibility (directive §10).
 
 ## Per-method settings (admin)
 
-Sales → Table Rate Methods → edit → **Launchpad Settings** tab:
+Sales → Table Rate Methods → edit → **** tab:
 
 | Field | Meaning |
 |---|---|
@@ -74,7 +74,7 @@ stable system identity (Secomm address-node code) that admins normally never typ
 1. Sales → Table Rate Methods → edit a method → **Add TableRate row**.
 2. Pick **Country** and **State/Region** — the **City / Area** select fills automatically
    (AJAX `launchpad_mptablerate/city/options`, ACL `Mageplaza_TableRateShipping::method`).
-3. Select a City/Area node, or keep **All / \\*** (wildcard, empty `city_code`) to apply the
+3. Select a City/Area node, or keep **All** (wildcard, empty `city_code`) to apply the
    row to the whole region; fill the pricing fields; **Save**.
 4. On edit, the stored code resolves to its display label. A stored code that no longer
    exists in the address hierarchy keeps its raw value and shows a red warning

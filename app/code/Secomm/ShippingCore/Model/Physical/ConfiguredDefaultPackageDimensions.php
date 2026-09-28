@@ -15,7 +15,7 @@ namespace Secomm\ShippingCore\Model\Physical;
  * that reach a carrier are the ones confirmed on the shipment (persisted physical facts).
  * Unset (0/empty) = no prefill — the admin must enter real dimensions.
  *
- * Shape mirrors the STC3NB config pattern (ConfiguredCodPaymentMethodResolver).
+ * Follows the Secomm config-default pattern (cf. the removed STC3NB COD config).
  */
 class ConfiguredDefaultPackageDimensions
 {

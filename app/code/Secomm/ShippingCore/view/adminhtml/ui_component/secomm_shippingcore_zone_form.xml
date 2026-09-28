@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="component" xsi:type="string">Magento_Ui/js/form/form</item>
+            <item name="provider" xsi:type="string">secomm_shippingcore_zone_form.secomm_shippingcore_zone_form_data_source</item>
+            <item name="namespace" xsi:type="string">secomm_shippingcore_zone_form</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Shipping Zone</item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="back" class="Secomm\ShippingCore\Block\Adminhtml\Zone\Edit\BackButton"/>
+            <button name="delete" class="Secomm\ShippingCore\Block\Adminhtml\Zone\Edit\DeleteButton"/>
+            <button name="save" class="Secomm\ShippingCore\Block\Adminhtml\Zone\Edit\SaveButton"/>
+        </buttons>
+        <namespace>secomm_shippingcore_zone_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>secomm_shippingcore_zone_form.secomm_shippingcore_zone_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="secomm_shippingcore_zone_form_data_source" component="Magento_Ui/js/form/provider">
+        <settings>
+            <submitUrl path="secomm_shippingcore/zone/save"/>
+        </settings>
+        <dataProvider class="Secomm\ShippingCore\Ui\DataProvider\ZoneFormDataProvider" name="secomm_shippingcore_zone_form_data_source">
+            <settings>
+                <requestFieldName>zone_id</requestFieldName>
+                <primaryFieldName>zone_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <fieldset name="general">
+        <settings>
+            <label translate="true">Zone</label>
+        </settings>
+        <field name="zone_id" formElement="hidden">
+            <settings>
+                <dataScope>zone_id</dataScope>
+            </settings>
+        </field>
+        <field name="code" formElement="input" sortOrder="10">
+            <settings>
+                <dataScope>code</dataScope>
+                <label translate="true">Code</label>
+                <notice translate="true">Stable machine identity, e.g. HCM_INNER. Letters A-Z, digits, underscore and dash. Immutable after creation.</notice>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="label" formElement="input" sortOrder="20">
+            <settings>
+                <dataScope>label</dataScope>
+                <label translate="true">Label</label>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <!-- TASK-G3K9V2 — P1 is Vietnam-only. Fixed display (disabled inputs are never
+             submitted); VN is implicit in the canonical VN_ADMIN_2025 codes — no column. -->
+        <field name="country" formElement="select" sortOrder="25">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">VN</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>country</dataScope>
+                <label translate="true">Country</label>
+                <disabled>true</disabled>
+                <notice translate="true">Shipping zones cover Vietnam only. The canonical province and ward codes below are Vietnam (VN_ADMIN_2025) identity.</notice>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\ShippingCore\Model\Config\Source\CountryOptions"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="enabled" formElement="select" sortOrder="30">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>enabled</dataScope>
+                <label translate="true">Enabled</label>
+                <notice translate="true">Disabled zones never match. Disabling a referenced zone changes carrier service areas — for "All Except Selected Zones" carriers it EXPANDS their coverage (a warning names the carriers). Deleting a referenced zone is blocked — remove the reference in Secomm → Shipping Coverage first.</notice>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <!-- TASK-WY6WP5 — core ui-select (recipe from Magento_Catalog new_category_form):
+             searchable chips multiselect, no custom KO template. -->
+        <field name="include_province_codes" component="Magento_Ui/js/form/element/ui-select" sortOrder="40" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filterOptions" xsi:type="boolean">true</item>
+                    <item name="multiple" xsi:type="boolean">true</item>
+                    <item name="showCheckbox" xsi:type="boolean">true</item>
+                    <item name="levelsVisibility" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>include_province_codes</dataScope>
+                <label translate="true">Province(s)</label>
+                <componentType>field</componentType>
+                <elementTmpl>ui/grid/filters/elements/ui-select</elementTmpl>
+                <notice translate="true">Canonical VN_ADMIN_2025 provinces — type to search. Empty = no province restriction (ward lists define the zone).</notice>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\ShippingCore\Model\Config\Source\ProvinceOptions"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <!-- TASK-WY6WP5 — core ui-select template + a small subclass that only adds the
+             cascading ward behavior: options reload from the ACL-guarded wardOptions AJAX
+             endpoint whenever the linked province selection changes, and stale selections
+             are pruned deterministically (save-time validation stays the boundary). -->
+        <field name="include_ward_codes" component="Secomm_ShippingCore/js/form/element/ward-select" sortOrder="50" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filterOptions" xsi:type="boolean">true</item>
+                    <item name="multiple" xsi:type="boolean">true</item>
+                    <item name="showCheckbox" xsi:type="boolean">true</item>
+                    <item name="levelsVisibility" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>include_ward_codes</dataScope>
+                <label translate="true">Included Wards</label>
+                <componentType>field</componentType>
+                <elementTmpl>ui/grid/filters/elements/ui-select</elementTmpl>
+                <notice translate="true">Wards of the selected provinces — type to search. Empty = the whole province is included. Changing the provinces clears wards that no longer belong.</notice>
+                <imports>
+                    <link name="provincesValue">${ $.provider }:data.include_province_codes</link>
+                </imports>
+            </settings>
+        </field>
+    </fieldset>
+</form>

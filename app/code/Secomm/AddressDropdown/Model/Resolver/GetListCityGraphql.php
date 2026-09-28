@@ -14,6 +14,9 @@ use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\GraphQl\Exception\GraphQlNoSuchEntityException;
 use Secomm\AddressDropdown\Model\DataStorage;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Secomm\AddressDropdown\Helper\Data;
 use Secomm\AddressDropdown\Model\ResourceModel\CityModel\CityLocaleCollectionFactory as CityCollectionFactory;
 
 class GetListCityGraphql implements ResolverInterface
@@ -21,7 +24,8 @@ class GetListCityGraphql implements ResolverInterface
 
     public function __construct(
         protected CityCollectionFactory $cityCollectionFactory,
-        protected DataStorage $dataStorage
+        protected DataStorage $dataStorage,
+        protected ScopeConfigInterface $scopeConfig
     )
     {
     }
@@ -42,6 +46,11 @@ class GetListCityGraphql implements ResolverInterface
         array       $value = null,
         array       $args = null)
     {
+        // TASK-SEC-A5: master switch off for this store scope — no AddressDropdown data.
+        if (!$this->scopeConfig->isSetFlag(Data::XML_PATH_ADDRESS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE)) {
+            return [];
+        }
+
         try {
             $output = [];
             if (isset($args['input']['area']) && $args['input']['area'] === \Magento\Framework\App\Area::AREA_ADMINHTML) {

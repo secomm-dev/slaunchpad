@@ -3,11 +3,12 @@ define([
     'Magento_Checkout/js/action/create-shipping-address',
     'Magento_Checkout/js/action/select-shipping-address',
     'Magento_Checkout/js/checkout-data',
-], function (
-    $,
+    'Secomm_AddressDropdown/js/model/master-switch'
+], function ($,
     createShippingAddress,
     selectShippingAddress,
     checkoutData,
+    isEnabled
 ) {
     'use strict';
 
@@ -40,6 +41,10 @@ define([
     };
 
     return function (target) {
+        if (!isEnabled()) {
+            // TASK-SEC-A5: module disabled for this store scope — keep native behavior intact.
+            return target;
+        }
         return target.extend(mixin);
     };
 });

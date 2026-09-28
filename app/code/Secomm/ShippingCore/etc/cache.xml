@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Cache/etc/cache.xsd">
+    <type name="secomm_shippingcore_zones" translate="label,description"
+          instance="Secomm\ShippingCore\Cache\Type\Zone">
+        <label>Secomm Shipping Zones</label>
+        <description>Canonical shipping zones used for carrier destination-scope eligibility
+(FEAT-QA23PZ). Invalidated by zone create/update/enable-disable/delete.</description>
+    </type>
+</config>

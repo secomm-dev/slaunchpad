@@ -1,0 +1,18 @@
+CSV_HEADER: source_scheme,source_code,target_scheme,target_code,relation_type
+CSV_EDGE_COUNT: 10418
+BASELINE_EDGE_COUNT: 10064
+DB_EDGE_COUNT: 10418
+CSV_DUPLICATE_TUPLES: 0
+DB_NOT_IN_CSV(extra): 0
+CSV_NOT_IN_DB(missing): 0
+CHANGED_RELATION_TYPE: 0
+BASELINE_NOT_IN_CSV(baseline-only): 41
+CSV_NOT_IN_BASELINE(snapshot-added): 395
+DB_ORPHAN_SOURCE_CODES: 0
+DB_ORPHAN_TARGET_CODES: 0
+DB_AMBIGUOUS_SOURCES: 297
+MAPPING_COLUMNS: mapping_id,source_scheme,source_code,target_scheme,target_code,relation_type,is_primary
+DB_MULTI_PRIMARY_SOURCES: 0
+PRE2025_WARD_UNITS: 10035
+MAPPED_DISTINCT_SOURCES: 10103
+UNMAPPED_KNOWN(legit, no edge): 0

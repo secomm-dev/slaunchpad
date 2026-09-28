@@ -209,6 +209,31 @@ class CarrierRateExecutionFlowIntegrationTest extends TestCase
         $this->assertSame(ServiceLevelRateDecisionInterface::SOURCE_UNAVAILABLE, $final->getSource());
     }
 
+    public function testInvalidPersistedScopeValueFailsClosedEndToEnd(): void
+    {
+        // TASK-R8WR1R r2 — a persisted-but-unknown scope travels verbatim through the request
+        // (no construction throw) and is failed closed by the REAL evaluator at step 1:
+        // no realtime, no fallback — even though the zone list would MATCH the destination.
+        $this->fallbackProvider->expects($this->never())->method('getRate');
+
+        $decision = $this->executionService->execute(
+            $this->request(
+                'carrier-a',
+                RateSourceMode::CARRIER_WITH_FALLBACK,
+                scope: 'SOME_ZONES',
+                zones: ['ZONE_VN01']
+            )
+        );
+        $final = $this->runFlow($decision, 'carrier-a');
+
+        $this->assertCount(0, $this->realtimeLog, 'Invalid scope must never open the realtime path');
+        $this->assertFalse($decision->shouldInvokeRealtime());
+        $this->assertNull($decision->getCarrierFacingHandoff());
+        $this->assertFalse($decision->getFallbackEligibility()->isEligible());
+        $this->assertSame('DESTINATION_NOT_IN_SCOPE', $decision->getReason());
+        $this->assertSame(ServiceLevelRateDecisionInterface::SOURCE_UNAVAILABLE, $final->getSource());
+    }
+
     public function testCaseD_FallbackOnlyEligibleLetsOrchestratorDispatchFallback(): void
     {
         // The fallback provider is dispatched by the ORCHESTRATOR, never by the execution layer.
@@ -283,6 +308,30 @@ class CarrierRateExecutionFlowIntegrationTest extends TestCase
         $this->assertSame(ServiceLevelRateDecisionInterface::SOURCE_FALLBACK, $final->getSource());
     }
 
+    public function testCaseI_RateRequestUnrepresentableKeepsOutcomeUnavailableWithIntegrationLimitation(): void
+    {
+        // TASK-MQ2DRG — capability-unsupported (§35.5 materialized): outcome stays UNAVAILABLE,
+        // the INTEGRATION_LIMITATION eligibility reaches the final fallback owner and the
+        // registered fallback provider supplies the rate.
+        $this->fallbackProvider->expects($this->once())->method('getRate')
+            ->willReturn(new FallbackRate(21000.0, 'Fallback'));
+
+        $decision = $this->executionService->execute(
+            $this->request(
+                'carrier-a',
+                RateSourceMode::CARRIER_WITH_FALLBACK,
+                outcome: CarrierRateOutcome::unavailable(ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE)
+            )
+        );
+        $final = $this->runFlow($decision, 'carrier-a');
+
+        $outcome = $decision->getRealtimeOutcome();
+        $this->assertNotNull($outcome);
+        $this->assertSame(CarrierRateOutcomeInterface::STATUS_UNAVAILABLE, $outcome->getStatus(), 'Never reclassified');
+        $this->assertTrue($decision->getFallbackEligibility()->hasIntegrationLimitationEligibility());
+        $this->assertSame(ServiceLevelRateDecisionInterface::SOURCE_FALLBACK, $final->getSource());
+    }
+
     public function testCaseH_MerchantInvalidConfigurationFailsClosedEndToEnd(): void
     {
         $this->fallbackProvider->expects($this->never())->method('getRate');
@@ -354,7 +403,12 @@ class CarrierRateExecutionFlowIntegrationTest extends TestCase
     public function testPickPrimarySuccessEndToEndCarrierReceivesOnlySelectedDestination(): void
     {
         $this->selector->expects($this->once())->method('selectPrimary')
-            ->willReturn(new VnPrimaryCandidateSelection(VnPrimaryCandidateSelection::STATUS_SELECTED, 'VNAP25-A1A1A1A1A1', 2));
+            ->willReturn(new VnPrimaryCandidateSelection(
+                VnPrimaryCandidateSelection::STATUS_SELECTED,
+                'VNAP25-A1A1A1A1A1',
+                2,
+                VnPrimaryCandidateSelection::REASON_CURATED_PRIMARY
+            ));
 
         $decision = $this->executionService->execute(
             $this->request(

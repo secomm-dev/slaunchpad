@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace Secomm\ShippingCore\Model\Rate;
 
 use Secomm\ShippingCore\Api\Address\CarrierOperationAddressCapabilityInterface;
-use Secomm\ShippingCore\Api\Address\DestinationScope;
 use Secomm\ShippingCore\Api\Address\AddressResolutionPolicy;
 use Secomm\ShippingCore\Api\Address\ShippingAddressResolutionContextInterface;
 use Secomm\ShippingCore\Api\Rate\CarrierRateExecutionRequestInterface;
@@ -21,14 +20,21 @@ use Secomm\ShippingCore\Api\ShippingContextInterface;
 /**
  * TASK-8MQHJX (Phase C) — immutable execution input; @see CarrierRateExecutionRequestInterface.
  *
- * Domain values (scope, mode, policy) are validated fail-fast at construction — an unknown
+ * RateSourceMode + AddressResolutionPolicy are validated fail-fast at construction — an unknown
  * value can never reach the execution service and silently degrade into a default.
+ *
+ * DestinationScope is deliberately NOT re-validated here (TASK-R8WR1R r2): a config-sourced
+ * unknown scope must REACH the eligibility step, where CarrierEligibilityEvaluator fails it
+ * closed deterministically (unknown scope → ineligible, never coerced). Throwing at construction
+ * would surface a merchant coverage-configuration error as a carrier runtime exception
+ * (the TECHNICAL path) instead of a deterministic coverage miss.
  */
 final class CarrierRateExecutionRequest implements CarrierRateExecutionRequestInterface
 {
     /**
      * @param string $carrierCode
-     * @param string $destinationScope DestinationScope::*
+     * @param string $destinationScope DestinationScope::* or an unrecognized persisted value
+     *        (fails closed at the eligibility step — see class docblock)
      * @param string[] $allowedZoneCodes
      * @param string $destinationProvinceCode
      * @param string|null $destinationWardCode
@@ -38,7 +44,8 @@ final class CarrierRateExecutionRequest implements CarrierRateExecutionRequestIn
      * @param ShippingAddressResolutionContextInterface $resolutionContext
      * @param ShippingContextInterface $shippingContext
      * @param RealtimeCarrierRateContributorInterface $realtimeContributor
-     * @throws \Magento\Framework\Exception\LocalizedException unknown scope/mode/policy
+     * @throws \InvalidArgumentException empty carrier code
+     * @throws \Magento\Framework\Exception\LocalizedException unknown mode/policy
      */
     public function __construct(
         private readonly string $carrierCode,
@@ -56,7 +63,6 @@ final class CarrierRateExecutionRequest implements CarrierRateExecutionRequestIn
         if (trim($this->carrierCode) === '') {
             throw new \InvalidArgumentException('Carrier rate execution requires a non-empty carrier code.');
         }
-        DestinationScope::assertKnown($this->destinationScope);
         RateSourceMode::assertKnown($this->rateSourceMode);
         AddressResolutionPolicy::assertKnown($this->addressResolutionPolicy);
     }

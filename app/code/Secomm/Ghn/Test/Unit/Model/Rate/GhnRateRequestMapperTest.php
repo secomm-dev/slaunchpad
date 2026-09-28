@@ -18,6 +18,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Secomm\Base\Api\ShippingDimensionsReaderInterface;
 use Secomm\Ghn\Model\Exception\GhnRateEstimationException;
 use Secomm\Ghn\Model\Rate\GhnRateRequestMapper;
 use Secomm\Ghn\Model\Rate\QuoteParcelEstimator;
@@ -41,8 +42,12 @@ class GhnRateRequestMapperTest extends TestCase
     {
         $this->scopeConfig = $this->createMock(ScopeConfigInterface::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
+        // TASK-RT50KH — dimension reader stubbed to "missing" (null): these tests pin the
+        // WEIGHT semantics; dimension wiring has its own estimator/reader suites.
+        $dimensionsReader = $this->createMock(ShippingDimensionsReaderInterface::class);
+        $dimensionsReader->method('read')->willReturn(null);
         $this->mapper = new GhnRateRequestMapper(
-            new QuoteParcelEstimator(new StoreWeightConverter($this->scopeConfig))
+            new QuoteParcelEstimator(new StoreWeightConverter($this->scopeConfig), $dimensionsReader)
         );
     }
 

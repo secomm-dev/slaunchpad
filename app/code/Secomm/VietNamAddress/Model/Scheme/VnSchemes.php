@@ -57,16 +57,25 @@ final class VnSchemes
             'counts' => ['regions' => 34, 'depth1' => 3321, 'depth2' => 0],
             'collision' => null,
             'legacy_profile_aliases' => ['vn_current'],
+            // TASK-B1: dataset integrity guard — md5 of the bundled contract file.
+            'checksum_sha256' => 'ffdc5a64c7796d486322f310fb067647b976aba86caaee8d2281e60df3476f49',
         ],
+        // TASK-B1: the PRE-2025 contract now points at the AUTHORITATIVE end-of-2024
+        // snapshot (63/696/10,035 — the dataset production actually runs, imported by the
+        // RefreshVnAdminPre2025Snapshot2024 corrective patch). The superseded
+        // VN_ADMIN_PRE_2025_import.csv (63/699/10,595) remains in Files/ as archived
+        // history only — nothing references it anymore, so CLI import / --reference-only /
+        // dry-run and the fresh-install patch chain all converge on ONE dataset contract.
         self::VN_ADMIN_PRE_2025 => [
             'profile_code' => 'vn_admin_pre_2025',
-            'label' => 'VN Admin pre-2025 (3-level)',
+            'label' => 'VN Admin pre-2025 (3-level, 2024 snapshot)',
             'level_count' => 3,
-            'unit_file' => 'VN_ADMIN_PRE_2025_import.csv',
+            'unit_file' => 'VN_ADMIN_PRE_2025_SNAPSHOT_2024_import.csv',
             'code_pattern' => '/^VNAP25-[0-9A-F]{10}$/',
-            'counts' => ['regions' => 63, 'depth1' => 699, 'depth2' => 10595],
-            'collision' => ['groups' => 19, 'rows' => 38],
+            'counts' => ['regions' => 63, 'depth1' => 696, 'depth2' => 10035],
+            'collision' => ['groups' => 18, 'rows' => 36],
             'legacy_profile_aliases' => ['vn_legacy'],
+            'checksum_sha256' => 'ff7dc8b7d8d0a5e351836c8778e9b9a448a2e02be9b2d7512bad70438b07d6c9',
         ],
     ];
 
@@ -116,6 +125,18 @@ final class VnSchemes
     public static function codePattern(string $scheme): string
     {
         return self::entry($scheme)['code_pattern'];
+    }
+
+    /**
+     * TASK-B1 (r2): sha256 the bundled contract file must match before any import
+     * (content-identity drift guard — preferred over md5; no BC constraint applies since
+     * the checksum contract has never been released).
+     */
+    public static function checksumSha256(string $scheme): ?string
+    {
+        $entry = self::entry($scheme);
+
+        return $entry['checksum_sha256'] ?? null;
     }
 
     /**

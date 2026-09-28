@@ -12,7 +12,7 @@ specification_ref: ../../specs/SPEC-FEAT-FQWEQ3-secomm-ghn-carrier-adapter.md
 risk: high
 status: proposed
 created: 2026-09-10
-updated: 2026-09-10
+updated: 2026-09-23
 ticket_ref:
   - TASK-RJFTPZ                   # GHN-A — skeleton module: registration, config, GhnApiClient, exception taxonomy, capability
   - TASK-MZ2TCB                   # GHN-B — secomm_ghn_address_unit + secomm_ghn_address_mapping (Tier-2 DB) + sync/mapping/audit CLI + resolver
@@ -20,19 +20,24 @@ ticket_ref:
   - TASK-9Q5ZAK                   # GHN-D — Create Order (is_new_to_address=true) + cancel/return + MQ + secomm_ghn_shipment (BLOCKED: GHN-C + staging evidence D1 + package/shipment slices)
   - TASK-RR1ZFN                   # GHN-E — webhook + GhnStatusMapper + reconciliation qua ShippingCore tracking pipeline
   - TASK-8019VC                   # GHN-F — cutover: config migration, webhook flip, disable legacy modules, dọn bảng/cột
+  - TASK-WAWNDS                   # GHN type-5 RATE items[] per-unit + QuoteParcelEstimator (dev-complete trên working tree)
+  - TASK-MQ2DRG                   # GHN checkout pre-validation + >50kg RATE INTEGRATION_LIMITATION fallback (supersede TASK-WAWNDS >50kg quote stance)
+  - TASK-RT50KH                   # Product shipping dimension contract + GHN dimension pre-validation (150cm hard-limit live)
 decisions:
   - DEC-FEATYA2C0W-004            # dependency chain + ownership (accepted — vẫn hiệu lực)
   - DEC-TASK3F6QWZ-002            # tracking pipeline chung (accepted — vẫn hiệu lực)
   - DEC-FEATFQWEQ3-001            # Create Order dual-scheme: GHN_ADMIN_2025 names + is_new_to_address=true (ACCEPTED 2026-09-10 — supersede một phần SPIKE-9Z231Q v3)
+  - DEC-TASKMQ2DRG-001            # GHN RATE pre-validation weight matrix + >50kg INTEGRATION_LIMITATION (ACCEPTED 2026-09-23 — supersede TASK-WAWNDS >50kg quote stance; ShippingCore amendment TL-approved)
+  - DEC-TASKRT50KH-001            # Product shipping dimension contract P1 (ACCEPTED 2026-09-23 — reuse length/width/height decimal/GLOBAL; completeness-only-authoritative + ceil; dims chỉ cho hard-limit gate)
 decision_assessment: material
-decision_refs: [DEC-FEATYA2C0W-004, DEC-TASK3F6QWZ-002, DEC-FEATFQWEQ3-001]
+decision_refs: [DEC-FEATYA2C0W-004, DEC-TASK3F6QWZ-002, DEC-FEATFQWEQ3-001, DEC-TASKMQ2DRG-001, DEC-TASKRT50KH-001]
 decision_approval_summary:
-  total: 3
+  total: 5
   pending_approval: []
-  approved: [DEC-FEATYA2C0W-004, DEC-TASK3F6QWZ-002, DEC-FEATFQWEQ3-001]
+  approved: [DEC-FEATYA2C0W-004, DEC-TASK3F6QWZ-002, DEC-FEATFQWEQ3-001, DEC-TASKMQ2DRG-001, DEC-TASKRT50KH-001]
   rejected: []
   superseded: []
-  last_synced: 2026-09-10
+  last_synced: 2026-09-23
 verified_against_commit:
 components:
   - CMP-SHIPPING            # Secomm_ShippingCore — consumer chính (KHÔNG sửa code trong FEAT này)

@@ -13,6 +13,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;
 use Secomm\ShippingCore\Api\Address\AddressResolutionPolicy;
+use Secomm\ShippingCore\Api\Config\CarrierDestinationScopeConfigInterface;
 use Secomm\ShippingCore\Api\Rate\RateSourceMode;
 
 /**
@@ -42,6 +43,9 @@ class Config
     public const XML_PATH_RATE_ADJ_APPLY_TO = 'carriers/secomm_ghn/rate_adjustment_apply_to';
     public const XML_PATH_RATE_SOURCE_MODE = 'carriers/secomm_ghn/rate_source_mode';
     public const XML_PATH_ADDRESS_RESOLUTION_POLICY = 'carriers/secomm_ghn/address_resolution_policy';
+    /** FEAT-QA23PZ / DEC-FEATQA23PZ-001 — destination-scope eligibility (generic pattern, shared reader). */
+    public const XML_PATH_DESTINATION_SCOPE = 'carriers/secomm_ghn/destination_scope';
+    public const XML_PATH_ALLOWED_ZONE_CODES = 'carriers/secomm_ghn/allowed_zone_codes';
 
     public const ENV_SANDBOX = 'sandbox';
     public const ENV_PRODUCTION = 'production';
@@ -57,7 +61,8 @@ class Config
 
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
-        private readonly EncryptorInterface $encryptor
+        private readonly EncryptorInterface $encryptor,
+        private readonly CarrierDestinationScopeConfigInterface $destinationScopeConfig
     ) {
     }
 
@@ -246,5 +251,23 @@ class Config
         $allowed = [AddressResolutionPolicy::STRICT, AddressResolutionPolicy::FALLBACK, AddressResolutionPolicy::PICK_PRIMARY];
 
         return in_array($policy, $allowed, true) ? $policy : AddressResolutionPolicy::FALLBACK;
+    }
+
+    /**
+     * FEAT-QA23PZ / DEC-FEATQA23PZ-001 — destination-scope eligibility config, delegated to
+     * the SHARED ShippingCore reader (generic `carriers/<code>/...` pattern; enum fail-closed
+     * + unknown/disabled zone diagnostics live there). GHN adds no semantics of its own.
+     */
+    public function getDestinationScope(?int $storeId = null): string
+    {
+        return $this->destinationScopeConfig->getDestinationScope('secomm_ghn', $storeId);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllowedZoneCodes(?int $storeId = null): array
+    {
+        return $this->destinationScopeConfig->getAllowedZoneCodes('secomm_ghn', $storeId);
     }
 }

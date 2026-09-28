@@ -12,6 +12,8 @@ use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Psr\Log\LoggerInterface;
 use Secomm\AddressDropdown\Api\Data\CityInterface;
+use Secomm\AddressDropdown\Api\Data\RegionInterface;
+use Secomm\AddressDropdown\Model\CanonicalDataGuard;
 use Secomm\AddressDropdown\Model\CityModel;
 use Secomm\AddressDropdown\Model\CityModelFactory;
 use Secomm\AddressDropdown\Model\ResourceModel\CityResource;
@@ -44,14 +46,14 @@ class DeleteByIdCommand
     public function __construct(
         LoggerInterface  $logger,
         CityModelFactory $modelFactory,
-        CityResource     $resource
+        CityResource     $resource,
+        private readonly CanonicalDataGuard $canonicalDataGuard
     )
     {
         $this->logger = $logger;
         $this->modelFactory = $modelFactory;
         $this->resource = $resource;
     }
-
     /**
      * Delete City.
      *
@@ -77,7 +79,15 @@ class DeleteByIdCommand
                 );
             }
 
+            // TASK-SEC-A4: cities of canonical VN regions are import-workflow-only.
+            $this->canonicalDataGuard->assertCityMutatable(
+                $entityId,
+                (int) $model->getData(RegionInterface::REGION_ID)
+            );
+
             $this->resource->delete($model);
+        } catch (CouldNotDeleteException $guardedException) {
+            throw $guardedException;
         } catch (Exception $exception) {
             $this->logger->error(
                 __('Could not delete City. Original message: {message}'),

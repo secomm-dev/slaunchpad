@@ -14,9 +14,11 @@ use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Framework\Exception\LocalizedException;
 use Psr\Log\LoggerInterface;
 use Secomm\AddressDropdown\Api\Data\CityInterface;
+use Secomm\AddressDropdown\Api\Data\RegionInterface;
 use Secomm\AddressDropdown\Api\Data\CityNameInterface;
 use Secomm\AddressDropdown\Api\Data\CityNameInterfaceFactory;
 use Secomm\AddressDropdown\Command\City\SaveValidator;
+use Secomm\AddressDropdown\Model\CanonicalDataGuard;
 use Secomm\AddressDropdown\Model\CityModel;
 use Secomm\AddressDropdown\Model\CityModelFactory;
 use Secomm\AddressDropdown\Model\Constant;
@@ -92,7 +94,8 @@ class SaveCommand
         CityNameResource          $cityNameResource,
         CityNameCollectionFactory $cityNameCollectionFactory,
         ResourceConnection        $resourceConnection,
-        SaveValidator             $saveValidator
+        SaveValidator             $saveValidator,
+        private readonly CanonicalDataGuard $canonicalDataGuard
     )
     {
         $this->logger = $logger;
@@ -117,6 +120,13 @@ class SaveCommand
      */
     public function execute(CityInterface $city): int
     {
+        // TASK-SEC-A4: cities of canonical VN regions are import-workflow-only — reject
+        // BEFORE any write (validation may run on non-VN data unchanged).
+        $this->canonicalDataGuard->assertCityMutatable(
+            (int) $city->getData(CityInterface::CITY_ID),
+            (int) $city->getData(RegionInterface::REGION_ID)
+        );
+
         try {
             $warnings = $this->saveValidator->validate($city);
             foreach ($warnings as $warning) {
@@ -210,7 +220,8 @@ class SaveCommand
             }
 
             foreach ($diff as $locale) {
-                $where = ["`locale` = '" . $locale . "' AND `city_id` =" . $cityId];
+                // TASK-SEC-A1: bound where conditions — no SQL text concatenation.
+                $where = ['locale = ?' => (string) $locale, 'city_id = ?' => (int) $cityId];
                 $this->resourceConnection->getConnection()
                     ->delete(
                         $this->cityNameResource->getMainTable(),

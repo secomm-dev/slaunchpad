@@ -26,7 +26,7 @@
             </storageConfig>
             <updateUrl path="mui/index/render"/>
         </settings>
-        <aclResource>Secomm_AddressDropdown::management</aclResource>
+        <aclResource>Secomm_AddressDropdown::listing</aclResource>
         <dataProvider class="Secomm\AddressDropdown\Ui\DataProvider\CountryDataProvider" name="country_listing_data_source">
             <settings>
                 <requestFieldName>country_id</requestFieldName>

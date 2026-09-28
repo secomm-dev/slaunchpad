@@ -55,6 +55,17 @@ class SafeDegradationEligibilityPolicyTest extends TestCase
         );
     }
 
+    /** TASK-MQ2DRG — capability-unsupported (§35.5 materialized) → INTEGRATION_LIMITATION → eligible. */
+    public function testRateRequestUnrepresentableIsEligible(): void
+    {
+        $this->assertTrue(
+            $this->policy->isFallbackEligible(
+                CarrierRateOutcomeInterface::STATUS_UNAVAILABLE,
+                ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE
+            )
+        );
+    }
+
     /**
      * @dataProvider notEligibleProvider
      */
