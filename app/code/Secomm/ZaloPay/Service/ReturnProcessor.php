@@ -131,11 +131,17 @@ class ReturnProcessor
         $returnCode = (int)($query[AbstractResponseValidator::RETURN_CODE] ?? 0);
         $paidAmount = (int)($query[AbstractResponseValidator::TOTAL_AMOUNT] ?? 0);
         $zpTransId = (string)($query[AbstractResponseValidator::ZP_TRANS_ID] ?? '');
+        $returnMessage = (string)($query[AbstractResponseValidator::RESPONSE_MESSAGE] ?? '');
 
         if ($returnCode === self::QUERY_PROCESSING) {
             // Non-terminal: the provider has not concluded. The attempt
             // keeps its current state — the IPN, a later return hit or the
             // attempt TTL resolves it. No mutation here.
+            if ($returnMessage != '') {
+                throw new LocalizedException(
+                    __($returnMessage)
+                );
+            }
             throw new LocalizedException(
                 __('Your ZaloPay payment is still being processed. Please check back shortly.')
             );
