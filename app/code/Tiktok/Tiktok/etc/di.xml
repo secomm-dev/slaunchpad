@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <type name="Tiktok\Tiktok\Logger\TiktokLogger">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="info" xsi:type="object">Tiktok\Tiktok\Logger\Handler\TiktokHandler</item>
+                <item name="debug" xsi:type="object">Tiktok\Tiktok\Logger\Handler\TiktokDebugHandler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="tiktok:generate:feed"
+                      xsi:type="object">Tiktok\Tiktok\Console\Command\GenerateFeedCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Tiktok\Tiktok\Model\Catalog\Export\Mapper\CsvProductAttributeMapper">
+        <arguments>
+            <argument name="exportFormatter"
+                      xsi:type="object">Tiktok\Tiktok\Model\Catalog\Export\Formatter\CsvExportFormatter</argument>
+        </arguments>
+    </type>
+    <type name="Tiktok\Tiktok\Model\Catalog\Export\Mapper\JsonProductAttributeMapper">
+        <arguments>
+            <argument name="exportFormatter"
+                      xsi:type="object">Tiktok\Tiktok\Model\Catalog\Export\Formatter\JsonExportFormatter</argument>
+        </arguments>
+    </type>
+
+    <preference for="Tiktok\Tiktok\Api\EventPublisherInterface" type="Tiktok\Tiktok\Model\Event\Publisher"/>
+
+    <preference for="Tiktok\Tiktok\Api\EventProcessorInterface" type="Tiktok\Tiktok\Model\Event\Processor"/>
+
+    <type name="Tiktok\Tiktok\Model\Event\Management\EventManager" shared="true">
+        <arguments>
+            <argument name="eventContext" xsi:type="object">Tiktok\Tiktok\Model\Event\Context\EventContext</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Checkout\Controller\Cart\Add">
+        <plugin name="tiktok_add_events" type="Tiktok\Tiktok\Plugin\AddEventsToResponse"/>
+    </type>
+
+    <!-- Product Collection Builder -->
+    <virtualType name="CSVFilterPool" type="Tiktok\Tiktok\Model\Catalog\Export\Provider\Filters\FilterPool">
+        <arguments>
+            <argument name="filters" xsi:type="array">
+                <item name="stock_status" xsi:type="object">CSVStockStatusFilter</item>
+                <item name="visibility" xsi:type="object">Tiktok\Tiktok\Model\Catalog\Export\Provider\Filters\Visibility</item>
+                <item name="status" xsi:type="object">Tiktok\Tiktok\Model\Catalog\Export\Provider\Filters\Status</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="CSVStockStatusFilter" type="Tiktok\Tiktok\Model\Catalog\Export\Provider\Filters\StockStatus">
+        <arguments>
+            <argument name="addInStockFilter" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="CSVProductCollectionBuilder"
+                 type="Tiktok\Tiktok\Model\Catalog\Export\Provider\ProductCollectionBuilder">
+        <arguments>
+            <argument name="filterPool" xsi:type="object">CSVFilterPool</argument>
+        </arguments>
+    </virtualType>
+    <type name="Tiktok\Tiktok\Model\Catalog\Export\Provider\CsvProductDataProvider">
+        <arguments>
+            <argument name="productCollectionBuilder" xsi:type="object">CSVProductCollectionBuilder</argument>
+        </arguments>
+    </type>
+    <virtualType name="JSONFilterPool" type="Tiktok\Tiktok\Model\Catalog\Export\Provider\Filters\FilterPool">
+        <arguments>
+            <argument name="filters" xsi:type="array">
+                <item name="stock_status" xsi:type="object">JSONStockStatusFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="JSONStockStatusFilter" type="Tiktok\Tiktok\Model\Catalog\Export\Provider\Filters\StockStatus"/>
+    <virtualType name="JSONProductCollectionBuilder"
+                 type="Tiktok\Tiktok\Model\Catalog\Export\Provider\ProductCollectionBuilder">
+        <arguments>
+            <argument name="filterPool" xsi:type="object">JSONFilterPool</argument>
+        </arguments>
+    </virtualType>
+    <type name="Tiktok\Tiktok\Model\Catalog\Export\Provider\JsonProductDataProvider">
+        <arguments>
+            <argument name="productCollectionBuilder" xsi:type="object">JSONProductCollectionBuilder</argument>
+        </arguments>
+    </type>
+    <type name="Tiktok\Tiktok\Model\Catalog\Export\Provider\Modifiers\ModifierPool">
+        <arguments>
+            <argument name="pool" xsi:type="array">
+                <item name="product_url"
+                      xsi:type="object">Tiktok\Tiktok\Model\Catalog\Export\Provider\Modifiers\AddProductUrl</item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- Product Collection Builder -->
+
+    <!-- Event Pool -->
+    <type name="Tiktok\Tiktok\Model\Event\Pool">
+        <arguments>
+            <argument name="pool" xsi:type="array">
+                <item name="PageView" xsi:type="object">Tiktok\Tiktok\Model\Event\Pool\PageView</item>
+                <item name="ViewContent" xsi:type="object">Tiktok\Tiktok\Model\Event\Pool\ViewContent</item>
+                <item name="InitiateCheckout" xsi:type="object">Tiktok\Tiktok\Model\Event\Pool\InitiateCheckout</item>
+                <item name="CompletePayment" xsi:type="object">Tiktok\Tiktok\Model\Event\Pool\CompletePayment</item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- Event Pool -->
+</config>

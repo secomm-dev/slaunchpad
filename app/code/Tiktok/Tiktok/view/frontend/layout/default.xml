@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="after.body.start">
+            <block name="tikTok.tiktok.pixel" template="Tiktok_Tiktok::pixel.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Tiktok\Tiktok\ViewModel\Event\PixelEventTracking</argument>
+                    <argument name="eventTypes" xsi:type="array">
+                        <item name="PageView" xsi:type="string">PageView</item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

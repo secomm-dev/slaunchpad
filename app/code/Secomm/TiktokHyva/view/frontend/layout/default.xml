@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- Vendor pixel block relies on RequireJS/jQuery (Luma) — inert on Hyvä. -->
+        <referenceBlock name="tikTok.tiktok.pixel" remove="true"/>
+        <referenceContainer name="after.body.start">
+            <block name="secomm.tiktok.pixel" template="Secomm_TiktokHyva::pixel.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Secomm\TiktokHyva\ViewModel\Pixel</argument>
+                    <argument name="eventTypes" xsi:type="array">
+                        <item name="pageview" xsi:type="string">PageView</item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

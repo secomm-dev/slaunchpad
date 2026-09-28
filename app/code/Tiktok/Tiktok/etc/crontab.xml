@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="tiktok_event_queue_processor" instance="Tiktok\Tiktok\Cron\ProcessEventQueue" method="execute">
+            <schedule>0/5 * * * *</schedule>
+        </job>
+        <job name="tiktok_partner_data_sync" instance="Tiktok\Tiktok\Cron\PartnerDataSync" method="execute">
+            <schedule>0 0 1 * *</schedule>
+        </job>
+    </group>
+    <group id="tiktok_catalog_sync">
+        <job name="full_sync" instance="Tiktok\Tiktok\Cron\FullCatalogSync" method="execute">
+            <schedule>* * * * *</schedule>
+        </job>
+    </group>
+</config>

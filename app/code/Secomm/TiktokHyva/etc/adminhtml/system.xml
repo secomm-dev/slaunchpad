@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <!-- Adds a field to the vendor TikTok > Pixel Tracking group (merge by id). -->
+        <section id="tiktok" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Configuration</label>
+            <tab>tiktok_tab</tab>
+            <resource>Tiktok_Tiktok::general</resource>
+            <group id="pixel_tracking" translate="label" sortOrder="35" showInDefault="0" showInWebsite="1" showInStore="0">
+                <label>Pixel Tracking</label>
+                <field id="complete_registration_value" translate="label comment" type="text" sortOrder="40" showInDefault="0" showInWebsite="1" showInStore="0">
+                    <label>Complete Registration Value</label>
+                    <comment>Lead value in VND assigned to each CompleteRegistration event. TikTok requires a positive number — 0 or missing value is flagged by diagnostics.</comment>
+                    <validate>validate-number validate-greater-than-zero</validate>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

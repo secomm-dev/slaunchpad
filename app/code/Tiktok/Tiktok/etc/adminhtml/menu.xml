@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Tiktok_Tiktok::tiktok_general" title="Tiktok Ads Platform" module="Tiktok_Tiktok" sortOrder="10" resource="Tiktok_Tiktok::general"/>
+        <add id="Tiktok_Tiktok::tiktok_splash_page" title="Start" translate="title" module="Tiktok_Tiktok"
+             parent="Tiktok_Tiktok::tiktok_general" resource="Tiktok_Tiktok::general" sortOrder="20"
+             action="tiktok/account/splashpage"/>
+        <add id="Tiktok_Tiktok::tiktok_settings" title="Configuration" translate="title"
+             module="Tiktok_Tiktok"
+             parent="Tiktok_Tiktok::tiktok_general" resource="Tiktok_Tiktok::general" sortOrder="30"
+             action="adminhtml/system_config/edit/section/tiktok/"/>
+    </menu>
+</config>

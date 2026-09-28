@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="script-src">
+            <values>
+                <value id="sf-ttmp.ttcdn-row.com" type="host">https://sf-ttmp.ttcdn-row.com</value>
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="sf-ttmp.ttcdn-row.com" type="host">https://sf-ttmp.ttcdn-row.com</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="sf-ttmp.ttcdn-row.com" type="host">https://sf-ttmp.ttcdn-row.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="sf-ttmp.ttcdn-row.com" type="host">https://sf-ttmp.ttcdn-row.com</value>
+            </values>
+        </policy>
+        <policy id="font-src">
+            <values>
+                <value id="sf-ttmp.ttcdn-row.com" type="host">https://sf-ttmp.ttcdn-row.com</value>
+                <value id="fonts.gstatic.com" type="host">https://fonts.gstatic.com</value>
+                <value id="use.typekit.net" type="host">https://use.typekit.net</value>
+                <value id="typekit.net" type="host">https://*.typekit.net</value>
+                <value id="gstatic.com" type="host">https://*.gstatic.com</value>
+                <value id="sf16-sg.tiktokcdn.com" type="host">https://sf16-sg.tiktokcdn.com</value>
+            </values>
+        </policy>
+        <policy id="media-src">
+            <values>
+                <value id="sf-ttmp.ttcdn-row.com" type="host">https://sf-ttmp.ttcdn-row.com</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <!-- Allow TikTok scripts -->
+        <policy id="script-src">
+            <values>
+                <value id="tiktok_analytics" type="host">*.tiktok.com</value>
+                <value id="tiktok_cdn" type="host">*.ttcdn-row.com</value>
+                <value id="tiktok_bytedance" type="host">*.bytedance.com</value>
+                <value id="tiktok_identify" type="host">analytics.tiktok.com</value>
+            </values>
+        </policy>
+
+        <!-- Allow TikTok API connections -->
+        <policy id="connect-src">
+            <values>
+                <value id="tiktok_analytics_api" type="host">analytics.tiktok.com</value>
+                <value id="tiktok_business_api" type="host">business-api.tiktok.com</value>
+                <value id="tiktok_cdn_connect" type="host">*.ttcdn-row.com</value>
+                <value id="tiktok_bytedance_connect" type="host">*.bytedance.com</value>
+            </values>
+        </policy>
+
+        <!-- Allow TikTok image/resources -->
+        <policy id="img-src">
+            <values>
+                <value id="tiktok_images" type="host">*.tiktok.com</value>
+                <value id="tiktok_cdn_images" type="host">*.ttcdn-row.com</value>
+            </values>
+        </policy>
+
+        <!-- Allow TikTok fonts/styles -->
+        <policy id="style-src">
+            <values>
+                <value id="tiktok_styles" type="host">*.tiktok.com</value>
+                <value id="tiktok_cdn_styles" type="host">*.ttcdn-row.com</value>
+            </values>
+        </policy>
+
+        <!-- Allow TikTok fonts -->
+        <policy id="font-src">
+            <values>
+                <value id="tiktok_fonts" type="host">*.tiktok.com</value>
+                <value id="tiktok_cdn_fonts" type="host">*.ttcdn-row.com</value>
+            </values>
+        </policy>
+        <policy id="object-src">
+            <values>
+                <value id="tiktok-object" type="host">*.tiktok.com</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

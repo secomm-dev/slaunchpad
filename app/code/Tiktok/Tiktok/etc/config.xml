@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<config>
+    <default>
+        <tiktok>
+            <api>
+                <url>https://business-api.tiktok.com/open_api/v1.3/event/track/</url>
+                <manage_url>https://ads.tiktok.com/business-extension/universal/manage</manage_url>
+                <auth_url>https://ads.tiktok.com/business-extension/auth</auth_url>
+                <business_platform>MAGENTO</business_platform>
+            </api>
+            <sync>
+                <sync_frequency>0 0 * * *</sync_frequency>
+            </sync>
+            <logging>
+                <log_level>info</log_level>
+            </logging>
+            <general>
+                <enable>0</enable>
+            </general>
+            <pixel_tracking>
+                <enable>1</enable>
+                <advanced_user_tracking>1</advanced_user_tracking>
+                <enable_tp_cookie>1</enable_tp_cookie>
+            </pixel_tracking>
+        </tiktok>
+    </default>
+</config>

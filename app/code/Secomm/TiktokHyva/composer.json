@@ -1,0 +1,19 @@
+{
+    "name": "secomm/module-tiktokhyva",
+    "description": "Hyvä theme compatibility for Tiktok_Tiktok pixel tracking (inline vanilla JS pixel, Mageplaza OSC + AJAX add-to-cart support).",
+    "type": "magento2-module",
+    "license": [
+        "proprietary"
+    ],
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Secomm\\TiktokHyva\\": ""
+        }
+    }
+}
