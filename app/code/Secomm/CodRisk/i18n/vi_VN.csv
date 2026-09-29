@@ -58,3 +58,5 @@
 "Order","Đơn hàng"
 "In Count","Tính vào đếm"
 "Block Threshold must be greater than Warning Threshold.","Ngưỡng chặn phải lớn hơn ngưỡng cảnh báo."
+"This phone number already exists in the %1 list for this website.","Số điện thoại này đã tồn tại trong danh sách %1 cho website này."
+"This phone already has an active %1 record for this website. Deactivate or edit the existing record first.","Số này đã có bản ghi %1 đang hiệu lực cho website này. Hãy Deactivate hoặc sửa bản ghi cũ trước."

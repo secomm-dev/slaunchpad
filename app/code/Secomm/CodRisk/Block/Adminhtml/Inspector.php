@@ -11,6 +11,7 @@ namespace Secomm\CodRisk\Block\Adminhtml;
 
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Store\Model\WebsiteFactory;
 use Secomm\CodRisk\Api\Data\CodRiskDecisionInterface;
 use Secomm\CodRisk\Model\Service\PhoneInspector;
@@ -26,9 +27,30 @@ class Inspector extends Template
         Context $context,
         private readonly PhoneInspector $phoneInspector,
         private readonly WebsiteFactory $websiteFactory,
+        private readonly TimezoneInterface $localeDate,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * Admin-timezone datetime in the yy-MM-dd HH:mm pattern (Bug 2).
+     * Template::formatDate() does not accept a pattern — the stdlib does.
+     */
+    public function formatRiskDateTime(?string $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        return $this->localeDate->formatDateTime(
+            $value,
+            \IntlDateFormatter::SHORT,
+            \IntlDateFormatter::SHORT,
+            null,
+            null,
+            'yy-MM-dd HH:mm'
+        );
     }
 
     /**
