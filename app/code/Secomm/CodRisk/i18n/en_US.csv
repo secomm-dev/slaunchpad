@@ -58,3 +58,5 @@
 "Order","Order"
 "In Count","In Count"
 "Block Threshold must be greater than Warning Threshold.","Block Threshold must be greater than Warning Threshold."
+"This phone number already exists in the %1 list for this website.","This phone number already exists in the %1 list for this website."
+"This phone already has an active %1 record for this website. Deactivate or edit the existing record first.","This phone already has an active %1 record for this website. Deactivate or edit the existing record first."

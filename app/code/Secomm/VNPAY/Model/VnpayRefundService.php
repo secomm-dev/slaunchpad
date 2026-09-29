@@ -162,6 +162,7 @@ class VnpayRefundService
                     $rowException->getMessage()
                 ));
             }
+            $payment->setLastTransId($transactionNo);
             return;
         }
 

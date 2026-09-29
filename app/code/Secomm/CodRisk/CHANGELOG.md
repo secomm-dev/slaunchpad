@@ -16,6 +16,10 @@ All notable changes follow Keep a Changelog; versioning: unreleased until TL rev
 - **Order View / Inspector hiển thị Historical Count = 0 sai** dù phone có event: pipeline dừng sớm ở rule ưu tiên cao (vd. Blacklist match → break) nên Historical/Spam rule không bao giờ chạy → count hiển thị luôn 0. Sửa: OrderRiskView + PhoneInspector tự tính count/spam trực tiếp từ event store để hiển thị, độc lập với pipeline (decision vẫn đúng precedence cũ).
 - **CSS Order View section**: bỏ class `bg-*` (không tồn tại trong admin Magento), badge inline-style rõ ràng; các mini-form bọc `admin__fieldset`/`admin__field`/`admin__field-control` để label/control căn chuẩn admin theme.
 
+- **Bug 1 (UI part, bổ sung 22/09)**: telephone field không thuộc nhóm field OSC reload → thêm `telephone-sync.js` trên checkout: debounce 600ms sau khi nhập xong SĐT → gọi **core action `set-shipping-information`** (save address xuống quote + re-fetch payment — đúng luồng khi sửa address), không mixin nội bộ OSC → an toàn upgrade. Guard server-side (observer place-order) vẫn là chốt chặn cuối.
+- **Bug 1 — COD vẫn đặt được khi list hiển thị stale**: plugin chỉ refresh list render, OSC không reload theo mỗi lần sửa phone → thêm hàng rào server-side tại place order (observer `sales_model_service_quote_submit_before`, `CodAvailabilityGuard`): BLOCK → throw message cấu hình `codrisk/checkout/message` (wire text D-14), fail-open nhất quán với plugin. Guest + registered + API đều đi qua.
+- **Bug 2 — giờ hiển thị lệch 7h + format**: `formatDate()` theo timezone admin + pattern **yy-MM-dd HH:mm** theo yêu cầu (grid dùng column Date có sẵn).
+- **Bug 3+4 — validate trùng lặp Risk Lists**: 1 phone + website chỉ được 1 record active; trùng cùng type → lỗi "already exists in the %1 list"; khác type (BLOCK vs ALLOW) → lỗi yêu cầu Deactivate/sửa bản ghi cũ (Allowlist thừa vì Blacklist luôn thắng). Deactivated record không chặn thêm lại. i18n 2 message.
 ### Added (TASK-YPWH9B / LC-26 P1)
 
 - Public contracts: `CodRiskEvaluatorInterface`, `CodRiskRuleInterface`, `RiskEventRecorderInterface`, DTOs `CodRiskContext`, `CodRiskDecision`, `RiskEvent`.
@@ -29,5 +33,5 @@ All notable changes follow Keep a Changelog; versioning: unreleased until TL rev
 ### Known limitations
 
 - Live-preview chuẩn hóa phone + duplicate-check real-time trên form (mockup UX) chưa làm — chuẩn hóa xảy ra lúc save, thông báo hiển thị sau save.
-- Message customer-facing trên checkout chưa wire (Tier-2 OSC).
+- ~~Message customer-facing chưa wire~~ → **đã wire 22/09** qua `CodAvailabilityGuard` (place-order gate) — text cấu hình tại `COD Risk → Checkout → COD Unavailable Message`, merchant đặt text tiếng Việt theo website.
 - Audit liên kết theo phone qua free-text match trong Phone Inspector (không có FK phone trong bảng audit).

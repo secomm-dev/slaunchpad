@@ -98,7 +98,7 @@ $badgeStyle = $decision !== null
                                 (string)$override->getData('base_decision'),
                                 (string)$override->getData('override_decision'),
                                 (string)$override->getData('admin_username'),
-                                (string)$override->getData('created_at'),
+                                $block->formatRiskDateTime((string)$override->getData('created_at')),
                                 (string)$override->getData('reason'))) ?>
                         </td>
                     </tr>
@@ -121,7 +121,7 @@ $badgeStyle = $decision !== null
                     <tbody>
                     <?php foreach ($summary['events'] as $event): ?>
                         <tr>
-                            <td><?= $escaper->escapeHtml((string)$event->getData('created_at')) ?></td>
+                            <td><?= $escaper->escapeHtml($block->formatRiskDateTime((string)$event->getData('created_at'))) ?></td>
                             <td><?= $escaper->escapeHtml((string)$event->getData('reason_code')) ?></td>
                             <td><?= $escaper->escapeHtml((string)$event->getData('source')) ?></td>
                             <td><?= (int)$event->getData('include_snapshot') === 1
