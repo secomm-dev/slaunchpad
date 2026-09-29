@@ -12,6 +12,7 @@ namespace Secomm\CodRisk\Block\Adminhtml\OrderView;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Registry;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Secomm\CodRisk\Api\Data\CodRiskDecisionInterface;
 use Secomm\CodRisk\Model\Config;
@@ -31,9 +32,30 @@ class CodRisk extends Template
         private readonly OrderRiskView $orderRiskView,
         private readonly ReasonCodes $reasonCodes,
         private readonly Config $config,
+        private readonly TimezoneInterface $localeDate,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * Admin-timezone datetime in the yy-MM-dd HH:mm pattern (Bug 2).
+     * Template::formatDate() does not accept a pattern — the stdlib does.
+     */
+    public function formatRiskDateTime(?string $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        return $this->localeDate->formatDateTime(
+            $value,
+            \IntlDateFormatter::SHORT,
+            \IntlDateFormatter::SHORT,
+            null,
+            null,
+            'yy-MM-dd HH:mm'
+        );
     }
 
     public function getOrder(): ?OrderInterface

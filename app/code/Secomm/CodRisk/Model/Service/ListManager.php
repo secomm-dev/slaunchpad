@@ -13,6 +13,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
 use Secomm\CodRisk\Model\CodRiskList;
 use Secomm\CodRisk\Model\CodRiskListFactory;
+use Secomm\CodRisk\Model\ResourceModel\CodRiskList\CollectionFactory;
 use Secomm\CodRisk\Model\Audit\AuditLog;
 use Secomm\CodRisk\Model\Audit\AuditWriter;
 use Secomm\CodRisk\Model\Phone\PhoneNormalizer;
@@ -26,6 +27,7 @@ class ListManager
 {
     public function __construct(
         private readonly CodRiskListFactory $listFactory,
+        private readonly CollectionFactory $collectionFactory,
         private readonly PhoneNormalizer $phoneNormalizer,
         private readonly AuditWriter $auditWriter,
     ) {
@@ -53,6 +55,16 @@ class ListManager
             : $this->listFactory->create();
 
         $isNew = $record->getId() === null;
+
+        // One active record per phone + website (Bug 3/4, 2026-09-22): duplicates of
+        // the same type are meaningless, and a second type is silently dead weight
+        // because Blacklist always outranks Allowlist.
+        $this->assertNoActiveConflict(
+            $normalized,
+            (int)($data['website_id'] ?? 0),
+            $listType,
+            $record->getId() !== null ? (int)$record->getId() : null
+        );
 
         $record->setData([
             'normalized_phone' => $normalized,
@@ -101,6 +113,44 @@ class ListManager
         );
 
         return $record;
+    }
+
+    /**
+     * Blocks saving an active record when the same phone + website already has one:
+     * - same type => plain duplicate (Bug 3)
+     * - other type => dead/confusing record since Blacklist outranks Allowlist (Bug 4)
+     * Deactivated records do not block re-adding the phone.
+     *
+     * @throws LocalizedException
+     */
+    private function assertNoActiveConflict(string $phone, int $websiteId, string $listType, ?int $excludeId): void
+    {
+        $collection = $this->collectionFactory->create();
+        $collection->addFieldToFilter('normalized_phone', $phone)
+            ->addFieldToFilter('website_id', $websiteId)
+            ->addFieldToFilter('is_active', 1);
+        if ($excludeId !== null) {
+            $collection->addFieldToFilter('entity_id', ['neq' => $excludeId]);
+        }
+        $collection->setPageSize(1);
+
+        $conflict = $collection->getFirstItem();
+        if (!$conflict->getId()) {
+            return;
+        }
+
+        $existingType = (string)$conflict->getData('list_type');
+        if ($existingType === $listType) {
+            throw new LocalizedException(new Phrase(
+                'This phone number already exists in the %1 list for this website.',
+                [$listType]
+            ));
+        }
+
+        throw new LocalizedException(new Phrase(
+            'This phone already has an active %1 record for this website. Deactivate or edit the existing record first.',
+            [$existingType]
+        ));
     }
 
     private function toDate(mixed $value): ?string
