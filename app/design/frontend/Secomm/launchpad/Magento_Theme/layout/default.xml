@@ -17,5 +17,38 @@
                 </arguments>
             </block>
         </referenceContainer>
+
+        <!--
+          TASK-7EYJ4C (SLP-275): footer mock-up. Each footer section is a CMS block
+          (footer_newsletter / footer_links / footer_social / footer_trust_payments)
+          rendered by the child-theme Magento_Theme::html/footer.phtml override.
+          Vendor static links + empty footer_content CMS block + store/language
+          switcher column are removed (switcher moves to the header in a separate task).
+        -->
+        <referenceBlock name="footer-static-links" remove="true"/>
+        <referenceBlock name="footer-cms-content" remove="true"/>
+        <referenceBlock name="footer-column-store" remove="true"/>
+        <referenceBlock name="footer-content">
+            <block class="Magento\Cms\Block\Block" name="footer-newsletter">
+                <arguments>
+                    <argument name="block_id" xsi:type="string">footer_newsletter</argument>
+                </arguments>
+            </block>
+            <block class="Magento\Cms\Block\Block" name="footer-links">
+                <arguments>
+                    <argument name="block_id" xsi:type="string">footer_links</argument>
+                </arguments>
+            </block>
+            <block class="Magento\Cms\Block\Block" name="footer-social">
+                <arguments>
+                    <argument name="block_id" xsi:type="string">footer_social</argument>
+                </arguments>
+            </block>
+            <block class="Magento\Cms\Block\Block" name="footer-trust-payments">
+                <arguments>
+                    <argument name="block_id" xsi:type="string">footer_trust_payments</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
     </body>
 </page>

@@ -1,5 +1,41 @@
 # Changelog
 
+## 1.3.1 (2026-09-29)
+
+- SLP-275 (TASK-7EYJ4C v4.3–v4.7): `SeedFooterBlocks` đổi store map theo
+  **staging: store 1 = Tiếng Việt, store 4 = English; bỏ row store 0 fallback**
+  (store view thiếu trong env bị skip qua `StoreManagerInterface` — local không
+  có store 4 nên chỉ seed VI; store view nào không có row riêng sẽ không thấy
+  footer block, by design). Content builders (`Model\FooterBlockContent`) sửa
+  appearance theo config PageBuilder (column-group `default`, image
+  `full-width`) — admin stage parse native thay vì fallback "HTML Code"
+  (v4.3), cộng padding/rhythm mobile links accordion theo Figma (v4.6, CSS ở
+  theme). Patch đã registered trong `patch_list` từ 1.3.0 nên không tự re-run;
+  môi trường mới sẽ seed thẳng theo map mới.
+
+## 1.3.0 (2026-09-28)
+
+- SLP-275 (TASK-7EYJ4C): footer mock-up — newsletter chuyển từ homepage xuống
+  footer, component footer = CMS block. Data patch `SeedFooterBlocks` seed 4
+  identifier (`footer_newsletter` / `footer_links` / `footer_social` /
+  `footer_trust_payments`) × 2 store (store 0 = EN fallback, store 1 = VI),
+  idempotent theo (identifier, store) qua join `cms_block_store` — không dùng
+  load-by-identifier (nguyên nhân duplicate `homepage-newsletter` 21/22).
+  `footer_newsletter` bọc `{{block}}` `Newsletter\Subscribe` hiện có.
+- SLP-275 v2 (cùng ngày, theo feedback user): content block đổi sang
+  **PageBuilder markup** (Row / column-group / Heading / Text / Image / HTML)
+  để admin sửa trực quan trong PB stage; anchor classes (`footer-links-group`,
+  `footer-links-title`, `footer-links-list`, `footer-social-item`,
+  `footer-trust-badge`, `footer-trust-payments`) đặt ở CSS Classes field.
+  Builders tách ra `Model\FooterBlockContent` (dùng chung cho patch + reseed
+  script). Section containers (bg/padding/width) + toàn bộ styling =
+  **template/CSS-owned** (`footer.phtml` + `footer.css` selector cấu trúc,
+  kèm counter cho bleed rules `body.cms-index-index` của homepage.css) —
+  PB admin save không thể phá footer (strip-proof, pattern TASK-0NNZCW v4.5).
+  Template `newsletter/subscribe.phtml` đổi sang Tailwind utilities trực tiếp
+  (bỏ phụ thuộc class `lp-newsletter-*` CSS-owned của homepage.css) + responsive
+  mobile (stack, nút full-width).
+
 ## 1.2.7 (2026-09-25)
 
 - SLP-272 (TASK-JBHGNR): product card / PDP / Quick View hiển thị option hết
