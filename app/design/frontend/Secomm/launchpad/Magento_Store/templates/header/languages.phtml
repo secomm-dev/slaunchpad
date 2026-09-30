@@ -1,0 +1,153 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\ViewModel\Store;
+use Hyva\Theme\ViewModel\StoreConfig;
+use Hyva\Theme\ViewModel\StoreSwitcher;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Magento\Store\ViewModel\SwitcherUrlProvider;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var HyvaCsp $hyvaCsp */
+
+$icons = $viewModels->require(SvgIcons::class);
+$switcherUrlProvider = $viewModels->require(SwitcherUrlProvider::class);
+$storeViewModel = $viewModels->require(Store::class);
+$storeSwitcher = $viewModels->require(StoreSwitcher::class);
+$storeConfig = $viewModels->require(StoreConfig::class);
+$stores = $storeSwitcher->getStores();
+
+if (count($stores) <= 1) {
+    return '';
+}
+
+$currentStore = $storeSwitcher->getStore();
+$orderedStores = [];
+foreach ($stores as $store) {
+    if ((int) $store->getId() === (int) $currentStore->getId()) {
+        array_unshift($orderedStores, $store);
+    } else {
+        $orderedStores[] = $store;
+    }
+}
+$localeCode = (string) $storeConfig->getStoreConfig('general/locale/code');
+$languageCode = strtoupper(substr($localeCode, 0, 2));
+$flagByLanguageCode = [
+    'EN' => 'images/flags/en.svg',
+    'VI' => 'images/flags/vi.svg',
+];
+$currentFlag = $flagByLanguageCode[$languageCode] ?? null;
+?>
+<div
+    class="relative"
+    x-data="initLaunchpadLanguageSwitcher"
+    @click.outside="close"
+    @keydown.escape.stop="close(true)"
+>
+    <button
+        type="button"
+        class="group flex h-10 items-center gap-1 rounded-md text-current outline-none"
+        @click="toggle"
+        @pointerup="$event.currentTarget.blur()"
+        :aria-expanded="open"
+        aria-haspopup="menu"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('Language') . ': ' . $currentStore->getName()) ?>"
+        x-ref="trigger"
+    >
+        <?php if ($currentFlag): ?>
+            <img
+                src="<?= $escaper->escapeUrl($block->getViewFileUrl($currentFlag)) ?>"
+                width="32"
+                height="32"
+                alt=""
+                aria-hidden="true"
+                class="inline-block mr-1"
+            >
+        <?php else: ?>
+            <span class="flex size-8 items-center justify-center text-xs font-medium mr-1" aria-hidden="true">
+                <?= $escaper->escapeHtml($languageCode) ?>
+            </span>
+        <?php endif; ?>
+        <span class="text-label-m"><?= $escaper->escapeHtml($languageCode) ?></span>
+        <?= $icons->renderHtml(
+            'outline/chevron-down',
+            'motion-safe:transition-transform group-aria-expanded:rotate-180',
+            12,
+            12,
+            ['aria-hidden' => 'true']
+        ) ?>
+    </button>
+
+    <nav
+        class="absolute right-0 z-30 mt-2 w-48 overflow-auto rounded-md bg-white p-2 text-ink shadow-lg"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('Choose your language')) ?>"
+        x-show="open"
+        x-transition
+        x-cloak
+    >
+        <div role="menu" aria-orientation="vertical">
+            <?php foreach ($orderedStores as $store): ?>
+                <?php
+                $storeLanguageCode = strtoupper(substr((string) $store->getLocaleCode(), 0, 2));
+                $storeFlag = $flagByLanguageCode[$storeLanguageCode] ?? null;
+                $isCurrentStore = (int) $store->getId() === (int) $storeViewModel->getStoreId();
+                $itemClasses = 'flex items-center gap-2 rounded px-3 py-2 text-label-l ' . ($isCurrentStore
+                    ? ''
+                    : 'hover:bg-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus');
+                ?>
+                <?php if ($isCurrentStore): ?>
+                    <span class="<?= $escaper->escapeHtmlAttr($itemClasses) ?>" role="menuitem" aria-current="true">
+                <?php else: ?>
+                    <a
+                        class="<?= $escaper->escapeHtmlAttr($itemClasses) ?>"
+                        href="<?= $escaper->escapeUrl($switcherUrlProvider->getTargetStoreRedirectUrl($store)) ?>"
+                        role="menuitem"
+                    >
+                <?php endif; ?>
+                    <?php if ($storeFlag): ?>
+                        <img
+                            src="<?= $escaper->escapeUrl($block->getViewFileUrl($storeFlag)) ?>"
+                            width="24"
+                            height="24"
+                            alt=""
+                            aria-hidden="true"
+                        >
+                    <?php else: ?>
+                        <span class="flex size-6 items-center justify-center text-xs font-medium" aria-hidden="true">
+                            <?= $escaper->escapeHtml($storeLanguageCode) ?>
+                        </span>
+                    <?php endif; ?>
+                    <span class="<?= $isCurrentStore ? 'border-b border-primary' : '' ?>">
+                        <?= $escaper->escapeHtml($store->getName()) ?>
+                    </span>
+                <?= $isCurrentStore ? '</span>' : '</a>' ?>
+            <?php endforeach; ?>
+        </div>
+    </nav>
+</div>
+<script>
+    function initLaunchpadLanguageSwitcher() {
+        return {
+            open: false,
+            toggle() {
+                this.open = !this.open
+            },
+            close(restoreFocus = false) {
+                this.open = false
+                if (restoreFocus) this.$nextTick(() => this.$refs.trigger?.focus())
+            }
+        }
+    }
+
+    window.addEventListener('alpine:init', () => {
+        Alpine.data('initLaunchpadLanguageSwitcher', initLaunchpadLanguageSwitcher)
+    }, {once: true})
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

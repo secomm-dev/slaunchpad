@@ -4,6 +4,7 @@
     <module name="Secomm_ThemeHelper">
         <sequence>
             <module name="Secomm_Base"/>
+            <module name="Magento_Config"/>
         </sequence>
     </module>
 </config>

@@ -4,3 +4,4 @@
 
 - Add a developer-mode Global Style Showcase route for active-theme regression
   and accessibility review.
+- Add Store View scoped sticky Header configuration and typed ViewModel.

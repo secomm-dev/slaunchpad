@@ -19,11 +19,11 @@ use Magento\Framework\View\Element\Template;
 $blockCacheViewModel = $viewModels->require(BlockCache::class);
 $snowdogNavigation = $viewModels->require(Config::class);
 
-// Snowdog navigation: only the mobile menu block is a child of topmenu_generic;
-// the desktop block renders separately in header.container (Snowdog_Menu layout).
+// Snowdog's mobile block is the only child retained here. Header orchestration
+// owns the native fallback because Snowdog removes Hyva's original menu blocks.
 echo $snowdogNavigation->isEnabled()
     ? $block->getChildHtml('topmenu-mobile')
-    : $block->getChildHtml();
+    : '';
 
 // Copy child cache tags to this block so they are added to the block_html cache record
 $block->setData('cache_tags', $blockCacheViewModel->collectBlockChildrenCacheTags($block));
