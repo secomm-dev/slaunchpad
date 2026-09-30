@@ -1,0 +1,11 @@
+<!--
+/**
+ * FEAT-QA23PZ — Magento 2.4.8 does not ship the client-side form container template
+ * that ui_component forms resolve through `templates/form/collapsible` (RequireJS text
+ * fallback `templates/template/form/default.html`). This file provides it; the
+ * requirejs alias in this module maps the prefix here.
+ */
+-->
+<each args="data: items, as: '$item'">
+    <each args="$item" render=""></each>
+</each>

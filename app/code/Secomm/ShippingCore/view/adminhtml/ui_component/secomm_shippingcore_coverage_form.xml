@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="component" xsi:type="string">Magento_Ui/js/form/form</item>
+            <item name="provider" xsi:type="string">secomm_shippingcore_coverage_form.secomm_shippingcore_coverage_form_data_source</item>
+            <item name="namespace" xsi:type="string">secomm_shippingcore_coverage_form</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Shipping Coverage</item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="back" class="Secomm\ShippingCore\Block\Adminhtml\Coverage\Edit\BackButton"/>
+            <button name="reset" class="Secomm\ShippingCore\Block\Adminhtml\Coverage\Edit\ResetButton"/>
+            <button name="save" class="Secomm\ShippingCore\Block\Adminhtml\Coverage\Edit\SaveButton"/>
+        </buttons>
+        <namespace>secomm_shippingcore_coverage_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>secomm_shippingcore_coverage_form.secomm_shippingcore_coverage_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="secomm_shippingcore_coverage_form_data_source" component="Magento_Ui/js/form/provider">
+        <settings>
+            <submitUrl path="secomm_shippingcore/coverage/save"/>
+        </settings>
+        <dataProvider class="Secomm\ShippingCore\Ui\DataProvider\CoverageFormDataProvider" name="secomm_shippingcore_coverage_form_data_source">
+            <settings>
+                <requestFieldName>target_code</requestFieldName>
+                <primaryFieldName>target_code</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <fieldset name="coverage">
+        <settings>
+            <label translate="true">Coverage</label>
+        </settings>
+        <!-- TASK-WY6WP5 — logical coverage identity (directive §21). P1 target_type is
+             always CARRIER; the hidden fields let the same form serve Add (create) and
+             Edit, and let Save enforce the one-config-per-type+code duplicate guard. -->
+        <field name="target_type" formElement="hidden" sortOrder="5">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">CARRIER</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>target_type</dataScope>
+            </settings>
+        </field>
+        <field name="is_create" formElement="hidden" sortOrder="6">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>is_create</dataScope>
+            </settings>
+        </field>
+        <field name="applies_to" formElement="input" sortOrder="10">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string" translate="true">Carrier</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>applies_to</dataScope>
+                <label translate="true">Applies To</label>
+                <disabled>true</disabled>
+                <notice translate="true">P1 configures coverage for carrier targets only. Method-level coverage is reserved for a future release.</notice>
+            </settings>
+        </field>
+        <!-- Create: searchable single select over the registered carriers that do not yet
+             have an explicit coverage config (RegisteredCarrierOptions — the registry is
+             the only source, no manual code entry, configured targets excluded).
+             Edit: the form data provider swaps in the single current target and disables
+             the field (directive §9 — selectable on create, readonly on edit). -->
+        <field name="target_code" component="Magento_Ui/js/form/element/ui-select" sortOrder="20" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filterOptions" xsi:type="boolean">true</item>
+                    <item name="multiple" xsi:type="boolean">false</item>
+                    <item name="showCheckbox" xsi:type="boolean">false</item>
+                    <item name="disableLabel" xsi:type="boolean">true</item>
+                    <item name="levelsVisibility" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>target_code</dataScope>
+                <label translate="true">Carrier</label>
+                <componentType>field</componentType>
+                <elementTmpl>ui/grid/filters/elements/ui-select</elementTmpl>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\ShippingCore\Model\Config\Source\RegisteredCarrierOptions"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="destination_scope" formElement="select" sortOrder="30">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">ALL</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>destination_scope</dataScope>
+                <label translate="true">Availability</label>
+                <notice translate="true">"All Except Selected Zones" hides the carrier wherever a selected zone matches — an excluded destination never opens the fallback layer (service-area restriction, not a technical failure).</notice>
+                <switcherConfig>
+                    <rules>
+                        <rule name="0">
+                            <value>ALL</value>
+                            <actions>
+                                <action name="0">
+                                    <target>secomm_shippingcore_coverage_form.secomm_shippingcore_coverage_form.coverage.allowed_zone_codes</target>
+                                    <callback>hide</callback>
+                                </action>
+                            </actions>
+                        </rule>
+                        <rule name="1">
+                            <value>SELECTED_ZONES</value>
+                            <actions>
+                                <action name="0">
+                                    <target>secomm_shippingcore_coverage_form.secomm_shippingcore_coverage_form.coverage.allowed_zone_codes</target>
+                                    <callback>show</callback>
+                                </action>
+                            </actions>
+                        </rule>
+                        <rule name="2">
+                            <value>ALL_EXCEPT_SELECTED_ZONES</value>
+                            <actions>
+                                <action name="0">
+                                    <target>secomm_shippingcore_coverage_form.secomm_shippingcore_coverage_form.coverage.allowed_zone_codes</target>
+                                    <callback>show</callback>
+                                </action>
+                            </actions>
+                        </rule>
+                    </rules>
+                    <enabled>true</enabled>
+                </switcherConfig>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\ShippingCore\Model\Config\Source\AvailabilityOptions"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="allowed_zone_codes" component="Magento_Ui/js/form/element/ui-select" sortOrder="40" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filterOptions" xsi:type="boolean">true</item>
+                    <item name="multiple" xsi:type="boolean">true</item>
+                    <item name="showCheckbox" xsi:type="boolean">true</item>
+                    <item name="levelsVisibility" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>allowed_zone_codes</dataScope>
+                <label translate="true">Zones</label>
+                <componentType>field</componentType>
+                <elementTmpl>ui/grid/filters/elements/ui-select</elementTmpl>
+                <notice translate="true">Enabled Shipping Zones only (Secomm → Shipping → Shipping Zones), searchable. A zone that is disabled but still persisted here stays visible marked "— Disabled"; it never matches at runtime until re-enabled, and it is only removed by explicitly deselecting it. Deleted zone references are rejected on save.</notice>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\ShippingCore\Model\Config\Source\ReferencableZoneCodes"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+    </fieldset>
+    <fieldset name="rate_orchestration">
+        <settings>
+            <label translate="true">Rate Orchestration Policy</label>
+        </settings>
+        <field name="rate_source_mode" formElement="select" sortOrder="10">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">CARRIER_WITH_FALLBACK</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>rate_source_mode</dataScope>
+                <label translate="true">Rate Source Mode</label>
+                <notice translate="true">ShippingCore v10 contract — consumed by the shared rate orchestration. FALLBACK_ONLY never calls the carrier RATE API. Runtime behavior is unchanged by this screen; it configures the same values the carriers consume.</notice>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\ShippingCore\Model\Config\Source\RateSourceModeOptions"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="address_resolution_policy" formElement="select" sortOrder="20">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">FALLBACK</item>
+                </item>
+            </argument>
+            <settings>
+                <dataScope>address_resolution_policy</dataScope>
+                <label translate="true">Address Resolution Policy (RATE)</label>
+                <notice translate="true">Applies to legacy-scheme RATE operations only. Selection is performed by the shared VietNamAddress selector — never by the carrier. Not applicable when Rate Source Mode = Fallback Only.</notice>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Secomm\ShippingCore\Model\Config\Source\AddressResolutionPolicyOptions"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+    </fieldset>
+</form>

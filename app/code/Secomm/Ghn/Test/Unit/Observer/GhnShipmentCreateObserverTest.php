@@ -16,6 +16,8 @@ use Magento\Sales\Model\Order\Shipment;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\Phrase;
+use Secomm\Cod\Model\CodCollectionDecision;
 use Secomm\Ghn\Model\Logger\GhnLogger;
 use Secomm\Ghn\Model\Shipment\GhnCreateOutcome;
 use Secomm\Ghn\Model\Shipment\GhnShipmentCreationService;
@@ -105,6 +107,25 @@ class GhnShipmentCreateObserverTest extends TestCase
             GhnCreateOutcome::unavailable('PROVIDER_MAPPING_MISSING', 'GHNS42')
         );
         $this->trackAttacher->expects($this->never())->method('attach');
+
+        $this->observer->execute(new Observer(['shipment' => $shipment]));
+    }
+
+    public function testCodRejectedOutcomeLogsCommentsAndSavesWithoutTrackAttach(): void
+    {
+        $shipment = $this->shipment('secomm_ghn_secomm_ghn', 42);
+        $this->creationService->method('createForShipment')->willReturn(
+            GhnCreateOutcome::codRejected(
+                CodCollectionDecision::REASON_COD_ALREADY_COLLECTED,
+                'Order #100000007 already has a COD collection of 500000 VND via "shipment:41"',
+                'GHNS42'
+            )
+        );
+        $this->trackAttacher->expects($this->never())->method('attach');
+        $shipment->expects($this->once())->method('addComment')->with($this->callback(
+            fn ($message): bool => str_contains((string) $message, 'COD collection rejected')
+        ));
+        $shipment->expects($this->once())->method('save');
 
         $this->observer->execute(new Observer(['shipment' => $shipment]));
     }

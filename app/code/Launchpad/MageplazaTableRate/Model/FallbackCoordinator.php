@@ -63,8 +63,9 @@ class FallbackCoordinator
         // Cheap checks first — the collector read is in-memory; the settings map is one query
         // per request, memoized, but nothing below this guard should run when no carrier
         // reported anything.
+        $decisions = $this->outcomeCollector->getDecisionRecords();
         $outcomes = $this->outcomeCollector->getOutcomes();
-        if ($outcomes === []) {
+        if ($decisions === [] && $outcomes === []) {
             return;
         }
 
@@ -87,13 +88,16 @@ class FallbackCoordinator
                 continue;
             }
 
-            // v10 §35: judge EACH member against its own frozen RateSourceMode /
-            // AddressResolutionPolicy; any participating SUCCESS still suppresses the group.
+            // v10 §35 + TASK-SEC-D-transport: judge EACH member — transported eligibility
+            // (recorded by the shared execution) is consumed verbatim; members without a
+            // transported record go through the legacy compatibility path.
             $suppressed = false;
             $hasEligibleMember = false;
             foreach ($enabledMembers[$methodId] ?? [] as $member) {
                 $carrierCode = $member['carrier_code'];
-                $outcome = $outcomes[$carrierCode][$member['method_code']] ?? null;
+                $methodCode = $member['method_code'];
+                $record = $decisions[$carrierCode][$methodCode] ?? null;
+                $outcome = $record?->getOutcome() ?? $outcomes[$carrierCode][$methodCode] ?? null;
                 if (!$outcome instanceof CarrierRateOutcomeInterface) {
                     // Not part of this Magento collection — never a synthetic failure.
                     continue;
@@ -104,6 +108,22 @@ class FallbackCoordinator
                     break;
                 }
 
+                if ($record !== null && $record->hasEligibilityTransport()) {
+                    // Transported decision: consume EXACTLY what the shared execution decided —
+                    // explicit NONE stays closed; no legacy policy call, no reason parsing.
+                    if ($record->getFallbackEligibility()?->isEligible()) {
+                        $hasEligibleMember = true;
+                    }
+
+                    continue;
+                }
+
+                // LEGACY COMPATIBILITY PATH — carriers not yet migrated to decision transport.
+                // Removal plan: delete this branch once every member records decisions.
+                $this->logger->debug(
+                    'Launchpad TableRate fallback: legacy eligibility re-judge for {carrier} (no decision transport).',
+                    ['carrier' => $carrierCode]
+                );
                 if ($this->isMemberEligible($carrierCode, $outcome, $storeId)) {
                     $hasEligibleMember = true;
                 }
@@ -139,6 +159,14 @@ class FallbackCoordinator
      */
     private function isMemberEligible(string $carrierCode, CarrierRateOutcomeInterface $outcome, int $storeId): bool
     {
+        // FEAT-QA23PZ / DEC-FEATQA23PZ-001 (§20) — a merchant service-area restriction is
+        // NEVER fallback-eligible, for ANY RateSourceMode. This guard MUST sit before the
+        // mode branches: FALLBACK_ONLY otherwise returns true unconditionally, which would
+        // expose fallback pricing for a destination the merchant excluded from the carrier.
+        if ($outcome->getFailureReason() === ShippingFailureReason::DESTINATION_NOT_IN_SCOPE) {
+            return false;
+        }
+
         $mode = $this->memberRatePolicy->rateSourceMode($carrierCode, $storeId);
         if ($mode === RateSourceMode::CARRIER_ONLY) {
             // Realtime-only member: its failures NEVER open a fallback.

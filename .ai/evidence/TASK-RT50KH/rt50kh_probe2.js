@@ -1,0 +1,35 @@
+const { chromium } = require('/tmp/node_modules/playwright');
+const fs = require('fs');
+const PW = fs.readFileSync('/tmp/rt50kh_pw', 'utf8').trim();
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.goto('http://fashion-launchpad.localhost/admin_w1275xl/admin/auth/login/', { waitUntil: 'networkidle' });
+  await page.fill('#username', 'smokert50kh');
+  await page.fill('#login', PW);
+  await page.click('.action-login');
+  await page.waitForLoadState('networkidle');
+  await page.goto('http://fashion-launchpad.localhost/admin_w1275xl/admin/dashboard/', { waitUntil: 'networkidle' });
+  const gridUrl = await page.evaluate(() => { const el = [...document.querySelectorAll('a')].find(a => a.href.includes('catalog/product/index')); return el ? el.href : null; });
+  await page.goto(gridUrl, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(3000);
+  await page.evaluate(() => {
+    const row = [...document.querySelectorAll('table.data-grid tbody tr')].find(r => r.textContent.includes('atlas-pouf'));
+    const el = row && [...row.querySelectorAll('a')].find(a => a.textContent.trim() === 'Edit');
+    if (el) el.click();
+  });
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(3500);
+  const html = await page.content();
+  console.log('label present:', html.includes('Shipping Length (cm)'));
+  console.log('validate-number (any):', (html.match(/validate-number/g) || []).length);
+  console.log('"required":true (any):', (html.match(/"required":true/g) || []).length);
+  console.log('maximum-length (any):', (html.match(/maximum-length/g) || []).length);
+  console.log('data-validate (any):', (html.match(/data-validate/g) || []).length);
+  const idx = html.indexOf('Shipping Length (cm)');
+  const slice = html.slice(Math.max(0, idx - 5000), idx + 2000);
+  const v = slice.indexOf('validate-zero-or-greater');
+  console.log('validation near length label:', v >= 0 ? slice.slice(Math.max(0, v - 140), v + 40).replace(/\s+/g, ' ') : 'not near label');
+  await browser.close();
+  process.exit(0);
+})().catch(e => { console.error('ERR ' + e.message.split('\n')[0]); process.exit(1); });

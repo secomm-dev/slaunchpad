@@ -53,9 +53,44 @@ final class ShippingFailureReason
     /** Carrier/business cannot serve the request (route, service, auth/config…). */
     public const SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE';
 
+    /**
+     * TASK-MQ2DRG (TL-approved 2026-09-23, DEC-TASKMQ2DRG-001) — capability-unsupported:
+     * the current RATE integration cannot represent the cart as an authoritative provider
+     * request (no packing information — the cart cannot be decomposed into
+     * provider-authoritative parcels), so the carrier cannot honestly report a provider
+     * result. Carriers report UNAVAILABLE + this reason; §35.5's "capability unsupported →
+     * fallback YES" row is materialized as INTEGRATION_LIMITATION. Distinct from
+     * SERVICE_UNAVAILABLE (a real business rejection) — an unrepresentable REQUEST is an
+     * integration capability limit, not a carrier refusal to serve. Never overload with
+     * business rejections.
+     */
+    public const RATE_REQUEST_UNREPRESENTABLE = 'RATE_REQUEST_UNREPRESENTABLE';
+
     /** Merchant-side carrier configuration invalid/unusable (never TECHNICAL_FAILURE). */
     public const INVALID_CONFIGURATION = 'INVALID_CONFIGURATION';
 
+    /**
+     * Carrier destination-scope eligibility miss (FEAT-QA23PZ / DEC-FEATQA23PZ-001): the
+     * canonical destination does not belong to any enabled zone allowed for the carrier
+     * (DestinationScope::SELECTED_ZONES), or it DOES belong to a zone the carrier excludes
+     * (DestinationScope::ALL_EXCEPT_SELECTED_ZONES — TASK-R8WR1R). String-aligned with
+     * CarrierEligibilityResultInterface::REASON_DESTINATION_NOT_IN_SCOPE. Merchant-configured
+     * service-area restriction — NEVER fallback-eligible by the shared policy (a merchant
+     * restriction must not open emergency pricing); composition consumers gate on this
+     * constant before mode-specific fallback branches.
+     */
+    public const DESTINATION_NOT_IN_SCOPE = 'DESTINATION_NOT_IN_SCOPE';
+
     /** Temporary technical/provider failure (timeout, HTTP 5xx, outage…). */
     public const TECHNICAL_ERROR = 'TECHNICAL_ERROR';
+
+    /**
+     * TASK-SEC-D r4 — unexpected runtime/programming failure (unclassified Throwable, e.g.
+     * TypeError) surfaced by a carrier catch-all. Always fail-closed: eligibility is explicit
+     * NONE regardless of the TECHNICAL_FAILURE status it may travel with — downstream MUST
+     * NOT infer eligibility from status/reason alone (see CarrierRateDecisionRecord transport).
+     * Generic and carrier-neutral by contract; never overloaded with INVALID_CONFIGURATION
+     * and never disguised as a provider timeout.
+     */
+    public const UNEXPECTED_RUNTIME_FAILURE = 'UNEXPECTED_RUNTIME_FAILURE';
 }

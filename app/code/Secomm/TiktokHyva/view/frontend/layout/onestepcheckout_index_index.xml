@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- Mageplaza OSC replaces the default checkout (route onestepcheckout/index/index);
+             the vendor handle checkout_index_index.xml never matches here. -->
+        <referenceBlock name="secomm.tiktok.pixel">
+            <arguments>
+                <argument name="eventTypes" xsi:type="array">
+                    <item name="initiateCheckout" xsi:type="string">InitiateCheckout</item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>

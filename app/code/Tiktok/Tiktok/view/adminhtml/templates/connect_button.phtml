@@ -1,0 +1,55 @@
+<?php
+/**
+ * @var \Tiktok\Tiktok\Block\Adminhtml\ConnectButton $block
+ * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
+ * @var \Magento\Framework\Escaper $escaper
+ */
+// phpcs:disable Magento2.Files.LineLength, Generic.Files.LineLength
+?>
+<?php if (!$block->getAuthUrl()): ?>
+    <div class="tiktok-extension-error">
+        <h2 class="page-sub-sub-title">
+            <?= /* @noEscape */ __(
+                'Sorry, We\'re currently experiencing issues generating data before connecting to TikTok. ' .
+                'This may be due to a temporary service interruption.'
+            ) ?>
+        </h2>
+        <span class="following-steps">
+            <?= /* @noEscape */ __(
+                'If the problem persists, reach out to support for further assistance.'
+            ) ?>
+        </span>
+    </div>
+<?php else: ?>
+    <div class="tiktok-extension-notification">
+        <section class="extension-description">
+            <div>
+                <header class="description-title">
+                    <?= /* @noEscape */ $escaper->escapeHtml(
+                        __('It appears that the Tiktok account was not set up for the current website.')
+                    ) ?>
+                </header>
+                <div class="content">
+                    <?= /* @noEscape */ __(
+                        'Your account is not currently connected to this website. ' .
+                        'For full access and an optimized experience, we recommend connecting your account.' .
+                        'Please click the button to proceed.'
+                    ) ?>
+                </div>
+            </div>
+            <div class="extension-actions">
+                <button id="connect_button"
+                        class="action-secondary scalable"
+                        data-mage-init='{"tiktokConnect":{"url": "<?= $escaper->escapeUrl($block->getAuthUrl()) ?>"}}'>
+                    <?= /* @noEscape */ __('Connect to TikTok') ?>
+                </button>
+                <p class="note">
+                    <span>
+                        <?= /* @noEscape */ __('Click to initiate connection with TikTok via OAuth2.') ?>
+                    </span>
+                </p>
+            </div>
+        </section>
+    </div>
+<?php endif ?>
+

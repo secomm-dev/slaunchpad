@@ -6,6 +6,18 @@ All notable changes to this project layer module are documented here.
 
 ### Fixed
 
+- SLP-232: `etc/db_schema.xml` — re-declare `quote_address.osc_gift_wrap_amount`
+  as `decimal`. Mageplaza_Osc 2.1.9 (product One Step Checkout 4.3.14, current
+  latest) ships it as `boolean` → TINYINT(1), signed max **127**: every totals
+  collect copies the amount onto the address (vendor
+  `TotalsCollector::collectAddressTotals` → `$address->addData($total->getData())`),
+  quote save clamps any amount ≥ 128 (every real VND case) to 127, and the Order
+  Summary segment then displays "127" while grand total math stays correct.
+  Declaration merges after the vendor's (module sequence), so
+  `setup:db-schema:upgrade` emits the tinyint→decimal ALTER once. Requires
+  Tier-2 review (OSC + DB schema) before apply + one-time data repair per
+  environment (SQL in the file header comment). Soft-coupling intact: with
+  Mageplaza_Osc absent the declaration only keeps the orphaned column alive.
 - BUG-F8R4E8 (SLP-214): `view/frontend/requirejs-config.js` +
   `view/frontend/web/js/model/shipping-rate-service-mixin.js` — collapse duplicate
   init-time shipping-rate estimations. Mageplaza OSC fires two estimations on

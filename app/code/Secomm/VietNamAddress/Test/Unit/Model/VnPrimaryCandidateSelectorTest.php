@@ -2,7 +2,6 @@
 /*
  * @author Secomm Team
  * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
- * See COPYING.txt for license details.
  */
 
 declare(strict_types=1);
@@ -13,17 +12,23 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Secomm\VietNamAddress\Api\Data\VnPrimaryCandidateSelectionInterface;
 use Secomm\VietNamAddress\Model\VnPrimaryCandidateSelector;
 
 /**
- * TASK-MD2BD3 — deterministic curated-primary selector: directional, designation-based,
- * candidate-order invariant, integrity-defect fail-closed.
+ * TASK-KQCX3A — FROZEN selection semantics (directive 2026-09-25 §12/§13/§14/§15/§16):
+ * zero → fail closed; sole → selected without is_primary inspection (fast path);
+ * >1 + exactly one primary → primary; >1 + zero/multiple primary → deterministic first
+ * (code ASC — DB/input-order independent, §14); multiple primary emits the
+ * MULTIPLE_PRIMARY_CANDIDATES diagnostic but NEVER fails the flow (§16).
  */
 class VnPrimaryCandidateSelectorTest extends TestCase
 {
     private ResourceConnection&MockObject $resource;
     private Select&MockObject $select;
+    private \Magento\Framework\DB\Adapter\AdapterInterface&MockObject $connection;
+    private LoggerInterface&MockObject $logger;
     private VnPrimaryCandidateSelector $selector;
 
     /** Rows mà connection->fetchCol() trả về cho query is_primary. */
@@ -42,95 +47,149 @@ class VnPrimaryCandidateSelectorTest extends TestCase
 
             return $this->select;
         });
+        $this->connection = $this->createMock(\Magento\Framework\DB\Adapter\AdapterInterface::class);
+        $this->connection->method('select')->willReturn($this->select);
+        $this->connection->method('fetchCol')->willReturnCallback(function (): array {
+            return $this->primaryRows;
+        });
         $this->resource->method('getTableName')->willReturnCallback(static fn (string $t): string => $t);
-        $this->resource->method('getConnection')->willReturn($this->mockConnection());
-        $this->selector = new VnPrimaryCandidateSelector($this->resource);
+        $this->resource->method('getConnection')->willReturn($this->connection);
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->selector = new VnPrimaryCandidateSelector($this->resource, $this->logger);
     }
 
-    private function mockConnection(): \Magento\Framework\DB\Adapter\AdapterInterface&MockObject
+    public function testZeroCandidatesFailClosed(): void
     {
-        $connection = $this->createMock(\Magento\Framework\DB\Adapter\AdapterInterface::class);
-        $connection->method('select')->willReturn($this->select);
-        $connection->method('fetchCol')->willReturnCallback(fn (Select $select): array => $this->primaryRows);
+        $this->connection->expects($this->never())->method('fetchCol');
 
-        return $connection;
+        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', []);
+
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_NOT_APPLICABLE, $selection->getStatus());
+        $this->assertNull($selection->getSelectedCode());
+        $this->assertNull($selection->getSelectionReason());
+        $this->assertSame(0, $selection->getCandidateCount());
     }
 
-    public function testExactlyOneDirectionalPrimaryIsSelected(): void
+    public function testOneCandidateSelectsSoleWithoutInspectingPrimary(): void
     {
-        $this->primaryRows = ['VNAP25-B2B2B2B2B2'];
+        // §15 fast path — is_primary KHÔNG bao giờ được query cho sole candidate.
+        $this->connection->expects($this->never())->method('fetchCol');
 
-        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-A1A1A1A1A1', 'VNAP25-B2B2B2B2B2']);
+        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-B2B2B2B2B2']);
 
         $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_SELECTED, $selection->getStatus());
         $this->assertSame('VNAP25-B2B2B2B2B2', $selection->getSelectedCode());
-        $this->assertSame(2, $selection->getCandidateCount());
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::REASON_SOLE_CANDIDATE, $selection->getSelectionReason());
     }
 
-    public function testZeroCuratedPrimaryMeansNoDesignatedPrimary(): void
+    public function testOnePrimaryFlaggedCandidateStillSelectsSole(): void
+    {
+        // Sole candidate được chọn kể cả khi is_primary=1 — selector không inspect.
+        $this->connection->expects($this->never())->method('fetchCol');
+
+        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-A1A1A1A1A1']);
+
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_SELECTED, $selection->getStatus());
+        $this->assertSame('VNAP25-A1A1A1A1A1', $selection->getSelectedCode());
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::REASON_SOLE_CANDIDATE, $selection->getSelectionReason());
+    }
+
+    public function testExactlyOnePrimaryWinsAmongMultipleCandidates(): void
+    {
+        $this->primaryRows = ['VNAP25-B2B2B2B2B2'];
+
+        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-A1A1A1A1A1', 'VNAP25-B2B2B2B2B2', 'VNAP25-M2M2M2M2M2']);
+
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_SELECTED, $selection->getStatus());
+        $this->assertSame('VNAP25-B2B2B2B2B2', $selection->getSelectedCode());
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::REASON_CURATED_PRIMARY, $selection->getSelectionReason());
+        $this->assertSame(3, $selection->getCandidateCount());
+    }
+
+    public function testZeroPrimarySelectsDeterministicFirst(): void
     {
         $this->primaryRows = [];
 
-        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-A1A1A1A1A1', 'VNAP25-B2B2B2B2B2']);
+        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-M2M2M2M2M2', 'VNAP25-ZZZ', 'VNAP25-A1A1A1A1A1']);
 
-        $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_NO_DESIGNATED_PRIMARY, $selection->getStatus());
-        $this->assertNull($selection->getSelectedCode());
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_SELECTED, $selection->getStatus());
+        $this->assertSame('VNAP25-A1A1A1A1A1', $selection->getSelectedCode());
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::REASON_DETERMINISTIC_FIRST_NO_PRIMARY, $selection->getSelectionReason());
     }
 
-    public function testMultipleCuratedPrimaryIsIntegrityDefect(): void
+    public function testMultiplePrimarySelectsDeterministicFirstAndEmitsDiagnostic(): void
     {
-        $this->primaryRows = ['VNAP25-A1A1A1A1A1', 'VNAP25-B2B2B2B2B2'];
+        // §5 Case E / §16 — curation defect: KHÔNG fail flow, chỉ diagnostic + deterministic first.
+        $this->primaryRows = ['VNAP25-M2M2M2M2M2', 'VNAP25-ZZZ'];
 
-        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-A1A1A1A1A1', 'VNAP25-B2B2B2B2B2']);
+        $this->logger->expects($this->once())->method('warning')->with(
+            'MULTIPLE_PRIMARY_CANDIDATES',
+            $this->callback(function (array $ctx): bool {
+                return ($ctx['candidate_count'] ?? null) === 3
+                    && ($ctx['primary_count'] ?? null) === 2
+                    && ($ctx['selected_source_code'] ?? null) === 'VNAP25-A1A1A1A1A1'
+                    && ($ctx['selection_policy'] ?? null) === 'deterministic_first'
+                    && ($ctx['source_code'] ?? null) === 'VNA25-AAA';
+            })
+        );
 
-        $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_MULTIPLE_PRIMARY, $selection->getStatus());
-        $this->assertNull($selection->getSelectedCode());
+        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-M2M2M2M2M2', 'VNAP25-ZZZ', 'VNAP25-A1A1A1A1A1']);
+
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_SELECTED, $selection->getStatus());
+        $this->assertSame('VNAP25-A1A1A1A1A1', $selection->getSelectedCode());
+        $this->assertSame(VnPrimaryCandidateSelectionInterface::REASON_DETERMINISTIC_FIRST_MULTIPLE_PRIMARY, $selection->getSelectionReason());
     }
 
-    public function testCandidateOrderCannotAffectSelection(): void
+    public function testSelectionIsIndependentOfInputOrderZeroPrimary(): void
     {
-        // Selection query theo designation (is_primary=1) — thứ tự truyền vào không đổi kết quả.
-        $this->primaryRows = ['VNAP25-ZZZ'];
-
-        $first = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-ZZZ', 'VNAP25-AAA']);
-        $second = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-AAA', 'VNAP25-ZZZ']);
-
-        $this->assertSame($first->getSelectedCode(), $second->getSelectedCode());
-        $this->assertSame('VNAP25-ZZZ', $second->getSelectedCode());
-    }
-
-    public function testReverseDirectionEdgeIsNotEvaluated(): void
-    {
-        // Directional enforcement: query resolution direction PRE:B → 2025 chỉ match edge
-        // source=B (không kế thừa primary của edge 2025:A → PRE:B).
+        // §14 — [A,B,C] / [C,A,B] / [B,C,A] cùng kết quả.
         $this->primaryRows = [];
 
-        $selection = $this->selector->selectPrimary('VN_ADMIN_PRE_2025', 'VNAP25-B2B2B2B2B2', 'VN_ADMIN_2025', ['VNA25-AAA']);
+        $permutations = [
+            ['VNAP25-A1A1A1A1A1', 'VNAP25-B2B2B2B2B2', 'VNAP25-M2M2M2M2M2'],
+            ['VNAP25-M2M2M2M2M2', 'VNAP25-A1A1A1A1A1', 'VNAP25-B2B2B2B2B2'],
+            ['VNAP25-B2B2B2B2B2', 'VNAP25-M2M2M2M2M2', 'VNAP25-A1A1A1A1A1'],
+        ];
 
-        // 1 candidate → NOT_APPLICABLE (unique set cần selector).
-        $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_NOT_APPLICABLE, $selection->getStatus());
+        $selected = [];
+        foreach ($permutations as $candidates) {
+            $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', $candidates);
+            $selected[] = $selection->getSelectedCode();
+        }
+
+        $this->assertSame(['VNAP25-A1A1A1A1A1', 'VNAP25-A1A1A1A1A1', 'VNAP25-A1A1A1A1A1'], $selected);
     }
 
-    public function testNotApplicableForSingleCandidate(): void
+    public function testSelectionIsIndependentOfInputOrderMultiplePrimary(): void
     {
-        $this->primaryRows = [];
+        // §14 — multiple primary cũng phải deterministic-first (không fail, không tie-break theo order).
+        $this->primaryRows = ['VNAP25-ZZZ', 'VNAP25-M2M2M2M2M2'];
 
-        $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_2025', ['VNA25-AAA']);
+        $permutations = [
+            ['VNAP25-ZZZ', 'VNAP25-M2M2M2M2M2', 'VNAP25-A1A1A1A1A1'],
+            ['VNAP25-A1A1A1A1A1', 'VNAP25-ZZZ', 'VNAP25-M2M2M2M2M2'],
+            ['VNAP25-M2M2M2M2M2', 'VNAP25-A1A1A1A1A1', 'VNAP25-ZZZ'],
+        ];
 
-        $this->assertSame(VnPrimaryCandidateSelectionInterface::STATUS_NOT_APPLICABLE, $selection->getStatus());
+        $selected = [];
+        foreach ($permutations as $candidates) {
+            $selection = $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', $candidates);
+            $selected[] = $selection->getSelectedCode();
+        }
+
+        $this->assertSame(['VNAP25-A1A1A1A1A1', 'VNAP25-A1A1A1A1A1', 'VNAP25-A1A1A1A1A1'], $selected);
     }
 
     public function testQueryIsDirectionalSourceToTarget(): void
     {
+        // Directional enforcement: query is_primary chỉ theo hướng resolution source → target.
         $this->primaryRows = [];
-        // AMBIGUOUS set (2 candidates) — query phải theo đúng hướng source → target.
         $this->selector->selectPrimary('VN_ADMIN_2025', 'VNA25-AAA', 'VN_ADMIN_PRE_2025', ['VNAP25-A1A1A1A1A1', 'VNAP25-B2B2B2B2B2']);
 
         $conditions = array_column($this->capturedWhere, 0);
         $this->assertContains('m.source_scheme = ?', $conditions);
         $this->assertContains('m.source_code = ?', $conditions);
         $this->assertContains('m.target_scheme = ?', $conditions);
-        // Directional: KHÔNG có điều kiện theo hướng ngược (target_code → source_code matching).
         foreach ($conditions as $condition) {
             $this->assertStringNotContainsString('source_code = m.', $condition);
         }

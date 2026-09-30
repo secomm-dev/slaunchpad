@@ -25,7 +25,7 @@ define([
 
     var WILDCARD_OPTION = {
         code: '',
-        label: 'All / *'
+        label: 'All'
     };
 
     /**

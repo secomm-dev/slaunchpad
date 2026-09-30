@@ -15,6 +15,9 @@
  *     (vendor `w-[480px]`/`md:w-[640px]` has no cap — drawer was cut off at 375px).
  *  4. Totals: discount row (cart.discount_amount from Launchpad_QuickCart section
  *     plugin) rendered under the subtotal when a discount applies.
+ *  5. Items list: `overflow-x-hidden` — the theme `.btn::after` 44px touch target of the
+ *     edit/remove buttons sticks out past the item's `px-1`, and `overflow-y-auto` then
+ *     also scrolls on x (extra horizontal scrollbar under the list on non-overlay OSes).
  * Coupon form + promo message are injected through the vendor container
  * `cart-drawer.totals.before` (theme layout default.xml) — not in this template.
  * Keep this file a minimal diff against the vendor template when upgrading Hyvä.
@@ -325,7 +328,7 @@ $miniCartOptionShowSku = $block->getShowSku() !== null ? (bool) $block->getShowS
     </template>
 
     <template x-if="itemsCount">
-        <ul class="grow flex flex-col overflow-y-auto overscroll-y-contain mask-overflow mask-dir-y">
+        <ul class="grow flex flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain mask-overflow mask-dir-y">
             <template x-for="item in cartItems">
                 <li class="flex gap-4 md:gap-6 items-start py-4 px-1 border-b border-slate-200">
                     <template x-if="productIsVisibleInSite">

@@ -20,9 +20,14 @@ use Magento\Sales\Api\Data\OrderAddressInterface;
  *   is_new_to_address = true, to_province_name / to_ward_name = GHN_ADMIN_2025 verbatim names,
  *   to_district_name = "" — NEVER to_district_id / to_ward_code (AC-SHIP-001..003).
  *
- * Absent BY DESIGN (each absence is an architecture boundary, not an omission):
- *   cod_amount/insurance_value/order_value — upstream owns collection/insurance policy (GHN-D
- *     boundary: no collection amount supplied upstream → provider defaults 0; §13/§16);
+ * TASK-DFGFZ9 phase 2 (DEC-TASKDFGFZ9-002): the builder now ALWAYS emits `cod_amount` — the
+ * mapped Secomm_Cod collection decision (0 = nothing to collect; provider contract: Int VND,
+ * optional, max 50,000,000, default 0; shape `cod_amount=0` is sandbox-verified, a non-zero
+ * value at create is pending sandbox verification — QC). The carrier only MAPS the decision;
+ * the amount itself is computed by Secomm_Cod.
+ *
+ * Still absent BY DESIGN (each absence is an architecture boundary, not an omission):
+ *   insurance_value/order_value — upstream owns insurance/declared-value policy (§13/§16);
  *   content — REQUIRED by the contract when items[] is absent: item-name summary ≤2000 chars;
  *   from_* / return_* — GHN ShopId profile supplies sender/return defaults (§17/§18);
  *   service_id — dead provider identity, never sent, never persisted.
@@ -41,6 +46,9 @@ class GhnCreateRequestBuilder
     /** GHN content field limit. */
     private const MAX_CONTENT_LENGTH = 2000;
 
+    /** GHN create-order cod_amount provider cap (Int VND — contract matrix §5). */
+    public const MAX_COD_AMOUNT = 50000000;
+
     public function build(
         string $clientOrderCode,
         string $provinceName,
@@ -49,7 +57,8 @@ class GhnCreateRequestBuilder
         OrderAddressInterface $address,
         int $paymentTypeId,
         string $requiredNote,
-        string $content
+        string $content,
+        int $codAmount
     ): array {
         if (!in_array($paymentTypeId, self::PAYMENT_TYPES, true)) {
             throw new GhnCreateValidationException(
@@ -61,6 +70,12 @@ class GhnCreateRequestBuilder
             throw new GhnCreateValidationException(
                 GhnCreateValidationException::REASON_INVALID_CONFIGURATION,
                 __('GHN create: required_note must be one of %1, got "%2".', implode(', ', self::REQUIRED_NOTES), $requiredNote)
+            );
+        }
+        if ($codAmount < 0 || $codAmount > self::MAX_COD_AMOUNT) {
+            throw new GhnCreateValidationException(
+                GhnCreateValidationException::REASON_INVALID_CONFIGURATION,
+                __('GHN create: cod_amount must be a non-negative VND integer up to %1, got %2.', (string) self::MAX_COD_AMOUNT, (string) $codAmount)
             );
         }
 
@@ -90,6 +105,7 @@ class GhnCreateRequestBuilder
             'service_type_id' => $plan->getServiceTypeId(),
             'payment_type_id' => $paymentTypeId,
             'required_note' => $requiredNote,
+            'cod_amount' => $codAmount,
         ];
 
         if ($plan->getItems() !== null) {

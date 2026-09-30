@@ -42,20 +42,34 @@ use Psr\Log\NullLogger;
 use Secomm\ShippingCore\Model\Rate\CarrierRateOutcomeCollector;
 use Secomm\Ghn\Model\Carrier\Ghn;
 use Secomm\Ghn\Model\Logger\GhnLogger;
+use Secomm\VietNamAddress\Api\VnOperationalAddressResolverInterface;
+use Secomm\VietNamAddress\Api\VnOperationalNameResolverInterface;
+use Secomm\VietNamAddress\Model\Data\VnOperationalIdentityData;
+use Secomm\VietNamAddress\Model\Data\VnOperationalNameResolutionData;
+use Secomm\VietNamAddress\Model\Data\VnOperationalResolutionData;
+use Secomm\VietNamAddress\Model\Scheme\VnSchemes;
 use Secomm\Ghn\Model\Rate\GhnParcel;
+use Secomm\Ghn\Model\Capability\GhnAddressCapability;
 use Secomm\Ghn\Model\Rate\GhnRateCalculator;
 use Secomm\Ghn\Model\Rate\QuoteParcelEstimate;
 use Secomm\Ghn\Model\Rate\GhnRateQuery;
 use Secomm\Ghn\Model\Rate\GhnRateRequestMapper;
+use Secomm\Ghn\Model\Rate\RealtimeRateContributorFactory;
 use Secomm\Ghn\Model\Rate\EstimatedPackage;
 use Secomm\Ghn\Model\Config;
 use Secomm\Ghn\Model\Rate\GhnRateAdjuster;
 use Secomm\Ghn\Model\Tracking\GhnTrackingResultBuilder;
+use Secomm\ShippingCore\Api\Address\AddressResolutionPolicy;
+use Secomm\ShippingCore\Api\Address\DestinationScope;
+use Secomm\ShippingCore\Api\Rate\CarrierRateExecutionServiceInterface;
 use Secomm\ShippingCore\Api\Rate\CarrierRateOutcomeInterface;
 use Secomm\ShippingCore\Model\Rate\CarrierRate;
 use Secomm\ShippingCore\Api\Failure\ShippingFailureReason;
 use Secomm\ShippingCore\Api\Rate\RateSourceMode;
+use Secomm\ShippingCore\Model\Address\RuntimeAddressContextBuilder;
+use Secomm\ShippingCore\Model\Rate\CarrierRateExecutionDecision;
 use Secomm\ShippingCore\Model\Rate\CarrierRateOutcome;
+use Secomm\ShippingCore\Model\ShippingContextFactory;
 
 /**
  * TASK-FMBBSD (GHN-C slice 2) — Magento carrier adapter behavior: the active gate, the VN and
@@ -88,8 +102,35 @@ class GhnTest extends TestCase
 
     private Config&MockObject $ghnConfig;
 
+    private CarrierRateExecutionServiceInterface&MockObject $executionService;
+
+    private ?CarrierRateOutcomeCollector $collector = null;
+
+    private VnOperationalAddressResolverInterface&MockObject $operationalAddressResolver;
+
+    private VnOperationalNameResolverInterface&MockObject $nameResolver;
+
     protected function setUp(): void
     {
+        // Canonical bridge defaults (FEAT-QA23PZ): region-only identity resolves the
+        // province scalar; the name bridge resolves the ward — both deterministic fixtures.
+        $provinceIdentity = new VnOperationalIdentityData(VnSchemes::VN_ADMIN_2025, 'VN-01', 1, 'VN-01');
+        $wardIdentity = new VnOperationalIdentityData(VnSchemes::VN_ADMIN_2025, 'VNA25-WARD001', 2, 'VN-01');
+        $this->ghnConfig = $this->createMock(Config::class);
+        // FEAT-QA23PZ defaults: the ALL / CARRIER_WITH_FALLBACK / FALLBACK composition the
+        // pre-zone behavior corresponds to; individual tests override specific accessors.
+        $this->ghnConfig->method('getRateSourceMode')->willReturn(RateSourceMode::CARRIER_WITH_FALLBACK);
+        $this->ghnConfig->method('getAddressResolutionPolicy')->willReturn(AddressResolutionPolicy::FALLBACK);
+        $this->ghnConfig->method('getDestinationScope')->willReturn(DestinationScope::ALL);
+        $this->ghnConfig->method('getAllowedZoneCodes')->willReturn([]);
+        $this->operationalAddressResolver = $this->createMock(VnOperationalAddressResolverInterface::class);
+        $this->operationalAddressResolver->method('resolveFromRuntime')->willReturn(
+            VnOperationalResolutionData::resolved($provinceIdentity)
+        );
+        $this->nameResolver = $this->createMock(VnOperationalNameResolverInterface::class);
+        $this->nameResolver->method('resolveWardByName')->willReturn(
+            VnOperationalNameResolutionData::exact($wardIdentity)
+        );
         $this->scopeConfig = $this->createMock(ScopeConfigInterface::class);
         $this->rateResultFactory = $this->createMock(ResultFactory::class);
         $this->rateMethodFactory = $this->createMock(MethodFactory::class);
@@ -173,16 +214,21 @@ class GhnTest extends TestCase
     public function testUnusableStoreConfigurationFailsClosedAsInvalidConfiguration(): void
     {
         $this->givenActiveCarrier();
-        $this->requestMapper->method('map')->willThrowException(
-            new LocalizedException(__('store weight unit must be kgs or lbs'))
+        // The contributor translates map() failures into the INVALID_CONFIGURATION outcome;
+        // the carrier receives it as a realtime decision and must fail closed (no rate).
+        $this->givenExecutionDecision(
+            new CarrierRateExecutionDecision(
+                shouldInvokeRealtime: true,
+                realtimeOutcome: CarrierRateOutcome::unavailable(Ghn::REASON_INVALID_CONFIGURATION)
+            )
         );
-        $this->psrLogger->expects($this->once())->method('warning')->with(
+        $this->psrLogger->expects($this->once())->method('info')->with(
             'GHN rate unavailable; no rate.',
             $this->callback(fn (array $context): bool =>
                 $context['reason'] === Ghn::REASON_INVALID_CONFIGURATION
                 && $context['status'] === CarrierRateOutcomeInterface::STATUS_UNAVAILABLE)
         );
-        $this->rateCalculator->expects($this->never())->method('calculate');
+        $this->rateCalculator->expects($this->never())->method('quoteWithHandoff');
 
         $this->assertFalse($this->carrier->collectRates($this->vnRequest()));
     }
@@ -268,7 +314,7 @@ class GhnTest extends TestCase
             'GHN rate: store base currency is not VND; method hidden.',
             ['base_currency' => 'USD']
         );
-        $this->rateCalculator->expects($this->never())->method('calculate');
+        $this->rateCalculator->expects($this->never())->method('quoteWithHandoff');
 
         $this->assertFalse($this->carrier->collectRates($this->vnRequest(baseCurrency: $usd)));
     }
@@ -276,13 +322,27 @@ class GhnTest extends TestCase
     public function testUnexpectedExceptionIsContainedToNoRate(): void
     {
         $this->givenActiveCarrier();
-        $this->requestMapper->method('map')->willThrowException(new \RuntimeException('boom'));
+        $this->executionService->method('execute')->willThrowException(new \RuntimeException('boom'));
         $this->psrLogger->expects($this->once())->method('error')->with(
-            'GHN collectRates failed; returning no rate (graceful).',
-            $this->callback(fn (array $context): bool => $context['exception'] === 'boom')
+            $this->stringContains('GHN collectRates failed'),
+            $this->callback(fn (array $context): bool =>
+                ($context['exception_class'] ?? '') === \RuntimeException::class
+                && ($context['message'] ?? '') === 'boom'
+                && ($context['carrier'] ?? '') === 'secomm_ghn')
         );
-
+        // TASK-SEC-D r4 — unexpected runtime defects are FAIL-CLOSED: explicit transported
+        // NONE (never TECHNICAL_FALLBACK, never a legacy policy re-judge).
+        $this->collector->beginCollection();
         $this->assertFalse($this->carrier->collectRates($this->vnRequest()));
+        $recorded = $this->collector->getDecisionRecords()['secomm_ghn']['secomm_ghn'] ?? null;
+        $this->collector->endCollection();
+        self::assertNotNull($recorded);
+        self::assertTrue($recorded->hasEligibilityTransport());
+        self::assertFalse($recorded->getFallbackEligibility()->isEligible());
+        self::assertSame(
+            ShippingFailureReason::UNEXPECTED_RUNTIME_FAILURE,
+            $recorded->getOutcome()->getFailureReason()
+        );
     }
 
     // ---------- TASK-PWHG0V (GHN-E3-A/C): tracking + label boundaries ----------
@@ -317,25 +377,47 @@ class GhnTest extends TestCase
     }
     public function testFallbackOnlyModeShortCircuitsBeforeMappingAndApi(): void
     {
-        // TASK-MD2BD3 (v10 §4): FALLBACK_ONLY = ShippingCore short-circuits realtime RATE —
-        // the GHN adapter must not touch canonical mapping or the provider API at all.
+        // TASK-MD2BD3 (v10 §4): FALLBACK_ONLY = the shared execution service short-circuits
+        // realtime RATE — the GHN adapter must not touch mapping or the provider API at all.
         $this->ghnConfig->method('getRateSourceMode')->willReturn(RateSourceMode::FALLBACK_ONLY);
-        $this->rateCalculator->expects($this->never())->method('calculate');
+        $decision = new CarrierRateExecutionDecision(shouldInvokeRealtime: false);
+        $this->executionService = $this->createMock(CarrierRateExecutionServiceInterface::class);
+        $this->executionService->expects($this->once())->method('execute')->willReturn($decision);
+        $this->carrier = $this->createCarrier();
+        $this->givenActiveCarrier();
+        $this->rateCalculator->expects($this->never())->method('quoteWithHandoff');
 
         $result = $this->carrier->collectRates($this->vnRequest());
 
         $this->assertFalse($result);
     }
 
+    /**
+     * FEAT-QA23PZ / DEC-FEATQA23PZ-001 — a service decision of "ineligible (out of scope)"
+     * must be reported as DESTINATION_NOT_IN_SCOPE (the reason the FallbackCoordinator
+     * guard keys on, §20) and the method hidden.
+     */
+    public function testIneligibleDecisionReportsDestinationNotInScope(): void
+    {
+        $decision = new CarrierRateExecutionDecision(shouldInvokeRealtime: false, reason: ShippingFailureReason::DESTINATION_NOT_IN_SCOPE);
+        $this->executionService = $this->createMock(CarrierRateExecutionServiceInterface::class);
+        $this->executionService->expects($this->once())->method('execute')->willReturn($decision);
+        $this->carrier = $this->createCarrier();
+        $this->givenActiveCarrier();
+        $this->rateCalculator->expects($this->never())->method('quoteWithHandoff');
+
+        $this->assertFalse($this->carrier->collectRates($this->vnRequest()));
+    }
+
     public function testCarrierOnlyModeStillRunsThePipeline(): void
     {
         $this->givenActiveCarrier();
         $this->ghnConfig->method('getRateSourceMode')->willReturn(RateSourceMode::CARRIER_ONLY);
-        $this->requestMapper->method('map')->willReturn(
-            new GhnRateQuery('VN', 12, null, 'Phường Bến Nghé', new QuoteParcelEstimate([new EstimatedPackage(10, 'UNIT-SKU', 1500.0, 'quote_item_weight')]), null)
-        );
-        $this->rateCalculator->expects($this->once())->method('calculate')->willReturn(
-            CarrierRateOutcome::unavailable(ShippingFailureReason::SERVICE_UNAVAILABLE)
+        $this->givenExecutionDecision(
+            new CarrierRateExecutionDecision(
+                shouldInvokeRealtime: true,
+                realtimeOutcome: CarrierRateOutcome::unavailable(ShippingFailureReason::SERVICE_UNAVAILABLE)
+            )
         );
 
         $this->assertFalse($this->carrier->collectRates($this->vnRequest()));
@@ -384,9 +466,24 @@ class GhnTest extends TestCase
         return $item;
     }
 
+    /**
+     * FEAT-QA23PZ — stubs the shared execution service (the carrier entry contract). The
+     * real service/composition is exercised in GhnZoneExecutionTest; these carrier tests
+     * own the POST-decision translation only.
+     */
+    private function givenExecutionDecision(CarrierRateExecutionDecision $decision): void
+    {
+        $this->executionService->method('execute')->willReturn($decision);
+    }
+
     private function givenCalculatorOutcome(CarrierRateOutcomeInterface $outcome): void
     {
-        $this->rateCalculator->method('calculate')->willReturn($outcome);
+        // FEAT-QA23PZ: the realtime tail is quoteWithHandoff — the contributor path of the
+        // shared execution service; calculate() stays the standalone path (unused here).
+        $this->rateCalculator->method('quoteWithHandoff')->willReturn($outcome);
+        $this->givenExecutionDecision(
+            new CarrierRateExecutionDecision(shouldInvokeRealtime: true, realtimeOutcome: $outcome)
+        );
         // TASK-WAWNDS: the real adjuster is config-driven and OFF by default in these tests —
         // the mocked one passes the provider rate through untouched.
         $this->rateAdjuster->method('adjust')->willReturnArgument(0);
@@ -397,6 +494,12 @@ class GhnTest extends TestCase
 
     private function createCarrier(?GhnTrackingResultBuilder $trackingResultBuilder = null): Ghn
     {
+        // Real capability (final class): RATE maps to the PRE-2025 scheme without config reads.
+        $capability = new GhnAddressCapability(
+            $this->ghnConfig ??= $this->createMock(Config::class),
+            new GhnLogger($this->psrLogger)
+        );
+
         return new Ghn(
             $this->scopeConfig,
             $this->rateErrorFactory,
@@ -413,13 +516,17 @@ class GhnTest extends TestCase
             $this->createMock(CurrencyFactory::class),
             $this->directoryData,
             $this->stockRegistry,
-            $this->rateCalculator,
-            $this->requestMapper,
             new GhnLogger($this->psrLogger),
-            new CarrierRateOutcomeCollector(new NullLogger()),
+            $this->collector ??= new CarrierRateOutcomeCollector(new NullLogger()),
             $trackingResultBuilder ?? $this->createMock(GhnTrackingResultBuilder::class),
             $this->rateAdjuster ??= $this->createMock(GhnRateAdjuster::class),
-            $this->ghnConfig ??= $this->createMock(Config::class)
+            $this->ghnConfig ??= $this->createMock(Config::class),
+            $this->executionService ??= $this->createMock(CarrierRateExecutionServiceInterface::class),
+            new RuntimeAddressContextBuilder($this->operationalAddressResolver, $this->nameResolver),
+            $this->operationalAddressResolver,
+            new ShippingContextFactory(),
+            new RealtimeRateContributorFactory($this->rateCalculator, $this->requestMapper, new GhnLogger($this->psrLogger)),
+            $capability
         );
     }
 
@@ -469,5 +576,132 @@ class GhnTest extends TestCase
     private function givenConfigValue(string $path, string $value): void
     {
         $this->givenConfigValues([$path => $value]);
+    }
+
+    // ---------- TASK-SEC-D r5 — success commit point (record AFTER usable result) ----------
+
+    private function givenProviderSuccess(): void
+    {
+        $this->givenActiveCarrier();
+        // Usable-result stubs: the SUCCESS commit point requires factories that actually
+        // build a carrier method + result (otherwise the fail-closed catch-all owns it).
+        $priceCurrency = $this->createMock(PriceCurrencyInterface::class);
+        $priceCurrency->method('round')->willReturnArgument(0);
+        $method = new Method($priceCurrency);
+        $this->rateMethodFactory->method('create')->willReturn($method);
+        $this->rateResultFactory->method('create')->willReturn(
+            new Result($this->createMock(\Magento\Store\Model\StoreManagerInterface::class))
+        );
+        $rate = $this->createMock(\Secomm\ShippingCore\Api\Rate\CarrierRateInterface::class);
+        $rate->method('getAmount')->willReturn(25000.0);
+        $rate->method('getCurrency')->willReturn('VND');
+        $this->givenExecutionDecision(
+            new CarrierRateExecutionDecision(
+                shouldInvokeRealtime: true,
+                realtimeOutcome: CarrierRateOutcome::success($rate)
+            )
+        );
+    }
+
+    public function testSuccessCommitsRecordOnlyAfterUsableResult(): void
+    {
+        $this->givenProviderSuccess();
+        $this->collector->beginCollection();
+
+        $result = $this->carrier->collectRates($this->vnRequest());
+        $recorded = $this->collector->getDecisionRecords()['secomm_ghn']['secomm_ghn'] ?? null;
+        $this->collector->endCollection();
+        self::assertNotNull($recorded, 'Committed SUCCESS must be transported');
+        self::assertSame('SUCCESS', $recorded->getOutcome()->getStatus());
+        self::assertTrue($recorded->hasEligibilityTransport());
+        self::assertFalse($recorded->getFallbackEligibility()->isEligible());
+        self::assertInstanceOf(Result::class, $result);
+    }
+
+    public function testAdjusterThrowAfterProviderSuccessRecordsFailClosedUnexpected(): void
+    {
+        $this->givenProviderSuccess();
+        $this->rateAdjuster->method('adjust')->willThrowException(new \RuntimeException('adjuster boom'));
+        $this->collector->beginCollection();
+
+        $this->assertFalse($this->carrier->collectRates($this->vnRequest()));
+        $recorded = $this->collector->getDecisionRecords()['secomm_ghn']['secomm_ghn'] ?? null;
+        $this->collector->endCollection();
+
+        self::assertNotNull($recorded);
+        self::assertNotSame('SUCCESS', $recorded->getOutcome()->getStatus(), 'No stale SUCCESS after build failure');
+        self::assertSame(ShippingFailureReason::UNEXPECTED_RUNTIME_FAILURE, $recorded->getOutcome()->getFailureReason());
+        self::assertTrue($recorded->hasEligibilityTransport());
+        self::assertFalse($recorded->getFallbackEligibility()->isEligible(), 'Programming defect fails closed');
+    }
+
+    public function testMethodFactoryThrowAfterProviderSuccessFailClosed(): void
+    {
+        $this->givenProviderSuccess();
+        $this->rateMethodFactory->method('create')->willThrowException(new \RuntimeException('method factory boom'));
+        $this->collector->beginCollection();
+
+        $this->assertFalse($this->carrier->collectRates($this->vnRequest()));
+        $recorded = $this->collector->getDecisionRecords()['secomm_ghn']['secomm_ghn'] ?? null;
+        $this->collector->endCollection();
+
+        self::assertNotNull($recorded);
+        self::assertSame(ShippingFailureReason::UNEXPECTED_RUNTIME_FAILURE, $recorded->getOutcome()->getFailureReason());
+        self::assertFalse($recorded->getFallbackEligibility()->isEligible());
+    }
+
+    public function testResultFactoryThrowAfterProviderSuccessFailClosed(): void
+    {
+        $this->givenProviderSuccess();
+        $this->rateResultFactory->method('create')->willThrowException(new \RuntimeException('result factory boom'));
+        $this->collector->beginCollection();
+
+        $this->assertFalse($this->carrier->collectRates($this->vnRequest()));
+        $recorded = $this->collector->getDecisionRecords()['secomm_ghn']['secomm_ghn'] ?? null;
+        $this->collector->endCollection();
+
+        self::assertNotNull($recorded);
+        self::assertNotSame('SUCCESS', $recorded->getOutcome()->getStatus(), 'No stale SUCCESS');
+        self::assertTrue($recorded->hasEligibilityTransport());
+        self::assertFalse($recorded->getFallbackEligibility()->isEligible());
+    }
+
+    public function testNextCollectionDoesNotLeakPreviousDecision(): void
+    {
+        $this->givenProviderSuccess();
+        // Stub stacking is first-wins — ONE callback with a state flag drives both runs.
+        $boomAdjuster = true;
+        $this->rateAdjuster->method('adjust')->willReturnCallback(
+            function (float $amount) use (&$boomAdjuster): float {
+                if ($boomAdjuster) {
+                    throw new \RuntimeException('boom');
+                }
+
+                return $amount;
+            }
+        );
+
+        $this->collector->beginCollection();
+        $this->carrier->collectRates($this->vnRequest());
+        $firstRun = $this->collector->getDecisionRecords();
+        $this->collector->endCollection();
+        self::assertSame(
+            ShippingFailureReason::UNEXPECTED_RUNTIME_FAILURE,
+            $firstRun['secomm_ghn']['secomm_ghn']->getOutcome()->getFailureReason(),
+            'Run 1: adjuster throw → fail-closed unexpected'
+        );
+
+        // A NEW collection must start with a clean decision ledger.
+        $boomAdjuster = false;
+        $this->collector->beginCollection();
+        $this->carrier->collectRates($this->vnRequest());
+        $records = $this->collector->getDecisionRecords();
+        $this->collector->endCollection();
+
+        self::assertSame(
+            'SUCCESS',
+            $records['secomm_ghn']['secomm_ghn']->getOutcome()->getStatus(),
+            'Previous UNEXPECTED record must not leak into the next collection'
+        );
     }
 }

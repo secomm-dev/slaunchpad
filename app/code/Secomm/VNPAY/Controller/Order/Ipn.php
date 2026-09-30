@@ -116,6 +116,7 @@ class Ipn extends Action
                                 $invoiceService = $this->invoiceServiceFactory->create();
                                 $invoice = $invoiceService->prepareInvoice($order);
                                 $invoice->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE);
+                                $invoice->setTransactionId((string)$this->getRequest()->getParam('vnp_TransactionNo', ''));
                                 $invoice->register();
 
                                 // Save the invoice

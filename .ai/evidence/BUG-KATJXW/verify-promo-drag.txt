@@ -1,0 +1,36 @@
+375 PASS env :has() supported {}
+375 PASS rail overflow + snap x mandatory + cursor grab {"overflowX":"auto","snap":"x mandatory","cursor":"grab"}
+375 PASS cards 320x400 [[320,400],[320,400],[320,400],[320,400]]
+375 PASS no page h-scroll {}
+375 PASS other sections intact (category slider + hero) {"cat":true,"hero":true}
+375 PASS snap to card edge after scroll 120 {"snapped":0,"snapTargets":[0,336,672,984]}
+375 PASS mouse drag follows pointer (grabbing) {"sl":86,"dragging":true,"cursor":"grabbing"}
+375 PASS release settles on next card edge / max, snap restored {"sl":336,"dragging":false,"snapTargets":[0,336,672,984]}
+375 PASS drag right returns to previous card edge {"back":0}
+375 PASS drag started on "→" link does not navigate {"url":"http://slaunchpad.localhost/"}
+375 PASS 0 pageerror []
+768 PASS env :has() supported {}
+768 PASS rail overflow + snap x mandatory + cursor grab {"overflowX":"auto","snap":"x mandatory","cursor":"grab"}
+768 PASS cards 320x400 [[320,400],[320,400],[320,400],[320,400]]
+768 PASS no page h-scroll {}
+768 PASS other sections intact (category slider + hero) {"cat":true,"hero":true}
+768 PASS snap to card edge after scroll 120 {"snapped":0,"snapTargets":[0,336,623,623]}
+768 PASS mouse drag follows pointer (grabbing) {"sl":176,"dragging":true,"cursor":"grabbing"}
+768 PASS release settles on next card edge / max, snap restored {"sl":336,"dragging":false,"snapTargets":[0,336,623,623]}
+768 PASS drag right returns to previous card edge {"back":0}
+768 PASS drag started on "→" link does not navigate {"url":"http://slaunchpad.localhost/"}
+768 PASS 0 pageerror []
+1440 PASS env :has() supported {}
+1440 PASS rail overflow + snap x mandatory + cursor grab {"overflowX":"auto","snap":"x mandatory","cursor":"grab"}
+1440 PASS cards 360x502 [[360,502],[360,502],[360,502],[360,502]]
+1440 PASS no page h-scroll {}
+1440 PASS rail bleeds to viewport right edge {"railRight":1425}
+1440 PASS other sections intact (category slider + hero) {"cat":true,"hero":true}
+1440 PASS snap to card edge after scroll 120 {"snapped":159,"snapTargets":[0,159,159,159]}
+1440 PASS mouse drag follows pointer (grabbing) {"sl":159,"dragging":true,"cursor":"grabbing"}
+1440 PASS release settles on next card edge / max, snap restored {"sl":159,"dragging":false,"snapTargets":[0,159,159,159]}
+1440 PASS drag right returns to previous card edge {"back":0}
+1440 PASS drag started on "→" link does not navigate {"url":"http://slaunchpad.localhost/"}
+1440 PASS plain click on "→" navigates to /value {"url":"http://slaunchpad.localhost/value"}
+1440 PASS 0 pageerror []
+RESULT: ALL PASS

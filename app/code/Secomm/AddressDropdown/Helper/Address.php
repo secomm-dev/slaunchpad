@@ -116,7 +116,8 @@ class Address extends AbstractHelper
             ->from(['m' => $table],'*')
             ->joinLeft(
                 ['n' => $tableName],
-                "m.city_id = n.city_id AND n.locale = '".$this->getLocale()."'",
+                // TASK-SEC-A1: locale is a config-derived value — still quoted, never concat raw.
+                'm.city_id = n.city_id AND n.locale = ' . $adapter->quote($this->getLocale()),
                 ['n.name']
             // Canonical generic sort (TASK-7HVGAB): localized display name with
             // default_name fallback, city_id tie-breaker — mirrors CityLocaleCollection.

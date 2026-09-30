@@ -60,6 +60,35 @@ class VnAddressUnitProvider implements VnAddressUnitProviderInterface
     /**
      * @inheritDoc
      */
+    public function getByLevel(string $schemeCode, int $level): array
+    {
+        return $this->fetchUnits(
+            $this->connection()->select()
+                ->from($this->table(self::TABLE))
+                ->where('scheme_code = ?', $schemeCode)
+                ->where('level = ?', $level)
+                ->order('name_vi ASC')
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getByRegion(string $schemeCode, string $regionCode, int $level): array
+    {
+        return $this->fetchUnits(
+            $this->connection()->select()
+                ->from($this->table(self::TABLE))
+                ->where('scheme_code = ?', $schemeCode)
+                ->where('region_code = ?', $regionCode)
+                ->where('level = ?', $level)
+                ->order('name_vi ASC')
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function countByScheme(string $schemeCode): int
     {
         return (int)$this->connection()->fetchOne(
@@ -67,6 +96,17 @@ class VnAddressUnitProvider implements VnAddressUnitProviderInterface
                 ->from($this->table(self::TABLE), ['COUNT(*)'])
                 ->where('scheme_code = ?', $schemeCode)
         );
+    }
+
+    /**
+     * @param \Magento\Framework\DB\Select $select
+     * @return VnAddressUnitInterface[]
+     */
+    private function fetchUnits($select): array
+    {
+        $rows = $this->connection()->fetchAll($select);
+
+        return array_map(fn (array $row): VnAddressUnitInterface => $this->hydrate($row), $rows);
     }
 
     /**

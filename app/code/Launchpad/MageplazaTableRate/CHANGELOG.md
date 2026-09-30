@@ -1,5 +1,41 @@
 # Changelog — Launchpad_MageplazaTableRate
 
+## TASK-RT50KH follow-up (2026-09-24) — City/Area form UX + bulk roundtrip
+
+### Fixed
+- **Tab "Launchpad Settings" không hiển thị**: `MethodTabs::_beforeToHtml` thêm tab SAU
+  `parent::_beforeToHtml()` — core `Widget\Tabs::_beforeToHtml` kết thúc bằng
+  `assign('tabs', $_tabs)` (snapshot template) → tab thêm sau không bao giờ tới template.
+  Fix: addTab BEFORE parent (`addTabAfter('rate')` khi edit).
+
+### Added
+- `CityForm`: field City/Area chèn NGAY SAU Region (`addField $after = 'region'`) — hết tình
+  trạng đẩy xuống cuối form; section "City / Area Data — Download & Import" thay
+  "City / Area Downloads": link Current Rates CSV (pre-filled, keyed `rateExportCsv`),
+  City Reference CSV, Import Template, Import (keyed `importGrid`) — mỗi link kèm giải thích.
+- Controller `City/*`: `RawFactory` thành required ctor arg (nullable default KHÔNG được
+  ObjectManager autowire → `csvDownload()` 500) — 3 controller con forward lên parent.
+
+### Fixed
+- `CityGrid::_prepareColumns`: cột export đổi header sang `city_code` (machine name) khi full
+  action = `mptablerate_method_rateExportCsv` — importer resolve column theo HEADER NAME nên
+  header hiển thị "City / Area" làm roundtrip mất assignment (silent). On-screen grid giữ
+  human label.
+
+### Không đổi
+`MptablerateImport` (import = APPEND — native Mageplaza semantics; empty city_code =
+wildcard) · CREATE/runtime · fee payload · ShippingCore.
+
+
+## FEAT-QA23PZ (TASK-BYT2WK) — 2026-09-21: zone-miss guard trong FallbackCoordinator
+
+- `FallbackCoordinator::isMemberEligible()`: guard `ShippingFailureReason::DESTINATION_NOT_IN_SCOPE
+  → false` TRƯỚC mọi mode branches — merchant service-area restriction KHÔNG BAO GIỜ mở fallback,
+  kể cả member `FALLBACK_ONLY` (nhánh này trước đây trả true vô điều kiện — §20 architecture
+  v10; DEC-FEATQA23PZ-001 decision 4). Không đổi pricing/City/Area; chỉ đọc structured reason
+  ShippingCore-owned (không message parsing).
+- Tests: +2 case guard (FALLBACK_ONLY + CARRIER_WITH_FALLBACK trên zone-miss).
+
 ## Unreleased — 2026-09-18 (TASK-JZXM66 — City/Area admin self-service)
 
 - Rate form `City / Area` upgraded from raw text input to a cascading select
@@ -49,7 +85,7 @@
   unresolved destinations never match city rows; no city rows = 100% legacy matching.
 - `Model\City\DestinationCityResolver` — resolves (regionId, destCity text) → unit code via
   `Secomm_VietNamAddress` `VnOperationalNameResolverInterface`; never guesses.
-- Admin: "Launchpad Settings" tab (preference subclass of Mageplaza Tabs), settings/members
+- Admin: "Fallback Settings" tab (preference subclass of Mageplaza Tabs), settings/members
   persistence plugin on Save, dynamic member options (`Model\Source\ShippingMethod`,
   mptablerate excluded), rate form/grid/export "City / Area" (preference subclasses),
   CSV importer (preference subclass) with `city_code` + round-trip fix

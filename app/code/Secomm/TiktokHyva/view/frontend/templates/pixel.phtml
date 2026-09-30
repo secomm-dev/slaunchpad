@@ -1,0 +1,115 @@
+<?php
+/**
+ * Secomm_TiktokHyva — TikTok pixel for Hyvä (vanilla JS, no RequireJS/jQuery).
+ * The base pixel is inline (cache-safe: pixel code is per-website config); event
+ * payloads are fetched per-request from the module endpoint because they contain
+ * session data (quote items, customer hashing) and must never be FPC-cached.
+ */
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Secomm\TiktokHyva\ViewModel\Pixel;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+
+$viewModel = $block->getData('view_model');
+$eventTypes = (array) $block->getData('eventTypes');
+
+if (!$viewModel instanceof Pixel
+    || !$viewModel->isPixelEnabled()
+    || !$viewModel->getPixelCode()
+) {
+    return;
+}
+
+$pixelCode = (string) $viewModel->getPixelCode();
+$eventsUrl = $block->getUrl('tiktokhyva/events/index');
+
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+?>
+<script>
+    'use strict';
+    (() => {
+        if (window.ttq) {
+            return;
+        }
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject = t;
+            var ttq = w[t] = w[t] || [];
+            ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie"];
+            ttq.setAndDefer = function (t, e) {
+                t[e] = function () {
+                    t.push([e].concat(Array.prototype.slice.call(arguments, 0)))
+                }
+            };
+            for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
+            ttq.instance = function (t) {
+                for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]);
+                return e
+            }, ttq.load = function (e, n) {
+                var i = "https://analytics.tiktok.com/i18n/pixel/events.js";
+                ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = i, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}, ttq._partner = ttq._partner || "Magento";
+                var o = document.createElement("script");
+                o.type = "text/javascript", o.async = !0, o.src = i + "?sdkid=" + e + "&lib=" + t;
+                var a = document.getElementsByTagName("script")[0];
+                a.parentNode.insertBefore(o, a)
+            };
+        }(window, document, 'ttq');
+        ttq.load('<?= $escaper->escapeJs($pixelCode) ?>');
+        const secommEventTypes = <?= /* @noEscape */ json_encode(array_values($eventTypes), JSON_THROW_ON_ERROR) ?>;
+        const secommProductId = <?= /* @noEscape */ json_encode($viewModel->getProductId(), JSON_THROW_ON_ERROR) ?>;
+        const secommSearchTerm = <?= /* @noEscape */ json_encode($viewModel->getSearchTerm(), JSON_THROW_ON_ERROR) ?>;
+        const secommFetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // M2.4.8 CsrfValidator: POST without form_key must be XHR or it 302-redirects
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        };
+        const secommTrackPayload = (payload) => {
+            if (!payload) {
+                return;
+            }
+            if (payload.user) {
+                ttq.identify(payload.user);
+            }
+            (payload.events || []).forEach((event) => {
+                try {
+                    ttq.track(event.event, Object.assign({event_id: event.event_id}, event.properties || {}));
+                } catch (error) {
+                    window.console && console.warn('TikTok pixel track failed:', error);
+                }
+            });
+        };
+        const secommFetchEvents = (eventTypes, body = {}) => fetch('<?= $escaper->escapeJs($eventsUrl) ?>', Object.assign({}, secommFetchOptions, {
+            body: JSON.stringify(Object.assign(
+                {event_types: eventTypes, product: secommProductId, search_string: secommSearchTerm},
+                body
+            ))
+        }))
+            .then((response) => response.ok ? response.json() : null)
+            .then(secommTrackPayload)
+            .catch((error) => {
+                window.console && console.warn('TikTok pixel events fetch failed:', error);
+            });
+
+        secommFetchEvents(secommEventTypes);
+
+        // AddPaymentInfo — fires on payment-method selection (checkout page only,
+        // gated by InitiateCheckout being a page-level event type).
+        if (secommEventTypes.includes('InitiateCheckout')) {
+            document.addEventListener('change', (event) => {
+                if (!event.target || !event.target.matches('input[name^="payment"], select[name^="payment"]')) {
+                    return;
+                }
+                secommFetchEvents(['AddPaymentInfo']);
+            });
+        }
+    })();
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

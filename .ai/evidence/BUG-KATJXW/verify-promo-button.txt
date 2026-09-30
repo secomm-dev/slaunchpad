@@ -1,0 +1,19 @@
+375 PASS live card 1 {"cls":"pagebuilder-button-link","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+375 PASS live card 2 {"cls":"pagebuilder-button-primary","href":"/cat","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+375 PASS live card 3 {"cls":"pagebuilder-button-link","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+375 PASS live card 4 {"cls":"pagebuilder-button-link","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+375 PASS simulated pagebuilder-button-primary {"cls":"pagebuilder-button-primary","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+375 PASS simulated pagebuilder-button-secondary {"cls":"pagebuilder-button-secondary","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+375 PASS simulated pagebuilder-button-link {"cls":"pagebuilder-button-link","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+375 PASS hover bg rgba(255, 255, 255, 0.1)
+375 PASS 0 pageerror []
+1440 PASS live card 1 {"cls":"pagebuilder-button-link","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+1440 PASS live card 2 {"cls":"pagebuilder-button-primary","href":"/cat","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+1440 PASS live card 3 {"cls":"pagebuilder-button-link","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+1440 PASS live card 4 {"cls":"pagebuilder-button-link","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+1440 PASS simulated pagebuilder-button-primary {"cls":"pagebuilder-button-primary","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+1440 PASS simulated pagebuilder-button-secondary {"cls":"pagebuilder-button-secondary","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+1440 PASS simulated pagebuilder-button-link {"cls":"pagebuilder-button-link","href":"/value","w":36,"h":36,"radius":true,"border":"1px rgb(255, 255, 255)","bg":"rgba(0, 0, 0, 0)","color":"rgb(255, 255, 255)","after":"none","text":"→"}
+1440 PASS hover bg rgba(255, 255, 255, 0.1)
+1440 PASS 0 pageerror []
+RESULT: ALL PASS

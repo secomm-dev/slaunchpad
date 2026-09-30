@@ -96,7 +96,7 @@ $decisionClass = $decision !== null
                 <?php foreach ($result['events'] as $event): ?>
                     <?php $eventId = (int)($event->getData('order_id') ?? 0); ?>
                     <tr>
-                        <td><?= $escaper->escapeHtml((string)$event->getData('created_at')) ?></td>
+                        <td><?= $escaper->escapeHtml($block->formatRiskDateTime((string)$event->getData('created_at'))) ?></td>
                         <td><?= $escaper->escapeHtml((string)$event->getData('reason_code')) ?></td>
                         <td><?= $escaper->escapeHtml((string)$event->getData('source')) ?></td>
                         <td>
@@ -131,7 +131,7 @@ $decisionClass = $decision !== null
                 <tbody>
                 <?php foreach ($result['evaluations'] as $evaluation): ?>
                     <tr>
-                        <td><?= $escaper->escapeHtml((string)$evaluation->getData('created_at')) ?></td>
+                        <td><?= $escaper->escapeHtml($block->formatRiskDateTime((string)$evaluation->getData('created_at'))) ?></td>
                         <td><?= $escaper->escapeHtml((string)$evaluation->getData('decision')) ?></td>
                         <td><?= $escaper->escapeHtml((string)$evaluation->getData('matched_rule')) ?></td>
                         <td><?= $escaper->escapeHtml((string)$evaluation->getData('historical_count')) ?></td>
@@ -158,7 +158,7 @@ $decisionClass = $decision !== null
                 <tbody>
                 <?php foreach ($result['audit'] as $entry): ?>
                     <tr>
-                        <td><?= $escaper->escapeHtml((string)$entry->getData('created_at')) ?></td>
+                        <td><?= $escaper->escapeHtml($block->formatRiskDateTime((string)$entry->getData('created_at'))) ?></td>
                         <td><?= $escaper->escapeHtml((string)$entry->getData('entity_type')) ?></td>
                         <td><?= $escaper->escapeHtml((string)$entry->getData('action')) ?></td>
                         <td><?= $escaper->escapeHtml((string)$entry->getData('admin_username')) ?></td>

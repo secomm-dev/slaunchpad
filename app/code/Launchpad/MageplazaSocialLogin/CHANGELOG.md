@@ -6,6 +6,51 @@ vendor code untouched.
 
 ## [Unreleased]
 
+### Added (2026-09-25) — TASK-YHCJ79
+
+- `view/frontend/templates/password-toggle.phtml` + blocks in
+  `view/frontend/layout/hyva_default.xml` (roots `#social-login-popup`,
+  `#authentication-popup`) and `view/frontend/layout/onestepcheckout_index_index.xml`
+  (root `body`): eye-icon show/hide toggle on every password input of the
+  Mageplaza popups (sign-in, create, request-info, checkout authentication) and
+  of the OSC checkout page (create account, email step, Sign In popup, luma
+  social-login modal). Plain JS, vendor templates untouched; late inputs (KO,
+  Alpine `x-if`) via MutationObserver; the toggle is a `span[role=button]`
+  (keyboard Enter/Space, `aria-pressed`, `aria-label`) because both pages style
+  every `<button>` by tag. Heroicons solid `eye`/`eye-off`, colors
+  `--color-ink-muted`/`--color-ink` with the checkout fallbacks.
+- `view/frontend/web/css/social-login-checkout.css`: `padding-right: 44px` on
+  the password inputs of the luma social-login modal (the modal's
+  `#social-login-popup .social-login .input-text` padding outranks the toggle's).
+
+### Fixed (2026-09-25) — BUG-C97F09 (SLP-207)
+
+- `view/frontend/layout/hyva_default.xml` + `view/frontend/templates/hyva/popup/form/authentication.phtml`
+  + `ViewModel/LoginRedirect.php`: the Hyvä sign-in popup now honors
+  `customer/startup/redirect_dashboard` (Customer Configuration › Login Options ›
+  Redirect Customer to Account Dashboard after Logging in). Yes → a successful
+  popup login goes to `customer/account/`; No → the page reloads as before. The
+  vendor script always reloaded, so the setting only worked on the full-page
+  login form. Module copy of the vendor template; the only change is
+  `launchpadLoginSuccessRedirect()` in both success branches. Luma OSC popup
+  untouched.
+
+### Changed (2026-09-25) — TASK-NWV2MQ (SLP-211)
+
+- `view/frontend/web/css/social-login-checkout.css`: re-synced the OSC checkout
+  social-login popup (luma fallback) with the Hyvä popup as it ships today
+  (SLP-259 plain title + SLP-246 global style), measured element by element on
+  the home page: title banner `#3399cc` removed (plain ink heading), block-title
+  rule removed, label/input/primary button/link/close button/social buttons and
+  the two-column layout match the Hyvä sizes, spacing and colors (≤7px position
+  delta at 1280/375). The checkout keeps its own font family (Open Sans) until
+  a checkout design exists; primary buttons keep the `style_management` config
+  color. Beats the page-wide OSC `border-radius: 4px !important`, the vendor
+  `.modal-content .secondary a.action { margin: -20px 0 25px !important }` (the
+  old 6px/2px link nudge is gone — the link is centered on the button row) and
+  luma's modal-slide offset under 768px. CSS-only, every vendor JS/class hook
+  preserved.
+
 ### Added (2026-09-16) — TASK-8TXS2P (SLP-203)
 
 - `view/frontend/layout/onestepcheckout_index_index.xml` +

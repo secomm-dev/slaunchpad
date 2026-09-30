@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Launchpad\MageplazaTableRate\Controller\Adminhtml\City;
 
+use Magento\Framework\Controller\Result\RawFactory;
+
 use Launchpad\MageplazaTableRate\Controller\Adminhtml\City;
 use Launchpad\MageplazaTableRate\Model\Adminhtml\ImportTemplateBuilder;
 use Magento\Backend\App\Action\Context;
@@ -25,9 +27,10 @@ class ImportTemplate extends City
 {
     public function __construct(
         Context $context,
-        private readonly ImportTemplateBuilder $templateBuilder
+        private readonly ImportTemplateBuilder $templateBuilder,
+        RawFactory $resultRawFactory
     ) {
-        parent::__construct($context);
+        parent::__construct($context, $resultRawFactory);
     }
 
     public function execute(): ResultInterface

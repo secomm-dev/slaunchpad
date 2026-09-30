@@ -1,0 +1,101 @@
+<?php
+/**
+ * Footer — LAUNCHPAD CORE (TASK-7EYJ4C, SLP-275 v2).
+ *
+ * Replaces the Hyvä vendor footer. The four content sections are PageBuilder
+ * CMS blocks (footer_newsletter / footer_links / footer_social /
+ * footer_trust_payments — see Launchpad\CmsContent\Model\FooterBlockContent).
+ * Section containers (background, padding, width) are owned HERE so an admin
+ * PageBuilder save cannot strip the footer layout (TASK-0NNZCW v4.5
+ * strip-proof pattern); the blocks carry only content elements plus anchor
+ * classes in their CSS Classes fields, with structural fallbacks in
+ * theme/footer.css. The links section is wrapped in an Alpine component that
+ * turns the PB columns into a mobile-only accordion.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HyvaCsp;
+
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+?>
+<div class="footer-section-newsletter border-b border-[#e5e7eb] bg-white">
+    <div class="mx-auto w-full max-w-[1440px] px-6 pb-8 pt-24 lg:px-10">
+        <?= $block->getChildHtml('footer-newsletter') ?>
+    </div>
+</div>
+<div class="footer-section-links bg-[#f3f4f6]" x-data="initFooterLinksAccordion">
+    <div class="mx-auto w-full max-w-[1440px] px-6 py-8 lg:px-10">
+        <?= $block->getChildHtml('footer-links') ?>
+    </div>
+</div>
+<div class="footer-section-social border-b border-[#e5e7eb] bg-white">
+    <div class="mx-auto w-full max-w-[1440px] px-6 pb-8 pt-4 text-center lg:px-10">
+        <?= $block->getChildHtml('footer-social') ?>
+    </div>
+</div>
+<div class="footer-section-trust border-b border-[#d1d5dc] bg-[#f4f9f4]">
+    <div class="mx-auto w-full max-w-[1440px] px-6 py-4 lg:px-10">
+        <?= $block->getChildHtml('footer-trust-payments') ?>
+    </div>
+</div>
+<div class="bg-[#f3f4f6]">
+    <div class="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-2 pl-6 pr-6 pb-6 pt-8 sm:flex-row sm:justify-between lg:pl-10 lg:pr-10">
+        <?= $block->getChildHtml('copyright') ?>
+    </div>
+</div>
+<script>
+    function initFooterLinksAccordion() {
+        return {
+            init() {
+                const section = this.$el;
+                // Anchor classes first; structural fallback (data-content-type)
+                // keeps the accordion working after a PageBuilder save strips
+                // custom classes from the block content.
+                let groups = Array.from(section.querySelectorAll('.footer-links-group'));
+                if (!groups.length) {
+                    groups = Array.from(section.querySelectorAll('[data-content-type="column"]'))
+                        .filter((col) => col.querySelector('[data-content-type="heading"], h2, h3, h4'));
+                }
+                const anyOpen = groups.some((g) => g.classList.contains('footer-links-open'));
+                groups.forEach((group, index) => {
+                    const title = group.querySelector('.footer-links-title')
+                        || group.querySelector('[data-content-type="heading"], h2, h3, h4');
+                    const list = group.querySelector('.footer-links-list')
+                        || (title ? title.nextElementSibling : null);
+                    if (!title || !list) {
+                        return;
+                    }
+                    if (!anyOpen && index === 0) {
+                        group.classList.add('footer-links-open');
+                    }
+                    const isOpen = () => group.classList.contains('footer-links-open');
+                    const toggle = () => {
+                        group.classList.toggle('footer-links-open');
+                        title.setAttribute('aria-expanded', isOpen() ? 'true' : 'false');
+                    };
+                    title.setAttribute('role', 'button');
+                    title.setAttribute('tabindex', '0');
+                    title.setAttribute('aria-expanded', isOpen() ? 'true' : 'false');
+                    title.addEventListener('click', toggle);
+                    title.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            toggle();
+                        }
+                    });
+                });
+            }
+        };
+    }
+
+    window.addEventListener('alpine:init', () => {
+        Alpine.data('initFooterLinksAccordion', initFooterLinksAccordion);
+    }, { once: true });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

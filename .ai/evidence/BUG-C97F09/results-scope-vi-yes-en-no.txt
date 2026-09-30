@@ -1,0 +1,10 @@
+PASS | vi home success | flag={"toDashboard":true,"dashboardUrl":"http://slaunchpad.localhost/customer/account/"} endpoint=/customer/ajax/login/ from=/ nav=/customer/account/ want=/customer/account/ consoleErrors=[]
+PASS | vi pdp success | flag={"toDashboard":true,"dashboardUrl":"http://slaunchpad.localhost/customer/account/"} endpoint=/customer/ajax/login/ from=/atlas-pouf.html nav=/customer/account/ want=/customer/account/ consoleErrors=["Error fetching data: SyntaxError: Unexpected token '<', \"<!doctype \"... is not valid JSON"]
+PASS | vi cart success | flag={"toDashboard":true,"dashboardUrl":"http://slaunchpad.localhost/customer/account/"} endpoint=/customer/ajax/login/ from=/checkout/cart/ nav=/customer/account/ want=/customer/account/ consoleErrors=[]
+PASS | vi home wrong-password (real server) | errors=true message="Tên đăng nhập hoặc mật khẩu không hợp lệ." navigated=none consoleErrors=[]
+PASS | en home success | flag={"toDashboard":false,"dashboardUrl":"http://slaunchpad.localhost/customer/account/"} endpoint=/customer/ajax/login/ from=/?___store=launchpad_en nav=/?___store=launchpad_en want=/?___store=launchpad_en consoleErrors=[]
+PASS | en pdp success | flag={"toDashboard":false,"dashboardUrl":"http://slaunchpad.localhost/customer/account/"} endpoint=/customer/ajax/login/ from=/atlas-pouf.html?___store=launchpad_en nav=/atlas-pouf.html?___store=launchpad_en want=/atlas-pouf.html?___store=launchpad_en consoleErrors=["Error fetching data: SyntaxError: Unexpected token '<', \"<!doctype \"... is not valid JSON"]
+PASS | en cart success | flag={"toDashboard":false,"dashboardUrl":"http://slaunchpad.localhost/customer/account/"} endpoint=/customer/ajax/login/ from=/checkout/cart/?___store=launchpad_en nav=/checkout/cart/?___store=launchpad_en want=/checkout/cart/?___store=launchpad_en consoleErrors=[]
+PASS | en home wrong-password (real server) | errors=true message="Tên đăng nhập hoặc mật khẩu không hợp lệ." navigated=none consoleErrors=[]
+
+8/8 PASS

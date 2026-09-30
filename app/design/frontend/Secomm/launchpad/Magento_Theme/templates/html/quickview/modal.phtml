@@ -17,8 +17,10 @@ declare(strict_types=1);
 
 use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\LucideIcons;
+use Hyva\Theme\ViewModel\ProductCompare;
 use Hyva\Theme\ViewModel\Store as StoreViewModel;
 use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\ViewModel\Wishlist;
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
 
@@ -36,6 +38,11 @@ $storeCode = $storeViewModel->getStoreCode();
 /** @var \Launchpad\QuickView\ViewModel\Config $quickViewConfig */
 $quickViewConfig = $viewModels->require(\Launchpad\QuickView\ViewModel\Config::class);
 $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
+
+// Wishlist / compare icon buttons next to Add to Cart — same config gates as the
+// product card (Hyvä Wishlist::isEnabled, ProductCompare::showInProductList).
+$showWishlist = $viewModels->require(Wishlist::class)->isEnabled();
+$showCompare = $viewModels->require(ProductCompare::class)->showInProductList();
 ?>
 
 <div x-data="initQuickView"
@@ -130,9 +137,14 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                     <div class="prose-sm text-gray-700 [&_p]:mb-2" x-html="product?.description?.html"></div>
                 </div>
 
+                <?php /* novalidate: qty is validated in addToCart() with theme-translated
+                       messages shown under the field — no browser-native bubble
+                       (its text follows the browser UI locale, not the store). */ ?>
                 <form
                     action="<?= $escaper->escapeUrl($block->getUrl('checkout/cart/add')) ?>"
                     method="post"
+                    novalidate
+                    x-ref="form"
                     @submit.prevent="addToCart($event)"
                 >
                     <?= $block->getBlockHtml('formkey') ?>
@@ -147,9 +159,9 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                             </legend>
                             <div class="flex flex-wrap gap-2">
                                 <template x-for="value in option.values" :key="value.value_index">
+                                    <?php /* SLP-272: unavailable (OOS) value styled by .swatch-option:has(:disabled) — swatches.css */ ?>
                                     <label
-                                        class="swatch-option my-0 cursor-pointer"
-                                        :class="!isValueAvailable(option, value.value_index) && 'opacity-40 pointer-events-none'"
+                                        class="swatch-option my-0"
                                         :data-swatch-type="swatchType(value) === 'text' ? 'text' : 'visual'"
                                     >
                                         <span
@@ -186,19 +198,27 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                         </fieldset>
                     </template>
 
-                    <div class="flex items-center gap-3 mb-4">
-                        <label for="quickview-qty" class="text-sm"><?= $escaper->escapeHtml(__('Qty')) ?></label>
-                        <input
-                            id="quickview-qty"
-                            type="number"
-                            name="qty"
-                            min="1"
-                            step="1"
-                            value="1"
-                            x-model.number="qty"
-                            inputmode="numeric"
-                            class="form-input w-20"
-                        />
+                    <div class="mb-4">
+                        <div class="flex items-center gap-3">
+                            <label for="quickview-qty" class="text-sm"><?= $escaper->escapeHtml(__('Qty')) ?></label>
+                            <input
+                                id="quickview-qty"
+                                type="number"
+                                name="qty"
+                                min="1"
+                                step="1"
+                                value="1"
+                                x-ref="qty"
+                                x-model.number="qty"
+                                @input="qtyError = ''"
+                                inputmode="numeric"
+                                class="form-input w-20"
+                                :class="qtyError ? 'border-red-600' : ''"
+                                aria-describedby="quickview-qty-error"
+                                :aria-invalid="qtyError ? 'true' : 'false'"
+                            />
+                        </div>
+                        <p id="quickview-qty-error" x-show="qtyError" class="mt-1 text-sm text-red-600" x-text="qtyError"></p>
                     </div>
 
                     <p x-show="status === 'success'" class="mb-3 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-800 flex items-start gap-2" role="status">
@@ -207,14 +227,42 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                     </p>
                     <p x-show="status === 'error'" class="mb-3 text-sm text-red-600" x-text="statusMessage" role="alert"></p>
 
-                    <button
-                        type="submit"
-                        class="btn btn-primary w-full"
-                        :disabled="submitting || !inStock"
-                    >
-                        <?= $lucideIcons->shoppingCartHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
-                        <span x-text="submitting ? '<?= $escaper->escapeJs(__('Loading...')) ?>' : '<?= $escaper->escapeJs(__('Add to Cart')) ?>'"></span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary flex-1"
+                            :disabled="submitting || !inStock"
+                        >
+                            <?= $lucideIcons->shoppingCartHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
+                            <span x-text="submitting ? '<?= $escaper->escapeJs(__('Loading...')) ?>' : '<?= $escaper->escapeJs(__('Add to Cart')) ?>'"></span>
+                        </button>
+                        <?php if ($showWishlist): ?>
+                            <button
+                                type="button"
+                                class="btn btn-secondary shrink-0 px-2"
+                                title="<?= $escaper->escapeHtmlAttr(__('Add to Wish List')) ?>"
+                                aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Wish List')) ?>"
+                                data-addto="wishlist"
+                                :disabled="wishlistBusy || !product"
+                                @click="addToWishlist()"
+                            >
+                                <?= $lucideIcons->heartHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
+                            </button>
+                        <?php endif; ?>
+                        <?php if ($showCompare): ?>
+                            <button
+                                type="button"
+                                class="btn btn-secondary shrink-0 px-2"
+                                title="<?= $escaper->escapeHtmlAttr(__('Add to Compare')) ?>"
+                                aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Compare')) ?>"
+                                data-addto="compare"
+                                :disabled="compareBusy || !product"
+                                @click="addToCompare()"
+                            >
+                                <?= $lucideIcons->scaleHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
+                            </button>
+                        <?php endif; ?>
+                    </div>
                 </form>
             </div>
         </div>
@@ -233,8 +281,11 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
             gallery: [],
             activeImage: 0,
             qty: 1,
+            qtyError: '',
             selected: {},
             submitting: false,
+            wishlistBusy: false,
+            compareBusy: false,
             status: '',
             statusMessage: '',
 
@@ -255,8 +306,11 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                 this.gallery = [];
                 this.activeImage = 0;
                 this.qty = 1;
+                this.qtyError = '';
                 this.selected = {};
                 this.submitting = false;
+                this.wishlistBusy = false;
+                this.compareBusy = false;
                 this.status = '';
                 this.statusMessage = '';
             },
@@ -406,16 +460,124 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                     && this.configurableOptions.some(option => !this.selected[option.attribute_code]);
             },
 
+            // Qty rules the native constraints (min=1, step=1) used to enforce,
+            // with store-translated messages instead of the browser bubble.
+            validateQty() {
+                const input = this.$refs.qty;
+                const raw = input ? input.value.trim() : String(this.qty);
+                if (input && input.validity.badInput) {
+                    return '<?= $escaper->escapeJs(__('Please enter a valid number.')) ?>';
+                }
+                if (raw === '') {
+                    return '<?= $escaper->escapeJs(__('This is a required field.')) ?>';
+                }
+                const qty = Number(raw);
+                if (!Number.isFinite(qty)) {
+                    return '<?= $escaper->escapeJs(__('Please enter a valid number.')) ?>';
+                }
+                if (qty < 1) {
+                    return '<?= $escaper->escapeJs(__('Value must be greater than or equal to %1.')) ?>'.replace('%1', '1');
+                }
+                if (!Number.isInteger(qty)) {
+                    return '<?= $escaper->escapeJs(__('Please enter a valid value.')) ?>';
+                }
+                return '';
+            },
+
+            // Messages go inside the modal: the <dialog> sits in the top layer,
+            // so the page's global message bar would be hidden behind it.
+            showStatus(type, message) {
+                this.status = type;
+                this.statusMessage = message;
+            },
+
+            actionParams() {
+                const params = new URLSearchParams(new FormData(this.$refs.form));
+                params.set('product', this.product.id);
+                params.set('form_key', hyva.getFormKey());
+                params.set('uenc', hyva.getUenc());
+                return params;
+            },
+
+            async addToWishlist() {
+                if (this.wishlistBusy || !this.product) {
+                    return;
+                }
+                this.wishlistBusy = true;
+                this.showStatus('', '');
+                try {
+                    // Same endpoint/payload as Hyvä initWishlist (product list):
+                    // form data carries the chosen super_attribute options + qty.
+                    const response = await fetch(BASE_URL + 'wishlist/index/add/', {
+                        method: 'POST',
+                        headers: { 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                        body: this.actionParams().toString(),
+                        credentials: 'include'
+                    });
+                    if (response.redirected) {
+                        // Guest → customer login page (core wishlist behaviour).
+                        window.location.href = response.url;
+                        return;
+                    }
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    const data = await response.json();
+                    if (data.success) {
+                        this.showStatus('success', '<?= $escaper->escapeJs(__('%1 has been added to your Wish List.', '%1')) ?>'.replace('%1', this.product.name));
+                    } else {
+                        this.showStatus('error', data.error_message || '<?= $escaper->escapeJs(__('Could not add item to wishlist.')) ?>');
+                    }
+                    window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+                } catch (error) {
+                    console.warn('Quick view add to wishlist failed:', error);
+                    this.showStatus('error', '<?= $escaper->escapeJs(__('Could not add item to wishlist.')) ?>');
+                } finally {
+                    this.wishlistBusy = false;
+                }
+            },
+
+            async addToCompare() {
+                if (this.compareBusy || !this.product) {
+                    return;
+                }
+                this.compareBusy = true;
+                this.showStatus('', '');
+                try {
+                    // Core compare/add always answers with a redirect to the referer;
+                    // 'manual' keeps the shopper in the modal instead of reloading.
+                    await fetch(BASE_URL + 'catalog/product_compare/add/', {
+                        method: 'POST',
+                        headers: { 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                        body: new URLSearchParams({
+                            form_key: hyva.getFormKey(),
+                            product: this.product.id,
+                            uenc: hyva.getUenc()
+                        }).toString(),
+                        credentials: 'include',
+                        redirect: 'manual'
+                    });
+                    this.showStatus('success', '<?= $escaper->escapeJs(__('You added product %1 to the comparison list.', '%1')) ?>'.replace('%1', this.product.name));
+                    window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+                } catch (error) {
+                    console.warn('Quick view add to compare failed:', error);
+                    this.showStatus('error', '<?= $escaper->escapeJs(__('Could not add item to compare.')) ?>');
+                } finally {
+                    this.compareBusy = false;
+                }
+            },
+
             addToCart(event) {
                 if (this.submitting) {
                     return;
                 }
-                const qty = parseInt(this.qty, 10);
-                if (!Number.isFinite(qty) || qty < 1) {
-                    this.status = 'error';
-                    this.statusMessage = '<?= $escaper->escapeJs(__('Please enter a number.')) ?>';
+                this.qtyError = this.validateQty();
+                if (this.qtyError) {
+                    this.status = '';
+                    this.$refs.qty && this.$refs.qty.focus();
                     return;
                 }
+                const qty = parseInt(this.qty, 10);
                 if (this.missingSelection) {
                     this.status = 'error';
                     this.statusMessage = '<?= $escaper->escapeJs(__('You need to choose options for your item.')) ?>';
@@ -453,6 +615,8 @@ $openCartAfterAdd = $quickViewConfig->isOpenCartAfterAddToCart();
                             window.location.href = data.backUrl;
                             return;
                         }
+                        // SLP-264: xóa global message cũ để ATC liên tiếp không stack success message
+                        window.dispatchEvent(new CustomEvent('clear-messages'));
                         window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
                         this.status = 'success';
                         this.statusMessage = '<?= $escaper->escapeJs(__('You added %1 to your shopping cart.')) ?>'.replace('%1', this.product.name);

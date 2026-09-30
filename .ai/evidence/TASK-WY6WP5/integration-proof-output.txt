@@ -1,0 +1,25 @@
+== baseline (no explicit GHN coverage config) ==
+PASS — hasExplicitConfig = false
+PASS — runtime reader default scope = ALL
+PASS — ALL → eligible for HCM province (VN-15)
+== create zone HCM_INNER (VN-15) if missing ==
+HCM_INNER already present
+== save explicit coverage: SELECTED_ZONES = [HCM_INNER] ==
+PASS — exactly 4 persisted DEFAULT rows
+   carriers/secomm_ghn/address_resolution_policy = FALLBACK
+   carriers/secomm_ghn/allowed_zone_codes = HCM_INNER
+   carriers/secomm_ghn/destination_scope = SELECTED_ZONES
+   carriers/secomm_ghn/rate_source_mode = CARRIER_WITH_FALLBACK
+== fresh runtime readers consume the exact persisted values ==
+PASS — reader scope = SELECTED_ZONES
+PASS — reader zones = [HCM_INNER]
+== eligibility evaluation (canonical identity, pre provider conversion) ==
+PASS — VN-15 (HCM) eligible, matched=HCM_INNER
+PASS — VN-01 (An Giang) ineligible + DESTINATION_NOT_IN_SCOPE
+== reset to defaults ==
+PASS — reset removed 4 DEFAULT values (got 4)
+PASS — runtime reader back to default ALL
+PASS — reader zones empty
+PASS — ALL → eligible again for VN-01
+PASS — hasExplicitConfig back to false
+ALL INTEGRATION PROOF CHECKS PASSED

@@ -31,14 +31,16 @@ class ValidateWidgetParameters
      * @param Widget $subject Widget model.
      * @param string $type Widget block type.
      * @param array $params Widget parameters.
-     * @param bool $asIs Whether to return a directive.
-     * @return array{string, array<string, mixed>, bool}
+     * @param mixed $asIs Whether to return a directive. Untyped like the core
+     *                    method: BuildWidget posts `as_is` only outside WYSIWYG,
+     *                    so inserts from TinyMCE pass null (SLP-267).
+     * @return array{string, array<string, mixed>, mixed}
      */
     public function beforeGetWidgetDeclaration(
         Widget $subject,
         string $type,
         array $params = [],
-        bool $asIs = true
+        mixed $asIs = true
     ): array {
         if ($type === SecommUi::class) {
             $this->validator->validate(

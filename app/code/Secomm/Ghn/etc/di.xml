@@ -100,4 +100,20 @@
             <argument name="unitProvider" xsi:type="object">Secomm\Ghn\Model\Address\Mapping\CanonicalCsvProvider</argument>
         </arguments>
     </type>
+
+    <!-- FEAT-QA23PZ / TASK-G3K9V2 / TASK-WY6WP5 — GHN opts into the shared Shipping
+         Coverage admin screen (Secomm → Shipping → Shipping Coverage): availability +
+         zones + rate-orchestration policy. The carrier owns its registration; ShippingCore
+         never hardcodes the identity. Metadata only — registration never creates config. -->
+    <type name="Secomm\ShippingCore\Model\CoverageTarget\CoverageTargetRegistry">
+        <arguments>
+            <argument name="targets" xsi:type="array">
+                <item name="secomm_ghn" xsi:type="array">
+                    <item name="type" xsi:type="string">CARRIER</item>
+                    <item name="code" xsi:type="string">secomm_ghn</item>
+                    <item name="label" xsi:type="string" translate="true">GHN (Giao Hàng Nhanh)</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
 </config>

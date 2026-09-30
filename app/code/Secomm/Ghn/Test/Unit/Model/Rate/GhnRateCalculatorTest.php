@@ -249,20 +249,93 @@ class GhnRateCalculatorTest extends TestCase
         $this->assertTrue($this->calculator->calculate($this->query(20000.0))->isSuccessful());
     }
 
-    public function testAggregateWeightAboveDocumentedRootCapIsNotRejectedByAggregate(): void
+    public function testAggregateOverFiftyKgIsUnavailableAsUnrepresentableWithoutApiCall(): void
     {
-        // 2×35kg = 70kg aggregate: NO aggregate cap exists (sandbox D = 200; docs 50k is a
-        // CREATE-root number, never fee-enforced). Per-package weight enforcement stays
-        // DEFERRED until a provider-verified rejection exists.
-        $this->givenResolvedLegacyUnit();
-        $this->config->method('getOriginDistrictId')->willReturn(0);
-        $this->apiClient->method('post')->willReturn(['total' => 605000]);
+        // TASK-MQ2DRG (DEC-TASKMQ2DRG-001 — SUPERSEDES the TASK-WAWNDS "aggregate >50kg is
+        // NOT rejected" stance): 2×35kg = 70kg aggregate with individually-valid units is a
+        // representational gap, not a carrier rejection — UNAVAILABLE + the shared
+        // RATE_REQUEST_UNREPRESENTABLE, decided BEFORE any provider call. The fee API's
+        // tolerance for heavy aggregates (sandbox 2×35kg = 200) stays a documented fact;
+        // quoting >50kg is now a deliberate business NO at pre-validation.
+        $this->handoffService->expects($this->never())->method('handoffContextForOperation');
+        $this->apiClient->expects($this->never())->method('post');
 
         $packages = [
             new EstimatedPackage(11, 'SKU-35KG', 35000.0, 'quote_item_weight'),
             new EstimatedPackage(12, 'SKU-35KG', 35000.0, 'quote_item_weight'),
         ];
+        $outcome = $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)));
+
+        $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
+        $this->assertSame(ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE, $outcome->getFailureReason());
+    }
+
+    public function testSingleUnitOverFiftyKgIsHardUnavailableWithoutApiCall(): void
+    {
+        // Directive case A: a single sellable unit above the per-package cap is a REAL
+        // carrier rejection (GHN-owned reason, never fallback-eligible) — NOT the shared
+        // limitation reason, NOT technical.
+        $this->handoffService->expects($this->never())->method('handoffContextForOperation');
+        $this->apiClient->expects($this->never())->method('post');
+
+        $outcome = $this->calculator->calculate($this->query(60000.0));
+
+        $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
+        $this->assertSame('GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED', $outcome->getFailureReason());
+    }
+
+    public function testMixedViolationHardUnitWins(): void
+    {
+        // Directive order: A before E — a hard unit violation must surface even when the
+        // aggregate is also over the cap (never masked as a representational gap).
+        $this->handoffService->expects($this->never())->method('handoffContextForOperation');
+        $this->apiClient->expects($this->never())->method('post');
+
+        $packages = [
+            new EstimatedPackage(11, 'SKU-60KG', 60000.0, 'quote_item_weight'),
+            new EstimatedPackage(12, 'SKU-20KG', 20000.0, 'quote_item_weight'),
+        ];
+        $outcome = $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)));
+
+        $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
+        $this->assertSame('GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED', $outcome->getFailureReason());
+    }
+
+    public function testAggregateExactlyFiftyKgStillQuotes(): void
+    {
+        // Boundary: the pre-validation limit is strictly greater-than — a 50000g total of
+        // valid units is representable (2×25kg → type 5, quoted).
+        $this->givenResolvedLegacyUnit();
+        $this->config->method('getOriginDistrictId')->willReturn(0);
+        $this->apiClient->method('post')->willReturn(['total' => 605000]);
+
+        $packages = [
+            new EstimatedPackage(11, 'SKU-25KG', 25000.0, 'quote_item_weight'),
+            new EstimatedPackage(12, 'SKU-25KG', 25000.0, 'quote_item_weight'),
+        ];
         $this->assertTrue($this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)))->isSuccessful());
+    }
+
+    public function testSingleUnitExactlyFiftyKgStillQuotes(): void
+    {
+        // Boundary: a single unit AT the 50000g cap is valid (limit is >, not >=).
+        $this->givenResolvedLegacyUnit();
+        $this->config->method('getOriginDistrictId')->willReturn(0);
+        $this->apiClient->method('post')->willReturn(['total' => 605000]);
+
+        $this->assertTrue($this->calculator->calculate($this->query(50000.0))->isSuccessful());
+    }
+
+    public function testWeightGateRunsBeforeHandoffOnStandalonePath(): void
+    {
+        // Mirrors the dimension gate: an unquotable weight must not spend address resolution.
+        $this->handoffService->expects($this->never())->method('handoffContextForOperation');
+        $this->apiClient->expects($this->never())->method('post');
+
+        $packages = [new EstimatedPackage(11, 'SKU-35KG', 35000.0, 'quote_item_weight'), new EstimatedPackage(12, 'SKU-35KG', 35000.0, 'quote_item_weight')];
+        $outcome = $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)));
+
+        $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
     }
     public function testAddressResolutionPolicyPassesThroughToSharedHandoff(): void
     {

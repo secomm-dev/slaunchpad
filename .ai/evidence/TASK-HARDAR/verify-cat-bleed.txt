@@ -1,0 +1,100 @@
+{
+ "375": {
+  "tiles": 7,
+  "tileW": 172,
+  "sectionRight": 352,
+  "trackRight": 368,
+  "viewport": 375,
+  "bleedsToEdge": false,
+  "tilesInsideContent": 1,
+  "peekingTile": true,
+  "scrollLeft": 0,
+  "overflowing": true,
+  "nav": {
+   "prevVisible": false,
+   "nextVisible": false,
+   "prevDisabled": true,
+   "nextDisabled": false
+  },
+  "dots": 7,
+  "pageHScroll": false,
+  "activePills": 1,
+  "pageErrors": []
+ },
+ "768": {
+  "tiles": 7,
+  "tileW": 172,
+  "sectionRight": 729,
+  "trackRight": 761,
+  "viewport": 768,
+  "bleedsToEdge": false,
+  "tilesInsideContent": 3,
+  "peekingTile": true,
+  "scrollLeft": 0,
+  "overflowing": true,
+  "nav": {
+   "prevVisible": false,
+   "nextVisible": false,
+   "prevDisabled": true,
+   "nextDisabled": false
+  },
+  "dots": 7,
+  "pageHScroll": true,
+  "activePills": 1,
+  "pageErrors": []
+ },
+ "1440": {
+  "tiles": 7,
+  "tileW": 210,
+  "sectionRight": 1401,
+  "trackRight": 1433,
+  "viewport": 1440,
+  "bleedsToEdge": false,
+  "tilesInsideContent": 6,
+  "peekingTile": true,
+  "scrollLeft": 0,
+  "overflowing": true,
+  "nav": {
+   "prevVisible": true,
+   "nextVisible": true,
+   "prevDisabled": true,
+   "nextDisabled": false
+  },
+  "dots": 0,
+  "pageHScroll": false,
+  "activePills": 0,
+  "afterNext": {
+   "scrollLeft": 233,
+   "prevDisabled": false,
+   "nextDisabled": true
+  },
+  "pageErrors": []
+ },
+ "1920": {
+  "tiles": 7,
+  "tileW": 212,
+  "sectionRight": 1649,
+  "trackRight": 1913,
+  "viewport": 1920,
+  "bleedsToEdge": false,
+  "tilesInsideContent": 6,
+  "peekingTile": true,
+  "scrollLeft": 0,
+  "overflowing": true,
+  "nav": {
+   "prevVisible": true,
+   "nextVisible": true,
+   "prevDisabled": true,
+   "nextDisabled": false
+  },
+  "dots": 0,
+  "pageHScroll": false,
+  "activePills": 0,
+  "afterNext": {
+   "scrollLeft": 236,
+   "prevDisabled": false,
+   "nextDisabled": true
+  },
+  "pageErrors": []
+ }
+}

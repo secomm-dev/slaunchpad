@@ -1,0 +1,63 @@
+PASS 1440 Explore all#1 size {"h":48,"font":"16px/24px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 1440 Explore all#1 arrow {"afPos":"static","afW":"16px","textRight":738,"btnRight":782}
+PASS 1440 Explore all#1 color {"bg":"rgb(88, 143, 96)","color":"rgb(255, 255, 255)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 1440 Explore all#1 hover rgb(69, 116, 76)
+PASS 1440 Explore all#1 focus ring rgba(0, 0, 0, 0) 0px 0px 0px 0px inset, rgb(207, 227, 209) 0px 0px 0px 4px
+PASS 1440 Explore all#2 size {"h":48,"font":"16px/24px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 1440 Explore all#2 arrow {"afPos":"static","afW":"16px","textRight":1065,"btnRight":1109}
+PASS 1440 Explore all#2 color {"bg":"rgb(88, 143, 96)","color":"rgb(255, 255, 255)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 1440 Explore all#2 hover rgb(69, 116, 76)
+PASS 1440 Explore all#2 focus ring rgba(0, 0, 0, 0) 0px 0px 0px 0px inset, rgb(207, 227, 209) 0px 0px 0px 4px
+PASS 1440 Go to Collection size {"h":48,"font":"16px/24px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 1440 Go to Collection arrow {"afPos":"static","afW":"16px","textRight":759,"btnRight":803}
+PASS 1440 Go to Collection color {"bg":"rgb(69, 116, 76)","color":"rgb(255, 255, 255)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 1440 Go to Collection hover rgb(53, 87, 58)
+PASS 1440 Go to Collection focus ring rgba(0, 0, 0, 0) 0px 0px 0px 0px inset, rgb(207, 227, 209) 0px 0px 0px 4px
+PASS 1440 Explore size {"h":48,"font":"16px/24px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 1440 Explore arrow {"afPos":"static","afW":"16px","textRight":121,"btnRight":165}
+PASS 1440 Explore color {"bg":"rgba(255, 255, 255, 0)","color":"rgb(41, 62, 45)","shadow":"rgb(41, 62, 45) 0px 0px 0px 1px inset"}
+PASS 1440 Explore hover rgb(244, 249, 244)
+PASS 1440 Explore focus ring rgb(41, 62, 45) 0px 0px 0px 1px inset, rgb(207, 227, 209) 0px 0px 0px 4px
+PASS 1440 Shop in-stock sofa size {"h":48,"font":"16px/24px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 1440 Shop in-stock sofa arrow {"afPos":"static","afW":"16px","textRight":208,"btnRight":252}
+PASS 1440 Shop in-stock sofa color {"bg":"rgb(255, 255, 255)","color":"rgb(41, 62, 45)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 1440 Shop in-stock sofa hover rgb(244, 249, 244)
+PASS 1440 Shop in-stock sofa focus ring rgba(0, 0, 0, 0) 0px 0px 0px 0px inset, rgb(207, 227, 209) 0px 0px 0px 4px
+PASS 1440 View all post size {"h":48,"font":"16px/24px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 1440 View all post arrow {"afPos":"static","afW":"16px","textRight":747,"btnRight":791}
+PASS 1440 View all post color {"bg":"rgb(88, 143, 96)","color":"rgb(255, 255, 255)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 1440 View all post hover rgb(69, 116, 76)
+PASS 1440 View all post focus ring rgba(0, 0, 0, 0) 0px 0px 0px 0px inset, rgb(207, 227, 209) 0px 0px 0px 4px
+PASS 1440 6 CTA found {"Explore all":2,"Go to Collection":1,"Explore":1,"Shop in-stock sofa":1,"View all post":1}
+PASS 1440 hero unchanged {"h":48,"bg":"rgb(88, 143, 96)","afPos":"absolute","afMask":"none"}
+PASS 1440 promo unchanged ["36x36 1px rgb(255, 255, 255) rgba(0, 0, 0, 0)","36x36 1px rgb(255, 255, 255) rgba(0, 0, 0, 0)","36x36 1px rgb(255, 255, 255) rgba(0, 0, 0, 0)","36x36 1px rgb(255, 255, 255) rgba(0, 0, 0, 0)"]
+PASS 1440 rail nav (6) [{"wh":"48x48","border":"1px rgb(88, 143, 96)","bg":"rgba(255, 255, 255, 0)","color":"rgb(88, 143, 96)","r":"6px","svg":"24x24 M15 19l-7-7 7-7"},{"wh":"48x48","border":"1px rgb(88, 143, 96)","bg":"rgba(255, 255, 255, 0)","color":"rgb(88, 143, 96)","r":"6px","svg":"24x24 M9 5l7 7-7 7"}]
+PASS 1440 rail nav hover rgb(244, 249, 244)
+PASS 1440 newsletter btn {"h":44,"pad":"10px 20px","font":"16px/24px/500","bg":"rgb(69, 116, 76)","color":"rgb(255, 255, 255)","r":"6px"}
+PASS 1440 newsletter hover rgb(53, 87, 58)
+PASS 1440 0 pageerror []
+PASS 375 Explore all#1 size {"h":48,"font":"14px/20px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 375 Explore all#1 arrow {"afPos":"static","afW":"16px","textRight":201,"btnRight":245}
+PASS 375 Explore all#1 color {"bg":"rgb(88, 143, 96)","color":"rgb(255, 255, 255)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 375 Explore all#2 size {"h":48,"font":"14px/20px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 375 Explore all#2 arrow {"afPos":"static","afW":"16px","textRight":101,"btnRight":145}
+PASS 375 Explore all#2 color {"bg":"rgb(88, 143, 96)","color":"rgb(255, 255, 255)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 375 Go to Collection size {"h":48,"font":"14px/20px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 375 Go to Collection arrow {"afPos":"static","afW":"16px","textRight":219,"btnRight":263}
+PASS 375 Go to Collection color {"bg":"rgb(69, 116, 76)","color":"rgb(255, 255, 255)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 375 Explore size {"h":48,"font":"14px/20px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 375 Explore arrow {"afPos":"static","afW":"16px","textRight":82,"btnRight":126}
+PASS 375 Explore color {"bg":"rgba(255, 255, 255, 0)","color":"rgb(41, 62, 45)","shadow":"rgb(41, 62, 45) 0px 0px 0px 1px inset"}
+PASS 375 Shop in-stock sofa size {"h":48,"font":"14px/20px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 375 Shop in-stock sofa arrow {"afPos":"static","afW":"16px","textRight":158,"btnRight":202}
+PASS 375 Shop in-stock sofa color {"bg":"rgb(255, 255, 255)","color":"rgb(41, 62, 45)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 375 View all post size {"h":48,"font":"14px/20px/500","ff":"Inter","pad":"12px 22px 12px 24px","r":"6px","gap":"6px"}
+PASS 375 View all post arrow {"afPos":"static","afW":"16px","textRight":208,"btnRight":252}
+PASS 375 View all post color {"bg":"rgb(88, 143, 96)","color":"rgb(255, 255, 255)","shadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px inset"}
+PASS 375 6 CTA found {"Explore all":2,"Go to Collection":1,"Explore":1,"Shop in-stock sofa":1,"View all post":1}
+PASS 375 hero unchanged {"h":48,"bg":"rgb(88, 143, 96)","afPos":"absolute","afMask":"none"}
+PASS 375 promo unchanged ["36x36 1px rgb(255, 255, 255) rgba(0, 0, 0, 0)","36x36 1px rgb(255, 255, 255) rgba(0, 0, 0, 0)","36x36 1px rgb(255, 255, 255) rgba(0, 0, 0, 0)","36x36 1px rgb(255, 255, 255) rgba(0, 0, 0, 0)"]
+PASS 375 rail nav (6) [{"wh":"48x48","border":"1px rgb(88, 143, 96)","bg":"rgba(255, 255, 255, 0)","color":"rgb(88, 143, 96)","r":"6px","svg":"24x24 M15 19l-7-7 7-7"},{"wh":"48x48","border":"1px rgb(88, 143, 96)","bg":"rgba(255, 255, 255, 0)","color":"rgb(88, 143, 96)","r":"6px","svg":"24x24 M9 5l7 7-7 7"}]
+PASS 375 newsletter btn {"h":44,"pad":"10px 20px","font":"14px/20px/500","bg":"rgb(69, 116, 76)","color":"rgb(255, 255, 255)","r":"6px"}
+PASS 375 0 pageerror []
+RESULT: ALL PASS

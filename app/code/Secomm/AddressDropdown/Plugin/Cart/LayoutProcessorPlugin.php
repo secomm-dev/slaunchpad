@@ -8,7 +8,8 @@ use Psr\Log\LoggerInterface;
 class LayoutProcessorPlugin
 {
     public function __construct(
-        protected LoggerInterface $logger
+        protected LoggerInterface $logger,
+        protected \Secomm\AddressDropdown\Helper\Data $addressDropdownHelper
     )
     {
         $this->logger = $logger;
@@ -16,6 +17,11 @@ class LayoutProcessorPlugin
 
     public function afterProcess(LayoutProcessor $subject, array $jsLayout)
     {
+        // TASK-SEC-A5: master switch off — never touch the cart checkout fields.
+        if (!$this->addressDropdownHelper->isAddressDropdownModuleEnabled()) {
+            return $jsLayout;
+        }
+
         $fieldsAttribute = ['city', 'custom_city'];
         $template = 'ui/form/field';
         $cityField = [

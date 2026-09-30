@@ -21,6 +21,9 @@
 /* Secomm UI widget component templates + utilities (app/code is outside the
    theme @source above — without this the embed/video component renders unstyled) */
 @source "../../../../../app/code/Secomm/UiWidget/view/**/*.phtml";
+/* Launchpad_CmsContent templates (footer newsletter form, TASK-7EYJ4C) sit outside
+   the theme @source above — without this the form utilities never compile. */
+@source "../../../../../../code/Launchpad/CmsContent/view/**/*.phtml";
 /* LAUNCHPAD CMS content classes (TASK-0NNZCW): cms_page.content / cms_block.content
    live in the database — Tailwind cannot scan them, so every class/variant used
    there is listed in this safelist markup (scanned like any other source). */

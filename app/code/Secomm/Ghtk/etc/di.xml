@@ -7,8 +7,10 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Secomm\Ghtk\Model\OrderSubmit\CodAmountResolverInterface"
-                type="Secomm\Ghtk\Model\OrderSubmit\DefaultCodAmountResolver" />
+    <!-- TASK-DFGFZ9 phase 2 (DEC-TASKDFGFZ9-002): the COD seam is now
+         Secomm\Cod\Api\CodCollectionResolverInterface (identification + amount + currency +
+         rejection policy) — override it THERE, never per-carrier. The former Ghtk-local
+         CodAmountResolverInterface/DefaultCodAmountResolver seam is deleted. -->
 
     <!-- TASK-7AJ3K8: tracking reconciliation orchestration is SHARED (ShippingCore); this
          virtual type binds it to the GHTK fetcher + carrier code. Carrier config policy

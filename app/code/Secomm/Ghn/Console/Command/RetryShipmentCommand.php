@@ -105,6 +105,12 @@ class RetryShipmentCommand extends Command
             (string) $outcome->getReason(),
             $outcome->getClientOrderCode()
         ));
+        if ($outcome->getStatus() === GhnCreateOutcome::STATUS_COD_REJECTED) {
+            $output->writeln(sprintf(
+                '<error>COD policy: %s</error>',
+                (string) $outcome->getRejectionMessage()
+            ));
+        }
 
         return Cli::RETURN_FAILURE;
     }

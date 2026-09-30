@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- Bug fix 2026-09-22 (Bug 1): authoritative place-order gate — the availability
+         plugin refreshes only the rendered list; OSC does not reload it on every
+         phone edit. Fires for guest + registered + API place-order. -->
+    <event name="sales_model_service_quote_submit_before">
+        <observer name="secomm_codrisk_availability_guard"
+                  instance="Secomm\CodRisk\Observer\CodAvailabilityGuard"/>
+    </event>
+</config>

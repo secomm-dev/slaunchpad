@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <!--
-  ~ TASK-STC3NB — COD payment identification defaults.
-  ~ Empty by default: nothing is treated as COD until the merchant declares payment method
-  ~ codes (safe false — emergency/policy decisions must be explicit).
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<!--
+  ~ TASK-DFGFZ9 (DEC-TASKDFGFZ9-001/003): COD identification moved OUT of ShippingCore —
+  ~ owned by Secomm_Cod (P1 default `cashondelivery` hardcoded; no config surface).
   -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
@@ -15,9 +19,6 @@
                 <default_package_width/>
                 <default_package_height/>
             </physical>
-            <cod>
-                <payment_methods/>
-            </cod>
         </secomm_shippingcore>
     </default>
 </config>

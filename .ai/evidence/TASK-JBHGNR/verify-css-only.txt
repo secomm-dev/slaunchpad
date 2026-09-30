@@ -1,0 +1,351 @@
+{
+ "cards": {
+  "bedroom/beds.html": [
+   {
+    "text": "Queen",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "King",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Cream",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgba(0, 0, 0, 0)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Oatmeal",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgba(0, 0, 0, 0)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   }
+  ],
+  "living-room/living-room-seating.html": [
+   {
+    "text": "2 Seat",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Corner",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Ottoman",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Cream",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgba(0, 0, 0, 0)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Sage",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgba(0, 0, 0, 0)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Charcoal",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgba(0, 0, 0, 0)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   }
+  ],
+  "dining/dining-tables.html": [
+   {
+    "text": "4 Seat",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   }
+  ]
+ },
+ "pdp": {
+  "haven-platform-bed.html": [
+   {
+    "text": "Queen",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "King",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Cream",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Oatmeal",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   }
+  ],
+  "meridian-modular-sofa.html": [
+   {
+    "text": "2 Seat",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Corner",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Ottoman",
+    "type": "text",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Cream",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Sage",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   },
+   {
+    "text": "Charcoal",
+    "type": "visual",
+    "disabled": false,
+    "border": "solid rgb(209, 213, 220)",
+    "color": "rgb(16, 24, 40)",
+    "opacity": "1",
+    "innerOpacity": "1",
+    "bgImage": "none",
+    "after": null,
+    "cursor": "pointer"
+   }
+  ]
+ },
+ "sofaAfterCharcoal": [
+  "2 Seat:enabled",
+  "Corner:disabled",
+  "Ottoman:enabled",
+  "Cream:enabled",
+  "Sage:enabled",
+  "Charcoal:enabled"
+ ],
+ "sofaAfterCharcoalStyles": [
+  {
+   "text": "2 Seat",
+   "type": "text",
+   "disabled": false,
+   "border": "solid rgb(209, 213, 220)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "innerOpacity": "1",
+   "bgImage": "none",
+   "after": null,
+   "cursor": "pointer"
+  },
+  {
+   "text": "Corner",
+   "type": "text",
+   "disabled": true,
+   "border": "solid rgb(229, 231, 235)",
+   "color": "rgb(153, 161, 175)",
+   "opacity": "1",
+   "innerOpacity": "1",
+   "bgImage": "linear-gradient(to right bottom, rgba(0, 0, 0, 0) calc(50% -",
+   "after": null,
+   "cursor": "not-allowed"
+  },
+  {
+   "text": "Ottoman",
+   "type": "text",
+   "disabled": false,
+   "border": "solid rgb(209, 213, 220)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "innerOpacity": "1",
+   "bgImage": "none",
+   "after": null,
+   "cursor": "pointer"
+  },
+  {
+   "text": "Cream",
+   "type": "visual",
+   "disabled": false,
+   "border": "solid rgba(0, 0, 0, 0)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "innerOpacity": "1",
+   "bgImage": "none",
+   "after": null,
+   "cursor": "pointer"
+  },
+  {
+   "text": "Sage",
+   "type": "visual",
+   "disabled": false,
+   "border": "solid rgba(0, 0, 0, 0)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "innerOpacity": "1",
+   "bgImage": "none",
+   "after": null,
+   "cursor": "pointer"
+  },
+  {
+   "text": "Charcoal",
+   "type": "visual",
+   "disabled": false,
+   "border": "solid rgb(41, 62, 45)",
+   "color": "rgb(16, 24, 40)",
+   "opacity": "1",
+   "innerOpacity": "1",
+   "bgImage": "none",
+   "after": null,
+   "cursor": "pointer"
+  }
+ ],
+ "pageerrors": []
+}

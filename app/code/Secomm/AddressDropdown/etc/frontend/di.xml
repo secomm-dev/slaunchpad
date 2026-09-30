@@ -19,6 +19,11 @@
             </argument>
         </arguments>
     </type>
+    <!-- TASK-SEC-A5 — store-scoped master switch for storefront JS (window.checkoutConfig). -->
+    <type name="Magento\Checkout\Model\DefaultConfigProvider">
+        <plugin name="secomm_addressdropdown_master_switch"
+                type="Secomm\AddressDropdown\Plugin\Checkout\DefaultConfigProviderPlugin"/>
+    </type>
     <type name="Magento\Directory\Helper\Data">
         <plugin name="get_region_data_plugin"
                 type="Secomm\AddressDropdown\Plugin\GetRegionDataPlugin"/>

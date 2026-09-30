@@ -8,7 +8,10 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
     <!-- SPEC-FEAT-FQWEQ3 §39 — dependency direction: Secomm_Ghn → Secomm_ShippingCore →
          Secomm_VietNamAddress. No dependency on Secomm_GiaoHangNhanh / Secomm_GhnAddressMapper
-         (legacy, replaced at GHN-F / TASK-8019VC); no carrier may depend on Secomm_Ghn. -->
+         (legacy, replaced at GHN-F / TASK-8019VC); no carrier may depend on Secomm_Ghn.
+         TASK-DFGFZ9 phase 2 (Rev v12): Secomm_Cod is consumed for the CREATE collection
+         decision — this deliberately REVERSES the former forbidden edge Secomm_Ghn -X-> Secomm_Cod
+         (identification owner + P1 collection policy; DEC-TASKDFGFZ9-002). -->
     <module name="Secomm_Ghn">
         <sequence>
             <module name="Magento_Backend"/>
@@ -20,6 +23,10 @@
             <module name="Magento_Quote"/>
             <module name="Secomm_VietNamAddress"/>
             <module name="Secomm_ShippingCore"/>
+            <module name="Secomm_Cod"/>
+            <!-- TASK-RT50KH — product shipping-dimension read contract (Secomm_Base owns
+                 the authoritative dimension attributes + reader). -->
+            <module name="Secomm_Base"/>
         </sequence>
     </module>
 </config>

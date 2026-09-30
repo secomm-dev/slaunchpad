@@ -30,8 +30,8 @@ class VnSchemesTest extends TestCase
         $catalog = VnSchemes::catalog();
 
         $this->assertSame(['regions' => 34, 'depth1' => 3321, 'depth2' => 0], $catalog[VnSchemes::VN_ADMIN_2025]['counts']);
-        $this->assertSame(['regions' => 63, 'depth1' => 699, 'depth2' => 10595], $catalog[VnSchemes::VN_ADMIN_PRE_2025]['counts']);
-        $this->assertSame(['groups' => 19, 'rows' => 38], $catalog[VnSchemes::VN_ADMIN_PRE_2025]['collision']);
+        $this->assertSame(['regions' => 63, 'depth1' => 696, 'depth2' => 10035], $catalog[VnSchemes::VN_ADMIN_PRE_2025]['counts']);
+        $this->assertSame(['groups' => 18, 'rows' => 36], $catalog[VnSchemes::VN_ADMIN_PRE_2025]['collision']);
         $this->assertNull($catalog[VnSchemes::VN_ADMIN_2025]['collision']);
     }
 

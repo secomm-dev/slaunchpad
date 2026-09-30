@@ -1,6 +1,6 @@
 <?php
 /*
- * TASK-5XQXZK (DEC-TASK5XQXZK-001) — "Launchpad Settings" tab on the Mageplaza method form.
+ * TASK-5XQXZK (DEC-TASK5XQXZK-001) — "Fallback Settings" tab on the Mageplaza method form.
  *
  * @author Secomm Team
  * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
@@ -44,7 +44,7 @@ class Launchpad extends Generic implements TabInterface
     {
         parent::_construct();
         $this->setDestElementId('edit_form');
-        $this->setTitle(__('Launchpad Settings'));
+        $this->setTitle(__('Fallback Settings'));
     }
 
     protected function _prepareForm()
@@ -52,7 +52,7 @@ class Launchpad extends Generic implements TabInterface
         $form = $this->_formFactory->create();
         $form->setHtmlIdPrefix('launchpad_');
 
-        $fieldset = $form->addFieldset('launchpad_fieldset', ['legend' => __('Launchpad Settings')]);
+        $fieldset = $form->addFieldset('launchpad_fieldset', ['legend' => __('Fallback Settings')]);
 
         $methodId = (int) ($this->_coreRegistry->registry(\Mageplaza\TableRateShipping\Model\RegistryConstants::METHOD)?->getId() ?? 0);
         $settings = $this->settingsProvider->getSettingsMap()[$methodId] ?? null;
@@ -110,12 +110,12 @@ class Launchpad extends Generic implements TabInterface
 
     public function getTabLabel(): \Magento\Framework\Phrase
     {
-        return __('Launchpad Settings');
+        return __('Fallback Settings');
     }
 
     public function getTabTitle(): \Magento\Framework\Phrase
     {
-        return __('Launchpad Settings');
+        return __('Fallback Settings');
     }
 
     public function canShowTab(): bool

@@ -40,7 +40,7 @@ class ImportVnAdminPre2025To2025MappingPatchTest extends TestCase
             'Secomm_VietNamAddress'
         );
         $this->mappingImporter->expects($this->once())->method('import')->with(
-            '/magento/app/code/Secomm/VietNamAddress/Files/VN_ADMIN_PRE_2025_TO_2025_mapping.csv',
+            '/magento/app/code/Secomm/VietNamAddress/Files/VN_ADMIN_PRE_2025_TO_2025_SNAPSHOT_2024_mapping.csv',
             false
         );
 

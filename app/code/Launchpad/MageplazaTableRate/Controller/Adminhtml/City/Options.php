@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 namespace Launchpad\MageplazaTableRate\Controller\Adminhtml\City;
+use Magento\Framework\Controller\Result\RawFactory;
 
 use Launchpad\MageplazaTableRate\Controller\Adminhtml\City;
 use Launchpad\MageplazaTableRate\Model\MethodSettingsProvider;
@@ -20,7 +21,7 @@ use Magento\Framework\Controller\ResultInterface;
 
 /**
  * GET launchpad_mptablerate/city/options?region=<region_id> →
- * `{"options": [{"code": "", "label": "All / *"}, {"code": "VNA25-…", "label": "…"}, …]}`.
+ * `{"options": [{"code": "", "label": "All"}, {"code": "VNA25-…", "label": "…"}, …]}`.
  * ACL `Mageplaza_TableRateShipping::method`; AJAX-only (noroute otherwise).
  */
 class Options extends City
@@ -28,9 +29,10 @@ class Options extends City
     public function __construct(
         Context $context,
         private readonly MethodSettingsProvider $settingsProvider,
-        private readonly JsonFactory $resultJsonFactory
+        private readonly JsonFactory $resultJsonFactory,
+        RawFactory $resultRawFactory
     ) {
-        parent::__construct($context);
+        parent::__construct($context, $resultRawFactory);
     }
 
     /**

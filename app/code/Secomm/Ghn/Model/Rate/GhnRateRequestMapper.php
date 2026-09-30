@@ -23,10 +23,11 @@ use Secomm\Ghn\Model\Exception\GhnRateEstimationException;
  *   LocalizedException at the carrier boundary — never a guess). Per-UNIT weights are
  *   converted once and multiplied by whole unit counts inside
  *   {@see QuoteParcelEstimator::estimate()} (PRODUCT_UNIT_AS_PACKAGE).
- * - Dimensions are deliberately NOT read at RATE: Magento carries no dimension-unit contract,
- *   and the sandbox Fee evidence shows unproven dimensions DISTORT pricing (type-2 root dims
- *   changed the fee materially) while type-5 items price fine weight-only. Omittance is
- *   contract-valid; dimensions come back when an upstream unit-aware parcel contract exists.
+ * - Dimensions (TASK-RT50KH — supersedes the earlier "deliberately NOT read" bullet): the
+ *   Secomm_Base shipping-dimension contract is now read per unit and feeds EXCLUSIVELY the
+ *   150cm hard-limit gate (see QuoteParcelEstimator). They are still OMITTED from the fee
+ *   payload — the pricing-distortion sandbox evidence stands (type-2 root dims changed the
+ *   fee materially) while type-5 items price fine weight-only.
  * - No collection amount at RATE: whether the order is COD and how much is collected is decided
  *   upstream — the carrier never infers it from the Magento payment method (SPEC §16).
  * - No dest city node id exists on a RateRequest, so cityId is always null and the locality

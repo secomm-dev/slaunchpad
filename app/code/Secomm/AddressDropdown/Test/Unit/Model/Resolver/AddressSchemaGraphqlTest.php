@@ -5,6 +5,7 @@ namespace Secomm\AddressDropdown\Test\Unit\Model\Resolver;
 
 use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Framework\GraphQl\Exception\GraphQlNoSuchEntityException;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\AddressDropdown\Api\AddressProfileResolverInterface;
@@ -28,10 +29,14 @@ class AddressSchemaGraphqlTest extends TestCase
         $this->profileResolver = $this->createMock(AddressProfileResolverInterface::class);
         $this->schemaProvider = $this->createMock(AddressSchemaProviderInterface::class);
         $this->pool = $this->createMock(ProfilePool::class);
+        // Default-enabled fixture: these tests exercise the resolver behavior, not the switch.
+        $scopeConfig = $this->createMock(ScopeConfigInterface::class);
+        $scopeConfig->method('isSetFlag')->willReturn(true);
         $this->resolver = new AddressSchemaGraphql(
             $this->profileResolver,
             $this->schemaProvider,
-            $this->pool
+            $this->pool,
+            $scopeConfig
         );
     }
 

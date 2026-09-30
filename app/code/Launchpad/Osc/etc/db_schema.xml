@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * SLP-232: re-declare quote_address.osc_gift_wrap_amount as decimal.
+ *
+ * Mageplaza_Osc 2.1.9 (product One Step Checkout 4.3.14 — current latest) declares
+ * this column with xsi:type="boolean", which resolves to TINYINT(1) (signed, max 127).
+ * Every totals collect copies the gift wrap amount onto the address (vendor
+ * TotalsCollector::collectAddressTotals does $address->addData($total->getData())),
+ * so the amount is persisted on quote save and clamped to 127 for any configured
+ * amount >= 128 — every real VND case. The checkout Order Summary segment then reads
+ * the clamped DB value and displays "127" while grand total math stays correct
+ * (computed in memory).
+ *
+ * This declaration merges AFTER the vendor one (module.xml sequences Mageplaza_Osc),
+ * so `setup:db-schema:upgrade` generates the tinyint -> decimal ALTER once and the
+ * merged declaration keeps the DB stable afterwards. Matches the sibling vendor
+ * declarations (sales_order_item / sales_invoice / sales_creditmemo) and the
+ * base_osc_gift_wrap_amount column on the same table.
+ *
+ * Soft coupling: with Mageplaza_Osc absent the gift wrap feature does not run, and
+ * this declaration merely keeps the (then orphaned) column alive — same posture as
+ * the vendor's mposc_field_* columns. Declarative schema is not PHP, so no
+ * ModuleManager runtime gate applies. If a future Mageplaza release fixes the vendor
+ * type, this file becomes a no-op and can be removed.
+ *
+ * One-time data repair per environment after the schema upgrade (clamped rows keep
+ * 127; exact original is unrecoverable for mixed-currency setups):
+ *   UPDATE quote_address SET osc_gift_wrap_amount = base_osc_gift_wrap_amount
+ *   WHERE osc_gift_wrap_amount = 127 AND base_osc_gift_wrap_amount > 127;
+ *
+ * Known related vendor sloppiness intentionally out of scope (functionally harmless):
+ * used_gift_wrap declared decimal (flag stored 0/1 works), quote_item + sales_order
+ * osc_gift_wrap_amount declared text (no clamping).
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="quote_address" resource="sales" comment="Sales Flat Order">
+        <column xsi:type="decimal" name="osc_gift_wrap_amount" nullable="true"
+                comment="Osc Gift Wrap Amount"/>
+    </table>
+</schema>

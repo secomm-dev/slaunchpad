@@ -9,13 +9,14 @@ namespace Secomm\AddressDropdown\Controller\Adminhtml\Region;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Ui\Component\MassAction\Filter;
 use Secomm\AddressDropdown\Model\ResourceModel\RegionModel\CollectionFactory;
 use Secomm\AddressDropdown\Command\Region\DeleteByIdCommand;
 
-class MassDelete extends \Magento\Backend\App\Action
+class MassDelete extends \Magento\Backend\App\Action implements HttpPostActionInterface
 {
     /**
      * Authorization level of a basic admin session.
@@ -64,6 +65,13 @@ class MassDelete extends \Magento\Backend\App\Action
         /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
         $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
         $resultRedirect->setUrl($this->_redirect->getRefererUrl());
+
+        // TASK-SEC-A3: mass deletion is POST-only (form-key validated) — a GET navigation
+        // to this URL must never mutate data, even where the dispatcher allows it.
+        if (!$this->getRequest()->isPost()) {
+            $this->messageManager->addErrorMessage(__('Invalid request method. Delete requires POST.'));
+            return $resultRedirect;
+        }
 
         try {
             $selected = $this->getRequest()->getParam(Filter::SELECTED_PARAM);

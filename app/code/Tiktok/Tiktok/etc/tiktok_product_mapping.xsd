@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <!-- Root Element Definition -->
+    <xs:element name="config">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="product_headers">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <!-- Header elements can be repeated -->
+                            <xs:element name="header" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:choice>
+                                            <!-- Case 1: Single attribute with optional formatter -->
+                                            <xs:sequence>
+                                                <xs:element name="attribute" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                                                <xs:element name="formatter" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                                            </xs:sequence>
+
+                                            <!-- Case 2: Multiple attributes with required formatter -->
+                                            <xs:sequence>
+                                                <xs:element name="attribute" type="xs:string" minOccurs="2" maxOccurs="unbounded"/>
+                                                <xs:element name="formatter" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                                            </xs:sequence>
+
+                                            <!-- Case 3: No attributes with required formatter -->
+                                            <xs:sequence>
+                                                <xs:element name="attribute" type="xs:string" minOccurs="0" maxOccurs="0"/>
+                                                <xs:element name="formatter" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                                            </xs:sequence>
+                                        </xs:choice>
+
+                                        <!-- New <required> element as an enumeration -->
+                                        <xs:element name="required" type="requiredType" minOccurs="0" maxOccurs="1"/>
+
+                                        <!-- Optional <default> element -->
+                                        <xs:element name="default" type="xs:string" minOccurs="0" maxOccurs="1"/>
+
+                                        <!-- Optional <parent> element -->
+                                        <xs:element name="parent" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                                    </xs:sequence>
+
+                                    <!-- Attributes for the <header> element -->
+                                    <xs:attribute name="name" type="xs:string" use="required"/>
+                                    <xs:attribute name="csv_name" type="xs:string" use="optional"/>
+                                    <xs:attribute name="json_name" type="xs:string" use="optional"/>
+                                    <xs:attribute name="export_type" type="exportType" use="optional" default="both"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Define exportType for export type options: csv, json, or both -->
+    <xs:simpleType name="exportType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="csv"/>
+            <xs:enumeration value="json"/>
+            <xs:enumeration value="both"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Define requiredType for export-specific required attribute -->
+    <xs:simpleType name="requiredType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="csv"/>
+            <xs:enumeration value="json"/>
+            <xs:enumeration value="both"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

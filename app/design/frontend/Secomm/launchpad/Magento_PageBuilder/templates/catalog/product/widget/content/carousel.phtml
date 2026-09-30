@@ -33,6 +33,7 @@ $productListItemViewModel = $viewModels->require(ProductListItem::class);
     ?>
     <div class="hp-pb-products lp-pb-products">
         <div data-slider-type="product-carousel"
+             data-lp-drag
              class="snap-slider hp-pb-slider"
              data-pager-class="snap-pager hp-pb-pager lp-pb-pager"
              data-marker-class="snap-marker hp-pb-marker">
@@ -64,9 +65,9 @@ $productListItemViewModel = $viewModels->require(ProductListItem::class);
                     enables these via data-prev/data-next. */ ?>
             <div data-page-builder-slider-nav class="lp-pb-nav flex">
                 <button type="button" class="lp-nav-btn" aria-label="Previous products" data-prev
-                        disabled><?= /* @noEscape */ $viewModels->require(\Hyva\Theme\ViewModel\LucideIcons::class)->arrowLeftHtml('rtl:rotate-180', 18, 18, ['aria-hidden' => 'true']) ?></button>
+                        disabled><?= /* @noEscape */ $viewModels->require(\Hyva\Theme\ViewModel\HeroiconsOutline::class)->chevronLeftHtml('rtl:rotate-180', 24, 24, ['aria-hidden' => 'true']) ?></button>
                 <button type="button" class="lp-nav-btn" aria-label="Next products" data-next
-                        disabled><?= /* @noEscape */ $viewModels->require(\Hyva\Theme\ViewModel\LucideIcons::class)->arrowRightHtml('rtl:rotate-180', 18, 18, ['aria-hidden' => 'true']) ?></button>
+                        disabled><?= /* @noEscape */ $viewModels->require(\Hyva\Theme\ViewModel\HeroiconsOutline::class)->chevronRightHtml('rtl:rotate-180', 24, 24, ['aria-hidden' => 'true']) ?></button>
             </div>
         </div>
     </div>

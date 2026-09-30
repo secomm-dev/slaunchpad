@@ -5,15 +5,21 @@ define([
     'Magento_Checkout/js/model/quote',
     'Magento_Checkout/js/checkout-data',
     'Magento_Checkout/js/action/select-billing-address',
+    'Secomm_AddressDropdown/js/model/master-switch',
 ], function (wrapper,
              $,
              addressList,
              quote,
              checkoutData,
-             selectBillingAddress,) {
+             selectBillingAddress,
+             isEnabled,) {
     'use strict';
 
     return function (target) {
+        if (!isEnabled()) {
+            // TASK-SEC-A5: module disabled for this store scope — keep native behavior intact.
+            return target;
+        }
         target.applyBillingAddress = wrapper.wrapSuper(target.applyBillingAddress, function () {
             var shippingAddress,
                 isBillingAddressInitialized;

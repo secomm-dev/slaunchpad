@@ -1,0 +1,15 @@
+ app/code/Secomm/Ghn/CHANGELOG.md                   |  30 +++++
+ app/code/Secomm/Ghn/Model/Carrier/Ghn.php          | 139 ++++++++++++++-------
+ app/code/Secomm/Ghn/Model/Config.php               |  25 +++-
+ .../Secomm/Ghn/Model/Rate/GhnRateCalculator.php    |   4 +
+ .../Secomm/Ghn/Test/Unit/Model/Carrier/GhnTest.php | 127 ++++++++++++++++---
+ app/code/Secomm/Ghn/Test/Unit/Model/ConfigTest.php |   9 +-
+ app/code/Secomm/Ghn/etc/adminhtml/system.xml       |  20 +++
+ app/code/Secomm/Ghn/etc/config.xml                 |   3 +
+ .../Api/Failure/ShippingFailureReason.php          |  11 ++
+ app/code/Secomm/ShippingCore/CHANGELOG.md          |  44 +++++++
+ app/code/Secomm/ShippingCore/docs/USER_GUIDE.md    |  60 ++++++++-
+ app/code/Secomm/ShippingCore/etc/db_schema.xml     |  21 ++++
+ .../ShippingCore/etc/db_schema_whitelist.json      |  17 +++
+ app/code/Secomm/ShippingCore/etc/di.xml            |  23 +++-
+ 14 files changed, 467 insertions(+), 66 deletions(-)

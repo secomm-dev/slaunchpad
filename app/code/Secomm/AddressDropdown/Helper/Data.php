@@ -78,14 +78,31 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $regionId
-     * @return array|null
+     * Localized region names for one region id.
+     *
+     * TASK-SEC-A1 (SQLi fix): the id is cast at the boundary and the query uses a bound
+     * parameter with an explicit column list — no request value ever reaches SQL text.
+     *
+     * @param mixed $regionId
+     * @return array<int, array<string, mixed>> empty when the id is not a positive integer
      */
-    public function getAllRegionNamesByRegionId($regionId) : ?array
+    public function getAllRegionNamesByRegionId($regionId): array
     {
-        $connect = $this->resourceConnection->getConnection();
-        $sql = 'SELECT * FROM `'.$connect->getTableName('directory_country_region_name').'` WHERE `'.RegionInterface::REGION_ID.'` = '. $regionId .' ORDER BY `'.RegionInterface::REGION_ID.'` DESC';
-        return $connect->fetchAll($sql);
+        $regionId = (int) $regionId;
+        if ($regionId <= 0) {
+            return [];
+        }
+
+        $connection = $this->resourceConnection->getConnection();
+        $select = $connection->select()
+            ->from(
+                $connection->getTableName('directory_country_region_name'),
+                [RegionInterface::REGION_ID, 'locale', 'name']
+            )
+            ->where(RegionInterface::REGION_ID . ' = ?', $regionId)
+            ->order(RegionInterface::REGION_ID . ' DESC');
+
+        return $connection->fetchAll($select);
     }
 
     /**

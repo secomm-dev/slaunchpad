@@ -30,7 +30,7 @@
             </storageConfig>
             <updateUrl path="mui/index/render"/>
         </settings>
-        <aclResource>Secomm_AddressDropdown::management</aclResource>
+        <aclResource>Secomm_AddressDropdown::listing</aclResource>
         <dataProvider class="Secomm\AddressDropdown\Ui\DataProvider\CityDataProvider" name="city_listing_data_source">
             <settings>
                 <requestFieldName>city_id</requestFieldName>

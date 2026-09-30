@@ -1,0 +1,36 @@
+PASS AC1 tap: not paused after release — {"idx":0,"prog":0.2788,"paused":false}
+PASS AC1 tap: slide advances ≤5s
+PASS AC1 long-press: paused while finger down
+PASS AC1 long-press 1.5s: not paused after release — {"idx":1,"prog":0.0375,"paused":false}
+PASS AC1 long-press 1.5s: slide advances ≤5s
+PASS AC1 horizontal swipe: not paused after release — {"idx":2,"prog":0.0417,"paused":false}
+PASS AC1 horizontal swipe: slide advances ≤5s
+PASS AC1 vertical scroll from hero: not paused after release — {"idx":0,"prog":0.0417,"paused":false}
+PASS AC1 vertical scroll from hero: slide advances ≤5s
+PASS AC2 touch without pointerleave: not paused after release — {"idx":1,"prog":0.1032,"paused":false}
+PASS AC2 touch without pointerleave: slide advances ≤5s
+PASS mouse hover still pauses
+PASS mouse leave: not paused after release — {"idx":2,"prog":0.0375,"paused":false}
+PASS mouse leave: slide advances ≤5s
+PASS AC4 375 button — {"fs":"14px","lh":"20px","fw":"500","ff":"Inter","pt":"12px","pl":"24px","r":"6px","bg":"rgb(88, 143, 96)","h":48,"w":154}
+PASS AC4 375 title/description — {"h":{"fs":"30px","lh":"36px","fw":"700","ff":"Inter","pt":"0px","pl":"0px","r":"0px","bg":"rgba(0, 0, 0, 0)","h":36,"w":374},"p":{"fs":"16px","lh":"24px","fw":"400","ff":"Inter","pt":"0px","pl":"0px","r":"0px","bg":"rgba(0, 0, 0, 0)","h":48,"w":374}}
+PASS AC3 1440 button — {"fs":"16px","lh":"24px","fw":"500","ff":"Inter","pt":"12px","pl":"24px","r":"6px","bg":"rgb(88, 143, 96)","h":48,"w":169}
+PASS AC3 1440 title 60/72 — {"fs":"60px","lh":"72px","fw":"700","ff":"Inter","pt":"0px","pl":"0px","r":"0px","bg":"rgba(0, 0, 0, 0)","h":72,"w":1345}
+PASS AC3 1440 description 18/28 — {"fs":"18px","lh":"28px","fw":"400","ff":"Inter","pt":"0px","pl":"0px","r":"0px","bg":"rgba(0, 0, 0, 0)","h":28,"w":1345}
+PASS AC3 1440 button hover brand-600 — rgb(69, 116, 76)
+INFO non-hero PB primary button (unchanged rule): {"h":36,"fs":"16px","bg":"rgba(0, 0, 0, 0)"}
+PASS AC6 drag left → next slide — mid={"left":400,"cls":true,"snap":"none"} end=1441 W=1425
+PASS AC6 track follows mouse, snap off while dragging
+PASS AC6 drag does not open link — http://slaunchpad.localhost/
+PASS AC6 drag right → previous slide — end=0
+PASS AC6 short drag (< threshold) snaps back — end=0
+PASS AC6 drag right on first slide stays first — end=0
+PASS AC6 drag past last slide clamps at last — end=2882
+PASS AC6 snap restored after settle
+PASS AC6 url unchanged after all drags — http://slaunchpad.localhost/
+PASS AC7 cursor: slide grab, CTA pointer, dragging grabbing — {"slide":"grab","cta":"pointer","dragSlide":"grabbing","dragCta":"grabbing"}
+PASS AC7 cursor back to grab after drag — grab
+PASS AC6 plain click still opens slide link — http://slaunchpad.localhost/collection
+PASS 0 pageerror
+
+ALL PASS

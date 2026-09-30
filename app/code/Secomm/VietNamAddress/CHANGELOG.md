@@ -1,5 +1,54 @@
 # Secomm_VietNamAddress — Changelog
 
+## 1.6.0 — 2026-09-22 (TASK-G3K9V2 — additive read API cho zone/coverage admin)
+
+### Added — `VnAddressUnitProviderInterface` level/region lookups
+- `getByLevel(scheme, level)`: mọi unit của 1 cấp (vd level 1 = 34 tỉnh VN_ADMIN_2025) — phục vụ
+  province options (ShippingCore `ProvinceOptions`).
+- `getByRegion(scheme, regionCode, level)`: units của 1 cấp theo `region_code` (vd phường level 2
+  của tỉnh `VN-15`) — phục vụ ward options endpoint.
+- Cả hai là method ĐỌC additive, ORDER BY name_vi ASC, KHÔNG đụng import/GraphQL/scheme swap.
+  Lý do tồn tại: seeded `secomm_vietnam_address_unit` rows mang `parent_code = NULL` trên mọi
+  cấp con (defect đã ghi nhận cho stream này) nên `getChildren(scheme, parent)` không dùng được
+  cho các lookup này — `region_code`/`level` là cột đáng tin cậy. Consumer thứ hai (nằm ngoài
+  module): `Secomm\Ghn\Model\Address\Mapping\CanonicalCsvProvider` implement interface nên được
+  bổ sung 2 method cùng semantics trên dữ liệu CSV.
+
+## 1.5.0 — 2026-09-21 (TASK-SEC-1.2 r2 — exact keyset migration with old-value guard)
+
+### Changed — migration now converges on content, not counts
+- `VnSnapshotMappingResync` (new) + `ResyncVnAdminPre2025SnapshotMappingPatch` rewired: upsert
+  the full snapshot THEN delete EXACTLY the 41 bundled-ownership keys recorded in the new
+  manifest (`…mapping_manifest.json`: old relation_type + old is_primary + row fingerprint +
+  sha256 of both bundled files). A removed key is deleted only when the current row still
+  carries the exact old bundled value — a merchant-changed row is PRESERVED and reported as a
+  conflict (`complete with preserved merchant conflict`), never silently overwritten.
+- Checksums upgraded MD5 → SHA-256 (contract never released; no BC constraint). Manifest
+  contract conflicts (a removed key re-appearing in the snapshot) fail loudly before any write.
+- Count is no longer an identity: a table with the right row count but wrong content is resynced.
+
+## 1.4.0 — 2026-09-21 (TASK-SEC-B1 — PRE-2025 dataset contract repoint + checksum guard)
+
+### Fixed — authoritative dataset mismatch (fresh-install vs CLI divergence)
+- `VnSchemes::CATALOG` VN_ADMIN_PRE_2025 now points at the AUTHORITATIVE end-of-2024 snapshot
+  (`VN_ADMIN_PRE_2025_SNAPSHOT_2024_import.csv`, 63/696/10.035, collision 18/36, md5-guarded) —
+  the dataset production DB actually runs. Previously the catalog still named the superseded
+  `VN_ADMIN_PRE_2025_import.csv` (63/699/10.595): every CLI path (import / `--reference-only` /
+  dry-run) read the stale file with NO guard while only the fresh-install patch chain reached
+  the snapshot — a CLI re-import silently drifted the reference layer back to the superseded
+  dataset. Both files remain in `Files/`; the superseded one is archived history, referenced
+  by nothing.
+- `VnDatasetReader`: md5 checksum guard against the dataset version contract (explicit
+  checksum overrides pair with file overrides; test fixtures are exempt; the canonical file is
+  always checked) — a bundled dataset that does not match its contract now fails the import
+  loudly with a "checksum mismatch" error.
+- `ImportVnAdminPre2025To2025MappingPatch`: imports the authoritative snapshot mapping
+  (`VN_ADMIN_PRE_2025_TO_2025_SNAPSHOT_2024_mapping.csv`, 10.418 edges) — was the superseded
+  10.064-edge baseline. The `RefreshVnAdminPre2025Snapshot2024` corrective patch keeps running
+  after it (idempotent wipe + snapshot re-import, never an automatic runtime swap).
+- Tests: catalog contract values, shipped-file sizes, override-mechanism pairs and the new
+  checksum-guard cases (184 tests green).
+
 ## [Unreleased] — BUG-ZTGGYZ: canonical hierarchy — province→L2 edge (2026-09-14)
 - **Fixed** hierarchy contract: `parent_code` là canonical portable parent relation nhưng unit
   snapshot trước giờ MẤT province→L2 edge — seed CSV để trống parent cho direct-province children

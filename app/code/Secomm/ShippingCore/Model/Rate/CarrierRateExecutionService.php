@@ -263,6 +263,13 @@ final class CarrierRateExecutionService implements CarrierRateExecutionServiceIn
             return FallbackEligibility::integrationLimitation();
         }
 
+        if ($failureReason === ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE) {
+            // TASK-MQ2DRG (DEC-TASKMQ2DRG-001) — capability-unsupported (§35.5 materialized):
+            // the cart cannot be represented as an authoritative provider request; status
+            // stays UNAVAILABLE, the outcome is never reclassified.
+            return FallbackEligibility::integrationLimitation();
+        }
+
         // Policy-eligible but merchant-side configuration (or any non-representable reason):
         // fail closed — the eligibility decision never broadens beyond the frozen taxonomy.
         return FallbackEligibility::none();

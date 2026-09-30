@@ -17,9 +17,9 @@ namespace Secomm\Ghn\Model\Rate;
  * (CREATE keeps its own confirmed `ShipmentPhysicalData`/`secomm_physical` layer; RATE
  * estimate and CREATE physical data may legitimately diverge, brief §36).
  *
- * Dimensions: OPTIONAL trusted values only (cm, explicit unit source — brief §14/§16). The
- * Magento catalog is NOT a trusted source (no unit/semantics contract), so the estimator
- * leaves them null today; a future merchant-approved package profile may fill them. When
+ * Dimensions: OPTIONAL trusted values only (cm — the Secomm_Base shipping-dimension
+ * contract is the trusted source since TASK-RT50KH; the estimator fills them from the
+ * product attributes when complete-and-valid, else null). When
  * present they are (a) used for the SANDBOX-verified 150cm hard-limit check and (b) STILL
  * omitted from the fee payload (unproven dimensions distort pricing — root dims changed the
  * type-2 sandbox fee materially).

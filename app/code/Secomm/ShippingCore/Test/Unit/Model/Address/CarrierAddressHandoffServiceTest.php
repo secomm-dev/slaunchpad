@@ -284,6 +284,42 @@ class CarrierAddressHandoffServiceTest extends TestCase
         $this->assertSame([], $handoff->getCandidateCodes(), 'GHN/carriers never see candidate lists');
     }
 
+    public function testPickPrimaryAutoFirstResolvesThroughTheSharedSelector(): void
+    {
+        // TASK-KQCX3A §22 — ambiguous + PICK_PRIMARY + 3 PRE candidates + no primary:
+        // the shared selector returns ONE deterministic PRE candidate; handoff is RESOLVED
+        // and the carrier receives exactly that one unit code. No candidate list leaks.
+        $selection = $this->createMock(\Secomm\VietNamAddress\Api\Data\VnPrimaryCandidateSelectionInterface::class);
+        $selection->method('getStatus')->willReturn(
+            \Secomm\VietNamAddress\Api\Data\VnPrimaryCandidateSelectionInterface::STATUS_SELECTED
+        );
+        $selection->method('getSelectedCode')->willReturn('VNAP25-2DFEAEB69B');
+        $selection->method('getCandidateCount')->willReturn(3);
+        $selection->method('getSelectionReason')->willReturn(
+            \Secomm\VietNamAddress\Api\Data\VnPrimaryCandidateSelectionInterface::REASON_DETERMINISTIC_FIRST_NO_PRIMARY
+        );
+        $selector = $this->createMock(VnPrimaryCandidateSelectorInterface::class);
+        $selector->method('selectPrimary')->willReturn($selection);
+
+        $service = new CarrierAddressHandoffService($this->contextBuilder, $this->resolutionManager, $selector);
+        $context = $this->contextWithSource();
+        $this->resolutionManager->method('resolve')
+            ->willReturn($this->canonicalOutcome(VnAddressResolutionInterface::STATUS_AMBIGUOUS));
+
+        $handoff = $service->handoffContextForOperation(
+            $context,
+            $this->operationCapability(supportsTextualFallback: true),
+            'RATE',
+            \Secomm\ShippingCore\Api\Address\AddressResolutionPolicy::PICK_PRIMARY
+        );
+
+        $this->assertNotNull($handoff->getResolvedAddress(), 'auto-first selection must resolve the handoff');
+        $this->assertSame('VNAP25-2DFEAEB69B', $handoff->getResolvedAddress()->getUnitCode());
+        $this->assertNull($handoff->getFailureReason());
+        $this->assertSame([], $handoff->getCandidateCodes(), 'exactly one PRE code reaches the carrier — no candidate leak');
+        $this->assertFalse($handoff->isTextualFallbackEligible());
+    }
+
     public function testPickPrimaryWithoutDesignatedPrimaryFailsClosedUnresolved(): void
     {
         $service = new CarrierAddressHandoffService(

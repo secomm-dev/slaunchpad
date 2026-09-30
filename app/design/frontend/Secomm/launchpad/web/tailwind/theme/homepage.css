@@ -107,7 +107,11 @@
         --swatch-radius: 9999px;
         --swatch-px: 2px;
         --swatch-py: 2px;
+        /* SLP-272 CR1: the card box radius / white bg above made the selected
+           ring a rounded square on a white tile — keep it a circle round the dot. */
         border-color: transparent;
+        border-radius: var(--swatch-radius);
+        background-color: transparent;
     }
 
     .hp-card .swatch-option[data-swatch-type="visual"] > span {
@@ -121,9 +125,12 @@
         box-shadow: inset 0 0 0 1px #293e2d;
     }
 
-    .hp-card .swatch-option:is(:has(:disabled), [aria-disabled="true"]) {
-        border-style: dashed;
-        opacity: 0.45;
+    /* SLP-272: out-of-stock option — the card overrides border/colour above,
+       so re-apply the disabled tokens here (strike itself: swatches.css).
+       Colour dots keep the transparent ring. */
+    .hp-card .swatch-option:not([data-swatch-type="visual"]):is(:has(:disabled), [aria-disabled="true"]) {
+        border-color: var(--ds-border-gray-secondary);
+        color: var(--ds-text-gray-quinary);
     }
 
     .hp-card-badge {
@@ -131,12 +138,15 @@
         @apply absolute start-0 top-0 z-10 bg-hp-brand px-3 py-1 text-xs font-medium text-[#cfe3d1];
     }
 
+    /* Design Product card 2151:17180 "Icon button": sát góc trên phải media,
+       padding 8px, heart outline 24px, không nền / không bo tròn.
+       Markup: theme Magento_Catalog::product/list/wishlist/button.phtml. */
     .hp-card-wishlist {
-        @apply absolute end-1 top-1 z-10;
+        @apply absolute end-0 top-0 z-10;
     }
 
-    .hp-card-wishlist .btn {
-        @apply bg-transparent text-ink shadow-none hover:bg-transparent hover:text-hp-brand;
+    .hp-card-wishlist-btn {
+        @apply flex items-center justify-center p-2 text-ink transition-colors hover:text-hp-brand focus-visible:text-hp-brand focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-hp-brand;
     }
 
     /* Action row overlaid on the media bottom: always visible on touch,
@@ -185,8 +195,14 @@
         @apply line-clamp-2 text-base font-medium leading-6 text-hp-ink hover:text-hp-brand-dark lg:text-[18px] lg:leading-7;
     }
 
+    /* SLP-270 (Figma 2151:17146 "Brand Name"): Label M, one line; the empty
+       line is kept (min-height) when a product has no brand. Weight via
+       font-medium: --ds-type-label-m-font-weight resolves to "500px". */
     .hp-card-brand {
-        @apply text-sm font-medium leading-5 text-[#99a1af];
+        @apply block min-h-5 truncate font-medium;
+        color: var(--ds-text-gray-quinary);
+        font-size: var(--ds-type-label-m-font-size);
+        line-height: var(--ds-type-label-m-line-height);
     }
 
     .hp-card-price {
@@ -196,24 +212,6 @@
     .hp-card-discount {
         /* Design discount chip: red, square, white 12/16 medium. */
         @apply bg-[#c10007] px-3 py-1 text-xs font-medium leading-4 text-white;
-    }
-
-    .hp-card-swatches {
-        @apply mt-2 flex items-center gap-1.5;
-    }
-
-    .hp-card-swatch {
-        @apply h-4 w-4 rounded-full border border-slate-300;
-    }
-
-    .hp-card-swatch-out {
-        background-image: linear-gradient(
-            to bottom right,
-            transparent calc(50% - 0.5px),
-            var(--color-red-700) calc(50% - 0.5px),
-            var(--color-red-700) calc(50% + 0.5px),
-            transparent calc(50% + 0.5px)
-        );
     }
 
     /* Design meta row: "In stock" left + rating right, single line. */
@@ -590,8 +588,21 @@
         @apply absolute bottom-full end-0 z-10 items-center justify-end gap-4;
     }
 
+    /* BUG-QJWCNG: Figma 2151:17177 — outline primary/brand-500, chevron 24px. */
     .lp-nav-btn {
-        @apply flex h-12 w-12 items-center justify-center rounded-md border border-[#d1d5dc] bg-white text-[#293e2d] transition hover:bg-hp-soft disabled:cursor-default disabled:opacity-40;
+        @apply flex h-12 w-12 items-center justify-center rounded-md border transition disabled:cursor-default disabled:opacity-40;
+        border-color: var(--ds-primary-brand-500);
+        background-color: var(--ds-bg-white-transparent);
+        color: var(--ds-primary-brand-500);
+
+        &:hover {
+            background-color: var(--ds-primary-brand-50);
+        }
+
+        &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 4px var(--ds-effects-focus-ring-primary);
+        }
     }
 
     /* Pager dots (design: 8px dot #a9ccae, active 24x8 pill #588f60). */
@@ -685,6 +696,28 @@
         }
     }
 
+    /* Widget option `title`: heading rendered by the widget itself (insert
+       without a PB heading). Same type scale as the homepage PB heading;
+       countdown sits in the head row instead of floating above the widget. */
+    .lp-flash-head {
+        @apply mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6;
+    }
+
+    .lp-flash-title {
+        @apply !m-0 font-sans text-[20px] font-medium leading-[28px] text-black lg:text-[36px] lg:font-bold lg:leading-[40px] lg:tracking-[-0.5px] lg:text-[#293e2d];
+    }
+
+    .lp-flash-head .lp-flash-countdown {
+        @apply mb-0;
+    }
+
+    @media (min-width: 64rem) {
+        .lp-flash-head .lp-flash-countdown {
+            position: static;
+            flex-shrink: 0;
+        }
+    }
+
     /* ---------------- REAL SPACES video (PB video element) ---------------- */
 
     /* REAL SPACES video lives in a PB html element (.lp-video): the native
@@ -748,15 +781,25 @@
        app/code templates are NOT in the theme's @source — utility classes used
        only there would never compile. Style them via these lp-* classes. */
     .lp-newsletter-form {
-        @apply mx-auto flex w-full max-w-[1136px] flex-col gap-3 lg:flex-row lg:items-center lg:gap-4;
+        @apply mx-auto flex w-full max-w-[1136px] flex-col gap-3 lg:flex-row lg:items-start lg:gap-4;
+    }
+
+    /* hyva.formValidation message container: the error list renders under the
+       input (left-aligned inside the centered band), the button stays on the row. */
+    .lp-newsletter-field {
+        @apply mt-0 w-full text-start lg:flex-1;
+
+        .messages {
+            @apply mt-1;
+        }
     }
 
     .lp-newsletter-input {
         @apply h-11 w-full rounded-md border border-[#d1d5dc] bg-white px-4 text-base leading-6 text-hp-ink placeholder:text-[#99a1af] focus:border-hp-brand focus:outline-none;
-    }
 
-    .lp-newsletter-btn {
-        @apply h-11 shrink-0 rounded-md bg-hp-brand-dark px-6 text-base font-medium text-white transition hover:bg-hp-ink;
+        &[aria-invalid="true"] {
+            border-color: var(--ds-border-error-primary);
+        }
     }
 
     .lp-journal-media img {
@@ -789,15 +832,24 @@ body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] {
     overflow: hidden !important;
 }
 
+/* SLP-266: hero = exactly ONE screen at every breakpoint (was a fixed
+   750/1024px that overflowed the viewport). Header + demo notice are NOT
+   subtracted — they will become fixed and overlay the hero.
+   svh (not dvh): stays stable while the mobile URL bar shows/hides, so the
+   hero does not resize and shift the page on scroll. 100vh is the
+   fallback for browsers without small-viewport units (Chrome < 108,
+   Safari < 15.4); svh sits in @supports because the Tailwind minifier
+   collapses a same-rule `height: 100vh; height: 100svh` pair and drops
+   the fallback. */
 body.cms-index-index [data-content-type="slider"] .pagebuilder-slide-wrapper {
-    height: 750px !important;
+    height: 100vh !important;
     background-size: cover !important;
     background-position: center !important;
 }
 
-@media (min-width: 64rem) {
+@supports (height: 100svh) {
     body.cms-index-index [data-content-type="slider"] .pagebuilder-slide-wrapper {
-        height: 1024px !important;
+        height: 100svh !important;
     }
 }
 
@@ -827,14 +879,37 @@ body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay [d
     }
 }
 
+/* Design "Filter" dưới ảnh hero (mobile 2151:16907, desktop 2151:17108): nền
+   tối dần xuống đáy để title / description / CTA trắng đọc rõ trên mọi ảnh.
+   Gắn lên overlay của MỌI slide (PB chỉ đặt background-color lên overlay —
+   ảnh slide nằm ở .pagebuilder-slide-wrapper — nên background-image rảnh;
+   overlay color do Admin chọn vẫn chồng bên dưới gradient).
+   --lp-media-filter dùng chung với editorial banner (New Sofa for Autumn). */
+body.cms-index-index {
+    --lp-media-filter: linear-gradient(180deg, rgb(0 0 0 / 0) 65.518%, rgb(0 0 0 / 0.48) 99.952%);
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index {
+        --lp-media-filter: linear-gradient(180deg, rgb(0 0 0 / 0) 62.646%, rgb(0 0 0 / 0.75) 84.863%);
+    }
+}
+
+body.cms-index-index [data-content-type="slider"] [data-content-type="slide"] .pagebuilder-overlay {
+    background-image: var(--lp-media-filter) !important;
+}
+
 @layer base {
     body.cms-index-index [data-content-type="slider"] .pagebuilder-poster-overlay {
         padding-block-end: 4rem !important;
     }
 }
 
-/* hero dots: story-style progress fill, armed by hero-autoplay.phtml */
+/* hero dots: story-style progress fill, armed by hero-autoplay.phtml
+   --snap-gap: 0 — base .snap-track has a 16px gap, which showed as a white
+   strip between two full-bleed slides while they slide. */
 body.cms-index-index [data-content-type="slider"] [data-track] {
+    --snap-gap: 0px;
     padding-block: 0 !important;
 }
 
@@ -926,9 +1001,40 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
         background-color 0.3s ease !important;
 }
 
-/* v4.9.7 (user, Figma design): Category slider = HTML element (KHÔNG PB
-   column), track tràn ra mép phải viewport; dots SnapSlider autoPager —
-   CHỈ mobile/tablet (desktop design không có dot). */
+/* SLP-267 (TASK-HARDAR): Category = Secomm UI widget `categories_a` (theme
+   override Secomm_UiWidget/templates/components/categories/a.phtml) — admin
+   quản lý item trong form widget, KHÔNG còn PB columns (v4.9.8).
+   Mọi breakpoint = SnapSlider rail TRÀN ra mép phải viewport (như Flash /
+   Everyday more value; body có overflow-x: clip): margin âm = padding-end =
+   phần tràn → content box của track = đúng bề rộng section (% của tile tính
+   theo khung content), tile dư ló sang vùng tràn, cuộn hết thì tile cuối
+   dừng thẳng mép content. Mobile/tablet: tile 172px + 1 dot/tile. Desktop:
+   6 tile/khung, không dot. KHÔNG nút ‹ › (user tắt). Chuột kéo được
+   (sliders-init: .is-dragging).
+   Tile look giữ nguyên v4.9.8. */
+.lp-cat-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.lp-cat-heading {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 28px;
+    color: #000;
+}
+
+.lp-cat-browse {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: #588f60;
+}
+
 .lp-cat-track {
     display: flex;
     flex-wrap: nowrap;
@@ -936,40 +1042,64 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
-    padding-block-end: 0.5rem;
     margin-inline-end: calc(50% - 50vw);
-    padding-inline-end: 2.5rem;
+    padding-block-end: 0.5rem;
+    padding-inline-end: calc(50vw - 50%);
 }
 
 .lp-cat-track::-webkit-scrollbar {
     display: none;
 }
 
+@media (pointer: fine) {
+    .lp-cat-track {
+        cursor: grab;
+    }
+}
+
+.lp-cat-track.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+    user-select: none;
+}
+
+.lp-cat-track.is-dragging .lp-cat-tile {
+    pointer-events: none;
+}
+
 .lp-cat-tile {
     display: flex;
-    flex: 0 0 auto;
+    flex: 0 0 172px;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
     align-items: center;
-    width: 172px;
     scroll-snap-align: start;
-    background-color: #fff;
-    border-radius: 0.5rem;
-    padding: 0.75rem 0.5rem 0.625rem;
+    background-color: #e7f1e8;
+    border-radius: 1rem;
+    padding: 1rem;
+    text-decoration: none;
 }
 
 .lp-cat-tile img {
-    width: 120px;
-    height: 120px;
+    display: block;
+    width: 100%;
+    height: 6rem;
     object-fit: contain;
+    border-radius: 0.5rem;
 }
 
 .lp-cat-tile-label {
-    font-size: 0.75rem;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
     font-weight: 500;
-    line-height: 1rem;
-    letter-spacing: 0.02em;
-    color: #1e293b;
+    line-height: 20px;
+    text-transform: uppercase;
+    color: #293e2d;
+}
+
+.lp-cat-tile:hover .lp-cat-tile-label {
+    color: #588f60;
 }
 
 .lp-cat-slider nav[data-pager] {
@@ -982,6 +1112,7 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
 .lp-cat-slider nav[data-pager] .snap-marker {
     width: 8px;
     height: 8px;
+    padding: 0;
     border: 0;
     border-radius: 9999px;
     background-color: #a9ccae;
@@ -995,36 +1126,62 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
     opacity: 1;
 }
 
+/* SnapSlider đánh aria-current cho MỌI tile đang hiện (2+ tile/khung) — chỉ
+   dot đầu tiên là pill active, các dot "current" sau trông như inactive. */
+.lp-cat-slider nav[data-pager] .snap-marker[aria-current='true'] ~ .snap-marker[aria-current='true'] {
+    width: 8px;
+    background-color: #a9ccae;
+    opacity: 0.8;
+}
+
+/* mobile_slider = No: mobile/tablet grid 2 cột, không rail/tràn. */
+@media (max-width: 63.98rem) {
+    .lp-cat-slider--static .lp-cat-track {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: visible;
+        margin-inline-end: 0;
+        padding-inline-end: 0;
+    }
+}
+
 @media (min-width: 64rem) {
+    .lp-cat-track {
+        gap: 1.5rem;
+        padding-block-end: 0;
+    }
+
+    .lp-cat-tile {
+        flex-basis: calc((100% - 7.5rem) / 6);
+    }
+
     .lp-cat-slider nav[data-pager] {
         display: none;
     }
 }
 
-/* v4.10 (user): CTA arrows — secondary button: text + arrow CÙNG màu
-   primary xanh (design); mọi CTA một dòng (arrow khôngwrap xuống line). */
-body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary {
-    color: #588f60 !important;
-}
-
+/* v4.10 (user): mọi CTA một dòng (arrow không wrap xuống line).
+   BUG-QJWCNG: màu chữ + gap do biến --btn-* của từng section (bên dưới). */
 body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary,
 body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-primary {
     display: inline-flex !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0.5rem !important;
     width: auto !important;
     white-space: nowrap !important;
 }
 
 /* v4.10 (user): mũi tên CTA bằng CSS ::after + mask currentColor —
    KHÔNG nhúng svg vào content (PB round-trip strip inline svg trong button).
-   Màu arrow tự theo màu chữ button (primary=trắng, secondary=xanh #588f60).
-   Hero slide KHÔNG arrow (override riêng). */
+   Màu arrow tự theo màu chữ button. Hero slide KHÔNG arrow (override riêng).
+   BUG-QJWCNG: `btn` (SLP-246) dùng ::after làm vùng chạm absolute ở giữa nút
+   → arrow đè chữ; đưa arrow về flow (nút h48 đã ≥ 44px vùng chạm). */
 body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-primary::after,
 body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary::after {
     content: '';
+    position: static;
+    transform: none;
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -1038,6 +1195,142 @@ body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-seco
 body.cms-index-index [data-content-type="slide"] [data-content-type="button-item"] a.pagebuilder-button-primary::after,
 body.cms-index-index [data-content-type="slide"] [data-content-type="button-item"] a.pagebuilder-button-secondary::after {
     content: none;
+}
+
+/* SLP-268 (BUG-118Z8T): hero CTA = Figma "Button Variation" 2151:17112 —
+   DS size XL (h48, 24x12, Label L) + primary/brand-500. The unlayered
+   `.pagebuilder-button-primary { @apply btn btn-primary }` (page-builder.css)
+   beats the CMS utility classes, so SLP-246 defaults (size S, brand-600)
+   leaked in. Weight is set here because the generated DS weight tokens carry
+   a `px` unit (invalid → inherits 400). --btn-bg sits above the btn :hover
+   rule's specificity, so hover/active are restated. */
+body.cms-index-index [data-content-type="slide"] .pagebuilder-button-primary {
+    @apply btn-size-xl;
+    --btn-bg: var(--ds-primary-brand-500);
+    --btn-font-weight: var(--font-weight-medium);
+}
+
+body.cms-index-index [data-content-type="slide"] .pagebuilder-button-primary:is(:hover, :active) {
+    --btn-bg: var(--ds-primary-brand-600);
+}
+
+/* SLP-268: CMS JIT compiles `font-sans` to Tailwind's default stack, not the
+   theme's Inter — hero copy follows the theme font like the design. */
+body.cms-index-index [data-content-type="slide"] [data-element="content"] :is(h1, h2, h3, p) {
+    font-family: var(--font-sans);
+}
+
+/* BUG-QJWCNG: section CTAs (all but hero + promo card) = Figma "Button
+   Variation" size XL with trailing arrow (h48, 24/22 x 12, Label L, 500).
+   Same cause as the hero: the unlayered `.pagebuilder-button-*` rule beats
+   the CMS utility classes. The variant follows the section, not the PB
+   button_type, so changing the type in Admin keeps the design (see SLP-269).
+   Sections set --lp-cta-* on the row; default = brand-500 filled.
+   box-shadow is restated because page-builder.css `shadow-none` on links
+   inside [data-content-type="buttons"] wins over the btn box-shadow (outline
+   ring + focus ring). No hover shadow, like the hero CTA. */
+body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *) {
+    @apply btn-size-xl;
+    --btn-font-weight: var(--font-weight-medium);
+    --btn-bg: var(--lp-cta-bg, var(--ds-primary-brand-500));
+    --btn-color: var(--lp-cta-color, var(--ds-text-white));
+    --btn-shadow: var(--lp-cta-ring, inset 0 0 0 0 transparent);
+    box-shadow: var(--btn-shadow);
+}
+
+body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *):is(:hover, :active) {
+    --btn-bg: var(--lp-cta-hover-bg, var(--ds-primary-brand-600));
+    --btn-shadow: var(--lp-cta-ring, inset 0 0 0 0 transparent);
+}
+
+body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *):focus-visible {
+    --btn-shadow: var(--lp-cta-ring, inset 0 0 0 0 transparent), 0 0 0 4px var(--ds-effects-focus-ring-primary);
+}
+
+/* btn-icon-trailing (24 → 22px end padding). The CMS `!px-6` is an
+   important utility, so the override has to be important in the same layer. */
+@layer utilities {
+    body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *) {
+        padding-inline-end: calc(var(--btn-padding-x) - 2px) !important;
+    }
+}
+
+/* Rail "Go to Collection": bg/brand-solid-primary. */
+body.cms-index-index [data-content-type="row"]:has([data-content-type="products"]) {
+    --lp-cta-bg: var(--ds-bg-brand-solid-primary);
+    --lp-cta-hover-bg: var(--ds-primary-brand-700);
+}
+
+/* Video copy (REAL SPACES row): outline border/brand-primary. */
+body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-cat-slider)) {
+    --lp-cta-bg: var(--ds-bg-white-transparent);
+    --lp-cta-hover-bg: var(--ds-primary-brand-50);
+    --lp-cta-color: var(--ds-text-brand-primary);
+    --lp-cta-ring: inset 0 0 0 1px var(--ds-border-brand-primary);
+}
+
+/* Editorial banner (full-bleed row, copy + button, no columns): white. */
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])) {
+    --lp-cta-bg: var(--ds-bg-white);
+    --lp-cta-hover-bg: var(--ds-primary-brand-50);
+    --lp-cta-color: var(--ds-text-brand-primary);
+}
+
+/* BUG-QJWCNG: newsletter "Đăng ký" = Figma 2717:85947 — DS size L (h44,
+   20x10, Label L) on the template's `btn btn-primary` (bg/brand-solid-primary,
+   hover brand-700). Unlayered: `btn` lives in the utilities layer. */
+.lp-newsletter-btn {
+    @apply btn-size-l;
+    --btn-font-weight: var(--font-weight-medium);
+    flex-shrink: 0;
+}
+
+/* SLP-268: hero mouse drag — hero-autoplay.phtml adds .lp-hero-dragging while
+   dragging/settling: snap + smooth scroll off so the track follows the mouse. */
+body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging {
+    scroll-snap-type: none !important;
+    scroll-behavior: auto !important;
+    user-select: none !important;
+}
+
+/* Mouse devices: open hand over the hero hints it can be dragged; the CTA
+   button keeps its pointer. */
+@media (hover: hover) and (pointer: fine) {
+    body.cms-index-index .lp-hero-slider [data-track],
+    body.cms-index-index .lp-hero-slider [data-track] a {
+        cursor: grab;
+    }
+
+    body.cms-index-index .lp-hero-slider [data-track] .pagebuilder-slide-button {
+        cursor: pointer;
+    }
+}
+
+body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging,
+body.cms-index-index .lp-hero-slider [data-track].lp-hero-dragging :is(a, button) {
+    cursor: grabbing !important;
+}
+
+/* Product sliders (Flash sale + PB products rails, cùng .hp-pb-track): chuột
+   kéo được track (sliders-init enableMouseDrag, root [data-lp-drag]). Khi kéo:
+   tắt snap + smooth scroll của .snap-track (không thì scrollLeft bị animate/
+   snap lại → giật), không chọn text, card không nhận hover/click. Flash mobile
+   = grid 2 cột, không cuộn → không áp dụng. */
+@media (hover: hover) and (pointer: fine) {
+    .hp-pb-track {
+        cursor: grab;
+    }
+}
+
+.hp-pb-track.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none !important;
+    scroll-behavior: auto !important;
+    user-select: none;
+}
+
+.hp-pb-track.is-dragging > * {
+    pointer-events: none;
 }
 
 /* ---- product sliders: mobile 2-up / desktop 4-up, bleed to viewport edge ---- */
@@ -1151,12 +1444,69 @@ body.cms-index-index [data-secomm-ui-component="embed_a"] iframe {
     width: 100% !important;
 }
 
+/* SLP-274: the video fills exactly ONE screen at every viewport: full
+   width x viewport height (was 100vw * 9/16, taller than short/wide
+   viewports). aspect-ratio is dropped (!important beats the component's
+   inline style); the poster is object-cover, so it crops to the screen
+   instead of distorting, and the YouTube player letterboxes itself inside
+   the iframe. Same convention as the hero (SLP-266): header is not
+   subtracted, svh sits in @supports so the minifier keeps the 100vh
+   fallback. */
+body.cms-index-index [data-secomm-ui-component="embed_a"] {
+    aspect-ratio: auto !important;
+    height: 100vh !important;
+}
+
+@supports (height: 100svh) {
+    body.cms-index-index [data-secomm-ui-component="embed_a"] {
+        height: 100svh !important;
+    }
+}
+
+/* SLP-274: full-screen video is square-cornered like the hero (component
+   ships rounded-lg on the wrapper, poster link and iframe). */
+body.cms-index-index [data-secomm-ui-component="embed_a"],
+body.cms-index-index [data-secomm-ui-component="embed_a"] > a,
+body.cms-index-index [data-secomm-ui-component="embed_a"] iframe {
+    border-radius: 0 !important;
+}
+
 /* ---- promo card circular arrow: PB forces inline-block — restore flex ---- */
 body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="buttons"] [data-element="link"] {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     flex-shrink: 0 !important;
+}
+
+/* SLP-269 CR2 (BUG-KATJXW): class của <a> do field `button_type` của PB sở
+   hữu — Admin sửa link là class Tailwind viết tay bị thay bằng
+   `pagebuilder-button-primary` → mất nút tròn. Theme giữ hình nút cho MỌI
+   button type (primary/secondary/link), không phụ thuộc class trên <a>. */
+body.cms-index-index .lp-promo-card [data-content-type="button-item"] [data-element="link"] {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    border: 1px solid #fff !important;
+    border-radius: 9999px !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    transition: background-color 150ms ease;
+}
+
+body.cms-index-index .lp-promo-card [data-content-type="button-item"] [data-element="link"]:is(:hover, :focus-visible) {
+    background-color: rgb(255 255 255 / 0.1) !important;
+}
+
+body.cms-index-index .lp-promo-card [data-content-type="button-item"] [data-element="link"]::after {
+    content: none !important;
 }
 
 /* ---- newsletter band: centered title + centered form ---- */
@@ -1206,53 +1556,14 @@ body.cms-index-index [data-content-type="row"][data-appearance="contained"] {
     margin-inline: auto !important;
 }
 
-/* ---- category slider section spacing (v4.9.7: HTML slider thay columns) ---- */
-/* v4.9.8 (user: Admin stage không render khi content có html-slider element →
-   quay lại PB columns; bleeding + dots làm bằng CSS/JS trên columns):
-   mobile/tablet = flex rail swipe; desktop = grid 6 cột tĩnh, không dot. */
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
-    margin-block-start: 2rem !important;
-    padding-inline: 0.5rem !important;
+/* SLP-267: widget nằm trong PB Text element (TinyMCE) — sau admin Save,
+   TinyMCE bọc directive trong <p>; <section> đóng <p> sớm → 2 <p> chỉ chứa
+   whitespace quanh slider (không khớp :empty) → bỏ margin, p cao 0. */
+body.cms-index-index [data-content-type="text"]:has(> .lp-cat-slider) > p {
+    margin-block: 0;
 }
 
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 0.5rem !important;
-    overflow-x: auto !important;
-    padding-block-end: 0.5rem !important;
-}
-
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
-    flex: 0 0 auto !important;
-}
-
-@media (max-width: 63.98rem) {
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
-        width: 172px !important;
-    }
-}
-
-@media (min-width: 64rem) {
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
-        margin-block-start: 2.5rem !important;
-        padding-inline: 2.5rem !important;
-    }
-
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
-        display: grid !important;
-        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-        gap: 1.5rem !important;
-        overflow: visible !important;
-        padding-block-end: 0 !important;
-    }
-}
-
-/* ---- category slider section spacing (v4.9.7: HTML slider thay columns) ---- */
+/* ---- category slider section spacing (SLP-267: widget categories_a) ---- */
 body.cms-index-index [data-content-type="row"]:has(.lp-cat-slider) {
     margin-block-start: 2rem !important;
     padding-inline: 0.5rem !important;
@@ -1262,80 +1573,6 @@ body.cms-index-index [data-content-type="row"]:has(.lp-cat-slider) {
     body.cms-index-index [data-content-type="row"]:has(.lp-cat-slider) {
         margin-block-start: 2.5rem !important;
         padding-inline: 2.5rem !important;
-    }
-}
-
-/* ---- category slider (v4.9.8 FINAL): tiles = PB columns — mobile/tablet
-   flex rail swipe 172px + dots; desktop grid 6 cột tĩnh KHÔNG dot (design).
-   Dots tạo bằng JS sliders-init (.lp-tiles-dots) — SnapSlider không khởi tạo
-   được trên columns (thiếu [data-track] con). ---- */
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
-    margin-block-start: 2rem !important;
-    padding-inline: 0.5rem !important;
-}
-
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 0.5rem !important;
-    overflow-x: auto !important;
-    padding-block-end: 0.5rem !important;
-}
-
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
-body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
-    flex: 0 0 auto !important;
-}
-
-@media (max-width: 63.98rem) {
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"] > [data-content-type="column"],
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"] > [data-content-type="column"] {
-        width: 172px !important;
-    }
-}
-
-.lp-tiles-dots {
-    display: flex;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1rem;
-}
-
-.lp-tiles-dots .lp-tiles-dot {
-    width: 8px;
-    height: 8px;
-    padding: 0;
-    border: 0;
-    border-radius: 9999px;
-    background-color: #a9ccae;
-    opacity: 0.8;
-    cursor: pointer;
-}
-
-.lp-tiles-dots .lp-tiles-dot[aria-current='true'] {
-    width: 24px;
-    background-color: #588f60;
-    opacity: 1;
-}
-
-@media (min-width: 64rem) {
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) {
-        margin-block-start: 2.5rem !important;
-        padding-inline: 2.5rem !important;
-    }
-
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-group"]:has(> [data-content-type="column"]),
-    body.cms-index-index [data-content-type="row"]:has(.lp-tile) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
-        display: grid !important;
-        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-        gap: 1.5rem !important;
-        overflow: visible !important;
-        padding-block-end: 0 !important;
-    }
-
-    .lp-tiles-dots {
-        display: none !important;
     }
 }
 
@@ -1376,6 +1613,33 @@ body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content
 body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"] > [data-content-type="column"],
 body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"] > [data-content-type="column"] {
     flex: 0 0 auto !important;
+}
+
+/* SLP-269 (BUG-KATJXW): rail = slider — snap theo mép card + mouse drag
+   (sliders-init gắn .lp-promo-dragging khi kéo: tắt snap để rail theo tay).
+   Không hiện scroll track ở mọi màn hình (cuộn bằng vuốt / kéo chuột). */
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"]:has(> [data-content-type="column"]),
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    cursor: grab;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"]:has(> [data-content-type="column"])::-webkit-scrollbar,
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"]:has(> [data-content-type="column"])::-webkit-scrollbar {
+    display: none;
+}
+
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-group"] > [data-content-type="column"],
+body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) [data-content-type="column-line"] > [data-content-type="column"] {
+    scroll-snap-align: start;
+}
+
+body.cms-index-index .lp-promo-dragging {
+    scroll-snap-type: none !important;
+    cursor: grabbing !important;
+    user-select: none !important;
 }
 
 @media (min-width: 48rem) {
@@ -1456,14 +1720,64 @@ body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"] [da
 
 /* v4.9.2 (user, Figma 2151:17164): Living, Reimagined = section FULL WIDTH —
    ảnh tràn sát mép trái viewport, cột text phải chừa 2.5rem mép phải.
-   (newsletter full-width không chứa column-group/line nên không bị phạm.) */
-body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]) [data-element="inner"],
-body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]) [data-element="inner"],
-body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-group"]) [data-element="inner"],
-body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-line"]) [data-element="inner"] {
+   (newsletter full-width không chứa column-group/line nên không bị phạm.)
+   v4.9.3 (TASK-7EYJ4C F13): :not(footer *) — các row footer cũng là
+   full-width + có column-group/line; không scope thì footer trên homepage
+   ăn padding 0 2.5rem 0 0 (lệch). Footer dùng counter ở footer.css tới
+   khi rule homepage tự loại footer thì counter thành dư phòng thủ. */
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]) [data-element="inner"]:not(footer *),
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]) [data-element="inner"]:not(footer *),
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-group"]) [data-element="inner"]:not(footer *),
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-line"]) [data-element="inner"]:not(footer *) {
     max-width: none !important;
     margin-inline: 0 !important;
     padding: 0 2.5rem 0 0 !important;
+}
+
+/* SLP-271 (BUG-3XJSQG): text Living, Reimagined đúng vị trí Figma 2151:17164 /
+   2151:16941. Ảnh (asset vuông) giữ height:auto nên không lấp cột media →
+   trống giữa ảnh và text (375: 175px dưới ảnh, 1920: 251px bên phải ảnh).
+   Ảnh cover khung: mobile cao 535, desktop tỉ lệ 940:620 và giãn theo hàng
+   nếu text cao hơn. Không đặt display cho img — giữ mobile-hidden/only. */
+body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]) [data-content-type="column"]:has(> [data-content-type="image"]) > [data-content-type="image"] {
+    position: relative !important;
+    height: 535px !important;
+    overflow: hidden;
+}
+
+body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]) [data-content-type="column"]:has(> [data-content-type="image"]) > [data-content-type="image"] img {
+    position: absolute !important;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover;
+    /* Figma crop phần trên, giữ sofa + bàn trà ở đáy */
+    object-position: center bottom;
+}
+
+@media (min-width: 64rem) {
+    body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]) [data-content-type="column"]:has(> [data-content-type="image"]) > [data-content-type="image"] {
+        flex: 1 1 auto;
+        height: auto !important;
+        aspect-ratio: 940 / 620;
+    }
+
+    /* page-builder.css `button-item { mb-2 }` đẩy button lên 8px khỏi đáy */
+    body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]):has([data-content-type="image"]) [data-content-type="column"]:has(> [data-content-type="heading"]) [data-content-type="button-item"] {
+        margin-bottom: 0;
+    }
+}
+
+/* Cột text: bỏ padding-bottom để đáy button trùng đáy ảnh. Class CMS JIT
+   `lg:!pb-6` ở @layer utilities + !important → rule unlayered không đè được
+   (important layered thắng); override cùng layer, specificity cao hơn. */
+@layer utilities {
+    @media (min-width: 64rem) {
+        body.cms-index-index [data-content-type="row"]:is([data-appearance="full-width"], [data-appearance="full-bleed"]):has([data-content-type="image"]) [data-content-type="column"]:has(> [data-content-type="heading"]) {
+            padding-bottom: 0 !important;
+        }
+    }
 }
 
 /* ---- product rails (3x) ---- */
@@ -1485,19 +1799,19 @@ body.cms-index-index [data-content-type="row"]:has([data-content-type="products"
 }
 
 /* ---- REAL SPACES copy (contained row: heading + button, no columns/modules) ---- */
-body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-tile)) {
+body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-cat-slider)) {
     margin-block-start: 1rem !important;
     padding-inline: 0.5rem !important;
 }
 
 @media (min-width: 48rem) {
-    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-tile)) {
+    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-cat-slider)) {
         padding-inline: 1.5rem !important;
     }
 }
 
 @media (min-width: 64rem) {
-    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-tile)) {
+    body.cms-index-index [data-content-type="row"][data-appearance="contained"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])):not(:has([data-content-type="products"])):not(:has(.lp-flash)):not(:has(.lp-journal)):not(:has(.lp-usp)):not(:has(.lp-cat-slider)) {
         margin-block-start: 1.5rem !important;
         padding-inline: 2.5rem !important;
     }
@@ -1526,6 +1840,30 @@ body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has
         margin-block-start: 4rem !important;
         min-height: 800px !important;
         padding: 2.5rem 2.5rem 4rem !important;
+    }
+}
+
+/* Editorial banner (New Sofa for Autumn): same "Filter" as the hero slides.
+   Full-bleed PB rows paint the background image on the row itself (no overlay
+   element like a slide), so the gradient is a ::before under the copy.
+   Structural selector (as the CTA rule above) — row classes may not survive
+   an Admin save; copy is lifted by CSS, not by its `relative z-10` classes. */
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="buttons"]):not(:has([data-content-type="column-group"])):not(:has([data-content-type="column-line"])) {
+    position: relative !important;
+    isolation: isolate;
+
+    &::before {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        content: "";
+        background-image: var(--lp-media-filter);
+        pointer-events: none;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
     }
 }
 

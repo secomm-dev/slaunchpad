@@ -1,0 +1,32 @@
+<?php
+/**
+ * @var \Tiktok\Tiktok\Block\Adminhtml\SplashPage $block
+ * @var SecureHtmlRenderer $secureRenderer
+ * @var Escaper $escaper
+ */
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+use Tiktok\Tiktok\Block\Adminhtml\SplashPage;
+
+// phpcs:disable Magento2.Files.LineLength, Generic.Files.LineLength
+?>
+<?php if (!$block->getIframeUrl()): ?>
+    <div class="tiktok-extension-error">
+        <h2 class="page-sub-sub-title">
+            <?= /* @noEscape */ __(
+                'Sorry, We\'re currently experiencing issues generating data before connecting to TikTok. ' .
+                'This may be due to a temporary service interruption.'
+            ) ?>
+        </h2>
+        <span class="following-steps"><?= /* @noEscape */
+            __('If the problem persists, reach out to support for further assistance.') ?></span>
+    </div>
+<?php else: ?>
+    <div class="tiktok-iframe-container">
+        <?= /* @noEscape */
+        $secureRenderer->renderTag('embed', [
+                'type' => 'text/html',
+                'src' => $escaper->escapeUrl($block->getIframeUrl())], false, false); ?>
+    </div>
+<?php endif ?>

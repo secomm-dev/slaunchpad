@@ -16,6 +16,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\Ghn\Api\Exception\ProviderAuthenticationException;
 use Secomm\Ghn\Api\Exception\ProviderInvalidRequestException;
+use Secomm\Ghn\Api\Exception\ProviderRateLimitException;
 use Secomm\Ghn\Api\Exception\ProviderRateUnavailableException;
 use Secomm\Ghn\Api\Exception\ProviderRemoteException;
 use Secomm\Ghn\Api\Exception\ProviderServiceUnavailableException;
@@ -156,6 +157,28 @@ class RealtimeRateContributorTest extends TestCase
         $this->assertSame('PROVIDER_MAPPING_MISSING', $outcome->getFailureReason());
     }
 
+    public function testWeightViolationOutcomesPassThroughVerbatim(): void
+    {
+        // TASK-MQ2DRG — the weight pre-validation happens INSIDE the calculator; the
+        // contributor seam is outcome-based and must not drop, reclassify or re-reason the
+        // resulting outcomes (both the hard carrier rejection and the shared
+        // capability-unsupported reason travel verbatim to the execution service).
+        $query = $this->query();
+        $this->requestMapper->method('map')->willReturn($query);
+
+        $hardOutcome = CarrierRateOutcome::unavailable('GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED');
+        $limitationOutcome = CarrierRateOutcome::unavailable(ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE);
+        $this->rateCalculator->method('quoteWithHandoff')->willReturnOnConsecutiveCalls($hardOutcome, $limitationOutcome);
+
+        $outcome = $this->contributor->contribute('secomm_ghn', $this->handoff());
+        $this->assertSame(CarrierRateOutcomeInterface::STATUS_UNAVAILABLE, $outcome->getStatus());
+        $this->assertSame('GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED', $outcome->getFailureReason());
+
+        $outcome = $this->contributor->contribute('secomm_ghn', $this->handoff());
+        $this->assertSame(CarrierRateOutcomeInterface::STATUS_UNAVAILABLE, $outcome->getStatus());
+        $this->assertSame(ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE, $outcome->getFailureReason());
+    }
+
     /**
      * TASK-WAWNDS correctness pass — the seam is outcome-based: every supported provider/
      * domain exception converts to a CarrierRateOutcome with EXACT parity to
@@ -196,8 +219,17 @@ class RealtimeRateContributorTest extends TestCase
                 CarrierRateOutcomeInterface::STATUS_TECHNICAL_FAILURE,
                 ShippingFailureReason::TECHNICAL_ERROR,
             ],
-            'service-unavailable(429/5xx) → TECHNICAL' => [
+            'service-unavailable(5xx) → TECHNICAL' => [
                 $p(ProviderServiceUnavailableException::class),
+                CarrierRateOutcomeInterface::STATUS_TECHNICAL_FAILURE,
+                ShippingFailureReason::TECHNICAL_ERROR,
+            ],
+            // Freeze-verification B1 (TL-approved 2026-09-22): TASK-GKHXY1 r2 split HTTP 429
+            // into its own typed exception; the RATE seam must keep classifying the throttle
+            // as transient TECHNICAL_FAILURE (shared policy → TECHNICAL_FALLBACK under
+            // CARRIER_WITH_FALLBACK) — never the carrier catch-all, never UNAVAILABLE.
+            'rate limit 429 → TECHNICAL' => [
+                $p(ProviderRateLimitException::class),
                 CarrierRateOutcomeInterface::STATUS_TECHNICAL_FAILURE,
                 ShippingFailureReason::TECHNICAL_ERROR,
             ],

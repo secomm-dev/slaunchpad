@@ -1,0 +1,12 @@
+home login-1280 btn dy 287 links [('Quên m', 414, 12), ('Tạo tà', 284, 61)] h2dy 27 social 76
+home create-1280 btn dy 557 links [('Quay l', 421, 12)] h2dy 27 social 76
+home forgot-1280 btn dy 222 links [('Quay l', 369, 13)] h2dy 27 social 76
+home login-375 btn dy 298 links [('Quên m', 142, 67), ('Tạo tà', 131, 104)] h2dy 39 social 531
+home create-375 btn dy 569 links [('Quay l', 164, 43)] h2dy 39 social 741
+home forgot-375 btn dy 233 links [('Quay l', 167, 67)] h2dy 39 social 429
+checkout login-1280 btn dy 291 links [('Quên m', 415, 12), ('Tạo tà', 284, 60)] h2dy 27 social 76
+checkout create-1280 btn dy 562 links [('Quay l', 421, 13)] h2dy 27 social 76
+checkout forgot-1280 btn dy 223 links [('Quay l', 369, 12)] h2dy 27 social 76
+checkout login-375 btn dy 302 links [('Quên m', 142, 68), ('Tạo tà', 131, 105)] h2dy 39 social 537
+checkout create-375 btn dy 574 links [('Quay l', 163, 44)] h2dy 39 social 748
+checkout forgot-375 btn dy 235 links [('Quay l', 163, 68)] h2dy 39 social 433

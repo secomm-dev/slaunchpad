@@ -24,14 +24,15 @@ abstract class City extends Action
 {
     public const ADMIN_RESOURCE = 'Mageplaza_TableRateShipping::method';
 
-    private readonly ?RawFactory $resultRawFactory;
+    private readonly RawFactory $resultRawFactory;
 
     public function __construct(
         Context $context,
-        // Optional by design: only the CSV download children use it. Magento DI still injects
-        // the factory; the optionality keeps the Options action's parent call compiler-clean.
-        ?RawFactory $resultRawFactory = null
+        RawFactory $resultRawFactory
     ) {
+        // TASK-RT50KH fix — the factory MUST be a required constructor argument: Magento's
+        // ObjectManager does NOT autowire optional (default-valued) arguments, so the nullable
+        // default left it null and every csvDownload() 500-ed.
         $this->resultRawFactory = $resultRawFactory;
         parent::__construct($context);
     }

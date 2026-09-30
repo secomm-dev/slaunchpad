@@ -1,0 +1,21 @@
+=== BEFORE: CodPaymentMethodResolver references (app/code) ===
+app/code/Secomm/Ghtk/Model/OrderSubmit/DefaultCodAmountResolver.php:15:use Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface;
+app/code/Secomm/Ghtk/Model/OrderSubmit/DefaultCodAmountResolver.php:20: * (`CodPaymentMethodResolverInterface::isCod`, config `secomm_shippingcore/cod/payment_methods`)
+app/code/Secomm/Ghtk/Model/OrderSubmit/DefaultCodAmountResolver.php:34:        private readonly CodPaymentMethodResolverInterface $codPaymentMethodResolver
+app/code/Secomm/Ghtk/Model/Config/GhtkConfig.php:129:    // (`secomm_shippingcore/cod/payment_methods` + CodPaymentMethodResolverInterface).
+app/code/Secomm/ShippingCore/Model/Cod/ConfiguredCodPaymentMethodResolver.php:13:use Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface;
+app/code/Secomm/ShippingCore/Model/Cod/ConfiguredCodPaymentMethodResolver.php:17: * payment method resolver; @see CodPaymentMethodResolverInterface.
+app/code/Secomm/ShippingCore/Model/Cod/ConfiguredCodPaymentMethodResolver.php:29:final class ConfiguredCodPaymentMethodResolver implements CodPaymentMethodResolverInterface
+app/code/Secomm/ShippingCore/Model/Physical/ConfiguredDefaultPackageDimensions.php:18: * Shape mirrors the STC3NB config pattern (ConfiguredCodPaymentMethodResolver).
+app/code/Secomm/ShippingCore/etc/di.xml:77:    <preference for="Secomm\ShippingCore\Api\Cod\CodPaymentMethodResolverInterface"
+app/code/Secomm/ShippingCore/etc/di.xml:78:                type="Secomm\ShippingCore\Model\Cod\ConfiguredCodPaymentMethodResolver"/>
+app/code/Secomm/ShippingCore/Api/Cod/CodPaymentMethodResolverInterface.php:25:interface CodPaymentMethodResolverInterface
+
+=== BEFORE: secomm_shippingcore/cod config path references ===
+app/code/Secomm/Ghtk/Model/OrderSubmit/DefaultCodAmountResolver.php:20: * (`CodPaymentMethodResolverInterface::isCod`, config `secomm_shippingcore/cod/payment_methods`)
+app/code/Secomm/Ghtk/Model/Config/GhtkConfig.php:129:    // (`secomm_shippingcore/cod/payment_methods` + CodPaymentMethodResolverInterface).
+app/code/Secomm/ShippingCore/Model/Cod/ConfiguredCodPaymentMethodResolver.php:20: * comma-separated list at `secomm_shippingcore/cod/payment_methods`
+app/code/Secomm/ShippingCore/Model/Cod/ConfiguredCodPaymentMethodResolver.php:31:    public const CONFIG_PATH_PAYMENT_METHODS = 'secomm_shippingcore/cod/payment_methods';
+
+=== BEFORE: local DB rows at legacy path ===
+(checked during audit: 0 rows — patch expected no-op locally)

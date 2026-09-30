@@ -27,7 +27,7 @@ class SettingsPersister
     }
 
     /**
-     * Persist the "Launchpad Settings" tab payload for one Mageplaza method.
+     * Persist the "Fallback Settings" tab payload for one Mageplaza method.
      *
      * @param int $methodId
      * @param array|null $data null = nothing posted, keep existing state
@@ -45,21 +45,34 @@ class SettingsPersister
         $showToCustomer = (int) (!empty($data['show_to_customer']));
         $useAsFallback = (int) (!empty($data['use_as_fallback']));
 
-        $connection->insertOnDuplicate(
-            $settingTable,
-            ['method_id' => $methodId, 'show_to_customer' => $showToCustomer, 'use_as_fallback' => $useAsFallback],
-            ['show_to_customer', 'use_as_fallback']
-        );
+        // TASK-SEC-C1 contract (Option B — recoverable partial save): the METHOD row is
+        // already committed when this runs (AbstractDb::save commits before the resource
+        // seam plugin fires); this settings+members write is itself ATOMIC — never partial
+        // settings/member rows — retry-safe (insertOnDuplicate + full member replace), and
+        // every failure propagates to the vendor controller catch, which surfaces the
+        // message and restores the form session (never a false success).
+        $connection->beginTransaction();
+        try {
+            $connection->insertOnDuplicate(
+                $settingTable,
+                ['method_id' => $methodId, 'show_to_customer' => $showToCustomer, 'use_as_fallback' => $useAsFallback],
+                ['show_to_customer', 'use_as_fallback']
+            );
 
-        $connection->delete($memberTable, ['method_id = ?' => $methodId]);
-        $pairs = $this->parseMemberPairs(is_array($data['members'] ?? null) ? $data['members'] : []);
-        foreach ($pairs as $pair) {
-            $connection->insert($memberTable, [
-                'method_id' => $methodId,
-                'carrier_code' => $pair['carrier_code'],
-                'method_code' => $pair['method_code'],
-                'enabled' => 1,
-            ]);
+            $connection->delete($memberTable, ['method_id = ?' => $methodId]);
+            $pairs = $this->parseMemberPairs(is_array($data['members'] ?? null) ? $data['members'] : []);
+            foreach ($pairs as $pair) {
+                $connection->insert($memberTable, [
+                    'method_id' => $methodId,
+                    'carrier_code' => $pair['carrier_code'],
+                    'method_code' => $pair['method_code'],
+                    'enabled' => 1,
+                ]);
+            }
+            $connection->commit();
+        } catch (\Throwable $e) {
+            $connection->rollBack();
+            throw $e;
         }
     }
 

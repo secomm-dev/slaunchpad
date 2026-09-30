@@ -18,6 +18,7 @@ define([
         'Magento_Customer/js/customer-data',
         'Magento_Checkout/js/action/set-billing-address',
         'Magento_Ui/js/model/messageList',
+        'Secomm_AddressDropdown/js/model/master-switch',
     ],
     function (
         $,
@@ -34,6 +35,7 @@ define([
         customerData,
         setBillingAddressAction,
         globalMessageList,
+        isEnabled,
     ) {
     'use strict';
 
@@ -134,6 +136,11 @@ define([
     };
 
     return function (target) {
+        if (!isEnabled()) {
+            // TASK-SEC-A5: module disabled for this store scope — keep native behavior intact.
+            return target;
+        }
+
         return target.extend(mixin);
     };
 });

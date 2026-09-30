@@ -29,7 +29,7 @@ class Delete extends GenericButton implements ButtonProviderInterface
         return $this->wrapButtonSettings(
             __('Delete')->getText(),
             'delete',
-            sprintf("deleteConfirm('%s', '%s')",
+            sprintf("deleteConfirm('%s', '%s', {data: {}})",
                 __('Are you sure you want to delete this city?'),
                 $this->getUrl(
                     '*/*/delete',

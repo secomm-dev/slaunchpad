@@ -4,4 +4,6 @@
     <type name="Magento\Shipping\Model\Shipping">
         <plugin name="secomm_collect_rates_dimensions" type="Secomm\Base\Plugin\Model\Shipping" sortOrder="22" />
     </type>
+    <!-- TASK-RT50KH — P1 product shipping-dimension contract (authoritative read). -->
+    <preference for="Secomm\Base\Api\ShippingDimensionsReaderInterface" type="Secomm\Base\Model\Shipping\ProductShippingDimensionsReader" />
 </config>

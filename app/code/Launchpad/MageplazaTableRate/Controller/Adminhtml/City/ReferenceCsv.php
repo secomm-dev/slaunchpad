@@ -14,6 +14,7 @@ namespace Launchpad\MageplazaTableRate\Controller\Adminhtml\City;
 use Launchpad\MageplazaTableRate\Controller\Adminhtml\City;
 use Launchpad\MageplazaTableRate\Model\Adminhtml\CityReferenceBuilder;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\Controller\Result\RawFactory;
 use Magento\Framework\Controller\ResultInterface;
 
 /**
@@ -24,9 +25,10 @@ class ReferenceCsv extends City
 {
     public function __construct(
         Context $context,
-        private readonly CityReferenceBuilder $referenceBuilder
+        private readonly CityReferenceBuilder $referenceBuilder,
+        RawFactory $resultRawFactory
     ) {
-        parent::__construct($context);
+        parent::__construct($context, $resultRawFactory);
     }
 
     public function execute(): ResultInterface

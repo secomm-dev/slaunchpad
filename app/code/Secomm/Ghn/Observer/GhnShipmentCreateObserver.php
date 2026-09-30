@@ -95,6 +95,21 @@ class GhnShipmentCreateObserver implements ObserverInterface
     {
         $outcome = $this->creationService->createForShipment($shipment, $this->postedPhysicalPackages());
 
+        if ($outcome->getStatus() === GhnCreateOutcome::STATUS_COD_REJECTED) {
+            // TASK-DFGFZ9 phase 2: the Secomm_Cod decision refused the collection — surface it
+            // to the admin explicitly (the shipment itself is intact; nothing was submitted).
+            $this->logger->error('GHN shipment create rejected by COD policy.', [
+                'reason' => $outcome->getReason(),
+                'message' => $outcome->getRejectionMessage(),
+            ]);
+            $shipment->addComment(
+                __('GHN COD collection rejected (%1): %2', $outcome->getReason(), $outcome->getRejectionMessage())
+            );
+            $shipment->save();
+
+            return;
+        }
+
         if ($outcome->isSuccessful()) {
             $attached = $this->trackAttacher->attach($shipment, (string) $outcome->getOrderCode(), 'GHN');
             $this->logger->call('GHN shipment create finished', [

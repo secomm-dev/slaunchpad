@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">secomm_shippingcore_zone_listing.secomm_shippingcore_zone_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="add">
+                <url path="*/*/new"/>
+                <class>primary</class>
+                <label translate="true">Add New Zone</label>
+            </button>
+        </buttons>
+        <spinner>secomm_shippingcore_zone_columns</spinner>
+        <deps>
+            <dep>secomm_shippingcore_zone_listing.secomm_shippingcore_zone_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="secomm_shippingcore_zone_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">zone_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Secomm_ShippingCore::zones</aclResource>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider" name="secomm_shippingcore_zone_listing_data_source">
+            <settings>
+                <requestFieldName>zone_id</requestFieldName>
+                <primaryFieldName>zone_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <massaction name="listing_massaction">
+            <action name="enable">
+                <settings>
+                    <confirm>
+                        <title translate="true">Enable selected zones</title>
+                        <message translate="true">Enable the selected zones? Carrier references to them become effective again on the next request.</message>
+                    </confirm>
+                    <url path="secomm_shippingcore/zone/massStatus">
+                        <param name="status">1</param>
+                    </url>
+                    <type>enable</type>
+                    <label translate="true">Enable</label>
+                </settings>
+            </action>
+            <action name="disable">
+                <settings>
+                    <confirm>
+                        <title translate="true">Disable selected zones</title>
+                        <message translate="true">Disable the selected zones? Disabled zones stop matching immediately (after cache refresh). Zones still referenced by carrier coverage keep the reference and surface an impact warning — for "All Except Selected Zones" carriers, disabling an excluded zone EXPANDS their service area.</message>
+                    </confirm>
+                    <url path="secomm_shippingcore/zone/massStatus">
+                        <param name="status">0</param>
+                    </url>
+                    <type>disable</type>
+                    <label translate="true">Disable</label>
+                </settings>
+            </action>
+            <action name="delete">
+                <settings>
+                    <confirm>
+                        <title translate="true">Delete selected zones</title>
+                        <message translate="true">Delete the selected zones? Deletion is BLOCKED for any zone still referenced by carrier coverage — remove those references in Secomm → Shipping Coverage first. The whole batch is skipped when any selected zone is referenced.</message>
+                    </confirm>
+                    <url path="secomm_shippingcore/zone/massDelete"/>
+                    <type>delete</type>
+                    <label translate="true">Delete</label>
+                </settings>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="secomm_shippingcore_zone_columns">
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>zone_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="code">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Code</label>
+            </settings>
+        </column>
+        <column name="label">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Label</label>
+            </settings>
+        </column>
+        <column name="enabled" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <filter>select</filter>
+                <options class="Magento\Config\Model\Config\Source\Enabledisable"/>
+                <label translate="true">Enabled</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="province_count">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Provinces</label>
+            </settings>
+        </column>
+        <column name="include_ward_count">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Included Wards</label>
+            </settings>
+        </column>
+        <column name="updated_at" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Updated At</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Secomm\ShippingCore\Ui\Component\Listing\Column\ZoneActions">
+            <settings>
+                <indexField>zone_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

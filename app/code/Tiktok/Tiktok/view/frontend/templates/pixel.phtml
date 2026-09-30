@@ -1,0 +1,26 @@
+<!-- Tiktok/Tiktok/view/frontend/templates/pixel.phtml -->
+<?php
+/** @var Template $block */
+
+/** @var \Tiktok\Tiktok\ViewModel\Event\PixelEventTracking $viewModel */
+/** @var \Magento\Framework\Escaper $escaper */
+
+use Tiktok\Tiktok\ViewModel\Event\PixelEventTracking;
+use Magento\Framework\View\Element\Template;
+
+$viewModel = $block->getData('view_model');
+$eventTypes = $block->getData('eventTypes') ?? [];
+?>
+<?php if ($viewModel->shouldInject()): ?>
+    <script type="text/x-magento-init">
+        {
+            "*": {
+                "tiktokPixel": {
+                    "url": "<?= $escaper->escapeUrl($block->getUrl('tiktok/tiktokevents')) ?>",
+                    "eventTypes": <?= /* @noEscape */ json_encode($eventTypes) ?>,
+                    "product": "<?= /* @noEscape */ $viewModel->getProduct() ?>"
+        }
+    }
+}
+    </script>
+<?php endif; ?>

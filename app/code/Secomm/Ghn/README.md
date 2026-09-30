@@ -52,11 +52,11 @@ GHN là shipping method → cấu hình nằm ở **`Stores → Configuration �
 
 | Path | Mặc định | Ghi chú |
 |---|---|---|
-| `carriers/secomm_ghn/enabled` | `0` | |
+| `carriers/secomm_ghn/active` | `0` | Magento's standard carrier gate — never `enabled` |
 | `carriers/secomm_ghn/environment` | `sandbox` | sandbox = `dev-online-gateway.ghn.vn/shiip/public-api` |
 | `carriers/secomm_ghn/api_token` | — | `obscure` + backend Encrypted |
 | `carriers/secomm_ghn/shop_id` | — | |
-| `carriers/secomm_ghn/payment_type` | `2` | preserve legacy behavior |
+| `carriers/secomm_ghn/payment_type` | `1` | shop pays the GHN fee (NOT a COD flag — COD identification + amount decision thuộc `Secomm_Cod`: CREATE luôn emit `cod_amount` từ collection decision — 0 = non-COD; frozen retry; cap 50M VND) |
 | `carriers/secomm_ghn/required_note` | `CHOXEMHANGKHONGTHU` | preserve |
 | `carriers/secomm_ghn/debug` | `0` | payload scrub mới được ghi |
 | `carriers/secomm_ghn/connection_timeout` | `10` | legacy không có timeout |

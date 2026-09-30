@@ -1,0 +1,42 @@
+# 375: {"vw":375,"sw":375,"row":{"x":0,"y":3562,"r":375,"b":4321,"w":375,"h":759},"fig":{"x":0,"y":3562,"r":375,"b":4097,"w":375,"h":535},"img":{"x":0,"y":3562,"r":375,"b":4097,"w":375,"h":535},"fit":"cover","h2":{"x":8,"y":4113,"r":367,"b":4145,"w":359,"h":32},"p":{"x":8,"y":4157,"r":367,"b":4253,"w":359,"h":96},"btn":{"x":8,"y":4277,"r":124,"b":4313,"w":116,"h":36},"promo":{"x":8,"y":3106,"r":328,"b":3506,"w":320,"h":400},"newsletter":{"x":0,"y":9282,"r":375,"b":9470,"w":375,"h":188},"figs":1}
+PASS 375: no h-scroll — 375/375
+PASS 375: img object-fit cover, fills figure — img 375x535 fig 375x535
+PASS 375: only split figure styled (cover) — 1
+PASS 375: img 375x535 — 375x535
+PASS 375: heading = img bottom + 16 — 4113 vs 4097+16
+PASS 375: text x = 8 — 8
+PASS 375: promo card unchanged size — 320x400
+# 1024: {"vw":1024,"sw":1017,"row":{"x":0,"y":2689,"r":1009,"b":3120,"w":1009,"h":431},"fig":{"x":0,"y":2689,"r":653,"b":3120,"w":653,"h":431},"img":{"x":0,"y":2689,"r":653,"b":3120,"w":653,"h":431},"fit":"cover","h2":{"x":685,"y":2848,"r":969,"b":2928,"w":284,"h":80},"p":{"x":685,"y":2940,"r":969,"b":3060,"w":284,"h":120},"btn":{"x":685,"y":3084,"r":801,"b":3120,"w":116,"h":36},"promo":{"x":40,"y":2115,"r":400,"b":2617,"w":360,"h":502},"newsletter":{"x":0,"y":7906,"r":1009,"b":8082,"w":1009,"h":176},"figs":1}
+PASS 1024: no h-scroll — 1017/1024
+PASS 1024: img object-fit cover, fills figure — img 653x431 fig 653x431
+PASS 1024: only split figure styled (cover) — 1
+PASS 1024: text x = img right + 32 — 685 vs 653+32
+PASS 1024: text right = section right - 40 — 969 vs 1009-40
+PASS 1024: button bottom = section bottom — 3120 vs 3120
+PASS 1024: img bottom = section bottom (no gap) — 3120 vs 3120
+PASS 1024: img starts at x=0
+PASS 1024: promo card unchanged size — 360x502
+# 1440: {"vw":1440,"sw":1433,"row":{"x":0,"y":2821,"r":1425,"b":3435,"w":1425,"h":614},"fig":{"x":0,"y":2821,"r":931,"b":3435,"w":931,"h":614},"img":{"x":0,"y":2821,"r":931,"b":3435,"w":931,"h":614},"fit":"cover","h2":{"x":963,"y":3251,"r":1385,"b":3291,"w":422,"h":40},"p":{"x":963,"y":3303,"r":1385,"b":3375,"w":422,"h":72},"btn":{"x":963,"y":3399,"r":1079,"b":3435,"w":116,"h":36},"promo":{"x":40,"y":2247,"r":400,"b":2749,"w":360,"h":502},"newsletter":{"x":0,"y":8638,"r":1425,"b":8814,"w":1425,"h":176},"figs":1}
+PASS 1440: no h-scroll — 1433/1440
+PASS 1440: img object-fit cover, fills figure — img 931x614 fig 931x614
+PASS 1440: only split figure styled (cover) — 1
+PASS 1440: text x = img right + 32 — 963 vs 931+32
+PASS 1440: text right = section right - 40 — 1385 vs 1425-40
+PASS 1440: button bottom = section bottom — 3435 vs 3435
+PASS 1440: img bottom = section bottom (no gap) — 3435 vs 3435
+PASS 1440: media ratio 940:620 — 931x614
+PASS 1440: img starts at x=0
+PASS 1440: promo card unchanged size — 360x502
+# 1920: {"vw":1920,"sw":1913,"row":{"x":0,"y":2895,"r":1905,"b":3720,"w":1905,"h":825},"fig":{"x":0,"y":2895,"r":1251,"b":3720,"w":1251,"h":825},"img":{"x":0,"y":2895,"r":1251,"b":3720,"w":1251,"h":825},"fit":"cover","h2":{"x":1283,"y":3560,"r":1865,"b":3600,"w":582,"h":40},"p":{"x":1283,"y":3612,"r":1865,"b":3660,"w":582,"h":48},"btn":{"x":1283,"y":3684,"r":1400,"b":3720,"w":116,"h":36},"promo":{"x":273,"y":2321,"r":633,"b":2823,"w":360,"h":502},"newsletter":{"x":0,"y":9041,"r":1905,"b":9217,"w":1905,"h":176},"figs":1}
+PASS 1920: no h-scroll — 1913/1920
+PASS 1920: img object-fit cover, fills figure — img 1251x825 fig 1251x825
+PASS 1920: only split figure styled (cover) — 1
+PASS 1920: text x = img right + 32 — 1283 vs 1251+32
+PASS 1920: text right = section right - 40 — 1865 vs 1905-40
+PASS 1920: button bottom = section bottom — 3720 vs 3720
+PASS 1920: img bottom = section bottom (no gap) — 3720 vs 3720
+PASS 1920: media ratio 940:620 — 1251x825
+PASS 1920: img starts at x=0
+PASS 1920: promo card unchanged size — 360x502
+PASS 0 pageerror
+RESULT: ALL PASS

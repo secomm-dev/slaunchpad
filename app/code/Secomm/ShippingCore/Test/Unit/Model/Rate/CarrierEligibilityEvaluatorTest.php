@@ -20,7 +20,9 @@ use Secomm\ShippingCore\Model\Rate\CarrierEligibilityEvaluator;
 
 /**
  * TASK-8MQHJX (Phase B) — carrier eligibility evaluation: ALL short-circuit,
- * SELECTED_ZONES first-match, disabled/unknown zone skip, fail-closed ineligible.
+ * SELECTED_ZONES first-match, disabled/unknown zone skip, fail-closed ineligible;
+ * TASK-R8WR1R — ALL_EXCEPT_SELECTED_ZONES inversion (valid enabled match excludes,
+ * empty/unknown/disabled never exclude on their own).
  */
 class CarrierEligibilityEvaluatorTest extends TestCase
 {
@@ -136,6 +138,154 @@ class CarrierEligibilityEvaluatorTest extends TestCase
             CarrierEligibilityResultInterface::REASON_DESTINATION_NOT_IN_SCOPE,
             $result->getReasonCode()
         );
+    }
+
+    public function testInvalidPersistedScopeValueCannotBecomeGloballyEligible(): void
+    {
+        // TASK-R8WR1R r2 — an unrecognized scope (e.g. invalid persisted config value passed
+        // through verbatim) is ineligible for EVERY destination regardless of the zone list;
+        // matching zone references must not resurrect eligibility.
+        $this->zoneRegistry->expects($this->never())->method('getByCode');
+        $this->zoneMatcher->expects($this->never())->method('matches');
+
+        $result = $this->evaluator->evaluate('SOME_ZONES', ['HCM_INNER', 'DN_INNER'], 'VN-SG', null);
+
+        $this->assertFalse($result->isEligible());
+        $this->assertSame(
+            CarrierEligibilityResultInterface::REASON_DESTINATION_NOT_IN_SCOPE,
+            $result->getReasonCode()
+        );
+        $this->assertNull($result->getMatchedZoneCode());
+    }
+
+    public function testAllExceptDestinationMatchingExcludedZoneIsIneligible(): void
+    {
+        $zone = $this->makeZone('HCM_INNER', true);
+        $this->zoneRegistry->method('getByCode')->willReturn($zone);
+        $this->zoneMatcher->method('matches')->willReturn(true);
+
+        $result = $this->evaluator->evaluate(
+            DestinationScope::ALL_EXCEPT_SELECTED_ZONES,
+            ['HCM_INNER'],
+            'VN-SG',
+            'VNA25-26734'
+        );
+
+        $this->assertFalse($result->isEligible());
+        $this->assertSame(
+            CarrierEligibilityResultInterface::REASON_DESTINATION_NOT_IN_SCOPE,
+            $result->getReasonCode()
+        );
+        $this->assertNull($result->getMatchedZoneCode());
+    }
+
+    public function testAllExceptDestinationOutsideExcludedZonesIsEligible(): void
+    {
+        $zone = $this->makeZone('HCM_INNER', true);
+        $this->zoneRegistry->method('getByCode')->willReturn($zone);
+        $this->zoneMatcher->method('matches')->willReturn(false);
+
+        $result = $this->evaluator->evaluate(
+            DestinationScope::ALL_EXCEPT_SELECTED_ZONES,
+            ['HCM_INNER'],
+            'VN-HN',
+            null
+        );
+
+        $this->assertTrue($result->isEligible());
+        $this->assertSame(CarrierEligibilityResultInterface::REASON_ELIGIBLE, $result->getReasonCode());
+        $this->assertNull($result->getMatchedZoneCode());
+    }
+
+    public function testAllExceptEmptyZoneListIsEligibleEquivalentToAll(): void
+    {
+        $this->zoneRegistry->expects($this->never())->method('getByCode');
+        $this->zoneMatcher->expects($this->never())->method('matches');
+
+        $result = $this->evaluator->evaluate(DestinationScope::ALL_EXCEPT_SELECTED_ZONES, [], 'VN-SG', null);
+
+        $this->assertTrue($result->isEligible());
+        $this->assertSame(CarrierEligibilityResultInterface::REASON_ELIGIBLE, $result->getReasonCode());
+        $this->assertNull($result->getMatchedZoneCode());
+    }
+
+    public function testAllExceptDisabledSelectedZoneDoesNotExclude(): void
+    {
+        $disabled = $this->makeZone('HCM_INNER', false);
+        $this->zoneRegistry->method('getByCode')->willReturn($disabled);
+        $this->zoneMatcher->expects($this->never())->method('matches');
+
+        $result = $this->evaluator->evaluate(
+            DestinationScope::ALL_EXCEPT_SELECTED_ZONES,
+            ['HCM_INNER'],
+            'VN-SG',
+            'VNA25-26734'
+        );
+
+        $this->assertTrue($result->isEligible());
+    }
+
+    public function testAllExceptUnknownSelectedZoneDoesNotExclude(): void
+    {
+        $this->zoneRegistry->method('getByCode')->willReturn(null);
+        $this->zoneMatcher->expects($this->never())->method('matches');
+
+        $result = $this->evaluator->evaluate(
+            DestinationScope::ALL_EXCEPT_SELECTED_ZONES,
+            ['GHOST_ZONE'],
+            'VN-SG',
+            'VNA25-26734'
+        );
+
+        $this->assertTrue($result->isEligible());
+        $this->assertSame(CarrierEligibilityResultInterface::REASON_ELIGIBLE, $result->getReasonCode());
+    }
+
+    public function testAllExceptMultipleZonesOneMatchingExcludes(): void
+    {
+        $zoneA = $this->makeZone('HCM_INNER', true);
+        $zoneB = $this->makeZone('DN_INNER', true);
+        $this->zoneRegistry->method('getByCode')->willReturnCallback(
+            static fn (string $code): ?CanonicalZoneInterface => match ($code) {
+                'HCM_INNER' => $zoneA,
+                'DN_INNER' => $zoneB,
+                default => null,
+            }
+        );
+        $this->zoneMatcher->method('matches')->willReturnCallback(
+            static fn (CanonicalZoneInterface $zone): bool => $zone->getCode() === 'DN_INNER'
+        );
+
+        $result = $this->evaluator->evaluate(
+            DestinationScope::ALL_EXCEPT_SELECTED_ZONES,
+            ['HCM_INNER', 'DN_INNER'],
+            'VN-DN',
+            null
+        );
+
+        $this->assertFalse($result->isEligible());
+        $this->assertSame(
+            CarrierEligibilityResultInterface::REASON_DESTINATION_NOT_IN_SCOPE,
+            $result->getReasonCode()
+        );
+    }
+
+    public function testAllExceptOnlyUnknownAndDisabledZonesDoesNotExclude(): void
+    {
+        $disabled = $this->makeZone('HCM_INNER', false);
+        $this->zoneRegistry->method('getByCode')->willReturnCallback(
+            static fn (string $code): ?CanonicalZoneInterface => $code === 'HCM_INNER' ? $disabled : null
+        );
+        $this->zoneMatcher->expects($this->never())->method('matches');
+
+        $result = $this->evaluator->evaluate(
+            DestinationScope::ALL_EXCEPT_SELECTED_ZONES,
+            ['GHOST_ZONE', 'HCM_INNER'],
+            'VN-SG',
+            'VNA25-26734'
+        );
+
+        $this->assertTrue($result->isEligible());
     }
 
     private function makeZone(string $code, bool $enabled): CanonicalZone

@@ -54,4 +54,51 @@
             <column name="is_active"/>
         </index>
     </table>
+    <!--
+        TASK-DFGFZ9 phase 2 (DEC-TASKDFGFZ9-002) — GHTK provider shipment persistence: submit
+        idempotency anchor + frozen COD collection decision. One row per submit attempt,
+        written PENDING BEFORE the Create Order POST (parity with Secomm_Ghn); `cod_amount` is
+        FROZEN at the decision so a retry replays the original amount (never re-decides), and
+        a non-FAILED row with amount > 0 on a DIFFERENT partner code of the same order blocks
+        a second COD collection (P1 one-collection-per-order rule).
+        `magento_shipment_id` stays NULL: the submit runs inside the native label flow,
+        BEFORE the Magento shipment is saved (there is no entity id yet and no post-save
+        hook to backfill); linkage = partner_order_code + shipment comment + sales_shipment_track.
+    -->
+    <table name="secomm_ghtk_shipment" resource="default" engine="innodb" comment="Secomm_Ghtk provider shipment persistence (submit idempotency + frozen COD collection anchor)">
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Entity ID"/>
+        <column xsi:type="varchar" name="partner_order_code" nullable="false" length="64"
+                comment="Deterministic idempotency key — ghtk-{increment_id}-{seq}; written before the API call"/>
+        <column xsi:type="int" name="magento_order_id" padding="10" unsigned="true" nullable="false"
+                comment="sales_order.entity_id"/>
+        <column xsi:type="int" name="magento_shipment_id" padding="10" unsigned="true" nullable="true"
+                comment="sales_shipment.entity_id — always NULL today (submit precedes the shipment save)"/>
+        <column xsi:type="varchar" name="provider_status" nullable="false" length="16" default="PENDING"
+                comment="PENDING | SUBMITTED | RECOVERED | FAILED | UNKNOWN (PENDING/UNKNOWN = outcome uncertain)"/>
+        <column xsi:type="varchar" name="provider_reason_code" nullable="true" length="64"
+                comment="Failure/uncertainty token (FAILED/UNKNOWN rows)"/>
+        <column xsi:type="decimal" name="cod_amount" scale="4" precision="12" unsigned="true" nullable="false" default="0"
+                comment="Frozen pick_money submitted upstream (VND); 0 = non-COD"/>
+        <column xsi:type="int" name="weight_gram" padding="10" unsigned="true" nullable="true"
+                comment="Submitted weight (grams)"/>
+        <column xsi:type="varchar" name="label_id" nullable="true" length="64"
+                comment="GHTK label id (SUBMITTED/RECOVERED rows)"/>
+        <column xsi:type="varchar" name="tracking_number" nullable="true" length="64"
+                comment="GHTK tracking number (SUBMITTED/RECOVERED rows)"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"
+                comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP"
+                comment="Updated At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SECOMM_GHTK_SHIPMENT_PARTNER_CODE">
+            <column name="partner_order_code"/>
+        </constraint>
+        <index referenceId="SECOMM_GHTK_SHIPMENT_ORDER_ID" indexType="btree">
+            <column name="magento_order_id"/>
+        </index>
+    </table>
 </schema>
