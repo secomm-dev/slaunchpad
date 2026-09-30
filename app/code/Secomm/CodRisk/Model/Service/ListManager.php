@@ -115,6 +115,17 @@ class ListManager
             throw new LocalizedException(new Phrase('List record does not exist.'));
         }
 
+        // Activating must respect the same one-active-record-per-phone+website rule
+        // as the form path — the row action bypasses saveRecord otherwise.
+        if ($active && (int)($record->getData('is_active') ?? 0) !== 1) {
+            $this->assertNoActiveConflict(
+                (string)$record->getData('normalized_phone'),
+                (int)($record->getData('website_id') ?? 0),
+                (string)$record->getData('list_type'),
+                $listId
+            );
+        }
+
         $record->setData('is_active', $active ? 1 : 0);
         $record->save();
 
