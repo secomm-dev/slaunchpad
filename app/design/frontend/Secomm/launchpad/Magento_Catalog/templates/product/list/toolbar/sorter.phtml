@@ -1,0 +1,96 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * Copy của Hyva_default/Magento_Catalog/templates/product/list/toolbar/sorter.phtml
+ * (TASK-NAMVVC, SLP-235). Đổi khác so với bản gốc:
+ *  1. Custom dropdown (Figma 2330-39557 + feedback round 1): native <select>
+ *     thay bằng Alpine dropdown — trigger bordered "Sort By <label> ⌄", menu
+ *     options với option đang chọn nền #45744c chữ trắng. Vẫn nằm trong x-data
+ *     scope của toolbar => gọi thẳng changeUrl() của parent component (Alpine
+ *     scope chain) — contract changeUrl/params giữ nguyên.
+ *  2. Thêm text label "Sort By" trước value.
+ *  3. Sort options/behavior giữ nguyên default Magento (user decision — không
+ *     thêm option mới); nút đảo chiều (asc/desc) giữ nguyên.
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Catalog\Block\Product\ProductList\Toolbar;
+use Magento\Framework\Escaper;
+
+/** @var Toolbar $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+$lpCurrentOrder = $block->getCurrentOrder();
+$lpAvailableOrders = $block->getAvailableOrders();
+$lpCurrentLabel = $lpAvailableOrders[$lpCurrentOrder] ?? '';
+?>
+<div class="toolbar-sorter sorter flex items-center order-1 col-span-3 sm:col-span-6
+        md:col-span-3 lg:col-span-6 justify-end"
+     x-data="{ lpOpen: false }"
+     @click.outside="lpOpen = false"
+     @keydown.escape.window="lpOpen = false"
+>
+    <div class="lp-sorter-wrap relative mr-3">
+        <button type="button"
+            class="lp-sorter-control inline-flex h-12 items-center gap-2 rounded-md border border-[#d1d5dc] bg-white px-4 text-base font-medium leading-6 text-[#101828]"
+            data-role="sorter"
+            aria-haspopup="listbox"
+            :aria-expanded="lpOpen ? 'true' : 'false'"
+            @click="lpOpen = !lpOpen"
+        >
+            <span class="lp-sorter-label"><?= $escaper->escapeHtml(__('Sort By')) ?></span>
+            <span class="lp-sorter-value"><?= $escaper->escapeHtml(__((string) $lpCurrentLabel)) ?></span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+                 class="transition-transform duration-200" :class="lpOpen && 'rotate-180'">
+                <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <div x-show="lpOpen" x-cloak
+             class="lp-sorter-menu absolute left-0 end-0 top-full z-20 mt-1 min-w-44 rounded-md overflow-hidden border border-[#e5e7eb] bg-white shadow-md"
+             role="listbox"
+             aria-label="<?= $escaper->escapeHtmlAttr(__('Sort By')) ?>"
+        >
+            <?php foreach ($lpAvailableOrders as $orderCode => $orderLabel): ?>
+                <button type="button"
+                    role="option"
+                    aria-selected="<?= $block->isOrderCurrent($orderCode) ? 'true' : 'false' ?>"
+                    class="lp-sorter-option block w-full px-5 py-2.5 text-left text-base leading-6 <?= $block->isOrderCurrent($orderCode) ? 'bg-hp-brand-dark text-white' : 'text-[#1e293b] hover:bg-[#f4f9f4]' ?>"
+                    @click="changeUrl('product_list_order', '<?= $escaper->escapeJs((string) $orderCode) ?>', options.orderDefault)"
+                >
+                    <?= $escaper->escapeHtml(__($orderLabel)) ?>
+                </button>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php if ($block->getCurrentDirection() == 'desc'): ?>
+        <button
+            title="<?= $escaper->escapeHtmlAttr(__('Set Ascending Direction')) ?>"
+            type="button"
+            class="action sorter-action sort-desc"
+            @click.prevent="changeUrl('product_list_dir', 'asc', options.directionDefault)"
+        >
+            <?= $heroicons->sortAscendingHtml('', 24, 24, ['aria-hidden' => 'true']); ?>
+        </button>
+    <?php else: ?>
+        <button
+            type="button"
+            title="<?= $escaper->escapeHtmlAttr(__('Set Descending Direction')) ?>"
+            class="action sorter-action sort-asc"
+            @click.prevent="changeUrl('product_list_dir', 'desc', options.directionDefault)"
+        >
+            <?= $heroicons->sortDescendingHtml('', 24, 24, ['aria-hidden' => 'true']); ?>
+        </button>
+    <?php endif; ?>
+</div>

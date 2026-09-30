@@ -1,0 +1,221 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ *
+ * Copy của Hyva_SmileElasticsuite catalog/layer/view.phtml (TASK-NAMVVC, SLP-235).
+ * Đổi khác so với bản gốc:
+ *  1. Design Figma 2330-39642 (sidebar) + 2330-39378/2330-39556 (mobile):
+ *     heading "Filters" + panel full-screen mobile (mở qua event `open-filters`
+ *     từ nút Filters trên toolbar — theme override Magento_Catalog toolbar.phtml),
+ *     có scrim, nút X và CTA "Show results" sticky đáy panel (restyle-only —
+ *     CTA chỉ đóng panel, filter vẫn navigate-immediate như mặc định).
+ *  2. Row "Active filters (N)" + "Clear all" (URL category không query params).
+ *  3. Fix skip-link: target `#products-list` → `#product-list` (id thật của
+ *     section product list — mismatch sẵn có của vendor).
+ * Behavior giữ nguyên: initLayeredNavigation (isMobile/blockOpen), accordion
+ * per filter, active-filter pre-open, renderer children, CSP inline script.
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\LucideIcons;
+use Magento\Framework\Escaper;
+use Magento\LayeredNavigation\Block\Navigation;
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+
+/** @var Navigation $block */
+/** @var Escaper $escaper */
+/** @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var LucideIcons $lucideIcons */
+$lucideIcons = $viewModels->require(LucideIcons::class);
+
+// "Clear all" = URL của category hiện tại không query params (restyle-only:
+// mỗi filter item vẫn navigate riêng như Magento mặc định). Search layer không
+// có current category → ẩn Clear all.
+$lpClearAllUrl = '';
+try {
+    $lpCurrentCategory = $block->getLayer()->getCurrentCategory();
+    if ($lpCurrentCategory && $lpCurrentCategory->getId()) {
+        $lpClearAllUrl = (string) $lpCurrentCategory->getUrl();
+    }
+} catch (\Throwable $e) {
+    $lpClearAllUrl = '';
+}
+// SLP-235 feedback r2: số filter ĐANG ÁP DỤNG lấy từ block State (con của
+// navigation). NHẦM LẪN KHÔNG ĐƯỢC: Navigation::getActiveFilters() (dùng ở
+// dưới cho pre-open accordion) trả về INDEX CÁC FACET ĐANG MỞ RỘNG (N facet
+// đầu theo config + facet có param) — trang sạch vẫn trả N.
+$lpAppliedCount = ($lpState = $block->getChildBlock('state'))
+    ? count((array) $lpState->getActiveFilters())
+    : 0;
+?>
+<?php if ($block->canShowBlock()) : ?>
+
+    <div
+        role="region"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('Product filters')) ?>"
+        class="lp-filter-sidebar block relative my-6"
+        x-data="initLayeredNavigation()"
+        x-init="checkIsMobileResolution()"
+        @resize.window.debounce="checkIsMobileResolution()"
+        @visibilitychange.window.debounce="checkIsMobileResolution()"
+        @open-filters.window="if (isMobile) { openPanel() }"
+        @keydown.escape.window="closePanel()"
+    >
+        <div class="lp-filter-scrim fixed inset-0 z-40 bg-black/40 md:hidden"
+             x-show="panelOpen" x-cloak @click="closePanel()" aria-hidden="true"></div>
+
+        <div class="lp-filter-panel relative z-50 flex flex-col md:z-auto"
+             x-show="!isMobile || panelOpen"
+             x-cloak
+             :class="panelOpen && isMobile ? 'lp-filter-panel-open' : ''">
+            <div class="lp-filter-header flex h-10 items-center justify-between">
+                <span class="lp-filter-title flex items-center gap-2 text-2xl font-medium leading-8 text-[#293e2d]">
+                    <?= $escaper->escapeHtml(__('Filters')) ?>
+                    <span class="lp-filter-title-icon md:hidden" aria-hidden="true">
+                        <?= $lucideIcons->slidersHorizontalHtml('', 24, 24) ?>
+                    </span>
+                </span>
+                <button type="button"
+                        class="lp-filter-close flex h-10 w-10 items-center justify-center text-[#293e2d] md:hidden"
+                        x-show="isMobile"
+                        x-cloak
+                        @click="closePanel()"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Close')) ?>"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div
+                id="filters-content"
+                class="lp-filter-content block-content filter-content"
+                x-show="isMobile && blockOpen || !isMobile"
+            >
+                <?php $activeFilters = json_decode($block->getActiveFilters()) ?>
+                <?php if ($lpAppliedCount > 0): ?>
+                    <div class="lp-filter-active flex items-center justify-between gap-2 py-1">
+                        <span class="text-sm font-medium leading-5 text-[#101828]">
+                            <?= $escaper->escapeHtml(__('Active filters')) ?>
+                            (<?= (int) $lpAppliedCount ?>)
+                        </span>
+                        <?php if ($lpClearAllUrl !== ''): ?>
+                            <a href="<?= $escaper->escapeUrl($lpClearAllUrl) ?>"
+                               class="text-sm font-medium leading-5 text-[#101828] underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-hp-brand">
+                                <?= $escaper->escapeHtml(__('Clear all')) ?>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+                <?= $block->getChildHtml('state') ?>
+                <a
+                    href="#product-list"
+                    class="sr-only focus:not-sr-only bg-blue-600 text-white px-12 py-4 text-center block rounded-sm"
+                >
+                    <?= $escaper->escapeHtml(__('Skip to product list')) ?>
+                </a>
+                <?php $filterIndex = 0; ?>
+                <?php foreach ($block->getFilters() as $filter): ?>
+                    <?php if ($filter->getItemsCount()): ?>
+                        <?php $showOpen = in_array($filterIndex, $activeFilters) ?>
+                        <div
+                            role="group"
+                            aria-labelledby="filter-option-<?= $filterIndex ?>-title"
+                            class="filter-option card my-4"
+                            x-data="{ open: <?= $showOpen ? 'true' : 'false' ?> }"
+                        >
+                            <h3
+                                id="filter-option-<?= $filterIndex ?>-title"
+                                class="filter-options-title"
+                            >
+                                <button
+                                    class="flex w-full cursor-pointer items-center justify-between hover:text-secondary-darker border-container"
+                                    :class="{ 'border-b pb-4': open }"
+                                    @click="open = !open"
+                                    aria-controls="filter-option-<?= $filterIndex ?>-content"
+                                    :aria-expanded="open"
+                                >
+                                    <span class="lp-filter-name title text-md font-medium md:text-lg">
+                                        <?= $escaper->escapeHtml(__($filter->getName())) ?>
+                                        <span class="sr-only"><?= $escaper->escapeHtml(__(' filter')) ?></span>
+                                    </span>
+                                    <span class="lp-filter-chevron">
+                                        <svg
+                                            width="20"
+                                            height="20"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="transition-transform transform duration-300 ease-in-out"
+                                            :class="open ? 'rotate-180' : ''"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M19 9L12 16L5 9"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
+                                        </svg>
+                                    </span>
+                                </button>
+                            </h3>
+                            <div
+                                id="filter-option-<?= $filterIndex ?>-content"
+                                class="filter-options-content pt-3"
+                                x-show="open"
+                            >
+                                <?= /* @noEscape */ $block->getChildBlock('renderer')->render($filter) ?>
+                            </div>
+                        </div>
+                        <?php $filterIndex++ ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+
+            <?php /* Design 2330-39556: CTA sticky đáy panel — restyle-only,
+               click chỉ đóng panel (filters đã navigate riêng từng item). */ ?>
+            <div class="lp-filter-cta sticky bottom-0 mt-auto bg-white p-4 md:hidden"
+                 x-show="panelOpen" x-cloak>
+                <button type="button"
+                        class="h-12 w-full rounded-md bg-hp-brand-dark px-6 text-base font-medium leading-6 text-white transition hover:brightness-90 focus-visible:outline-2 focus-visible:outline-hp-brand-dark"
+                        @click="closePanel()"
+                >
+                    <?= $escaper->escapeHtml(__('Show results')) ?>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function initLayeredNavigation() {
+            return {
+                isMobile: false,
+                blockOpen: false,
+                panelOpen: false,
+                openPanel: function () {
+                    this.panelOpen = true
+                    this.blockOpen = true
+                },
+                closePanel: function () {
+                    this.panelOpen = false
+                },
+                checkIsMobileResolution: function () {
+                    this.isMobile = window.outerWidth < 768
+                }
+            }
+        }
+    </script>
+    <?php $hyvaCsp->registerInlineScript(); ?>
+<?php endif; ?>
