@@ -51,6 +51,7 @@
                 <filter>select</filter>
                 <label translate="true">Type</label>
                 <options class="Secomm\CodRisk\Model\Source\ListTypes"/>
+                            <dataType>select</dataType>
             </settings>
         </column>
         <column name="website_id" class="Secomm\CodRisk\Ui\Component\Listing\Columns\WebsiteName">
@@ -58,6 +59,7 @@
                 <filter>select</filter>
                 <options class="Secomm\CodRisk\Model\Source\Websites"/>
                 <label translate="true">Website</label>
+                            <dataType>select</dataType>
             </settings>
         </column>
         <column name="reason">
@@ -72,6 +74,7 @@
                 <label translate="true">Status</label>
                 <options class="Secomm\CodRisk\Model\Source\ActivationStatus"/>
                 <bodyTmpl>ui/grid/cells/html</bodyTmpl>
+                            <dataType>select</dataType>
             </settings>
         </column>
         <column name="effective_from" class="Magento\Ui\Component\Listing\Columns\Date">
