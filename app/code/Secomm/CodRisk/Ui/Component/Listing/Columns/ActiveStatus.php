@@ -39,6 +39,10 @@ class ActiveStatus extends Column
 
         foreach ($dataSource['data']['items'] as &$row) {
             $active = (int)($row['is_active'] ?? 0) === 1;
+            // Columns mutate the SHARED item array in render order — stash the raw
+            // value so later columns (ListActions) still see 0/1, not this HTML.
+            $row['is_active_raw'] = $active ? 1 : 0;
+
             $color = $active ? '#1e7e34' : '#575756';
             $background = $active ? '#e6f4ea' : '#eeeced';
             $label = $active ? __('Active') : __('Inactive');
