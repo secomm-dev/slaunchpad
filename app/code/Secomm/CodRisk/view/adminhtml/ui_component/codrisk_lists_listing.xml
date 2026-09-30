@@ -53,9 +53,10 @@
                 <options class="Secomm\CodRisk\Model\Source\ListTypes"/>
             </settings>
         </column>
-        <column name="website_id">
+        <column name="website_id" class="Secomm\CodRisk\Ui\Component\Listing\Columns\WebsiteName">
             <settings>
-                <filter>text</filter>
+                <filter>select</filter>
+                <options class="Secomm\CodRisk\Model\Source\Websites"/>
                 <label translate="true">Website</label>
             </settings>
         </column>
@@ -65,12 +66,12 @@
                 <label translate="true">Reason</label>
             </settings>
         </column>
-        <column name="is_active" component="Magento_Ui/js/grid/columns/select">
+        <column name="is_active" class="Secomm\CodRisk\Ui\Component\Listing\Columns\ActiveStatus">
             <settings>
                 <filter>select</filter>
                 <label translate="true">Status</label>
                 <options class="Secomm\CodRisk\Model\Source\ActivationStatus"/>
-                <dataType>text</dataType>
+                <bodyTmpl>ui/grid/cells/html</bodyTmpl>
             </settings>
         </column>
         <column name="effective_from" class="Magento\Ui\Component\Listing\Columns\Date">
