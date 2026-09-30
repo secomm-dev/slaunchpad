@@ -39,6 +39,8 @@
 
 ## Current focus / phase
 
+- **TASK-DWW34M Header refinement dev-complete (chờ TL review)** — 2026-09-28: Header shell đổi sang grid `minmax(0,1fr) 120px minmax(0,1fr)` + gap 24px (logo centered invariant, bỏ fixed 400px — HMF-11); theme override `Snowdog_Menu/templates/hyva-topmenu-desktop/menu.phtml` (level-1 row: 1 hàng non-wrap, gap 24px, scroll ngang ẩn scrollbar, Label M 14/20 medium, chevron theme 12px, currentColor — lưu ý CSS prebuilt `.snowdog-menu-link` của Snowdog là unlayered nên phải dùng `leading-5!`/`hover:text-current!`); mobile/tablet: action 40×40, glyph 24px, gap 8/16px, safeguard `max-[374px]:gap-2`. 0 edit vendor/Snowdog. Browser QA 320→1920px pass (không overflow, panel mega full-bleed escape scroll viewport qua `relative` trên grid shell, keyboard scroll qua Tab hoạt động). Known: hamburger mobile giữ `text-primary-darker` (vendor, pre-existing — đề xuất xử lý ở Menu workstream). Evidence: `.ai/evidence/TASK-DWW34M/header-validation.md` (refinement section).
+
 - **Secomm UI Phase 1 / Batch 1 complete** — Batch 2 catalog-backed providers/components remain intentionally deferred until separately requested.
 - **Phase 1a–1d artifacts done**; **1e/1f** semantic-only (satisfied in AGENTS §8.5/§8.6/§9 + `rules/no-duplicate-knowledge.md` — no separate artifact). Migration markers P1A–P1F stamped 2026-07-23 (CHANGELOG 1.3.0).
 - **Address batch chờ release**: TASK-3T3NSV tại QC gate (browser + L3) → sau đó commit; kế tiếp TASK-YQSS3M (cart) → TASK-FMAN1B (OSC).

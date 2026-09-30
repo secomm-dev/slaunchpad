@@ -118,7 +118,12 @@ Xem bảng Files affected trong plan — được cập nhật tiến độ ✅ 
 
 ## Pre-review notes (AI self-check — AGENTS §8.3)
 
-- Scope: chỉ 2 module mới, 0 modify module có sẵn; config.php để CLI enable xử lý.
+- Scope: chỉ module mới `Secomm_CodRisk`, 0 modify module có sẵn; config.php để CLI enable xử lý.
 - Fail-open plugin (catch Throwable, log critical, không rethrow) — có chủ đích checkout safety, flag cho TL.
 - ~~`AuditLogFactory`/`CodRisk*Factory` hand-written~~ → **đã xóa theo code review 22/09** (ObjectManager không đúng chuẩn): factory giờ do DI sinh vào `generated/code` khi `setup:di:compile`; module 0 ObjectManager.
-- Đề xuất缺口 đã ghi Known limitations (live preview normalize + duplicate-check realtime, OSC message chưa wire, audit phone match free-text).
+- Đề xuất缺口 đã ghi Known limitations (live preview normalize + duplicate-check realtime, audit phone match free-text).
+- **Self-test round 1–2 (22–30/09): bug fix được track trong 3 BUG records**:
+  - `BUG-11997Y` (high, payment L3) — plugin availability không chạy (FQCN `Cashondelivery` sai thành `CashOnDelivery`) + place-order gate `CodAvailabilityGuard` + telephone-sync JS.
+  - `BUG-M9K4D2` (high, data integrity) — edit tạo mới thay vì update (`DataObject::setData` thay mảng mất entity_id) + validate duplicate Risk Lists (phone+type+website scope, 0 overlap).
+  - `BUG-N8D8AY` (medium, admin UX batch) — 404 pages/actions, Historical Count hiển thị sai, timezone/format, cột Status/Website, CSS, menu group, field Status trong form.
+- Chi tiết đầy đủ từng fix: `app/code/Secomm/CodRisk/CHANGELOG.md` (mục Fixed).

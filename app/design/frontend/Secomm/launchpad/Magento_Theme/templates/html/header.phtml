@@ -1,0 +1,292 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\ViewModel\StoreConfig;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Launchpad\SnowdogMenu\ViewModel\Config as SnowdogNavigationConfig;
+use Magento\Checkout\Block\Cart\Sidebar as SidebarCart;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Secomm\ThemeHelper\ViewModel\HeaderConfig;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var HyvaCsp $hyvaCsp */
+
+$icons = $viewModels->require(SvgIcons::class);
+$storeConfig = $viewModels->require(StoreConfig::class);
+$headerConfig = $viewModels->require(HeaderConfig::class);
+$snowdogNavigation = $viewModels->require(SnowdogNavigationConfig::class);
+$showMiniCart = $storeConfig->getStoreConfig(SidebarCart::XML_PATH_CHECKOUT_SIDEBAR_DISPLAY);
+$showWishlist = $block->getShowWishlist() !== null ? (bool) $block->getShowWishlist() : true;
+$showLanguage = $block->getShowLanguage() !== null ? (bool) $block->getShowLanguage() : true;
+$stickyEnabled = $headerConfig->isStickyEnabled();
+$snowdogNavigationEnabled = $snowdogNavigation->isEnabled();
+?>
+<script>
+    function initLaunchpadHeader() {
+        return {
+            searchOpen: false,
+            cart: {},
+            customer: {},
+            isCartOpen: false,
+            isHomepage: false,
+            isScrolled: false,
+            stickyEnabled: <?= $stickyEnabled ? 'true' : 'false' ?>,
+            init() {
+                this.isHomepage = document.body.classList.contains('cms-index-index')
+                this.applyHeaderPosition()
+                this.updateScrollState()
+                this.$nextTick(() => this.applyMenuTriggerIcon())
+            },
+            applyHeaderPosition() {
+                const pageHeader = this.$root.parentElement
+                if (!pageHeader) return
+
+                pageHeader.classList.add('top-0', 'z-50', 'w-full')
+                if (this.isHomepage) {
+                    pageHeader.classList.add(this.stickyEnabled ? 'fixed' : 'absolute')
+                } else if (this.stickyEnabled) {
+                    pageHeader.classList.add('sticky')
+                }
+            },
+            globalMessage() {
+                return [...document.querySelectorAll('.message.global')].find((message) => {
+                    const style = window.getComputedStyle(message)
+                    return style.display !== 'none' && style.visibility !== 'hidden' && message.offsetHeight > 0
+                })
+            },
+            updateHeaderOffset(globalMessage = this.globalMessage()) {
+                if (!this.isHomepage) return
+
+                const pageHeader = this.$root.parentElement
+                if (!pageHeader) return
+
+                const offset = !globalMessage
+                    ? 0
+                    : (this.stickyEnabled
+                        ? Math.max(0, globalMessage.getBoundingClientRect().bottom)
+                        : globalMessage.offsetHeight)
+                pageHeader.style.top = `${offset}px`
+            },
+            applyMenuTriggerIcon() {
+                const trigger = this.$refs.menuHost?.querySelector(
+                    '[x-ref="open-menu-button"], div.lg\\:hidden > button:first-of-type'
+                )
+                const icon = this.$refs.menuIcon?.content.firstElementChild?.cloneNode(true)
+                if (trigger && icon) {
+                    // Mobile/Tablet Header contract: every action is a 40x40
+                    // target with a centered 24px glyph (node 2115:5849).
+                    trigger.classList.add(
+                        'flex',
+                        'h-10',
+                        'w-10',
+                        'items-center',
+                        'justify-center',
+                        'btn-transparent',
+                        '[--btn-icon-size:24px]!',
+                        '[--btn-color:currentColor]!'
+                    )
+                    trigger.replaceChildren(icon)
+                }
+            },
+            updateScrollState() {
+                const globalMessage = this.globalMessage()
+                const stickyThreshold = Math.max(8, globalMessage?.offsetHeight || 0)
+                this.isScrolled = window.scrollY >= stickyThreshold
+                this.updateHeaderOffset(globalMessage)
+            },
+            isContextual() {
+                return this.isHomepage && !this.isScrolled
+            },
+            getData(data) {
+                this.cart = data.cart ?? {}
+                this.customer = data.customer ?? {}
+            },
+            summaryCount() {
+                return this.cart.summary_count || 0
+            },
+            isCartEmpty() {
+                return !this.summaryCount()
+            },
+            cartAriaLabel() {
+                return '<?= $escaper->escapeJs($showMiniCart ? __('Toggle minicart') : __('View cart')) ?>, ' +
+                    (this.isCartEmpty() ? '<?= $escaper->escapeJs(__('Cart is empty')) ?>' : (
+                        Math.abs(this.summaryCount()) > 1
+                            ? hyva.str('<?= $escaper->escapeJs(__('%1 items')) ?>', this.summaryCount())
+                            : hyva.str('<?= $escaper->escapeJs(__('%1 item')) ?>', this.summaryCount())
+                    ))
+            },
+            openCart() {
+                this.isCartOpen = true
+                this.$dispatch('toggle-cart', {isOpen: true})
+            },
+            syncCartState(event) {
+                if (event.detail?.isOpen === undefined) return
+                this.isCartOpen = event.detail.isOpen
+                if (!this.isCartOpen) this.$nextTick(() => this.$refs.cartButton?.focus())
+            },
+            toggleSearch() {
+                this.searchOpen = !this.searchOpen
+                if (this.searchOpen) this.$dispatch('search-open')
+            },
+            closeSearch(restoreFocus = false) {
+                this.searchOpen = false
+                if (restoreFocus) this.$nextTick(() => this.$refs.searchButton?.focus())
+            },
+            isMac: /Mac|iPod|iPhone|iPad/.test(navigator.platform),
+            searchShortcut(event) {
+                if ((this.isMac ? event.metaKey : event.ctrlKey) && event.key === 'k') {
+                    event.preventDefault()
+                    this.searchOpen = true
+                    this.$dispatch('search-open')
+                }
+            }
+        }
+    }
+
+    function initWishlistHeader() {
+        return {
+            itemCount: 0,
+            receiveWishlistData(data) {
+                this.itemCount = data.wishlist?.items?.length || 0
+            },
+            linkAriaLabel() {
+                const label = this.itemCount === 1
+                    ? '<?= $escaper->escapeJs(__('%1 item')) ?>'
+                    : '<?= $escaper->escapeJs(__('%1 items')) ?>'
+                return `<?= $escaper->escapeJs(__('My Wish List')) ?>, ${hyva.str(label, this.itemCount)}`
+            }
+        }
+    }
+
+    window.addEventListener('alpine:init', () => {
+        Alpine.data('initLaunchpadHeader', initLaunchpadHeader)
+        Alpine.data('initWishlistHeader', initWishlistHeader)
+    }, {once: true})
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+<div
+    id="header"
+    class="z-30 w-full motion-safe:transition-[background-color,box-shadow,color] motion-safe:duration-200"
+    :class="{
+        'bg-transparent text-white shadow-none': isContextual(),
+        'bg-white text-ink shadow-sm': !isContextual()
+    }"
+    x-data="initLaunchpadHeader"
+    @scroll.window.passive="updateScrollState"
+    @resize.window="updateScrollState"
+    @private-content-loaded.window="getData(event.detail.data)"
+    @keydown.window="searchShortcut"
+>
+    <!-- TASK-DWW34M refinement (HMF-11): the desktop shell is an equal
+         minmax(0,1fr) | 120px | minmax(0,1fr) grid with 24px column gaps so the
+         120x18 logo slot stays centered regardless of either side's content.
+         `relative` is the containing block for the Snowdog level-1 full-width
+         submenu panel, letting it escape the navigation scroll viewport. -->
+    <div class="grid relative h-16 w-full grid-cols-[1fr_auto] items-center px-2 py-3 sm:px-8 lg:grid-cols-[minmax(0,1fr)_120px_minmax(0,1fr)] lg:gap-6 lg:px-10">
+        <div class="flex min-w-0 items-center gap-4 max-[374px]:gap-2 lg:h-10 lg:gap-6 lg:overflow-hidden">
+            <div class="min-w-0" x-ref="menuHost">
+                <?php if ($snowdogNavigationEnabled): ?>
+                    <?php $snowdogMobileHtml = $block->getChildHtml('topmenu'); ?>
+                    <?= $snowdogMobileHtml !== ''
+                        ? $snowdogMobileHtml
+                        : $block->getChildHtml('native-topmenu-mobile-fallback') ?>
+                    <?= $block->getChildHtml('snowdog-topmenu-desktop') ?>
+                <?php else: ?>
+                    <?= $block->getChildHtml('native-topmenu-mobile-fallback') ?>
+                    <?= $block->getChildHtml('native-topmenu-desktop-fallback') ?>
+                <?php endif; ?>
+            </div>
+            <template x-ref="menuIcon">
+                <?= $icons->renderHtml('outline/menu', '', 24, 24, ['aria-hidden' => 'true']) ?>
+            </template>
+            <div class="lg:hidden">
+                <?= $block->getChildHtml('logo') ?>
+            </div>
+        </div>
+
+        <div class="hidden justify-self-center lg:block">
+            <?= $block->getChildHtml('logo') ?>
+        </div>
+
+        <div class="ml-auto flex items-center gap-2 sm:gap-4 lg:justify-end lg:gap-6">
+            <?php if ($showLanguage): ?>
+                <div class="hidden lg:block">
+                    <?= $block->getChildHtml('store-language-switcher') ?>
+                </div>
+            <?php endif; ?>
+
+            <button
+                id="menu-search-icon"
+                type="button"
+                class="btn btn-transparent h-10 shrink-0 px-2 [--btn-icon-size:24px]! [--btn-color:currentColor]!"
+                @click="toggleSearch"
+                :aria-expanded="searchOpen"
+                aria-controls="search-content"
+                aria-haspopup="true"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Toggle search form')) ?>"
+                x-ref="searchButton"
+            >
+                <?= $icons->renderHtml('outline/search', '', 24, 24, ['aria-hidden' => 'true']) ?>
+            </button>
+
+            <?= $block->getChildHtml('additional') ?>
+            <?= $block->getChildHtml('customer') ?>
+
+            <?php if ($showWishlist): ?>
+                <?= $block->getChildHtml('wishlist') ?>
+            <?php endif; ?>
+
+            <?php if ($showMiniCart): ?>
+                <button
+                    id="menu-cart-icon"
+                    type="button"
+                    class="btn btn-transparent relative h-10 shrink-0 px-2 [--btn-icon-size:24px]! [--btn-color:currentColor]!"
+                    @click.prevent="openCart"
+                    @toggle-cart.window="syncCartState"
+                    :aria-expanded="isCartOpen"
+                    :aria-label="cartAriaLabel"
+                    aria-haspopup="dialog"
+                    x-ref="cartButton"
+                >
+            <?php else: ?>
+                <a
+                    id="menu-cart-icon"
+                    class="btn btn-transparent relative h-10 shrink-0 px-2 [--btn-icon-size:24px]! [--btn-color:currentColor]!"
+                    href="<?= $escaper->escapeUrl($block->getUrl('checkout/cart/index')) ?>"
+                    :aria-label="cartAriaLabel"
+                    x-ref="cartButton"
+                >
+            <?php endif; ?>
+                <?= $icons->renderHtml('outline/shopping-cart', '', 24, 24, ['aria-hidden' => 'true']) ?>
+                <span
+                    class="absolute end-0 top-0 min-w-4 rounded-full bg-primary px-1 text-center text-xs font-semibold leading-4 text-on-primary"
+                    x-text="summaryCount"
+                    x-show="summaryCount"
+                    x-cloak
+                    aria-hidden="true"
+                ></span>
+            <?= $showMiniCart ? '</button>' : '</a>' ?>
+        </div>
+    </div>
+
+    <div
+        id="search-content"
+        class="absolute inset-x-0 top-full z-20 border-t border-border bg-white pb-3 text-ink shadow-lg"
+        x-show="searchOpen"
+        x-cloak
+        @click.outside="closeSearch"
+        @keydown.escape.stop="closeSearch(true)"
+    >
+        <?= $block->getChildHtml('header-search') ?>
+    </div>
+
+    <?= $block->getChildHtml('cart-drawer') ?>
+    <?= $block->getChildHtml('authentication-popup') ?>
+</div>

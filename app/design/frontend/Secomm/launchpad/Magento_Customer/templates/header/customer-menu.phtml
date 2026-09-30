@@ -8,7 +8,7 @@
 declare(strict_types=1);
 
 use Hyva\Theme\Model\ViewModelRegistry;
-use Hyva\Theme\ViewModel\LucideIcons;
+use Hyva\Theme\ViewModel\SvgIcons;
 use Hyva\Theme\ViewModel\HyvaCsp;
 use Magento\Customer\Block\Account\Customer;
 use Magento\Framework\Escaper;
@@ -18,8 +18,8 @@ use Magento\Framework\Escaper;
 /** @var HyvaCsp $hyvaCsp */
 /** @var ViewModelRegistry $viewModels */
 
-/** @var LucideIcons $lucideIcons */
-$lucideIcons = $viewModels->require(LucideIcons::class);
+/** @var SvgIcons $icons */
+$icons = $viewModels->require(SvgIcons::class);
 
 /**
  * Secomm Launchpad theme override of Magento_Customer::header/customer-menu.phtml
@@ -39,16 +39,20 @@ $lucideIcons = $viewModels->require(LucideIcons::class);
     <button
         type="button"
         id="customer-menu"
-        class="btn bg-transparent border-transparent p-1"
+        class="btn btn-transparent h-10 shrink-0 gap-1 px-2 [--btn-icon-size:24px]! [--btn-color:currentColor]!"
         @click="toggleOpen"
         :aria-expanded="open"
         aria-label="<?= $escaper->escapeHtmlAttr(__('My Account')) ?>"
         aria-haspopup="true"
     >
-        <?= $lucideIcons->userHtml('', 24, 24, ['aria-hidden' => 'true']); ?>
+        <?= $icons->renderHtml('outline/user', '', 24, 24, ['aria-hidden' => 'true']) ?>
+        <span class="hidden text-label-m lg:inline" x-show="customer?.firstname" x-cloak>
+            <?= $escaper->escapeHtml(__('Hi,')) ?>
+            <span x-text="customer.firstname"></span>
+        </span>
     </button>
     <nav
-        class="z-10 absolute left-0 sm:left-auto right-0 w-40 sm:w-48 mt-2 lg:mt-3 sm:-me-4 py-2 px-1 rounded-md shadow-lg bg-white overflow-auto"
+        class="absolute right-0 z-30 mt-2 w-48 overflow-auto rounded-md bg-white px-1 py-2 text-ink shadow-lg lg:mt-3"
         aria-labelledby="customer-menu"
         x-show="open"
         x-transition
