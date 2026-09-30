@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\Escaper;
+use Magento\Theme\Block\Html\Header\Logo;
+
+/** @var Logo $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+$icons = $viewModels->require(SvgIcons::class);
+?>
+<a class="flex h-[18px] w-[120px] items-center justify-center text-current"
+   href="<?= $escaper->escapeUrl($block->getUrl('')) ?>"
+   aria-label="<?= $escaper->escapeHtmlAttr(__('Go to Home page')) ?>">
+    <?= $icons->renderHtml('brand/slaunch-logo', '', 118, 18, ['aria-hidden' => 'true']) ?>
+</a>

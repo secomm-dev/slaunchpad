@@ -12,3 +12,8 @@ available only in Magento developer mode and returns 404 in other modes.
 The showcase owns no presentation CSS. Its theme templates consume the same
 semantic Tailwind utilities, component hooks and Hyvä SVG renderer as production
 storefront templates.
+
+## Header configuration
+
+Stores → Configuration → Secomm Extensions → Theme → Header provides the
+Store View scoped **Enable Sticky Header** setting. The default is enabled.

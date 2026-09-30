@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+
+$icons = $viewModels->require(SvgIcons::class);
+?>
+<a
+    href="<?= $escaper->escapeUrl($block->getUrl('wishlist')) ?>"
+    class="btn btn-transparent relative hidden h-10 shrink-0 px-2 text-inherit! [--btn-icon-size:24px]! [--btn-color:currentColor]! lg:flex"
+    x-data="initWishlistHeader"
+    @private-content-loaded.window="receiveWishlistData(event.detail.data)"
+    :aria-label="linkAriaLabel()"
+    aria-label="<?= $escaper->escapeHtmlAttr(__('My Wish List')) ?>"
+>
+    <?= $icons->renderHtml('outline/heart', '', 24, 24, ['aria-hidden' => 'true']) ?>
+    <span
+        class="absolute end-0 top-0 min-w-4 rounded-full bg-primary px-1 text-center text-xs font-semibold leading-4 text-on-primary"
+        x-text="itemCount"
+        x-show="itemCount"
+        x-cloak
+        aria-hidden="true"
+    ></span>
+</a>

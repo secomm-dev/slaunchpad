@@ -7,6 +7,32 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <referenceBlock name="header-content">
+            <arguments>
+                <argument name="show_compare" xsi:type="boolean">false</argument>
+                <argument name="show_wishlist" xsi:type="boolean">true</argument>
+                <argument name="show_language" xsi:type="boolean">true</argument>
+            </arguments>
+            <block name="launchpad.topmenu.native.mobile"
+                   as="native-topmenu-mobile-fallback"
+                   template="Magento_Theme::html/header/menu/mobile.phtml"/>
+            <block name="launchpad.topmenu.native.desktop"
+                   as="native-topmenu-desktop-fallback"
+                   template="Magento_Theme::html/header/menu/desktop.phtml"/>
+            <block name="header.store-language-switcher"
+                   as="store-language-switcher"
+                   template="Magento_Store::header/languages.phtml">
+                <arguments>
+                    <argument name="show_label" xsi:type="boolean">true</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceBlock name="header-content">
+            <block name="header.content.wishlist"
+                   template="Magento_Wishlist::header/wishlist.phtml"
+                   as="wishlist"
+                   ifconfig="wishlist/general/active"/>
+        </referenceBlock>
         <referenceContainer name="cart-drawer.totals.before">
             <block class="Magento\Checkout\Block\Cart\Coupon"
                    name="cart-drawer.coupon"
