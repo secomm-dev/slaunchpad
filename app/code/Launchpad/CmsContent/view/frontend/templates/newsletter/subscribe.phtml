@@ -1,12 +1,14 @@
 <?php
 /**
- * Newsletter subscribe form — LAUNCHPAD CORE homepage (TASK-0NNZCW v4.3).
- * Design 2151:17272: one-line form (input + brand button), centered.
+ * Newsletter subscribe form — LAUNCHPAD CORE (TASK-0NNZCW v4.3, restyled TASK-7EYJ4C).
+ * Design 2151:17272 (homepage) + footer 2717:85933/2717:86177 (SLP-275): one-line
+ * form (input + brand button) on desktop, stacked full-width on mobile.
  *
- * Validation: hyva.formValidation (sets novalidate — the HTML5 native bubble uses the
- * browser locale and cannot be translated), so required/email messages come from the
- * store locale i18n. The `.field.field-reserved` wrapper is the message container —
- * without it the component wraps the input in an unstyled div inside the flex row.
+ * Styling lives directly on the markup as Tailwind utilities (TASK-7EYJ4C decision:
+ * no dependency on the homepage.css lp-* classes — the form renders in the global
+ * footer now). The `.field.field-reserved` wrapper is the validation message
+ * container — without it the component wraps the input in an unstyled div inside
+ * the flex row.
  *
  * @var \Launchpad\CmsContent\Block\Newsletter\Subscribe $block
  * @var \Magento\Framework\Escaper $escaper
@@ -20,7 +22,7 @@ use Hyva\Theme\ViewModel\HyvaCsp;
 /** @var HyvaCsp $hyvaCsp */
 $hyvaCsp = $viewModels->require(HyvaCsp::class);
 ?>
-<form class="lp-newsletter-form"
+<form class="mx-auto flex w-full max-w-[1184px] flex-col gap-2 lg:flex-row lg:items-center lg:gap-2"
       action="<?= $escaper->escapeUrl($block->getFormActionUrl()) ?>"
       method="post"
       id="homepage-newsletter-form"
@@ -32,8 +34,8 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
         <?= $escaper->escapeHtml(__('Email Address')) ?>
     </label>
     <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>">
-    <div class="field field-reserved lp-newsletter-field">
-        <input class="lp-newsletter-input"
+    <div class="field field-reserved w-full lg:flex-1">
+        <input class="h-11 w-full rounded-md border border-[#d1d5dc] bg-white px-3.5 text-[16px] leading-6 text-[#101828] placeholder:text-[#364153] focus:border-[#588f60] focus:outline-none"
                id="homepage-newsletter-email"
                name="email"
                type="email"
@@ -41,7 +43,7 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
                autocomplete="email"
                placeholder="<?= $escaper->escapeHtmlAttr(__('Enter your email address')) ?>">
     </div>
-    <button class="btn btn-primary lp-newsletter-btn"
+    <button class="h-11 w-full shrink-0 rounded-md bg-[#45744c] px-5 text-[16px] font-medium leading-6 text-white transition hover:bg-[#35573a] lg:w-[118px]"
             type="submit">
         <?= $escaper->escapeHtml(__('Subscribe')) ?>
     </button>

@@ -1,0 +1,10 @@
+FAIL | vi home success | flag=null endpoint=/customer/ajax/login/ from=/ nav=/ want=/customer/account/ consoleErrors=[]
+FAIL | vi pdp success | flag=null endpoint=/customer/ajax/login/ from=/atlas-pouf.html nav=/atlas-pouf.html want=/customer/account/ consoleErrors=["Error fetching data: SyntaxError: Unexpected token '<', \"<!doctype \"... is not valid JSON"]
+FAIL | vi cart success | flag=null endpoint=/customer/ajax/login/ from=/checkout/cart/ nav=/checkout/cart/ want=/customer/account/ consoleErrors=[]
+PASS | vi home wrong-password (real server) | errors=true message="Tên đăng nhập hoặc mật khẩu không hợp lệ." navigated=none consoleErrors=[]
+FAIL | en home success | flag=null endpoint=/customer/ajax/login/ from=/?___store=launchpad_en nav=/?___store=launchpad_en want=/customer/account/ consoleErrors=[]
+FAIL | en pdp success | flag=null endpoint=/customer/ajax/login/ from=/atlas-pouf.html?___store=launchpad_en nav=/atlas-pouf.html?___store=launchpad_en want=/customer/account/ consoleErrors=["Error fetching data: SyntaxError: Unexpected token '<', \"<!doctype \"... is not valid JSON"]
+FAIL | en cart success | flag=null endpoint=/customer/ajax/login/ from=/checkout/cart/?___store=launchpad_en nav=/checkout/cart/?___store=launchpad_en want=/customer/account/ consoleErrors=[]
+PASS | en home wrong-password (real server) | errors=true message="Tên đăng nhập hoặc mật khẩu không hợp lệ." navigated=none consoleErrors=[]
+
+2/8 PASS

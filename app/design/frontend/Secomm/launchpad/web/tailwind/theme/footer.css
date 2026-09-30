@@ -1,0 +1,286 @@
+/* Footer (TASK-7EYJ4C v3, SLP-275).
+   Content = native PageBuilder elements + Tailwind classes in the elements'
+   CSS Classes fields (compiled via the generated safelist). This file keeps
+   ONLY what classes cannot own:
+   • counters for homepage.css !important bleed rules (body.cms-index-index
+     row/column-line/image rules) — classes lose those by specificity;
+   • column-line containers (no CSS Classes field on the auto element);
+   • accordion chrome (chevron ::after mask + collapse display rules);
+   • image sizes (homepage.css forces image-element imgs to 100%/absolute;
+     utilities lose that by specificity + importance);
+   • figure margin reset (unlayered page-builder rules).
+   Everything else (typography, colors, spacing, borders) lives as classes on
+   the elements — see Launchpad\CmsContent\Model\FooterBlockContent. */
+
+/* ---------- Layout guard (counter homepage.css bleed) ---------- */
+
+/* homepage.css rules `body.cms-index-index [row][appearance=full-width]
+   :has([column-group]/[column-line]) { margin-block-start: 4rem !important }`
+   (split/promo sections) bleed into the footer on the homepage → 64px gaps
+   between footer sections. Section-class + :has keeps specificity (0,5,1),
+   footer.css imports after homepage.css → the tie breaks here. */
+footer.page-footer .footer-section-newsletter [data-content-type="row"]:has([data-content-type="column-group"]),
+footer.page-footer .footer-section-newsletter [data-content-type="row"]:has([data-content-type="column-line"]),
+footer.page-footer .footer-section-links [data-content-type="row"]:has([data-content-type="column-group"]),
+footer.page-footer .footer-section-links [data-content-type="row"]:has([data-content-type="column-line"]),
+footer.page-footer .footer-section-social [data-content-type="row"]:has([data-content-type="column-group"]),
+footer.page-footer .footer-section-social [data-content-type="row"]:has([data-content-type="column-line"]),
+footer.page-footer .footer-section-trust [data-content-type="row"]:has([data-content-type="column-group"]),
+footer.page-footer .footer-section-trust [data-content-type="row"]:has([data-content-type="column-line"]) {
+    margin-block-start: 0 !important;
+    margin-block-end: 0 !important;
+}
+
+/* ID-prefixed variant `#html-body.cms-index-index [row][appearance=full-width]
+   :has([column-group/line])` carries (1,5,1) — only an ID-anchored counter with
+   the same chain (1,6,1) beats it. body#html-body exists on CMS pages
+   (homepage), the only place these rules apply. */
+#html-body footer.page-footer .footer-section-newsletter [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]),
+#html-body footer.page-footer .footer-section-newsletter [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]),
+#html-body footer.page-footer .footer-section-links [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]),
+#html-body footer.page-footer .footer-section-links [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]),
+#html-body footer.page-footer .footer-section-social [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]),
+#html-body footer.page-footer .footer-section-social [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]),
+#html-body footer.page-footer .footer-section-trust [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]),
+#html-body footer.page-footer .footer-section-trust [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]) {
+    margin-block-start: 0 !important;
+    margin-block-end: 0 !important;
+}
+
+footer.page-footer
+    [data-content-type="row"][data-appearance="full-width"]
+    [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    grid-template-columns: none !important;
+    gap: 0 !important;
+    overflow: visible !important;
+    padding-block-end: 0 !important;
+}
+
+footer.page-footer
+    [data-content-type="row"]
+    [data-content-type="column-line"]
+    > [data-content-type="column"] {
+    flex: 0 0 auto !important;
+}
+
+/* Counter homepage.css split-image rules: without these the footer social
+   icons / trust badge stretch to 100% width inside a 535px absolute frame. */
+footer.page-footer
+    [data-content-type="row"][data-appearance="full-width"]
+    [data-content-type="column"]:has(> [data-content-type="image"])
+    > [data-content-type="image"] {
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+    aspect-ratio: auto !important;
+}
+
+footer.page-footer
+    [data-content-type="row"][data-appearance="full-width"]
+    [data-content-type="column"]:has(> [data-content-type="image"])
+    > [data-content-type="image"] img {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    max-width: 100% !important;
+    object-fit: fill !important;
+    object-position: center !important;
+}
+
+/* ---------- Containers (column-line has no CSS Classes field) ---------- */
+
+/* page-builder.css gives `[row full-width] > .row-full-width-inner` the Tailwind
+   `container` treatment (max-width steps + responsive padding-inline, 24px at
+   desktop). The section wrappers in footer.phtml already own the container job
+   (max-w-[1440px] px-6 lg:px-10) — the stacked step padding made every footer
+   row's content sit 24px right of the main content columns above (F14). */
+footer.page-footer [data-content-type="row"][data-appearance="full-width"] > .row-full-width-inner {
+    padding-inline: 0;
+}
+
+footer.page-footer
+    .footer-section-links [data-content-type="row"]
+    [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    flex-direction: column !important;
+}
+
+@media (min-width: 64rem) {
+    footer.page-footer
+        .footer-section-links [data-content-type="row"]
+        [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        flex-direction: row !important;
+        gap: 1.5rem !important;
+    }
+
+    footer.page-footer
+        .footer-section-links [data-content-type="row"]
+        [data-content-type="column-line"]
+        > [data-content-type="column"] {
+        width: auto !important;
+        flex: 1 1 0 !important;
+        border-bottom: 0;
+        padding: 0;
+    }
+}
+
+footer.page-footer
+    .footer-section-social [data-content-type="row"]
+    [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    justify-content: center !important;
+    gap: 2rem !important;
+    margin-top: 1.5rem;
+}
+
+/* page-builder.css `@apply w-full` would stretch these columns to the full
+   line width (4 columns × 100% in a nowrap row → icons off-viewport). */
+footer.page-footer .footer-section-social [data-content-type="column"],
+footer.page-footer .footer-section-trust [data-content-type="column"] {
+    width: auto !important;
+    max-width: none !important;
+}
+
+footer.page-footer
+    .footer-section-trust [data-content-type="row"]
+    [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1.5rem !important;
+}
+
+@media (min-width: 64rem) {
+    footer.page-footer
+        .footer-section-trust [data-content-type="row"]
+        [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+}
+
+/* ---------- Image sizes (homepage.css bleed can only be beaten here) ---------- */
+
+footer.page-footer .footer-section-social [data-content-type="column"] .pagebuilder-image,
+footer.page-footer
+    .footer-section-social [data-content-type="row"][data-appearance="full-width"]
+    [data-content-type="column"]
+    > [data-content-type="image"] img {
+    width: 40px !important;
+    height: 40px !important;
+    transition: opacity 0.2s ease;
+}
+
+footer.page-footer .footer-section-social [data-content-type="column"]:hover .pagebuilder-image {
+    opacity: 0.8;
+}
+
+footer.page-footer .footer-section-trust .footer-trust-badge .pagebuilder-image,
+footer.page-footer
+    .footer-section-trust [data-content-type="row"][data-appearance="full-width"]
+    .footer-trust-badge[data-content-type="column"]
+    > [data-content-type="image"] img {
+    width: auto !important;
+    height: 64px !important;
+}
+
+/* Payment icons: nested column-line → grid 4-up on mobile, flex row on desktop. */
+footer.page-footer
+    .footer-section-trust [data-content-type="row"][data-appearance="full-width"]
+    .footer-trust-payments [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    justify-items: center !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+@media (min-width: 64rem) {
+    footer.page-footer
+        .footer-section-trust [data-content-type="row"][data-appearance="full-width"]
+        .footer-trust-payments [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        display: flex !important;
+        gap: 1rem !important;
+    }
+
+    footer.page-footer
+        .footer-section-trust [data-content-type="row"][data-appearance="full-width"]
+        .footer-trust-payments [data-content-type="column-line"] > [data-content-type="column"] {
+        width: auto !important;
+    }
+}
+
+footer.page-footer .footer-section-trust .footer-trust-payments [data-content-type="image"] img,
+footer.page-footer
+    .footer-section-trust [data-content-type="row"][data-appearance="full-width"]
+    .footer-trust-payments [data-content-type="column-line"] [data-content-type="image"] img {
+    width: auto !important;
+    height: 48px !important;
+}
+
+@media (min-width: 64rem) {
+    footer.page-footer
+        .footer-section-trust [data-content-type="row"][data-appearance="full-width"]
+        .footer-trust-payments [data-content-type="column-line"] [data-content-type="image"] img {
+        height: 32px !important;
+    }
+}
+
+/* ---------- Accordion chrome (mobile only) ---------- */
+
+@media (max-width: 63.97rem) {
+    footer.page-footer .footer-section-links [data-content-type="heading"] {
+        cursor: pointer;
+    }
+
+    footer.page-footer .footer-section-links [data-content-type="heading"]::after {
+        content: "" !important;
+        flex: 0 0 auto;
+        width: 20px;
+        height: 20px; /* F15: was 0px tall (flex item + items-center) → invisible */
+        background-color: currentColor;
+        mask: url("../images/chevron-down.svg") center / contain no-repeat;
+        transition: transform 0.2s ease;
+    }
+
+    footer.page-footer .footer-section-links .footer-links-open [data-content-type="heading"]::after {
+        transform: rotate(180deg);
+    }
+
+    footer.page-footer .footer-section-links .footer-links-group:not(.footer-links-open) .footer-links-list,
+    footer.page-footer .footer-section-links [data-content-type="column"]:not(.footer-links-open) > [data-content-type="text"] {
+        display: none;
+    }
+
+    /* F15 — accordion rhythm theo Figma mobile (node 2717:86198): container
+       gap 16px giữa các group, group KHÔNG tự mang padding dọc, divider chỉ
+       nằm GIỮA các group (không có line sau group cuối), title→list khi mở
+       = 24px. Đè utility classes trong content (py-5 / border-b / mt-4). */
+    footer.page-footer .footer-section-links [data-content-type="row"]
+    [data-content-type="column-line"]:has(> [data-content-type="column"]) {
+        gap: 16px !important; /* !important: homepage.css bleed `gap: 1rem !important` */
+    }
+
+    footer.page-footer .footer-section-links [data-content-type="column"] {
+        padding-top: 0;
+        padding-bottom: 0;
+        border-bottom: 0;
+    }
+
+    footer.page-footer .pagebuilder-column-line .footer-links-group:not(:last-child) {
+        padding-bottom: 16px;
+    }
+
+    footer.page-footer .footer-section-links [data-content-type="column"]:not(:last-child) {
+        border-bottom: 1px solid #e4e7ec;
+    }
+
+    footer.page-footer .footer-section-links [data-content-type="column"].footer-links-open
+    [data-content-type="text"] {
+        margin-top: 24px;
+    }
+}
+
+figure {
+    margin: 0;
+}

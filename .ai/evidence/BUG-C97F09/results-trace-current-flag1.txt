@@ -1,0 +1,20 @@
+[A success as server returns (flag=1)] page=/
+  override loaded      : false
+  popup posts to       : /customer/ajax/login/
+  response             : {"errors":false,"message":"Login successful."} (mocked)
+  navigation after     : /  (= reload same page)
+[A success as server returns (flag=1)] page=/atlas-pouf.html
+  override loaded      : false
+  popup posts to       : /customer/ajax/login/
+  response             : {"errors":false,"message":"Login successful."} (mocked)
+  navigation after     : /atlas-pouf.html  (= reload same page)
+[B success WITH redirectUrl] page=/
+  override loaded      : false
+  popup posts to       : /customer/ajax/login/
+  response             : {"errors":false,"message":"Login successful.","redirectUrl":"http://slaunchpad.localhost/customer/account/"} (mocked)
+  navigation after     : /  (= reload same page)
+[C real server, wrong password] page=/
+  override loaded      : false
+  popup posts to       : /customer/ajax/login/
+  response             : {"errors":true,"message":"T\u00ean \u0111\u0103ng nh\u1eadp ho\u1eb7c m\u1eadt kh\u1ea9u kh\u00f4ng h\u1ee3p l\u1ec7."}
+  navigation after     : none

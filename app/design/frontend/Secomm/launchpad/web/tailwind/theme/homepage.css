@@ -1720,11 +1720,15 @@ body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"] [da
 
 /* v4.9.2 (user, Figma 2151:17164): Living, Reimagined = section FULL WIDTH —
    ảnh tràn sát mép trái viewport, cột text phải chừa 2.5rem mép phải.
-   (newsletter full-width không chứa column-group/line nên không bị phạm.) */
-body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]) [data-element="inner"],
-body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]) [data-element="inner"],
-body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-group"]) [data-element="inner"],
-body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-line"]) [data-element="inner"] {
+   (newsletter full-width không chứa column-group/line nên không bị phạm.)
+   v4.9.3 (TASK-7EYJ4C F13): :not(footer *) — các row footer cũng là
+   full-width + có column-group/line; không scope thì footer trên homepage
+   ăn padding 0 2.5rem 0 0 (lệch). Footer dùng counter ở footer.css tới
+   khi rule homepage tự loại footer thì counter thành dư phòng thủ. */
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-group"]) [data-element="inner"]:not(footer *),
+body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has([data-content-type="column-line"]) [data-element="inner"]:not(footer *),
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-group"]) [data-element="inner"]:not(footer *),
+body.cms-index-index [data-content-type="row"][data-appearance="full-bleed"]:has([data-content-type="column-line"]) [data-element="inner"]:not(footer *) {
     max-width: none !important;
     margin-inline: 0 !important;
     padding: 0 2.5rem 0 0 !important;

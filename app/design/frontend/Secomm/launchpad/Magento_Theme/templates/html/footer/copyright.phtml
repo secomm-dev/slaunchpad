@@ -1,0 +1,27 @@
+<?php
+/**
+ * Footer copyright bar — LAUNCHPAD CORE (TASK-7EYJ4C, SLP-275).
+ *
+ * Text comes from Content > Design > Configuration > Theme > Footer > Copyright
+ * (design/footer/copyright, configurable per store view). Legal links are the
+ * static lowercase routes agreed in TASK-7EYJ4C (placeholder pages pending).
+ *
+ * @var \Magento\Theme\Block\Html\Footer $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+declare(strict_types=1);
+?>
+<small class="text-sm leading-5 text-[#364153]">
+    <?= $escaper->escapeHtml($block->getCopyright()) ?>
+</small>
+<nav aria-label="<?= $escaper->escapeHtmlAttr(__('Footer legal')) ?>"
+     class="flex items-center gap-4 text-[#4a5565]"
+>
+    <a href="<?= $escaper->escapeUrl($block->getUrl('terms-and-conditions')) ?>"
+       class="text-sm leading-5 text-[#4a5565] transition hover:text-[#101828]"
+    ><?= $escaper->escapeHtml(__('Terms & Conditions')) ?></a>
+    <a href="<?= $escaper->escapeUrl($block->getUrl('privacy-policy-cookie-restriction-mode')) ?>"
+       class="text-sm leading-5 text-[#4a5565] transition hover:text-[#101828]"
+    ><?= $escaper->escapeHtml(__('Privacy Policy')) ?></a>
+</nav>
