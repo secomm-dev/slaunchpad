@@ -47,6 +47,7 @@ class Save extends AbstractAction implements HttpPostActionInterface
                 'source' => 'ADMIN',
                 'effective_from' => $request->getParam('effective_from'),
                 'effective_to' => $request->getParam('effective_to'),
+                'is_active' => $request->getParam('is_active'),
                 'created_by' => $user !== null ? $user->getUsername() : '',
             ], $request->getParam('list_id') !== null ? (int)$request->getParam('list_id') : null);
 
