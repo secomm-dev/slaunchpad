@@ -16,11 +16,16 @@
  *   forced primary color, uppercase transform and selected-panel styling are
  *   intentionally not used.
  *
- * The submenu panel markup and behaviour are unchanged (owned by the separate
- * Menu workstream). The panel is absolutely positioned, so its containing
- * block is the Header grid shell (position: relative on the grid in
- * Magento_Theme::html/header.phtml): it renders full width below the shell and
- * escapes the scroll viewport's clipping.
+ * The submenu panel is rendered by the theme-local
+ * `menu/desktop-sub-menu.phtml` (wired through the `subMenuTemplate` block
+ * argument): a full-width composition below the Header shell (feature image +
+ * copy and up to three selection-driven navigation columns). The panel is
+ * absolutely positioned, so its containing block is the Header grid shell
+ * (position: relative on the grid in Magento_Theme::html/header.phtml): it
+ * renders full width below the shell and escapes the scroll viewport's
+ * clipping. Activation follows HMF-04: hover enhancement on fine pointers,
+ * deterministic click/Enter/Space toggle, delayed mouseleave, outside click
+ * and Escape close with focus restoration.
  */
 
 use Hyva\Theme\Model\ViewModelRegistry;
@@ -45,21 +50,79 @@ $uniqueId = '_' . uniqid();
 
         const initTopmenuDesktop<?= $escaper->escapeHtml($uniqueId) ?> = () => ({
             openSubmenuId: null,
+            branchSelection: {},
+            hoverCloseTimer: null,
+            openedViaHover: false,
+            canHover() {
+                return window.matchMedia('(hover: hover) and (pointer: fine)').matches
+            },
+            activateSubmenu(menuNode, { trapFocus = true } = {}) {
+                this.openSubmenuId = menuNode
+                this.openedViaHover = !trapFocus
+                this.branchSelection = { ...this.branchSelection, [menuNode]: { l1: null, l2: null } }
+                if (!trapFocus) return
+                this.$nextTick(() => {
+                    hyva.releaseFocus()
+                    hyva.trapFocus(this.$refs['submenu-' + menuNode])
+                })
+            },
             toggleSubmenu(menuNode) {
                 if (menuNode === this.openSubmenuId) {
+                    this.closeSubmenu()
+                } else {
+                    this.activateSubmenu(menuNode)
+                }
+            },
+            closeSubmenu() {
+                this.clearCloseTimer()
+                const panel = this.openSubmenuId ? this.$refs['submenu-' + this.openSubmenuId] : null
+                this.openSubmenuId = null
+                hyva.releaseFocus()
+                if (panel && panel.contains(document.activeElement)) {
+                    this.$refs['sr-button-' + (panel.getAttribute('x-ref') || '').replace('submenu-', '')]?.focus()
+                }
+            },
+            openSubmenuOnHover(menuNode) {
+                if (!this.canHover()) return
+                this.clearCloseTimer()
+                if (menuNode !== this.openSubmenuId) this.activateSubmenu(menuNode, { trapFocus: false })
+            },
+            scheduleSubmenuClose() {
+                // Only hover-opened panels close on mouseleave; a panel opened
+                // via click/keyboard stays until Escape, outside click or the
+                // trigger toggle (Menu C disclosure semantics).
+                if (!this.canHover() || !this.openedViaHover) return
+                this.clearCloseTimer()
+                this.hoverCloseTimer = setTimeout(() => {
+                    const panel = this.openSubmenuId ? this.$refs['submenu-' + this.openSubmenuId] : null
+                    // keyboard focus inside the panel outranks the mouse leaving
+                    if (panel && panel.contains(document.activeElement)) return
                     this.openSubmenuId = null
                     hyva.releaseFocus()
-                } else {
-                    this.openSubmenuId = menuNode
-                    this.$nextTick(() => {
-                        hyva.trapFocus(this.$refs['submenu-' + menuNode])
-                    })
+                }, 300)
+            },
+            clearCloseTimer() {
+                if (this.hoverCloseTimer) {
+                    clearTimeout(this.hoverCloseTimer)
+                    this.hoverCloseTimer = null
                 }
+            },
+            selectBranch(topId, level, nodeId) {
+                const branch = { ...(this.branchSelection[topId] || {}) }
+                if (level === 1) {
+                    branch.l1 = branch.l1 === nodeId ? null : nodeId
+                    branch.l2 = null
+                } else {
+                    branch.l2 = branch.l2 === nodeId ? null : nodeId
+                }
+                this.branchSelection = { ...this.branchSelection, [topId]: branch }
             },
             onSubmenuEscape(event) {
                 event.stopPropagation()
-                this.$refs['sr-button-' + this.openSubmenuId]?.focus()
+                const activeTop = this.openSubmenuId
                 this.openSubmenuId = null
+                hyva.releaseFocus()
+                this.$refs['sr-button-' + activeTop]?.focus()
             }
         })
     </script>
@@ -69,6 +132,7 @@ $uniqueId = '_' . uniqid();
             <?= $escaper->escapeHtmlAttr($menu->getCssClass()) ?>
             navigation hidden w-full lg:block
         "
+        @resize.window.passive="if (window.innerWidth < 1024 && openSubmenuId) closeSubmenu()"
     >
         <nav
             class="snowdog-topmenu-desktop min-w-0 overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
@@ -77,7 +141,7 @@ $uniqueId = '_' . uniqid();
         >
             <ul
                 class="flex w-max items-center gap-6"
-                @mouseleave="openSubmenuId = null"
+                @mouseleave="scheduleSubmenuClose()"
             >
                 <?php foreach ($block->getNodes() as $node): ?>
                     <?php
@@ -91,10 +155,12 @@ $uniqueId = '_' . uniqid();
                     $nodeClasses = $node->getClasses();
                     ?>
                     <li class="flex items-center gap-1 <?= /* @noEscape */ (string) $nodeType === 'wrapper' ? $escaper->escapeHtmlAttr($nodeClasses) : '' ?>"
-                        @mouseenter="openSubmenuId = '<?= /* @noEscape */ (string) $nodeId ?>'"
+                        @mouseenter="openSubmenuOnHover('<?= /* @noEscape */ (string) $nodeId ?>')"
+                        @mouseleave="scheduleSubmenuClose()"
+                        @click.outside="if (openSubmenuId === '<?= /* @noEscape */ (string) $nodeId ?>') closeSubmenu()"
                         @keydown.escape="onSubmenuEscape"
                     >
-                        <div class="[&>a]:flex [&>a]:items-center [&>a]:py-2 [&>a]:text-label-m [&>a]:leading-5! [&>a]:font-medium [&>a]:text-current [&>a]:whitespace-nowrap [&>a]:hover:text-current! [&>a]:hover:opacity-80 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus">
+                        <div class="[&>a]:flex [&>a]:items-center [&>a]:py-2 [&>a]:text-label-m [&>a]:leading-5! [&>a]:font-medium [&>a]:text-current [&>a]:whitespace-nowrap [&>a:not(:last-child)]:hidden [&>a]:hover:text-current! [&>a]:hover:opacity-80 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus">
                             <?= /* @noEscape */ $block->renderMenuNode($node) ?>
                         </div>
                         <?php if ($children): ?>
