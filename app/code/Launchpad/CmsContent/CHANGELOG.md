@@ -14,6 +14,25 @@
   không có cache.xml event-invalidation cho section custom). Output escape
   `$escaper` (XSS probe PASS). Không schema/patch → không cần `setup:upgrade`.
 
+## 1.3.2 (2026-10-01)
+
+- SLP-159 (BUG-9X14Y1): flash sale hết hạn ẩn toàn bộ PB row (mất content
+  page). Fix theo method (a) — hết hạn = mất cả section: (1) block thêm
+  `isSaleEnded()` (guard server-side, template render trống khi
+  `sale_end` đã qua; `sale_end` rỗng/sai format vẫn fallback midnight
+  evergreen) + override `getCacheLifetime()` cap lifetime theo giây còn lại
+  (mặc định 86400s sẽ serve render "sale active" đến 24h sau khi hết hạn);
+  (2) template render gate `items && !isSaleEnded()`, Alpine `hide()` thu
+  scope từ PB row về root `.lp-flash` (client FPC-guard, không bao giờ nuốt
+  content ngoài widget), check hết hạn ngay `init()`; (3) content migration
+  heading PB riêng → `title` trong widget directive (script
+  `.ai/evidence/BUG-9X14Y1/migrate-flashsale-heading.php` — fixture
+  `homepage-content.html` + DB local, script có assert), bỏ `!mt-5` wrapper;
+  (4) theme `homepage.css` `.lp-flash-head` mobile gap-3 → gap-5 giữ rhythm
+  20px cũ. Rule desktop `row:has(.lp-flash) h2[...]` giữ lại cho content
+  chưa migrate. Staging/prod: deploy code + update CMS content theo release
+  notes.
+
 ## 1.3.1 (2026-09-29)
 
 - SLP-275 (TASK-7EYJ4C v4.3–v4.7): `SeedFooterBlocks` đổi store map theo
