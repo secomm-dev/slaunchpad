@@ -1,0 +1,24 @@
+<?php
+/**
+ * TASK-08343C (SLP-246): Launchpad mobile menu drawer logo.
+ *
+ * Drawer logo slot: 160px wide with the brand mark rendered at its Figma
+ * geometry (~156.8×24). The drawer logo is a visual mark inside the dialog,
+ * not a navigation link (close/Back own navigation), so it renders without a
+ * destination; the page logo remains the semantic home link.
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+$icons = $viewModels->require(SvgIcons::class);
+?>
+<div class="flex h-[24px] w-[160px] items-center justify-start text-current">
+    <?= $icons->renderHtml('brand/slaunch-logo', '', 157, 24, ['aria-hidden' => 'true']) ?>
+</div>

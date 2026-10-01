@@ -1,0 +1,149 @@
+<?php
+/**
+ * TASK-08343C (SLP-246): Launchpad mobile menu drawer search.
+ *
+ * Drawer-scoped variant of the Hyvä mini search contract (SearchHelper result
+ * URL, query param, min/max length and the optional suggestions endpoint) so
+ * the drawer form never collides with the Header search popup DOM IDs
+ * (`search_mini_form`/`search`). Submit works via Enter (native form submit
+ * through the Alpine validity check) and via the button. Figma field styling:
+ * gray-primary border, 4px radius, Body 2 placeholder.
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Magento\Search\Helper\Data as SearchHelper;
+use Magento\Search\ViewModel\ConfigProvider as SearchConfig;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var HyvaCsp $hyvaCsp */
+
+$icons = $viewModels->require(SvgIcons::class);
+$searchConfig = $viewModels->require(SearchConfig::class);
+
+/** @var SearchHelper $helper */
+$helper = $this->helper(SearchHelper::class);
+
+$minQueryLength = (int) $helper->getMinQueryLength();
+$formId = 'launchpad_menu_search_form';
+$inputId = 'launchpad_menu_search_input';
+?>
+<script>
+    function initLaunchpadMenuDrawerSearch() {
+        return {
+            minSearchLength: <?= (int) $minQueryLength ?>,
+            suggestions: [],
+            suggest() {
+                const search = this.$refs.searchInput
+                if (search.value.length >= this.minSearchLength) {
+                    search.setCustomValidity('')
+                    search.reportValidity()
+                    this.fetchSuggestions(search.value)
+                } else {
+                    this.suggestions = []
+                }
+            },
+            fetchSuggestions(term) {
+                fetch(
+                    window.BASE_URL + 'search/ajax/suggest?' + new URLSearchParams({q: term}),
+                    {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    }
+                )
+                    .then(response => response.json())
+                    .then(result => this.suggestions = result)
+            },
+            search(term) {
+                const search = this.$refs.searchInput
+                term = term && typeof term === 'string' ? term : search.value
+                if (term.length < this.minSearchLength) {
+                    search.setCustomValidity('<?= $escaper->escapeJs(
+                        __('Minimum Search query length is %1', $helper->getMinQueryLength())
+                    ) ?>')
+                    search.reportValidity()
+                } else {
+                    search.setCustomValidity('')
+                    search.value = term
+                    this.$refs.form.submit()
+                }
+            },
+            searchSuggestion() {
+                this.search(this.suggestion.title)
+            }
+        }
+    }
+
+    window.addEventListener('alpine:init', () => {
+        Alpine.data('initLaunchpadMenuDrawerSearch', initLaunchpadMenuDrawerSearch)
+    }, {once: true})
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+<div x-data="initLaunchpadMenuDrawerSearch">
+    <search role="search" title="<?= $escaper->escapeHtmlAttr(__('Store')) ?>">
+        <form
+            id="<?= /* @noEscape */ $formId ?>"
+            class="flex items-stretch overflow-clip rounded-[4px] border border-border bg-white"
+            action="<?= $escaper->escapeUrl($helper->getResultUrl()) ?>"
+            method="get"
+            @submit.prevent="search"
+            x-ref="form"
+        >
+            <input
+                id="<?= /* @noEscape */ $inputId ?>"
+                x-ref="searchInput"
+                type="search"
+                autocomplete="off"
+                name="<?= $escaper->escapeHtmlAttr($helper->getQueryParamName()) ?>"
+                value="<?= /** @noEscape */ $helper->getEscapedQueryText() ?>"
+                placeholder="<?= $escaper->escapeHtmlAttr(__('What are you looking for?')) ?>"
+                maxlength="<?= $escaper->escapeHtmlAttr($helper->getMaxQueryLength()) ?>"
+                class="min-w-0 flex-1 bg-white px-[14px] py-[10px] text-body-2 text-ink outline-none placeholder:text-[var(--ds-text-gray-quaternary)]"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Search')) ?>"
+                <?php if ($searchConfig->isSuggestionsAllowed()): ?>
+                    @focus.once="suggest"
+                    @input.debounce.300="suggest"
+                <?php endif ?>
+            >
+            <label class="sr-only" for="<?= /* @noEscape */ $inputId ?>">
+                <?= $escaper->escapeHtml(__('Search')) ?>
+            </label>
+            <button
+                type="submit"
+                class="flex shrink-0 items-center justify-center bg-white p-[10px] text-current"
+                title="<?= $escaper->escapeHtmlAttr(__('Search')) ?>"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Search')) ?>"
+            >
+                <?= $icons->renderHtml('outline/search', '', 24, 24, ['aria-hidden' => 'true']) ?>
+            </button>
+        </form>
+    </search>
+    <?php if ($searchConfig->isSuggestionsAllowed()): ?>
+        <template x-if="suggestions.length">
+            <nav
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Search Suggestions')) ?>"
+                class="flex flex-col gap-1 pt-1"
+            >
+                <template x-for="suggestion in suggestions">
+                    <button
+                        type="button"
+                        class="flex justify-between border border-border bg-white p-2 text-left hover:bg-bg"
+                        @click="searchSuggestion"
+                        @keydown.enter="searchSuggestion"
+                    >
+                        <span x-text="suggestion.title"></span>
+                        <span x-text="suggestion.num_results"></span>
+                    </button>
+                </template>
+            </nav>
+        </template>
+    <?php endif ?>
+</div>
