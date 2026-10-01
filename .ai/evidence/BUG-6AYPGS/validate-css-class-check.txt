@@ -1,0 +1,7 @@
+Core rule: validator-rules-mixin.js line 70 -> /^[a-zA-Z\d\-_\/:.\[\]&@()! ]+$/i
+
+column-open  PASS
+column       PASS
+heading      PASS
+list         PASS
+old list value (regression): FAIL (rejected as before)

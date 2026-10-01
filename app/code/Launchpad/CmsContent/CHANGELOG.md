@@ -2,6 +2,36 @@
 
 ## 1.3.3 (unreleased — version bump khi unblock `setup:upgrade`, xem TASK-KMJV5Q)
 
+- SLP-290 (BUG-6AYPGS): edit block `footer_links` không save được —
+  PageBuilder `validate-css-class` reject `#` (regex allowed set của
+  validator-rules-mixin.js không có `#`) trong khi content seed chứa 4 hex
+  utility (`border-[#e4e7ec]`, `text-[#364153]`, `[&_a]:text-[#4a5565]`,
+  `hover:[&_a]:text-[#101828]`). Fix Option A (TL-approved): bỏ hex utility
+  khỏi `FooterBlockContent::links()` (utility column đã bị footer.css override
+  sẵn cả 2 breakpoint — F15/desktop, xóa không đổi render); màu title + link
+  color/hover chuyển sang `footer.css` trên semantic class (`.footer-links-title`,
+  `.footer-links-list a`) cùng giá trị hex → 0 visual change. Reseed DB
+  footer_links bằng script backup-first
+  (`.ai/evidence/BUG-6AYPGS/reseed-footer-links-slp290.php` — staging cần chạy
+  sau pull) + regen safelist (181→171) + rebuild tailwind. Part 2 (user xác
+  nhận homepage vẫn lỗi): quét toàn bộ cms_page/cms_block — hex utility trong
+  field css_classes của `cms_page home`/testpage (heading `text-[#293e2d]`,
+  `.lp-promo-card` `bg-[#304b34]`, `.lp-usp` `bg-[#e7f1e8]`, figure icon
+  `bg-[#45744c]`) cũng fail save → token-aware replace (không đụng
+  `hover:bg-...`) sang 4 class semantic homepage.css (`.lp-text-olive`,
+  `.lp-bg-olive-dark`, `.lp-bg-olive`, `.lp-bg-mint` — cùng hex) qua script
+  backup-first `migrate-home-hex-classes-slp290.php` (6 rows, staging chạy sau
+  pull); fixture `homepage-content.html` + seed
+  `CreateHomepageNewsletterBlock.php` cập nhật cùng token cho parity. Part 3
+  (root cause thật — screenshot field sạch hex vẫn fail): class chứa `&`
+  (Tailwind `[&_x]` variants) round-trip escaped `&amp;` trong admin form input,
+  dấu `;` fail validate → toàn bộ `[&_ul]/[&_li]/[&_a]` rút về footer.css
+  (`.footer-links-list ul/li/a`), field chỉ còn `footer-links-list mt-4`.
+  Hex còn lại trong raw HTML (button `pagebuilder-button-*`, newsletter input)
+  KHÔNG đi qua field CSS Classes → không bị validate, giữ nguyên.
+  **Quy tắc cho content PB từ nay: field CSS Classes chỉ chứa class không có
+  `#` và không có `&`** (chi tiết: `.ai/records/bugs/BUG-6AYPGS.md`). Không
+  schema/patch → không cần `setup:upgrade`.
 - SLP-291 (TASK-KMJV5Q): legal links copyright bar footer (Terms & Privacy)
   edit được qua **Stores > Configuration > Launchpad > Footer > Legal Links** —
   4 field store-view scope (`terms_label` / `terms_url` / `privacy_label` /

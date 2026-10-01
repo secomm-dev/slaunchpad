@@ -6,6 +6,8 @@
      row/column-line/image rules) — classes lose those by specificity;
    • column-line containers (no CSS Classes field on the auto element);
    • accordion chrome (chevron ::after mask + collapse display rules);
+   • hex colors + link hover (SLP-290: PageBuilder validate-css-class rejects
+     "#", so text-[#...] utilities cannot ride in the content);
    • image sizes (homepage.css forces image-element imgs to 100%/absolute;
      utilities lose that by specificity + importance);
    • figure margin reset (unlayered page-builder rules).
@@ -224,6 +226,38 @@ footer.page-footer
         .footer-trust-payments [data-content-type="column-line"] [data-content-type="image"] img {
         height: 32px !important;
     }
+}
+
+/* ---------- Typography & link colors (SLP-290) ---------- */
+
+/* Hex-color utilities cannot live in the content (validate-css-class rejects
+   "#") — footer_links carries them on the semantic classes instead. */
+footer.page-footer .footer-section-links .footer-links-title {
+    color: #364153;
+}
+
+/* [&_ul]/[&_li]/[&_a] variants moved out of the content (SLP-290): a raw "&"
+   round-trips to &amp; in the admin form input and the ";" fails
+   validate-css-class — owned here instead. */
+footer.page-footer .footer-section-links .footer-links-list ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+footer.page-footer .footer-section-links .footer-links-list li {
+    padding-block: 0.375rem;
+}
+
+footer.page-footer .footer-section-links .footer-links-list a {
+    color: #4a5565;
+    font-size: 16px;
+    line-height: 24px;
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+footer.page-footer .footer-section-links .footer-links-list a:hover {
+    color: #101828;
 }
 
 /* ---------- Accordion chrome (mobile only) ---------- */

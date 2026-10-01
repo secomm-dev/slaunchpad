@@ -1731,3 +1731,27 @@ body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has
         padding: 2.5rem !important;
     }
 }
+
+/* ---------- Content hex utilities (SLP-290) ---------- */
+
+/* PageBuilder validate-css-class rejects "#" — hex utilities (bg-[#...],
+   text-[#...]) cannot ride in the content's CSS Classes field (SLP-290).
+   These semantic stand-ins carry the same values; content references them
+   instead (unlayered, same file — beats layered utilities like the F15
+   pattern). Raw-HTML hexes inside text elements (pagebuilder-button-*,
+   newsletter form) are NOT validated and keep their utilities. */
+.lp-text-olive {
+    color: #293e2d;
+}
+
+.lp-bg-olive-dark {
+    background-color: #304b34;
+}
+
+.lp-bg-olive {
+    background-color: #45744c;
+}
+
+.lp-bg-mint {
+    background-color: #e7f1e8;
+}
