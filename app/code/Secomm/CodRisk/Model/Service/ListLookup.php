@@ -49,7 +49,7 @@ class ListLookup
             ->where('effective_from IS NULL OR effective_from <= ?', $today)
             ->where('effective_to IS NULL OR effective_to >= ?', $today)
             // Cast below operates on the already-filtered int set.
-            ->order(new \Zend_Db_Expr('CASE WHEN website_id = ' . (int)($websiteId ?? 0) . ' THEN 0 ELSE 1 END'))
+            ->order(new \Magento\Framework\DB\Sql\Expression('CASE WHEN website_id = ' . (int)($websiteId ?? 0) . ' THEN 0 ELSE 1 END'))
             ->order('entity_id DESC')
             ->limit(1);
 

@@ -15,6 +15,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Model\WebsiteFactory;
 use Secomm\CodRisk\Model\CodRiskList;
+use Secomm\CodRisk\Model\Source\ActivationStatus;
 use Secomm\CodRisk\Model\Source\ListTypes;
 use Secomm\CodRisk\Model\Source\ReasonCodes;
 
@@ -31,6 +32,7 @@ class Form extends Template
         private readonly Registry $registry,
         private readonly ListTypes $listTypes,
         private readonly ReasonCodes $reasonCodes,
+        private readonly ActivationStatus $activationStatus,
         private readonly WebsiteFactory $websiteFactory,
         private readonly UrlInterface $urlBuilder,
         array $data = [],
@@ -75,6 +77,14 @@ class Form extends Template
         }
 
         return $options;
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getStatusOptions(): array
+    {
+        return $this->activationStatus->toOptionArray();
     }
 
     public function getSaveUrl(): string

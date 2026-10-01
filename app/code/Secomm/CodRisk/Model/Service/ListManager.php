@@ -56,17 +56,32 @@ class ListManager
 
         $isNew = $record->getId() === null;
 
+        // Status is editable from the form when provided; quick-add flows
+        // (order view / new records without the field) keep existing or default to active.
+        $newIsActive = isset($data['is_active']) && $data['is_active'] !== ''
+            ? ((int)$data['is_active'] === 1 ? 1 : 0)
+            : (int)($record->getData('is_active') ?? 1);
+        $wasActive = $isNew ? 0 : (int)($record->getData('is_active') ?? 0);
+
         // One active record per phone + website (Bug 3/4, 2026-09-22): duplicates of
         // the same type are meaningless, and a second type is silently dead weight
         // because Blacklist always outranks Allowlist.
-        $this->assertNoActiveConflict(
-            $normalized,
-            (int)($data['website_id'] ?? 0),
-            $listType,
-            $record->getId() !== null ? (int)$record->getId() : null
-        );
+        // The check only applies when the record ENDS UP active and was not already
+        // occupying that slot (new, or activating an inactive one). Editing an
+        // already-active record — reason/status/notes/dates, including deactivating
+        // legacy duplicates — must always stay possible.
+        if ($newIsActive === 1 && ($isNew || $wasActive !== 1)) {
+            $this->assertNoActiveConflict(
+                $normalized,
+                (int)($data['website_id'] ?? 0),
+                $listType,
+                $record->getId() !== null ? (int)$record->getId() : null
+            );
+        }
 
-        $record->setData([
+        // addData (merge) — setData(array) REPLACES the whole data array and wipes
+        // entity_id on a loaded model, turning every edit into an INSERT (new row).
+        $record->addData([
             'normalized_phone' => $normalized,
             'list_type' => $listType,
             'website_id' => (int)($data['website_id'] ?? 0),
@@ -75,7 +90,7 @@ class ListManager
             'source' => (string)($data['source'] ?? CodRiskList::SOURCE_ADMIN),
             'effective_from' => $this->toDate($data['effective_from'] ?? null),
             'effective_to' => $this->toDate($data['effective_to'] ?? null),
-            'is_active' => (int)($record->getData('is_active') ?? 1),
+            'is_active' => $newIsActive,
             'created_by' => (string)($data['created_by'] ?? ''),
         ]);
         $record->save();
@@ -100,6 +115,17 @@ class ListManager
             throw new LocalizedException(new Phrase('List record does not exist.'));
         }
 
+        // Activating must respect the same one-active-record-per-phone+website rule
+        // as the form path — the row action bypasses saveRecord otherwise.
+        if ($active && (int)($record->getData('is_active') ?? 0) !== 1) {
+            $this->assertNoActiveConflict(
+                (string)$record->getData('normalized_phone'),
+                (int)($record->getData('website_id') ?? 0),
+                (string)$record->getData('list_type'),
+                $listId
+            );
+        }
+
         $record->setData('is_active', $active ? 1 : 0);
         $record->save();
 
@@ -116,9 +142,12 @@ class ListManager
     }
 
     /**
-     * Blocks saving an active record when the same phone + website already has one:
+     * Blocks saving an active record when the same phone already has one covering
+     * the same website scope:
      * - same type => plain duplicate (Bug 3)
      * - other type => dead/confusing record since Blacklist outranks Allowlist (Bug 4)
+     * Website 0 ("All Websites") overlaps with every specific website — a record
+     * on 0 + a new record on 1 would be the same enforcement twice.
      * Deactivated records do not block re-adding the phone.
      *
      * @throws LocalizedException
@@ -127,7 +156,7 @@ class ListManager
     {
         $collection = $this->collectionFactory->create();
         $collection->addFieldToFilter('normalized_phone', $phone)
-            ->addFieldToFilter('website_id', $websiteId)
+            ->addFieldToFilter('website_id', ['in' => array_values(array_unique([0, $websiteId]))])
             ->addFieldToFilter('is_active', 1);
         if ($excludeId !== null) {
             $collection->addFieldToFilter('entity_id', ['neq' => $excludeId]);

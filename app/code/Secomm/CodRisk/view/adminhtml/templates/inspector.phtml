@@ -66,7 +66,7 @@ $decisionClass = $decision !== null
                 · <?= $escaper->escapeHtml(__('Historical Count')) ?>:
                 <b><?= $escaper->escapeHtml((string)$result['historical_count']) ?></b>
                 · <?= $escaper->escapeHtml(__('Spam Match')) ?>:
-                <b><?= $result['spam_matched'] ? __('Yes') : __('No') ?></b>
+                <b><?= $escaper->escapeHtml($result['spam_matched'] ? __('Yes') : __('No')) ?></b>
             </div>
 
             <?php $blacklist = $result['blacklist']; ?>

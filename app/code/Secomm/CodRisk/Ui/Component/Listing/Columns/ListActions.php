@@ -45,12 +45,18 @@ class ListActions extends Column
                 continue;
             }
 
+            // ActiveStatus column may have already replaced is_active with the HTML
+            // pill (shared item array, render order) — read the stashed raw value.
+            $isActive = array_key_exists('is_active_raw', $item)
+                ? (int)$item['is_active_raw'] === 1
+                : (int)($item['is_active'] ?? 0) === 1;
+
             $item[$this->getName()]['edit'] = [
                 'href' => $this->urlBuilder->getUrl('codrisk/lists/edit', ['id' => $id]),
                 'label' => (string)__('Edit'),
             ];
 
-            if ((int)($item['is_active'] ?? 0) === 1) {
+            if ($isActive) {
                 $item[$this->getName()]['deactivate'] = [
                     'href' => $this->urlBuilder->getUrl('codrisk/lists/deactivate', ['id' => $id, 'active' => 0]),
                     'label' => (string)__('Deactivate'),

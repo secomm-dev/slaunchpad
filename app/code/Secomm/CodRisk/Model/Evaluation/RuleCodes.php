@@ -13,7 +13,7 @@ namespace Secomm\CodRisk\Model\Evaluation;
  * Rule codes + P1 business precedence (sortOrder lives in di.xml — AD-03/AD-04:
  * precedence is code-controlled, never an admin runtime setting).
  */
-final class RuleCodes
+class RuleCodes
 {
     public const BLACKLIST = 'blacklist';
     public const SPAM_ORDER = 'spam_order';

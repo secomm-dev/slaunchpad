@@ -1,0 +1,62 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ */
+?>
+<?php
+/**
+ * Category layered navigation state
+ *
+ * Copy của Magento_LayeredNavigation layer/state.phtml (TASK-NAMVVC, SLP-235).
+ * Đổi khác: active filter items render thành chip theo design Figma 2330-39642
+ * (bg #f4f9f4, radius 4, 12px Medium + X). Text remove/previous giữ nguyên cho
+ * screen reader (sr-only), X là visual. "Now Shopping by" subtitle bỏ (design
+ * không có — heading "Filters" + "Active filters (N)" do view.phtml render).
+ *
+ * @var $block \Magento\LayeredNavigation\Block\Navigation\State
+ */
+?>
+<?php $_filters = $block->getActiveFilters() ?>
+<?php if (!empty($_filters)) : ?>
+<div class="filter-current">
+    <ol class="lp-filter-chips flex flex-wrap items-center gap-2 py-1">
+        <?php foreach ($_filters as $_filter) : ?>
+            <?php
+            $clearLinkUrl = $_filter->getClearLinkUrl();
+            $currentFilterName = $block->escapeHtmlAttr(__($_filter->getName()) . " " . $block->stripTags($_filter->getLabel()));
+            ?>
+            <li class="lp-filter-chip item flex items-center gap-1 rounded bg-[#f4f9f4] px-2 py-1.5">
+                <span class="text-xs font-medium leading-4 text-[#293e2d]"><?= $block->escapeHtml($block->stripTags($_filter->getLabel())) ?></span>
+                <span class="sr-only"><?= $block->escapeHtml(__($_filter->getName())) ?></span>
+                <?php if ($clearLinkUrl) : ?>
+                    <a class="action previous sr-only" href="<?= $block->escapeUrl($_filter->getRemoveUrl()) ?>"
+                       title="<?= $block->escapeHtmlAttr(__('Previous')) ?>">
+                        <span><?= $block->escapeHtml(__('Previous')) ?></span>
+                    </a>
+                    <a class="action remove flex items-center text-[#293e2d] hover:text-[#c10007]"
+                       title="<?= $block->escapeHtmlAttr($_filter->getFilter()->getClearLinkText()) ?>"
+                       href="<?= $block->escapeUrl($clearLinkUrl) ?>">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="sr-only"><?= $block->escapeHtml($_filter->getFilter()->getClearLinkText()) ?></span>
+                    </a>
+                <?php else : ?>
+                    <a class="action remove flex items-center text-[#293e2d] hover:text-[#c10007]"
+                       title="<?= /* @noEscape */ $block->escapeHtmlAttr(__('Remove')) . " " . $currentFilterName ?>"
+                       href="<?= $block->escapeUrl($_filter->getRemoveUrl()) ?>">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="sr-only"><?= $block->escapeHtml(__('Remove This Item')) ?></span>
+                    </a>
+                <?php endif; ?>
+            </li>
+        <?php endforeach; ?>
+    </ol>
+</div>
+<?php endif; ?>

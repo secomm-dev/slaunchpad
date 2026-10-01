@@ -71,10 +71,12 @@
                 <label translate="true">Order</label>
             </settings>
         </column>
-        <column name="website_id">
+        <column name="website_id" class="Secomm\CodRisk\Ui\Component\Listing\Columns\WebsiteName">
             <settings>
-                <filter>text</filter>
+                <filter>select</filter>
+                <options class="Secomm\CodRisk\Model\Source\Websites"/>
                 <label translate="true">Website</label>
+                            <dataType>select</dataType>
             </settings>
         </column>
         <column name="note">

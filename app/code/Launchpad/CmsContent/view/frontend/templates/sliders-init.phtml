@@ -84,6 +84,12 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
             if (el.matches('[data-lp-tiles-slider]')) {
                 enableMouseDrag(el.querySelector('[data-track]'));
             }
+            // TASK-NAMVVC feedback r1 (SLP-235): card gallery kéo được bằng chuột
+            // (dots chỉ là click; touch vẫn native). enableMouseDrag đã nuốt
+            // click sau kéo + chặn native image drag.
+            if (el.matches('[data-lp-card-slider]')) {
+                enableMouseDrag(el.querySelector('[data-track]'));
+            }
             // v4.9.2 (user): bấm dot của card gallery làm trượt cả product slider
             // ngoài. 2 nguyên nhân: (1) click bubble lên root slider ngoài,
             // SnapSlider ngoài cũng xử lý pager; (2) SnapSlider scroll bằng

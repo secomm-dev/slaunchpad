@@ -457,6 +457,7 @@ return [
         'Secomm_Base' => 1,
         'Secomm_Cod' => 1,
         'Secomm_CodRisk' => 1,
+        'Secomm_ContactGraphQlReCaptcha' => 1,
         'Secomm_DisableFileUpload' => 1,
         'Secomm_FulfillmentCore' => 1,
         'Secomm_Ghn' => 1,

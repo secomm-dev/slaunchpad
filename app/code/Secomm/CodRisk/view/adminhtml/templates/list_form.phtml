@@ -13,6 +13,7 @@ $listType = $record !== null ? (string)$record->getData('list_type') : 'BLOCK';
 $reason = $record !== null ? (string)$record->getData('reason') : '';
 $note = $record !== null ? (string)$record->getData('note') : '';
 $websiteId = $record !== null ? (string)(int)($record->getData('website_id') ?? 0) : '0';
+$isActive = $record !== null ? (int)($record->getData('is_active') ?? 1) : 1;
 $effectiveFrom = $record !== null ? (string)($record->getData('effective_from') ?? '') : '';
 $effectiveTo = $record !== null ? (string)($record->getData('effective_to') ?? '') : '';
 ?>
@@ -83,6 +84,22 @@ $effectiveTo = $record !== null ? (string)($record->getData('effective_to') ?? '
                         </option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="label admin__field-label" for="is_active">
+                <span><?= $escaper->escapeHtml(__('Status')) ?></span>
+            </label>
+            <div class="admin__field-control control">
+                <select class="select admin__control-select" id="is_active" name="is_active">
+                    <?php foreach ($block->getStatusOptions() as $option): ?>
+                        <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>"
+                            <?= (string)$isActive === (string)$option['value'] ? 'selected' : '' ?>>
+                            <?= $escaper->escapeHtml((string)$option['label']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <div class="note"><?= $escaper->escapeHtml(__('Inactive = the record stays in the list but does not affect evaluation.')) ?></div>
             </div>
         </div>
         <div class="admin__field">
