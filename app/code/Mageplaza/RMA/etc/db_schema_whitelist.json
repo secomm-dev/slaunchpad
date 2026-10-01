@@ -1,0 +1,230 @@
+{
+    "mageplaza_rma_status": {
+        "column": {
+            "status_id": true,
+            "name": true,
+            "label": true,
+            "comment": true,
+            "enable_comment": true,
+            "is_active": true,
+            "description": true,
+            "allow_action": true,
+            "updated_at": true,
+            "created_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mageplaza_rma_status_label": {
+        "column": {
+            "status_id": true,
+            "store_id": true,
+            "label": true
+        },
+        "index": {
+            "MAGEPLAZA_RMA_STATUS_LABEL_STATUS_ID": true,
+            "MAGEPLAZA_RMA_STATUS_LABEL_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGEPLAZA_RMA_STS_LBL_STS_ID_MAGEPLAZA_RMA_STS_STS_ID": true,
+            "MAGEPLAZA_RMA_STATUS_LABEL_STORE_ID_STORE_STORE_ID": true,
+            "MAGEPLAZA_RMA_STATUS_LABEL_STATUS_ID_STORE_ID": true
+        }
+    },
+    "mageplaza_rma_status_comment": {
+        "column": {
+            "status_id": true,
+            "store_id": true,
+            "comment": true
+        },
+        "index": {
+            "MAGEPLAZA_RMA_STATUS_COMMENT_STATUS_ID": true,
+            "MAGEPLAZA_RMA_STATUS_COMMENT_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGEPLAZA_RMA_STS_COMMENT_STS_ID_MAGEPLAZA_RMA_STS_STS_ID": true,
+            "MAGEPLAZA_RMA_STATUS_COMMENT_STORE_ID_STORE_STORE_ID": true,
+            "MAGEPLAZA_RMA_STATUS_COMMENT_STATUS_ID_STORE_ID": true
+        }
+    },
+    "mageplaza_rma_rule": {
+        "column": {
+            "rule_id": true,
+            "name": true,
+            "description": true,
+            "status": true,
+            "websites": true,
+            "customer_group": true,
+            "conditions_serialized": true,
+            "reason": true,
+            "solution": true,
+            "additional_field": true,
+            "priority": true,
+            "updated_at": true,
+            "created_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mageplaza_rma_request": {
+        "column": {
+            "request_id": true,
+            "order_id": true,
+            "order_increment_id": true,
+            "increment_id": true,
+            "status_id": true,
+            "is_canceled": true,
+            "store_id": true,
+            "comment": true,
+            "files": true,
+            "last_responded_by": true,
+            "customer_email": true,
+            "updated_at": true,
+            "created_at": true
+        },
+        "index": {
+            "MAGEPLAZA_RMA_REQUEST_ORDER_ID": true,
+            "MAGEPLAZA_RMA_REQUEST_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGEPLAZA_RMA_REQUEST_ORDER_ID_SALES_ORDER_ENTITY_ID": true,
+            "MAGEPLAZA_RMA_REQUEST_STORE_ID_STORE_STORE_ID": true
+        }
+    },
+    "mageplaza_rma_request_item": {
+        "column": {
+            "item_id": true,
+            "request_id": true,
+            "product_id": true,
+            "order_item_id": true,
+            "name": true,
+            "sku": true,
+            "qty_rma": true,
+            "price": true,
+            "price_returned": true,
+            "reason": true,
+            "solution": true,
+            "additional_fields": true,
+            "created_at": true
+        },
+        "index": {
+            "MAGEPLAZA_RMA_REQUEST_ITEM_REQUEST_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_64B183C1A3702AB1F9CDD9EBB53706EF": true
+        }
+    },
+    "mageplaza_rma_request_shipping_label": {
+        "column": {
+            "shipping_label_id": true,
+            "request_id": true
+        },
+        "index": {
+            "MAGEPLAZA_RMA_REQUEST_SHIPPING_LABEL_REQUEST_ID": true,
+            "MAGEPLAZA_RMA_REQUEST_SHIPPING_LABEL_SHIPPING_LABEL_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_0835966EB2D2779FFCBA1240B348E6A9": true,
+            "FK_EE7A366C239B466673632DA011DEEFA2": true
+        }
+    },
+    "sales_order_item": {
+        "column": {
+            "mp_qty_rma": true
+        }
+    },
+    "mageplaza_rma_request_reply": {
+        "column": {
+            "reply_id": true,
+            "request_id": true,
+            "is_customer_notified": true,
+            "is_visible_on_front": true,
+            "author_name": true,
+            "type": true,
+            "content": true,
+            "files": true,
+            "created_at": true
+        },
+        "index": {
+            "MAGEPLAZA_RMA_REQUEST_REPLY_REQUEST_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_208D370C36F49E81517D238C8A73C014": true
+        }
+    },
+    "mageplaza_rma_template": {
+        "column": {
+            "template_id": true,
+            "title": true,
+            "content": true,
+            "updated_at": true,
+            "created_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mageplaza_rma_template_content": {
+        "column": {
+            "template_id": true,
+            "store_id": true,
+            "content": true
+        },
+        "index": {
+            "MAGEPLAZA_RMA_TEMPLATE_CONTENT_TEMPLATE_ID": true,
+            "MAGEPLAZA_RMA_TEMPLATE_CONTENT_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_D2360A49AC4325FF02C1D0D2463AB6DC": true,
+            "MAGEPLAZA_RMA_TEMPLATE_CONTENT_STORE_ID_STORE_STORE_ID": true,
+            "MAGEPLAZA_RMA_TEMPLATE_CONTENT_TEMPLATE_ID_STORE_ID": true
+        }
+    },
+    "mageplaza_rma_shipping_label": {
+        "column": {
+            "shipping_label_id": true,
+            "label": true,
+            "name": true,
+            "status": true,
+            "description": true,
+            "image": true,
+            "barcode": true,
+            "information": true,
+            "conditions_serialized": true,
+            "return_address": true,
+            "store_id": true,
+            "priority": true,
+            "updated_at": true,
+            "created_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mageplaza_rma_shipping_label_label": {
+        "column": {
+            "shipping_label_id": true,
+            "store_id": true,
+            "label": true
+        },
+        "index": {
+            "MAGEPLAZA_RMA_SHIPPING_LABEL_LABEL_SHIPPING_LABEL_ID": true,
+            "MAGEPLAZA_RMA_SHIPPING_LABEL_LABEL_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_D9293B6A42F2A485734CD925EA72E64D": true,
+            "MAGEPLAZA_RMA_SHIPPING_LABEL_LABEL_STORE_ID_STORE_STORE_ID": true,
+            "MAGEPLAZA_RMA_SHIPPING_LABEL_LABEL_SHIPPING_LABEL_ID_STORE_ID": true
+        }
+    }
+}

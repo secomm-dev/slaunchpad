@@ -1,0 +1,258 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="mageplaza_rma_status" resource="default" engine="innodb" comment="RMA Status Table">
+    <column xsi:type="int" name="status_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Status ID"/>
+    <column xsi:type="varchar" name="name" nullable="false" length="255" comment="Status Title"/>
+    <column xsi:type="varchar" name="label" nullable="false" length="255" comment="Status Label"/>
+    <column xsi:type="varchar" name="comment" nullable="true" length="255" comment="Status Comment"/>
+    <column xsi:type="smallint" name="enable_comment" padding="6" unsigned="false" nullable="true" identity="false" comment="Enable Status Comment"/>
+    <column xsi:type="smallint" name="is_active" padding="6" unsigned="false" nullable="true" identity="false" comment="Is Active"/>
+    <column xsi:type="text" name="description" nullable="true" comment="Description"/>
+    <column xsi:type="text" name="allow_action" nullable="false" comment="Allow Action"/>
+    <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="status_id"/>
+    </constraint>
+  </table>
+  <table name="mageplaza_rma_status_label" resource="default" engine="innodb" comment="RMA Status Label Table">
+    <column xsi:type="int" name="status_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Status ID"/>
+    <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" identity="false" comment="Store ID"/>
+    <column xsi:type="varchar" name="label" nullable="true" length="255" comment="Label"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="status_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="MAGEPLAZA_RMA_STS_LBL_STS_ID_MAGEPLAZA_RMA_STS_STS_ID" table="mageplaza_rma_status_label" column="status_id" referenceTable="mageplaza_rma_status" referenceColumn="status_id" onDelete="CASCADE"/>
+    <constraint xsi:type="foreign" referenceId="MAGEPLAZA_RMA_STATUS_LABEL_STORE_ID_STORE_STORE_ID" table="mageplaza_rma_status_label" column="store_id" referenceTable="store" referenceColumn="store_id" onDelete="CASCADE"/>
+    <constraint xsi:type="unique" referenceId="MAGEPLAZA_RMA_STATUS_LABEL_STATUS_ID_STORE_ID">
+      <column name="status_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <index referenceId="MAGEPLAZA_RMA_STATUS_LABEL_STATUS_ID" indexType="btree">
+      <column name="status_id"/>
+    </index>
+    <index referenceId="MAGEPLAZA_RMA_STATUS_LABEL_STORE_ID" indexType="btree">
+      <column name="store_id"/>
+    </index>
+  </table>
+  <table name="mageplaza_rma_status_comment" resource="default" engine="innodb" comment="RMA Status Comment Table">
+    <column xsi:type="int" name="status_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Status ID"/>
+    <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" identity="false" comment="Store ID"/>
+    <column xsi:type="varchar" name="comment" nullable="true" length="255" comment="Comment"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="status_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="MAGEPLAZA_RMA_STS_COMMENT_STS_ID_MAGEPLAZA_RMA_STS_STS_ID" table="mageplaza_rma_status_comment" column="status_id" referenceTable="mageplaza_rma_status" referenceColumn="status_id" onDelete="CASCADE"/>
+    <constraint xsi:type="foreign" referenceId="MAGEPLAZA_RMA_STATUS_COMMENT_STORE_ID_STORE_STORE_ID" table="mageplaza_rma_status_comment" column="store_id" referenceTable="store" referenceColumn="store_id" onDelete="CASCADE"/>
+    <constraint xsi:type="unique" referenceId="MAGEPLAZA_RMA_STATUS_COMMENT_STATUS_ID_STORE_ID">
+      <column name="status_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <index referenceId="MAGEPLAZA_RMA_STATUS_COMMENT_STATUS_ID" indexType="btree">
+      <column name="status_id"/>
+    </index>
+    <index referenceId="MAGEPLAZA_RMA_STATUS_COMMENT_STORE_ID" indexType="btree">
+      <column name="store_id"/>
+    </index>
+  </table>
+  <table name="mageplaza_rma_rule" resource="default" engine="innodb" comment="RMA Rule Table">
+    <column xsi:type="int" name="rule_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Rule ID"/>
+    <column xsi:type="varchar" name="name" nullable="false" length="255" comment="Rule Name"/>
+    <column xsi:type="text" name="description" nullable="true" comment="Description"/>
+    <column xsi:type="smallint" name="status" padding="6" unsigned="false" nullable="true" identity="false" comment="Rule Status"/>
+    <column xsi:type="text" name="websites" nullable="true" comment="Website Ids"/>
+    <column xsi:type="text" name="customer_group" nullable="false" comment="Customer Groups"/>
+    <column xsi:type="mediumtext" name="conditions_serialized" nullable="true" comment="Conditions Serialized"/>
+    <column xsi:type="text" name="reason" nullable="true" comment="Reason"/>
+    <column xsi:type="text" name="solution" nullable="true" comment="Solution"/>
+    <column xsi:type="text" name="additional_field" nullable="true" comment="Additional Field"/>
+    <column xsi:type="smallint" name="priority" padding="5" unsigned="true" nullable="false" identity="false" default="0" comment="Priority"/>
+    <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="rule_id"/>
+    </constraint>
+  </table>
+  <table name="mageplaza_rma_request" resource="default" engine="innodb" comment="RMA Request Table">
+    <column xsi:type="int" name="request_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Request ID"/>
+    <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Order Id"/>
+    <column xsi:type="varchar" name="order_increment_id" nullable="true" length="32" comment="Order Increment Id"/>
+    <column xsi:type="varchar" name="increment_id" nullable="true" length="50" comment="Increment Id"/>
+    <column xsi:type="int" name="status_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Status ID"/>
+    <column xsi:type="int" name="is_canceled" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Is Canceled"/>
+    <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" identity="false" comment="Store ID"/>
+    <column xsi:type="text" name="comment" nullable="true" comment="Comment"/>
+    <column xsi:type="mediumtext" name="files" nullable="true" comment="Files (Json)"/>
+    <column xsi:type="varchar" name="last_responded_by" nullable="false" length="255" default="No replies" comment="Last Responded"/>
+    <column xsi:type="varchar" name="customer_email" nullable="true" length="128" comment="Customer Email"/>
+    <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="request_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="MAGEPLAZA_RMA_REQUEST_ORDER_ID_SALES_ORDER_ENTITY_ID" table="mageplaza_rma_request" column="order_id" referenceTable="sales_order" referenceColumn="entity_id" onDelete="CASCADE"/>
+    <constraint xsi:type="foreign" referenceId="MAGEPLAZA_RMA_REQUEST_STORE_ID_STORE_STORE_ID" table="mageplaza_rma_request" column="store_id" referenceTable="store" referenceColumn="store_id" onDelete="CASCADE"/>
+    <index referenceId="MAGEPLAZA_RMA_REQUEST_ORDER_ID" indexType="btree">
+      <column name="order_id"/>
+    </index>
+    <index referenceId="MAGEPLAZA_RMA_REQUEST_STORE_ID" indexType="btree">
+      <column name="store_id"/>
+    </index>
+  </table>
+  <table name="mageplaza_rma_request_item" resource="default" engine="innodb" comment="RMA Request Item Table">
+    <column xsi:type="int" name="item_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Item ID"/>
+    <column xsi:type="int" name="request_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Request ID"/>
+    <column xsi:type="int" name="product_id" padding="10" unsigned="true" nullable="true" identity="false" comment="Product Id"/>
+    <column xsi:type="int" name="order_item_id" padding="10" unsigned="true" nullable="true" identity="false" comment="Order Item Id"/>
+    <column xsi:type="varchar" name="name" nullable="true" length="255" comment="Name"/>
+    <column xsi:type="varchar" name="sku" nullable="true" length="255" comment="Sku"/>
+    <column xsi:type="decimal" name="qty_rma" scale="4" precision="12" unsigned="false" nullable="true" default="0" comment="Qty RMA"/>
+    <column xsi:type="decimal" name="price" scale="4" precision="12" unsigned="false" nullable="false" default="0" comment="Price"/>
+    <column xsi:type="decimal" name="price_returned" scale="4" precision="12" unsigned="false" nullable="false" default="0" comment="Price Returned"/>
+    <column xsi:type="varchar" name="reason" nullable="true" length="255" comment="Reason"/>
+    <column xsi:type="varchar" name="solution" nullable="true" length="255" comment="Solution"/>
+    <column xsi:type="mediumtext" name="additional_fields" nullable="true" comment="Additional Fields (Json)"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="item_id"/>
+      <column name="request_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="FK_64B183C1A3702AB1F9CDD9EBB53706EF" table="mageplaza_rma_request_item" column="request_id" referenceTable="mageplaza_rma_request" referenceColumn="request_id" onDelete="CASCADE"/>
+    <index referenceId="MAGEPLAZA_RMA_REQUEST_ITEM_REQUEST_ID" indexType="btree">
+      <column name="request_id"/>
+    </index>
+  </table>
+  <table name="mageplaza_rma_request_shipping_label" resource="default" engine="innodb" comment="RMA Request Shipping Label Relation Table">
+    <column xsi:type="int" name="shipping_label_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Shipping Label ID"/>
+    <column xsi:type="int" name="request_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Request ID"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="shipping_label_id"/>
+      <column name="request_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="FK_0835966EB2D2779FFCBA1240B348E6A9" table="mageplaza_rma_request_shipping_label" column="request_id" referenceTable="mageplaza_rma_request" referenceColumn="request_id" onDelete="CASCADE"/>
+    <constraint xsi:type="foreign" referenceId="FK_EE7A366C239B466673632DA011DEEFA2" table="mageplaza_rma_request_shipping_label" column="shipping_label_id" referenceTable="mageplaza_rma_shipping_label" referenceColumn="shipping_label_id" onDelete="CASCADE"/>
+    <index referenceId="MAGEPLAZA_RMA_REQUEST_SHIPPING_LABEL_REQUEST_ID" indexType="btree">
+      <column name="request_id"/>
+    </index>
+    <index referenceId="MAGEPLAZA_RMA_REQUEST_SHIPPING_LABEL_SHIPPING_LABEL_ID" indexType="btree">
+      <column name="shipping_label_id"/>
+    </index>
+  </table>
+  <table name="sales_order_item" resource="default">
+    <column xsi:type="decimal" name="mp_qty_rma" scale="4" precision="12" unsigned="false" nullable="true" default="0" comment="Mageplaza Qty RMA"/>
+  </table>
+  <table name="mageplaza_rma_request_reply" resource="default" engine="innodb" comment="RMA Request Reply Table">
+    <column xsi:type="int" name="reply_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Reply ID"/>
+    <column xsi:type="int" name="request_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Request ID"/>
+    <column xsi:type="int" name="is_customer_notified" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Is Customer Notified"/>
+    <column xsi:type="smallint" name="is_visible_on_front" padding="5" unsigned="true" nullable="false" identity="false" default="0" comment="Is Visible On Front"/>
+    <column xsi:type="varchar" name="author_name" nullable="false" length="255" comment="Author Name"/>
+    <column xsi:type="smallint" name="type" padding="6" unsigned="false" nullable="true" identity="false" comment="Reply Type"/>
+    <column xsi:type="text" name="content" nullable="true" comment="Reply Content"/>
+    <column xsi:type="mediumtext" name="files" nullable="true" comment="Files (Json)"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="reply_id"/>
+      <column name="request_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="FK_208D370C36F49E81517D238C8A73C014" table="mageplaza_rma_request_reply" column="request_id" referenceTable="mageplaza_rma_request" referenceColumn="request_id" onDelete="CASCADE"/>
+    <index referenceId="MAGEPLAZA_RMA_REQUEST_REPLY_REQUEST_ID" indexType="btree">
+      <column name="request_id"/>
+    </index>
+  </table>
+  <table name="mageplaza_rma_template" resource="default" engine="innodb" comment="RMA Template Table">
+    <column xsi:type="int" name="template_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Template ID"/>
+    <column xsi:type="varchar" name="title" nullable="false" length="255" comment="Template Title"/>
+    <column xsi:type="text" name="content" nullable="true" comment="Content"/>
+    <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="template_id"/>
+    </constraint>
+  </table>
+  <table name="mageplaza_rma_template_content" resource="default" engine="innodb" comment="RMA Template Content Table">
+    <column xsi:type="int" name="template_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Template ID"/>
+    <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" identity="false" comment="Store ID"/>
+    <column xsi:type="text" name="content" nullable="true" comment="Content"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="template_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="FK_D2360A49AC4325FF02C1D0D2463AB6DC" table="mageplaza_rma_template_content" column="template_id" referenceTable="mageplaza_rma_template" referenceColumn="template_id" onDelete="CASCADE"/>
+    <constraint xsi:type="foreign" referenceId="MAGEPLAZA_RMA_TEMPLATE_CONTENT_STORE_ID_STORE_STORE_ID" table="mageplaza_rma_template_content" column="store_id" referenceTable="store" referenceColumn="store_id" onDelete="CASCADE"/>
+    <constraint xsi:type="unique" referenceId="MAGEPLAZA_RMA_TEMPLATE_CONTENT_TEMPLATE_ID_STORE_ID">
+      <column name="template_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <index referenceId="MAGEPLAZA_RMA_TEMPLATE_CONTENT_TEMPLATE_ID" indexType="btree">
+      <column name="template_id"/>
+    </index>
+    <index referenceId="MAGEPLAZA_RMA_TEMPLATE_CONTENT_STORE_ID" indexType="btree">
+      <column name="store_id"/>
+    </index>
+  </table>
+  <table name="mageplaza_rma_shipping_label" resource="default" engine="innodb" comment="RMA Shipping Table">
+    <column xsi:type="int" name="shipping_label_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Shipping Label ID"/>
+    <column xsi:type="varchar" name="label" nullable="false" length="255" comment="Shipping Label"/>
+    <column xsi:type="varchar" name="name" nullable="false" length="255" comment="Shipping Name"/>
+    <column xsi:type="smallint" name="status" padding="6" unsigned="false" nullable="true" identity="false" comment="Status"/>
+    <column xsi:type="text" name="description" nullable="true" comment="Description"/>
+    <column xsi:type="varchar" name="image" nullable="true" length="255" comment="Shipping Logo"/>
+    <column xsi:type="varchar" name="barcode" nullable="true" length="255" comment="Shipping Barcode"/>
+    <column xsi:type="text" name="information" nullable="false" comment="Information"/>
+    <column xsi:type="mediumtext" name="conditions_serialized" nullable="true" comment="Conditions Serialized"/>
+    <column xsi:type="text" name="return_address" nullable="true" comment="Return Shipping Address"/>
+    <column xsi:type="text" name="store_id" nullable="false" comment="Store Id"/>
+    <column xsi:type="smallint" name="priority" padding="5" unsigned="true" nullable="false" identity="false" default="0" comment="Priority"/>
+    <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="true" default="CURRENT_TIMESTAMP"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="shipping_label_id"/>
+    </constraint>
+  </table>
+  <table name="mageplaza_rma_shipping_label_label" resource="default" engine="innodb" comment="RMA Shipping Label - Label Table">
+    <column xsi:type="int" name="shipping_label_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Shipping Label ID"/>
+    <column xsi:type="smallint" name="store_id" padding="5" unsigned="true" nullable="false" identity="false" comment="Store ID"/>
+    <column xsi:type="varchar" name="label" nullable="false" length="255" comment="Shipping Label"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="shipping_label_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="FK_D9293B6A42F2A485734CD925EA72E64D" table="mageplaza_rma_shipping_label_label" column="shipping_label_id" referenceTable="mageplaza_rma_shipping_label" referenceColumn="shipping_label_id" onDelete="CASCADE"/>
+    <constraint xsi:type="foreign" referenceId="MAGEPLAZA_RMA_SHIPPING_LABEL_LABEL_STORE_ID_STORE_STORE_ID" table="mageplaza_rma_shipping_label_label" column="store_id" referenceTable="store" referenceColumn="store_id" onDelete="CASCADE"/>
+    <constraint xsi:type="unique" referenceId="MAGEPLAZA_RMA_SHIPPING_LABEL_LABEL_SHIPPING_LABEL_ID_STORE_ID">
+      <column name="shipping_label_id"/>
+      <column name="store_id"/>
+    </constraint>
+    <index referenceId="MAGEPLAZA_RMA_SHIPPING_LABEL_LABEL_SHIPPING_LABEL_ID" indexType="btree">
+      <column name="shipping_label_id"/>
+    </index>
+    <index referenceId="MAGEPLAZA_RMA_SHIPPING_LABEL_LABEL_STORE_ID" indexType="btree">
+      <column name="store_id"/>
+    </index>
+  </table>
+</schema>

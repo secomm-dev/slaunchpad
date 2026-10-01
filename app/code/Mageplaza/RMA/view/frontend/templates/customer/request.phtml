@@ -1,0 +1,104 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Customer\Request $block */
+$_requests = $block->getRmaRequests();
+/** @var \Mageplaza\RMA\Helper\Data $helper */
+$helper = $block->_helperData;
+?>
+<?php if ($_requests && count($_requests)): ?>
+    <div class="table-wrapper mp-requests-history">
+        <table class="data table table-request-items history" id="my-requests-table">
+            <caption class="table-caption"><?= /* @noEscape */ __('Requests') ?></caption>
+            <thead>
+            <tr>
+                <th scope="col" class="col_id"><?= /* @noEscape */ __('Request ID') ?></th>
+                <th scope="col" class="col_order_increment"><?= /* @noEscape */ __('Order Increment ID') ?></th>
+                <th scope="col" class="col_status"><?= /* @noEscape */ __('Request Status') ?></th>
+                <th scope="col" class="col_created"><?= /* @noEscape */ __('Created Date') ?></th>
+                <th scope="col" class="col_updated"><?= /* @noEscape */ __('Updated Date') ?></th>
+                <th scope="col" class="col_actions"><?= /* @noEscape */ __('Action') ?></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($_requests as $request):
+                /** @var \Mageplaza\RMA\Model\Request $request */ ?>
+                <tr>
+                    <td data-th="<?= /* @noEscape */ __('Request ID') ?>"
+                        class="col_id"><?= /* @noEscape */ $request->getId() ?></td>
+                    <td data-th="<?= /* @noEscape */ __('Order Increment ID') ?>" class="col_order_increment">
+                        <?= /* @noEscape */ $request->getOrder()->getIncrementId() ?></td>
+                    <td data-th="<?= /* @noEscape */ __('Request Status') ?>"
+                        class="col_status"><?= /* @noEscape */ $request->getStatusLabel() ?></td>
+                    <td data-th="<?= /* @noEscape */ __('Created Date') ?>" class="col_created">
+                        <?= /* @noEscape */ $helper->getConvertedDate($request->getCreatedAt())->format('n/j/y') ?>
+                    </td>
+                    <td data-th="<?= /* @noEscape */ __('Updated Date') ?>" class="col_updated">
+                        <?= /* @noEscape */ $helper->getConvertedDate($request->getUpdatedAt())->format('n/j/y') ?>
+                    </td>
+                    <td data-th="<?= /* @noEscape */ __('Action') ?>" class="col_actions">
+                        <a href="<?= /* @noEscape */ $block->getRequestDetailsUrl($request->getId()) ?>"
+                           class="action view">
+                            <span><?= /* @noEscape */ __('See Details') ?></span>
+                        </a>
+                        <?php if (!$request->getIsCanceled() && $block->canCancelRequest($request)): ?>
+                            <a href="<?= /* @noEscape */
+                            $block->getUrl('mprma/request/cancel', ['request_id' => $request->getId()]) ?>"
+                               class="action cancel">
+                                <span><?= /* @noEscape */ __('Cancel') ?></span>
+                            </a>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php if ($block->getPagerHtml()): ?>
+        <div class="mprma-requests-toolbar toolbar bottom"><?= $block->getPagerHtml() ?></div>
+    <?php endif ?>
+<?php else: ?>
+    <div class="message info empty"><span><?= /* @noEscape */ __('You have no RMA requests.') ?></span></div>
+<?php endif; ?>
+<script>
+    require([
+        'jquery',
+        'mage/translate',
+        'Magento_Ui/js/modal/confirm',
+    ], function ($, $t, confirmation) {
+        $('#my-requests-table a.action.cancel').on('click', function (e){
+            var el = this;
+
+            e.preventDefault();
+            confirmation({
+                content: $t('Do you want to cancel this request?'),
+                actions: {
+                    confirm: function () {
+                        window.location.href = $(el).attr('href');
+                    },
+                    cancel: function () {
+                        return false;
+                    }
+                }
+            });
+        });
+    });
+</script>

@@ -1,0 +1,237 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Request\Index $block */
+/** @var \Magento\Sales\Model\Order $order */
+$order = $block->getOrder();
+/** @var \Mageplaza\RMA\Helper\Data $helper */
+$helper = $block->_helperData;
+?>
+<?php if (!$order && !$block->getAvailableOrders()): ?>
+    <?= /* @noEscape */ __('There are no order to return.') ?>
+<?php else: ?>
+    <form class="form mp-edit-rma-form" id="mp-edit-rma-form"
+          action="<?= /* @noEscape */ $block->getRequestSaveUrl() ?>"
+          method="post"
+          enctype="multipart/form-data"
+          data-mage-init='{
+      "mpRMA/order":{
+            "uploadUrl":"<?= /* @noEscape */ $block->getUploadUrl() ?>",
+            "loadOrderInfoUrl":"<?= /* @noEscape */ $block->getLoadOrderInformationUrl() ?>"
+        },
+      "validation":{}}'>
+        <?= $block->getBlockHtml('formkey') ?>
+        <div class="mp-fieldset-container col-mp mp-6 mp-xs-12">
+            <fieldset class="fieldset mp-order-information">
+                <div class="mp-rma-image-loader order-loader">
+                    <div class="loader">
+                        <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                             alt="<?= /* @noEscape */ __('Loading') ?>">
+                    </div>
+                </div>
+                <legend class="legend"><span><?= /* @noEscape */ __('Order Information') ?></span></legend>
+                <br>
+                <div class="field mp-field-order-id required">
+                    <label class="label" for="mp-order-id">
+                        <span><?= /* @noEscape */ __('Order ID') ?></span>
+                    </label>
+                    <div class="control">
+                        <select name="order[order_id]" id="mp-order-id"
+                                class="select required-entry"
+                                data-role="load-order"
+                            <?= $order ? 'disabled' : '' ?>>
+                            <?php if ($block->isCustomerRequest()): ?>
+                                <?php foreach ($block->getAvailableOrders() as $rmaOrder): ?>
+                                    <option value="<?= /* @noEscape */ $rmaOrder['value'] ?>"
+                                        <?= ($order && $rmaOrder['value'] === $order->getId()) ? 'selected' : '' ?>>
+                                        <?= /* @noEscape */ $rmaOrder['label'] ?></option>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <option value="<?= /* @noEscape */ $order->getId() ?>" selected>
+                                    <?= /* @noEscape */ '#'.$order->getIncrementId() ?></option>
+                            <?php endif; ?>
+
+                        </select>
+                        <input type="hidden" name="request[order_id]" value="">
+                        <input type="hidden" name="request[customer_email]" value="">
+                        <input type="hidden" name="request[store_id]" value="">
+                        <input type="hidden" name="request[order_increment_id]" value="">
+                    </div>
+                </div>
+                <div class="field mp-field-bill-lastname required">
+                    <label class="label" for="mp-field-bill-lastname">
+                        <span><?= /* @noEscape */ __('Billing Last Name') ?></span>
+                    </label>
+                    <div class="control">
+                        <input type="text" id="mp-field-bill-lastname"
+                               name="order[bill_lastname]"
+                               value=""
+                               title="<?= /* @noEscape */ __('Billing Last Name') ?>"
+                               class="input-text required-entry"
+                               data-validate="{required:true}"
+                               aria-required="true"
+                               disabled>
+                    </div>
+                </div>
+                <?php if ($order): ?>
+                    <div class="field mp-field-type required">
+                        <label class="label" for="mp-field-type">
+                            <span><?= /* @noEscape */ __('Find Order By') ?></span>
+                        </label>
+                        <div class="control">
+                            <select name="order[type]" id="mp-field-type"
+                                    class="select required-entry"
+                                    disabled>
+                                <?php foreach ($block->getFindOrderTypes() as $type):
+                                    /** @var array $type */ ?>
+                                    <option value="<?= /* @noEscape */ $type['value'] ?>"
+                                        <?= $order->getFindType() === $type['value'] ? 'selected' : '' ?>>
+                                        <?= $block->escapeHtml($type['label']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <?php if ($order && $order->getFindType() === \Mageplaza\RMA\Model\Config\Source\RMARequest\FindOrder::FIND_BY_ZIP_CODE): ?>
+                    <div class="field mp-field-zip required">
+                        <label class="label" for="mp-field-zip">
+                            <span><?= /* @noEscape */ __('Billing ZIP Code') ?></span>
+                        </label>
+                        <div class="control">
+                            <input type="text" id="mp-field-zip"
+                                   name="order[zip_code]"
+                                   value="<?= /* @noEscape */ $order->getBillingAddress()->getPostcode() ?>"
+                                   title="<?= /* @noEscape */ __('Billing ZIP Code') ?>"
+                                   class="input-text required-entry"
+                                   data-validate="{required:true}"
+                                   aria-required="true"
+                                   disabled>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="field mp-field-email required">
+                        <label class="label" for="mp-field-email">
+                            <span><?= /* @noEscape */ __('Email') ?></span>
+                        </label>
+                        <div class="control">
+                            <input type="text" id="mp-field-email"
+                                   name="order[email]"
+                                   value=""
+                                   title="<?= /* @noEscape */ __('Email') ?>"
+                                   class="input-text required-entry"
+                                   data-validate="{required:true}"
+                                   aria-required="true"
+                                   disabled>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </fieldset>
+            <fieldset class="fieldset mp-request-information">
+                <legend class="legend"><span><?= /* @noEscape */ __('Comment') ?></span></legend>
+                <br>
+                <div class="field mp-field-request-comment">
+                    <label class="label" for="mp-request-comment">
+                        <span><?= /* @noEscape */ __('Comment') ?></span>
+                    </label>
+                    <div class="control">
+                    <textarea name="request[comment]"
+                              id="mp-request-comment"
+                              title="<?= /* @noEscape */ __('Comment') ?>"
+                              class="input-text"
+                              cols="5"
+                              rows="3"
+                              aria-required="true"
+                              spellcheck="false"></textarea>
+                    </div>
+                </div>
+                <?php if ($block->isUploadFiles()): ?>
+                    <div class="field mp-field-request-files">
+                        <label class="label" for="mp-request-files">
+                            <span><?= /* @noEscape */ __('Attach File(s)') ?></span>
+                        </label>
+                        <span class="mp-image-limit-text">
+                            *<?= /* @noEscape */ __('Not larger than %1MB', $helper->getMaxFileSize()) ?>
+                        </span>
+                        <div class="control">
+                            <div id="mp-image-place-holder" class="mp-image mp-image-placeholder">
+                                <div id="mp-request-uploader" class="uploader">
+                                    <div class="file-input-button form-buttons button">
+                                        <span><?= /* @noEscape */ __('Browse Files...') ?></span>
+                                        <input id="file-upload" name="image" multiple="multiple" type="file"
+                                               data-role="upload-files">
+                                    </div>
+                                </div>
+                                <div id="mp-request-image-wrapper" class="request-image-wrapper">
+                                    <i class="fa fa-camera" aria-hidden="true"></i>
+                                </div>
+                                <div class="mp_image_loader">
+                                    <div class="loader">
+                                        <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                                             alt="<?= /* @noEscape */ __('Loading...') ?>">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mp-rma-message files-message"></div>
+                    </div>
+                <?php endif; ?>
+                <?php if ($policyLink = $helper->getPolicyLink(\Mageplaza\RMA\Model\Config\Source\System\Policy\Location::RMA_PAGE)): ?>
+                    <div class="field mp-field-request-term">
+                        <a id="mp-request-term"
+                           href="<?= /* @noEscape */ $policyLink ?>"
+                           target="_blank"><?= /* @noEscape */ __('By clicking submit you agree to the Terms and Conditions') ?></a>
+                    </div>
+                <?php endif; ?>
+            </fieldset>
+        </div>
+        <div class="mp-fieldset-container col-mp mp-6 mp-xs-12">
+            <fieldset class="fieldset mp-items-information">
+                <legend class="legend"><span><?= /* @noEscape */ __('RMA Information') ?></span></legend>
+                <br>
+                <div class="mp-rma-information-container">
+                    <div class="mp-rma-image-loader order-loader">
+                        <div class="loader">
+                            <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                                 alt="<?= /* @noEscape */ __('Loading') ?>">
+                        </div>
+                    </div>
+                    <div class="control"></div>
+                </div>
+            </fieldset>
+            <div class="actions-toolbar">
+                <div class="primary">
+                    <a href="<?= /* @noEscape */ $block->getBackToFormUrl() ?>" class="action primary">
+                        <span><?= /* @noEscape */ __('Back') ?></span>
+                    </a>
+                </div>
+                <div class="primary">
+                    <button type="submit"
+                            class="action save primary"
+                            data-role="request-submit"
+                            title="<?= /* @noEscape */ __('Submit') ?>"
+                            disabled>
+                        <span><?= /* @noEscape */ __('Submit') ?></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+<?php endif; ?>

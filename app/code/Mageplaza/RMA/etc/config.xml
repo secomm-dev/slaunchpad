@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mprma>
+            <module>
+                <user_guide>magento/rma</user_guide>
+            </module>
+            <general>
+                <enabled>1</enabled>
+                <enabled_guest>1</enabled_guest>
+                <location>2</location>
+                <policy_location>1</policy_location>
+                <rma_pattern>
+                    <type>1</type>
+                    <prefix>PRE</prefix>
+                    <suffix>SUF</suffix>
+                </rma_pattern>
+            </general>
+            <request>
+                <each_item>1</each_item>
+                <allow_attachment>1</allow_attachment>
+                <file_extensions>png,pdf,jpg,jpeg,doc,zip</file_extensions>
+                <google_recaptcha>0</google_recaptcha>
+                <default_status>1</default_status>
+                <reply_name>1</reply_name>
+                <default_name>Admin</default_name>
+            </request>
+            <email>
+                <enabled>1</enabled>
+                <sender>general</sender>
+                <is_notify>1</is_notify>
+                <customer_template>mprma_email_customer_template</customer_template>
+                <admin_template>mprma_email_admin_template</admin_template>
+                <request_admin_template>mprma_email_request_admin_template</request_admin_template>
+            </email>
+        </mprma>
+    </default>
+</config>

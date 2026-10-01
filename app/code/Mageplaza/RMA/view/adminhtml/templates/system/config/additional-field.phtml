@@ -1,0 +1,272 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Adminhtml\System\AdditionalField $block */
+
+$_fieldsValue = $block->getElement()->getValue();
+if (!is_array($_fieldsValue)) {
+    $_fieldsValue = \Mageplaza\RMA\Helper\Data::jsonDecode($_fieldsValue);
+}
+$isDefaultConfig = $block->helperData->isDefaultConfigPage();
+?>
+<div class="design_theme_ua_regexp" id="mp-grid-additional-field">
+    <div class="admin__control-table-wrapper">
+        <script id="mp_additional_field_row_template" type="text/x-magento-template">
+            <tr class="mp_additional-field_row">
+                <?php foreach ($block->getColumns() as $columnName => $column): ?>
+                    <td class="col-<?= /* @noEscape */ $columnName ?> control-table-actions-cell col-items">
+                        <table class="mp-rma-additional-field-item">
+                            <tr>
+                                <td colspan="2" class="mp-rma-additional-field-row-title">
+                                    <label class="mp-label" for="mp-rma-additional-field-row-T-<%- data.id %>">
+                                        <span><?= /* @noEscape */ __('Title') ?></span>
+                                    </label>
+                                    <input id="mp-rma-additional-field-row-T-<%- data.id %>"
+                                           class="input-text required-entry"
+                                           type="text"
+                                           name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<%- data.id %>][title]"
+                                           value=""/>
+                                </td>
+                            </tr>
+                            <tr class="field-item-row-body">
+                                <td class="mp-rma-additional-field-row-type">
+                                    <label class="mp-label" for="mp-rma-additional-field-row-TP-<%- data.id %>">
+                                        <span><?= /* @noEscape */ __('Type') ?></span>
+                                    </label>
+                                    <select id="mp-rma-additional-field-row-TP-<%- data.id %>"
+                                            class="input-select"
+                                            name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<%- data.id %>][type]">
+                                        <?php foreach ($block->getAdditionalFieldType() as $type):
+                                            /** @var array $type */ ?>
+                                            <option value="<?= $block->escapeHtml($type['value']) ?>">
+                                                <?= $block->escapeHtml($type['label']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                                <td class="mp-rma-additional-field-row-require">
+                                    <input id="mp-rma-additional-field-row-R-<%- data.id %>"
+                                           class="input-checkbox"
+                                           type="checkbox"
+                                           name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<%- data.id %>][is_require]"
+                                           value=""/>
+                                    <label class="mp-label" for="mp-rma-additional-field-row-R-<%- data.id %>">
+                                        <span><?= /* @noEscape */ __('Is require') ?></span>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr class="field-item-row-body">
+                                <td class="mp-rma-additional-field-row-validate">
+                                    <label class="mp-label" for="mp-rma-additional-field-row-V-<%- data.id %>">
+                                        <span><?= /* @noEscape */ __('Validation Class') ?></span>
+                                    </label>
+                                    <input id="mp-rma-additional-field-row-V-<%- data.id %>"
+                                           class="input-text"
+                                           type="text"
+                                           name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<%- data.id %>][validation]"
+                                           value=""/>
+                                </td>
+                                <td class="mp-rma-additional-field-row-sort">
+                                    <label class="mp-label" for="mp-rma-additional-field-row-S-<%- data.id %>">
+                                        <span><?= /* @noEscape */ __('Sort Order') ?></span>
+                                    </label>
+                                    <input id="mp-rma-additional-field-row-S-<%- data.id %>"
+                                           class="input-text validate-zero-or-greater validate-digits"
+                                           type="text"
+                                           name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<%- data.id %>][sort]"
+                                           value=""/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                <?php endforeach; ?>
+                <td class="col-action">
+                    <?php if ($isDefaultConfig): ?>
+                        <button type="button" class="action-default action-delete"
+                                onclick="mpRMAAdditional.deleteRow(event)">
+                            <span><?= /* @noEscape */ __('Delete') ?></span>
+                        </button>
+                        <i class="fa fa-angle-double-down mp-field-expand"
+                           aria-hidden="true"
+                           onclick="mpRMAAdditional.expandItem(event)"></i>
+                    <?php endif; ?>
+                </td>
+            </tr>
+        </script>
+        <table id="mp-rma-additional-field" class="admin__control-table">
+            <?php if ($isDefaultConfig): ?>
+                <tfoot>
+                <tr class="mp-row-add-button">
+                    <td colspan="2" class="mp-row-add">
+                        <button id="mp-add-additional-field" title="<?= /* @noEscape */ __('Add') ?>" type="button"
+                                class="action-default scalable primary"
+                                onclick="mpRMAAdditional.add(event)">
+                            <span><?= /* @noEscape */ __('Add') ?></span>
+                        </button>
+                    </td>
+                </tr>
+                </tfoot>
+            <?php endif; ?>
+            <tbody id="mp_additional-field_row_container" data-role="options-container">
+            <?php if ($_fieldsValue && isset($_fieldsValue['name'])): ?>
+                <?php foreach ($_fieldsValue['name'] as $key => $field): ?>
+                    <tr class="mp_additional-field_row">
+                        <?php foreach ($block->getColumns() as $columnName => $column): ?>
+                            <td class="col-<?= /* @noEscape */ $columnName ?> control-table-actions-cell col-items">
+                                <table class="mp-rma-additional-field-item">
+                                    <tr>
+                                        <td colspan="2" class="mp-rma-additional-field-row-title">
+                                            <label class="mp-label"
+                                                   for="mp-rma-additional-field-row-T-<?= /* @noEscape */ $key ?>">
+                                                <span><?= /* @noEscape */ __('Title') ?></span>
+                                            </label>
+                                            <input id="mp-rma-additional-field-row-T-<?= /* @noEscape */ $key ?>"
+                                                   class="input-text required-entry"
+                                                   type="text"
+                                                   name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<?= /* @noEscape */ $key ?>][title]"
+                                                   value="<?= /* @noEscape */ $field['title'] ?>"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="field-item-row-body">
+                                        <td class="mp-rma-additional-field-row-type">
+                                            <label class="mp-label"
+                                                   for="mp-rma-additional-field-row-TP-<?= /* @noEscape */ $key ?>">
+                                                <span><?= /* @noEscape */ __('Type') ?></span>
+                                            </label>
+                                            <select id="mp-rma-additional-field-row-TP-<?= /* @noEscape */ $key ?>"
+                                                    class="input-select"
+                                                    name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<?= /* @noEscape */ $key ?>][type]">
+                                                <?php foreach ($block->getAdditionalFieldType() as $type):
+                                                    /** @var array $type */ ?>
+                                                    <option value="<?= /* @noEscape */ $type['value'] ?>"
+                                                        <?= $type['value'] === $field['type'] ? 'selected' : '' ?>>
+                                                        <?= $block->escapeHtml($type['label']) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+                                        <td class="mp-rma-additional-field-row-require">
+                                            <input id="mp-rma-additional-field-row-R-<?= /* @noEscape */ $key ?>"
+                                                   class="input-checkbox"
+                                                   type="checkbox"
+                                                   name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<?= /* @noEscape */ $key ?>][is_require]"
+                                                   value="<?= /* @noEscape */ $field['is_require'] ?>"
+                                                   onclick="this.value = this.checked ? 1 : 0"
+                                                <?= $field['is_require'] ? 'checked' : '' ?>/>
+                                            <label class="mp-label"
+                                                   for="mp-rma-additional-field-row-R-<?= /* @noEscape */ $key ?>">
+                                                <span><?= /* @noEscape */ __('Is require') ?></span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr class="field-item-row-body">
+                                        <td class="mp-rma-additional-field-row-validate">
+                                            <label class="mp-label"
+                                                   for="mp-rma-additional-field-row-V-<?= /* @noEscape */ $key ?>">
+                                                <span><?= /* @noEscape */ __('Validation Class') ?></span>
+                                            </label>
+                                            <input id="mp-rma-additional-field-row-V-<?= /* @noEscape */ $key ?>"
+                                                   class="input-text"
+                                                   type="text"
+                                                   name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<?= /* @noEscape */ $key ?>][validation]"
+                                                   value="<?= /* @noEscape */ $field['validation'] ?>"/>
+                                        </td>
+                                        <td class="mp-rma-additional-field-row-sort">
+                                            <label class="mp-label"
+                                                   for="mp-rma-additional-field-row-S-<?= /* @noEscape */ $key ?>">
+                                                <span><?= /* @noEscape */ __('Sort Order') ?></span>
+                                            </label>
+                                            <input id="mp-rma-additional-field-row-S-<?= /* @noEscape */ $key ?>"
+                                                   class="input-text validate-zero-or-greater validate-digits"
+                                                   type="text"
+                                                   name="groups[request][groups][rma][fields][additional_field][value][<?= /* @noEscape */ $columnName ?>][<?= /* @noEscape */ $key ?>][sort]"
+                                                   value="<?= /* @noEscape */ $field['sort'] ?>""/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        <?php endforeach; ?>
+                        <td class="col-action">
+                            <?php if ($isDefaultConfig): ?>
+                                <button type="button" class="action-default action-delete"
+                                        onclick="mpRMAAdditional.deleteRow(event)">
+                                    <span><?= /* @noEscape */ __('Delete') ?></span>
+                                </button>
+                                <i class="fa fa-angle-double-down mp-field-expand"
+                                   aria-hidden="true"
+                                   onclick="mpRMAAdditional.expandItem(event)"></i>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php elseif (!$isDefaultConfig): ?>
+                <tr>
+                    <td class="col-empty" colspan="2">
+                        <span><?= /* @noEscape */ __('There are no additional fields to edit.') ?></span>
+                    </td>
+                </tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <input type="hidden" name="groups[request][groups][rma][fields][additional_field][value][__empty]" value="">
+</div>
+<script type="text/javascript">
+    require([
+        'jquery',
+        'mage/template'
+    ], function ($, mageTemplate) {
+        if ($('#mprma_request_rma_additional_field_inherit').prop('checked') === true) {
+            $('#row_mprma_request_rma_additional_field input.input-text').prop('disabled', true);
+        }
+
+        mpRMAAdditional = {
+            add: function (event) {
+                var d       = new Date();
+                var tBody   = $(event.target).parents('#mp-rma-additional-field')
+                    .find('#mp_additional-field_row_container'),
+                    rowHtml = mageTemplate(
+                        '#mp_additional_field_row_template',
+                        {
+                            data: {
+                                id: 'F_' + d.getTime() + '_' + d.getMilliseconds()
+                            }
+                        }
+                    );
+                tBody.append(rowHtml);
+            },
+
+            deleteRow: function (event) {
+                $(event.target).closest('tr').remove();
+            },
+
+            expandItem: function (event) {
+                var itemTable = $(event.target).parents('tr.mp_additional-field_row')
+                .find('table.mp-rma-additional-field-item');
+                if ($(event.target).hasClass('fa-angle-double-down')) {
+                    itemTable.find('tr.field-item-row-body').show();
+                    $(event.target).removeClass('fa-angle-double-down').addClass('fa-angle-double-up');
+                } else if ($(event.target).hasClass('fa-angle-double-up')) {
+                    itemTable.find('tr.field-item-row-body').hide();
+                    $(event.target).removeClass('fa-angle-double-up').addClass('fa-angle-double-down');
+                }
+            }
+        };
+    });
+</script>

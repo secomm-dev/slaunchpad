@@ -1,0 +1,135 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Adminhtml\System\Reason $block */
+
+$_reasonValue = $block->getElement()->getValue();
+if (!is_array($_reasonValue)) {
+    $_reasonValue = \Mageplaza\RMA\Helper\Data::jsonDecode($_reasonValue);
+}
+$isDefaultConfig = $block->helperData->isDefaultConfigPage();
+?>
+<div class="design_theme_ua_regexp" id="mp-grid-reason">
+    <div class="admin__control-table-wrapper">
+        <script id="mp_reason_row_template"
+                type="text/x-magento-template">
+            <tr>
+                <?php foreach ($block->getColumns() as $columnName => $column): ?>
+                    <td class="col-<?= /* @noEscape */ $columnName ?> control-table-actions-cell col-items">
+                        <input class="input-text required-entry"
+                               type="text"
+                               name="groups[request][groups][rma][fields][reason][value][<?= /* @noEscape */ $columnName ?>][<%- data.id %>]"
+                               value=""/>
+                    </td>
+                <?php endforeach; ?>
+                <td class="col-action">
+                    <?php if ($isDefaultConfig): ?>
+                        <button type="button" class="action-default action-delete"
+                                onclick="mpRMAReason.deleteRow(event)">
+                            <span><?= /* @noEscape */ __('Delete') ?></span>
+                        </button>
+                    <?php endif; ?>
+                </td>
+            </tr>
+        </script>
+        <table id="mp-rma-reason" class="admin__control-table">
+            <?php if ($isDefaultConfig): ?>
+                <tfoot>
+                <tr class="mp-row-add-button">
+                    <td colspan="2" class="mp-row-add">
+                        <button id="mp-add-reason" title="<?= /* @noEscape */ __('Add') ?>" type="button"
+                                class="action-default scalable"
+                                onclick="mpRMAReason.add(event)">
+                            <span><?= /* @noEscape */ __('Add') ?></span>
+                        </button>
+                    </td>
+                </tr>
+                </tfoot>
+            <?php endif; ?>
+            <tbody id="mp_reason_row_container" data-role="options-container">
+            <?php if ($_reasonValue && isset($_reasonValue['name'])): ?>
+                <?php foreach ($_reasonValue['name'] as $key => $reason): ?>
+                    <tr>
+                        <?php foreach ($block->getColumns() as $columnName => $column): ?>
+                            <td class="col-<?= /* @noEscape */ $columnName ?> control-table-actions-cell col-items">
+                                <input class="input-text required-entry"
+                                       type="text"
+                                       name="groups[request][groups][rma][fields][reason][value][<?= /* @noEscape */ $columnName ?>][<?= /* @noEscape */ $key ?>]"
+                                       value="<?= /* @noEscape */ $reason ?>"/>
+                            </td>
+                        <?php endforeach; ?>
+                        <td class="col-action">
+                            <?php if ($isDefaultConfig): ?>
+                                <button type="button" class="action-default action-delete"
+                                        onclick="mpRMAReason.deleteRow(event)">
+                                    <span><?= /* @noEscape */ __('Delete') ?></span>
+                                </button>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php elseif (!$isDefaultConfig): ?>
+                <tr>
+                    <td class="col-empty" colspan="2">
+                        <span><?= /* @noEscape */ __('There are no reasons to edit.') ?></span>
+                    </td>
+                </tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <input type="hidden" name="groups[request][groups][rma][fields][reason][value][__empty]" value="">
+</div>
+<script type="text/javascript">
+    require([
+        'jquery',
+        'mage/template'
+    ], function ($, mageTemplate) {
+        if ($('#mprma_request_rma_reason_inherit').prop('checked') === true) {
+            $('#row_mprma_request_rma_reason input.input-text').each(function () {
+                $(this).prop('disabled', true);
+            });
+            $('#row_mprma_request_rma_reason button').each(function () {
+                $(this).prop('disabled', true);
+            });
+        }
+
+        mpRMAReason = {
+            add: function (event) {
+                var d       = new Date();
+                var tBody   = $(event.target).parents('#mp-rma-reason').find('#mp_reason_row_container'),
+                    rowHtml = mageTemplate(
+                        '#mp_reason_row_template',
+                        {
+                            data: {
+                                id: 'R_' + d.getTime() + '_' + d.getMilliseconds()
+                            }
+                        }
+                    );
+                tBody.append(rowHtml);
+            },
+
+            deleteRow: function (event) {
+                $(event.target).closest('tr').remove();
+            }
+        };
+    });
+</script>

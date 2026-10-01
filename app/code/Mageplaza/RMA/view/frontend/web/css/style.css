@@ -1,0 +1,460 @@
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+.mp-return-alert {
+    font-style: italic;
+    font-size: 12px;
+    display: block;
+}
+
+form#mp-edit-rma-form .grecaptcha-badge {
+    box-shadow: unset !important;
+}
+
+form#mp-edit-rma-form .grecaptcha-logo iframe {
+    box-shadow: grey 0 0 5px;
+}
+
+/** Request Index Css */
+form#mp-edit-rma-form {
+    display: inline-block;
+    width: 100%;
+}
+
+form#mp-edit-rma-form .mp-fieldset-container {
+    margin-bottom: 20px;
+}
+
+form#mp-edit-rma-form fieldset.mp-order-information {
+    position: relative;
+}
+
+form#mp-edit-rma-form fieldset.mp-request-information, form#mp-edit-rma-form fieldset.mp-order-information {
+    width: 82%;
+}
+
+form#mp-edit-rma-form .actions-toolbar {
+    clear: both;
+    float: right;
+}
+
+form#mp-edit-rma-form .actions-toolbar div.primary a {
+    height: 32px;
+    line-height: 15px;
+}
+
+form#mp-edit-rma-form .mp-image.mp-image-placeholder {
+    height: 110px;
+}
+
+/** Attachment CSS */
+.mp-field-request-files .mp-image {
+    background: #fff;
+    box-sizing: border-box;
+    display: inline-block;
+    margin: 1.2rem 1.2rem .5rem 0;
+    position: relative;
+    vertical-align: top;
+    width: 110px;
+}
+
+.mp-field-request-files .mp-image .item-description .item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.3rem;
+}
+
+.mp-field-request-files .mp-image .item-description .item-size {
+    color: #666;
+    font-size: 1.2rem;
+}
+
+.mp-field-request-files .mp-image.mp-image-placeholder .file-input-button {
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 0;
+    overflow: hidden;
+    float: left;
+}
+
+.mp-field-request-files .mp-image.mp-image-placeholder input[type='file'] {
+    border: 500px solid transparent;
+    bottom: 0;
+    cursor: pointer;
+    font-size: 10em;
+    height: 100%;
+    left: 0;
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100%;
+    z-index: 3;
+}
+
+.mp-field-request-files .mp-image .request-image-wrapper {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    cursor: pointer;
+    height: 110px;
+    line-height: 1;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    position: relative;
+    width: 110px;
+    text-decoration: none;
+}
+
+.mp-field-request-files .mp-image .request-image-wrapper img {
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    max-height: 100%;
+    max-width: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
+}
+
+.mp-field-request-files .mp-image .request-image-wrapper div.actions {
+    position: absolute;
+    font-size: 17px;
+    color: #827d7d;
+    bottom: 5%;
+    left: 5%;
+    z-index: 2;
+}
+
+.mp-field-request-files .mp-image.mp-image-placeholder .request-image-wrapper i {
+    font-size: 54px;
+    position: absolute;
+    left: 25%;
+    top: 23%;
+    color: #dfdfdf;
+}
+
+.mp-field-request-files .mp-image .loader {
+    display: none;
+}
+
+.mp-field-request-files .mp-image .loader img {
+    width: 60px;
+    position: absolute;
+    top: 22%;
+    left: 25%;
+}
+
+.mp-field-request-files .mp-image-limit-text {
+    margin-left: 5px;
+    font-size: 13px;
+}
+
+/** End attachment CSS */
+form#mp-edit-rma-form .mp-rma-information-container {
+    position: relative;
+    min-height: 50px;
+}
+
+form#mp-edit-rma-form .mp-field-items {
+    position: relative;
+    display: none;
+}
+
+form#mp-edit-rma-form .mp-rma-image-loader.order-loader {
+    background-color: #FFFFFF;
+    height: 100%;
+    left: 0;
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 555;
+    display: none;
+}
+
+form#mp-edit-rma-form .mp-rma-image-loader.order-loader img {
+    top: 40%;
+    left: 45%;
+    display: block;
+    position: absolute;
+    width: 40px;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items th {
+    padding: 1rem 1rem;
+    background-color: #514943;
+    border: .1rem solid #8a837f;
+    border-left-color: transparent;
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+    font-size: 1.3rem;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items td {
+    background-color: #fff;
+    border-left: .1rem dashed #d6d6d6;
+    border-right: .1rem dashed #d6d6d6;
+    border-bottom: .1rem dashed #d6d6d6;
+    color: #303030;
+    padding: 1rem 1rem;
+    vertical-align: middle;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items tr.mp-items-info td {
+    font-size: 1.3rem;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items tr.mp-additional-contents {
+    display: none;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items .col-select {
+    width: 3%;
+    text-align: center;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items .col-number {
+    width: 10%;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items .col-select input[type=checkbox] {
+    margin: 0;
+    cursor: pointer;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items .col-number input[type=text] {
+    height: 23px;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items .mp-request-item-thumbnail {
+    background: #fff;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    cursor: pointer;
+    height: 60px;
+    line-height: 1;
+    overflow: hidden;
+    margin: auto;
+    position: relative;
+    width: 60px;
+    text-decoration: none;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items .mp-request-item-thumbnail img {
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    max-height: 100%;
+    max-width: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
+    width: auto;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items .col-additional {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+form#mp-edit-rma-form table#mp-RMA-return-items .col-additional fieldset div.field {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/** Request View CSS */
+.mprma-request-view .page-main h1.page-title {
+    margin-right: 25px;
+}
+
+.mprma-request-view .page-main span.mp-request-status {
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    display: inline-block;
+    margin: 6px 3px 0;
+    text-transform: uppercase;
+    vertical-align: top;
+    padding: 5px 10px;
+}
+
+.mprma-request-view .page-main .mp-request-date {
+    margin: -14px 0 18px;
+}
+
+#mp-request-detail-container .mp-conversation-information .block-content, #mp-request-detail-container .mp-request-comment-information .block-content {
+    width: 61%;
+}
+
+@media (max-width: 767px) {
+    .mprma-request-view .page-main span.mp-request-status {
+        margin: -7px 3px 13px 3px;
+    }
+
+    .mprma-request-view .page-main .mp-request-date {
+        margin: 0 0 10px 0;
+    }
+
+    #mp-request-detail-container .mp-conversation-information .block-content, #mp-request-detail-container .mp-request-comment-information .block-content {
+        width: 100%;
+    }
+}
+
+.mprma-request-view .page-main .mp-request-date span {
+    font-size: 16px;
+}
+
+#mp-request-detail-container .block .block-title {
+    border-bottom: 1px solid #c6c6c6;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+}
+
+#mp-request-detail-container .block .table-wrapper {
+    border-top: none;
+}
+
+#mp-request-detail-container .block .block-title strong {
+    font-size: 2.2rem;
+    font-weight: 300;
+}
+
+#mp-request-detail-container label.label {
+    font-weight: 600;
+    margin: 0 0 3px;
+    display: inline-block;
+}
+
+#mp-request-detail-container .block-content div.field {
+    margin-bottom: 10px;
+}
+
+#mp-request-detail-container .block-content div.mp-field-request-reply-file {
+    display: inline-block;
+}
+
+#mp-request-detail-container .block-content div.mp-replies-actions {
+    float: right;
+    position: relative;
+}
+
+#mp-request-detail-container .block-content div.mp-replies-actions .mp-rma-image-loader {
+    position: absolute;
+    top: 3px;
+    left: -30px;
+    display: none;
+}
+
+#mp-request-detail-container .block-content div.mp-replies-actions .mp-rma-image-loader img {
+    width: 26px;
+}
+
+#mp-request-detail-container .mp-conversation-information {
+    display: flow-root;
+
+}
+
+form#edit_form .mp-field-request-reply-file #mp-uploader {
+    box-sizing: border-box;
+    display: inline-block;
+    margin: 0 1.2rem .5rem 0;
+    position: relative;
+    vertical-align: top;
+    width: 155px;
+    height: 29px;
+}
+
+form#edit_form .mp-field-request-reply-file #mp-uploader .file-input-button {
+    background: #e3e3e3;
+    border: 1px solid #adadad;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 0;
+    overflow: hidden;
+    float: left;
+    text-align: center;
+}
+
+form#edit_form .mp-field-request-reply-file #mp-uploader .file-input-button span {
+    display: block;
+    margin-top: 5px;
+    color: #514943;
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 15px;
+}
+
+form#edit_form .mp-field-request-reply-file #mp-uploader .file-input-button input {
+    border: 500px solid transparent;
+    bottom: 0;
+    cursor: pointer;
+    font-size: 10em;
+    height: 100%;
+    left: 0;
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100%;
+    z-index: 3;
+}
+
+/** Customer Dashboard CSS*/
+#my-requests-table tbody .col_actions a.cancel:before {
+    border-left: 1px solid #a6a6a6;
+    content: '';
+    display: inline-block;
+    height: 12px;
+    margin: 0 10px;
+    vertical-align: -1px;
+}
+
+.mprma-requests-toolbar .limiter {
+    float: right;
+}
+
+#mp-customer-request-add {
+    float: right;
+}
+
+.account.mprma-customer-index .page-title-wrapper .page-title {
+    display: inline-block;
+}
+
+input:disabled, select:disabled {
+    cursor: not-allowed;
+}
+
+td.col-qty.col-number input {
+    width: 100%;
+}
