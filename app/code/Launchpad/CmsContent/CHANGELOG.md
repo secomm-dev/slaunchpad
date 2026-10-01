@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.3 (unreleased — version bump khi unblock `setup:upgrade`, xem TASK-KMJV5Q)
+
+- SLP-291 (TASK-KMJV5Q): legal links copyright bar footer (Terms & Privacy)
+  edit được qua **Stores > Configuration > Launchpad > Footer > Legal Links** —
+  4 field store-view scope (`terms_label` / `terms_url` / `privacy_label` /
+  `privacy_url`); để trống = giữ fallback hiện tại (label dịch CSV + route tĩnh
+  TASK-7EYJ4C) → 0 visual change khi chưa cấu hình. ViewModel `LegalLinks`
+  (`ArgumentInterface`, require qua `$viewModels` registry của Hyva — engine
+  inject cho mọi template); URL config: `http(s)://` passthrough, còn lại
+  resolve qua `getUrl()`. Observer `admin_system_config_changed_section_launchpad_footer`
+  clean `block_html` + `full_page` → storefront thấy ngay sau save (core 2.4.8
+  không có cache.xml event-invalidation cho section custom). Output escape
+  `$escaper` (XSS probe PASS). Không schema/patch → không cần `setup:upgrade`.
+
 ## 1.3.1 (2026-09-29)
 
 - SLP-275 (TASK-7EYJ4C v4.3–v4.7): `SeedFooterBlocks` đổi store map theo
