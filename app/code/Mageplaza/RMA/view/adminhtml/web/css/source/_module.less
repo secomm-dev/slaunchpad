@@ -1,0 +1,125 @@
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** Additional Field System Config CSS */
+
+#row_mprma_request_rma_additional_field #mp-add-additional-field {
+  width: 27%;
+}
+
+#row_mprma_request_rma_additional_field .mp-rma-additional-field-item td {
+  padding: 1rem;
+  border-bottom: unset;
+}
+
+#row_mprma_request_rma_additional_field .mp-rma-additional-field-item select {
+  width: 77%;
+  margin-top: 3px;
+}
+
+#row_mprma_request_rma_additional_field .mp-rma-additional-field-item label.mp-label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 5px;
+}
+
+#row_mprma_request_rma_additional_field .mp-rma-additional-field-item .mp-rma-additional-field-row-require {
+  padding-top: 2rem;
+}
+
+#row_mprma_request_rma_additional_field #mp_additional-field_row_container tr.mp_additional-field_row {
+  border-bottom: solid 10px #FFF;
+}
+
+#row_mprma_request_rma_additional_field #mp_additional-field_row_container tr.mp_additional-field_row i.mp-field-expand {
+  margin-right: 2px;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+#row_mprma_request_rma_additional_field #mp_additional-field_row_container tr.mp_additional-field_row td.col-action {
+  padding: 1.3rem 0.5rem 1.3rem 0;
+}
+
+#row_mprma_request_rma_additional_field .col-name {
+  width: 89%;
+  padding: 0;
+}
+
+#row_mprma_request_rma_additional_field .mp-rma-additional-field-item input[type='text'] {
+  width: 86%;
+  margin-top: 3px;
+}
+
+#row_mprma_request_rma_additional_field .mp-rma-additional-field-item tr.field-item-row-body {
+  display: none;
+}
+
+@media (max-width: 1680px) and (min-width: 1400px) {
+  #row_mprma_request_rma_additional_field .col-name {
+    width: 86%;
+    padding: 0;
+  }
+
+  #row_mprma_request_rma_additional_field .mp-rma-additional-field-item .mp-rma-additional-field-row-require {
+    padding-top: 3.2rem;
+  }
+}
+
+@media (max-width: 1399px) and (min-width: 1160px) {
+  #row_mprma_request_rma_additional_field .col-name {
+    width: 82%;
+    padding: 0;
+  }
+}
+
+@media (max-width: 1160px) {
+  #row_mprma_request_rma_additional_field .col-name {
+    width: 77%;
+    padding: 0;
+  }
+}
+
+#row_mprma_request_rma_additional_field .mp-rma-additional-field-item .mp-rma-additional-field-row-title .mp-label span:after {
+  margin: 0 0 0 .5rem;
+  color: #e22626;
+  content: '*';
+}
+
+/** Reasons Field System Config CSS */
+#row_mprma_request_rma_reason .col-name, #row_mprma_request_rma_solution .col-name {
+  width: 85%;
+}
+
+/** Order Conditions CSS */
+#row_mprma_request_order_condition .mprma-fieldset, .rule-tree-mprma {
+  padding: 0 !important;
+}
+
+#row_mprma_request_order_condition .rule-param.rule-param-new-child a {
+  padding: 0;
+}
+
+#row_mprma_request_order_condition #rule_conditions_fieldset .label {
+  text-align: left;
+  color: #000;
+  padding: 0;
+  vertical-align: baseline;
+}

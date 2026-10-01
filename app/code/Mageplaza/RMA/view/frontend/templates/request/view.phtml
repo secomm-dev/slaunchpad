@@ -1,0 +1,247 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Request\View $block */
+/** @var \Mageplaza\RMA\Model\Request $request */
+$request = $block->getRmaRequest();
+$order   = $request->getOrder();
+$items   = $request->getItemsCollection();
+/** @var \Mageplaza\RMA\Helper\Data $helper */
+$helper        = $block->_helperData;
+$shippingLabel = $request->getShippingLabel();
+?>
+<div id="mp-request-detail-container">
+    <div class="block mp-order-information">
+        <div class="block-title">
+            <strong><?= /* @noEscape */ __('Order Request Information') ?></strong>
+        </div>
+        <div class="block-content">
+            <span><?= $block->escapeHtml(__('Request ID: ') . $request->getId()) ?></span><br>
+            <span><?= $block->escapeHtml(__('Order Increment ID: ') . $order->getIncrementId()) ?></span><br>
+            <span><?= $block->escapeHtml(__('Order Created Date: ') . $block->getConvertedDate($order->getCreatedAt())->format('n/j/y')) ?></span><br>
+            <span><?= $block->escapeHtml(__('Email Address: ') . $order->getBillingAddress()->getEmail()) ?></span><br>
+            <span><?= $block->escapeHtml(__('Billing Zip/Postal Code: ') . $order->getBillingAddress()->getPostcode()) ?></span><br>
+            <span><?= $block->escapeHtml(__('Phone Number: ') . $order->getBillingAddress()->getTelephone()) ?></span><br>
+        </div>
+    </div>
+    <div class="block mp-shipping-information">
+        <div class="block-title">
+            <strong><?= /* @noEscape */ __('Return Shipping Information') ?></strong>
+        </div>
+        <div class="block-content">
+            <?php if ($shippingLabel
+                && in_array(\Mageplaza\RMA\Model\Config\Source\RMAStatus\Action::SHIPPING_LABEL, $helper->getRequestStatusActions($request), true)): ?>
+                <span><?= $block->escapeHtml(__('Shipping Label: ') . $shippingLabel->getLabel()) ?></span><br>
+                <span><?= $block->escapeHtml(__('Shipping Address: ') . $shippingLabel->getReturnAddress()) ?></span><br>
+                <a class="mp-print-shipping-label"
+                   href="<?= /* @noEscape */ $block->getPrintShippingLabelUrl($request->getId()) ?>">
+                    <?= /* @noEscape */ __('Print Shipping Label') ?></a>
+            <?php else: ?>
+                <?= /* @noEscape */ __('There is no shipping label for this request') ?>
+            <?php endif; ?>
+        </div>
+    </div>
+    <div class="block mp-rma-information">
+        <div class="block-title">
+            <strong><?= /* @noEscape */ __('RMA Information') ?></strong>
+        </div>
+        <div class="table-wrapper block-content">
+            <table class="data table" id="my-request-items-table">
+                <thead>
+                <tr>
+                    <th scope="col" class="col-name"><?= /* @noEscape */ __('Product Name') ?></th>
+                    <th scope="col" class="col-sku"><?= /* @noEscape */ __('SKU') ?></th>
+                    <th scope="col" class="col-price"><?= /* @noEscape */ __('Price') ?></th>
+                    <th scope="col" class="col-reason"><?= /* @noEscape */ __('Reason') ?></th>
+                    <th scope="col" class="col-solution"><?= /* @noEscape */ __('Solution') ?></th>
+                    <th scope="col" class="col-field"><?= /* @noEscape */ __('Additional Field') ?></th>
+                    <th scope="col" class="col-qty"><?= /* @noEscape */ __('Qty') ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($items as $item):
+                    /** @var \Mageplaza\RMA\Model\Request\Item $item */ ?>
+                    <tr>
+                        <td data-th="<?= /* @noEscape */ __('Product Name') ?>" class="col-name">
+                            <?= /* @noEscape */ $item->getName() ?></td>
+                        <td data-th="<?= /* @noEscape */ __('SKU') ?>" class="col-sku">
+                            <?= /* @noEscape */ $item->getSku() ?></td>
+                        <td data-th="<?= /* @noEscape */ __('Price') ?>" class="col-price">
+                            <?= /* @noEscape */ $helper->renderPriceColByOrder($item->getPrice(), $order->getIncrementId()) ?></td>
+                        <td data-th="<?= /* @noEscape */ __('Reason') ?>" class="col-reason">
+                            <?= /* @noEscape */ $item->getReason() ?: __('There is no reason') ?></td>
+                        <td data-th="<?= /* @noEscape */ __('Solution') ?>" class="col-solution">
+                            <?= /* @noEscape */ $item->getSolution() ?: __('There is no solution') ?></td>
+                        <td data-th="<?= /* @noEscape */ __('Additional Field') ?>" class="col-field">
+                            <?php $fields = \Mageplaza\RMA\Helper\Data::jsonDecode($item->getAdditionalFields());
+                            if ($fields):?>
+                                <?php foreach ($fields as $field): ?>
+                                    <div class="field mp-items-fields">
+                                        <?= $helper->getValidatedAdditionalFieldHtml($field, $item, false) ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <?= /* @noEscape */ __('There are no additional fields.') ?>
+                            <?php endif; ?>
+                        </td>
+                        <td data-th="<?= /* @noEscape */ __('Qty') ?>"
+                            class="col-qty"><?= $item->getQtyRma() * 1 ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="block mp-request-comment-information">
+        <div class="block-title">
+            <strong><?= /* @noEscape */ __('Comment') ?></strong>
+        </div>
+        <div class="block-content">
+            <div class="field mp-field-request-comment">
+                <label class="label" for="mp-request-comment">
+                    <span><?= /* @noEscape */ __('Comment') ?></span>
+                </label>
+                <div class="control">
+                    <textarea id="mp-request-comment"
+                              title="<?= /* @noEscape */ __('Comment') ?>"
+                              class="input-text"
+                              cols="5"
+                              rows="3"
+                              aria-required="true"
+                              spellcheck="false"
+                              disabled><?= /* @noEscape */ $request->getComment() ?></textarea>
+                </div>
+            </div>
+            <?php if ($files = \Mageplaza\RMA\Helper\Data::jsonDecode($request->getFiles())): ?>
+                <div class="field mp-field-request-files">
+                    <label class="label" for="mp-request-files">
+                        <span><?= /* @noEscape */ __('Attach File(s)') ?></span>
+                    </label>
+                    <div class="control">
+                        <?php foreach ($files as $file): ?>
+                            <div class="mp-image item mp-new-image">
+                                <div class="request-image-wrapper">
+                                    <img class="request-image"
+                                         src="<?= /* @noEscape */ $block->getFileImageUrl($file['file'], false) ?>"
+                                         alt="<?= /* @noEscape */ $file['name'] ?>">
+                                </div>
+                                <div class="item-description">
+                                    <div class="item-title" data-role="img-title">
+                                        <?= $block->escapeHtml($file['name']) ?></div>
+                                    <div class="item-size">
+                                        <span data-role="image-size">
+                                            <?= /* @noEscape */ $helper->fileSizeFormat($file['size']) ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="mp-rma-message files-message"></div>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <div class="block mp-conversation-information"
+         data-mage-init='{"mpRMA/reply":{
+         "uploadUrl":"<?= /* @noEscape */ $block->getUploadReplyUrl() ?>",
+         "loadReplyUrl":"<?= /* @noEscape */ $block->getLoadReplyUrl() ?>",
+         "saveReplyUrl":"<?= /* @noEscape */ $block->getSaveReplyUrl() ?>"
+         }}'>
+        <div class="block-title">
+            <strong><?= /* @noEscape */ __('Conversation') ?></strong>
+        </div>
+        <div class="block-content">
+            <form class="form form-request-reply" id="edit_form"
+                  action="<?= /* @noEscape */ $block->getReplyFormAction($request->getId()) ?>"
+                  method="post">
+                <fieldset class="fieldset admin__fieldset fieldset-wide" id="request_conversation_fieldset">
+                    <input id="request_request_id"
+                           name="reply[request_id]"
+                           value="<?= /* @noEscape */ $request->getId() ?>"
+                           type="hidden">
+                    <input type="hidden" id="mp-reply-name" name="reply[author_name]"
+                           value="<?= /* @noEscape */ $order->getCustomerName() ?>">
+                    <input type="hidden" id="mp-reply-email" name="reply[author_email]"
+                           value="<?= /* @noEscape */ $order->getBillingAddress()->getEmail() ?>">
+                    <div class="field mp-field-request-reply">
+                        <label class="label" for="mp-request-reply">
+                            <span><?= /* @noEscape */ __('Content') ?></span>
+                        </label>
+                        <div class="control">
+                    <textarea id="mp-request-comment"
+                              title="<?= /* @noEscape */ __('Content') ?>"
+                              name="reply[content]"
+                              class="input-text"
+                              cols="15"
+                              rows="3"
+                              aria-required="true"
+                              spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                    <div id="mp-request-reply-container" class="field-actions">
+                        <div class="field mp-field-request-reply-file">
+                            <div id="mp-uploader" class="uploader col-mp mp-7 mp-md-12 mp-sm-12 mp-xs-12">
+                                <div class="file-input-button form-buttons button">
+                                    <span><?= /* @noEscape */ __('Attach File') ?></span>
+                                    <input id="file-upload" data-role="upload-file" name="image" multiple="multiple"
+                                           type="file">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mp-replies-actions">
+                            <button id="mp-replies-submit"
+                                    title="<?= /* @noEscape */ __('Submit') ?>"
+                                    type="button"
+                                    class="action primary"
+                                    data-role="submit-reply">
+                                <span><?= /* @noEscape */ __('Submit') ?></span>
+                            </button>
+                            <div class="mp-rma-image-loader">
+                                <div class="loader">
+                                    <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                                         alt="<?= /* @noEscape */ __('Loading') ?>">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mp-rma-message reply-message"></div>
+                    <div class="mp-files">
+                        <div class="mp-file-number">
+                            <i class="fa fa-paperclip" aria-hidden="true"></i>
+                            <span class="attachment-num">0</span>
+                            <span class="attachment-text"><?= /* @noEscape */ __('Attachment(s)') ?></span>
+                        </div>
+                        <div class="mp-file-box-container"></div>
+                    </div>
+                    <div id="mp-request-conversation-container" class="mp-request-conversation-container">
+                        <div class="mp-rma-image-loader">
+                            <div class="loader">
+                                <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                                     alt="<?= /* @noEscape */ __('Loading') ?>">
+                            </div>
+                        </div>
+                        <div class="mp-request-conversation"></div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>

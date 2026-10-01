@@ -1,0 +1,522 @@
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+.mp-return-alert {
+    font-style: italic;
+    font-size: 12px;
+    display: block;
+}
+
+/** status edit form css */
+.mprma_status_edit_form .tree-store-scope [class*='field-w'].admin__field {
+    margin: 0 0 0 35px;
+}
+
+.mprma_status_edit_form .tree-store-scope.admin__fieldset > .admin__field {
+    margin-left: 35px;
+}
+
+.mprma_status_edit_form .admin__legend .admin__field-tooltip {
+    margin-top: 2px;
+    margin-left: 0 !important;
+}
+
+/** shipping label edit form css */
+.mprma_shipping_label_edit_form .tree-store-scope [class*='field-w'].admin__field {
+    margin: 0 0 0 35px;
+}
+
+.mprma_shipping_label_edit_form .tree-store-scope.admin__fieldset > .admin__field {
+    margin-left: 35px;
+}
+
+.mprma_shipping_label_edit_form .admin__legend .admin__field-tooltip {
+    margin-top: 2px;
+}
+
+.mprma_shipping_label_edit_form .mp-review-shipping-container {
+    width: 400px;
+    margin-top: 15px;
+    display: none;
+}
+
+.mprma_shipping_label_edit_form .mp-review-shipping-container img {
+    border: solid 1px;
+}
+
+#shipping_label_image_delete {
+    margin: auto;
+}
+
+/** request edit form css */
+#request_base_fieldset .field-files .admin__field-control .fileinput-button {
+    overflow: hidden;
+}
+
+#request_base_fieldset .field-files .admin__field-control .image .product-image {
+    max-height: 85%;
+    max-width: 90%;
+}
+
+#request_base_fieldset .field-files .admin__field-control .image {
+    width: 140px;
+}
+
+#request_base_fieldset .field-files .admin__field-control .image .product-image-wrapper {
+    width: 140px;
+}
+
+.mfp-content .mfp-figure {
+    position: relative;
+    background: #ffffff;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+#request_order_fieldset .field-customer_name, #request_order_fieldset .field-customer_email, #request_order_fieldset .field-store_view {
+    display: none;
+}
+
+#request_RMA_fieldset {
+    display: none;
+}
+
+#request_order_fieldset .field-order_increment_id button {
+    margin: 0 10px;
+}
+
+#request_order_fieldset #request_order_increment_id {
+    width: 63%;
+    margin-right: 10px;
+}
+
+#request_RMA_fieldset .admin__field-control.control {
+    width: 100%;
+    margin-left: 0;
+}
+
+#request_RMA_fieldset .admin__field-control.control #request_product_information {
+    width: 100%;
+}
+
+#request_RMA_fieldset .admin__field-control.control #mp-request-product-table, #request_RMA_fieldset .mp-rma-message.items-message {
+    width: 97%;
+    margin-top: 7px;
+    margin-left: 50px;
+}
+
+#request_RMA_fieldset .mp-rma-message.items-message label.items-empty-error, label.order-empty-error {
+    background: #fffbbb;
+    border: 1px solid #ee7d7d;
+    box-sizing: border-box;
+    color: #555;
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.2;
+    margin: .2rem 0 0;
+    padding: .8rem 1rem .9rem;
+}
+
+#requestOrdersGrid_table tbody tr {
+    cursor: pointer;
+}
+
+/** -- Request Items Table CSS -- */
+#mp-request-product-table td {
+    background-color: #fff;
+    border-left: .1rem dashed #d6d6d6;
+    border-right: .1rem dashed #d6d6d6;
+    border-bottom: .1rem dashed #d6d6d6;
+    color: #303030;
+    padding: 1rem 1rem;
+}
+
+#mp-request-product-table .col-select {
+    width: 3%;
+    text-align: center;
+}
+
+#mp-request-product-table .col-text {
+    width: 13%;
+}
+
+#mp-request-product-table .col-number {
+    width: 6%;
+}
+
+#mp-request-product-table .col-other {
+    width: 30%;
+}
+
+#mp-request-product-table .col-items-empty {
+    padding: 2.5rem;
+    text-align: center;
+}
+
+#mp-request-product-table .col-select input[type="checkbox"] {
+    cursor: pointer;
+    height: 16px;
+    width: 16px;
+}
+
+#mp-request-product-table th {
+    padding: 1rem 1rem;
+    background-color: #514943;
+    border: .1rem solid #8a837f;
+    border-left-color: transparent;
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+}
+
+#mp-request-product-table input[type="text"], #mp-request-product-table select {
+    width: 100%;
+}
+
+#mp-request-product-table .col-additional-fields label span.required-entry:after {
+    margin: 0 0 0 .5rem;
+    color: #e22626;
+    content: '*';
+}
+
+/** request TEMPLATE popup container */
+/**-- Popup Css --*/
+.mp-rma-template-box {
+    left: 70%;
+}
+
+.mp-rma-template-box .modal-inner-wrap {
+    width: 700px;
+    float: right;
+}
+
+/**-- Popup Loader Css --*/
+#mp-rma-template-container .mp-rma-image-loader {
+    background-color: #FFFFFF;
+    height: 100%;
+    left: 0;
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 555;
+    display: none;
+}
+
+#mp-rma-template-container .mp-rma-image-loader img {
+    top: 40%;
+    left: 45%;
+    display: block;
+    position: fixed;
+}
+
+#mp-rma-template-container .mp-rma-message {
+    margin-top: 7px;
+}
+
+/**-- EDIT TEMPLATE PAGE --*/
+#mp-rma-edit-page #template_base_fieldset {
+    padding: 20px 15px;
+}
+
+#mp-rma-edit-page #template_base_fieldset label.admin__field-label {
+    color: #303030;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#mp-rma-edit-page #template_base_fieldset label span:after {
+    margin: 0 0 0 .5rem;
+    color: #e22626;
+    content: '*';
+}
+
+#mp-rma-edit-page #template_base_fieldset .mp-template-field span.mage-error {
+    background: #fffbbb;
+    border: 1px solid #ee7d7d;
+    color: #555;
+    font-size: 1.2rem;
+    font-weight: 400;
+    padding: .6rem;
+    margin-left: 5px;
+}
+
+#mp-rma-edit-page #template_base_fieldset select.template_select_store {
+    margin-left: 10px;
+}
+
+#mp-rma-edit-page #template_base_fieldset select.template_select_store.duplicate {
+    border: solid 1px #ee7d7d;
+}
+
+#mp-rma-edit-page #template_base_fieldset input, #mp-rma-edit-page #template_base_fieldset textarea {
+    width: 100%;
+    margin-top: 5px;
+}
+
+#mp-rma-edit-page #template_base_fieldset .mp-template-field {
+    margin-bottom: 20px;
+    padding: 0 10px;
+}
+
+#mp-rma-edit-page #template_base_fieldset .mp-template-field i {
+    float: right;
+    margin-top: 8px;
+    margin-right: 3px;
+    cursor: pointer;
+    font-size: 17px;
+    color: #595555;
+}
+
+#mp-rma-edit-page #mp-template-edit-form .mp-store-buttons {
+    float: left;
+}
+
+#mp-rma-edit-page #mp-template-edit-form .mp-action-buttons {
+    float: right;
+}
+
+#mp-rma-edit-page #mp-template-edit-form .mp-action-buttons button#mp-template-save {
+    margin-right: 15px;
+}
+
+/**-- INDEX TEMPLATE PAGE --*/
+#mp-rma-index-page .mp-rma-template-title i {
+    margin-right: 10px;
+}
+
+#mp-rma-index-page .mp-rma-template-title a#add-new {
+    font-size: 13px;
+    margin-left: 13px;
+}
+
+#mp-rma-index-page .template-empty {
+    padding: 15px 10px;
+}
+
+#mp-rma-index-page .mp-template-item {
+    border: solid 1px #ebedf0;
+    border-radius: 5px;
+    margin-bottom: 13px;
+}
+
+#mp-rma-index-page .mp-template-item:hover {
+    border-color: #cfd7df;
+}
+
+#mp-rma-index-page .mp-template-item:hover div#header {
+    color: #2c5cc5;
+}
+
+#mp-rma-index-page .mp-template-item .mp-template-header {
+    padding: 6px 15px 6px;
+    cursor: pointer;
+    display: inline-block;
+    width: 100%;
+}
+
+#mp-rma-index-page .mp-template-item .mp-template-content {
+    display: none;
+    height: 150px;
+    border-top: solid 1px #e3e7ea;
+}
+
+#mp-rma-index-page .mp-template-item .mp-template-content #template-text[disabled] {
+    width: 100%;
+    height: 100%;
+    cursor: unset;
+    border: unset;
+    opacity: unset;
+    resize: none;
+    padding-top: 1.6rem;
+    padding-left: 2rem;
+    background-color: #ebedf0;
+}
+
+#mp-rma-index-page .mp-template-item div#header {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+#mp-rma-index-page .mp-template-item .template-buttons {
+    float: right;
+}
+
+#mp-rma-index-page .mp-template-item .delete-template {
+    display: inline-block;
+}
+
+#mp-rma-index-page .mp-template-item .delete-template i {
+    margin-left: 5px;
+}
+
+/** request Reply & conversation container */
+#request_conversation_fieldset .mp-reply-author {
+    margin: 8px 0;
+}
+
+#request_conversation_fieldset .admin__field-control .mp-rma-message.reply-message {
+    margin-top: 5px;
+}
+
+#request_conversation_fieldset .admin__field-control .message {
+    margin: 0;
+}
+
+#mp-request-reply-container {
+    display: inline-block;
+    width: 100%;
+}
+
+#mp-request-reply-container .mp-attachment-container {
+    width: 60%;
+    float: left;
+}
+
+#mp-request-reply-container .mp-option-container {
+    width: 35%;
+    float: left;
+    margin-left: 20px;
+    padding-left: 8%;
+}
+
+@media (max-width: 1550px) {
+    #mp-request-reply-container .mp-option-container {
+        padding-left: 0;
+    }
+}
+
+@media (max-width: 1200px) {
+    #mp-request-reply-container .mp-option-container {
+        padding-left: 0;
+        margin-left: 10px;
+    }
+}
+
+#mp-request-reply-container .mp-buttons {
+    margin-bottom: 15px;
+    float: left;
+    width: 100%;
+}
+
+#mp-request-reply-container .mp-attachment-container #mp-uploader {
+    height: 33px;
+    display: inline-block;
+    margin: 0 2.5rem .5rem 0;
+    position: relative;
+    vertical-align: top;
+}
+
+#mp-request-reply-container .mp-attachment-container #mp-template {
+    padding: 0;
+}
+
+#mp-request-reply-container .mp-attachment-container #mp-template button {
+    width: 100%;
+}
+
+#mp-request-reply-container .mp-attachment-container .file-input-button {
+    background: #e3e3e3;
+    border: 1px solid #adadad;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 0;
+    overflow: hidden;
+    float: left;
+    text-align: center;
+}
+
+#mp-request-reply-container .mp-attachment-container .file-input-button:hover {
+    background: #dbdbdb;
+}
+
+#mp-request-reply-container .mp-attachment-container .file-input-button span {
+    display: block;
+    margin-top: 5px;
+    color: #514943;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+#mp-request-reply-container .mp-attachment-container input[type='file'] {
+    border: 500px solid transparent;
+    bottom: 0;
+    cursor: pointer;
+    font-size: 10em;
+    height: 100%;
+    left: 0;
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100%;
+    z-index: 3;
+}
+
+#mp-request-reply-container .mp-attachment-container .mp-file-box:hover div.file-inspect {
+    visibility: visible;
+    opacity: 1;
+}
+
+#mp-request-reply-container .mp-attachment-container .mp-file-box div.file-inspect {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s linear;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #FFF;
+    border-left: solid 1px #dfdffd;
+    padding: 6px 8px 8px 13px;
+    height: 100%;
+}
+
+#mp-request-reply-container .mp-attachment-container .mp-file-box div.file-inspect:hover {
+    background-color: #f5f5f5;
+}
+
+#mp-request-reply-container .mp-option-container .mp-replies-actions {
+    margin-top: 20px;
+    position: relative;
+}
+
+#mp-request-reply-container .mp-option-container .mp-replies-actions button {
+    width: 85%;
+}
+
+#mp-request-reply-container .mp-option-container .mp-rma-image-loader {
+    position: absolute;
+    top: 3px;
+    right: 0;
+    display: none;
+}
+
+#mp-request-reply-container .mp-option-container .mp-rma-image-loader img {
+    width: 26px;
+}

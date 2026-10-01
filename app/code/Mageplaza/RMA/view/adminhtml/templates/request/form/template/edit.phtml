@@ -1,0 +1,156 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Adminhtml\Request\Edit\Form\Template $block */
+/** @var \Mageplaza\RMA\Model\Template $templateModel */
+$templateModel = $block->getTemplateModel()->getData() ? $block->getTemplateModel() : false;
+?>
+<div id="mp-rma-edit-page"
+     class="entry-edit form-inline"
+     data-mage-init='{"mpRMA/template":{
+     "templateIndexUrl":"<?= /* @noEscape */ $block->getUrl('mprma/request/template_load', [
+         'form_key'      => $block->getFormKey(),
+         'template_type' => \Mageplaza\RMA\Block\Adminhtml\Request\Edit\Form\Template::TEMPLATE_INDEX_PAGE
+     ]) ?>"}}'>
+    <div class="mp-rma-template-title">
+        <h2><?= /* @noEscape */ __('Add/Edit Reply Template') ?></h2>
+    </div>
+    <form id="mp-template-edit-form"
+          action="<?= /* @noEscape */ $block->getUrl(
+              'mprma/request/template_save',
+              ['form_key' => $block->getFormKey()]
+          ) ?>"
+          method="post"
+          enctype="multipart/form-data"
+          data-mage-init='{"validation":{}}'>
+        <div>
+            <input name="form_key" type="hidden" value="<?= /* @noEscape */ $block->getFormKey() ?>">
+        </div>
+        <fieldset class="fieldset admin__fieldset fieldset-wide" id="template_base_fieldset">
+            <?php if ($templateModel): ?>
+                <input type="hidden" id="template_id"
+                       name="template_id" value="<?= /* @noEscape */ $templateModel->getId() ?>">
+            <?php endif; ?>
+            <div class="field-title_template mp-template-field">
+                <label class="label admin__field-label" for="template_title">
+                    <span><?= /* @noEscape */ __('Title')  ?></span>
+                </label>
+                <input id="template_title"
+                       type="text"
+                       name="template[title]"
+                       class="input-text admin__control-text required-entry _required"
+                       value="<?= $templateModel ? /* @noEscape */ $templateModel->getTitle()  : '' ?>">
+            </div>
+            <div class="field-content_template mp-template-field">
+                <label class="label admin__field-label" for="template_content">
+                    <span><?= /* @noEscape */ __('Message') ?></span>
+                </label>
+                <textarea id="template_content"
+                          name="template[content]"
+                          title="<?= /* @noEscape */ __('Message') ?>"
+                          rows="2"
+                          cols="15"
+                          class="textarea admin__control-textarea required-entry _required"
+                          spellcheck="false"><?= $templateModel ? /* @noEscape */ $templateModel->getContent() : '' ?></textarea>
+            </div>
+            <?php if ($templateModel && $templates = $templateModel->getStoreViewTemplates()): ?>
+                <?php foreach ($templates as $template): ?>
+                    <div id="field-content_template-S<?= /* @noEscape */ $template['store_id'] ?>"
+                         class="field-content_template mp-template-field">
+                        <label class="label admin__field-label"
+                               for="template_content-S<?= /* @noEscape */ $template['store_id'] ?>">
+                            <span><?= /* @noEscape */ __('Message') ?></span>
+                        </label>
+                        <input type="hidden" id="template_select_store-<?= /* @noEscape */ $template['store_id'] ?>"
+                               class="template_select_store"
+                               value="<?= /* @noEscape */ $template['store_id'] ?>">
+                        <?= $block->getStoreViewHtml((int) $template['store_id']) ?>
+                        <i class="fa fa-trash" aria-hidden="true" data-role="template-delete-row"></i>
+                        <textarea id="template_content-S<?= /* @noEscape */ $template['store_id'] ?>"
+                                  name="template[update_contents][<?= /* @noEscape */ $template['store_id'] ?>]"
+                                  title="<?= /* @noEscape */ __('Message') ?>"
+                                  rows="2"
+                                  cols="15"
+                                  class="textarea admin__control-textarea required-entry _required"
+                                  spellcheck="false"><?= /* @noEscape */ $template['content'] ?></textarea>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            <script id="mp_rma_content_row_template"
+                    type="text/x-magento-template">
+                <div id="field-content_template-S<%- data.id %>" class="field-content_template mp-template-field">
+                    <label class="label admin__field-label" for="template_content-S<%- data.id %>">
+                        <span><?= /* @noEscape */ __('Message') ?></span>
+                    </label>
+                    <select id="template_select_store-<%- data.id %>"
+                            class="admin__control-select template_select_store"
+                            name="template[contents][<%- data.id %>][store]">
+                        <?php foreach ($block->getStoreStructure() as $website): ?>
+                            <?php if (!is_array($website['value'])): ?>
+                                <option value="<?= /* @noEscape */ $website['value'] ?>">
+                                    <?= /* @noEscape */ $website['label'] ?></option>
+                            <?php else: ?>
+                                <optgroup label="<?= /* @noEscape */ $website['label'] ?>"></optgroup>
+                            <?php endif; ?>
+                            <?php if (is_array($website['value']) && $website['value'] > 0): ?>
+                                <?php foreach ($website['value'] as $store): ?>
+                                    <option value="<?= /* @noEscape */ $store['value'] ?>">
+                                        <?= /* @noEscape */ $store['label'] ?></option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </select>
+                    <i class="fa fa-trash" aria-hidden="true" data-role="template-delete-row"></i>
+                    <textarea id="template_content-<%- data.id %>"
+                              name="template[contents][<%- data.id %>][content]"
+                              title="<?= /* @noEscape */ __('Message') ?>"
+                              rows="2"
+                              cols="15"
+                              class="textarea admin__control-textarea required-entry _required"
+                              spellcheck="false"></textarea>
+                </div>
+            </script>
+        </fieldset>
+        <div class="field-buttons">
+            <div class="mp-store-buttons">
+                <button id="mp-template-addStore"
+                        title="<?= /* @noEscape */ __('Add For Store') ?>"
+                        type="button"
+                        class="action-default action-secondary"
+                        data-role="template-add-row">
+                    <span><?= /* @noEscape */ __('Add For Store') ?></span>
+                </button>
+            </div>
+            <div class="mp-action-buttons">
+                <button id="mp-template-save" title="<?= /* @noEscape */ __('Save') ?>" type="button"
+                        class="action-default action-primary"
+                        data-role="template-save">
+                    <span><?= /* @noEscape */ __('Save') ?></span>
+                </button>
+                <button id="mp-template-cancel" title="<?= /* @noEscape */ __('Cancel') ?>" type="button"
+                        class="action-default action-secondary"
+                        data-role="template-index">
+                    <span><?= /* @noEscape */ __('Cancel') ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

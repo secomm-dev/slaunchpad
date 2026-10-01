@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!--Grid collection-->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="mageplaza_rma_status_listing_data_source" xsi:type="string">Mageplaza\RMA\Model\ResourceModel\Status\Grid\Collection</item>
+                <item name="mageplaza_rma_rule_listing_data_source" xsi:type="string">Mageplaza\RMA\Model\ResourceModel\Rule\Grid\Collection</item>
+                <item name="mageplaza_rma_request_listing_data_source" xsi:type="string">Mageplaza\RMA\Model\ResourceModel\Request\Grid\Collection</item>
+                <item name="mageplaza_rma_shipping_label_listing_data_source" xsi:type="string">Mageplaza\RMA\Model\ResourceModel\ShippingLabel\Grid\Collection</item>
+                <item name="mageplaza_rma_order_view_request_grid_data_source" xsi:type="string">Mageplaza\RMA\Model\ResourceModel\Request\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Mageplaza\RMA\Model\ResourceModel\Status\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mageplaza_rma_status</argument>
+            <argument name="resourceModel" xsi:type="string">Mageplaza\RMA\Model\ResourceModel\Status</argument>
+        </arguments>
+    </virtualType>
+    <preference for="Magento\Framework\Mail\Template\TransportBuilder" type="Mageplaza\RMA\Mail\Template\TransportBuilder" />
+    <preference for="Magento\Framework\Mail\Message" type="Mageplaza\RMA\Mail\Message"/>
+
+    <preference for="Mageplaza\RMA\Api\Data\RuleInterface" type="Mageplaza\RMA\Model\Rule"/>
+    <preference for="Mageplaza\RMA\Api\Data\ReasonInterface" type="Mageplaza\RMA\Model\Rule"/>
+    <preference for="Mageplaza\RMA\Api\Data\SolutionInterface" type="Mageplaza\RMA\Model\Rule"/>
+    <preference for="Mageplaza\RMA\Api\Data\ItemAdditionalFieldInterface" type="Mageplaza\RMA\Model\Rule"/>
+    <preference for="Mageplaza\RMA\Api\SearchResult\RuleSearchResultInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Mageplaza\RMA\Api\RuleManagementInterface" type="Mageplaza\RMA\Model\Api\RuleManagement"/>
+
+    <preference for="Mageplaza\RMA\Api\Data\ShippingLabelInterface" type="Mageplaza\RMA\Model\ShippingLabel"/>
+    <preference for="Mageplaza\RMA\Api\Data\ShippingStoreLabelsInterface" type="Mageplaza\RMA\Model\ShippingLabel"/>
+    <preference for="Mageplaza\RMA\Api\SearchResult\ShippingLabelSearchResultInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Mageplaza\RMA\Api\ShippingLabelManagementInterface" type="Mageplaza\RMA\Model\Api\ShippingLabelManagement"/>
+
+    <preference for="Mageplaza\RMA\Api\Data\StatusInterface" type="Mageplaza\RMA\Model\Status"/>
+    <preference for="Mageplaza\RMA\Api\Data\StatusStoreLabelInterface" type="Mageplaza\RMA\Model\Status"/>
+    <preference for="Mageplaza\RMA\Api\Data\StatusStoreCommentInterface" type="Mageplaza\RMA\Model\Status"/>
+    <preference for="Mageplaza\RMA\Api\SearchResult\StatusSearchResultInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Mageplaza\RMA\Api\StatusManagementInterface" type="Mageplaza\RMA\Model\Api\StatusManagement"/>
+
+    <preference for="Mageplaza\RMA\Api\Data\RequestInterface" type="Mageplaza\RMA\Model\Request"/>
+    <preference for="Mageplaza\RMA\Api\Data\GuestDataInterface" type="Mageplaza\RMA\Model\Request"/>
+    <preference for="Mageplaza\RMA\Api\Data\RequestItemInterface" type="Mageplaza\RMA\Model\Request\Item"/>
+    <preference for="Mageplaza\RMA\Api\Data\ItemAdditionalFieldInterface" type="Mageplaza\RMA\Model\Request\Item"/>
+    <preference for="Mageplaza\RMA\Api\Data\RequestReplyInterface" type="Mageplaza\RMA\Model\Request\Reply"/>
+    <preference for="Mageplaza\RMA\Api\Data\RequestShippingLabelInterface" type="Mageplaza\RMA\Model\Request"/>
+    <preference for="Mageplaza\RMA\Api\SearchResult\RequestSearchResultInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Mageplaza\RMA\Api\RequestManagementInterface" type="Mageplaza\RMA\Model\Api\RequestManagement"/>
+
+    <preference for="Mageplaza\RMA\Api\InformationManagementInterface" type="Mageplaza\RMA\Model\Api\InformationManagement"/>
+</config>

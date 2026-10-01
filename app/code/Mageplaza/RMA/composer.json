@@ -1,0 +1,27 @@
+{
+  "name": "mageplaza/module-rma-mkp",
+  "description": "Magento 2 RMA Extension",
+  "require": {
+    "mageplaza/module-core": "^1.5.13",
+    "picqer/php-barcode-generator": "*"
+  },
+  "type": "magento2-module",
+  "version": "4.1.1",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Mageplaza",
+      "email": "support@mageplaza.com",
+      "homepage": "https://www.mageplaza.com",
+      "role": "Technical Support"
+    }
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Mageplaza\\RMA\\": ""
+    }
+  }
+}

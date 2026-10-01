@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="top.links">
+            <block class="Mageplaza\RMA\Block\Link\Request\Top" name="mprma_top_link" ifconfig="mprma/general/enabled">
+                <arguments>
+                    <argument name="label" xsi:type="string" translate="true">RMA Request</argument>
+                    <argument name="path" xsi:type="string">mprma/request/form</argument>
+                </arguments>
+            </block>
+            <block class="Mageplaza\RMA\Block\Link\Policy\Top" name="mprma_policy_top_link" ifconfig="mprma/general/enabled">
+                <arguments>
+                    <argument name="label" xsi:type="string" translate="true">RMA Terms And Conditions</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceBlock name="header.links">
+            <block class="Mageplaza\RMA\Block\Link\Request\Header" name="mprma_header_link" ifconfig="mprma/general/enabled">
+                <arguments>
+                    <argument name="label" xsi:type="string" translate="true">RMA Request</argument>
+                    <argument name="path" xsi:type="string">mprma/request/form</argument>
+                </arguments>
+            </block>
+            <block class="Mageplaza\RMA\Block\Link\Policy\Header" name="mprma_policy_top_link_logged_in" ifconfig="mprma/general/enabled">
+                <arguments>
+                    <argument name="label" xsi:type="string" translate="true">RMA Terms And Conditions</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceBlock name="footer_links">
+            <block class="Mageplaza\RMA\Block\Link\Request\Footer" name="mprma_footer_link" ifconfig="mprma/general/enabled">
+                <arguments>
+                    <argument name="label" xsi:type="string" translate="true">RMA Request</argument>
+                    <argument name="path" xsi:type="string">mprma/request/form</argument>
+                </arguments>
+            </block>
+            <block class="Mageplaza\RMA\Block\Link\Policy\Footer" name="mprma_policy_footer_link" ifconfig="mprma/general/enabled">
+                <arguments>
+                    <argument name="label" xsi:type="string" translate="true">RMA Terms And Conditions</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

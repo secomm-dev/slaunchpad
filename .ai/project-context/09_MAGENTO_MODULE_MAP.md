@@ -41,7 +41,7 @@ composer show --installed | grep -i hyva
 
 ## Mageplaza Commerce Suite (source-committed under `app/code/Mageplaza/`)
 
-> **Third-party — do NOT modify in place.** Extend via plugin/preference only. 16 modules.
+> **Third-party — do NOT modify in place.** Extend via plugin/preference only. 17 modules.
 
 | Module Name | Path | Purpose | Risk | Hyvä Compat? | Notes |
 |-------------|------|---------|------|--------------|-------|
@@ -58,6 +58,7 @@ composer show --installed | grep -i hyva
 | Mageplaza_AbandonedCart | `app/code/Mageplaza/AbandonedCart` | Cart recovery | L | Yes | Cron every minute |
 | Mageplaza_ThankYouPage | `app/code/Mageplaza/ThankYouPage` | Custom thank-you page | L | Yes | — |
 | Mageplaza_BackendReindex | `app/code/Mageplaza/BackendReindex` | Backend reindex helper | L | Yes | — |
+| Mageplaza_RMA | `app/code/Mageplaza/RMA` | RMA/return workflow — request form, status workflow, reasons (admin config per store view), shipping label, conversation; v4.1.1 (`mageplaza/module-rma-mkp`) | M | Yes (builtin) | Hyvä builtin: `hyva_` layout handles + `templates/hyva/` + `web/js/hyva/` (Alpine, no RequireJS); account grid/button auto-switch via `checkHyvaTheme()` (parent theme code contains "hyva" — OK for Secomm/launchpad). DB: `mageplaza_rma_status` + request/reply/rule/shipping-label tables. 20 REST `/V1/mpRMA/*`. NO cron/indexer. Data gaps: status labels seeded English (global, no store scope), vi_VN i18n missing — see 06 risks |
 
 ## Hyvä-Specific Modules
 

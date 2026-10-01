@@ -1,0 +1,197 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+$isNew = true;
+/** @var \Mageplaza\RMA\Block\Adminhtml\Request\Edit\Form\Items $block */
+if ($request = $block->getCurrentRequest()) {
+    /** @var \Mageplaza\RMA\Model\Request $request */
+    $itemCollection = $request->getItemsCollection();
+    $isNew          = false;
+} else {
+    $itemCollection = $block->getOrderedProducts();
+}
+/** @var \Mageplaza\RMA\Helper\Data $helper */
+$helper = $block->helperData;
+/** @var \Magento\Sales\Model\Order $order */
+$order = $block->getOrder();
+/** @var $orderId */
+$orderId = $order->getData('increment_id');
+?>
+
+<table id="mp-request-product-table"
+       data-mage-init='{"mpRMA/items":{"priceFormat" :<?= /* @noEscape */ $helper->getJsonPriceFormat() ?>}}'>
+    <thead>
+    <tr>
+        <?php if ($isNew): ?>
+            <th class="col-select"><?= /* @noEscape */ __('Select') ?></th>
+        <?php endif; ?>
+        <th class="col-name col-text"><?= /* @noEscape */ __('Product Name') ?></th>
+        <th class="col-sku col-text"><?= /* @noEscape */ __('SKU') ?></th>
+        <th class="col-price col-number"><?= /* @noEscape */ __('Price') ?></th>
+        <th class="col-qty col-number"><?= /* @noEscape */ __('Quantity returned') ?></th>
+        <th class="col-amount-return col-number"><?= /* @noEscape */ __('Total amount returned') ?></th>
+        <th class="col-reason"><?= /* @noEscape */ __('Reason') ?></th>
+        <th class="col-solution"><?= /* @noEscape */ __('Solution') ?></th>
+        <th class="col-additional-fields"><?= /* @noEscape */ __('Other Information') ?></th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php
+    if (count($itemCollection)):
+        foreach ($itemCollection as $item):
+            if ($item->getParentItem()) {
+                continue;
+            }
+            /** @var \Magento\Sales\Model\Order\Item|\Mageplaza\RMA\Model\Request\Item $item */ ?>
+            <?php $isShow = !($isNew && $helper->getAvailableQtyToReturn($item) <= 0);
+            if ($isShow): ?>
+                <tr>
+                    <?php if ($isNew): ?>
+                        <td class="col-select">
+                            <input type="hidden"
+                                   name="request[products][<?= /* @noEscape */ $item->getId() ?>][product_id]"
+                                   value="<?= /* @noEscape */ $item->getProductId() ?>"
+                                   disabled>
+                            <input type="hidden"
+                                   name="request[products][<?= /* @noEscape */ $item->getId() ?>][item_id]"
+                                   value="<?= /* @noEscape */ $item->getId() ?>"
+                                   disabled>
+                            <input id="mp-select-P<?= /* @noEscape */ $item->getProductId() ?>"
+                                   type="checkbox"
+                                   class="admin__control-checkbox"
+                                   name="request[products][<?= /* @noEscape */ $item->getId() ?>][selected]"
+                                   value="0"
+                                   data-role="enable-item"
+                                   onchange="this.value = this.checked ? 1: 0;"
+                                <?= $helper->canReturnProduct($item->getProductId(), $order) ? '' : 'disabled' ?>>
+                            <label for="mp-select-P<?= /* @noEscape */ $item->getProductId() ?>"></label>
+                        </td>
+                    <?php endif; ?>
+                    <td class="col-name col-text"><?= $block->escapeHtml($item->getName()) ?>
+                        <input type="hidden"
+                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][name]"
+                               value="<?= /* @noEscape */ $item->getName() ?>"
+                               disabled>
+                        <?php if (!$helper->canReturnProduct($item->getProductId(), $order)): ?>
+                            <span class="mp-return-alert"><?= /* @noEscape */ __('(This product cannot return)') ?></span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="col-sku col-text"><?= $block->escapeHtml($item->getSku()) ?>
+                        <input type="hidden"
+                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][sku]"
+                               value="<?= /* @noEscape */ $item->getSku() ?>"
+                               disabled>
+                    </td>
+                    <td class="col-price col-number">
+                        <?= /* @noEscape */ $helper->renderPriceColByOrder($item->getPrice(), $orderId) ?>
+                        <input type="hidden"
+                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][price]"
+                               value="<?= /* @noEscape */ $item->getPrice() ?>"
+                               disabled>
+                    </td>
+                    <td class="col-qty col-number">
+                        <input type="text"
+                               class="admin__control-text required-entry _required validate-digits validate-greater-than-zero validate-digits-range digits-range-0-<?= $block->escapeHtml($helper->getAvailableQtyToReturn($item)) ?>"
+                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][qty_rma]"
+                               value="<?= $isNew ? /* @noEscape */ $helper->getAvailableQtyToReturn($item)
+                                   : $item->getQtyRma() * 1 ?>"
+                               data-role="change-qty"
+                               disabled>
+                    </td>
+                    <td class="col-amount-return col-number">
+                        <span class="mp-amount-return-text">
+                            <?= $isNew
+                                ? /* @noEscape */ $helper
+                                    ->renderPriceColByOrder($item->getPrice() * $helper->getAvailableQtyToReturn($item), $orderId)
+                                : /* @noEscape */ $helper->renderPriceColByOrder($item->getPriceReturned(), $orderId)
+                            ?>
+                        </span>
+                        <input type="hidden"
+                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][price_returned]"
+                               value="<?= $isNew
+                                   ? /* @noEscape */ number_format($item
+                                           ->getPrice() * $helper->getAvailableQtyToReturn($item), 4)
+                                        : /* @noEscape */ number_format($item->getPriceReturned(), 4) ?>"
+                               disabled>
+                    </td>
+                    <td class="col-reason">
+                        <?php $reasons = $helper->getValidatedReasons($item->getProductId(), $order);
+                        if ($reasons && $isNew): ?>
+                            <select class="admin__control-select"
+                                    name="request[products][<?= /* @noEscape */ $item->getId() ?>][reason]"
+                                    disabled>
+                                <?php foreach ($reasons as $reason): ?>
+                                    <option value="<?= $block->escapeHtml($reason['value']) ?>">
+                                        <?= $block->escapeHtml($reason['label']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        <?php elseif (!$isNew && $item->getReason()): ?>
+                            <select class="admin__control-select" disabled>
+                                <option value=""><?= $block->escapeHtml($item->getReason()) ?></option>
+                            </select>
+                        <?php else: ?>
+                            <?= /* @noEscape */ __('There are no reasons.') ?>
+                        <?php endif; ?>
+                    </td>
+                    <td class="col-solution">
+                        <?php $solutions = $helper->getValidatedSolutions($item->getProductId(), $order);
+                        if ($solutions && $isNew): ?>
+                            <select class="admin__control-select"
+                                    name="request[products][<?= /* @noEscape */ $item->getId() ?>][solution]"
+                                    disabled>
+                                <?php foreach ($solutions as $solution): ?>
+                                    <option value="<?= $block->escapeHtml($solution['value']) ?>">
+                                        <?= $block->escapeHtml($solution['label']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        <?php elseif (!$isNew && $item->getSolution()): ?>
+                            <select class="admin__control-select" disabled>
+                                <option value=""><?= $block->escapeHtml($item->getSolution()) ?></option>
+                            </select>
+                        <?php else: ?>
+                            <?= /* @noEscape */ __('There are no solutions.') ?>
+                        <?php endif; ?>
+                    </td>
+                    <td class="col-additional-fields admin__field field">
+                        <?php $fields = $isNew
+                            ? $helper->getValidatedAdditionalFields($item->getProductId(), $order)
+                            : \Mageplaza\RMA\Helper\Data::jsonDecode($item->getAdditionalFields());
+                        if ($fields): ?>
+                            <?php foreach ($fields as $field): ?>
+                                <?= $helper->getValidatedAdditionalFieldHtml($field, $item, $isNew) ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <?= /* @noEscape */ __('There are no additional fields.') ?>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <tr>
+            <td class="col-items-empty" colspan="8">
+                <span><?= /* @noEscape */ __('There are no return items in this request.') ?></span>
+            </td>
+        </tr>
+    <?php endif; ?>
+    </tbody>
+</table>
+<div class="mp-rma-message items-message"></div>

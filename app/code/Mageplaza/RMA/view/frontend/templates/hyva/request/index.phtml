@@ -1,0 +1,465 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Request\Index $block */
+/** @var \Magento\Sales\Model\Order $order */
+$order = $block->getOrder();
+/** @var \Mageplaza\RMA\Helper\Data $helper */
+$helper = $block->_helperData;
+?>
+<?php if (!$order && !$block->getAvailableOrders()): ?>
+    <?= /* @noEscape */ __('There are no order to return.') ?>
+<?php else: ?>
+    <form class="form mp-edit-rma-form" id="mp-edit-rma-form"
+          action="<?= /* @noEscape */ $block->getRequestSaveUrl() ?>"
+          method="post"
+          enctype="multipart/form-data"
+          x-data="{...hyva.formValidation($el), ...initDataOrder($el)}"
+          @submit.prevent="myFormSubmit">
+        <?= $block->getBlockHtml('formkey') ?>
+        <div class="mp-fieldset-container col-mp mp-6 mp-xs-12">
+            <fieldset class="fieldset mp-order-information">
+                <div class="mp-rma-image-loader order-loader">
+                    <div class="loader">
+                        <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                             alt="<?= /* @noEscape */ __('Loading') ?>">
+                    </div>
+                </div>
+                <legend class="legend"><span><?= /* @noEscape */ __('Order Information') ?></span></legend>
+                <br>
+                <div class="field mp-field-order-id required">
+                    <label class="label" for="mp-order-id">
+                        <span><?= /* @noEscape */ __('Order ID') ?></span>
+                    </label>
+                    <div class="control">
+                        <select name="order[order_id]" id="mp-order-id"
+                                class="select required-entry w-full"
+                                data-role="load-order"
+                            <?= $order ? 'disabled' : '' ?>>
+                            <?php if ($block->isCustomerRequest()): ?>
+                                <?php foreach ($block->getAvailableOrders() as $rmaOrder): ?>
+                                    <option value="<?= /* @noEscape */ $rmaOrder['value'] ?>"
+                                        <?= ($order && $rmaOrder['value'] === $order->getId()) ? 'selected' : '' ?>>
+                                        <?= /* @noEscape */ $rmaOrder['label'] ?></option>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <option value="<?= /* @noEscape */ $order->getId() ?>" selected>
+                                    <?= /* @noEscape */ '#'.$order->getIncrementId() ?></option>
+                            <?php endif; ?>
+
+                        </select>
+                        <input type="hidden" name="request[order_id]" value="">
+                        <input type="hidden" name="request[customer_email]" value="">
+                        <input type="hidden" name="request[store_id]" value="">
+                        <input type="hidden" name="request[order_increment_id]" value="">
+                    </div>
+                </div>
+                <div class="field mp-field-bill-lastname required">
+                    <label class="label" for="mp-field-bill-lastname">
+                        <span><?= /* @noEscape */ __('Billing Last Name') ?></span>
+                    </label>
+                    <div class="control">
+                        <input type="text" id="mp-field-bill-lastname"
+                               name="order[bill_lastname]"
+                               value=""
+                               title="<?= /* @noEscape */ __('Billing Last Name') ?>"
+                               class="input-text required-entry w-full"
+                               data-validate='{"required": true}'
+                               aria-required="true"
+                               disabled>
+                    </div>
+                </div>
+                <?php if ($order): ?>
+                    <div class="field mp-field-type required">
+                        <label class="label" for="mp-field-type">
+                            <span><?= /* @noEscape */ __('Find Order By') ?></span>
+                        </label>
+                        <div class="control">
+                            <select name="order[type]" id="mp-field-type"
+                                    class="select required-entry w-full"
+                                    disabled>
+                                <?php foreach ($block->getFindOrderTypes() as $type):
+                                    /** @var array $type */ ?>
+                                    <option value="<?= /* @noEscape */ $type['value'] ?>"
+                                        <?= $order->getFindType() === $type['value'] ? 'selected' : '' ?>>
+                                        <?= $block->escapeHtml($type['label']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <?php if ($order && $order->getFindType() === \Mageplaza\RMA\Model\Config\Source\RMARequest\FindOrder::FIND_BY_ZIP_CODE): ?>
+                    <div class="field mp-field-zip required">
+                        <label class="label" for="mp-field-zip">
+                            <span><?= /* @noEscape */ __('Billing ZIP Code') ?></span>
+                        </label>
+                        <div class="control">
+                            <input type="text" id="mp-field-zip"
+                                   name="order[zip_code]"
+                                   value="<?= /* @noEscape */ $order->getBillingAddress()->getPostcode() ?>"
+                                   title="<?= /* @noEscape */ __('Billing ZIP Code') ?>"
+                                   class="input-text required-entry"
+                                   data-validate='{"required": true}'
+                                   aria-required="true"
+                                   disabled>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="field mp-field-email required">
+                        <label class="label" for="mp-field-email">
+                            <span><?= /* @noEscape */ __('Email') ?></span>
+                        </label>
+                        <div class="control">
+                            <input type="text" id="mp-field-email"
+                                   name="order[email]"
+                                   value=""
+                                   title="<?= /* @noEscape */ __('Email') ?>"
+                                   class="input-text required-entry w-full"
+                                   data-validate='{"required": true}'
+                                   aria-required="true"
+                                   disabled>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </fieldset>
+            <fieldset class="fieldset mp-request-information">
+                <legend class="legend"><span><?= /* @noEscape */ __('Comment') ?></span></legend>
+                <br>
+                <div class="field mp-field-request-comment">
+                    <label class="label" for="mp-request-comment">
+                        <span><?= /* @noEscape */ __('Comment') ?></span>
+                    </label>
+                    <div class="control">
+                    <textarea name="request[comment]"
+                              id="mp-request-comment"
+                              title="<?= /* @noEscape */ __('Comment') ?>"
+                              class="input-text w-full"
+                              cols="5"
+                              rows="3"
+                              aria-required="true"
+                              spellcheck="false"></textarea>
+                    </div>
+                </div>
+                <?php if ($block->isUploadFiles()): ?>
+                    <div class="field mp-field-request-files">
+                        <label class="label" for="file-upload">
+                        <span><?= /* @noEscape */ __('Attach File(s)') ?></span>
+                        </label>
+                        <span class="mp-image-limit-text">
+                            *<?= /* @noEscape */ __('Not larger than %1MB', $helper->getMaxFileSize()) ?>
+                        </span>
+                        <div class="control">
+                            <div id="mp-image-place-holder" class="mp-image mp-image-placeholder">
+                                <div id="mp-request-uploader" class="uploader">
+                                    <div class="file-input-button form-buttons button">
+                                        <span><?= /* @noEscape */ __('Browse Files...') ?></span>
+                                        <input id="file-upload" name="image" multiple="multiple" type="file"
+                                               data-role="upload-files">
+                                    </div>
+                                </div>
+                                <div id="mp-request-image-wrapper" class="request-image-wrapper">
+                                    <i class="fa fa-camera" aria-hidden="true"></i>
+                                </div>
+                                <div class="mp_image_loader">
+                                    <div class="loader">
+                                        <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                                             alt="<?= /* @noEscape */ __('Loading...') ?>">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mp-rma-message files-message" style="display: none">
+                            <div class="messages">
+                                <div class="message message-error error">
+                                    <div class="files-message-content" data-ui-id="magento-framework-view-element-messages-0-message-error">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <?php if ($policyLink = $helper->getPolicyLink(\Mageplaza\RMA\Model\Config\Source\System\Policy\Location::RMA_PAGE)): ?>
+                    <div class="field mp-field-request-term">
+                        <a id="mp-request-term"
+                           class="text-sm text-gray-500 hover:text-primary"
+                           href="<?= /* @noEscape */ $policyLink ?>"
+                           target="_blank"><?= /* @noEscape */ __('By clicking submit you agree to the Terms and Conditions') ?></a>
+                    </div>
+                <?php endif; ?>
+            </fieldset>
+        </div>
+        <div class="mp-fieldset-container">
+            <fieldset class="fieldset mp-items-information">
+                <legend class="legend"><span><?= /* @noEscape */ __('RMA Information') ?></span></legend>
+                <br>
+                <div class="mp-rma-information-container">
+                    <div class="mp-rma-image-loader order-loader">
+                        <div class="loader">
+                            <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                                 alt="<?= /* @noEscape */ __('Loading') ?>">
+                        </div>
+                    </div>
+                    <div class="control"></div>
+                </div>
+            </fieldset>
+            <div class="actions-toolbar" style="clear: unset">
+                <div class="primary">
+                    <a href="<?= /* @noEscape */ $block->getBackToFormUrl() ?>" class="action px-4 text-sm text-gray-500 hover:text-primary">
+                        <span><?= /* @noEscape */ __('Back') ?></span>
+                    </a>
+                </div>
+                <div class="primary">
+                    <button type="submit"
+                            class="action save primary"
+                            data-role="request-submit"
+                            title="<?= /* @noEscape */ __('Submit') ?>"
+                            disabled>
+                        <span class="text-sm"><?= /* @noEscape */ __('Submit') ?></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <script>
+        function initDataOrder(element) {
+            return {
+                options: {
+                    fileMessage: element.querySelector('form#mp-edit-rma-form .mp-rma-message.files-message'),
+                    fileLoader: element.querySelector('form#mp-edit-rma-form .mp-image .loader'),
+                    fileWrapper: element.querySelector('form#mp-edit-rma-form .request-image-wrapper i'),
+                    itemContainer: element.querySelector('form#mp-edit-rma-form .mp-rma-information-container'),
+                    itemLoader: element.querySelector('form#mp-edit-rma-form .mp-rma-image-loader.order-loader'),
+                    orderIdVal: element.querySelector('form#mp-edit-rma-form .mp-field-order-id select[name="order[order_id]"]').value,
+                    requestOrderID: element.querySelector('form#mp-edit-rma-form input[name="request[order_id]"]'),
+                    requestCuzEmail: element.querySelector('form#mp-edit-rma-form input[name="request[customer_email]"]'),
+                    requestStoreId: element.querySelector('form#mp-edit-rma-form input[name="request[store_id]"]'),
+                    requestOrderIncrementID: element.querySelector('form#mp-edit-rma-form input[name="request[order_increment_id]"]'),
+                    orderLastName: element.querySelector('form#mp-edit-rma-form input[name="order[bill_lastname]"]'),
+                    orderEmail: element.querySelector('form#mp-edit-rma-form input[name="order[email]"]'),
+                    uploadUrl: '<?= /* @noEscape */ $block->getUploadUrl() ?>',
+                    loadOrderInfoUrl: '<?= /* @noEscape */ $block->getLoadOrderInformationUrl() ?>'
+                },
+                init: function () {
+                    this._bind();
+                    this._initOrderInformation();
+                },
+                myFormSubmit(event) {
+                    event.preventDefault();
+
+                    hyva.formValidation.addRule('no-only-whitespace', function(value, options, field, context) {
+                        if (value !== "" && value.trim().length === 0) {
+                            return 'This field cannot be only whitespace';
+                        }
+                        return true;
+                    });
+
+                    this.validate()
+                        .then(() => {
+                            let recaptchaResponse = true;
+                            if (document.querySelectorAll('.g-recaptcha').length > 0) {
+                                recaptchaResponse = (typeof grecaptcha !== "undefined" && grecaptcha.getResponse)
+                                    ? grecaptcha.getResponse()
+                                    : true;
+                            }
+
+                            if (!recaptchaResponse) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                event.stopImmediatePropagation();
+                            } else {
+                                event.target.submit();
+                            }
+                        })
+                        .catch((invalid) => {
+                            if (invalid.length > 0) {
+                                invalid[0].focus();
+                            }
+                            event.preventDefault();
+                            event.stopPropagation();
+                            event.stopImmediatePropagation();
+                        });
+                },
+                _bind: function () {
+                    var uploadInput = element.querySelector('input[data-role=upload-files]');
+                    var orderSelect = element.querySelector('select[data-role=load-order]');
+
+                    if (uploadInput) {
+                        uploadInput.addEventListener('change', function (event) {
+                            this._uploadFile(event);
+                        }.bind(this));
+                    }
+
+                    document.addEventListener('click', function(event) {
+                        if (event.target.matches('i[data-role="delete-button"]')) {
+                            this._remove(event);
+                        }
+                    });
+
+
+                    orderSelect.addEventListener('change', function (event) {
+                        this.options.orderIdVal = event.target.value;
+                        this._initOrderInformation();
+                    }.bind(this));
+                },
+                _uploadFile: function (event) {
+                    var el = this,
+                        formData = new FormData(),
+                        files = event.target.files;
+
+                    Array.from(files).forEach(function (file) {
+                        var d = new Date(),
+                            fileId = d.getTime() + '_' + d.getMilliseconds();
+
+                        el.options.fileLoader.style.display = 'block';
+                        el.options.fileWrapper.style.display = 'none';
+
+                        if (formData) {
+                            formData.delete('file');
+                            formData.delete('position');
+                            formData.delete('file_id');
+                            formData.append('file', file);
+                            const prevElement = document.querySelector('#mp-image-place-holder')?.previousElementSibling;
+                            const positionInput = prevElement?.querySelector('input.position');
+
+                            formData.append('position', positionInput ? positionInput.value : '');
+
+                            formData.append('file_id', fileId);
+                            fetch(el.options.uploadUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: formData
+                            })
+                                .then(function (response) {
+                                    return response.json();
+                                })
+                                .then(function (response) {
+                                    el.options.fileLoader.style.display = 'none';
+                                    el.options.fileWrapper.style.display = 'block';
+                                    if (response.status) {
+                                        var placeholder = document.querySelector('#mp-image-place-holder');
+                                        placeholder.insertAdjacentHTML('beforebegin', response.request_files);
+                                        hyva.activateScripts(placeholder);
+
+                                        let removeSelection = placeholder.previousElementSibling.querySelectorAll(".actions i")
+
+                                        removeSelection.forEach(function (element) {
+                                            element.addEventListener('click', function () {
+                                                let fileContainer = element.parentElement.parentElement.parentElement;
+                                                if (fileContainer) {
+                                                    fileContainer.remove();
+                                                }
+                                            });
+                                        });
+                                    } else {
+                                        el.options.fileMessage.querySelector('.files-message-content div').textContent = response.errorSize;
+                                        el.options.fileMessage.style.display = 'block';
+                                    }
+                                })
+                                .catch(function () {
+                                    console.log('Error')
+                                });
+                        }
+                    });
+                    event.target.value = '';
+                },
+                _initOrderInformation: function () {
+                    var el = this;
+                    el.options.itemLoader.style.display = 'block';
+                    const formData = new FormData();
+                    formData.set('order_id', el.options.orderIdVal);
+                    fetch(this.options.loadOrderInfoUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                        .then(function (response) {
+                            return response.json();
+                        })
+                        .then(function (response) {
+                            var itemList = el.options.itemContainer.querySelector('div.control');
+
+                            if (response.status) {
+                                el.options.requestOrderID.value = el.options.orderIdVal;
+                                el.options.requestCuzEmail.value = response.customer_email;
+                                el.options.requestStoreId.value = response.store_id;
+                                el.options.orderLastName.value = response.billing_lastname;
+                                el.options.orderEmail.value = response.customer_email;
+                                el.options.requestOrderIncrementID.value = response.order_increment_id;
+
+                                itemList.innerHTML = response.request_products;
+                                hyva.activateScripts(itemList);
+
+                                var event = new Event('contentUpdated');
+                                itemList.dispatchEvent(event);
+                            } else {
+                                itemList.innerHTML = response.error_message;
+                            }
+                        })
+                        .catch(function (error) {
+                            console.error('Error:', error);
+                        })
+                        .finally(function () {
+                            el.options.itemLoader.style.display = 'none';
+                        });
+                }
+            }
+        }
+    </script>
+
+<?php endif; ?>
+<style>
+    .mp-items-info .col-select input:disabled {
+        border-color: rgba(118, 118, 118, 0.3);
+    }
+    .g-recaptcha {
+        float: left;
+    }
+    .g-recaptcha-error {
+        right: 20.5%;
+        top: 100px;
+        position: relative;
+    }
+    .action.primary[disabled] {
+        opacity: 0.5;
+        cursor: default;
+        pointer-events: none;
+    }
+
+    form#mp-edit-rma-form table#mp-RMA-return-items .col-additional fieldset div.field {
+        width: 100%;
+    }
+    .field.mp-field-request-files div.control {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    #mp-request-comment {
+        border-color: #c6c6c6;
+    }
+    .mp-items-fields input {
+        border-color: #c6c6c6;
+    }
+</style>
