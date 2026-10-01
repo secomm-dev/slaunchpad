@@ -48,7 +48,7 @@ $currentFlag = $flagByLanguageCode[$languageCode] ?? null;
 <div
     class="relative"
     x-data="initLaunchpadLanguageSwitcher"
-    @click.outside="close"
+    @click.outside="close(false)"
     @keydown.escape.stop="close(true)"
 >
     <button

@@ -52,11 +52,13 @@ $uniqueId = '_' . uniqid();
             openSubmenuId: null,
             branchSelection: {},
             hoverCloseTimer: null,
+            openedViaHover: false,
             canHover() {
                 return window.matchMedia('(hover: hover) and (pointer: fine)').matches
             },
             activateSubmenu(menuNode, { trapFocus = true } = {}) {
                 this.openSubmenuId = menuNode
+                this.openedViaHover = !trapFocus
                 this.branchSelection = { ...this.branchSelection, [menuNode]: { l1: null, l2: null } }
                 if (!trapFocus) return
                 this.$nextTick(() => {
@@ -86,9 +88,15 @@ $uniqueId = '_' . uniqid();
                 if (menuNode !== this.openSubmenuId) this.activateSubmenu(menuNode, { trapFocus: false })
             },
             scheduleSubmenuClose() {
-                if (!this.canHover()) return
+                // Only hover-opened panels close on mouseleave; a panel opened
+                // via click/keyboard stays until Escape, outside click or the
+                // trigger toggle (Menu C disclosure semantics).
+                if (!this.canHover() || !this.openedViaHover) return
                 this.clearCloseTimer()
                 this.hoverCloseTimer = setTimeout(() => {
+                    const panel = this.openSubmenuId ? this.$refs['submenu-' + this.openSubmenuId] : null
+                    // keyboard focus inside the panel outranks the mouse leaving
+                    if (panel && panel.contains(document.activeElement)) return
                     this.openSubmenuId = null
                     hyva.releaseFocus()
                 }, 300)
