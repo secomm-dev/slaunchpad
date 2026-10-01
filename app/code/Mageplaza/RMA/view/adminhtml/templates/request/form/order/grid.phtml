@@ -1,0 +1,324 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Magento\Backend\Block\Widget\Grid\Extended $block */
+$numColumns = count($block->getColumns());
+?>
+
+<?php if ($block->getCollection()): ?>
+    <?php if ($block->canDisplayContainer()): ?>
+        <div id="<?= $block->escapeHtml($block->getId()) ?>" data-grid-id="<?= $block->escapeHtml($block->getId()) ?>">
+    <?php else: ?>
+        <?= $block->getLayout()->getMessagesBlock()->getGroupedHtml() ?>
+    <?php endif; ?>
+        <?php $massActionAvailable = $block->getMassactionBlock() && $block->getMassactionBlock()->isAvailable() ?>
+        <?php if ($massActionAvailable
+            || $block->getPagerVisibility()
+            || $block->getExportTypes()
+            || $block->getFilterVisibility()): ?>
+            <div class="admin__data-grid-header admin__data-grid-toolbar">
+                <div class="admin__data-grid-header-row">
+                    <?php if ($massActionAvailable): ?>
+                        <?= $block->getMainButtonsHtml()
+                            ? '<div class="admin__filter-actions">' . $block->getMainButtonsHtml() . '</div>' : '' ?>
+                    <?php endif; ?>
+                    <?php if ($block->getExportTypes()): ?>
+                        <div class="admin__data-grid-export">
+                            <label class="admin__control-support-text"
+                                   for="<?= $block->escapeHtml($block->getId()) ?>_export">
+                                <?= /* @noEscape */
+                                __('Export to:') ?></label>
+                            <select name="<?= $block->escapeHtml($block->getId()) ?>_export"
+                                    id="<?= $block->escapeHtml($block->getId()) ?>_export"
+                                    class="admin__control-select">
+                                <?php foreach ($block->getExportTypes() as $_type): ?>
+                                    <option value="<?= /* @noEscape */ $_type->getUrl() ?>">
+                                        <?= /* @noEscape */ $_type->getLabel() ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?= $block->getExportButtonHtml() ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="admin__data-grid-header-row <?= $massActionAvailable ? '_massaction' : '' ?>">
+                    <?php if ($massActionAvailable): ?>
+                        <?= $block->getMassactionBlockHtml() ?>
+                    <?php else: ?>
+                        <?= $block->getMainButtonsHtml()
+                            ? '<div class="admin__filter-actions">' . $block->getMainButtonsHtml() . '</div>' : '' ?>
+                    <?php endif; ?>
+                    <?php $countRecords = $block->getCollection()->getSize(); ?>
+                    <div class="admin__control-support-text">
+                        <span id="<?= $block->escapeHtml($block->getHtmlId()) ?>-total-count" <?= /* @noEscape */
+                        $block->getUiId('total-count') ?>><?= /* @noEscape */
+                            $countRecords ?></span>
+                        <?= /* @noEscape */
+                        __('records found') ?>
+                        <span id="<?= $block->escapeHtml($block->getHtmlId()) ?>_massaction-count"
+                              class="mass-select-info _empty">
+                            <strong data-role="counter">0</strong><span><?= /* @noEscape */
+                                __('selected') ?></span></span>
+                    </div>
+                    <?php if ($block->getPagerVisibility()): ?>
+                        <div class="admin__data-grid-pager-wrap">
+                            <select name="<?= /* @noEscape */ $block->getVarNameLimit() ?>"
+                                    id="<?= $block->escapeHtml($block->getHtmlId()) ?>_page-limit"
+                                    onchange="<?= /* @noEscape */
+                                    $block->getJsObjectName() ?>.loadByElement(this)"
+                                    class="admin__control-select">
+                                <?php $pageSize = $block->getCollection()->getPageSize(); ?>
+                                <option value="20"<?= ($pageSize === 20) ? ' selected="selected"' : '' ?>>20</option>
+                                <option value="30"<?= ($pageSize === 30) ? ' selected="selected"' : '' ?>>30</option>
+                                <option value="50"<?= ($pageSize === 50) ? ' selected="selected"' : '' ?>>50</option>
+                                <option value="100"<?= ($pageSize === 100) ? ' selected="selected"' : '' ?>>100</option>
+                                <option value="200"<?= ($pageSize === 200) ? ' selected="selected"' : '' ?>>200</option>
+                            </select>
+                            <label for="<?= $block->escapeHtml($block->getHtmlId()) ?><?= $block->escapeHtml($block->getHtmlId()) ?>_page-limit"
+                                   class="admin__control-support-text"><?= /* @noEscape */ __('per page') ?></label>
+                            <div class="admin__data-grid-pager">
+                                <?php $_curPage = $block->getCollection()->getCurPage() ?>
+                                <?php $_lastPage = $block->getCollection()->getLastPageNumber() ?>
+                                <?php if ($_curPage > 1): ?>
+                                    <button class="action-previous"
+                                            type="button"
+                                            onclick="<?= /* @noEscape */
+                                            $block->getJsObjectName() ?>.setPage('<?= /* @noEscape */
+                                            ($_curPage - 1) ?>');return false;">
+                                        <span><?= /* @noEscape */
+                                            __('Previous page') ?></span>
+                                    </button>
+                                <?php else: ?>
+                                    <button type="button" class="action-previous disabled">
+                                        <span><?= /* @noEscape */
+                                            __('Previous page') ?></span></button>
+                                <?php endif; ?>
+                                <input type="text"
+                                       id="<?= $block->escapeHtml($block->getHtmlId()) ?>_page-current"
+                                       name="<?= /* @noEscape */ $block->getVarNamePage() ?>"
+                                       value="<?= /* @noEscape */ $_curPage ?>"
+                                       class="admin__control-text"
+                                       onkeypress="<?= /* @noEscape */
+                                        $block->getJsObjectName() ?>.inputPage(event, '<?= /* @noEscape */
+                                       $_lastPage ?>')" <?= /* @noEscape */
+                                $block->getUiId('current-page') ?> />
+                                <label class="admin__control-support-text"
+                                       for="<?= $block->escapeHtml($block->getHtmlId()) ?>_page-current">
+                                    <?= /* @noEscape */
+                                    __('of %1', '<span>' . $block->getCollection()->getLastPageNumber() . '</span>') ?>
+                                </label>
+                                <?php if ($_curPage < $_lastPage): ?>
+                                    <button type="button"
+                                            title="<?= /* @noEscape */
+                                            __('Next page') ?>"
+                                            class="action-next"
+                                            onclick="<?= /* @noEscape */
+                                            $block->getJsObjectName() ?>.setPage('<?= /* @noEscape */
+                                            ($_curPage + 1) ?>');return false;">
+                                        <span><?= /* @noEscape */
+                                            __('Next page') ?></span>
+                                    </button>
+                                <?php else: ?>
+                                    <button type="button" class="action-next disabled">
+                                        <span><?= /* @noEscape */
+                                            __('Next page') ?></span></button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endif ?>
+                </div>
+            </div>
+        <?php endif; ?>
+        <div class="admin__data-grid-wrap admin__data-grid-wrap-static" data-mage-init='{"mpRMA/grid":{}}'>
+            <table class="data-grid" id="<?= $block->escapeHtml($block->getId()) ?>_table">
+                <thead>
+                <?php if ($block->getHeadersVisibility()): ?>
+                    <tr>
+                        <?php foreach ($block->getColumns() as $_column): ?>
+                            <?php if ($_column->getHeaderHtml() === '&nbsp;'): ?>
+                                <th class="data-grid-th" data-column="<?= /* @noEscape */
+                                $_column->getId() ?>"
+                                    <?= $_column->getHeaderHtmlProperty() ?>>&nbsp;
+                                </th>
+                            <?php else: ?>
+                                <?= $_column->getHeaderHtml() ?>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endif; ?>
+                <?php if ($block->getFilterVisibility()): ?>
+                    <tr class="data-grid-filters" data-role="filter-form">
+                        <?php $i = 0;
+                        foreach ($block->getColumns() as $_column): ?>
+                            <td data-column="<?= /* @noEscape */
+                            $_column->getId() ?>" <?= $_column->getHeaderHtmlProperty() ?>>
+                                <?= $_column->getFilterHtml() ?>
+                            </td>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endif ?>
+                </thead>
+                <?php if ($block->getCountTotals()): ?>
+                    <tfoot>
+                    <tr class="totals">
+                        <?php foreach ($block->getColumns() as $_column): ?>
+                            <th class="<?= /* @noEscape */
+                            $_column->getCssProperty() ?>">
+                                <?= /* @noEscape */
+                                $_column->hasTotalsLabel()
+                                    ? $_column->getTotalsLabel()
+                                    : $_column->getRowField($_column->getGrid()->getTotals()) ?>
+                            </th>
+                        <?php endforeach; ?>
+                    </tr>
+                    </tfoot>
+                <?php endif; ?>
+                <tbody>
+                <?php if ((!$block->getIsCollapsed()) && ($block->getCollection()->getSize() > 0)): ?>
+                    <?php foreach ($block->getCollection() as $_index => $_item): ?>
+                        <tr title="<?= /* @noEscape */
+                        $block->getRowUrl($_item) ?>"<?php if ($_class = $block->getRowClass($_item)): ?>
+                            class="<?= /* @noEscape */ $_class ?>"<?php
+                        endif; ?>><?php
+                            $i = 0;
+foreach ($block->getColumns() as $_column):
+    if ($block->shouldRenderCell($_item, $_column)):
+        $_rowspan = $block->getRowspan($_item, $_column);
+        ?>
+                                <td <?= ($_rowspan ? /* @noEscape */
+                                'rowspan="' . $_rowspan . '" ' : '') ?>
+                                        class="<?= /* @noEscape */
+                                        $_column->getCssProperty() ?>
+                                        <?= /* @noEscape */
+                                        $_column->getId() === 'massaction' ? 'data-grid-checkbox-cell' : '' ?>">
+                                    <?= (($_html = $_column->getRowField($_item)) !== ''
+                                    ? /* @noEscape */
+                                    $_html : '&nbsp;') ?>
+                                    </td><?php
+                                    if ($block->shouldRenderEmptyCell($_item, $_column)):
+                                        ?>
+                                        <td colspan="<?= /* @noEscape */
+                                        $block->getEmptyCellColspan($_item) ?>" class="last"><?= /* @noEscape */
+                                    $block->getEmptyCellLabel() ?></td><?php
+                                    endif;
+    endif;
+endforeach; ?>
+                        </tr>
+                        <?php if ($_multipleRows = $block->getMultipleRows($_item)): ?>
+                            <?php foreach ($_multipleRows as $_i): ?>
+                                <tr>
+                                    <?php $i = 0;
+                                    foreach ($block->getMultipleRowColumns($_i) as $_column): ?>
+                                        <td class="<?= /* @noEscape */
+                                        $_column->getCssProperty() ?>
+                                        <?= /* @noEscape */
+                                        $_column->getId() === 'massaction' ? 'data-grid-checkbox-cell' : '' ?>">
+                                            <?= (($_html = $_column->getRowField($_i)) !== ''
+                                                ? /* @noEscape */
+                                                $_html : '&nbsp;') ?>
+                                        </td>
+                                    <?php endforeach; ?>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+
+                        <?php if ($block->shouldRenderSubTotal($_item)): ?>
+                            <tr class="subtotals">
+                                <?php $i = 0;
+                                foreach ($block->getSubTotalColumns() as $_column): ?>
+                                    <td class="<?= /* @noEscape */
+                                    $_column->getCssProperty() ?>
+                                           <?= /* @noEscape */
+                                            $_column->getId() === 'massaction' ? 'data-grid-checkbox-cell' : '' ?>">
+                                        <?= /* @noEscape */
+                                        ($_column->hasSubtotalsLabel() ? $_column->getSubtotalsLabel() :
+                                            $_column->getRowField($block->getSubTotalItem($_item))
+                                        );
+                                        ?>
+                                    </td>
+                                <?php endforeach; ?>
+                            </tr>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                <?php elseif ($block->getEmptyText()): ?>
+                    <tr class="data-grid-tr-no-data">
+                        <td class="<?= /* @noEscape */
+                        $block->getEmptyTextClass() ?>"
+                            colspan="<?= /* @noEscape */
+                            $numColumns ?>"><?= /* @noEscape */
+                            $block->getEmptyText() ?></td>
+                    </tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
+
+        </div>
+        <?php if ($block->canDisplayContainer()): ?>
+    </div>
+    <script>
+        var deps = [];
+            <?php if ($block->getDependencyJsObject()): ?>
+        deps.push('uiRegistry');
+            <?php endif; ?>
+            <?php if (strpos($block->getRowClickCallback(), 'order.') !== false): ?>
+        deps.push('Magento_Sales/order/create/form');
+            <?php endif; ?>
+        deps.push('mage/adminhtml/grid');
+            <?php if (is_array($block->getRequireJsDependencies())): ?>
+                <?php foreach ($block->getRequireJsDependencies() as $dependency): ?>
+        deps.push('<?= /* @noEscape */ $dependency ?>');
+                <?php endforeach; ?>
+            <?php endif; ?>
+        require(deps, function (<?= ($block->getDependencyJsObject() ? 'registry' : '') ?>) {
+            <?php //TODO: getJsObjectName and getRowClickCallback has unexpected behavior. Should be removed ?>
+            //<![CDATA[
+            <?php if ($block->getDependencyJsObject()): ?>
+            registry.get('<?= /* @noEscape */ $block->getDependencyJsObject() ?>', function (<?= /* @noEscape */ $block->getDependencyJsObject() ?>) {
+            <?php endif; ?>
+                <?= /* @noEscape */ $block->getJsObjectName() ?> = new varienGrid(<?= /* @noEscape */ \Mageplaza\RMA\Helper\Data::jsonEncode($block->getId()) ?>, '<?= /* @noEscape */ $block->getGridUrl() ?>', '<?= /* @noEscape */ $block->getVarNamePage() ?>', '<?= /* @noEscape */ $block->getVarNameSort() ?>', '<?= /* @noEscape */ $block->getVarNameDir() ?>', '<?= /* @noEscape */ $block->getVarNameFilter() ?>');
+                <?= /* @noEscape */ $block->getJsObjectName() ?>.
+                useAjax = '<?= /* @noEscape */ $block->getUseAjax() ?>';
+                <?php if ($block->getRowClickCallback()): ?>
+                    <?= /* @noEscape */ $block->getJsObjectName() ?>.
+                rowClickCallback = <?= /* @noEscape */ $block->getRowClickCallback() ?>;
+                <?php endif; ?>
+                <?php if ($block->getCheckboxCheckCallback()): ?>
+                    <?= /* @noEscape */ $block->getJsObjectName() ?>.
+                checkboxCheckCallback = <?= /* @noEscape */ $block->getCheckboxCheckCallback() ?>;
+                <?php endif; ?>
+                <?php if ($block->getRowInitCallback()): ?>
+                    <?= /* @noEscape */ $block->getJsObjectName() ?>.
+                initRowCallback = <?= /* @noEscape */ $block->getRowInitCallback() ?>;
+                    <?= /* @noEscape */ $block->getJsObjectName() ?>.
+                initGridRows();
+                <?php endif; ?>
+                <?php if ($block->getMassactionBlock() && $block->getMassactionBlock()->isAvailable()): ?>
+                    <?= /* @noEscape */ $block->getMassactionBlock()->getJavaScript() ?>
+                <?php endif ?>
+                <?= /* @noEscape */ $block->getAdditionalJavaScript() ?>
+
+                <?php if ($block->getDependencyJsObject()): ?>
+            });
+                <?php endif; ?>
+            //]]>
+        });
+    </script>
+        <?php endif; ?>
+<?php endif ?>

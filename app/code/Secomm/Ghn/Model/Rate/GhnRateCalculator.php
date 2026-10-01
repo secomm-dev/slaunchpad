@@ -51,21 +51,26 @@ use Secomm\VietNamAddress\Model\Scheme\VnSchemes;
  * fail-closed (rate hidden, never approximated).
  *
  * Current official contract (developer.ghn.vn/en/docs, re-fetched 2026-09-18): Calculate Fee
- * is keyed by `service_type_id` ({2 total <20kg, 5 ≥20kg OR multi-parcel}) + required non-zero
+ * is keyed by `service_type_id` (TASK-WNQCRW FROZEN rule: {2 total <20kg, 5 total ≥20kg} —
+ * total quote weight ONLY, no package/item count) + required non-zero
  * gram `weight`; NO `service_id` anywhere (leadtime docs explicitly mark it no-effect) —
  * Available Services is therefore an OPTIONAL availability probe, deliberately not spent on the
  * checkout critical path (TASK-WAWNDS §27 decision: fee rejection suffices).
  * TASK-WAWNDS: type-5 quotes are RATE-SUPPORTED — the quote-time estimator serializes
  * `items[]` per-unit rows (sandbox-proven: type-5 fee REJECTS a root-weight-only payload and
- * `quantity=2` is NOT equivalent to two rows).
- * TASK-MQ2DRG (2026-09-23, DEC-TASKMQ2DRG-001 — SUPERSEDES the TASK-WAWNDS "no weight
- * pre-rejection at RATE" stance): the fee API still tolerates heavy aggregates (2×35kg = 200;
- * 60kg single = 200 — sandbox facts unchanged), but checkout cannot know the final packing, so
- * quoting a >50kg aggregate would not be an authoritative request. Deterministic weight
- * pre-validation now gates BEFORE the call: a single unit >50kg is a hard carrier rejection
- * (GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED, never fallback-eligible); a >50kg aggregate of
- * individually-valid units is RATE_REQUEST_UNREPRESENTABLE (INTEGRATION_LIMITATION — fallback
- * per RateSourceMode). CREATE-side caps keep their own enforcement (unchanged).
+ * `quantity=2` is NOT equivalent to two rows). Type-2 quotes carry the root aggregate weight
+ * only — payload-safe for multi-item light carts (TASK-WNQCRW).
+ * TASK-FXFMJ0 (2026-09-30, DEC-TASKFXFMJ0-001 — superseded the DEC-TASKMQ2DRG-001 weight
+ * pre-gate at RATE): Calculate Fee supports type 5 with NO documented or provider-enforced
+ * 50kg upper bound (docs re-fetched 2026-09-30 + full sandbox matrix 12/12: single
+ * 50.001kg / 60kg and aggregates 70kg / 120kg all quote 200).
+ * TASK-WNQCRW (2026-10-01, DEC-TASKWNQCRW-001 — revives a TUNABLE eligibility guard, keeping
+ * the FXFMJ0 provider evidence): a per-PACKAGE weight display gate
+ * (carriers/secomm_ghn/max_package_weight_g, default = the CREATE contract 50000g) gates
+ * BEFORE any resolution/provider call — one unit over the limit → UNAVAILABLE
+ * GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED, no fallback. Aggregate weight is never capped; CREATE
+ * physical package caps remain separate and unchanged
+ * (GhnPhysicalParcelInterpreter via GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G).
  *
  * Outcome semantics (E-C1): auth/config/no-route/invalid parcel → UNAVAILABLE (never technical,
  * never fallback-triggering); timeout/5xx/429/malformed → TECHNICAL_FAILURE. Status decides
@@ -130,29 +135,25 @@ class GhnRateCalculator
 
     private function resolveAndQuote(GhnRateQuery $query): CarrierRateOutcomeInterface
     {
-        // TASK-WAWNDS — SANDBOX-verified hard limits (150cm/dimension) gate BEFORE any
+        // TASK-WNDS/FXFMJ0 lineage — shared per-dimension (default 200cm, TASK-ZS2B41) +
+        // per-package weight (default 50000g, TASK-WNQCRW) hard limits gate BEFORE any
         // resolution or provider call on the standalone path too (duplicated with
         // quoteWithHandoff for the v10 contributor path — cheap, pure, idempotent).
         $violation = $query->getEstimate()->findHardLimitViolation();
         if ($violation !== null) {
             [$reason, $packageIndex, $dimension, $value, $limit] = $violation;
+            // TASK-WNQCRW — the tuple may be a WEIGHT violation ('weight', grams) as well as
+            // a dimension one; log keys are kind-aware so existing cm log greps stay stable.
+            $isWeight = $dimension === 'weight';
             $this->logger->call('GHN rate unavailable; package hard limit exceeded', [
                 'reason' => $reason,
                 'package_index' => $packageIndex,
                 'dimension' => $dimension,
-                'value_cm' => $value,
-                'limit_cm' => $limit,
+                $isWeight ? 'value_g' : 'value_cm' => $value,
+                $isWeight ? 'limit_g' : 'limit_cm' => $limit,
             ]);
 
             return $this->unavailable($reason);
-        }
-
-        // TASK-MQ2DRG — deterministic weight pre-validation gates BEFORE any resolution or
-        // provider call on the standalone path too (duplicated with quoteWithHandoff for the
-        // v10 contributor path — cheap, pure, idempotent, same as the dimension gate above).
-        $weightViolation = $query->getEstimate()->findWeightLimitViolation();
-        if ($weightViolation !== null) {
-            return $this->weightLimitOutcome($weightViolation);
         }
 
         $handoff = $this->handoffService->handoffContextForOperation(
@@ -185,28 +186,24 @@ class GhnRateCalculator
      */
     public function quoteWithHandoff(GhnRateQuery $query, CarrierAddressHandoffInterface $handoff): CarrierRateOutcomeInterface
     {
-        // TASK-WAWNDS — SANDBOX-verified hard limits (150cm/dimension) gate BEFORE any
+        // TASK-WNDS/FXFMJ0 lineage — shared per-dimension (default 200cm, TASK-ZS2B41) +
+        // per-package weight (default 50000g, TASK-WNQCRW) hard limits gate BEFORE any
         // resolution or provider call (brief §12).
         $violation = $query->getEstimate()->findHardLimitViolation();
         if ($violation !== null) {
             [$reason, $packageIndex, $dimension, $value, $limit] = $violation;
+            // TASK-WNQCRW — the tuple may be a WEIGHT violation ('weight', grams) as well as
+            // a dimension one; log keys are kind-aware so existing cm log greps stay stable.
+            $isWeight = $dimension === 'weight';
             $this->logger->call('GHN rate unavailable; package hard limit exceeded', [
                 'reason' => $reason,
                 'package_index' => $packageIndex,
                 'dimension' => $dimension,
-                'value_cm' => $value,
-                'limit_cm' => $limit,
+                $isWeight ? 'value_g' : 'value_cm' => $value,
+                $isWeight ? 'limit_g' : 'limit_cm' => $limit,
             ]);
 
             return $this->unavailable($reason);
-        }
-
-        // TASK-MQ2DRG — deterministic weight pre-validation (DEC-TASKMQ2DRG-001): a single
-        // unit >50kg is a hard carrier rejection; a >50kg aggregate of valid units is
-        // RATE_REQUEST_UNREPRESENTABLE (INTEGRATION_LIMITATION upstream). No API call.
-        $weightViolation = $query->getEstimate()->findWeightLimitViolation();
-        if ($weightViolation !== null) {
-            return $this->weightLimitOutcome($weightViolation);
         }
 
         if ($query->getEstimate()->isEmpty() || $query->getEstimate()->getTotalWeightGrams() <= 0.0) {
@@ -316,28 +313,5 @@ class GhnRateCalculator
     private function unavailable(string $reason): CarrierRateOutcomeInterface
     {
         return CarrierRateOutcome::unavailable($reason);
-    }
-
-    /**
-     * TASK-MQ2DRG — single home for the weight-violation → outcome mapping (both calculator
-     * entry points): a HARD unit violation is a real carrier rejection (GHN-owned reason,
-     * never fallback-eligible); an AGGREGATE violation is the shared capability-unsupported
-     * reason (INTEGRATION_LIMITATION upstream — eligibility is ShippingCore-owned, decided by
-     * the execution service per RateSourceMode). Status stays UNAVAILABLE either way.
-     */
-    private function weightLimitOutcome(GhnWeightConstraintViolation $violation): CarrierRateOutcomeInterface
-    {
-        $reason = $violation->getKind() === GhnWeightConstraintViolation::KIND_HARD_UNIT_OVER_WEIGHT
-            ? GhnPackageLimits::REASON_PACKAGE_WEIGHT_LIMIT_EXCEEDED
-            : ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE;
-        $this->logger->call('GHN rate unavailable; weight pre-validation rejected', [
-            'reason' => $reason,
-            'kind' => $violation->getKind(),
-            'package_index' => $violation->getPackageIndex(),
-            'weight_g' => (int) round($violation->getWeightGrams()),
-            'limit_g' => $violation->getLimitGrams(),
-        ]);
-
-        return $this->unavailable($reason);
     }
 }

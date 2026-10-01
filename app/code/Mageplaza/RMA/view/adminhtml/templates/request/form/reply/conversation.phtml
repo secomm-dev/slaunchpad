@@ -1,0 +1,89 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Adminhtml\Request\Edit\Form\Reply $block */
+/** @var \Mageplaza\RMA\Helper\Conversation $helperConversation */
+$helperConversation = $block->helperConversation;
+if ($replies = $block->getReplyCollection()): ?>
+    <?php foreach ($replies as $reply):
+        /** @var \Mageplaza\RMA\Model\Request\Reply $reply */
+        ?>
+        <div id="mp-conversation-box-<?= /* @noEscape */ $reply->getId()  ?>"
+             data-mage-init='{"mpRMA/request":{
+                "downloadFileUrl":"<?= /* @noEscape */ $block->getDownloadFileUrl() ?>"
+             },
+                "mpRMA/replyDelete":{
+                "deleteReplyUrl":"<?= /* @noEscape */ $block->getDeleteReplyUrl() ?>",
+                "loadReplyUrl":"<?= /* @noEscape */ $block->getLoadReplyUrl() ?>"
+             }}'
+             class="mp-conversation-box <?= /* @noEscape */ $helperConversation->getConversationTypeClass((int) $reply->getType()) ?>">
+            <div class="mp-header">
+                <span><b class="mp-author">
+                    <?= /* @noEscape */ $reply->getAuthorName() ?></b>
+                    <?= /* @noEscape */ $helperConversation->getMessageHeader($reply) ?></span>
+                <i class="fa fa-trash delete-reply"
+                   aria-hidden="true"
+                   data-reply-id="<?= /* @noEscape */ $reply->getId() ?>"
+                   data-role="delete-reply"></i>
+            </div>
+            <div class="mp-content">
+                <p><?= /* @noEscape */ $helperConversation->formatReplyContent($reply->getContent()) ?></p>
+            </div>
+            <?php if ($files = $helperConversation->getReplyFiles($reply->getFiles())): ?>
+                <div class="mp-attachments">
+                    <?php foreach ($files as $file): ?>
+                        <div class="mp-file-box file-inspect"
+                             data-file-info='<?= /* @noEscape */ $helperConversation->getReplyFileJson($file, $reply) ?>'
+                             data-role="inspect-file">
+                            <span class="file-info"><?= /* @noEscape */ $file['name'] ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endforeach; ?>
+    <?php if ($block->getIsLoadMore()): ?>
+        <div class="mp-conversation-load-more"
+             data-mage-init='{"mpRMA/replyLoadMore":{
+             "loadReplyUrl":"<?= /* @noEscape */ $block->getLoadReplyUrl() ?>"}}'>
+            <button title="<?= /* @noEscape */ __('Load more') ?>"
+                    class="action load-more"
+                    type="button"
+                    data-role="load-all">
+                <span><?= /* @noEscape */ __('Load more') ?></span>
+            </button>
+        </div>
+    <?php endif; ?>
+<?php endif; ?>
+<style type="text/css">
+    #mp-request-conversation-container .mp-reply:hover {
+        border-color: #dde2e6;
+    }
+
+    #mp-request-conversation-container .mp-note:hover {
+        border-color: #eacdad;
+    }
+
+    #mp-request-conversation-container .mp-conversation-box:hover i.delete-reply {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>

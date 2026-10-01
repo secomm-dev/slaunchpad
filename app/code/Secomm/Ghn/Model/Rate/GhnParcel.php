@@ -18,9 +18,11 @@ use Secomm\Ghn\Model\GhnShipmentConstraints;
  *   - length/width/height in cm are OPTIONAL at RATE time — omitted, never faked 1×1×1
  *     (Create Order requires them; RATE does not).
  *
- * GHN service_type_id is a WEIGHT CLASS, not a speed tier: 2 = total weight under 20 kg,
- * 5 = 20 kg or more / multi-parcel. There is no express/same-day service type in the current
- * contract — semantic service levels must NOT be derived from it.
+ * GHN service_type_id is a WEIGHT CLASS, not a speed tier: 2 = TOTAL weight under 20 kg,
+ * 5 = TOTAL weight 20 kg or more (TASK-WNQCRW frozen RATE rule — no package/item count
+ * input; the docs' "or multi-parcel" is an OR trigger, never implemented). There is no
+ * express/same-day service type in the current contract — semantic service levels must NOT
+ * be derived from it.
  */
 final class GhnParcel
 {

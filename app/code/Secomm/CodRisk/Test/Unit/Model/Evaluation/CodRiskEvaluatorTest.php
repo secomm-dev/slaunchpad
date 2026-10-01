@@ -16,6 +16,7 @@ use Secomm\CodRisk\Api\Data\CodRiskContextInterface;
 use Secomm\CodRisk\Api\Data\CodRiskDecisionInterface;
 use Secomm\CodRisk\Model\CodRiskEvaluation;
 use Secomm\CodRisk\Model\CodRiskEvaluationFactory;
+use Secomm\CodRisk\Model\Config;
 use Secomm\CodRisk\Model\Data\CodRiskContext;
 use Secomm\CodRisk\Model\Evaluation\CodRiskEvaluator;
 use Secomm\CodRisk\Model\Evaluation\RuleCodes;
@@ -23,6 +24,7 @@ use Secomm\CodRisk\Model\Evaluation\RulePool;
 use Secomm\CodRisk\Model\Evaluation\RuleResult;
 use Secomm\CodRisk\Model\Phone\PhoneNormalizer;
 use Secomm\CodRisk\Model\Service\EvaluationLogger;
+use Secomm\CodRisk\Model\Service\EventCounter;
 
 /**
  * CR-003 precedence + CR-008 invalid phone + CR-010 trace behavior.
@@ -31,20 +33,27 @@ class CodRiskEvaluatorTest extends TestCase
 {
     private CodRiskEvaluator $evaluator;
     private MockObject $evaluationFactory;
+    private MockObject $eventCounter;
+    private MockObject $config;
 
     protected function setUp(): void
     {
         $this->evaluationFactory = $this->createMock(CodRiskEvaluationFactory::class);
-        $evaluationLogger = new EvaluationLogger($this->evaluationFactory, new NullLogger());
-        $this->evaluator = new CodRiskEvaluator(
-            new RulePool([]),
-            $evaluationLogger
-        );
+        $this->eventCounter = $this->createMock(EventCounter::class);
+        $this->config = $this->createMock(Config::class);
+        $this->evaluator = $this->makeEvaluator(new RulePool([]));
     }
 
     private function makeEvaluator(RulePool $pool): CodRiskEvaluator
     {
-        return new CodRiskEvaluator($pool, new EvaluationLogger($this->evaluationFactory, new NullLogger()));
+        $evaluationLogger = new EvaluationLogger(
+            $this->evaluationFactory,
+            new NullLogger(),
+            $this->eventCounter,
+            $this->config
+        );
+
+        return new CodRiskEvaluator($pool, $evaluationLogger);
     }
 
     public function testInvalidPhoneYieldsAllowWithoutTrace(): void

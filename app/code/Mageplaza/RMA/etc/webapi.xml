@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <!-- Managing rule -->
+    <route url="/V1/mpRMA/rules" method="GET">
+        <service class="Mageplaza\RMA\Api\RuleManagementInterface" method="getList"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::rule"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/rules/:id" method="DELETE">
+        <service class="Mageplaza\RMA\Api\RuleManagementInterface" method="delete"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::rule"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/rules" method="POST">
+        <service class="Mageplaza\RMA\Api\RuleManagementInterface" method="save"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::rule"/>
+        </resources>
+    </route>
+
+    <!-- Managing shipping label -->
+    <route url="/V1/mpRMA/shipping-labels" method="GET">
+        <service class="Mageplaza\RMA\Api\ShippingLabelManagementInterface" method="getList"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::shipping_label"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/shipping-labels/:id" method="DELETE">
+        <service class="Mageplaza\RMA\Api\ShippingLabelManagementInterface" method="delete"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::shipping_label"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/shipping-labels" method="POST">
+        <service class="Mageplaza\RMA\Api\ShippingLabelManagementInterface" method="save"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::shipping_label"/>
+        </resources>
+    </route>
+
+    <!-- Managing status -->
+    <route url="/V1/mpRMA/status" method="GET">
+        <service class="Mageplaza\RMA\Api\StatusManagementInterface" method="getList"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::status"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/status/:id" method="DELETE">
+        <service class="Mageplaza\RMA\Api\StatusManagementInterface" method="delete"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::status"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/status" method="POST">
+        <service class="Mageplaza\RMA\Api\StatusManagementInterface" method="save"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::status"/>
+        </resources>
+    </route>
+
+    <!-- Managing request -->
+    <route url="/V1/mpRMA/requests" method="GET">
+        <service class="Mageplaza\RMA\Api\RequestManagementInterface" method="getList"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::request"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/requests/:id" method="DELETE">
+        <service class="Mageplaza\RMA\Api\RequestManagementInterface" method="delete"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::request"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/requests" method="POST">
+        <service class="Mageplaza\RMA\Api\RequestManagementInterface" method="save"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::request"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/guest/requests" method="POST">
+        <service class="Mageplaza\RMA\Api\RequestManagementInterface" method="saveGuest"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/mine/requests" method="GET">
+        <service class="Mageplaza\RMA\Api\RequestManagementInterface" method="getMine"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/mpRMA/requests/conversation" method="POST">
+        <service class="Mageplaza\RMA\Api\RequestManagementInterface" method="saveAdminReply"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::request"/>
+        </resources>
+    </route>
+    <route url="/V1/mpRMA/mine/requests/cancel" method="POST">
+        <service class="Mageplaza\RMA\Api\RequestManagementInterface" method="cancel"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/mpRMA/mine/requests/conversation" method="POST">
+        <service class="Mageplaza\RMA\Api\RequestManagementInterface" method="saveCustomerReply"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+        <data>
+            <parameter name="customerId" force="true">%customer_id%</parameter>
+        </data>
+    </route>
+    <route url="/V1/mpRMA/mine/requests" method="POST">
+        <service class="Mageplaza\RMA\Api\RequestManagementInterface" method="saveMine"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+    </route>
+
+    <!-- Managing information -->
+    <route url="/V1/mpRMA/config/rma-information" method="GET">
+        <service class="Mageplaza\RMA\Api\InformationManagementInterface" method="get"/>
+        <resources>
+            <resource ref="Mageplaza_RMA::request"/>
+        </resources>
+    </route>
+</routes>

@@ -1,0 +1,197 @@
+<?php
+/**
+ * TASK-08343C (SLP-246): Launchpad Mobile/Tablet menu drawer.
+ *
+ * Theme-local replacement of the vendor Snowdog mobile menu, wired through
+ * the `topmenu-mobile` block arguments (menu id `hyva-topmenu-desktop` —
+ * the shared managed hierarchy — and template `Snowdog_Menu::menu-mobile.phtml`,
+ * resolved to this file). A-scroll behavior baseline: native <dialog> with the
+ * Hyva x-htmldialog plugin (verified loaded), viewport-height drawer with an
+ * internal scroll area, Escape/backdrop/close-button close and focus
+ * restoration; root -> group uses a single sliding panel; inside a group the
+ * children render as single-open inline accordions per the mobile Figma
+ * states; the branch feature image (managed Snowdog node image) sits below
+ * the content. Settings: Language disclosure with runtime store options
+ * (current store included, selected indicator). My Account is intentionally
+ * not rendered (user decision 2026-09-29); no Currency/socials/demo links.
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\SvgIcons;
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\Menu;
+
+/** @var Menu $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+$menu = $block->getMenu();
+
+if (!$menu) {
+    return '';
+}
+
+$icons = $viewModels->require(SvgIcons::class);
+$uniqueId = '_' . uniqid();
+$rootNodes = $block->getNodes(0);
+?>
+<?php if ($rootNodes): ?>
+    <script>
+        'use strict';
+
+        const initLaunchpadMobileMenu<?= /* @noEscape */ $uniqueId ?> = () => ({
+            open: false,
+            activePanel: null,
+            openGroups: {},
+            init() {
+                // Escape inside an open group panel closes the panel first; the
+                // x-htmldialog plugin (dialog-level bubble listener) must not see
+                // it, otherwise the whole drawer would close. Capture phase runs
+                // before the plugin's listener; without an open panel, Escape
+                // falls through to the plugin and closes the drawer. $refs are
+                // only populated after the component tree renders.
+                this.$nextTick(() => {
+                    this.$refs.drawerDialog?.addEventListener('keydown', (event) => {
+                        if (event.key === 'Escape' && this.activePanel) {
+                            event.stopImmediatePropagation()
+                            event.preventDefault()
+                            this.closePanel(this.activePanel)
+                        }
+                    }, true)
+                })
+            },
+            openMenu() {
+                this.open = true
+            },
+            closeMenu() {
+                this.open = false
+                this.activePanel = null
+                this.openGroups = {}
+            },
+            openPanel(panelId) {
+                this.activePanel = panelId
+                this.openGroups = {}
+                this.$nextTick(() => {
+                    this.$refs['panel-back-' + panelId]?.focus()
+                })
+            },
+            closePanel(panelId) {
+                this.activePanel = null
+                this.openGroups = {}
+                this.$nextTick(() => {
+                    this.$refs['panel-trigger-' + panelId]?.focus()
+                })
+            },
+            toggleGroup(groupId) {
+                const next = {}
+                const wasOpen = !!this.openGroups[groupId]
+                if (!wasOpen) {
+                    next[groupId] = true
+                }
+                this.openGroups = next
+            },
+            onDrawerResize() {
+                if (this.open && window.innerWidth >= 1024) {
+                    this.closeMenu()
+                }
+            },
+        })
+    </script>
+
+    <div
+        class="navigation lg:hidden"
+        x-data="initLaunchpadMobileMenu<?= /* @noEscape */ $uniqueId ?>()"
+        @resize.window.debounce.100="onDrawerResize"
+    >
+        <button
+            x-ref="open-menu-button"
+            type="button"
+            aria-label="<?= $escaper->escapeHtmlAttr(__('Open menu')) ?>"
+            aria-haspopup="dialog"
+            aria-controls="launchpad-mobile-menu<?= /* @noEscape */ $uniqueId ?>"
+            :aria-expanded="open"
+            @click="openMenu"
+        >
+            <?= $icons->renderHtml('outline/menu', '', 24, 24, ['aria-hidden' => 'true']) ?>
+        </button>
+        <dialog
+            id="launchpad-mobile-menu<?= /* @noEscape */ $uniqueId ?>"
+            x-ref="drawerDialog"
+            aria-label="<?= $escaper->escapeHtmlAttr(__('Main menu')) ?>"
+            class="max-h-full h-[100dvh] w-full max-w-none! ms-0! me-0! m-0! rounded-none! p-0 open:flex flex-col bg-white"
+            x-show="open"
+            x-htmldialog.noscroll="closeMenu"
+            x-transition:enter="motion-safe:ease-in-out motion-safe:duration-300"
+            x-transition:enter-start="-translate-x-full"
+            x-transition:enter-end="translate-x-0"
+            x-transition:leave="motion-safe:ease-in-out motion-safe:duration-200"
+            x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="-translate-x-full"
+        >
+            <div class="flex h-full min-h-0 flex-col px-2 pb-16 pt-6 sm:px-8">
+                <div class="flex items-center justify-between pb-2">
+                    <div class="flex w-[160px] items-center">
+                        <?= $block->getChildHtml('launchpad.topmenu.mobile.logo') ?>
+                    </div>
+                    <button
+                        type="button"
+                        class="flex size-11 items-center justify-center rounded-md bg-[var(--ds-primary-brand-100)] text-current"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Close menu')) ?>"
+                        @click="closeMenu"
+                    >
+                        <?= $icons->renderHtml('outline/close', '', 24, 24, ['aria-hidden' => 'true']) ?>
+                    </button>
+                </div>
+                <div class="pb-4 pt-2">
+                    <?= $block->getChildHtml('launchpad.topmenu.mobile.search') ?>
+                </div>
+                <div
+                    class="relative min-h-0 flex-1 overflow-y-auto overflow-x-clip"
+                    :style="activePanel ? {overflow: 'hidden'} : {}"
+                >
+                    <nav aria-label="<?= $escaper->escapeHtmlAttr(__('Main menu')) ?>" :inert="!!activePanel">
+                        <ul class="flex flex-col">
+                            <?php foreach ($rootNodes as $node): ?>
+                                <?php
+                                $children = $block->getNodes((int) $node->getLevel() + 1, $node);
+                                $node->setIsParent((bool) $children);
+                                $nodeId = (string) $node->getNodeId();
+                                $nodeType = (string) $node->getType();
+                                $nodeClasses = $node->getClasses();
+                                ?>
+                                <?php if ($children): ?>
+                                    <li>
+                                        <button
+                                            type="button"
+                                            class="flex w-full min-w-0 items-center justify-between gap-2 border-b border-border py-3 text-left text-label-l font-medium text-ink"
+                                            x-ref="panel-trigger-<?= /* @noEscape */ $nodeId ?>"
+                                            :aria-expanded="activePanel === '<?= /* @noEscape */ $nodeId ?>'"
+                                            aria-haspopup="dialog"
+                                            @click="openPanel('<?= /* @noEscape */ $nodeId ?>')"
+                                        >
+                                            <span class="min-w-0 truncate"><?= $escaper->escapeHtml((string) $node->getTitle()) ?></span>
+                                            <?= $icons->renderHtml('outline/chevron-right', '', 16, 16, ['aria-hidden' => 'true']) ?>
+                                        </button>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="[&>a]:block [&>a]:w-full [&>a]:truncate [&>a]:border-b [&>a]:border-border [&>a]:py-3 [&>a]:text-label-l [&>a]:font-medium [&>a]:text-ink [&>a]:hover:opacity-80 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus <?= /* @noEscape */ (string) $nodeType === 'wrapper' ? $escaper->escapeHtmlAttr((string) $nodeClasses) : '' ?>">
+                                        <?= /** @noEscape */ $block->renderMenuNode($node) ?>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </ul>
+                    </nav>
+                    <div :inert="!!activePanel">
+                        <?= $block->getChildHtml('launchpad.topmenu.mobile.languages') ?>
+                    </div>
+<?php foreach ($rootNodes as $node): ?>
+    <?php $panelChildren = $block->getNodes((int) $node->getLevel() + 1, $node); ?>
+    <?php if ($panelChildren): ?>
+                    <?= /** @noEscape */ $block->renderSubmenu($panelChildren, $node, (int) $node->getLevel() + 1) ?>
+    <?php endif; ?>
+<?php endforeach; ?>
+                </div>
+            </div>
+        </dialog>
+    </div>
+<?php endif; ?>

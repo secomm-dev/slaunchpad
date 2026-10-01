@@ -116,4 +116,15 @@
             </argument>
         </arguments>
     </type>
+
+    <!-- TASK-S52DGA (DEC-TASKS52DGA-001) — GHN opts into the generic offline shipment flow:
+         the admin "Create Offline Shipment" path renders (and posted offline intent is
+         accepted) for orders travelling on this carrier. -->
+    <type name="Secomm\ShippingCore\Model\Shipment\OfflineCapabilityPool">
+        <arguments>
+            <argument name="capabilities" xsi:type="array">
+                <item name="secomm_ghn" xsi:type="object">Secomm\Ghn\Model\Shipment\GhnOfflineCapability</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

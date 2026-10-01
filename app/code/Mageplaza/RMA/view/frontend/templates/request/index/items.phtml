@@ -1,0 +1,280 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Request\Index\Items $block */
+$itemCollection = $block->getOrderedProducts();
+/** @var \Magento\Sales\Model\Order $order */
+$order = $block->getOrder();
+/** @var \Mageplaza\RMA\Helper\Data $helper */
+$helper = $block->_helperData;
+$canReturnAllProducts = $helper->canReturnAllProducts($order);
+?>
+<fieldset class="fieldset mp-items-type" data-mage-init='{"mpRMA/orderItemType":{
+"canReturnAllProducts":"<?= /* @noEscape */ $canReturnAllProducts ?>"}}'>
+    <?php if ($canReturnAllProducts) : ?>
+        <?php if ($block->isReturnEachItem()) : ?>
+            <div class="field mp-field-return-type required">
+                <label class="label" for="mp-RMA-return-type">
+                    <span><?= /* @noEscape */ __('Return') ?></span>
+                </label>
+                <div class="control">
+                    <select name="request[return_type]" id="mp-RMA-return-type"
+                            class="select required-entry" data-role="return-type">
+                        <?php foreach ($block->getReturnTypes() as $type) :
+                            /** @var array $type */ ?>
+                            <option value="<?= /* @noEscape */ $type['value'] ?>">
+                                <?= /* @noEscape */ $type['label'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="field mp-field-items">
+                <div class="control">
+                    <table id="mp-RMA-return-items" data-mage-init='{"mpRMA/items":{}}'>
+                        <thead>
+                        <tr>
+                            <th class="col-select"><?= /* @noEscape */ __('Select') ?></th>
+                            <th class="col-select"><?= /* @noEscape */ __('Thumbnail') ?></th>
+                            <th class="col-name col-text"><?= /* @noEscape */ __('Name') ?></th>
+                            <th class="col-sku col-text"><?= /* @noEscape */ __('SKU') ?></th>
+                            <th class="col-price col-number"><?= /* @noEscape */ __('Price') ?></th>
+                            <th class="col-qty col-number"><?= /* @noEscape */ __('Quantity') ?></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (count($itemCollection)) : ?>
+                            <?php foreach ($itemCollection as $item) :
+                                if ($item->getParentItem()) {
+                                    continue;
+                                }
+                                /** @var \Magento\Sales\Model\Order\Item $item */ ?>
+                                <?php if ($helper->getAvailableQtyToReturn($item) > 0) : ?>
+                                <tr class="mp-items-info">
+                                    <td class="col-select">
+                                        <input type="hidden"
+                                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][product_id]"
+                                               value="<?= /* @noEscape */ $item->getProductId() ?>"
+                                               disabled>
+                                        <input type="hidden"
+                                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][item_id]"
+                                               value="<?= /* @noEscape */ $item->getId() ?>"
+                                               disabled>
+                                        <input id="mp-select-P<?= /* @noEscape */ $item->getProductId() ?>"
+                                               type="checkbox"
+                                               class="admin__control-checkbox"
+                                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][selected]"
+                                               value="0"
+                                               data-role="enable-item"
+                                               data-item-id="<?= /* @noEscape */ $item->getId() ?>"
+                                               onchange="this.value = this.checked ? 1: 0;"
+                                            <?= $helper->canReturnProduct($item
+                                                ->getProductId(), $order) ? '' : 'disabled' ?>>
+                                    </td>
+                                    <td class="col-name col-text">
+                                        <div class="mp-request-item-thumbnail">
+                                            <img class="thumbnail-img"
+                                                 src="<?= /* @noEscape */
+                                                 $helper->getProductImgUrl($item->getProductId()) ?>"
+                                                 alt="<?= /* @noEscape */ $item->getName() ?>">
+                                        </div>
+                                    </td>
+                                    <td class="col-name col-text"><?= $block->escapeHtml($item->getName()) ?>
+                                        <input type="hidden"
+                                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][name]"
+                                               value="<?= /* @noEscape */ $item->getName() ?>"
+                                               disabled>
+                                        <?php if (!$helper->canReturnProduct($item->getProductId(), $order)) : ?>
+                                            <span class="mp-return-alert"><?= /* @noEscape */ __('(This product cannot return)') ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="col-sku col-text"><?= $block->escapeHtml($item->getSku()) ?>
+                                        <input type="hidden"
+                                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][sku]"
+                                               value="<?= /* @noEscape */ $item->getSku() ?>"
+                                               disabled>
+                                    </td>
+                                    <td class="col-price col-number">
+                                        <?= /* @noEscape */ $helper->renderPriceColByOrder($item->getPrice(), $order->getIncrementId()) ?>
+                                        <input type="hidden"
+                                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][price]"
+                                               value="<?= /* @noEscape */ $item->getPrice() ?>"
+                                               disabled>
+                                    </td>
+                                    <td class="col-qty col-number">
+                                        <input type="text"
+                                               class="admin__control-text required-entry _required validate-digits validate-greater-than-zero validate-digits-range digits-range-0-<?= $block->escapeHtml($helper->getAvailableQtyToReturn($item)) ?>"
+                                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][qty_rma]"
+                                               data-role="change-qty"
+                                               value="<?=/* @noEscape */ $helper->getAvailableQtyToReturn($item) ?>"
+                                               disabled>
+                                        <input class="mp-amount-return-value"
+                                               type="hidden"
+                                               name="request[products][<?= /* @noEscape */ $item->getId() ?>][price_returned]"
+                                               value="<?= /* @noEscape */ number_format($item->getPrice() * $helper->getAvailableQtyToReturn($item), 4) ?>"
+                                               disabled>
+                                    </td>
+                                </tr>
+                                <?php
+                                $reasons   = $helper->getValidatedReasons($item->getProductId(), $order);
+                                $solutions = $helper->getValidatedSolutions($item->getProductId(), $order);
+                                $fields    = $helper->getValidatedAdditionalFields($item->getProductId(), $order);
+                                ?>
+                                <?php if ($reasons || $solutions || $fields) : ?>
+                                    <tr id="mp-items-<?= /* @noEscape */ $item->getId() ?>-additional"
+                                        class="mp-additional-contents">
+                                        <td class="col-additional" colspan="6">
+                                            <fieldset class="fieldset mp-items-additional">
+                                                <?php if ($reasons) : ?>
+                                                    <div class="field mp-field-items-reason required">
+                                                        <label class="label"
+                                                               for="mp-items-reason-R<?= /* @noEscape */ $item->getId() ?>">
+                                                            <span><?= /* @noEscape */ __('Reason') ?></span>
+                                                        </label>
+                                                        <div class="control">
+                                                            <select name="request[products][<?= /* @noEscape */ $item->getId() ?>][reason]"
+                                                                    id="mp-items-reason-R<?= /* @noEscape */ $item->getId() ?>"
+                                                                    class="select required-entry"
+                                                                    disabled>
+                                                                <?php foreach ($reasons as $reason) :
+                                                                    /** @var array $reason */ ?>
+                                                                    <option value="<?= /* @noEscape */ $reason['value'] ?>">
+                                                                        <?= /* @noEscape */ $reason['label'] ?>
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <?php if ($solutions) : ?>
+                                                    <div class="field mp-field-items-solution required">
+                                                        <label class="label"
+                                                               for="mp-items-solution-S<?= /* @noEscape */ $item->getId() ?>">
+                                                            <span><?= /* @noEscape */ __('Solution') ?></span>
+                                                        </label>
+                                                        <div class="control">
+                                                            <select name="request[products][<?= /* @noEscape */ $item->getId() ?>][solution]"
+                                                                    id="mp-items-solution-S<?= /* @noEscape */ $item->getId() ?>"
+                                                                    class="select required-entry"
+                                                                    disabled>
+                                                                <?php foreach ($solutions as $solution) :
+                                                                    /** @var array $solution */ ?>
+                                                                    <option value="<?= /* @noEscape */ $solution['value'] ?>">
+                                                                        <?= $block->escapeHtml($solution['label']) ?>
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <?php if ($fields) : ?>
+                                                    <?php foreach ($fields as $field) :
+                                                        $isRequired = $field['is_require'] ? 'required' : ''; ?>
+                                                        <div class="field mp-field-items-field
+                                                            <?= /* @noEscape */ $isRequired ?>">
+                                                            <?= /* @noEscape */ $helper->getValidatedAdditionalFieldHtml($field, $item, true) ?>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            </fieldset>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <?php
+        $reasons = [];
+        $solutions = [];
+        $fields = [];
+
+        foreach ($itemCollection as $item) {
+            if ($reason = $helper->getValidatedReasons($item->getProductId(), $order)) {
+                $reasons += $reason;
+            }
+
+            if ($solution = $helper->getValidatedSolutions($item->getProductId(), $order)) {
+                $solutions += $solution;
+            }
+
+            if ($field = $helper->getValidatedAdditionalFields($item->getProductId(), $order)) {
+                $fields += $field;
+            }
+        }
+        ?>
+
+        <div class="mp-field-all-items">
+            <fieldset class="fieldset mp-items-additional">
+                <input type="hidden" id="mp-all-items-information" name="request[all_products]" value="">
+            <?php if ($reasons) : ?>
+                <div class="field mp-field-items-reason required">
+                    <label class="label" for="mp-all-items-reason">
+                        <span><?= /* @noEscape */ __('Reason') ?></span>
+                    </label>
+                    <div class="control">
+                        <select name="request[all_products][reason]" id="mp-all-items-reason"
+                                class="select required-entry">
+                            <?php foreach ($reasons as $reason) :
+                                /** @var array $reason */ ?>
+                                <option value="<?= /* @noEscape */ $reason['value'] ?>">
+                                    <?= $block->escapeHtml($reason['label']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+            <?php endif; ?>
+            <?php if ($solutions) : ?>
+                <div class="field mp-field-items-solution required">
+                    <label class="label" for="mp-all-items-solution">
+                        <span><?= /* @noEscape */ __('Solution') ?></span>
+                    </label>
+                    <div class="control">
+                        <select name="request[all_products][solution]" id="mp-all-items-solution"
+                                class="select required-entry">
+                            <?php foreach ($solutions as $solution) :
+                                /** @var array $solution */ ?>
+                                <option value="<?= /* @noEscape */ $solution['value'] ?>">
+                                    <?= $block->escapeHtml($solution['label']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+            <?php endif; ?>
+            <?php if ($fields) : ?>
+                <?php foreach ($fields as $field) :
+                    $requiredClass = $field['is_require'] ? 'required' : ''; ?>
+                    <div class="field mp-field-items-fields <?= /* @noEscape */ $requiredClass ?>">
+                        <?= /* @noEscape */ $helper->getAdditionalFieldHtml($field) ?>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            </fieldset>
+        </div>
+    <?php else : ?>
+        <div class="mp-empty"><?= /* @noEscape */ __('You cannot return products in this Order.') ?></div>
+    <?php endif; ?>
+</fieldset>

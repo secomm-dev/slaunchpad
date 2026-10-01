@@ -194,7 +194,7 @@ $snowdogNavigationEnabled = $snowdogNavigation->isEnabled();
             <div class="min-w-0" x-ref="menuHost">
                 <?php if ($snowdogNavigationEnabled): ?>
                     <?php $snowdogMobileHtml = $block->getChildHtml('topmenu'); ?>
-                    <?= $snowdogMobileHtml !== ''
+                    <?= trim((string) $snowdogMobileHtml) !== ''
                         ? $snowdogMobileHtml
                         : $block->getChildHtml('native-topmenu-mobile-fallback') ?>
                     <?= $block->getChildHtml('snowdog-topmenu-desktop') ?>
@@ -281,7 +281,7 @@ $snowdogNavigationEnabled = $snowdogNavigation->isEnabled();
         class="absolute inset-x-0 top-full z-20 border-t border-border bg-white pb-3 text-ink shadow-lg"
         x-show="searchOpen"
         x-cloak
-        @click.outside="closeSearch"
+        @click.outside="closeSearch(false)"
         @keydown.escape.stop="closeSearch(true)"
     >
         <?= $block->getChildHtml('header-search') ?>

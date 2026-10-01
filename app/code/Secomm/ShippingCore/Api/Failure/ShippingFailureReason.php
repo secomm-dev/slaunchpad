@@ -54,15 +54,10 @@ final class ShippingFailureReason
     public const SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE';
 
     /**
-     * TASK-MQ2DRG (TL-approved 2026-09-23, DEC-TASKMQ2DRG-001) — capability-unsupported:
-     * the current RATE integration cannot represent the cart as an authoritative provider
-     * request (no packing information — the cart cannot be decomposed into
-     * provider-authoritative parcels), so the carrier cannot honestly report a provider
-     * result. Carriers report UNAVAILABLE + this reason; §35.5's "capability unsupported →
-     * fallback YES" row is materialized as INTEGRATION_LIMITATION. Distinct from
-     * SERVICE_UNAVAILABLE (a real business rejection) — an unrepresentable REQUEST is an
-     * integration capability limit, not a carrier refusal to serve. Never overload with
-     * business rejections.
+     * RESERVED (TASK-FXFMJ0, DEC-TASKFXFMJ0-001): GHN was the only production emitter and its
+     * RATE 50kg pre-gate is superseded — no carrier currently emits this reason. The constant
+     * and its fallback-eligibility wiring stay (capability-unsupported semantics for a future
+     * provider contract) but are dormant until an emitter exists.
      */
     public const RATE_REQUEST_UNREPRESENTABLE = 'RATE_REQUEST_UNREPRESENTABLE';
 

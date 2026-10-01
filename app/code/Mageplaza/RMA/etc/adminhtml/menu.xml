@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Mageplaza_RMA::rma" title="RMA" module="Mageplaza_RMA" sortOrder="110" resource="Mageplaza_RMA::rma" parent="Magento_Sales::sales"/>
+        <add id="Mageplaza_RMA::request" title="Manage RMA Request" module="Mageplaza_RMA" sortOrder="10" action="mprma/request" resource="Mageplaza_RMA::request" parent="Mageplaza_RMA::rma"/>
+        <add id="Mageplaza_RMA::status" title="Manage RMA Status" module="Mageplaza_RMA" sortOrder="20" action="mprma/status" resource="Mageplaza_RMA::status" parent="Mageplaza_RMA::rma"/>
+        <add id="Mageplaza_RMA::rule" title="Manage RMA Rule" module="Mageplaza_RMA" sortOrder="30" action="mprma/rule" resource="Mageplaza_RMA::rule" parent="Mageplaza_RMA::rma"/>
+        <add id="Mageplaza_RMA::shipping_label" title="Manage RMA Shipping Label" module="Mageplaza_RMA" sortOrder="40" action="mprma/shippingLabel" resource="Mageplaza_RMA::shipping_label" parent="Mageplaza_RMA::rma"/>
+        <add id="Mageplaza_RMA::configuration" title="Configuration" module="Mageplaza_RMA" sortOrder="1000" action="adminhtml/system_config/edit/section/mprma" resource="Mageplaza_RMA::configuration" parent="Mageplaza_RMA::rma"/>
+    </menu>
+</config>

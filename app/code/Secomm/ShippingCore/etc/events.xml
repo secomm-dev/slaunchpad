@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- TASK-S52DGA (DEC-TASKS52DGA-001) — generic offline shipment seam. No sortOrder: every
+         gate is either request-scoped (intent) or idempotent (marker), so correctness never
+         depends on observer order. -->
+    <event name="sales_order_shipment_save_before">
+        <observer name="secomm_shippingcore_offline_intent_validation"
+                  instance="Secomm\ShippingCore\Observer\ShipmentOfflineIntentValidationObserver"/>
+    </event>
+    <event name="sales_order_shipment_save_commit_after">
+        <observer name="secomm_shippingcore_offline_fulfillment"
+                  instance="Secomm\ShippingCore\Observer\ShipmentOfflineFulfillmentObserver"/>
+    </event>
+</config>

@@ -1,0 +1,193 @@
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+.mp-request-conversation-container {
+    display: inline-block;
+}
+
+@media (max-width: 767px) {
+    .mp-request-conversation-container {
+        width: 100%;
+    }
+}
+
+#mp-request-conversation-container {
+    margin-top: 15px;
+    position: relative;
+    width: 100%;
+}
+
+#mp-request-conversation-container .mp-request-conversation {
+    min-height: 65px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#mp-request-conversation-container .mp-conversation-box {
+    border-radius: 3px;
+    margin-bottom: 13px;
+    display: inline-block;
+    width: 100%;
+}
+
+#mp-request-conversation-container .mp-note {
+    background-color: #fef1e1;
+    border: solid 1px #fddbb5;
+}
+
+#mp-request-conversation-container .mp-reply {
+    background-color: #f5f7f9;
+    border: solid 1px #ebeff3;
+    cursor: default;
+}
+
+#mp-request-conversation-container .mp-customer {
+    background-color: #e5f2fd;
+    border: solid 1px #bedbf5;
+}
+
+#mp-request-conversation-container .mp-note .mp-header {
+    border-bottom: solid 1px #fddbb5;
+}
+
+#mp-request-conversation-container .mp-reply .mp-header {
+    border-bottom: solid 1px #ebeff3;
+}
+
+#mp-request-conversation-container .mp-customer .mp-header {
+    border-bottom: solid 1px #bedbf5;
+}
+
+#mp-request-conversation-container .mp-conversation-box .mp-header {
+    padding: 12px 24px;
+}
+
+#mp-request-conversation-container .mp-conversation-box .mp-header i {
+    margin-left: 6px;
+    font-size: 15px;
+}
+
+#mp-request-conversation-container .mp-conversation-box .mp-header i.delete-reply {
+    float: right;
+    cursor: pointer;
+    color: #b7b5b5;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s linear;
+    background-color: #FFF;
+}
+
+#mp-request-conversation-container .mp-conversation-box .mp-content {
+    padding: 12px 25px 7px;
+}
+
+#mp-request-conversation-container .mp-conversation-box .mp-attachments {
+    float: left;
+    padding: 5px 20px 15px;
+}
+
+#mp-request-conversation-container .mp-conversation-load-more {
+    text-align: center;
+    margin-top: 7px;
+}
+
+#mp-request-conversation-container .mp-rma-image-loader {
+    background-color: #FFFFFF;
+    height: 110%;
+    left: 0;
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 555;
+    display: none;
+}
+
+#mp-request-conversation-container .mp-rma-image-loader img {
+    top: 40%;
+    left: 45%;
+    display: block;
+    position: absolute;
+    width: 50px;
+}
+
+#request_conversation_fieldset .mp-file-box span.file-info {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    font-size: 12px;
+}
+
+#request_conversation_fieldset .mp-files {
+    border: solid 1px #dfdfdf;
+    padding: 15px;
+    border-radius: 10px;
+    float: left;
+    width: 100%;
+    display: none;
+}
+
+#request_conversation_fieldset .mp-file-box {
+    float: left;
+    padding: 5px 8px 8px;
+    border: solid 1px #dfdfdf;
+    cursor: pointer;
+    border-radius: 3px;
+    margin: 0 5px 8px 5px;
+    max-width: 135px;
+    position: relative;
+}
+
+#request_conversation_fieldset .mp-file-box:hover {
+    border: solid 1px #c4c2df;
+}
+
+#request_conversation_fieldset .mp-file-box i {
+    font-size: 14px;
+    margin-right: 5px;
+    cursor: pointer;
+    color: #888383;
+    float: left;
+    line-height: 17px;
+}
+
+#request_conversation_fieldset .mp-file-number {
+    padding: 2px;
+    margin-bottom: 20px;
+}
+
+#request_conversation_fieldset .mp-file-number i {
+    font-size: 15px;
+    margin-right: 4px;
+}
+
+#request_conversation_fieldset .mp-file-number span {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+#request_conversation_fieldset .mp-file-box span.error {
+    color: #ee7d7d;
+}
+
+#request_conversation_fieldset .mp-file-box span.file-size, .mp-file-box span.uploading {
+    color: #b3acac;
+}

@@ -1,0 +1,65 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Request\View\Reply $block */
+/** @var \Mageplaza\RMA\Helper\Conversation $helperConversation */
+$helperConversation = $block->helperConversation;
+if ($replies = $block->getReplyCollection()): ?>
+    <?php foreach ($replies as $reply):
+        /** @var \Mageplaza\RMA\Model\Request\Reply $reply */
+        ?>
+        <div id="mp-conversation-box-<?= /* @noEscape */ $reply->getId() ?>"
+             data-mage-init='{"mpRMA/request":{
+                "downloadFileUrl":"<?= /* @noEscape */ $block->getDownloadFileUrl() ?>"
+                }}'
+             class="mp-conversation-box <?= /* @noEscape */ $helperConversation->getConversationTypeClass((int) $reply->getType()) ?>">
+            <div class="mp-header">
+                <span><b class="mp-author"><?= /* @noEscape */ $reply->getAuthorName() ?></b>
+                    <?= /* @noEscape */ $helperConversation->getMessageHeader($reply) ?></span>
+            </div>
+            <div class="mp-content">
+                <p><?= /* @noEscape */ $helperConversation->formatReplyContent($reply->getContent()) ?></p>
+            </div>
+            <?php if ($files = $helperConversation->getReplyFiles($reply->getFiles())): ?>
+                <div class="mp-attachments">
+                    <?php foreach ($files as $file): ?>
+                        <div class="mp-file-box file-inspect"
+                             data-file-info='<?= /* @noEscape */ $helperConversation->getReplyFileJson($file, $reply) ?>'
+                             data-role="inspect-file">
+                            <span class="file-info"><?= $block->escapeHtml($file['name']) ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endforeach; ?>
+    <?php if ($block->getIsLoadMore()): ?>
+        <div class="mp-conversation-load-more"
+             data-mage-init='{"mpRMA/replyLoadMore":{"loadReplyUrl":"<?=/* @noEscape */$block->getLoadReplyUrl() ?>"}}'>
+            <button title="<?= /* @noEscape */ __('Load more') ?>"
+                    class="action primary load-more"
+                    type="button"
+                    data-role="load-all">
+                <span><?= /* @noEscape */ __('Load more') ?></span>
+            </button>
+        </div>
+    <?php endif; ?>
+<?php endif; ?>

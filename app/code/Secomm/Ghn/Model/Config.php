@@ -46,6 +46,14 @@ class Config
     /** FEAT-QA23PZ / DEC-FEATQA23PZ-001 — destination-scope eligibility (generic pattern, shared reader). */
     public const XML_PATH_DESTINATION_SCOPE = 'carriers/secomm_ghn/destination_scope';
     public const XML_PATH_ALLOWED_ZONE_CODES = 'carriers/secomm_ghn/allowed_zone_codes';
+    /** TASK-ZS2B41 (rev. 3-path, 2026-10-01) — per-dimension dimension limits (cm) SHARED by
+     *  RATE (display filter) and CREATE (hard gate); defaults = GhnShipmentConstraints. */
+    public const XML_PATH_MAX_LENGTH_CM = 'carriers/secomm_ghn/max_length_cm';
+    public const XML_PATH_MAX_WIDTH_CM = 'carriers/secomm_ghn/max_width_cm';
+    public const XML_PATH_MAX_HEIGHT_CM = 'carriers/secomm_ghn/max_height_cm';
+    /** TASK-WNQCRW (2026-10-01) — per-package weight limit (g) for the RATE display gate
+     *  ONLY; CREATE stays frozen at GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G. */
+    public const XML_PATH_MAX_PACKAGE_WEIGHT_G = 'carriers/secomm_ghn/max_package_weight_g';
 
     public const ENV_SANDBOX = 'sandbox';
     public const ENV_PRODUCTION = 'production';
@@ -269,5 +277,73 @@ class Config
     public function getAllowedZoneCodes(?int $storeId = null): array
     {
         return $this->destinationScopeConfig->getAllowedZoneCodes('secomm_ghn', $storeId);
+    }
+
+    /**
+     * TASK-ZS2B41 (rev. 3-path, 2026-10-01) — shared per-dimension hard limits (cm), ONE set
+     * of config paths for both RATE (display filter) and CREATE (hard gate). Authoritative
+     * default is {@see GhnShipmentConstraints::MAX_SIDE_CM} (Create contract 200; the
+     * sandbox-observed 150 is superseded as default — merchants on 150-enforcing accounts
+     * lower the config). System config OVERRIDES per dimension when present and positive.
+     */
+    public function getMaxLengthCm(?int $storeId = null): int
+    {
+        return $this->readPositiveInt(
+            self::XML_PATH_MAX_LENGTH_CM,
+            GhnShipmentConstraints::MAX_SIDE_CM,
+            $storeId
+        );
+    }
+
+    public function getMaxWidthCm(?int $storeId = null): int
+    {
+        return $this->readPositiveInt(
+            self::XML_PATH_MAX_WIDTH_CM,
+            GhnShipmentConstraints::MAX_SIDE_CM,
+            $storeId
+        );
+    }
+
+    public function getMaxHeightCm(?int $storeId = null): int
+    {
+        return $this->readPositiveInt(
+            self::XML_PATH_MAX_HEIGHT_CM,
+            GhnShipmentConstraints::MAX_SIDE_CM,
+            $storeId
+        );
+    }
+
+    /**
+     * TASK-WNQCRW (2026-10-01, DEC-TASKWNQCRW-001) — RATE display gate for per-package
+     * weight (GRAMS): ONE estimated sellable unit over the limit hides GHN at checkout
+     * (hard UNAVAILABLE `GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED`, no fallback). Default = the
+     * frozen CREATE cap ({@see GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G}). The gate is
+     * per-unit only — aggregate weight is never capped. NOTE: legacy
+     * `carriers/secomm_ghn/max_package_weight` (no _g) is a DIFFERENT, undeclared
+     * validation-stage knob (Ghn::processAdditionalValidation) — inert by default,
+     * deliberately untouched.
+     */
+    public function getMaxPackageWeightG(?int $storeId = null): int
+    {
+        return $this->readPositiveInt(
+            self::XML_PATH_MAX_PACKAGE_WEIGHT_G,
+            GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G,
+            $storeId
+        );
+    }
+
+    /**
+     * Shared config read for positive int limits (cm or g): empty/non-numeric/non-positive
+     * config values never disable a hard limit — the constraint default applies instead.
+     */
+    private function readPositiveInt(string $xmlPath, int $default, ?int $storeId): int
+    {
+        $value = (int) $this->scopeConfig->getValue(
+            $xmlPath,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        return $value > 0 ? $value : $default;
     }
 }

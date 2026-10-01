@@ -266,3 +266,11 @@ Pancake POS Open API documents **Webhook configuration** on `PUT /shops/{SHOP_ID
 | **Ops UI** | Pancake: Setting → Advance → Third-party connection → Webhook/API. Magento: see `Secomm_PancakeBridge` README. |
 
 ---
+
+## Mageplaza RMA (internal REST)
+
+**Type**: storefront-internal API (Mageplaza_RMA module's own frontend) | **Criticality**: low | **Direction**: internal
+
+### Endpoints
+
+20 REST routes under `/V1/mpRMA/*` — see `app/code/Mageplaza/RMA/etc/webapi.xml` for the authoritative list (rules, shipping-labels, status, requests, replies, file upload/download, order search). Auth per route (admin ACL vs customer self-service). No external integration — no external API contract risk. Storefront pages additionally use classic controller routes `mprma/request/*` + `mprma/customer` (Hyvä `hyva_` handles).

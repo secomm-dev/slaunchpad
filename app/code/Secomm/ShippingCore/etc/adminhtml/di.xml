@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager:etc/config.xsd">
+    <!-- BUG-74VGQX — the secomm_physical marker (DEC-TASK9Q5ZAK-001 snapshot) is not a native
+         package entry; packed.phtml and the printPackage PDF render every entry unguarded. -->
+    <type name="Magento\Shipping\Block\Adminhtml\Order\Packaging">
+        <plugin name="secomm_shippingcore_strip_physical_marker_from_packages"
+                type="Secomm\ShippingCore\Plugin\Shipping\PackagingBlockPlugin"/>
+    </type>
+    <!-- BUG-DT0C4W — the core view template gates "Show Packages" on the RAW packages column,
+         which always holds Secomm markers on this project; hide the button when no NATIVE
+         packages exist (the modal it opens would be empty — marker-stripped data). -->
+    <type name="Magento\Shipping\Block\Adminhtml\View\Form">
+        <plugin name="secomm_shippingcore_hide_show_packages_without_native"
+                type="Secomm\ShippingCore\Plugin\Shipping\FormShowPackagesPlugin"/>
+    </type>
+</config>

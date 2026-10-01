@@ -46,6 +46,17 @@ Secomm_Ghn  →  Secomm_ShippingCore  →  Secomm_VietNamAddress
 | `secomm_ghn_address_unit` | GHN master data dual-scheme (1 row = 1 unit trong 1 scheme) | `UNIQUE(scheme_code, provider_key)`; self-FK `parent_id` RESTRICT |
 | `secomm_ghn_address_mapping` | bridge canonical↔GHN (chỉ row APPROVED) | `UNIQUE(secomm_scheme_code, secomm_unit_code)`; FK unit CASCADE |
 
+## Offline Shipment (TASK-S52DGA, DEC-TASKS52DGA-001)
+
+GHN opts vào generic offline flow của `Secomm_ShippingCore` (xem USER_GUIDE ShippingCore §2.5
+cho seam đầy đủ): khi create bị chặn deterministic (package vi phạm limit), admin có thể tạo
+**Offline Shipment** — Magento shipment thật, KHÔNG GHN API, KHÔNG anchor `secomm_ghn_shipment`,
+KHÔNG retry/reconciliation, KHÔNG COD claim. GHN đóng góp: `GhnOfflineCapability` (đăng ký
+`OfflineCapabilityPool`), 2 gate trong observers (pre-save skip khi offline intent; create
+observer skip khi intent **hoặc** persisted metadata — re-save comment/track không bao giờ gọi
+GHN), token offline-eligible frozen `{INVALID_PARCEL, INVALID_CONFIGURATION}` (stash reason cho
+prefill), banner offline trên section "GHN Shipment".
+
 ## Cấu hình
 
 GHN là shipping method → cấu hình nằm ở **`Stores → Configuration → Sales → Delivery Methods → GHN Shipping (Secomm_Ghn)`** (section chuẩn `carriers`, group `secomm_ghn`):
@@ -97,7 +108,7 @@ secomm:ghn:address:suggest → workfile đề xuất (candidate tooling, không 
 | GHN-A skeleton | TASK-RJFTPZ | done (TL approve 2026-09-10) |
 | GHN-B master data + mapping | TASK-MZ2TCB | in_progress |
 | GHN-C rate (Magento carrier wiring) | TASK-FMBBSD | dev-complete 2026-09-14 — chờ TL review + QC L3 (available-services/leadtime giữ EXTERNAL/deferred) |
-| GHN-D create (observer) | TASK-9Q5ZAK | dev-complete 2026-09-15 — CREATE only qua shipment observer + idempotent retry; cancel/return/MQ = GHN-E/F backlog |
+| GHN-D create (observer) | TASK-9Q5ZAK | dev-complete 2026-09-15 — CREATE only qua shipment observer + idempotent retry; cancel/return/MQ = GHN-E/F backlog. **TASK-W5BW4F 2026-09-30: create-failure surfacing 2 lớp** — fresh save có package deterministic-invalid bị chặn pre-commit; mọi lỗi còn lại loud (message + comment + section "GHN Shipment" trên shipment view); DEC-TASKW5BW4F-001 |
 | GHN-E1 webhook tracking (normalize) | TASK-GKHXY1 | dev-complete 2026-09-15 — webhook + mapper + reconciliation cron; getTracking/label = E3; cancel/return API = E2 |
 | GHN-F cutover legacy | TASK-8019VC | proposed |
 

@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Secomm\Ghn\Model\Rate\GhnParcel;
 use Secomm\Ghn\Model\Shipment\GhnCreateValidationException;
 use Secomm\Ghn\Model\Shipment\GhnPhysicalLimit;
+use Secomm\Ghn\Model\Config;
 use Secomm\Ghn\Model\Shipment\GhnPhysicalParcelInterpreter;
 use Secomm\ShippingCore\Model\Physical\PhysicalPackage;
 use Secomm\ShippingCore\Model\Physical\ShipmentPhysicalData;
@@ -30,7 +31,8 @@ class GhnPhysicalParcelInterpreterTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->interpreter = new GhnPhysicalParcelInterpreter(new GhnPhysicalLimit());
+        $constraints = \Secomm\Ghn\Model\GhnShipmentConstraints::MAX_SIDE_CM;
+        $this->interpreter = $this->interpreterWithLimits($constraints, $constraints, $constraints);
     }
 
     public function testSingleLightPackageMapsToType2Root(): void
@@ -125,6 +127,74 @@ class GhnPhysicalParcelInterpreterTest extends TestCase
         $this->interpreter->interpret($this->physical([[1000, 10, 10, 10], [1000, 300, 10, 10]]));
     }
 
+    /**
+     * TASK-WNQCRW §15 — RATE ≠ CREATE truth: the SAME 15kg order quotes as RATE type 2
+     * (total-weight-only rule) while CREATE derives type 5 INDEPENDENTLY from the 2 actual
+     * physical parcels the warehouse packed (physical package count + per-package weight).
+     */
+    public function testCreateDerivesIndependentlyFromTheRateClassification(): void
+    {
+        // RATE view (transient, never persisted): 3 items, 15kg total → type 2.
+        $rateEstimate = new \Secomm\Ghn\Model\Rate\QuoteParcelEstimate([
+            new \Secomm\Ghn\Model\Rate\EstimatedPackage(11, 'SKU-A', 5000.0, 'quote_item_weight'),
+            new \Secomm\Ghn\Model\Rate\EstimatedPackage(12, 'SKU-B', 5000.0, 'quote_item_weight'),
+            new \Secomm\Ghn\Model\Rate\EstimatedPackage(13, 'SKU-C', 5000.0, 'quote_item_weight'),
+        ]);
+        $this->assertSame(2, $rateEstimate->getServiceTypeId(), 'RATE: 15kg total is type 2');
+
+        // CREATE view (fulfillment truth): the same order packed into 2 light physical
+        // parcels → type 5 with items[] — NOT the RATE type.
+        $plan = $this->interpreter->interpret($this->physical([
+            [7500, 30, 20, 10],
+            [7500, 30, 20, 10],
+        ]));
+
+        $this->assertSame(GhnParcel::SERVICE_TYPE_HEAVY_GOODS, $plan->getServiceTypeId(), 'CREATE re-derives from physical parcels');
+        $this->assertCount(2, $plan->getItems());
+        $this->assertSame(15000, $plan->getRootWeightG());
+    }
+
+    /**
+     * TASK-ZS2B41 bug fix regression — width compares against ITS OWN limit: 190cm width
+     * with a lowered width limit of 150 must fail closed even though length (100) and
+     * height (100) are well under the 200 defaults. (Pre-fix this passed: width was checked
+     * against the length limit.)
+     */
+    public function testWidthAboveItsOwnLimitFailsClosedEvenWhenLengthIsUnder(): void
+    {
+        $interpreter = $this->interpreterWithLimits(200, 150, 200);
+
+        try {
+            $interpreter->interpret($this->physical([[1000, 100, 190, 100]]));
+            $this->fail('Expected GhnCreateValidationException');
+        } catch (GhnCreateValidationException $exception) {
+            $this->assertSame(GhnCreateValidationException::REASON_INVALID_PARCEL, $exception->getReasonToken());
+            $this->assertStringContainsString('width', $exception->getMessage());
+            $this->assertStringContainsString('150', $exception->getMessage());
+        }
+    }
+
+    /** TASK-ZS2B41 bug fix regression — same own-limit rule for height. */
+    public function testHeightAboveItsOwnLimitFailsClosedEvenWhenLengthIsUnder(): void
+    {
+        $interpreter = $this->interpreterWithLimits(200, 200, 150);
+
+        $this->expectException(GhnCreateValidationException::class);
+        $this->expectExceptionMessage('height');
+
+        $interpreter->interpret($this->physical([[1000, 100, 100, 190]]));
+    }
+
+    /** TASK-ZS2B41 bug fix regression — dimensions under their OWN (lowered) limits still interpret. */
+    public function testDimensionsUnderTheirOwnLoweredLimitsStillInterpret(): void
+    {
+        $interpreter = $this->interpreterWithLimits(200, 150, 150);
+
+        $plan = $interpreter->interpret($this->physical([[1000, 140, 140, 140]]));
+
+        $this->assertSame(GhnParcel::SERVICE_TYPE_LIGHT_PARCEL, $plan->getServiceTypeId());
+    }
+
     // ---------- helpers ----------
 
     /**
@@ -138,5 +208,19 @@ class GhnPhysicalParcelInterpreterTest extends TestCase
         }
 
         return ShipmentPhysicalData::fromPackages($packages);
+    }
+
+    /**
+     * TASK-ZS2B41 (rev. 3-path) — builder pinning the merchant-tunable shared limits
+     * (length, width, height) so tests can lower individual dimensions.
+     */
+    private function interpreterWithLimits(int $lengthCm, int $widthCm, int $heightCm): GhnPhysicalParcelInterpreter
+    {
+        $config = $this->createMock(Config::class);
+        $config->method('getMaxLengthCm')->willReturn($lengthCm);
+        $config->method('getMaxWidthCm')->willReturn($widthCm);
+        $config->method('getMaxHeightCm')->willReturn($heightCm);
+
+        return new GhnPhysicalParcelInterpreter(new GhnPhysicalLimit($config));
     }
 }

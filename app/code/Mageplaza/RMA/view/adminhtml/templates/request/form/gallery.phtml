@@ -1,0 +1,101 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Adminhtml\Request\Edit\Form\Files $block */
+$element     = $block->getElement();
+$formName    = $block->getFormName();
+$elementName = $element->getName();
+?>
+<div id="template-images-gallery" class="gallery"
+     data-mage-init='{"mpRMA/gallery":{}}'
+     data-images="<?= $block->escapeHtml($block->getFilesJson()) ?>">
+    <?php if (!$element->getDataObject()->getId()): ?>
+        <div class="image image-placeholder">
+            <?= $block->getUploaderHtml() ?>
+            <div class="product-image-wrapper">
+                <p class="image-placeholder-text">
+                    <?= /* @noEscape */ __('Browse to find or drag file here') ?>
+                </p>
+            </div>
+        </div>
+    <?php elseif (empty($element->getFiles())): ?>
+        <div class="mp-empty-file">
+            <span><?= /* @noEscape */ __('There are no attached files in this request') ?></span>
+        </div>
+    <?php endif; ?>
+    <?php foreach ($block->getFileTypes() as $typeData): ?>
+        <input name="<?= $block->escapeHtml($typeData['name']) ?>"
+               data-form-part="<?= $block->escapeHtml($formName) ?>"
+               class="image-<?= $block->escapeHtml($typeData['code']) ?>"
+               type="hidden"
+               value="<?= $block->escapeHtml($typeData['value']) ?>"/>
+    <?php endforeach; ?>
+    <script id="template-images-gallery-template" data-template="image" type="text/x-magento-template">
+        <div class="image item"
+             data-role="image"
+             data-file-type="<%- data.file_type %>"
+             data-file-info="<%- data.file_info %>">
+            <input type="hidden"
+                   name="<?= /* @noEscape */ $elementName ?>[<%- data.file_id %>][position]"
+                   value="<%- data.position %>"
+                   data-form-part="<?= /* @noEscape */ $formName ?>"
+                   class="position"/>
+            <input type="hidden"
+                   name="<?= /* @noEscape */ $elementName ?>[<%- data.file_id %>][file]"
+                   value="<%- data.file %>"
+                   data-form-part="<?= /* @noEscape */ $formName ?>"/>
+            <input type="hidden"
+                   name="<?= /* @noEscape */ $elementName ?>[<%- data.file_id %>][name]"
+                   value="<%- data.name %>"
+                   data-form-part="<?= /* @noEscape */ $formName ?>"/>
+            <input type="hidden"
+                   name="<?= /* @noEscape */ $elementName ?>[<%- data.file_id %>][size]"
+                   value="<%- data.size %>"
+                   data-form-part="<?= /* @noEscape */ $formName ?>"/>
+            <input type="hidden"
+                   name="<?= /* @noEscape */ $elementName ?>[<%- data.file_id %>][removed]"
+                   value="" class="is-removed"
+                   data-form-part="<?= /* @noEscape */ $formName ?>"/>
+            <a class="mp-zoom-file" href="<%- data.url %>"></a>
+            <div class="product-image-wrapper">
+                <img class="product-image" data-role="image-element" src="<%- data.url %>"
+                     alt="<%- data.name %>"/>
+                <?php if (!$element->getDataObject()->getId()): ?>
+                    <div class="actions">
+                        <button type="button"
+                                class="action-remove"
+                                data-role="delete-button"
+                                title="<?= /* @noEscape */ __('Delete image') ?>">
+                            <span><?= /* @noEscape */ __('Delete image') ?></span>
+                        </button>
+                        <div class="draggable-handle"></div>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="item-description">
+                <div class="item-title" data-role="img-title"><%- data.name %></div>
+                <div class="item-size">
+                    <span data-role="image-size"><%- data.sizeLabel %></span>
+                </div>
+            </div>
+        </div>
+    </script>
+</div>

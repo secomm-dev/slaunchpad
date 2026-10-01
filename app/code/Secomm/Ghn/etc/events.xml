@@ -12,4 +12,11 @@
     <event name="sales_order_shipment_save_commit_after">
         <observer name="secomm_ghn_shipment_create" instance="Secomm\Ghn\Observer\GhnShipmentCreateObserver"/>
     </event>
+    <!-- TASK-W5BW4F layer 1: a FRESH shipment save whose confirmed packages would
+         deterministically fail the GHN create is blocked BEFORE the shipment exists
+         (GhnCreateValidationException = LocalizedException → core save controller renders the
+         message; re-saves of an existing shipment are never blocked). -->
+    <event name="sales_order_shipment_save_before">
+        <observer name="secomm_ghn_shipment_save_validation" instance="Secomm\Ghn\Observer\GhnShipmentSaveValidationObserver"/>
+    </event>
 </config>

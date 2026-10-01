@@ -16,10 +16,7 @@ use Secomm\Cod\Model\CodClaimConflictException;
 use Secomm\Cod\Model\CodCollectionAttempt;
 use Secomm\Ghn\Model\Config;
 use Secomm\ShippingCore\Api\Physical\ShipmentPhysicalDataInterface;
-use Secomm\ShippingCore\Model\Physical\PhysicalPackage;
-use Secomm\ShippingCore\Model\Physical\ShipmentPhysicalData;
 use Secomm\ShippingCore\Model\Physical\ShipmentPhysicalPersister;
-use Secomm\ShippingCore\Model\Physical\StoreWeightConverter;
 use Secomm\Ghn\Api\Client\GhnApiClientInterface;
 use Secomm\Ghn\Api\Exception\ProviderAuthenticationException;
 use Secomm\Ghn\Api\Exception\ProviderInvalidAddressException;
@@ -86,8 +83,8 @@ class GhnShipmentCreationService
         private readonly GhnApiClientInterface $apiClient,
         private readonly GhnCreateRequestBuilder $requestBuilder,
         private readonly GhnPhysicalParcelInterpreter $interpreter,
+        private readonly GhnCreateParcelValidator $parcelValidator,
         private readonly ShipmentPhysicalPersister $physicalPersister,
-        private readonly StoreWeightConverter $weightConverter,
         private readonly Config $config,
         private readonly GhnShipmentRepository $shipmentRepository,
         private readonly CodCollectionResolverInterface $codCollectionResolver,
@@ -362,7 +359,9 @@ class GhnShipmentCreationService
     private function resolvePhysicalData(Shipment $shipment, ?array $postedRawPackages, ?int $storeId): ShipmentPhysicalDataInterface
     {
         if (is_array($postedRawPackages) && $postedRawPackages !== []) {
-            $physical = $this->buildFromPostedRows($postedRawPackages, $storeId);
+            // TASK-W5BW4F: row usability + limits live in the shared parcel validator (the same
+            // source the pre-save gate enforces), so the two gates can never drift apart.
+            $physical = $this->parcelValidator->fromPostedRows($postedRawPackages, $storeId);
             $this->physicalPersister->persist($shipment, $physical);
 
             return $physical;
@@ -375,39 +374,8 @@ class GhnShipmentCreationService
 
         throw new GhnCreateValidationException(
             GhnCreateValidationException::REASON_INVALID_PARCEL,
-            __('GHN create: no confirmed package weight/dimensions on the shipment. '
-                . 'Enter the real package information when creating the shipment.')
+            GhnCreateParcelValidator::missingParcelMessage()
         );
-    }
-
-    /**
-     * @param array<int, array<string, mixed>> $postedRawPackages rows [weight, lengthCm, widthCm, heightCm]
-     * @throws GhnCreateValidationException INVALID_PARCEL on unusable rows
-     * @throws \Magento\Framework\Exception\LocalizedException on an unusable store weight unit
-     */
-    private function buildFromPostedRows(array $postedRawPackages, ?int $storeId): ShipmentPhysicalDataInterface
-    {
-        $packages = [];
-        foreach (array_values($postedRawPackages) as $index => $row) {
-            $weight = (float) ($row['weight'] ?? 0);
-            $length = (int) ($row['length'] ?? 0);
-            $width = (int) ($row['width'] ?? 0);
-            $height = (int) ($row['height'] ?? 0);
-            if ($weight <= 0 || $length <= 0 || $width <= 0 || $height <= 0) {
-                throw new GhnCreateValidationException(
-                    GhnCreateValidationException::REASON_INVALID_PARCEL,
-                    __('GHN create: package #%1 has an empty weight or dimension.', (string) ($index + 1))
-                );
-            }
-            $packages[] = new PhysicalPackage(
-                (int) round($this->weightConverter->toGrams($weight, $storeId)),
-                $length,
-                $width,
-                $height
-            );
-        }
-
-        return ShipmentPhysicalData::fromPackages($packages);
     }
 
     private function resolvePaymentTypeId(?int $storeId): int

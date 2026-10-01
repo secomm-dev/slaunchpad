@@ -1,0 +1,59 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+/** @var \Secomm\ShippingCore\Block\Adminhtml\Shipment\View\FulfillmentStatus $block */
+
+if (!$block->canShow()) {
+    return;
+}
+?>
+<div class="admin__field secomm-shipment-fulfillment-status" style="margin: 12px 0;">
+    <h4><?= $block->escapeHtml(__('Fulfillment')) ?></h4>
+    <table class="admin__table-secondary" style="max-width: 640px;">
+        <tbody>
+        <tr>
+            <th><?= $block->escapeHtml(__('Fulfillment Mode')) ?></th>
+            <td>
+                <?php if ($block->isOffline()) : ?>
+                    <strong><?= $block->escapeHtml(__('Offline')) ?></strong>
+                    <span class="note">— <?= $block->escapeHtml(
+                        __('no carrier order was requested; fulfillment and tracking are manual.')
+                    ) ?></span>
+                <?php else : ?>
+                    <?= $block->escapeHtml(__('Online')) ?>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <?php if ($block->getIntendedCarrier() !== '') : ?>
+            <tr>
+                <th><?= $block->escapeHtml(__('Intended Carrier')) ?></th>
+                <td><?= $block->escapeHtml($block->getIntendedCarrier()) ?></td>
+            </tr>
+        <?php endif; ?>
+        <?php if ($block->isOffline()) : ?>
+            <tr>
+                <th><?= $block->escapeHtml(__('Provider Shipment')) ?></th>
+                <td><?= $block->escapeHtml(__('Not Created')) ?></td>
+            </tr>
+        <?php endif; ?>
+        <?php if ($block->getReasonMessage() !== '' || $block->getReasonCode() !== '') : ?>
+            <tr>
+                <th><?= $block->escapeHtml(__('Reason')) ?></th>
+                <td>
+                    <?= $block->escapeHtml($block->getReasonMessage() !== '' ? $block->getReasonMessage() : $block->getReasonCode()) ?>
+                </td>
+            </tr>
+        <?php endif; ?>
+        <?php if ($block->getNote() !== '') : ?>
+            <tr>
+                <th><?= $block->escapeHtml(__('Operator note')) ?></th>
+                <td><?= $block->escapeHtml($block->getNote()) ?></td>
+            </tr>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>

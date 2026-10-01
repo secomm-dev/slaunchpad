@@ -114,6 +114,52 @@ Admin: **Stores → Configuration → General → tab `Secomm` → Secomm Shippi
 
 ---
 
+### 2.5 Offline Shipment — fulfillment mode generic (TASK-S52DGA, DEC-TASKS52DGA-001)
+
+**ONLINE** = Magento shipment + provider shipment qua integration (flow thường). **OFFLINE** =
+Magento shipment THẬT, không provider side-effect nào: không GHN API, không anchor
+`secomm_ghn_shipment`, không retry/reconciliation, không COD claim — fulfillment + tracking
+thủ công. Đây là lối thoát vận hành khi create bị chặn bởi deterministic constraint (vd package
+300cm > limit 200cm), KHÔNG phải retry/fallback checkout (đó là rate-time concepts —
+`RateSourceMode`/`FallbackEligibility` không bao giờ tham gia fulfillment decision).
+
+**Ownership:** ShippingCore sở hữu seam generic (`Api\Shipment\FulfillmentMode` +
+`CarrierOfflineCapabilityInterface` + pool, `FulfillmentModeResolver`,
+`FulfillmentMetadataPersister`, `OfflineEligibilitySession`, 2 observers, UI); carrier tự đăng
+ký capability (`GhnOfflineCapability` → `OfflineCapabilityPool` DI item entry) và giữ mọi rule
+provider (token offline-eligible frozen trong GHN gate); Secomm_Cod không đổi (offline → 0 call
+`CodCollectionResolverInterface`); Magento_Sales giữ nguyên persistence.
+
+**Flow:** form tạo shipment (carrier capable) → nút **Create Offline Shipment** (confirm) →
+CÙNG core save endpoint với `shipment[fulfillment_mode]=OFFLINE` (không controller mới; ACL
+native `Magento_Sales::ship`; form-key core) → save_before: capability check fail-closed +
+history comment; GHN gate đứng xuống → save native → commit_after: metadata marker +
+package facts (chỉ GHI NHẬN, không validate) + 1 structured log. Offline shipment không bao
+giờ vào create/retry/reconciliation: gate create GHN check **request intent OR persisted
+metadata** (re-save comment/track cũng không gọi GHN).
+
+**Metadata:** marker JSON `secomm_fulfillment` trên `sales_shipment.packages` (pattern
+`secomm_physical`, zero migration; chỉ ghi cho OFFLINE — absence = ONLINE; per-shipment scope
+nên 1 order có thể Shipment #1 ONLINE + Shipment #2 OFFLINE; `PackagingBlockPlugin` strip cả
+marker này ở packaging popup — BUG-74VGQX pattern).
+
+**Offline-eligible (P1):** `INVALID_PARCEL`, `INVALID_CONFIGURATION` — 2 token deterministic
+mà gate pre-save chặn; transient (`TECHNICAL_ERROR`, `SERVICE_UNAVAILABLE`) và nhóm address
+(`CANONICAL_UNRESOLVED`, …) KHÔNG eligible. Khi block bằng token eligible, gate stash lý do
+(order-scoped backend session) → form prefill + message có hint offline.
+
+**Modal "Show Packages" (BUG-DT0C4W):** shipment của project luôn chứa marker Secomm trong
+`sales_shipment.packages` nên nút "Show Packages" core (gate trên packages RAW) sẽ mở modal
+rỗng — plugin ẨN nút khi không có NATIVE packages; thông tin package xem ở section "GHN
+Shipment" (bảng Confirmed packages) / "Fulfillment" trên cùng trang. Layout shipment view
+dùng handle đúng `adminhtml_order_shipment_view` (file `sales_shipment_view.xml` cũ là dead
+handle — không bao giờ load).
+
+**Giới hạn đã biết (chủ đích P1):** retry CLI trên offline shipment không bị guard (§15 —
+không duplicate guard); nếu snapshot trong limit, retry sẽ tạo GHN order thật cạnh metadata
+stale (P2 option: CLI notice). Order COD ship offline hoàn toàn không có ledger row (thu hộ
+thủ công vô hình với Secomm_Cod — gap báo cáo, không fix). Confirm dialog là UI-only.
+
 ## 3. Secomm_VietNamAddress — dữ liệu địa chỉ VN
 
 ### 3.1 Scheme model
@@ -206,18 +252,19 @@ Bảng: `secomm_vietnam_address_scheme` (registry + status label), `secomm_vietn
 Secomm_Ghn → Secomm_ShippingCore → Secomm_VietNamAddress   (KHÔNG depend legacy Secomm_GiaoHangNhanh/GhnAddressMapper)
 ```
 
-- **Rating**: destination canonical (`VN_ADMIN_2025`) → ShippingCore handoff về `VN_ADMIN_PRE_2025` (capability RATE = PRE-2025 + UNIT_ID) → mapping → `district_id + ward_code` legacy → GHN Calculate Fee. **Weight pre-validation TRƯỚC fee call (TASK-MQ2DRG — DEC-TASKMQ2DRG-001)**: ≤ 19.999 g single package → `2` (light) · 20.000–50.000 g (hoặc multi-parcel) → `5` (heavy, kèm `items[]` per package) · **tổng > 50.000 g với từng unit hợp lệ → KHÔNG gọi API — `RATE_REQUEST_UNREPRESENTABLE` (INTEGRATION_LIMITATION)**: GHN ẩn, TableRate fallback khi `CARRIER_WITH_FALLBACK`, ẩn hoàn toàn khi `CARRIER_ONLY` · **bất kỳ unit đơn > 50.000 g → UNAVAILABLE `GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED` — không fallback ở mọi mode** (hard carrier rejection). Lưu ý: limitation nghĩa là "checkout không thể represent request một cách authoritative (thiếu packing)", KHÔNG nghĩa là GHN không vận chuyển được đơn. Legacy `carriers/secomm_ghn/max_package_weight` (nếu merchant set) vẫn ẩn method ở validation như cũ. **Shipping dimensions (TASK-RT50KH — contract P1)**: attrs `length/width/height` (decimal, GLOBAL, cm, labels "Shipping … (cm)") — authoritative CHỈ khi cả 3 present + numeric + > 0 (ceil int cm); partial/malformed/blank → treated as missing → KHÔNG dimension rejection, provider remains final authority. Longest side > 150cm (SANDBOX_OBSERVED) → hard UNAVAILABLE `GHN_PACKAGE_{LENGTH|WIDTH|HEIGHT}_LIMIT_EXCEEDED` không API call, không fallback mọi mode (carrier-owned rejection). Configurable → selected child dims; bundle ship-together → bundle-level dims. Dims KHÔNG nhân với qty và KHÔNG gửi fee API. `ShipmentPhysicalData` vẫn authoritative tại shipment creation.
+- **Rating**: destination canonical (`VN_ADMIN_2025`) → ShippingCore handoff về `VN_ADMIN_PRE_2025` (capability RATE = PRE-2025 + UNIT_ID) → mapping → `district_id + ward_code` legacy → GHN Calculate Fee. **Weight tại RATE (TASK-WNQCRW — DEC-TASKWNQCRW-001, 2026-10-01; supersedes một phần TASK-FXFMJ0/DEC-TASKFXFMJ0-001 — fallback rule FXFMJ0 GIỮ)**: `service_type_id` phụ thuộc CHỈ total quote weight — `< 20.000 g → 2` · `>= 20.000 g → 5` (CẤM package/item count ảnh hưởng; docs câu "or multi-parcel" là OR trigger cho type 5, không phải requirement; payload type 2 multi-item = root aggregate weight only, an toàn). Provider fee endpoint KHÔNG có weight bound (SANDBOX_OBSERVED 2026-09-30) NHƯNG checkout có **per-package weight display gate merchant-tunable** `carriers/secomm_ghn/max_package_weight_g` (GRAMS, store scope, default **50.000 g** = Create contract — TASK-WNQCRW): 1 sellable unit > limit → UNAVAILABLE `GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED` trước fee call, không fallback; strictly `>` (đúng 50.000g vẫn quote); aggregate KHÔNG bao giờ bị cap khi mọi unit ≤ limit; CREATE luôn enforce 50.000 g/package bất kể config. Weight chỉ quyết định service type qua biên 20kg. `weight` required non-zero (≤0 → `GHN_RATE_INVALID_PARCEL_DATA`, không API call). Provider fee endpoint là final authority cho availability: SUCCESS → realtime; timeout/5xx/429 → `TECHNICAL_FAILURE` (fallback theo policy); business rejection → UNAVAILABLE không fallback. Heavy weight đơn thuần KHÔNG tạo fallback eligibility. Legacy `carriers/secomm_ghn/max_package_weight` (KHÔNG có `_g` — knob validation-stage riêng của `Ghn::processAdditionalValidation`, không khai báo trong system.xml/config.xml, inert by default) độc lập với path `_g` mới — nếu merchant tự set giá trị DB thì cả 2 gate cùng chạy. **Shipping dimensions (TASK-RT50KH — contract P1)**: attrs `length/width/height` (decimal, GLOBAL, cm, labels "Shipping … (cm)") — authoritative CHỈ khi cả 3 present + numeric + > 0 (ceil int cm); partial/malformed/blank → treated as missing → KHÔNG dimension rejection, provider remains final authority. Dimension vượt limit riêng của chiều đó (shared config `carriers/secomm_ghn/max_{length,width,height}_cm`, default 200cm Create contract — TASK-ZS2B41 rev. 2026-10-01; quan sát sandbox 150 bị supersede làm default, merchant hạ config khi account enforce 150) → hard UNAVAILABLE `GHN_PACKAGE_{LENGTH|WIDTH|HEIGHT}_LIMIT_EXCEEDED` không API call, không fallback mọi mode (carrier-owned rejection). Configurable → selected child dims; bundle ship-together → bundle-level dims. Dims KHÔNG nhân với qty và KHÔNG gửi fee API. `ShipmentPhysicalData` vẫn authoritative tại shipment creation.
 - **Create Order**: handoff `VN_ADMIN_2025` + TEXT_NAME → mapping sang tên GHN 2025 → `is_new_to_address=true`. Rating và create **không reuse** resolution path.
 - **Fail closed**: mapping miss = exception (`GhnMappingNotFoundException`), không fuzzy name runtime, không magic fallback rate, empty body = exception.
 
 **Shipment lifecycle (create)** — `GhnShipmentCreationService::createForShipment()`:
 1. Idempotency: `client_order_code = 'GHNS' + shipmentId`; row `SUBMITTED` có order code → no-op.
-2. Ghi `PENDING` **trước** khi gọi GHN; thiếu physical data (posted packages hoặc snapshot `secomm_physical`) → `INVALID_PARCEL` (không thay bằng default).
-3. Limit per package: ≤ 50.000 g, mỗi cạnh ≤ 200 cm (rate-time limit GHN thực tế 150 cm — sandbox observed).
+2. Ghi `PENDING` **trước** khi gọi GHN; thiếu physical data (posted packages hoặc snapshot `secomm_physical`) → `INVALID_PARCEL` (không thay bằng default). **TASK-W5BW4F / DEC-TASKW5BW4F-001 — surfacing 2 lớp**: fresh save (shipment chưa tồn tại) có package deterministic-invalid (thiếu/zero rows, vi phạm limit) bị **chặn ngay lúc save** (`sales_order_shipment_save_before` → `GhnShipmentSaveValidationObserver`, cùng validator với service) — không sinh shipment/anchor/snapshot rác; re-save shipment hiện hữu không bao giờ bị chặn.
+3. Limit per package: ≤ 50.000 g, mỗi chiều ≤ max_length/width/height_cm (config dùng chung RATE + CREATE, default 200 cm — Create contract; merchant hạ khi account enforce thấp hơn).
 4. Stage-1 handoff CREATE + Stage-2 mapping 2025; thiếu tên mới → `PROVIDER_MAPPING_MISSING`.
 5. Payload: `shop_id` (header), `payment_type_id`, `required_note`, `content`; **KHÔNG gửi** `cod_amount`/`insurance_value`/`order_value` (policy COD/insurance thuộc upstream).
 6. POST `v2/shipping-order/create-order` **single attempt**; HTTP 200 nhưng thiếu `order_code` → row `UNKNOWN` (không tạo blind second order).
 7. Kết quả: `SUBMITTED` (kèm fee, expected delivery) | `FAILED` (business/mapping) | `UNKNOWN` (technical). Track GHN được attach như native shipment track (title "GHN").
+8. **Mọi outcome non-success là loud (layer 2)**: admin error message (status + reason human + hint retry CLI) + shipment comment + section "GHN Shipment" trên shipment view (provider row + packages đã xác nhận; hint retry cho FAILED/UNKNOWN).
 
 Observer tạo tự động: event `sales_order_shipment_save_commit_after` → `GhnShipmentCreateObserver` (idempotent, không bao giờ throw, gate raw method prefix `secomm_ghn_`).
 
@@ -450,7 +497,7 @@ Config tối thiểu: `address/profiles/mapping` = `a:1:{s:2:"VN";s:13:"vn_admin
 | `carriers/secomm_ghn/debug` | `1` (chỉ khi cần tra log `var/log/secomm_ghn.log`) |
 | `carriers/secomm_ghn/rate_source_mode` | `CARRIER_ONLY` nếu chưa cấu hình fallback |
 
-Kiểm tra rate: cart có destination VN (region + ward hợp lệ) → method "GHN Delivery" hiện với giá realtime. Hạn mức rate-time: mỗi cạnh ≤ 150 cm; nặng ≥ 20 kg hoặc multi-package → `service_type_id=5`.
+Kiểm tra rate: cart có destination VN (region + ward hợp lệ) → method "GHN Delivery" hiện với giá realtime. Hạn mức rate-time: mỗi chiều ≤ max_length/width/height_cm + mỗi unit ≤ max_package_weight_g (config merchant-tunable, default 200 cm / 50.000 g); service type theo TOTAL weight: < 20 kg → `2`, ≥ 20 kg → `5` (không phụ thuộc số package).
 
 ### Case 3 — GHN production
 
@@ -492,13 +539,17 @@ Lưu ý: ĐỔI SCHEME LÀM HỎNG NAME-MATCHING của address đã lưu (ward v
 
 ### Case 8 — Xử lý shipment tạo GHN thất bại
 
+Lỗi create hiện không bao giờ im lặng (TASK-W5BW4F): fresh save có package invalid bị **chặn
+ngay lúc save** với message rõ; lỗi post-commit hiện dưới dạng admin error message lúc save +
+shipment comment + section "GHN Shipment" trên shipment view (status + reason + hint retry).
+
 ```bash
 bin/magento secomm:ghn:shipment:retry <shipment_id>          # FAILED/UNKNOWN — idempotent, đúng client_order_code
 bin/magento secomm:ghn:shipment:cancel <shipment_id> GHN-CO003 --reason "khách hủy"
 bin/magento secomm:ghn:shipment:return <shipment_id>
 ```
 
-Row `UNKNOWN` (timeout/5xx lúc create) — kiểm tra trên GHN portal trước khi retry (retry an toàn do idempotent code). Cancel/Return từ admin grid shipment view cũng được (ACL tương ứng).
+Row `UNKNOWN` (timeout/5xx lúc create) — kiểm tra trên GHN portal trước khi retry (retry an toàn do idempotent code). Cancel/Return từ admin grid shipment view cũng được (ACL tương ứng). Lưu ý: fresh save bị chặn (pre-commit) thì KHÔNG có shipment/anchor row nào để retry — sửa package data và tạo lại shipment. Nếu merchant vẫn phải hoàn tất đơn: dùng **Create Offline Shipment** (Case 12 / §2.5).
 
 ### Case 9 — Tracking không cập nhật
 
@@ -526,6 +577,28 @@ Row `UNKNOWN` (timeout/5xx lúc create) — kiểm tra trên GHN portal trước
 Zones/service levels/fallback per-level là **DI composition**, không có admin UI: đóng góp qua `canonicalZones` / `serviceLevels` / `fallbackEnabledByLevel` trong `etc/di.xml` của module composition. Không cấu hình gì = mọi destination hợp lệ đều được phục vụ (scope `ALL`).
 
 ---
+
+### Case 12 — Offline Shipment (carrier create bị chặn deterministic)
+
+Khi GHN create bị chặn pre-save (vd package vi phạm limit) và merchant vẫn phải hoàn tất đơn:
+**Create Offline Shipment** trên form tạo shipment (hiện khi order đi carrier có capability —
+hiện tại GHN). Confirm → shipment Magento tạo thật, không có gì gửi lên GHN.
+
+Kiểm tra sau tạo:
+
+```bash
+mysql -h 127.0.0.1 -P 3307 -u root launchpad -e \
+  "SELECT entity_id FROM sales_shipment WHERE order_id=<id>;                 -- shipment tồn tại
+   SELECT packages FROM sales_shipment WHERE entity_id=<sid>;\"             # JSON có 'secomm_fulfillment' (mode OFFLINE) + 'secomm_physical'
+# Phải RỖNG:
+#   secomm_ghn_shipment  (không anchor)   secomm_cod_collection (không claim)   sales_shipment_track (không track)
+```
+
+View shipment: section **Fulfillment** (Mode/Intended Carrier/Provider Shipment: Not
+Created/Reason/Note) + banner offline trong "GHN Shipment" (nếu có packages). Thêm tracking
+thủ công bằng Add Track native (carrier "Custom Value" — không dùng carrier `secomm_ghn` trừ
+khi có thật mã GHN book tay trên portal, khi đó tracking reconcile GHN sẽ xử lý như thường).
+Chi tiết ownership/eligibility: §2.5.
 
 ## 10. Kết quả audit — trạng thái & lưu ý
 
