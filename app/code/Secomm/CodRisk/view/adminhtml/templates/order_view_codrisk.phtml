@@ -73,21 +73,21 @@ $badgeStyle = $decision !== null
                     </tr>
                     <tr>
                         <th><?= $escaper->escapeHtml(__('Spam Match')) ?></th>
-                        <td><?= $summary['spam_matched'] ? __('Yes') : __('No') ?></td>
+                        <td><?= $escaper->escapeHtml($summary['spam_matched'] ? __('Yes') : __('No')) ?></td>
                     </tr>
                 <?php endif; ?>
                 <tr>
                     <th><?= $escaper->escapeHtml(__('List State')) ?></th>
                     <td>
                         <?= $escaper->escapeHtml(__('Blacklist')) ?>:
-                        <b><?= $blacklist !== null ? __('Active') : __('None') ?></b>
+                        <b><?= $escaper->escapeHtml($blacklist !== null ? __('Active') : __('None')) ?></b>
                         <?php if ($blacklist !== null): ?>
                             (<a href="<?= $escaper->escapeUrl($block->getDeactivateListUrl((int)$blacklist->getId())) ?>">
                                 <?= $escaper->escapeHtml(__('Deactivate Blacklist')) ?>
                             </a>)
                         <?php endif; ?>
                         — <?= $escaper->escapeHtml(__('Allowlist')) ?>:
-                        <b><?= $allowlist !== null ? __('Active') : __('None') ?></b>
+                        <b><?= $escaper->escapeHtml($allowlist !== null ? __('Active') : __('None')) ?></b>
                     </td>
                 </tr>
                 <?php if ($override !== null): ?>

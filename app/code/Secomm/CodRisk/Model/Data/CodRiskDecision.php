@@ -14,7 +14,7 @@ use Secomm\CodRisk\Api\Data\CodRiskDecisionInterface;
 /**
  * Immutable evaluation result.
  */
-final class CodRiskDecision implements CodRiskDecisionInterface
+class CodRiskDecision implements CodRiskDecisionInterface
 {
     /**
      * @param string $decision Self::ALLOW|WARNING|BLOCK

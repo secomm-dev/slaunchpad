@@ -15,7 +15,7 @@ use Secomm\CodRisk\Model\Phone\PhoneNormalizer;
 /**
  * Immutable evaluation context.
  */
-final class CodRiskContext implements CodRiskContextInterface
+class CodRiskContext implements CodRiskContextInterface
 {
     public function __construct(
         private readonly PhoneNormalizer $phoneNormalizer,

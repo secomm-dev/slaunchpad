@@ -18,7 +18,7 @@ use Secomm\CodRisk\Api\Data\CodRiskDecisionInterface;
  * reporting, pipeline continues), or matches terminally (pipeline stops and the
  * rule's decision becomes the base decision).
  */
-final class RuleResult
+class RuleResult
 {
     public function __construct(
         private readonly bool $matched = false,
