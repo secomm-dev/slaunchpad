@@ -32,3 +32,236 @@
     display: block;
     margin-inline: auto;
 }
+
+/* ==========================================================================
+   PLP design (TASK-NAMVVC, SLP-235) — toolbar, pager, filter sidebar/panel,
+   empty state, page title. Unlayered on purpose: these rules restructure or
+   recolor vendor markup whose utilities (grid, rounded-3xl, invisible) would
+   otherwise win the cascade against @layer components rules.
+   ========================================================================== */
+
+/* --- Toolbar: mobile = [Filters][Sorter] row, no mode switcher (2330-39378) --- */
+.lp-filters-toggle {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    body.catalog-category-view .toolbar-products.toolbar-top,
+    body.catalogsearch-result-index .toolbar-products.toolbar-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    body.catalog-category-view .toolbar-products .modes,
+    body.catalogsearch-result-index .toolbar-products .modes {
+        display: none;
+    }
+
+    /* Feedback r3: 2 nút Bộ lọc / Sắp xếp xếp 1 hàng — chữ nowrap, padding
+       gọn, value sort cắt "…" thay vì wrap đẩy 2 hàng. */
+    .lp-filters-toggle {
+        display: flex;
+        flex: 0 1 auto;
+        white-space: nowrap;
+        padding-inline: 0.625rem;
+        font-size: 0.875rem;
+    }
+
+    .toolbar-products .lp-sorter-control {
+        height: 3rem;
+        padding-inline: 0.625rem;
+        font-size: 0.875rem;
+    }
+
+    .toolbar-products .lp-sorter-value {
+        max-width: 8.5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .toolbar-products .lp-sorter-wrap {
+        margin-right: 0;
+    }
+
+    /* Design mobile không có nút đảo chiều sort */
+    .toolbar-products .toolbar-sorter .sorter-action {
+        display: none;
+    }
+
+    .toolbar-products .toolbar-sorter {
+        justify-content: flex-end;
+    }
+
+    /* Feedback r4 (design 2330-39394): bottom toolbar mobile = 2 hàng —
+       hàng 1 pager ghost (arrows + số không viền, current tint #e7f1e8),
+       hàng 2 amount trái + limiter phải. Grid mặc định đã cho 2 hàng khi
+       không bị rule flex của top toolbar đè (root cause vụ 3 khối 1 hàng:
+       display:flex áp cả bottom vì cùng class .toolbar-products). */
+    .toolbar-products.toolbar-bottom .lp-pager-page,
+    .toolbar-products.toolbar-bottom .lp-pager-arrow,
+    .toolbar-products.toolbar-bottom .lp-pager-jump {
+        border-color: transparent;
+        background-color: transparent;
+        padding-inline: 0.75rem;
+        min-width: 2.75rem;
+    }
+
+    .toolbar-products.toolbar-bottom .lp-pager-page-current {
+        background-color: #e7f1e8;
+    }
+
+    .toolbar-products.toolbar-bottom {
+        row-gap: 0.75rem;
+    }
+}
+
+/* --- Sort control: custom Alpine dropdown (2330-39557) — control classes
+   live on the template button (utilities); only the action arrow is themed --- */
+.toolbar-sorter .sorter-action {
+    color: #293e2d;
+}
+
+/* --- Mode switcher (desktop only): radius 8, gap 16, active tint --- */
+.toolbar-products .modes {
+    width: fit-content;
+    border-color: #d1d5dc;
+    border-radius: 0.5rem;
+    column-gap: 1rem;
+}
+
+.toolbar-products .modes-mode {
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    color: #293e2d;
+    /* design icon 16px giữa nút 32px — vendor vẽ background-image 24px,
+       mặc định top-left. */
+    background-size: 16px 16px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.toolbar-products .modes-mode.active {
+    opacity: 1;
+}
+
+/* --- Pager: radius 6, active page tint (2330-39642) --- */
+.pager .pages-item-previous,
+.pager .pages-item-next,
+.pager .pages .page {
+    border-radius: 6px;
+}
+
+.pager .pages-item-previous,
+.pager .pages-item-next {
+    padding: 10px;
+}
+
+.pager .pages .page[aria-current="page"] {
+    background-color: #e7f1e8;
+    color: #293e2d;
+}
+
+/* --- Filter sidebar / mobile panel (2330-39642 + 2330-39556) --- */
+.lp-filter-sidebar .filter-option {
+    margin: 1.5rem 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.lp-filter-sidebar .filter-options-title button {
+    padding-block: 0.25rem;
+}
+
+.lp-filter-sidebar .filter-option .title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.75rem;
+    color: #293e2d;
+}
+
+.lp-filter-sidebar .lp-filter-chevron {
+    display: flex;
+    color: #293e2d;
+}
+
+.lp-filter-item {
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.75rem;
+    color: #293e2d;
+}
+
+.lp-filter-item a:hover {
+    color: #45744c;
+}
+
+@media (max-width: 767.98px) {
+    .lp-filter-panel-open {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        background-color: #fff;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    .lp-filter-panel-open .lp-filter-content {
+        flex: 1 1 auto;
+    }
+}
+
+/* --- Breadcrumb + page title block (design 2330-39701 / 2330-39540) ---
+   Feedback r5: selector cũ dùng .page-title-wrapper.product KHÔNG khớp DOM
+   (wrapper thật = div.container.flex trong column.main) nên utilities
+   text-3xl/lg:text-4xl (36/40) thắng — H1 chưa bao giờ đạt 40/60px. */
+/* Feedback r5b (khoảng cách): page-main margin-top 32px của theme làm gap
+   breadcrumb -> H1 = 32px (design 12px — breadcrumb 44 + gap 12 + H1 72 +
+   pb 25 = 153). Scope catalog/search. */
+body.catalog-category-view .page-main,
+body.catalogsearch-result-index .page-main {
+    margin-top: 0.75rem;
+}
+
+body.catalog-category-view .page-main .page-title {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    letter-spacing: -1px;
+    color: #101828;
+    margin-bottom: 0;
+}
+
+@media (min-width: 1024px) {
+    body.catalog-category-view .page-main .page-title {
+        font-size: 3.75rem;
+        letter-spacing: -1px;
+    }
+}
+
+/* Breadcrumb: nền trắng sạch, 14px Medium #101828, py-12 (màu/chevron trong
+   template override Magento_Theme::html/breadcrumbs.phtml). */
+body.catalog-category-view .breadcrumbs {
+    background: none;
+    box-shadow: none;
+}
+
+body.catalog-category-view .breadcrumbs .items {
+    padding-block: 0.75rem;
+}
+
+@layer components {
+    /* SLP-235 feedback r2: checkbox box mặc định (trắng/gray). Nằm ở layer
+       components để utility bg-hp-brand-dark / border-hp-brand-dark (do Alpine
+       :class thêm khi chọn) THẮNG cascade — bg-white trong cùng class list sẽ
+       thắng ngược lại (cùng layer utilities, thứ tự stylesheet quyết định).
+       Tick trắng: path mang stroke="white" inline + opacity Alpine toggle. */
+    .lp-filter-item-box {
+        background-color: #fff;
+        border-color: #d1d5dc;
+    }
+}

@@ -1,0 +1,106 @@
+<?php
+
+/** @var $block \Smile\ElasticsuiteCatalog\Block\Navigation\FilterRenderer */
+/** @var $this \Smile\ElasticsuiteCatalog\Block\Navigation\Renderer\Attribute */
+/** @var $escaper \Magento\Framework\Escaper  */
+
+/**
+ * Copy của Hyva_SmileElasticsuite catalog/layer/filter/attribute.phtml
+ * (TASK-NAMVVC, SLP-235). Đổi khác: item row theo design Figma 2330-39642 —
+ * [label flex-1] [count "(n)"] [checkbox 24×24 radius-4] (bản gốc: checkbox
+ * trái + label + count inline). Giữ nguyên contract: initSmileAttribute jsLayout,
+ * x-for displayedItems, anchor navigate-immediate, search-in-filter,
+ * show-more/less, sr-only texts, disabled (count<1) unlinked item.
+ */
+
+?>
+<?php
+  $uniqueId = '_' . uniqid();
+  $jsLayout = $this->getJsLayout();
+  $datascope = $this->getFilter()->getRequestVar() . 'Filter';
+  $filterName = $this->getFilter()->getName();
+?>
+<?php if (!empty($filterItems)) : ?>
+    <div
+        class="<?= $escaper->escapeHtml($datascope); ?>"
+        x-data="initSmileAttribute(<?= $escaper->escapeHtmlAttr($jsLayout) ?>)"
+        x-init="initialize();"
+    >
+        <div class="field search"  x-show="displaySearch">
+            <div class="control">
+                <input class="filter-search w-full mb-2"
+                       type="text"
+                       aria-label="<?= $escaper->escapeHtmlAttr( __('Search %1 filter', $filterName)) ?>"
+                       autocomplete="off"
+                       :placeholder="searchPlaceholder"
+                       @keyup="onSearchChange"
+                       @focusout="onSearchFocusOut" />
+            </div>
+        </div>
+        <ol class="items"
+            aria-label="<?= $escaper->escapeHtmlAttr(__('%1 filter options', $filterName)) ?>"
+            tabindex="-1"
+            x-ref="closestItems<?= $uniqueId ?>"
+        >
+            <template x-for="attribute in displayedItems" hidden>
+                <li class="item">
+                    <a
+                        class="lp-filter-item flex items-center gap-2 py-2"
+                        :href="attribute.url"
+                        x-show="attribute.count >= 1"
+                        :rel="options.displayRelNofollow"
+                    >
+                        <span class="min-w-0 flex-1 truncate">
+                            <span x-html="attribute.label"></span>
+                            <span class="sr-only" x-show="attribute.is_selected">
+                                <?= $escaper->escapeHtml(__('filter selected')) ?>
+                            </span>
+                        </span>
+                        <span class="lp-filter-item-count shrink-0 text-xs leading-4 text-[#6a7282]"
+                              x-show="options.displayProductCount">
+                            (<span x-text="attribute.count"></span><span class="sr-only"><?= $escaper->escapeHtml(__('products available')) ?></span>)
+                        </span>
+                        <span
+                            class="lp-filter-item-box flex h-6 w-6 shrink-0 items-center justify-center rounded border"
+                            :class="attribute.is_selected && 'bg-hp-brand-dark border-hp-brand-dark'"
+                            aria-hidden="true"
+                        >
+                            <svg
+                                fill="none"
+                                class="stroke-2 stroke-white"
+                                :class="{
+                                    'opacity-100': attribute.is_selected,
+                                    'opacity-0': !attribute.is_selected,
+                                }"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                              <path stroke="white" stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path>
+                            </svg>
+                        </span>
+                    </a>
+
+                    <div class="lp-filter-item lp-filter-item-disabled flex items-center gap-2 py-2" x-show="attribute.count < 1">
+                        <span class="min-w-0 flex-1 truncate"><span x-html="attribute.label"></span></span>
+                        <span class="lp-filter-item-count shrink-0 text-xs leading-4 text-[#6a7282]" x-text="attribute.count"></span>
+                        <span class="lp-filter-item-box flex h-6 w-6 shrink-0 items-center justify-center rounded border border-[#d1d5dc] bg-white" aria-hidden="true"></span>
+                    </div>
+                </li>
+            </template>
+        </ol>
+
+        <div class="no-results-message" x-model="result" x-show="getFulltextSearch() && !hasSearchResult()" class="empty">
+            <p x-html="getSearchResultMessage()"></p>
+        </div>
+
+        <div class="actions" x-show="enableExpansion()">
+            <div class="secondary text-right">
+                <button class="action show-more underline text-secondary cursor-pointer" @click="onShowMore(); $refs.closestItems<?= $uniqueId ?>.focus()" x-show="displayShowMore()"><span x-text="showMoreLabel + '+'"></span></button>
+                <button class="action show-less underline text-secondary cursor-pointer" @click="onShowLess(); $refs.closestItems<?= $uniqueId ?>.focus()" x-show="displayShowLess()"><span x-text="showLessLabel + '-'"></span></button>
+            </div>
+        </div>
+    </div>
+
+<?php endif; ?>

@@ -1,0 +1,270 @@
+/**
+ * Product card (TASK-NAMVVC, SLP-235) — the one design card for PLP grid/list,
+ * search, compare, PageBuilder carousels and Launchpad_CmsContent rails
+ * (product_list_item pipeline, template Magento_Catalog::product/list/item.phtml).
+ * Restyle of the SLP-213 card per Figma LAUNCHPAD-CORE (grid 2330-39642,
+ * list 2622-41324, mobile grid 2330-39378). ATC is visible on every surface
+ * (ticket decision — replaces the SLP-213 "ATC hidden" state).
+ *
+ * Contracts preserved (see record Constraints):
+ *  - form.product_addtocart_form + type=submit button FIRST in the form
+ *    (Monsoon_HyvaAjaxAddToCart loader binds form.querySelector('button'));
+ *  - swatches restyled through the component's custom properties ONLY —
+ *    .swatch-option is a grid stacking the hidden radio over the label;
+ *    overriding its display breaks the box (see swatches.css, SLP-272 strike);
+ *  - price-box x-data + update-prices-<id> events untouched (template);
+ *  - LL-0030 rating guard lives in the template.
+ */
+
+@layer components {
+    /* Card container — white, radius 8 (grid) / 12 (list row), shadow xs. */
+    .hp-card {
+        @apply relative flex flex-col overflow-hidden rounded-lg bg-white shadow-xs;
+    }
+
+    .hp-card.md\:flex-row {
+        @apply rounded-xl;
+    }
+
+    .hp-card-media-wrap {
+        @apply relative block overflow-hidden bg-hp-surface;
+    }
+
+    .hp-card-photo img {
+        @apply aspect-square w-full object-contain mix-blend-multiply;
+    }
+
+    /* Card media slider (TASK-0NNZCW v4.3 — design mini dots under the image). */
+    .hp-card-gallery {
+        --snap-cols: 1;
+        --snap-gap: 0px;
+        padding-block: 0;
+    }
+
+    /* TASK-NAMVVC feedback r1 (SLP-235): mouse drag via sliders-init
+       enableMouseDrag. Without this, scroll-snap-type mandatory re-snaps the
+       programmatic scrollLeft on every pointermove and the drag looks dead.
+       Same pattern as .lp-cat-track.is-dragging (homepage.css, SLP-267). */
+    .hp-card-gallery.is-dragging {
+        scroll-snap-type: none;
+        user-select: none;
+    }
+
+    .hp-card-gallery.is-dragging a {
+        -webkit-user-drag: none;
+    }
+
+    .hp-card-media-slider nav[data-pager] {
+        @apply absolute inset-x-0 bottom-2 z-30 mx-auto w-fit;
+    }
+
+    .hp-card-media-slider nav[data-pager] .snap-marker {
+        @apply h-2 w-2 rounded-full border-0 bg-[#a9ccae] opacity-80;
+    }
+
+    .hp-card-media-slider nav[data-pager] .snap-marker[aria-current="true"] {
+        @apply w-6 rounded-full bg-hp-brand opacity-100;
+    }
+
+    /* Badges: pill, top-left over the media. The template renders ONE badge
+       (priority Sale -% > New arrival > Exclusive). */
+    .hp-card-badges {
+        @apply absolute start-0 top-0 z-10 flex p-1;
+    }
+
+    .hp-card-badge {
+        @apply rounded-xl px-2 py-1 text-xs font-medium leading-4;
+    }
+
+    .hp-card-badge-sale {
+        @apply bg-[#c10007] text-white;
+    }
+
+    .hp-card-badge-new {
+        @apply bg-hp-brand text-[#cfe3d1];
+    }
+
+    .hp-card-badge-exclusive {
+        @apply bg-[#bc9e53] text-white;
+    }
+
+    /* Configurable options on card. The Hyvä swatch-option is a GRID that
+       stacks the hidden radio over the label (grid-area 1/1); overriding its
+       display to flex pushes the radio into the flow and breaks the box.
+       Restyle through the component's own custom properties only. */
+    .hp-card fieldset {
+        @apply m-0 border-0 p-0;
+    }
+
+    .hp-card fieldset legend {
+        @apply sr-only;
+    }
+
+    .hp-card .product-item-details {
+        @apply mt-2;
+    }
+
+    .hp-card fieldset > div {
+        @apply mt-2 flex-wrap gap-2;
+    }
+
+    .hp-card .swatch-option {
+        --swatch-size: 2rem;
+        --swatch-px: 0.75rem;
+        --swatch-py: 0.375rem;
+        border-width: 2px;
+        transition: border-color 150ms ease, background-color 150ms ease;
+        border-color: #e5e7eb;
+        border-radius: 0.375rem;
+        background-color: #fff;
+        color: #1e293b;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1.25rem;
+    }
+
+    .hp-card .swatch-option[data-swatch-type="text"] {
+        min-inline-size: 0;
+    }
+
+    .hp-card .swatch-option[data-swatch-type="visual"] {
+        --swatch-radius: 9999px;
+        --swatch-px: 2px;
+        --swatch-py: 2px;
+        /* SLP-272 CR1: keep the selected ring a circle round the dot. */
+        border-color: #e5e7eb;
+        border-radius: var(--swatch-radius);
+        background-color: transparent;
+    }
+
+    .hp-card .swatch-option[data-swatch-type="visual"] > span {
+        width: 24px !important;
+        height: 24px !important;
+        border: 1px solid #d1d5dc;
+    }
+
+    .hp-card .swatch-option:is(:has(:checked)) {
+        border-color: #588f60;
+        box-shadow: inset 0 0 0 1px #588f60;
+        background-color: #f4f9f4;
+        color: #304b34;
+    }
+
+    .hp-card .swatch-option[data-swatch-type="visual"]:is(:has(:checked)) {
+        background-color: transparent;
+        color: inherit;
+    }
+
+    /* SLP-272: out-of-stock option — re-apply the disabled tokens here (the
+       strike-through itself comes from components/swatches.css). Colour dots
+       keep the transparent ring. */
+    .hp-card .swatch-option:not([data-swatch-type="visual"]):is(:has(:disabled), [aria-disabled="true"]) {
+        border-color: var(--ds-border-gray-secondary);
+        color: var(--ds-text-gray-quinary);
+        background-color: #f3f4f6;
+    }
+
+    .hp-card .swatch-option[data-swatch-type="visual"]:is(:has(:disabled), [aria-disabled="true"]) {
+        border-color: transparent;
+    }
+
+    /* Brand + rating row (design: brand left flex-1, rating right). */
+    .hp-card-brandrow {
+        @apply flex items-center justify-between gap-2;
+    }
+
+    .hp-card-brand {
+        @apply block min-h-5 min-w-0 flex-1 truncate;
+        color: #99a1af;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+    }
+
+    .hp-card-rating {
+        @apply flex shrink-0 items-center gap-1 text-sm;
+    }
+
+    .hp-card-rating-score {
+        @apply font-medium text-[#1e2939];
+    }
+
+    .hp-card-rating-count {
+        @apply text-hp-brand;
+    }
+
+    .product-item-link.hp-card-name {
+    /* block: anchor mặc định inline -> overflow-hidden/truncate vô hiệu,
+       title dài bị wrap nhiều dòng (SLP-235 feedback r3: 1 hàng + "…"). */
+        @apply mt-1 block truncate text-base font-medium leading-6 text-hp-ink hover:text-hp-brand-dark;
+    }
+
+    /* List-mode short description (design: 14/20 #6a7282, ~2 lines). */
+    .hp-card-desc {
+        @apply mt-1 line-clamp-2 text-sm leading-5 text-[#6a7282];
+    }
+
+    /* Price block: sale price 20/28 medium green, old price 14 strikethrough. */
+    .hp-card .price-box {
+        @apply m-0 flex flex-wrap items-center gap-x-3 gap-y-1;
+    }
+
+    .hp-card .price-box .price {
+        @apply text-xl font-medium leading-7 text-hp-brand;
+    }
+
+    .hp-card .price-box .old-price {
+        @apply order-2 text-sm leading-5 text-[#99a1af];
+    }
+
+    .hp-card .price-box .old-price .price {
+        @apply text-sm font-normal leading-5 text-[#99a1af] line-through;
+    }
+
+    .hp-card .price-box .special-price {
+        @apply order-1;
+    }
+
+    /* Stock row. */
+    .hp-card-stock {
+        @apply mt-1 flex items-center gap-1.5 text-base leading-6 text-[#1e2939];
+    }
+
+    .hp-card-stock-dot {
+        @apply h-3 w-3 shrink-0 rounded-full bg-[#00a63e];
+    }
+
+    /* Action row — in flow at the card foot (no longer a media overlay).
+       Grid cards stretch per row: mt-auto pins the actions down. List rows
+       keep content top-aligned (design: slack below the action row). */
+    .hp-card-actions {
+        @apply flex items-center gap-2 pt-3;
+    }
+
+    .hp-card:not(.md\:flex-row) .hp-card-actions {
+        @apply mt-auto;
+    }
+
+    /* SLP-235 feedback r3 (mobile design 2330-39378): dưới md ATC = nút icon
+       vuông 36px (text ẩn trong template); từ md nút full như desktop grid. */
+    .hp-card-actions .hp-btn-atc {
+        @apply flex h-9 w-9 flex-none items-center justify-center rounded-md bg-hp-brand-dark text-white transition hover:brightness-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hp-brand-dark;
+    }
+
+    @media (min-width: 768px) {
+        .hp-card:not(.md\:flex-row) .hp-card-actions .hp-btn-atc {
+            @apply w-auto flex-1 gap-1.5 px-4 text-sm font-medium leading-5;
+        }
+    }
+
+    /* List mode: compact ATC, icon cluster pushed to the far right
+       (ATC flex-none + margin-auto, icons keep their gap — justify-between
+       would spread all four children evenly). */
+    .hp-card.md\:flex-row .hp-btn-atc {
+        @apply w-[200px] flex-none mr-auto gap-1.5 px-4 text-sm font-medium leading-5;
+    }
+
+    /* Shared 32px round icon button (wishlist / quick view / compare). */
+    .hp-card-action-btn {
+        @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-hp-soft text-ink transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hp-brand;
+    }
+}

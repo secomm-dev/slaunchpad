@@ -1,0 +1,141 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * This file includes sections of software developed by Magento, Inc.
+ * (https://github.com/magento/magento2) and distributed under the AFL v3.0.
+ *
+ * Copy của Hyva_default/Magento_Catalog/templates/product/list/toolbar.phtml
+ * (TASK-NAMVVC, SLP-235). Đổi khác DUY NHẤT: thêm nút "Filters (N)" mobile-only
+ * (Figma 2330-39378) trong nhánh top toolbar — dispatch event `open-filters` để
+ * mở filter panel full-screen (theme override Hyva_SmileElasticsuite
+ * catalog/layer/view.phtml). Count = active filters của block catalog.leftnav.
+ * Mọi contract khác (initToolbar/changeUrl/options JSON) giữ nguyên.
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\LucideIcons;
+use Magento\Catalog\Block\Product\ProductList\Toolbar;
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+/** @var Toolbar $block */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var LucideIcons $lucideIcons */
+$lucideIcons = $viewModels->require(LucideIcons::class);
+
+$uniqueId = '_' . uniqid();
+$additionalOptions = ['page' => 'p'];
+?>
+<script>
+    function initToolbar<?= /** @noEscape */  $uniqueId ?>() {
+        return {
+            options: <?= /* @noEscape */ $block->getWidgetOptionsJson($additionalOptions) ?>.productListToolbarForm || {},
+            getUrlParams: function () {
+                let decode = window.decodeURIComponent,
+                    urlPaths = this.options.url.split('?'),
+                    urlParams = urlPaths[1] ? urlPaths[1].split('&') : [],
+                    params = {},
+                    parameters, i;
+
+                for (i = 0; i < urlParams.length; i++) {
+                    parameters = urlParams[i].split('=');
+                    params[decode(parameters[0])] = parameters[1] !== undefined ?
+                        decode(parameters[1].replace(/\+/g, '%20')) :
+                        '';
+                }
+
+                return params;
+            },
+            getCurrentLimit: function () {
+                return this.getUrlParams()[this.options.limit] || this.options.limitDefault;
+            },
+            getCurrentPage: function () {
+                return this.getUrlParams()[this.options.page] || 1;
+            },
+            changeUrl(paramName, paramValue, defaultValue) {
+                let urlPaths = this.options.url.split('?'),
+                    baseUrl = urlPaths[0],
+                    paramData = this.getUrlParams(),
+                    currentPage = this.getCurrentPage(),
+                    newPage;
+
+                /**
+                 * calculates the page on which the first item of the current page will
+                 * be with the new limit and sets that number as the new page
+                 */
+                if (currentPage > 1 && paramName === this.options.limit) {
+                    newPage = Math.floor(this.getCurrentLimit() * (currentPage - 1) / paramValue) + 1;
+
+                    if (newPage > 1) {
+                        paramData[this.options.page] = newPage;
+                    } else {
+                        delete paramData[this.options.page];
+                    }
+                }
+
+                paramData[paramName] = paramValue;
+
+                if (this.options.post) {
+                    hyva.postForm({action: baseUrl, data: paramData, skipUenc: true});
+                } else {
+                    if (paramValue === defaultValue.toString()) {
+                        delete paramData[paramName];
+                    }
+                    paramData = Object.keys(paramData).length === 0
+                        ? ''
+                        : '?' + (new URLSearchParams(paramData));
+                    location.href = baseUrl + paramData
+                }
+            }
+        }
+    }
+</script>
+<?php if ($block->getCollection()->getSize()): ?>
+    <div x-data="initToolbar<?= /** @noEscape */ $uniqueId ?>()"
+         class="toolbar toolbar-products <?= $block->getIsBottom() ? 'toolbar-bottom' : 'toolbar-top' ?> grid grid-cols-4 sm:grid-cols-8 md:grid-cols-4
+            lg:grid-cols-8  grid-flow-row gap-2 items-center">
+        <?php if ($block->getIsBottom()): ?>
+            <?= /** @noEscape */  $block->fetchView($block->getTemplateFile('Magento_Catalog::product/list/toolbar/amount.phtml')) ?>
+            <?= $block->getPagerHtml() ?>
+            <?= /** @noEscape */ $block->fetchView($block->getTemplateFile('Magento_Catalog::product/list/toolbar/limiter.phtml')) ?>
+        <?php else: ?>
+            <?php if ($block->isExpanded()): ?>
+                <?php /* SLP-235: mobile "Filters (N)" button (design 2330-39378).
+                   Hidden ≥lg by CSS; opens the Elasticsuite layer panel via the
+                   `open-filters` window event. */ ?>
+                <?php
+                    // SLP-235 feedback r2: count = filter ĐANG ÁP DỤNG (State child),
+                    // KHÔNG phải Navigation::getActiveFilters() (danh sách facet
+                    // đang mở rộng — trang sạch vẫn trả N).
+                    $lpFilterCount = 0;
+                    if ($lpLeftNav = $block->getLayout()->getBlock('catalog.leftnav')) {
+                        try {
+                            $lpFilterCount = ($lpState = $lpLeftNav->getChildBlock('state'))
+                                ? count((array) $lpState->getActiveFilters())
+                                : 0;
+                        } catch (\Throwable $e) {
+                            $lpFilterCount = 0;
+                        }
+                    }
+                ?>
+                <button type="button"
+                    class="lp-filters-toggle flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d1d5dc] bg-white px-4 text-base font-medium leading-6 text-[#101828]"
+                    aria-controls="filters-content"
+                    @click.prevent="$dispatch('open-filters')"
+                >
+                    <?= $lucideIcons->slidersHorizontalHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
+                    <span><?= $escaper->escapeHtml(__('Filters')) ?></span>
+                    <?php if ($lpFilterCount > 0): ?><span class="lp-filters-count">(<?= (int) $lpFilterCount ?>)</span><?php endif; ?>
+                </button>
+                <?= /** @noEscape */  $block->fetchView($block->getTemplateFile('Magento_Catalog::product/list/toolbar/viewmode.phtml')) ?>
+                <?= /** @noEscape */  $block->fetchView($block->getTemplateFile('Magento_Catalog::product/list/toolbar/sorter.phtml')) ?>
+            <?php endif ?>
+        <?php endif ?>
+    </div>
+<?php endif ?>
