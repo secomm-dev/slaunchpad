@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Secomm. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Secomm_ContactGraphQlReCaptcha">
+        <sequence>
+            <module name="Magento_ReCaptchaWebapiApi"/>
+            <module name="Magento_ReCaptchaUi"/>
+            <module name="Magento_ContactGraphQl"/>
+        </sequence>
+    </module>
+</config>
