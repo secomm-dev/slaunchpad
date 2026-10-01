@@ -19,7 +19,7 @@ namespace Secomm\CodRisk\Model\Phone;
  * Invalid/unusable input returns null — an invalid phone is an address/checkout
  * validation concern, never a risk BLOCK (CR-008).
  */
-final class PhoneNormalizer
+class PhoneNormalizer
 {
     private const VN_COUNTRY_CODE = '84';
 

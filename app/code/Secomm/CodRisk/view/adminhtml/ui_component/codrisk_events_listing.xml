@@ -76,6 +76,7 @@
                 <filter>select</filter>
                 <options class="Secomm\CodRisk\Model\Source\Websites"/>
                 <label translate="true">Website</label>
+                            <dataType>select</dataType>
             </settings>
         </column>
         <column name="note">

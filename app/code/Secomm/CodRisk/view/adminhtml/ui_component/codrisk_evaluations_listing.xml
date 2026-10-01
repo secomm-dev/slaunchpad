@@ -58,6 +58,7 @@
                 <filter>select</filter>
                 <label translate="true">Decision</label>
                 <options class="Secomm\CodRisk\Model\Source\Decisions"/>
+                            <dataType>select</dataType>
             </settings>
         </column>
         <column name="matched_rule">
@@ -77,7 +78,7 @@
                 <filter>select</filter>
                 <label translate="true">Spam Match</label>
                 <options class="Secomm\CodRisk\Model\Source\YesNo"/>
-                <dataType>text</dataType>
+                <dataType>select</dataType>
             </settings>
         </column>
     </columns>

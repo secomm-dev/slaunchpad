@@ -12,7 +12,6 @@ namespace Secomm\CodRisk\Model\Config\Backend;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Value;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Phrase;
 use Secomm\CodRisk\Model\Config;
 
@@ -28,6 +27,12 @@ use Secomm\CodRisk\Model\Config;
  */
 class BlockThreshold extends Value
 {
+    /**
+     * Parent App\Config\Value does not expose the ScopeConfigInterface it receives —
+     * keep our own reference for the warning-threshold lookup.
+     */
+    private ScopeConfigInterface $scopeConfig;
+
     public function __construct(
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
@@ -38,6 +43,7 @@ class BlockThreshold extends Value
         array $data = [],
     ) {
         parent::__construct($context, $registry, $config, $cacheTypeList, $resource, $resourceCollection, $data);
+        $this->scopeConfig = $config;
     }
 
     /**
@@ -64,15 +70,15 @@ class BlockThreshold extends Value
 
     private function getStoredWarning(): ?int
     {
-        $scopeType = $this->getScope() !== ''
-            ? $this->getScope()
-            : ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
-        $scopeCode = $this->getScopeCode();
+        // Value objects carry scope as raw strings ('default'/'websites'/'stores') —
+        // identical to the ScopeInterface constant values.
+        $scopeType = (string)$this->getScope();
+        $scopeCode = (string)$this->getScopeCode();
 
         $value = $this->scopeConfig->getValue(
             Config::XML_PATH_WARNING_THRESHOLD,
-            $scopeType === 'websites' ? ScopeInterface::SCOPE_WEBSITE : $scopeType,
-            $scopeCode
+            $scopeType !== '' ? $scopeType : ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+            $scopeCode !== '' ? $scopeCode : null
         );
 
         return $value === null ? null : (int)$value;

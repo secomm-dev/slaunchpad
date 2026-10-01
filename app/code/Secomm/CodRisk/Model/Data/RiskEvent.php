@@ -14,7 +14,7 @@ use Secomm\CodRisk\Api\Data\RiskEventInterface;
 /**
  * Immutable normalized risk event value object.
  */
-final class RiskEvent implements RiskEventInterface
+class RiskEvent implements RiskEventInterface
 {
     public function __construct(
         private readonly string $normalizedPhone,
