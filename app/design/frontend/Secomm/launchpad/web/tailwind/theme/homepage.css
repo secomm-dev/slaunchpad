@@ -1338,7 +1338,7 @@ body.cms-index-index [data-content-type="row"] [data-content-type="column-line"]
    1360 content + 2×40 padding, centered. Full-bleed (hero/video/split/sofa)
    vẫn tràn viewport. */
 body.cms-index-index [data-content-type="row"][data-appearance="contained"] {
-    max-width: 90rem !important;
+    max-width: 100% !important;
     margin-inline: auto !important;
 }
 
@@ -1439,7 +1439,7 @@ body.cms-index-index .lp-promo-dragging {
        container chuẩn 90rem/1440 như mọi section contained (1360 content):
        1440 clip item 4 tại mép container, màn lớn không giãn. */
     #html-body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) {
-        max-width: 90rem !important;
+        max-width: 100% !important;
         margin-inline: auto !important;
         margin-block-start: 1.5rem !important;
         padding-inline: 2.5rem !important;
