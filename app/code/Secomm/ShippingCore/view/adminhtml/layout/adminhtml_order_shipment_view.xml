@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- BUG-DT0C4W — the page handle is `adminhtml_order_shipment_view` (route id
+             `adminhtml`); the former `sales_shipment_view.xml` filename was a dead handle (that
+             name is only the root BLOCK name), so this section never rendered. Anchor: the core
+             `extra_shipment_info` container under block `form` (echoed at
+             Magento_Shipping::view/form.phtml:162). -->
+        <referenceContainer name="extra_shipment_info">
+            <!-- TASK-S52DGA (DEC-TASKS52DGA-001): carrier-neutral fulfillment status — renders
+                 only for shipments with an OFFLINE fulfillment record (legacy/online: nothing). -->
+            <block class="Secomm\ShippingCore\Block\Adminhtml\Shipment\View\FulfillmentStatus"
+                   name="secomm_shippingcore.shipment.view.fulfillment_status"
+                   template="Secomm_ShippingCore::shipment/view/fulfillment_status.phtml"
+                   after="-"/>
+        </referenceContainer>
+    </body>
+</page>

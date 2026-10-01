@@ -18,8 +18,8 @@ namespace Secomm\Ghn\Model\Rate;
  * Note the deliberate asymmetry: fee = `cod_value`, Create Order = `cod_amount` (current docs).
  *
  * TASK-WAWNDS: the single-parcel {@see GhnParcel} rate input became a quote-time
- * {@see QuoteParcelEstimate} (PRODUCT_UNIT_AS_PACKAGE) so heavy/multi-parcel quotes serialize
- * the type-5 `items[]` payload. GhnParcel stays CREATE-only.
+ * {@see QuoteParcelEstimate} (PRODUCT_UNIT_AS_PACKAGE) so type-5 quotes (total >= 20kg,
+ * TASK-WNQCRW) serialize the `items[]` payload. GhnParcel stays CREATE-only.
  */
 final class GhnRateQuery
 {

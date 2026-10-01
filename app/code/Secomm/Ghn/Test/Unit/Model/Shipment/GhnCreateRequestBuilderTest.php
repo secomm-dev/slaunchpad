@@ -254,4 +254,54 @@ class GhnCreateRequestBuilderTest extends TestCase
             $this->assertSame(GhnCreateValidationException::REASON_INVALID_PARCEL, $exception->getReasonToken());
         }
     }
+
+    /**
+     * TASK-4P33TV — every RequiredNote source-model option MUST be accepted by the builder.
+     * Sandbox-verified set (shop 200537, 2026-09-30): KHONGCHOXEMHANG / CHOXEMHANGKHONGTHU /
+     * CHOTHUHANG accepted; CHOXEMHANG + CHOTHUHANGKHONGDOI rejected by the provider and
+     * REMOVED from the source model (they shipped in the dropdown and fail-closed CREATE —
+     * shipment 21).
+     */
+    public function testEverySourceModelRequiredNoteOptionIsAccepted(): void
+    {
+        $options = (new \Secomm\Ghn\Model\Config\Source\RequiredNote())->toOptionArray();
+        foreach ($options as $index => $option) {
+            $payload = $this->builder->build(
+                'GHNS-' . $index,
+                'Lạng Sơn',
+                'Xã Tân Thanh',
+                new GhnParcelPlan(2, 1000, 10, 10, 10, null),
+                $this->address,
+                1,
+                (string) $option['value'],
+                'content',
+                0
+            );
+
+            $this->assertSame($option['value'], $payload['required_note']);
+        }
+    }
+
+    /** TASK-4P33TV — the provider-rejected legacy tokens stay rejected by the builder. */
+    public function testProviderRejectedLegacyTokensStillFailClosed(): void
+    {
+        foreach (['CHOXEMHANG', 'CHOTHUHANGKHONGDOI'] as $legacyToken) {
+            try {
+                $this->builder->build(
+                    'GHNS-X',
+                    'Lạng Sơn',
+                    'Xã Tân Thanh',
+                    new GhnParcelPlan(2, 1000, 10, 10, 10, null),
+                    $this->address,
+                    1,
+                    $legacyToken,
+                    'content',
+                    0
+                );
+                $this->fail("Expected GhnCreateValidationException for {$legacyToken}");
+            } catch (GhnCreateValidationException $exception) {
+                $this->assertSame(GhnCreateValidationException::REASON_INVALID_CONFIGURATION, $exception->getReasonToken());
+            }
+        }
+    }
 }

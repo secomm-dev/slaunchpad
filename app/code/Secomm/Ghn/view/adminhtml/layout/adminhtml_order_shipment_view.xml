@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- BUG-DT0C4W — the page handle is `adminhtml_order_shipment_view` (route id
+             `adminhtml`); the former `sales_shipment_view.xml` filename was a dead handle (that
+             name is only the root BLOCK name), so these sections never rendered. Anchor: the
+             core `extra_shipment_info` container under block `form` (echoed at
+             Magento_Shipping::view/form.phtml:162). -->
+        <referenceContainer name="extra_shipment_info">
+            <!-- TASK-W5BW4F: read-only provider status + confirmed packages (layer 2 surface). -->
+            <block class="Secomm\Ghn\Block\Adminhtml\Shipment\View\ProviderStatus"
+                   name="secomm_ghn.shipment.view.provider_status"
+                   template="Secomm_Ghn::shipment/view/provider_status.phtml"
+                   after="-"/>
+            <block class="Secomm\Ghn\Block\Adminhtml\Shipment\View\Actions"
+                   name="secomm_ghn.shipment.view.actions"
+                   template="Secomm_Ghn::shipment/actions.phtml">
+                <block name="secomm_ghn.formkey" class="Magento\Backend\Block\Admin\Formkey"
+                       as="formkey" template="Magento_Backend::admin/formkey.phtml"/>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

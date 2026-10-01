@@ -46,8 +46,15 @@ class GhnRateRequestMapperTest extends TestCase
         // WEIGHT semantics; dimension wiring has its own estimator/reader suites.
         $dimensionsReader = $this->createMock(ShippingDimensionsReaderInterface::class);
         $dimensionsReader->method('read')->willReturn(null);
+        // TASK-ZS2B41 (rev. 3-path) — config stubbed to the authoritative 200cm default (weight tests only).
+        $ghnConfig = $this->createMock(\Secomm\Ghn\Model\Config::class);
+        $ghnConfig->method('getMaxLengthCm')->willReturn(\Secomm\Ghn\Model\GhnShipmentConstraints::MAX_SIDE_CM);
+        $ghnConfig->method('getMaxWidthCm')->willReturn(\Secomm\Ghn\Model\GhnShipmentConstraints::MAX_SIDE_CM);
+        $ghnConfig->method('getMaxHeightCm')->willReturn(\Secomm\Ghn\Model\GhnShipmentConstraints::MAX_SIDE_CM);
+        // TASK-WNQCRW — mandatory stub (an un-stubbed mock int return would be 0 → every estimate violates).
+        $ghnConfig->method('getMaxPackageWeightG')->willReturn(\Secomm\Ghn\Model\GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G);
         $this->mapper = new GhnRateRequestMapper(
-            new QuoteParcelEstimator(new StoreWeightConverter($this->scopeConfig), $dimensionsReader)
+            new QuoteParcelEstimator(new StoreWeightConverter($this->scopeConfig), $dimensionsReader, $ghnConfig)
         );
     }
 
@@ -117,8 +124,8 @@ class GhnRateRequestMapperTest extends TestCase
 
         $query = $this->mapper->map($this->request([$this->item('SKU-25KG', 25.0, 2.0)]));
 
-        // PRODUCT_UNIT_AS_PACKAGE: qty 2 → 2 estimated packages → type 5 even at 2kg each? no —
-        // 2 packages ⇒ multi-parcel ⇒ type 5 regardless of the 50kg aggregate (docs: multi-parcel).
+        // PRODUCT_UNIT_AS_PACKAGE: qty 2 → 2 estimated packages. TASK-WNQCRW: type follows
+        // the TOTAL only — 2×25kg = 50000g total ≥ 20kg → type 5 (package count irrelevant).
         $this->assertSame(2, $query->getEstimate()->getPackageCount());
         $this->assertSame(50000.0, $query->getEstimate()->getTotalWeightGrams());
         $this->assertSame(5, $query->getEstimate()->getServiceTypeId());

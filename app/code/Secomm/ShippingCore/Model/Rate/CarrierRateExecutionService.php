@@ -264,9 +264,10 @@ final class CarrierRateExecutionService implements CarrierRateExecutionServiceIn
         }
 
         if ($failureReason === ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE) {
-            // TASK-MQ2DRG (DEC-TASKMQ2DRG-001) — capability-unsupported (§35.5 materialized):
-            // the cart cannot be represented as an authoritative provider request; status
-            // stays UNAVAILABLE, the outcome is never reclassified.
+            // Capability-unsupported (§35.5 materialized — TASK-MQ2DRG). RESERVED wiring since
+            // TASK-FXFMJ0 (DEC-TASKFXFMJ0-001): GHN's RATE pre-gate is superseded and no
+            // carrier currently emits this reason — the branch stays for the frozen semantics
+            // (status stays UNAVAILABLE, never reclassified) should one appear.
             return FallbackEligibility::integrationLimitation();
         }
 
