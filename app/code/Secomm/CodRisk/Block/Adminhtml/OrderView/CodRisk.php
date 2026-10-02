@@ -16,6 +16,7 @@ use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Secomm\CodRisk\Api\Data\CodRiskDecisionInterface;
 use Secomm\CodRisk\Model\Config;
+use Secomm\CodRisk\Model\Reason\ReasonCatalog;
 use Secomm\CodRisk\Model\Source\ReasonCodes;
 use Secomm\CodRisk\Model\Service\OrderRiskView;
 
@@ -31,6 +32,7 @@ class CodRisk extends Template
         private readonly Registry $registry,
         private readonly OrderRiskView $orderRiskView,
         private readonly ReasonCodes $reasonCodes,
+        private readonly ReasonCatalog $reasonCatalog,
         private readonly Config $config,
         private readonly TimezoneInterface $localeDate,
         array $data = [],
@@ -127,5 +129,46 @@ class CodRisk extends Template
     public function getDeactivateListUrl(int $listId): string
     {
         return $this->getUrl('codrisk/lists/deactivate', ['id' => $listId, 'active' => 0]);
+    }
+
+    /**
+     * Human reason label everywhere — codes stay internal (UX review 01/10).
+     */
+    public function getReasonLabel(string $reasonCode): string
+    {
+        return $reasonCode === '' ? '' : (string)__($this->reasonCatalog->getLabel($reasonCode));
+    }
+
+    public function getInspectorUrl(): string
+    {
+        $order = $this->getOrder();
+
+        return $this->getUrl('codrisk/inspector/index', [
+            'phone' => (string)($order !== null ? $order->getShippingAddress()?->getTelephone() : ''),
+            'website_id' => $order !== null ? (int)$order->getStore()->getWebsiteId() : 0,
+        ]);
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getOverrideReasonOptions(): array
+    {
+        return [
+            ['label' => (string)__('Customer verified by CS'), 'value' => 'CUSTOMER_VERIFIED_BY_CS'],
+            ['label' => (string)__('Merchant approved'), 'value' => 'MERCHANT_APPROVED'],
+            ['label' => (string)__('False positive'), 'value' => 'FALSE_POSITIVE'],
+        ];
+    }
+
+    public function getOverrideReasonLabel(string $code): string
+    {
+        foreach ($this->getOverrideReasonOptions() as $option) {
+            if ($option['value'] === $code) {
+                return (string)$option['label'];
+            }
+        }
+
+        return $code;
     }
 }

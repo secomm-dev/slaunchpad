@@ -62,9 +62,11 @@
                             <dataType>select</dataType>
             </settings>
         </column>
-        <column name="reason">
+        <column name="reason" class="Secomm\CodRisk\Ui\Component\Listing\Columns\ReasonLabel">
             <settings>
-                <filter>text</filter>
+                <filter>select</filter>
+                <options class="Secomm\CodRisk\Model\Source\ReasonCodes"/>
+                <dataType>select</dataType>
                 <label translate="true">Reason</label>
             </settings>
         </column>

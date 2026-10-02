@@ -127,3 +127,4 @@ Xem bảng Files affected trong plan — được cập nhật tiến độ ✅ 
   - `BUG-M9K4D2` (high, data integrity) — edit tạo mới thay vì update (`DataObject::setData` thay mảng mất entity_id) + validate duplicate Risk Lists (phone+type+website scope, 0 overlap).
   - `BUG-N8D8AY` (medium, admin UX batch) — 404 pages/actions, Historical Count hiển thị sai, timezone/format, cột Status/Website, CSS, menu group, field Status trong form.
 - Chi tiết đầy đủ từng fix: `app/code/Secomm/CodRisk/CHANGELOG.md` (mục Fixed).
+- **UI/UX feedback rounds 01–02/10** (PO tự dùng thử → 10+ điểm chỉnh): nút skin chuẩn + accordion form, View in Phone Inspector, reason label mọi nơi, Effective datetime timezone-correct, logger riêng codrisk.log, filter/dataType select, normalizer siết quy hoạch băng tần VN + JS mirror — chi tiết trong `BUG-N8D8AY` (Round 3) + CHANGELOG. 2 orphan files chờ PO xác nhận xóa: `EffectiveDate.php`, `ReasonLabel.php` (session song song).

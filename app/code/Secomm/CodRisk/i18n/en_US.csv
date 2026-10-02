@@ -11,20 +11,20 @@
 "Spam Lookback Window (days)","Spam Lookback Window (days)"
 "Spam Threshold","Spam Threshold"
 "Customer-Attributable Reasons","Customer-Attributable Reasons"
-"Reason Include Flags","Reason Include Flags"
+"Reason Flags","Reason Flags"
 "Checkout","Checkout"
 "COD Unavailable Message","COD Unavailable Message"
 "COD is currently unavailable for this order. Please choose another payment method.","COD is currently unavailable for this order. Please choose another payment method."
-"Customer cancelled before confirmation","Customer cancelled before confirmation"
-"Customer asked admin/CS to cancel","Customer asked admin/CS to cancel"
-"Customer refused delivery","Customer refused delivery"
-"Customer unreachable during delivery","Customer unreachable during delivery"
-"Out of stock","Out of stock"
-"Wrong price","Wrong price"
-"Damaged in transit","Damaged in transit"
-"Lost shipment","Lost shipment"
-"System error","System error"
-"Undetermined cause","Undetermined cause"
+Customer cancelled before confirmation,Customer cancelled before confirmation
+Customer asked admin/CS to cancel,Customer asked admin/CS to cancel
+Customer refused delivery,Customer refused delivery
+Customer unreachable during delivery,Customer unreachable during delivery
+Out of stock,Out of stock
+Wrong price,Wrong price
+Damaged in transit,Damaged in transit
+Lost shipment,Lost shipment
+System error,System error
+Undetermined cause,Undetermined cause
 "Blacklist","Blacklist"
 "Allowlist","Allowlist"
 "Allow COD for this order","Allow COD for this order"
@@ -60,3 +60,4 @@
 "Block Threshold must be greater than Warning Threshold.","Block Threshold must be greater than Warning Threshold."
 "This phone number already exists in the %1 list for this website.","This phone number already exists in the %1 list for this website."
 "This phone already has an active %1 record for this website. Deactivate or edit the existing record first.","This phone already has an active %1 record for this website. Deactivate or edit the existing record first."
+"Not a valid Vietnamese number — expected 09xx… (10 digits) or +84xx… formats.","Not a valid Vietnamese number — expected 09xx… (10 digits) or +84xx… formats."

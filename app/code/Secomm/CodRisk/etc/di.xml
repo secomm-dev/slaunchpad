@@ -46,6 +46,30 @@
         </arguments>
     </type>
 
+    <!-- Dedicated logger: all CodRisk traces go to var/log/codrisk.log (UX review 01/10). -->
+    <virtualType name="Secomm\CodRisk\Logger\CodRiskLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="codrisk" xsi:type="object">Secomm\CodRisk\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\CodRisk\Plugin\CashOnDeliveryAvailabilityPlugin">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\CodRisk\Logger\CodRiskLogger</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\CodRisk\Observer\CodAvailabilityGuard">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\CodRisk\Logger\CodRiskLogger</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\CodRisk\Model\Service\EvaluationLogger">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\CodRisk\Logger\CodRiskLogger</argument>
+        </arguments>
+    </type>
+
     <!-- Admin grids: collection-backed data sources (standard SearchResult virtual types). -->
     <virtualType name="SecommCodRiskListsGridCollection"
                  type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
