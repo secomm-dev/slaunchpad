@@ -152,7 +152,10 @@ const primitiveValue = token => {
   }
   if (typeof token.value === 'number') {
     const value = Number(token.value.toFixed?.(4) ?? token.value);
-    return /(?:font-weight|weight)$/.test(token.path) ? String(value) : `${value}px`;
+    // font-weight is unitless in CSS; match it as a path SEGMENT (the old
+    // /weight$/ anchor missed tokens like global/typography/font-weight/base
+    // and emitted "400px", which browsers drop).
+    return /(?:^|\/)(?:font-)?weight(?:\/|$)/.test(token.path) ? String(value) : `${value}px`;
   }
   return String(token.value);
 };
