@@ -217,6 +217,11 @@
             <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
         </arguments>
     </type>
+    <type name="Secomm\MoMo\Service\PaymentRecovery">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">MoMoCommandPool</argument>
+        </arguments>
+    </type>
 
     <!-- MOMO-02: operator refund tooling + creditmemo linkage backfill.
          The resolve command queries /v2/gateway/api/refund/query (query
