@@ -14,6 +14,7 @@ use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Store\Model\WebsiteFactory;
 use Secomm\CodRisk\Api\Data\CodRiskDecisionInterface;
+use Secomm\CodRisk\Model\Reason\ReasonCatalog;
 use Secomm\CodRisk\Model\Service\PhoneInspector;
 
 /**
@@ -28,6 +29,7 @@ class Inspector extends Template
         private readonly PhoneInspector $phoneInspector,
         private readonly WebsiteFactory $websiteFactory,
         private readonly TimezoneInterface $localeDate,
+        private readonly ReasonCatalog $reasonCatalog,
         array $data = [],
     ) {
         parent::__construct($context, $data);
@@ -62,6 +64,11 @@ class Inspector extends Template
             $this->getRequest()->getParam('phone'),
             $this->resolveWebsiteId()
         );
+    }
+
+    public function getReasonLabel(string $reasonCode): string
+    {
+        return $reasonCode === '' ? '' : (string)__($this->reasonCatalog->getLabel($reasonCode));
     }
 
     public function getSubmittedPhone(): string

@@ -61,46 +61,46 @@
                 </field>
             </group>
             <group id="reasons" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
-                <label>Reason Include Flags</label>
+                <label>Reason Flags</label>
                 <comment>Whether each reason counts into the historical total. The flag is snapshotted onto events at record time — changing it later never reinterprets old events. Unset = catalog default (refused delivery / unreachable = yes, everything else = no).</comment>
                 <field id="include_customer_cancellation_pre_confirm" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "Customer cancelled before confirmation"</label>
+                    <label>Customer cancelled before confirmation</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="include_customer_requested_cancel" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "Customer asked admin/CS to cancel"</label>
+                    <label>Customer asked admin/CS to cancel</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="include_refused_delivery" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "Customer refused delivery"</label>
+                    <label>Customer refused delivery</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="include_unreachable_customer" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "Customer unreachable during delivery"</label>
+                    <label>Customer unreachable during delivery</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="include_out_of_stock" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "Out of stock"</label>
+                    <label>Out of stock</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="include_wrong_price" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "Wrong price"</label>
+                    <label>Wrong price</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="include_damaged_in_transit" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "Damaged in transit"</label>
+                    <label>Damaged in transit</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="include_lost_shipment" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "Lost shipment"</label>
+                    <label>Lost shipment</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="include_system_error" translate="label" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "System error"</label>
+                    <label>System error</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="include_undetermined" translate="label" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Include "Undetermined cause"</label>
+                    <label>Undetermined cause</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>

@@ -23,13 +23,18 @@ class PhoneNormalizer
 {
     private const VN_COUNTRY_CODE = '84';
 
-    /**
-     * +84 followed by 9–10 digits (VN mobile = 9 after country code,
-     * landline with area code = 10).
-     */
-    private const VN_SUBSCRIBER_LENGTHS = [9, 10];
-
     private const MIN_DIGITS = 7;
+
+    /**
+     * VN numbering plan (post 2018 migration):
+     * - mobile:      9 digits after +84, first digit 3/5/7/8/9
+     * - landline:    9 digits starting 2 (area 2xx + 7 digits), or
+     *                10 digits starting 2 (long area codes)
+     * A "mobile-looking" subscriber with 10 digits (QC case 01/10 — one
+     * typed digit too many) must NOT normalize into a valid identity.
+     */
+    private const MOBILE_FIRST_DIGITS = '35789';
+    private const LANDLINE_FIRST_DIGIT = '2';
 
     public function normalize(?string $phone): ?string
     {
@@ -53,7 +58,11 @@ class PhoneNormalizer
             return null;
         }
 
-        if (!in_array(strlen($subscriber), self::VN_SUBSCRIBER_LENGTHS, true)) {
+        $length = strlen($subscriber);
+        $first = $subscriber[0];
+        $valid = ($length === 9 && ($first === self::LANDLINE_FIRST_DIGIT || str_contains(self::MOBILE_FIRST_DIGITS, $first)))
+            || ($length === 10 && $first === self::LANDLINE_FIRST_DIGIT);
+        if (!$valid) {
             return null;
         }
 

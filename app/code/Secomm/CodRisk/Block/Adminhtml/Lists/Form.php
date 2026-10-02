@@ -12,7 +12,9 @@ namespace Secomm\CodRisk\Block\Adminhtml\Lists;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Registry;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Framework\UrlInterface;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\WebsiteFactory;
 use Secomm\CodRisk\Model\CodRiskList;
 use Secomm\CodRisk\Model\Source\ActivationStatus;
@@ -34,10 +36,33 @@ class Form extends Template
         private readonly ReasonCodes $reasonCodes,
         private readonly ActivationStatus $activationStatus,
         private readonly WebsiteFactory $websiteFactory,
+        private readonly TimezoneInterface $localeDate,
         private readonly UrlInterface $urlBuilder,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * Render a stored UTC timestamp as the website's local "Y-m-d H:i:s" for the
+     * calendar input. Uses the SAME scope (website) as ListManager::toDateTime()
+     * on save — asymmetric scopes would drift the value 7h per edit-save cycle.
+     * Deliberately NOT TimezoneInterface::date(): its DateTimeImmutable branch
+     * (vendor Timezone.php:189) re-wraps the value WITHOUT converting timezone.
+     */
+    public function formatEffective(string $utcValue, int $websiteId = 0): string
+    {
+        if ($utcValue === '' || $utcValue === '0000-00-00 00:00:00') {
+            return '';
+        }
+
+        $date = new \DateTime($utcValue, new \DateTimeZone('UTC'));
+        $date->setTimezone(new \DateTimeZone($this->localeDate->getConfigTimezone(
+            ScopeInterface::SCOPE_WEBSITE,
+            (string)$websiteId
+        )));
+
+        return $date->format('Y-m-d H:i:s');
     }
 
     public function getRecord(): ?CodRiskList

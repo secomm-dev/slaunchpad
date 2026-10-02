@@ -14,16 +14,21 @@ $reason = $record !== null ? (string)$record->getData('reason') : '';
 $note = $record !== null ? (string)$record->getData('note') : '';
 $websiteId = $record !== null ? (string)(int)($record->getData('website_id') ?? 0) : '0';
 $isActive = $record !== null ? (int)($record->getData('is_active') ?? 1) : 1;
-$effectiveFrom = $record !== null ? (string)($record->getData('effective_from') ?? '') : '';
-$effectiveTo = $record !== null ? (string)($record->getData('effective_to') ?? '') : '';
+// Timestamps are stored UTC (Magento convention); the calendar edits local time.
+$effectiveFrom = $record !== null
+    ? $block->formatEffective((string)($record->getData('effective_from') ?? ''), (int)$websiteId)
+    : '';
+$effectiveTo = $record !== null
+    ? $block->formatEffective((string)($record->getData('effective_to') ?? ''), (int)$websiteId)
+    : '';
 ?>
 <form method="post" action="<?= $escaper->escapeUrl($block->getSaveUrl()) ?>" id="edit_form">
-    <div class="page-actions" style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
-        <button class="action secondary back" type="button"
+    <div class="codrisk-list-actions">
+        <button class="action-default scalable back" type="button"
                 onclick="setLocation('<?= $escaper->escapeJs($block->getBackUrl()) ?>'); return false;">
             <?= $escaper->escapeHtml(__('Back')) ?>
         </button>
-        <button class="action primary save" type="submit">
+        <button class="action-default scalable primary save" type="submit">
             <?= $escaper->escapeHtml(__('Save')) ?>
         </button>
     </div>
@@ -107,8 +112,9 @@ $effectiveTo = $record !== null ? (string)($record->getData('effective_to') ?? '
                 <span><?= $escaper->escapeHtml(__('Effective From')) ?></span>
             </label>
             <div class="admin__field-control control">
-                <input class="input-text admin__control-text" type="date" id="effective_from"
-                       name="effective_from" value="<?= $escaper->escapeHtml($effectiveFrom) ?>"/>
+                <input class="input-text admin__control-text" type="text" id="effective_from"
+                       name="effective_from" value="<?= $escaper->escapeHtml($effectiveFrom) ?>"
+                       data-mage-init='{"mage/calendar": {"showsTime": true, "dateFormat": "yy-mm-dd", "timeFormat": "HH:mm"}}'/>
             </div>
         </div>
         <div class="admin__field">
@@ -116,8 +122,9 @@ $effectiveTo = $record !== null ? (string)($record->getData('effective_to') ?? '
                 <span><?= $escaper->escapeHtml(__('Effective To')) ?></span>
             </label>
             <div class="admin__field-control control">
-                <input class="input-text admin__control-text" type="date" id="effective_to"
-                       name="effective_to" value="<?= $escaper->escapeHtml($effectiveTo) ?>"/>
+                <input class="input-text admin__control-text" type="text" id="effective_to"
+                       name="effective_to" value="<?= $escaper->escapeHtml($effectiveTo) ?>"
+                       data-mage-init='{"mage/calendar": {"showsTime": true, "dateFormat": "yy-mm-dd", "timeFormat": "HH:mm"}}'/>
                 <div class="note"><?= $escaper->escapeHtml(__('Leave empty = block/allow indefinitely.')) ?></div>
             </div>
         </div>
@@ -132,3 +139,5 @@ $effectiveTo = $record !== null ? (string)($record->getData('effective_to') ?? '
         </div>
     </fieldset>
 </form>
+
+

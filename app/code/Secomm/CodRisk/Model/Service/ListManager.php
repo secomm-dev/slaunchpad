@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace Secomm\CodRisk\Model\Service;
 
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Phrase;
 use Secomm\CodRisk\Model\CodRiskList;
 use Secomm\CodRisk\Model\CodRiskListFactory;
@@ -17,6 +19,7 @@ use Secomm\CodRisk\Model\ResourceModel\CodRiskList\CollectionFactory;
 use Secomm\CodRisk\Model\Audit\AuditLog;
 use Secomm\CodRisk\Model\Audit\AuditWriter;
 use Secomm\CodRisk\Model\Phone\PhoneNormalizer;
+use Secomm\CodRisk\Model\Reason\ReasonCatalog;
 
 /**
  * Create/update/activate/deactivate phone list records (admin + order-view quick
@@ -29,7 +32,9 @@ class ListManager
         private readonly CodRiskListFactory $listFactory,
         private readonly CollectionFactory $collectionFactory,
         private readonly PhoneNormalizer $phoneNormalizer,
+        private readonly ReasonCatalog $reasonCatalog,
         private readonly AuditWriter $auditWriter,
+        private readonly TimezoneInterface $localeDate,
     ) {
     }
 
@@ -63,6 +68,13 @@ class ListManager
             : (int)($record->getData('is_active') ?? 1);
         $wasActive = $isNew ? 0 : (int)($record->getData('is_active') ?? 0);
 
+        // Effective datetime: picked in the website's config timezone, stored UTC —
+        // the core Date grid column then converts back for display, exactly like
+        // updated_at (UX review 01/10: full datetime, timezone-correct).
+        $effectiveWebsiteId = (int)($data['website_id'] ?? 0);
+        $effectiveFrom = $this->toDateTime($data['effective_from'] ?? null, $effectiveWebsiteId);
+        $effectiveTo = $this->toDateTime($data['effective_to'] ?? null, $effectiveWebsiteId);
+
         // One active record per phone + website (Bug 3/4, 2026-09-22): duplicates of
         // the same type are meaningless, and a second type is silently dead weight
         // because Blacklist always outranks Allowlist.
@@ -88,8 +100,8 @@ class ListManager
             'reason' => (string)($data['reason'] ?? ''),
             'note' => (string)($data['note'] ?? ''),
             'source' => (string)($data['source'] ?? CodRiskList::SOURCE_ADMIN),
-            'effective_from' => $this->toDate($data['effective_from'] ?? null),
-            'effective_to' => $this->toDate($data['effective_to'] ?? null),
+            'effective_from' => $effectiveFrom,
+            'effective_to' => $effectiveTo,
             'is_active' => $newIsActive,
             'created_by' => (string)($data['created_by'] ?? ''),
         ]);
@@ -100,7 +112,7 @@ class ListManager
             (int)$record->getId(),
             $isNew ? 'created' : 'updated',
             $isNew ? null : $listType,
-            sprintf('%s %s (%s)', $listType, $normalized, (string)($data['reason'] ?? '')),
+            sprintf('%s %s (%s)', $listType, $normalized, $this->reasonCatalog->getLabel((string)($data['reason'] ?? ''))),
             (string)($data['note'] ?? '')
         );
 
@@ -182,15 +194,33 @@ class ListManager
         ));
     }
 
-    private function toDate(mixed $value): ?string
+    /**
+     * Normalizes the picked datetime and stores it in UTC: picked value is in the
+     * website's config timezone; the grid Date column converts back for display.
+     * createFromFormat MUST anchor the config timezone — without it the value is
+     * parsed in the PHP default TZ (UTC in this container) and the +7 shift on
+     * display would resurrect the phantom-hour bug.
+     */
+    private function toDateTime(mixed $value, ?int $websiteId): ?string
     {
         if ($value === null || (string)$value === '') {
             return null;
         }
 
-        $date = \DateTimeImmutable::createFromFormat('Y-m-d', (string)$value)
-            ?: \DateTimeImmutable::createFromFormat('d/m/Y', (string)$value);
+        $value = (string)$value;
+        $tzName = $this->localeDate->getConfigTimezone(
+            ScopeInterface::SCOPE_WEBSITE,
+            (string)($websiteId ?? 0)
+        );
+        $configTz = new \DateTimeZone($tzName);
 
-        return $date !== false ? $date->format('Y-m-d') : null;
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $value, $configTz)
+            ?: \DateTimeImmutable::createFromFormat('Y-m-d H:i', $value, $configTz)
+            ?: \DateTimeImmutable::createFromFormat('Y-m-d', $value, $configTz);
+        if ($date === false) {
+            return null;
+        }
+
+        return $date->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
     }
 }

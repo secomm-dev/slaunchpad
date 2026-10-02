@@ -1,0 +1,78 @@
+/* ============================================================================
+ * Secomm_CodRisk — admin styles (TASK-YPWH9B)
+ * Included on all admin pages via view/adminhtml/layout/default.xml <head><css/>.
+ * ========================================================================== */
+
+/* --- Order View: decision badge --- */
+.codrisk-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    margin-left: 12px;
+    border-radius: 3px;
+    font-weight: 700;
+    vertical-align: middle;
+}
+.codrisk-badge--block { background: #c0392b; color: #fff; }
+.codrisk-badge--warning { background: #f7d78a; color: #5c4400; }
+.codrisk-badge--allow { background: #d6ecd9; color: #1e7e34; }
+
+/* --- Order View: tables & sub-titles --- */
+.codrisk-table { max-width: 920px; }
+.codrisk-events-title { margin-top: 18px; }
+.codrisk-evaluated-note { display: inline; }
+
+/* --- Order View: action bar + collapsible form panels --- */
+.codrisk-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 16px 0 0;
+}
+.codrisk-form-panel {
+    max-width: 560px;
+    margin-top: 10px;
+}
+.codrisk-form-panel[hidden] { display: none; }
+
+/* --- Phone Inspector: search row --- */
+.codrisk-inspector-search {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) 220px auto;
+    gap: 12px;
+    align-items: end;
+    max-width: 780px;
+}
+.codrisk-field-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+.codrisk-phone-cell { position: relative; }
+.codrisk-phone-note {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    white-space: nowrap;
+    color: #c0392b;
+}
+.codrisk-phone-note.visible { display: block; }
+
+/* --- Risk Lists: form actions --- */
+.codrisk-list-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* --- Inspector: input full-width trong grid column --- */
+.codrisk-inspector-search .input-text,
+.codrisk-inspector-search .select { width: 100%; }
+
+/* --- Khoảng cách dùng chung --- */
+.codrisk-mt { margin-top: 10px; }
+
+.codrisk-inspector-block { margin-top: 20px; }
+.codrisk-block-title { margin-top: 24px; }

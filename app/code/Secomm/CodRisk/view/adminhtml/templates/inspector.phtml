@@ -18,22 +18,26 @@ $decisionClass = $decision !== null
     : '';
 ?>
 <form method="get" action="<?= $escaper->escapeUrl($block->getUrl('codrisk/inspector/index')) ?>"
-      style="max-width: 780px;">
-    <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
-        <div style="flex:1; min-width:260px;">
-            <label for="phone" style="display:block; margin-bottom:5px; font-weight:600;">
+      id="codrisk-inspector-filter"
+      class="codrisk-inspector-search"
+      data-mage-init='{"Secomm_CodRisk/js/inspector-search": {}}'>
+        <div class="codrisk-phone-cell">
+            <label for="phone" class="codrisk-field-label">
                 <?= $escaper->escapeHtml(__('Phone (any format)')) ?>
             </label>
             <input class="input-text admin__control-text" type="text" id="phone" name="phone"
-                   style="width:100%;"
+                   
                    value="<?= $escaper->escapeHtml($block->getSubmittedPhone()) ?>"
                    placeholder="0901 234 567 / 84901234567 / +84 901 234 567"/>
+            <div class="codrisk-phone-note" id="codrisk-phone-note">
+                <?= $escaper->escapeHtml(__('Not a valid Vietnamese number — expected 09xx… (10 digits) or +84xx… formats.')) ?>
+            </div>
         </div>
-        <div style="width:220px;">
-            <label for="website_id" style="display:block; margin-bottom:5px; font-weight:600;">
+        <div>
+            <label for="website_id" class="codrisk-field-label">
                 <?= $escaper->escapeHtml(__('Website')) ?>
             </label>
-            <select class="select admin__control-select" id="website_id" name="website_id" style="width:100%;">
+            <select class="select admin__control-select" id="website_id" name="website_id" >
                 <?php foreach ($block->getWebsiteOptions() as $option): ?>
                     <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>"
                         <?= $block->getSelectedWebsiteId() === (string)$option['value'] ? 'selected' : '' ?>>
@@ -42,14 +46,16 @@ $decisionClass = $decision !== null
                 <?php endforeach; ?>
             </select>
         </div>
-        <button class="action primary" type="submit">
+        <button class="action-default scalable primary" type="submit" id="codrisk-check-phone">
             <?= $escaper->escapeHtml(__('Check Phone')) ?>
         </button>
     </div>
 </form>
 
+
+
 <?php if ($result !== null): ?>
-    <section class="admin__page-section" style="margin-top: 20px;">
+    <section class="admin__page-section codrisk-inspector-block">
         <?php if ($result['normalized_phone'] === null): ?>
             <div class="message message-warning warning">
                 <?= $escaper->escapeHtml(__('Not a usable Vietnamese phone number — invalid phones are an address validation concern, never a risk decision.')) ?>
@@ -71,9 +77,10 @@ $decisionClass = $decision !== null
 
             <?php $blacklist = $result['blacklist']; ?>
             <?php if ($blacklist !== null): ?>
-                <div class="message message-error error" style="margin-top: 10px;">
+                <div class="message message-error error codrisk-mt">
                     <?= $escaper->escapeHtml(__('Active Blacklist — reason %1, created by %2.',
-                        (string)$blacklist->getData('reason'), (string)($blacklist->getData('created_by') ?? ''))) ?>
+                        $block->getReasonLabel((string)$blacklist->getData('reason')),
+                        (string)($blacklist->getData('created_by') ?? ''))) ?>
                     <a href="<?= $escaper->escapeUrl($block->getUrl('codrisk/lists/deactivate',
                         ['id' => (int)$blacklist->getId(), 'active' => 0])) ?>">
                         <?= $escaper->escapeHtml(__('Deactivate Blacklist')) ?>
@@ -81,7 +88,7 @@ $decisionClass = $decision !== null
                 </div>
             <?php endif; ?>
 
-            <h3 style="margin-top: 20px;"><?= $escaper->escapeHtml(__('Risk Events')) ?></h3>
+            <h3 class="codrisk-block-title"><?= $escaper->escapeHtml(__('Risk Events')) ?></h3>
             <table class="admin__table-secondary">
                 <thead>
                 <tr>
@@ -97,7 +104,7 @@ $decisionClass = $decision !== null
                     <?php $eventId = (int)($event->getData('order_id') ?? 0); ?>
                     <tr>
                         <td><?= $escaper->escapeHtml($block->formatRiskDateTime((string)$event->getData('created_at'))) ?></td>
-                        <td><?= $escaper->escapeHtml((string)$event->getData('reason_code')) ?></td>
+                        <td><?= $escaper->escapeHtml($block->getReasonLabel((string)$event->getData('reason_code'))) ?></td>
                         <td><?= $escaper->escapeHtml((string)$event->getData('source')) ?></td>
                         <td>
                             <?php if ($eventId > 0): ?>
@@ -118,7 +125,7 @@ $decisionClass = $decision !== null
                 </tbody>
             </table>
 
-            <h3 style="margin-top: 24px;"><?= $escaper->escapeHtml(__('Evaluations (WARNING/BLOCK log)')) ?></h3>
+            <h3 class="codrisk-block-title"><?= $escaper->escapeHtml(__('Evaluations (WARNING/BLOCK log)')) ?></h3>
             <table class="admin__table-secondary">
                 <thead>
                 <tr>
@@ -143,7 +150,7 @@ $decisionClass = $decision !== null
                 </tbody>
             </table>
 
-            <h3 style="margin-top: 24px;"><?= $escaper->escapeHtml(__('Audit')) ?></h3>
+            <h3 class="codrisk-block-title"><?= $escaper->escapeHtml(__('Audit')) ?></h3>
             <table class="admin__table-secondary">
                 <thead>
                 <tr>

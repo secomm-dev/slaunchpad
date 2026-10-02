@@ -10,8 +10,8 @@
         <column xsi:type="varchar" name="reason" nullable="true" length="64" comment="Reason Code"/>
         <column xsi:type="text" name="note" nullable="true" comment="Note"/>
         <column xsi:type="varchar" name="source" nullable="false" length="16" default="ADMIN" comment="Source: ADMIN | IMPORT | ORDER"/>
-        <column xsi:type="date" name="effective_from" nullable="true" comment="Effective From"/>
-        <column xsi:type="date" name="effective_to" nullable="true" comment="Effective To (null = indefinite)"/>
+        <column xsi:type="timestamp" name="effective_from" nullable="true" comment="Effective From"/>
+        <column xsi:type="timestamp" name="effective_to" nullable="true" comment="Effective To (null = indefinite)"/>
         <column xsi:type="smallint" name="is_active" padding="5" unsigned="true" nullable="false" default="1" comment="Is Active"/>
         <column xsi:type="varchar" name="created_by" nullable="true" length="40" comment="Created By (admin username)"/>
         <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false" comment="Created At"/>
