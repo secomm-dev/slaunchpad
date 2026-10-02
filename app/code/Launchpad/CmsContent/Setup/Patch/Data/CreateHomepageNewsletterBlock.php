@@ -40,7 +40,7 @@ class CreateHomepageNewsletterBlock implements DataPatchInterface, PatchRevertab
     <input class="lp-newsletter-input h-11 w-full rounded-md border border-[#d1d5dc] bg-white px-4 text-[16px] leading-6 text-[#101828] placeholder:text-[#99a1af] focus:border-[#588f60] focus:outline-none"
            id="homepage-newsletter-email" name="email" type="email" required autocomplete="email"
            placeholder="Enter your email address">
-    <button class="lp-newsletter-btn h-11 shrink-0 rounded-md bg-[#45744c] px-6 text-[16px] font-medium text-white transition hover:bg-[#35573a]"
+    <button class="lp-newsletter-btn h-11 shrink-0 rounded-md lp-bg-olive px-6 text-[16px] font-medium text-white transition hover:bg-[#35573a]"
             type="submit">Subscribe</button>
 </form>
 HTML;

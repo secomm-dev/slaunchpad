@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+    TASK-KMJV5Q (SLP-291): invalidate the rendered footer after a Legal Links
+    config save — core 2.4.8 has no cache.xml event invalidation for custom
+    sections, so without this the storefront keeps the old bar until a manual
+    flush.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="admin_system_config_changed_section_launchpad_footer">
+        <observer name="launchpad_cmscontent_invalidate_footer_legal_config"
+                  instance="Launchpad\CmsContent\Observer\InvalidateFooterLegalConfig"/>
+    </event>
+</config>

@@ -11,7 +11,11 @@ namespace Launchpad\CmsContent\Model;
  * Text / Image) so the admin edits everything visually in the PB stage — no
  * "Edit HTML Code" surfaces. Tailwind classes ride in each element's
  * "CSS Classes" field (compiled through the generated safelist, see
- * regen-safelist evidence script). The newsletter form is embedded as a
+ * regen-safelist evidence script) — validation-safe subset only: PageBuilder's
+ * validate-css-class rule rejects "#" and, fatally for [&_x] arbitrary
+ * variants, any "&" — the admin form input receives the &amp;-escaped form and
+ * the ";" fails the rule (SLP-290). Hex colors + list/link styling therefore
+ * live in the theme footer.css instead. The newsletter form is embedded as a
  * {{block}} directive inside a Text element (WYSIWYG) — not an html element
  * (that would face the admin with "Edit HTML Code") and not a static-block
  * widget (Hyva CMS JIT two-pass rendering empties it, TASK-0NNZCW). The
@@ -70,14 +74,12 @@ final class FooterBlockContent
             }
             $columns .= '<div class="pagebuilder-column footer-links-group'
                 . (!empty($open) ? ' footer-links-open' : '')
-                . ' border-b border-[#e4e7ec] py-5 lg:border-b-0 lg:py-0 lg:flex-1"'
+                . '"'
                 . ' data-content-type="column" data-appearance="full-height" data-background-images="{}" data-grid-size="3" data-element="main">'
                 . '<h3 class="footer-links-title flex items-center justify-between text-[16px] font-medium'
-                . ' leading-[24px] text-[#364153] lg:pointer-events-none" data-content-type="heading"'
+                . ' leading-[24px] lg:pointer-events-none" data-content-type="heading"'
                 . ' data-appearance="default" data-element="main">' . $title . '</h3>'
-                . '<div class="footer-links-list mt-4 [&_ul]:m-0 [&_ul]:list-none [&_ul]:p-0 [&_li]:py-1.5'
-                . ' [&_a]:text-[16px] [&_a]:leading-[24px] [&_a]:text-[#4a5565] [&_a]:transition-colors'
-                . ' hover:[&_a]:text-[#101828]" data-content-type="text" data-appearance="default"'
+                . '<div class="footer-links-list mt-4" data-content-type="text" data-appearance="default"'
                 . ' data-element="main"><ul>' . $items . '</ul></div></div>';
         }
 

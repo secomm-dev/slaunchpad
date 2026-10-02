@@ -11,6 +11,13 @@
  *     TASK-Z3DAH5) nên không xảy ra double-intercept (root cause count ×2 của TASK-Z3DAH5).
  *   - Form có input type="file" → body FormData (multipart) thay vì URLSearchParams.
  *   - window.setAjaxCart(selectors, recursive) giữ nguyên signature/behavior (bind form card PLP).
+ *   - SLP-264 bug staging (2026-10-01) — double-add: env thiếu DB row
+ *     checkout/options/ajax_add_to_cart_selectors → fallback default của module
+ *     (etc/config.xml) chứa cả #product_addtocart_form → setAjaxCart bind thêm listener
+ *     submit trên PDP form, song song với path Alpine onSubmit (product-form.phtml) →
+ *     1 click = 2 POST = +2 item. 2 lớp chống:
+ *     (1) setAjaxCart skip form #product_addtocart_form (PDP có path AJAX riêng);
+ *     (2) re-entrancy guard per form trong ajaxSubmitCart (collapse mọi double-call).
  *   - Success path dispatch `clear-messages` trước `reload-customer-section-data` (SLP-264 bug
  *     double message): ATC liên tiếp không reload page → message cũ stack với message mới.
  * Giữ nguyên so với module: loader/disable button/delay, events (product-addtocart-success,
@@ -37,6 +44,15 @@ $selectors = $block->getSelectors() ?? '.product_addtocart_form, #product_addtoc
 </style>
 <script>
 window.ajaxSubmitCart = async (form, recursive = true) => {
+    // SLP-264 (bug staging): re-entrancy guard — 2 submit listener (setAjaxCart bind +
+    // Alpine onSubmit) cùng gọi hàm này trong 1 click phải collapse về 1 POST.
+    // Flag nằm trên form element (không serialize vào FormData/URLSearchParams);
+    // clear ở đầu finally để cả nhánh early-return cookie cũng không kẹt guard.
+    if (form.dataset.ajaxInFlight === '1') {
+        return;
+    }
+    form.dataset.ajaxInFlight = '1';
+
     const delay = parseInt('<?= $escaper->escapeJs($block->getDelay()) ?>', 10);
     const button = form.querySelector('button') ?
             form.querySelector('button') :
@@ -118,6 +134,7 @@ window.ajaxSubmitCart = async (form, recursive = true) => {
             type: 'error'
         });
     } finally {
+        form.dataset.ajaxInFlight = '0';
         try {
             var messages = hyva.getCookie('mage-messages');
             messages = messages ? JSON.parse(decodeURIComponent(messages).replace(/\+/g, ' ')) : [];
@@ -148,6 +165,13 @@ window.setAjaxCart = (selectors = '<?= $escaper->escapeJs($selectors) ?>', recur
     const forms = document.querySelectorAll(selectors);
 
     forms.forEach(form => {
+        // SLP-264 (bug staging): PDP form có path AJAX riêng qua hyva.formValidation
+        // (Magento_Catalog::product/view/product-form.phtml) — KHÔNG bind thêm listener
+        // ở đây, kẻo 2 handler = 2 POST/click khi selectors chứa #product_addtocart_form.
+        if (form.id === 'product_addtocart_form') {
+            return;
+        }
+
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 

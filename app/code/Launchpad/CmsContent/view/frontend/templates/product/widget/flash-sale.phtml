@@ -4,8 +4,14 @@
  *
  * "Sale ending in" countdown + product snap-slider (dots on mobile per design;
  * desktop shows no pager). Card pipeline = product_list_item (PLP parity).
- * Optional `title` option renders the heading in a row with the countdown;
- * empty = no heading (homepage keeps its own Page Builder heading).
+ * Optional `title` option renders the heading in the recommended layout: with
+ * title set, the widget IS the whole section — when the sale ends the
+ * server-side gate renders nothing (BUG-9X14Y1), so heading + countdown +
+ * slider disappear together. A widget WITHOUT a title leaves a dangling PB
+ * heading behind when the sale ends. Optional `sale_end` (store-local
+ * datetime): when it has passed, render nothing server-side; the Alpine
+ * countdown's hide() stays as a client-side FPC-staleness guard, scoped to
+ * the widget root only (never a Page Builder row — BUG-9X14Y1).
  *
  * @var \Launchpad\CmsContent\Block\Product\FlashSaleList $block
  * @var \Magento\Framework\Escaper $escaper
@@ -36,7 +42,7 @@ $items = $collection ? $collection->getItems() : [];
 $endMillis = (int) $block->getSaleEndMillis();
 $title = trim((string) $block->getTitle());
 ?>
-<?php if ($items): ?>
+<?php if ($items && !$block->isSaleEnded()): ?>
     <div class="lp-flash relative">
         <?php if ($title !== ''): ?>
         <div class="lp-flash-head">
@@ -87,6 +93,13 @@ $title = trim((string) $block->getTitle());
                 },
                 init() {
                     this.tick();
+                    if (this.end <= Date.now()) {
+                        // Sale already over (e.g. stale FPC page cache): hide
+                        // the widget root immediately — never a PB row, other
+                        // page content must survive (BUG-9X14Y1).
+                        this.hide();
+                        return;
+                    }
                     this.timer = window.setInterval(() => {
                         this.tick();
                         if (this.end <= Date.now()) {
@@ -96,8 +109,8 @@ $title = trim((string) $block->getTitle());
                     }, 1000);
                 },
                 hide() {
-                    const row = this.$el.closest('[data-content-type="row"]');
-                    if (row) row.style.display = 'none';
+                    const root = this.$el.closest('.lp-flash');
+                    if (root) root.style.display = 'none';
                 }
             };
         }

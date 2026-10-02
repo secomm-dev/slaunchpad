@@ -481,11 +481,12 @@
         }
     }
 
-    /* Widget option `title`: heading rendered by the widget itself (insert
-       without a PB heading). Same type scale as the homepage PB heading;
-       countdown sits in the head row instead of floating above the widget. */
+    /* Widget option `title`: heading rendered by the widget itself. BUG-9X14Y1:
+       homepage migrated to title-in-widget so an expired sale hides the whole
+       section server-side. Mobile gap-5 (20px) keeps the old heading→pill
+       rhythm (was the wrapper `!mt-5` between the PB heading and the widget). */
     .lp-flash-head {
-        @apply mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6;
+        @apply mb-5 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-6;
     }
 
     .lp-flash-title {
@@ -1337,7 +1338,7 @@ body.cms-index-index [data-content-type="row"] [data-content-type="column-line"]
    1360 content + 2×40 padding, centered. Full-bleed (hero/video/split/sofa)
    vẫn tràn viewport. */
 body.cms-index-index [data-content-type="row"][data-appearance="contained"] {
-    max-width: 90rem !important;
+    max-width: 100% !important;
     margin-inline: auto !important;
 }
 
@@ -1438,7 +1439,7 @@ body.cms-index-index .lp-promo-dragging {
        container chuẩn 90rem/1440 như mọi section contained (1360 content):
        1440 clip item 4 tại mép container, màn lớn không giãn. */
     #html-body.cms-index-index [data-content-type="row"]:has(.lp-promo-card) {
-        max-width: 90rem !important;
+        max-width: 100% !important;
         margin-inline: auto !important;
         margin-block-start: 1.5rem !important;
         padding-inline: 2.5rem !important;
@@ -1729,4 +1730,28 @@ body.cms-index-index [data-content-type="row"][data-appearance="full-width"]:has
         margin-block-start: 4rem !important;
         padding: 2.5rem !important;
     }
+}
+
+/* ---------- Content hex utilities (SLP-290) ---------- */
+
+/* PageBuilder validate-css-class rejects "#" — hex utilities (bg-[#...],
+   text-[#...]) cannot ride in the content's CSS Classes field (SLP-290).
+   These semantic stand-ins carry the same values; content references them
+   instead (unlayered, same file — beats layered utilities like the F15
+   pattern). Raw-HTML hexes inside text elements (pagebuilder-button-*,
+   newsletter form) are NOT validated and keep their utilities. */
+.lp-text-olive {
+    color: #293e2d;
+}
+
+.lp-bg-olive-dark {
+    background-color: #304b34;
+}
+
+.lp-bg-olive {
+    background-color: #45744c;
+}
+
+.lp-bg-mint {
+    background-color: #e7f1e8;
 }

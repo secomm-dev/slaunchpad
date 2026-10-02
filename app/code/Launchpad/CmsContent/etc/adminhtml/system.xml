@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+    TASK-KMJV5Q (SLP-291): footer legal links (Terms & Privacy) editable via
+    system config. Every field is store-view scoped; an empty value keeps the
+    code fallback (translated default label / static route from TASK-7EYJ4C),
+    so the footer is unchanged until an admin fills a field.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="launchpad" translate="label" sortOrder="450">
+            <label>Launchpad</label>
+        </tab>
+        <section id="launchpad_footer" translate="label" type="text" sortOrder="100"
+                 showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Footer</label>
+            <tab>launchpad</tab>
+            <resource>Magento_Backend::content</resource>
+            <group id="legal_links" translate="label comment" type="text" sortOrder="10"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Legal Links (Copyright Bar)</label>
+                <comment>Leave a field empty to keep the default label/route. Changes are visible on the storefront right after saving.</comment>
+                <field id="terms_label" translate="label comment" type="text" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Terms Link Label</label>
+                    <comment>Empty = "Terms &amp; Conditions" (translated).</comment>
+                </field>
+                <field id="terms_url" translate="label comment" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Terms Link URL</label>
+                    <comment>Route/path (e.g. terms-and-conditions) or a full https:// URL.</comment>
+                </field>
+                <field id="privacy_label" translate="label comment" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Privacy Link Label</label>
+                    <comment>Empty = "Privacy Policy" (translated).</comment>
+                </field>
+                <field id="privacy_url" translate="label comment" type="text" sortOrder="40"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Privacy Link URL</label>
+                    <comment>Route/path (e.g. privacy-policy-cookie-restriction-mode) or a full https:// URL.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

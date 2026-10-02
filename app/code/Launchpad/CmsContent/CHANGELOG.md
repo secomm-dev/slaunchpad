@@ -1,5 +1,68 @@
 # Changelog
 
+## 1.3.3 (unreleased — version bump khi unblock `setup:upgrade`, xem TASK-KMJV5Q)
+
+- SLP-290 (BUG-6AYPGS): edit block `footer_links` không save được —
+  PageBuilder `validate-css-class` reject `#` (regex allowed set của
+  validator-rules-mixin.js không có `#`) trong khi content seed chứa 4 hex
+  utility (`border-[#e4e7ec]`, `text-[#364153]`, `[&_a]:text-[#4a5565]`,
+  `hover:[&_a]:text-[#101828]`). Fix Option A (TL-approved): bỏ hex utility
+  khỏi `FooterBlockContent::links()` (utility column đã bị footer.css override
+  sẵn cả 2 breakpoint — F15/desktop, xóa không đổi render); màu title + link
+  color/hover chuyển sang `footer.css` trên semantic class (`.footer-links-title`,
+  `.footer-links-list a`) cùng giá trị hex → 0 visual change. Reseed DB
+  footer_links bằng script backup-first
+  (`.ai/evidence/BUG-6AYPGS/reseed-footer-links-slp290.php` — staging cần chạy
+  sau pull) + regen safelist (181→171) + rebuild tailwind. Part 2 (user xác
+  nhận homepage vẫn lỗi): quét toàn bộ cms_page/cms_block — hex utility trong
+  field css_classes của `cms_page home`/testpage (heading `text-[#293e2d]`,
+  `.lp-promo-card` `bg-[#304b34]`, `.lp-usp` `bg-[#e7f1e8]`, figure icon
+  `bg-[#45744c]`) cũng fail save → token-aware replace (không đụng
+  `hover:bg-...`) sang 4 class semantic homepage.css (`.lp-text-olive`,
+  `.lp-bg-olive-dark`, `.lp-bg-olive`, `.lp-bg-mint` — cùng hex) qua script
+  backup-first `migrate-home-hex-classes-slp290.php` (6 rows, staging chạy sau
+  pull); fixture `homepage-content.html` + seed
+  `CreateHomepageNewsletterBlock.php` cập nhật cùng token cho parity. Part 3
+  (root cause thật — screenshot field sạch hex vẫn fail): class chứa `&`
+  (Tailwind `[&_x]` variants) round-trip escaped `&amp;` trong admin form input,
+  dấu `;` fail validate → toàn bộ `[&_ul]/[&_li]/[&_a]` rút về footer.css
+  (`.footer-links-list ul/li/a`), field chỉ còn `footer-links-list mt-4`.
+  Hex còn lại trong raw HTML (button `pagebuilder-button-*`, newsletter input)
+  KHÔNG đi qua field CSS Classes → không bị validate, giữ nguyên.
+  **Quy tắc cho content PB từ nay: field CSS Classes chỉ chứa class không có
+  `#` và không có `&`** (chi tiết: `.ai/records/bugs/BUG-6AYPGS.md`). Không
+  schema/patch → không cần `setup:upgrade`.
+- SLP-291 (TASK-KMJV5Q): legal links copyright bar footer (Terms & Privacy)
+  edit được qua **Stores > Configuration > Launchpad > Footer > Legal Links** —
+  4 field store-view scope (`terms_label` / `terms_url` / `privacy_label` /
+  `privacy_url`); để trống = giữ fallback hiện tại (label dịch CSV + route tĩnh
+  TASK-7EYJ4C) → 0 visual change khi chưa cấu hình. ViewModel `LegalLinks`
+  (`ArgumentInterface`, require qua `$viewModels` registry của Hyva — engine
+  inject cho mọi template); URL config: `http(s)://` passthrough, còn lại
+  resolve qua `getUrl()`. Observer `admin_system_config_changed_section_launchpad_footer`
+  clean `block_html` + `full_page` → storefront thấy ngay sau save (core 2.4.8
+  không có cache.xml event-invalidation cho section custom). Output escape
+  `$escaper` (XSS probe PASS). Không schema/patch → không cần `setup:upgrade`.
+
+## 1.3.2 (2026-10-01)
+
+- SLP-159 (BUG-9X14Y1): flash sale hết hạn ẩn toàn bộ PB row (mất content
+  page). Fix theo method (a) — hết hạn = mất cả section: (1) block thêm
+  `isSaleEnded()` (guard server-side, template render trống khi
+  `sale_end` đã qua; `sale_end` rỗng/sai format vẫn fallback midnight
+  evergreen) + override `getCacheLifetime()` cap lifetime theo giây còn lại
+  (mặc định 86400s sẽ serve render "sale active" đến 24h sau khi hết hạn);
+  (2) template render gate `items && !isSaleEnded()`, Alpine `hide()` thu
+  scope từ PB row về root `.lp-flash` (client FPC-guard, không bao giờ nuốt
+  content ngoài widget), check hết hạn ngay `init()`; (3) content migration
+  heading PB riêng → `title` trong widget directive (script
+  `.ai/evidence/BUG-9X14Y1/migrate-flashsale-heading.php` — fixture
+  `homepage-content.html` + DB local, script có assert), bỏ `!mt-5` wrapper;
+  (4) theme `homepage.css` `.lp-flash-head` mobile gap-3 → gap-5 giữ rhythm
+  20px cũ. Rule desktop `row:has(.lp-flash) h2[...]` giữ lại cho content
+  chưa migrate. Staging/prod: deploy code + update CMS content theo release
+  notes.
+
 ## 1.3.1 (2026-09-29)
 
 - SLP-275 (TASK-7EYJ4C v4.3–v4.7): `SeedFooterBlocks` đổi store map theo

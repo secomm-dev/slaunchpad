@@ -1,0 +1,70 @@
+<?php
+/**
+ * Back to Top — floating action button (TASK-S0EZG9, SLP-293).
+ *
+ * Homepage-only; wired in Magento_Cms/layout/cms_index_index.xml. Hidden until
+ * the page is scrolled past one viewport height (user decision "hiển thị khi
+ * scroll quá 1 màn hình"); click smooth-scrolls to the top. Alpine component
+ * registered on alpine:init — same pattern as initFooterLinksAccordion in
+ * footer.phtml (TASK-7EYJ4C); inline script allowed via HyvaCsp.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\ViewModel\LucideIcons;
+
+/** @var LucideIcons $lucideIcons */
+$lucideIcons = $viewModels->require(LucideIcons::class);
+/** @var HyvaCsp $hyvaCsp */
+$hyvaCsp = $viewModels->require(HyvaCsp::class);
+?>
+<div
+    x-data="initBackToTop"
+    x-cloak
+    x-show="visible"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="translate-y-4 opacity-0"
+    x-transition:enter-end="translate-y-0 opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed bottom-6 right-6 z-40"
+>
+    <button
+        type="button"
+        class="flex h-12 w-12 items-center justify-center rounded-md bg-hp-brand-dark text-white shadow-lg transition hover:brightness-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hp-brand-dark"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('Back to top')) ?>"
+        x-on:click="scrollTop"
+    >
+        <?= $lucideIcons->arrowUpHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
+    </button>
+</div>
+<script>
+    function initBackToTop() {
+        return {
+            visible: false,
+            init() {
+                const update = () => {
+                    this.visible = window.scrollY > window.innerHeight;
+                };
+                update();
+                window.addEventListener('scroll', update, { passive: true });
+            },
+            scrollTop() {
+                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+            }
+        };
+    }
+
+    window.addEventListener('alpine:init', () => {
+        Alpine.data('initBackToTop', initBackToTop);
+    }, { once: true });
+</script>
+<?= $hyvaCsp->registerInlineScript() ?>
