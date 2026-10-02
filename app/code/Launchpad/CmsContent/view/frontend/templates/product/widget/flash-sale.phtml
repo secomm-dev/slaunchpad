@@ -2,8 +2,9 @@
 /**
  * Flash Sale slider widget (TASK-0NNZCW v4, SLP-213).
  *
- * "Sale ending in" countdown + product snap-slider (dots on mobile per design;
- * desktop shows no pager). Card pipeline = product_list_item (PLP parity).
+ * hr/min/sec box countdown (SLP-297: pill "Sale ending in" retired per Figma
+ * 2151:17103) + product snap-slider (dots on mobile per design; desktop shows
+ * no pager). Card pipeline = product_list_item (PLP parity).
  * Optional `title` option renders the heading in the recommended layout: with
  * title set, the widget IS the whole section — when the sale ends the
  * server-side gate renders nothing (BUG-9X14Y1), so heading + countdown +
@@ -49,14 +50,21 @@ $title = trim((string) $block->getTitle());
             <h2 class="lp-flash-title"><?= $escaper->escapeHtml($title) ?></h2>
         <?php endif; ?>
         <div class="lp-flash-countdown" x-data="lpFlashCountdown(<?= (int) $endMillis ?>)">
-            <div class="lp-countdown-pill">
-                <span class="lp-countdown-label">
-                    <svg class="h-6 w-6 shrink-0 text-[#293e2d]" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                    </svg>
-                    <span><?= $escaper->escapeHtml(__('Sale ending in')) ?></span>
+            <div class="lp-countdown-box">
+                <span class="lp-countdown-cell">
+                    <span class="lp-countdown-num" x-text="h">00</span>
+                    <span class="lp-countdown-unit"><?= $escaper->escapeHtml(__('hr')) ?></span>
                 </span>
-                <span class="lp-countdown-value" x-text="left">00:00:00</span>
+                <span class="lp-countdown-sep" aria-hidden="true">:</span>
+                <span class="lp-countdown-cell">
+                    <span class="lp-countdown-num" x-text="m">00</span>
+                    <span class="lp-countdown-unit"><?= $escaper->escapeHtml(__('min')) ?></span>
+                </span>
+                <span class="lp-countdown-sep" aria-hidden="true">:</span>
+                <span class="lp-countdown-cell">
+                    <span class="lp-countdown-num" x-text="s">00</span>
+                    <span class="lp-countdown-unit"><?= $escaper->escapeHtml(__('sec')) ?></span>
+                </span>
             </div>
         </div>
         <?php if ($title !== ''): ?>
@@ -84,12 +92,14 @@ $title = trim((string) $block->getTitle());
         function lpFlashCountdown(endMillis) {
             return {
                 end: endMillis,
-                left: '00:00:00',
+                h: '00',
+                m: '00',
+                s: '00',
                 tick() {
                     const diff = Math.max(0, Math.floor((this.end - Date.now()) / 1000));
-                    this.left = [Math.floor(diff / 3600), Math.floor((diff % 3600) / 60), diff % 60]
-                        .map((n) => String(n).padStart(2, '0'))
-                        .join(':');
+                    this.h = String(Math.floor(diff / 3600)).padStart(2, '0');
+                    this.m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+                    this.s = String(diff % 60).padStart(2, '0');
                 },
                 init() {
                     this.tick();

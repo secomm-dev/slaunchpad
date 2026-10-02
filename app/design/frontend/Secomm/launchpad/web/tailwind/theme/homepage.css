@@ -402,16 +402,17 @@
     }
 
     /* v4.9.9 (design Heading-3): title flash sale desktop = Inter Bold 36/40
-       #293e2d tracking -0.5px — !important vì utility lg:text-[36px] trên
-       element bị rule khác đoạt quyền (computed vẫn 20px). Heading là anh em
-       của .lp-flash trong row → dùng row:has(.lp-flash). */
+       tracking -0.5px — !important vì utility lg:text-[36px] trên element bị
+       rule khác đoạt quyền (computed vẫn 20px). Heading là anh em của .lp-flash
+       trong row → dùng row:has(.lp-flash). v4.13 (SLP-297): trắng trên gradient
+       section (cả mobile qua .lp-flash-title ở trên). */
     @media (min-width: 64rem) {
         body.cms-index-index [data-content-type="row"]:has(.lp-flash) h2[data-content-type='heading'] {
             font-size: 36px !important;
             font-weight: 700 !important;
             line-height: 40px !important;
             letter-spacing: -0.5px !important;
-            color: #293e2d !important;
+            color: #ffffff !important;
         }
     }
 
@@ -451,24 +452,49 @@
         @apply w-6 rounded-full bg-[#588f60] opacity-100;
     }
 
-    /* ---------------- Flash sale countdown (Launchpad_CmsContent widget) ---------------- */
+    /* ---------------- Flash sale section (Launchpad_CmsContent widget) -------- */
 
-    /* Mobile: full-width pill under the heading. Desktop: absolute right,
+    /* SLP-297 (design 2151:17103): nền gradient full-bleed trên row PB,
+       code-owned qua :has() (cùng pattern title v4.9.9) — không set bg qua PB
+       admin (bg PB nằm trên inner contained + trap admin stage). Bleed
+       calc(50% - 50vw) như SnapSlider — an toàn vì body.cms-index-index
+       overflow-x: clip (AC-4). Khi sale hết widget render nothing → :has() hết
+       match → nền tự tắt theo section (BUG-9X14Y1 behavior). */
+    body.cms-index-index [data-content-type="row"]:has(.lp-flash) {
+        margin-inline: calc(50% - 50vw);
+        padding-inline: calc(50vw - 50%);
+        padding-block: 1.5rem;
+        background: linear-gradient(278deg, #dd5800 2.83%, #c10000 98.02%);
+    }
+
+    /* Mobile: full-width row under the heading. Desktop: absolute right,
        aligned with the Page Builder heading line (widget follows it). */
     .lp-flash-countdown {
         @apply mb-5 w-full;
     }
 
-    .lp-countdown-pill {
-        @apply flex w-full items-center justify-between gap-2 rounded-full bg-hp-soft px-4 py-2.5 text-sm leading-5 text-[#293e2d] lg:w-auto lg:justify-start lg:gap-4;
+    /* SLP-297: 3 box hr/min/sec thay pill "Sale ending in" (pill retired per
+       Figma — frame cũ hidden). Box = white/30 + rounded-lg(8px) trên gradient;
+       số Heading-4 30/36 Medium, unit Label-M 14/20, mobile scale down
+       (24/28 + 12/16, gap 8px). */
+    .lp-countdown-box {
+        @apply flex w-fit items-center gap-2 text-white lg:gap-4;
     }
 
-    .lp-countdown-label {
-        @apply flex items-center gap-2;
+    .lp-countdown-cell {
+        @apply flex flex-col items-center justify-center gap-[2px] rounded-lg bg-white/30 px-2 py-1 text-center;
     }
 
-    .lp-countdown-value {
-        @apply font-semibold tabular-nums;
+    .lp-countdown-num {
+        @apply min-w-8 whitespace-nowrap font-sans text-[24px] font-medium leading-7 tabular-nums lg:min-w-10 lg:text-[30px] lg:leading-9;
+    }
+
+    .lp-countdown-unit {
+        @apply font-sans text-xs font-medium leading-4 lg:text-sm lg:leading-5;
+    }
+
+    .lp-countdown-sep {
+        @apply shrink-0 font-sans text-[24px] font-medium leading-none lg:text-[30px];
     }
 
     @media (min-width: 64rem) {
@@ -490,7 +516,7 @@
     }
 
     .lp-flash-title {
-        @apply !m-0 font-sans text-[20px] font-medium leading-[28px] text-black lg:text-[36px] lg:font-bold lg:leading-[40px] lg:tracking-[-0.5px] lg:text-[#293e2d];
+        @apply !m-0 font-sans text-[20px] font-medium leading-[28px] text-white lg:text-[36px] lg:font-bold lg:leading-[40px] lg:tracking-[-0.5px];
     }
 
     .lp-flash-head .lp-flash-countdown {
@@ -1027,6 +1053,21 @@ body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-
 body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *):is(:hover, :active) {
     --btn-bg: var(--lp-cta-hover-bg, var(--ds-primary-brand-600));
     --btn-shadow: var(--lp-cta-ring, inset 0 0 0 0 transparent);
+}
+
+/* SLP-297 follow-up (TASK-KMVKEX): secondary CTA theo style guide DS —
+   Figma Button 2410:26107 (XL+Secondary+Trailing): bg brand-100 + text
+   brand-700; hover 2410:26307: bg brand-300 + shadow-lg, text giữ brand-700.
+   Class-driven, đặt sau rule generic (specificity ngang) để thắng; rule này
+   cũng thắng row `--lp-cta-*` ad-hoc (vd row sofa set #fff). */
+body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary:not([data-content-type="slide"] *, .lp-promo-card *) {
+    --btn-bg: var(--ds-bg-brand-soft-secondary);
+    --btn-color: var(--ds-primary-brand-700);
+}
+
+body.cms-index-index [data-content-type="button-item"] a.pagebuilder-button-secondary:not([data-content-type="slide"] *, .lp-promo-card *):is(:hover, :active) {
+    --btn-bg: var(--ds-primary-brand-300);
+    --btn-shadow: var(--btn-design-shadow-lg);
 }
 
 body.cms-index-index [data-content-type="button-item"] :is(a.pagebuilder-button-primary, a.pagebuilder-button-secondary):not([data-content-type="slide"] *, .lp-promo-card *):focus-visible {

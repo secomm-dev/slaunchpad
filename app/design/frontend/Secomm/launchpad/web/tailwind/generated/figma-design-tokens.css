@@ -207,10 +207,10 @@
   --ds-global-typography-font-size-sm: 14px;
   --ds-global-typography-font-size-xl: 20px;
   --ds-global-typography-font-size-xs: 12px;
-  --ds-global-typography-font-weight-base: 400px;
-  --ds-global-typography-font-weight-emphasis: 700px;
-  --ds-global-typography-font-weight-strong: 500px;
-  --ds-global-typography-font-weight-thin: 300px;
+  --ds-global-typography-font-weight-base: 400;
+  --ds-global-typography-font-weight-emphasis: 700;
+  --ds-global-typography-font-weight-strong: 500;
+  --ds-global-typography-font-weight-thin: 300;
   --ds-global-typography-letter-spacing-normal: 0px;
   --ds-global-typography-letter-spacing-slight-tight: -0.5px;
   --ds-global-typography-letter-spacing-slight-wide: 0.5px;

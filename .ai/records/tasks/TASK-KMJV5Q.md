@@ -29,7 +29,7 @@ changes_project_state: true
 changes_architecture: false
 changes_integration: false
 changes_known_limitations: false
-verified_against_commit: working tree (chưa commit — dev branch anhchong)
+verified_against_commit: aad3a289 (SLP-291 — commit riêng, code task khác left unstaged)
 last_verified: 2026-10-01
 supersedes: []
 ---

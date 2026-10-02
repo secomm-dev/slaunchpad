@@ -15,14 +15,13 @@
            #99a1af (card.css already styles .hp-card old prices this way).
            Direct declarations on .price so the unlayered cascade beats both
            product-price.css `.price-box .price` (--price-font-size) and the
-           Hyvä base theme rule. Weight is a literal: the generated token
-           --ds-type-body-3-font-weight is malformed ("400px"). */
+           Hyvä base theme rule. */
         --price-font-size: 0.875rem;
 
         & .price {
             font-size: 0.875rem;
             line-height: 1.25rem;
-            font-weight: 400;
+            font-weight: var(--ds-type-body-3-font-weight);
             color: #99a1af;
         }
     }
