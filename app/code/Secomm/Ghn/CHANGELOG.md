@@ -1,5 +1,12 @@
 # Changelog — Secomm_Ghn
 
+## [Unreleased] — TASK-K6KG99: rate observability (2026-10-02)
+- **Log-only**: `GHN rate estimate` thêm `to_district_id`/`to_ward_code`; POST 4xx/5xx +
+  debug on → `GHN call payload` kèm request payload (sanitize sẵn, token luôn ở header).
+  Bối cảnh: sự cố calculate_fee 400 `CONFIG_FEE_NOT_FOUND` (bảng giá sandbox shop 190759
+  thiếu tuyến Hà Nội/"Ba Đình" — xác định bằng truy ngược quote DB vì log không có
+  destination). Không đổi behavior/payload/fallback (frozen DEC-TASKWNQCRW).
+
 ## 0.18.0 — 2026-10-01 (TASK-WNQCRW / DEC-TASKWNQCRW-001 — RATE weight classification + per-unit weight gate)
 
 ### Changed

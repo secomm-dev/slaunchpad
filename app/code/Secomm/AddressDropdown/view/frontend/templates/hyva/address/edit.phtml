@@ -434,15 +434,46 @@ function initCustomerAddressEdit() {
             this.selectedCity = '';
         },
         async fetchCities(regionId) {
-            const query = 'query{ GetListCity(input:{region_id:"' + regionId + '"}){ city_id default_name label } }';
+            // TASK-Z6SK3T: canonical addressLocations (GetListCity is deprecated +
+            // uncached). Inline page-session memo — Hyva has no RequireJS, so the shared
+            // JS cache module is not reachable from this Alpine component.
+            const countryId = (this.$refs['country_id'] && this.$refs['country_id'].value) || '';
+            const cityCache = this.cityCache || (this.cityCache = {});
+            const schemaCache = this.citySchemaCache || (this.citySchemaCache = {});
+            const cacheKey = countryId + '|' + regionId;
+            if (cityCache[cacheKey]) {
+                return cityCache[cacheKey];
+            }
             try {
+                let profileCode = schemaCache[countryId];
+                if (!profileCode) {
+                    const schemaResponse = await fetch('/graphql', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            query: 'query{addressSchema(input:{country_id:"' + countryId + '"}){profile_code}}'
+                        })
+                    });
+                    const schemaJson = await schemaResponse.json();
+                    const schema = schemaJson && schemaJson.data && schemaJson.data.addressSchema;
+                    profileCode = schemaCache[countryId] = (schema && schema.profile_code) || '';
+                }
+                if (!profileCode) {
+                    // Unmapped country: no canonical dataset — native city input applies.
+                    cityCache[cacheKey] = [];
+                    return [];
+                }
+                const query = 'query{addressLocations(input:{region_id:' + parseInt(regionId, 10) +
+                    ',profile_code:"' + profileCode + '"}){city_id default_name label}}';
                 const response = await fetch('/graphql', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: query })
                 });
                 const json = await response.json();
-                return (json.data && json.data.GetListCity) ? json.data.GetListCity : [];
+                const nodes = (json.data && json.data.addressLocations) || [];
+                cityCache[cacheKey] = nodes;
+                return nodes;
             } catch (error) {
                 console.error('AddressDropdown: failed to load cities', error);
                 return [];

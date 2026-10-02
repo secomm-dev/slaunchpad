@@ -23,12 +23,19 @@ namespace Secomm\VietNamAddress\Plugin\Cart;
 use Magento\Quote\Model\Quote\Address\RateRequest;
 use Magento\Shipping\Model\Shipping;
 use Psr\Log\LoggerInterface;
-use Secomm\AddressDropdown\Model\ResourceModel\CityModel\CityLocaleCollectionFactory;
+use Magento\Framework\App\ResourceConnection;
 
 class ValidateVietNamWard
 {
+    /**
+     * TASK-Z6SK3T: per-request ward-validity memo ("<regionId>|<ward>" => bool) — the
+     * plugin runs once per carrier per rate collection, so an address change fires the
+     * identical validation repeatedly within one request.
+     */
+    private array $wardValidMemo = [];
+
     public function __construct(
-        private readonly CityLocaleCollectionFactory $cityCollectionFactory,
+        private readonly ResourceConnection $resource,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -54,18 +61,12 @@ class ValidateVietNamWard
                 return [$request];
             }
 
-            $collection = $this->cityCollectionFactory->create();
-            $collection->addFieldToFilter('region_id', $regionId);
-            // TASK-ADT94K: the schema renderer submits the locale-resolved name (e.g. vi_VN
-            // "Hoàn Kiếm"), the legacy renderer the ASCII default_name — match either.
-            $connection = $collection->getConnection();
-            $collection->getSelect()->where(
-                $connection->quoteInto('main_table.default_name = ?', $ward)
-                . ' OR ' . $connection->quoteInto('rname.name = ?', $ward)
-            );
-            $collection->setPageSize(1)->setCurPage(1);
+            $memoKey = $regionId . '|' . $ward;
+            if (!isset($this->wardValidMemo[$memoKey])) {
+                $this->wardValidMemo[$memoKey] = $this->isWardInRegion($regionId, $ward);
+            }
 
-            if ($collection->getSize() === 0) {
+            if (!$this->wardValidMemo[$memoKey]) {
                 // Ward does not belong to the province -> neutralise to avoid a
                 // misleading rate. Logged for visibility (do not silently guess).
                 $this->logger->warning(
@@ -84,5 +85,31 @@ class ValidateVietNamWard
         }
 
         return [$request];
+    }
+
+    /**
+     * Single-statement ward-membership probe (TASK-Z6SK3T): fetchOne + limit 1 instead of
+     * a full CityLocaleCollection build + getSize() COUNT. Dual-match (TASK-ADT94K): the
+     * schema renderer submits the locale-resolved name (e.g. vi_VN "Hoàn Kiếm"), the
+     * legacy renderer the ASCII default_name — match either.
+     */
+    private function isWardInRegion(string $regionId, string $ward): bool
+    {
+        $connection = $this->resource->getConnection();
+        $select = $connection->select()
+            ->from(['d' => $this->resource->getTableName('directory_region_city')], [new \Zend_Db_Expr('1')])
+            ->joinLeft(
+                ['n' => $this->resource->getTableName('directory_region_city_name')],
+                'n.city_id = d.city_id',
+                []
+            )
+            ->where('d.region_id = ?', $regionId)
+            ->where(
+                $connection->quoteInto('d.default_name = ?', $ward)
+                . ' OR ' . $connection->quoteInto('n.name = ?', $ward)
+            )
+            ->limit(1);
+
+        return $connection->fetchOne($select) !== false;
     }
 }
