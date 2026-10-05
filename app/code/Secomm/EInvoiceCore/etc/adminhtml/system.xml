@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="secomm_einvoice" translate="label" type="text" sortOrder="10"
+                 showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>EInvoice</label>
+            <tab>secomm</tab>
+            <resource>Secomm_EInvoiceCore::config</resource>
+            <group id="general" translate="label" sortOrder="10"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="provider" translate="label comment" type="select" sortOrder="15"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Provider</label>
+                    <comment>Select the EInvoice provider for this scope.</comment>
+                    <source_model>Secomm\EInvoiceCore\Model\Config\Source\Provider</source_model>
+                </field>
+            </group>
+            <group id="issuance" translate="label" sortOrder="20"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Issuance</label>
+                <field id="issue_trigger" translate="label comment" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Issue Trigger</label>
+                    <comment>Manual = Admin Issue button only. First Shipment = auto issue on first ship.</comment>
+                    <source_model>Secomm\EInvoiceCore\Model\Config\Source\IssueTrigger</source_model>
+                </field>
+                <field id="auto_issue" translate="label comment" type="select" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Auto Issue on Trigger</label>
+                    <comment>When No, only the Admin Issue button issues the invoice.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="auto_creditmemo_adjustment" translate="label comment" type="select" sortOrder="25"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Auto Issue on Credit Memo</label>
+                    <comment>When No, creating a credit memo does not automatically issue an adjustment invoice.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="commercial_discount_enabled" translate="label comment" type="select" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Commercial Discount (CKTM)</label>
+                    <comment>When Yes, shows the Commercial discount section on the order EInvoice tab (MeInvoice ReferenceType=5).</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
