@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Secomm_EInvoiceCore::einvoice"
+             title="EInvoice"
+             module="Secomm_EInvoiceCore"
+             sortOrder="20"
+             resource="Secomm_EInvoiceCore::einvoice"
+             parent="MenuSecomm_Base::menu"/>
+        <add id="Secomm_EInvoiceCore::issue_logs"
+             title="EInvoice Logs"
+             module="Secomm_EInvoiceCore"
+             sortOrder="10"
+             action="secomm_einvoice_log/issuelog/index"
+             resource="Secomm_EInvoiceLog::issue_log"
+             parent="Secomm_EInvoiceCore::einvoice"/>
+        <add id="Secomm_EInvoiceCore::config"
+             title="Configuration"
+             module="Secomm_EInvoiceCore"
+             sortOrder="20"
+             action="adminhtml/system_config/edit/section/secomm_einvoice"
+             resource="Secomm_EInvoiceCore::config"
+             parent="Secomm_EInvoiceCore::einvoice"/>
+    </menu>
+</config>

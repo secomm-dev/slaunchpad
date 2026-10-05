@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <secomm_einvoice>
+            <general>
+                <enabled>0</enabled>
+                <provider>misa</provider>
+            </general>
+            <issuance>
+                <issue_trigger>on_shipment</issue_trigger>
+                <auto_issue>1</auto_issue>
+                <auto_creditmemo_adjustment>0</auto_creditmemo_adjustment>
+                <commercial_discount_enabled>0</commercial_discount_enabled>
+            </issuance>
+        </secomm_einvoice>
+    </default>
+</config>

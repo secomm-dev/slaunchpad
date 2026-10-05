@@ -1,0 +1,40 @@
+{
+    "secomm_einvoice_issue_log": {
+        "column": {
+            "entity_id": true,
+            "order_id": true,
+            "order_increment_id": true,
+            "store_id": true,
+            "status": true,
+            "external_id": true,
+            "ref_id": true,
+            "transaction_id": true,
+            "inv_series": true,
+            "inv_no": true,
+            "invoice_template_id": true,
+            "sign_type": true,
+            "reference_type": true,
+            "parent_log_id": true,
+            "creditmemo_id": true,
+            "invoice_status": true,
+            "request_payload": true,
+            "response_payload": true,
+            "error_message": true,
+            "last_action": true,
+            "last_action_at": true,
+            "action_errors": true,
+            "issued_at": true,
+            "cancelled_at": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "SECCOMM_EINVOICE_ISSUE_LOG_ORDER_ID": true,
+            "SECCOMM_EINVOICE_ISSUE_LOG_ORDER_STATUS": true,
+            "SECCOMM_EINVOICE_ISSUE_LOG_TRANSACTION_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

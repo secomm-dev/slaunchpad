@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="secomm_einvoice">
+            <group id="misa" translate="label" sortOrder="30"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>MISA API</label>
+                <depends>
+                    <field id="general/provider">misa</field>
+                </depends>
+                <field id="base_url" translate="label comment" type="text" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Base URL</label>
+                    <comment>Sandbox: https://testapi.meinvoice.vn, Production: https://api.meinvoice.vn</comment>
+                </field>
+                <field id="app_id" translate="label comment" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>App ID</label>
+                    <comment>Application ID from MeInvoice integration settings.</comment>
+                </field>
+                <field id="tax_code" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Tax Code</label>
+                </field>
+                <field id="username" translate="label" type="text" sortOrder="40"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Username</label>
+                </field>
+                <field id="password" translate="label" type="obscure" sortOrder="50"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Password</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="sign_type" translate="label comment" type="select" sortOrder="60"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sign Type</label>
+                    <comment>Select sign mode based on MISA issuance scenario.</comment>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\SignType</source_model>
+                </field>
+                <field id="use_preview_before_publish" translate="label" type="select" sortOrder="70"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Use Preview Before Publish</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="send_email_on_issue" translate="label comment" type="select" sortOrder="75"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Send Email on Issue</label>
+                    <comment>Automatic only: sets InvoiceData IsSendEmail when publishing. MeInvoice emails the buyer on successful issue. No admin button — use order tab “Resend email” for the separate /sendemail API.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="invoice_with_code" translate="label comment" type="select" sortOrder="76"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Invoice With Code</label>
+                    <comment>Maps to MeInvoice IsInvoiceCode on sendemail and invoiceWithCode on other APIs.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="invoice_calculating_machine" translate="label comment" type="select" sortOrder="77"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Invoice Calculating Machine (MTT)</label>
+                    <comment>Maps to invoiceCalcu query param and IsInvoiceCalculatingMachine on sendemail.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="certificate_sn" translate="label comment" type="select" sortOrder="78"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Certificate SN</label>
+                    <comment>Required only for SignType=2 when multiple HSM certificates exist. Loaded from MeInvoice get-certificates (cached 24h). Leave as Default for a single certificate.</comment>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\CertificateSn</source_model>
+                    <depends>
+                        <field id="sign_type">2</field>
+                    </depends>
+                </field>
+                <field id="shipping_line_name" translate="label comment" type="text" sortOrder="76"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Shipping Line Name</label>
+                    <comment>ItemName for the shipping row on InvoiceDetail (e.g. Phí vận chuyển).</comment>
+                </field>
+                <field id="invoice_template" translate="label comment" type="select" sortOrder="77"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Invoice Template</label>
+                    <comment>Default template (mau hoa don) for this store, used by auto issue. The order view can pick a different template for manual issue. Requires valid MISA credentials.</comment>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\InvoiceTemplate</source_model>
+                </field>
+            </group>
+            <group id="amount_format" translate="label comment" sortOrder="35"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Invoice Amount Format</label>
+                <depends>
+                    <field id="general/provider">misa</field>
+                </depends>
+                <field id="amount_decimal_digits" translate="label comment" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Amount Decimal Digits (VND)</label>
+                    <comment>Thành tiền / tổng tiền quy đổi VND. Use 2 for fractional VND (e.g. 9.88 shipping); 0 rounds display to whole đồng.</comment>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\DecimalDigits</source_model>
+                </field>
+                <field id="amount_oc_decimal_digits" translate="label comment" type="select" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Amount OC Decimal Digits</label>
+                    <comment>Thành tiền nguyên tệ (CurrencyCode). Must match Amount when CurrencyCode is VND.</comment>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\DecimalDigits</source_model>
+                </field>
+                <field id="unit_price_oc_decimal_digits" translate="label comment" type="select" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Unit Price OC Decimal Digits</label>
+                    <comment>Đơn giá nguyên tệ.</comment>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\DecimalDigits</source_model>
+                </field>
+                <field id="unit_price_decimal_digits" translate="label comment" type="select" sortOrder="40"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Unit Price Decimal Digits (VND)</label>
+                    <comment>Đơn giá quy đổi VND.</comment>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\DecimalDigits</source_model>
+                </field>
+                <field id="quantity_decimal_digits" translate="label comment" type="select" sortOrder="50"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Quantity Decimal Digits</label>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\DecimalDigits</source_model>
+                </field>
+                <field id="coefficient_decimal_digits" translate="label comment" type="select" sortOrder="60"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Coefficient Decimal Digits</label>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\DecimalDigits</source_model>
+                </field>
+                <field id="exchange_rate_decimal_digits" translate="label comment" type="select" sortOrder="70"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exchange Rate Decimal Digits</label>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\DecimalDigits</source_model>
+                </field>
+                <field id="clock_decimal_digits" translate="label comment" type="select" sortOrder="80"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Clock Decimal Digits</label>
+                    <source_model>Secomm\EInvoiceMisa\Model\Config\Source\DecimalDigits</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

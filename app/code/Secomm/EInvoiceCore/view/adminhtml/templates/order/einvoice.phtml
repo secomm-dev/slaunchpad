@@ -1,0 +1,556 @@
+<?php
+/**
+ * @var \Secomm\EInvoiceCore\Block\Adminhtml\Order\View\Einvoice $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$order = $block->getOrder();
+$viewModel = $block->getViewModel();
+$storeId = $order !== null ? (int) $order->getStoreId() : null;
+$orderId = $order !== null && $order->getEntityId() ? (int) $order->getEntityId() : null;
+?>
+<?php if ($order !== null && $viewModel->canShow($storeId)): ?>
+    <?php
+    $latestLog = $viewModel->getLatestLog($orderId);
+    $detailsLog = $viewModel->getOrderTabLog($orderId);
+    $templateOptions = $viewModel->getTemplateOptions($storeId);
+    $defaultTemplateId = $viewModel->getDefaultTemplateId($storeId);
+    $status = $latestLog ? $latestLog->getStatus() : null;
+    $statusModifier = $block->getStatusModifier($status);
+    $hasIssued = $viewModel->hasIssuedInvoice($orderId);
+    $canIssue = $viewModel->canIssue($orderId, $storeId);
+    $canCancel = $viewModel->canCancel($orderId, $storeId);
+    ?>
+    <div class="secomm-einvoice"
+         data-mage-init='<?= /* @noEscape */ $block->getAccordionInitJson() ?>'>
+        <div class="secomm-einvoice__summary">
+            <div class="secomm-einvoice__summary-main">
+                <h2 class="secomm-einvoice__summary-title">
+                    <?= $escaper->escapeHtml(__('MeInvoice for order #%1', $order->getIncrementId())) ?>
+                </h2>
+                <?php if ($detailsLog): ?>
+                    <p class="secomm-einvoice__summary-desc">
+                        <?= $escaper->escapeHtml(__('Latest issuance attempt and provider references.')) ?>
+                    </p>
+                <?php else: ?>
+                    <p class="secomm-einvoice__summary-desc">
+                        <?= $escaper->escapeHtml(__('No invoice has been issued for this order yet.')) ?>
+                    </p>
+                <?php endif; ?>
+            </div>
+            <span class="secomm-einvoice__badge secomm-einvoice__badge--<?= $escaper->escapeHtmlAttr($statusModifier) ?>">
+                <?= $escaper->escapeHtml($block->getStatusLabel($status)) ?>
+            </span>
+        </div>
+
+        <?php
+        $actionErrors = $latestLog ? $latestLog->getActionErrors() : [];
+        if ($actionErrors === [] && $latestLog && $latestLog->getErrorMessage()) {
+            $actionErrors = [(string) ($latestLog->getLastAction() ?: 'unknown') => $latestLog->getErrorMessage()];
+        }
+        ?>
+        <?php foreach ($actionErrors as $actionCode => $errorMsg): ?>
+            <div class="secomm-einvoice__alert secomm-einvoice__alert--error" role="alert">
+                <strong><?= $escaper->escapeHtml($block->getActionLabel((string) $actionCode)) ?>:</strong>
+                <?= $escaper->escapeHtml($errorMsg) ?>
+            </div>
+        <?php endforeach; ?>
+
+        <div class="secomm-einvoice__accordion">
+            <section class="secomm-einvoice__accordion-item"
+                     data-accordion-section="details">
+                <button type="button"
+                        class="secomm-einvoice__accordion-trigger"
+                        id="secomm-einvoice-trigger-details"
+                        aria-controls="secomm-einvoice-panel-details"
+                        aria-expanded="true">
+                    <span class="secomm-einvoice__accordion-head">
+                        <span class="secomm-einvoice__accordion-title">
+                            <?= $escaper->escapeHtml(__('Invoice details')) ?>
+                        </span>
+                    </span>
+                    <span class="secomm-einvoice__accordion-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="secomm-einvoice__accordion-panel"
+                     id="secomm-einvoice-panel-details"
+                     role="region"
+                     aria-labelledby="secomm-einvoice-trigger-details">
+                    <?php if ($detailsLog): ?>
+                        <dl class="secomm-einvoice__meta">
+                            <div class="secomm-einvoice__meta-item">
+                                <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('Status')) ?></dt>
+                                <dd class="secomm-einvoice__meta-value"><?= $escaper->escapeHtml($block->getStatusLabel($detailsLog->getStatus())) ?></dd>
+                            </div>
+                            <?php if ($detailsLog->getLastAction()): ?>
+                                <div class="secomm-einvoice__meta-item">
+                                    <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('Last action')) ?></dt>
+                                    <dd class="secomm-einvoice__meta-value">
+                                        <?= $escaper->escapeHtml($block->getActionLabel($detailsLog->getLastAction())) ?>
+                                        <?php
+                                        $lastActionAt = $detailsLog->getData('last_action_at');
+                                        if ($lastActionAt):
+                                            ?>
+                                            <span class="secomm-einvoice__meta-muted">
+                                                — <?= $escaper->escapeHtml($block->formatLogDatetime((string) $lastActionAt)) ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </dd>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($detailsLog->getExternalId()): ?>
+                                <div class="secomm-einvoice__meta-item">
+                                    <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('External ID')) ?></dt>
+                                    <dd class="secomm-einvoice__meta-value secomm-einvoice__meta-value--mono">
+                                        <?= $escaper->escapeHtml($detailsLog->getExternalId()) ?>
+                                    </dd>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($detailsLog->getTransactionId()): ?>
+                                <div class="secomm-einvoice__meta-item">
+                                    <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('Transaction ID')) ?></dt>
+                                    <dd class="secomm-einvoice__meta-value secomm-einvoice__meta-value--mono">
+                                        <?= $escaper->escapeHtml($detailsLog->getTransactionId()) ?>
+                                    </dd>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($detailsLog->getRefId()): ?>
+                                <div class="secomm-einvoice__meta-item">
+                                    <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('Ref ID')) ?></dt>
+                                    <dd class="secomm-einvoice__meta-value secomm-einvoice__meta-value--mono">
+                                        <?= $escaper->escapeHtml($detailsLog->getRefId()) ?>
+                                    </dd>
+                                </div>
+                            <?php endif; ?>
+                            <?php
+                            $invSeries = $detailsLog->getData('inv_series');
+                            if ($invSeries): ?>
+                                <div class="secomm-einvoice__meta-item">
+                                    <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('Invoice series')) ?></dt>
+                                    <dd class="secomm-einvoice__meta-value"><?= $escaper->escapeHtml((string) $invSeries) ?></dd>
+                                </div>
+                            <?php endif; ?>
+                            <?php
+                            $invNo = $detailsLog->getInvNo();
+                            if ($invNo): ?>
+                                <div class="secomm-einvoice__meta-item">
+                                    <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('Invoice number')) ?></dt>
+                                    <dd class="secomm-einvoice__meta-value secomm-einvoice__meta-value--mono">
+                                        <?= $escaper->escapeHtml($invNo) ?>
+                                    </dd>
+                                </div>
+                            <?php endif; ?>
+                            <?php
+                            $invoiceStatus = $block->getInvoiceStatusLabel($orderId);
+                            if ($invoiceStatus): ?>
+                                <div class="secomm-einvoice__meta-item">
+                                    <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('MeInvoice Status')) ?></dt>
+                                    <dd class="secomm-einvoice__meta-value"><?= $escaper->escapeHtml($invoiceStatus) ?></dd>
+                                </div>
+                            <?php endif; ?>
+                            <div class="secomm-einvoice__meta-item">
+                                <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('Invoice type')) ?></dt>
+                                <dd class="secomm-einvoice__meta-value">
+                                    <?= $escaper->escapeHtml($block->getReferenceTypeLabel($detailsLog->getData('reference_type'))) ?>
+                                </dd>
+                            </div>
+                            <?php
+                            $issuedAt = $detailsLog->getData('issued_at');
+                            if ($issuedAt): ?>
+                                <div class="secomm-einvoice__meta-item">
+                                    <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('Issued at')) ?></dt>
+                                    <dd class="secomm-einvoice__meta-value">
+                                        <?= $escaper->escapeHtml($block->formatLogDatetime((string) $issuedAt)) ?>
+                                    </dd>
+                                </div>
+                            <?php endif; ?>
+                            <?php
+                            $cancelledAt = $detailsLog->getData('cancelled_at');
+                            if ($cancelledAt): ?>
+                                <div class="secomm-einvoice__meta-item">
+                                    <dt class="secomm-einvoice__meta-label"><?= $escaper->escapeHtml(__('Cancelled at')) ?></dt>
+                                    <dd class="secomm-einvoice__meta-value">
+                                        <?= $escaper->escapeHtml($block->formatLogDatetime((string) $cancelledAt)) ?>
+                                    </dd>
+                                </div>
+                            <?php endif; ?>
+                        </dl>
+                    <?php else: ?>
+                        <div class="secomm-einvoice__empty">
+                            <p class="secomm-einvoice__empty-title"><?= $escaper->escapeHtml(__('No issuance attempt yet')) ?></p>
+                            <p class="secomm-einvoice__empty-text">
+                                <?= $escaper->escapeHtml(
+                                    __('Open “Issue invoice” below when the order is ready to publish.')
+                                ) ?>
+                            </p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </section>
+
+            <?php if ($canIssue): ?>
+                <section class="secomm-einvoice__accordion-item"
+                         data-accordion-section="issue">
+                    <button type="button"
+                            class="secomm-einvoice__accordion-trigger"
+                            id="secomm-einvoice-trigger-issue"
+                            aria-controls="secomm-einvoice-panel-issue"
+                            aria-expanded="false">
+                        <span class="secomm-einvoice__accordion-head">
+                            <span class="secomm-einvoice__accordion-title">
+                                <?= $escaper->escapeHtml(__('Issue invoice')) ?>
+                            </span>
+                            <span class="secomm-einvoice__accordion-note">
+                                <?= $escaper->escapeHtml(__('Send this order to MeInvoice using the selected template.')) ?>
+                            </span>
+                        </span>
+                        <span class="secomm-einvoice__accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="secomm-einvoice__accordion-panel"
+                         id="secomm-einvoice-panel-issue"
+                         role="region"
+                         aria-labelledby="secomm-einvoice-trigger-issue"
+                         hidden>
+                        <div class="secomm-einvoice__panel">
+                            <?php if ($templateOptions === []): ?>
+                                <div class="secomm-einvoice__alert secomm-einvoice__alert--warning" role="alert">
+                                    <?= $escaper->escapeHtml(
+                                        __('No invoice templates available. Check MISA credentials and template configuration.')
+                                    ) ?>
+                                </div>
+                            <?php else: ?>
+                                <form class="secomm-einvoice__form"
+                                      action="<?= $escaper->escapeUrl($block->getIssueUrl()) ?>"
+                                      method="post">
+                                    <input name="form_key" type="hidden"
+                                           value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+                                    <div class="admin__field">
+                                        <label class="admin__field-label" for="einvoice_template_id">
+                                            <span><?= $escaper->escapeHtml(__('Invoice Template')) ?></span>
+                                        </label>
+                                        <div class="admin__field-control">
+                                            <select id="einvoice_template_id" name="invoice_template_id"
+                                                    class="admin__control-select" required>
+                                                <?php foreach ($templateOptions as $option): ?>
+                                                    <option value="<?= $escaper->escapeHtmlAttr($option['value']) ?>"
+                                                        <?= $option['value'] === $defaultTemplateId ? 'selected="selected"' : '' ?>>
+                                                        <?= $escaper->escapeHtml($option['label']) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="secomm-einvoice__form-actions">
+                                        <button type="submit" class="action-default scalable action-primary">
+                                            <span><?= $escaper->escapeHtml(__('Issue EInvoice')) ?></span>
+                                        </button>
+                                    </div>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </section>
+            <?php endif; ?>
+
+            <?php if ($hasIssued): ?>
+                <section class="secomm-einvoice__accordion-item"
+                         data-accordion-section="documents">
+                    <button type="button"
+                            class="secomm-einvoice__accordion-trigger"
+                            id="secomm-einvoice-trigger-documents"
+                            aria-controls="secomm-einvoice-panel-documents"
+                            aria-expanded="false">
+                        <span class="secomm-einvoice__accordion-head">
+                            <span class="secomm-einvoice__accordion-title">
+                                <?= $escaper->escapeHtml(__('Documents & sync')) ?>
+                            </span>
+                            <span class="secomm-einvoice__accordion-note">
+                                <?= $escaper->escapeHtml(__('Refresh status or download published invoice files from MeInvoice.')) ?>
+                            </span>
+                        </span>
+                        <span class="secomm-einvoice__accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="secomm-einvoice__accordion-panel"
+                         id="secomm-einvoice-panel-documents"
+                         role="region"
+                         aria-labelledby="secomm-einvoice-trigger-documents"
+                         hidden>
+                        <div class="secomm-einvoice__panel">
+                            <div class="secomm-einvoice__toolbar">
+                                <a href="<?= $escaper->escapeUrl($block->getPreviewUrl()) ?>"
+                                   class="action-default scalable"
+                                   target="_blank" rel="noopener">
+                                    <span><?= $escaper->escapeHtml(__('Preview')) ?></span>
+                                </a>
+                                <a href="<?= $escaper->escapeUrl($block->getViewPublishedUrl()) ?>"
+                                   class="action-default scalable"
+                                   target="_blank" rel="noopener">
+                                    <span><?= $escaper->escapeHtml(__('View Published')) ?></span>
+                                </a>
+                                <a href="<?= $escaper->escapeUrl($block->getRefreshStatusUrl()) ?>"
+                                   class="action-default scalable action-primary">
+                                    <span><?= $escaper->escapeHtml(__('Refresh Status')) ?></span>
+                                </a>
+                                <a href="<?= $escaper->escapeUrl($block->getDownloadUrl('pdf')) ?>"
+                                   class="action-default scalable">
+                                    <span><?= $escaper->escapeHtml(__('Download PDF')) ?></span>
+                                </a>
+                                <a href="<?= $escaper->escapeUrl($block->getDownloadUrl('xml')) ?>"
+                                   class="action-default scalable">
+                                    <span><?= $escaper->escapeHtml(__('Download XML')) ?></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="secomm-einvoice__accordion-item"
+                         data-accordion-section="email">
+                    <button type="button"
+                            class="secomm-einvoice__accordion-trigger"
+                            id="secomm-einvoice-trigger-email"
+                            aria-controls="secomm-einvoice-panel-email"
+                            aria-expanded="false">
+                        <span class="secomm-einvoice__accordion-head">
+                            <span class="secomm-einvoice__accordion-title">
+                                <?= $escaper->escapeHtml(__('Resend email to customer')) ?>
+                            </span>
+                            <span class="secomm-einvoice__accordion-note">
+                                <?= $escaper->escapeHtml(
+                                    __('Calls MeInvoice POST /sendemail when you need to send the invoice again.')
+                                ) ?>
+                            </span>
+                        </span>
+                        <span class="secomm-einvoice__accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="secomm-einvoice__accordion-panel"
+                         id="secomm-einvoice-panel-email"
+                         role="region"
+                         aria-labelledby="secomm-einvoice-trigger-email"
+                         hidden>
+                        <div class="secomm-einvoice__panel">
+                            <?php if ($detailsLog && $block->hadSendEmailOnPublish($detailsLog)): ?>
+                                <div class="secomm-einvoice__alert secomm-einvoice__alert--warning" role="status">
+                                    <?= $escaper->escapeHtml(
+                                        __('This order was issued with IsSendEmail enabled; MeInvoice may have already emailed the customer on publish.')
+                                    ) ?>
+                                </div>
+                            <?php endif; ?>
+                            <form class="secomm-einvoice__form secomm-einvoice__send-email"
+                                  action="<?= $escaper->escapeUrl($block->getSendEmailUrl()) ?>"
+                                  method="post">
+                                <input name="form_key" type="hidden"
+                                       value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+                                <div class="admin__field">
+                                    <label class="admin__field-label" for="einvoice_receiver_name">
+                                        <span><?= $escaper->escapeHtml(__('Receiver Name')) ?></span>
+                                    </label>
+                                    <div class="admin__field-control">
+                                        <input type="text" id="einvoice_receiver_name" name="receiver_name"
+                                               class="admin__control-text"
+                                               value="<?= $escaper->escapeHtmlAttr($block->getDefaultReceiverName()) ?>"/>
+                                    </div>
+                                </div>
+                                <div class="admin__field">
+                                    <label class="admin__field-label" for="einvoice_receiver_email">
+                                        <span><?= $escaper->escapeHtml(__('Receiver Email')) ?></span>
+                                    </label>
+                                    <div class="admin__field-control">
+                                        <input type="email" id="einvoice_receiver_email" name="receiver_email"
+                                               class="admin__control-text" required
+                                               value="<?= $escaper->escapeHtmlAttr($block->getDefaultReceiverEmail()) ?>"/>
+                                    </div>
+                                </div>
+                                <div class="secomm-einvoice__form-actions">
+                                    <button type="submit" class="action-default scalable">
+                                        <span><?= $escaper->escapeHtml(__('Resend Invoice Email')) ?></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <?php if ($viewModel->canIssueCommercialDiscount($orderId, $storeId)): ?>
+                <section class="secomm-einvoice__accordion-item"
+                         data-accordion-section="commercial_discount">
+                    <button type="button"
+                            class="secomm-einvoice__accordion-trigger"
+                            id="secomm-einvoice-trigger-commercial-discount"
+                            aria-controls="secomm-einvoice-panel-commercial-discount"
+                            aria-expanded="false">
+                        <span class="secomm-einvoice__accordion-head">
+                            <span class="secomm-einvoice__accordion-title">
+                                <?= $escaper->escapeHtml(__('Commercial discount')) ?>
+                            </span>
+                            <span class="secomm-einvoice__accordion-note">
+                                <?= $escaper->escapeHtml(__('Issue a commercial discount invoice (CKTM) for this order.')) ?>
+                            </span>
+                        </span>
+                        <span class="secomm-einvoice__accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="secomm-einvoice__accordion-panel"
+                         id="secomm-einvoice-panel-commercial-discount"
+                         role="region"
+                         aria-labelledby="secomm-einvoice-trigger-commercial-discount"
+                         hidden>
+                        <div class="secomm-einvoice__panel">
+                            <form class="secomm-einvoice__form"
+                                  action="<?= $escaper->escapeUrl($block->getCommercialDiscountUrl()) ?>"
+                                  method="post"
+                                  onsubmit="return window.confirm('<?= $escaper->escapeJs(
+                                      __('Issue a commercial discount invoice for this order?')
+                                  ) ?>');">
+                                <input name="form_key" type="hidden"
+                                       value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+                                <div class="admin__field">
+                                    <label class="admin__field-label" for="einvoice_list_no">
+                                        <span><?= $escaper->escapeHtml(__('List No')) ?></span>
+                                    </label>
+                                    <div class="admin__field-control">
+                                        <input type="text" id="einvoice_list_no" name="list_no"
+                                               class="admin__control-text" required/>
+                                    </div>
+                                </div>
+                                <div class="admin__field">
+                                    <label class="admin__field-label" for="einvoice_list_date">
+                                        <span><?= $escaper->escapeHtml(__('List Date')) ?></span>
+                                    </label>
+                                    <div class="admin__field-control">
+                                        <input type="date" id="einvoice_list_date" name="list_date"
+                                               class="admin__control-text" required/>
+                                    </div>
+                                </div>
+                                <div class="admin__field">
+                                    <label class="admin__field-label" for="einvoice_cktm_note">
+                                        <span><?= $escaper->escapeHtml(__('Invoice Note')) ?></span>
+                                    </label>
+                                    <div class="admin__field-control">
+                                        <input type="text" id="einvoice_cktm_note" name="invoice_note"
+                                               class="admin__control-text" required/>
+                                    </div>
+                                </div>
+                                <div class="admin__field">
+                                    <label class="admin__field-label" for="einvoice_cktm_amount">
+                                        <span><?= $escaper->escapeHtml(__('Amount (excl. VAT)')) ?></span>
+                                    </label>
+                                    <div class="admin__field-control">
+                                        <input type="number" step="0.01" min="0.01" id="einvoice_cktm_amount"
+                                               name="amount" class="admin__control-text" required/>
+                                    </div>
+                                </div>
+                                <div class="admin__field">
+                                    <label class="admin__field-label" for="einvoice_cktm_vat">
+                                        <span><?= $escaper->escapeHtml(__('VAT Amount')) ?></span>
+                                    </label>
+                                    <div class="admin__field-control">
+                                        <input type="number" step="0.01" min="0" id="einvoice_cktm_vat"
+                                               name="vat_amount" class="admin__control-text" value="0"/>
+                                    </div>
+                                </div>
+                                <div class="secomm-einvoice__form-actions">
+                                    <button type="submit" class="action-default scalable">
+                                        <span><?= $escaper->escapeHtml(__('Issue Commercial Discount')) ?></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+                <?php endif; ?>
+
+                <section class="secomm-einvoice__accordion-item"
+                         data-accordion-section="replacement">
+                    <button type="button"
+                            class="secomm-einvoice__accordion-trigger"
+                            id="secomm-einvoice-trigger-replacement"
+                            aria-controls="secomm-einvoice-panel-replacement"
+                            aria-expanded="false">
+                        <span class="secomm-einvoice__accordion-head">
+                            <span class="secomm-einvoice__accordion-title">
+                                <?= $escaper->escapeHtml(__('Replacement invoice')) ?>
+                            </span>
+                            <span class="secomm-einvoice__accordion-note">
+                                <?= $escaper->escapeHtml(__('Issue a replacement invoice referencing the original.')) ?>
+                            </span>
+                        </span>
+                        <span class="secomm-einvoice__accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="secomm-einvoice__accordion-panel"
+                         id="secomm-einvoice-panel-replacement"
+                         role="region"
+                         aria-labelledby="secomm-einvoice-trigger-replacement"
+                         hidden>
+                        <div class="secomm-einvoice__panel">
+                            <form class="secomm-einvoice__form"
+                                  action="<?= $escaper->escapeUrl($block->getReplaceUrl()) ?>"
+                                  method="post"
+                                  onsubmit="return window.confirm('<?= $escaper->escapeJs(
+                                      __('Issue a replacement invoice for this order?')
+                                  ) ?>');">
+                                <input name="form_key" type="hidden"
+                                       value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+                                <div class="secomm-einvoice__form-actions">
+                                    <button type="submit" class="action-default scalable">
+                                        <span><?= $escaper->escapeHtml(__('Issue Replacement')) ?></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            <?php endif; ?>
+
+            <?php if ($canCancel): ?>
+                <section class="secomm-einvoice__accordion-item secomm-einvoice__accordion-item--danger"
+                         data-accordion-section="cancel">
+                    <button type="button"
+                            class="secomm-einvoice__accordion-trigger"
+                            id="secomm-einvoice-trigger-cancel"
+                            aria-controls="secomm-einvoice-panel-cancel"
+                            aria-expanded="false">
+                        <span class="secomm-einvoice__accordion-head">
+                            <span class="secomm-einvoice__accordion-title">
+                                <?= $escaper->escapeHtml(__('Cancel invoice')) ?>
+                            </span>
+                            <span class="secomm-einvoice__accordion-note">
+                                <?= $escaper->escapeHtml(__('Cancels the invoice on MeInvoice. This cannot be undone.')) ?>
+                            </span>
+                        </span>
+                        <span class="secomm-einvoice__accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="secomm-einvoice__accordion-panel"
+                         id="secomm-einvoice-panel-cancel"
+                         role="region"
+                         aria-labelledby="secomm-einvoice-trigger-cancel"
+                         hidden>
+                        <div class="secomm-einvoice__panel secomm-einvoice__panel--danger">
+                            <form class="secomm-einvoice__form"
+                                  action="<?= $escaper->escapeUrl($block->getCancelUrl()) ?>"
+                                  method="post"
+                                  onsubmit="return window.confirm('<?= $escaper->escapeJs(
+                                      __('Cancel this issued invoice on MeInvoice?')
+                                  ) ?>');">
+                                <input name="form_key" type="hidden"
+                                       value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+                                <div class="admin__field">
+                                    <label class="admin__field-label" for="einvoice_cancel_reason">
+                                        <span><?= $escaper->escapeHtml(__('Cancel Reason')) ?></span>
+                                    </label>
+                                    <div class="admin__field-control">
+                                        <input type="text" id="einvoice_cancel_reason" name="reason"
+                                               class="admin__control-text"
+                                               value="<?= $escaper->escapeHtmlAttr(__('Cancelled by admin')) ?>"/>
+                                    </div>
+                                </div>
+                                <div class="secomm-einvoice__form-actions">
+                                    <button type="submit" class="action-default scalable">
+                                        <span><?= $escaper->escapeHtml(__('Cancel EInvoice')) ?></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            <?php endif; ?>
+        </div>
+    </div>
+<?php endif; ?>

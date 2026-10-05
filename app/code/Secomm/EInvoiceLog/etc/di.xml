@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Secomm\EInvoiceLog\Api\IssueLogRepositoryInterface"
+                type="Secomm\EInvoiceLog\Model\IssueLogRepository"/>
+    <virtualType name="Secomm\EInvoiceLog\Logger\Handler\System" type="Secomm\EInvoiceLog\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Secomm\EInvoiceLog\Logger\Logger" type="Monolog\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">secomm_einvoice</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Secomm\EInvoiceLog\Logger\Handler\System</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Secomm\EInvoiceCore\Model\Service\IssueInvoiceService">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\EInvoiceLog\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <virtualType name="Secomm\EInvoiceLog\Model\ResourceModel\IssueLog\Grid\Collection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">secomm_einvoice_issue_log</argument>
+            <argument name="resourceModel" xsi:type="string">Secomm\EInvoiceLog\Model\ResourceModel\IssueLog</argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="secomm_einvoice_issue_log_listing_data_source" xsi:type="string">Secomm\EInvoiceLog\Model\ResourceModel\IssueLog\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

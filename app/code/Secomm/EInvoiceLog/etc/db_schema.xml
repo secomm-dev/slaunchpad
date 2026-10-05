@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="secomm_einvoice_issue_log" resource="default" engine="innodb"
+           comment="Electronic invoice issuance log">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true"
+                comment="Entity ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="Magento Order ID"/>
+        <column xsi:type="varchar" name="order_increment_id" nullable="false" length="50"
+                comment="Order Increment ID"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Store ID"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="32" default="pending"
+                comment="pending|processing|success|failed"/>
+        <column xsi:type="varchar" name="external_id" nullable="true" length="255"
+                comment="External system reference"/>
+        <column xsi:type="varchar" name="ref_id" nullable="true" length="64"
+                comment="Invoice request RefID"/>
+        <column xsi:type="varchar" name="transaction_id" nullable="true" length="64"
+                comment="MeInvoice Transaction ID"/>
+        <column xsi:type="varchar" name="inv_series" nullable="true" length="32"
+                comment="Invoice series"/>
+        <column xsi:type="varchar" name="inv_no" nullable="true" length="32"
+                comment="MeInvoice assigned invoice number (InvNo)"/>
+        <column xsi:type="varchar" name="invoice_template_id" nullable="true" length="64"
+                comment="Invoice template ID"/>
+        <column xsi:type="smallint" name="sign_type" unsigned="true" nullable="true"
+                comment="MeInvoice SignType used for publish"/>
+        <column xsi:type="smallint" name="reference_type" unsigned="true" nullable="true"
+                comment="0=original, 1=replace, 2=adjustment, 5=commercial discount"/>
+        <column xsi:type="int" name="parent_log_id" unsigned="true" nullable="true"
+                comment="Parent issue log entity_id"/>
+        <column xsi:type="int" name="creditmemo_id" unsigned="true" nullable="true"
+                comment="Related credit memo entity_id"/>
+        <column xsi:type="varchar" name="invoice_status" nullable="true" length="64"
+                comment="Last MeInvoice InvoiceStatus from refresh"/>
+        <column xsi:type="text" name="request_payload" nullable="true" comment="Request JSON"/>
+        <column xsi:type="text" name="response_payload" nullable="true" comment="Response JSON"/>
+        <column xsi:type="text" name="error_message" nullable="true"
+                comment="Primary error message (mirrors last failed action)"/>
+        <column xsi:type="varchar" name="last_action" nullable="true" length="32"
+                comment="Last API action: issue|cancel|refresh_status|adjustment"/>
+        <column xsi:type="timestamp" name="last_action_at" on_update="false" nullable="true"
+                comment="Timestamp of last action"/>
+        <column xsi:type="text" name="action_errors" nullable="true"
+                comment="JSON map of action code to error message"/>
+        <column xsi:type="timestamp" name="issued_at" on_update="false" nullable="true"
+                comment="Successful issue time"/>
+        <column xsi:type="timestamp" name="cancelled_at" on_update="false" nullable="true"
+                comment="Invoice cancellation time"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false"
+                default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false"
+                default="CURRENT_TIMESTAMP" comment="Updated at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <index referenceId="SECCOMM_EINVOICE_ISSUE_LOG_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+        <index referenceId="SECCOMM_EINVOICE_ISSUE_LOG_ORDER_STATUS" indexType="btree">
+            <column name="order_id"/>
+            <column name="status"/>
+        </index>
+        <index referenceId="SECCOMM_EINVOICE_ISSUE_LOG_TRANSACTION_ID" indexType="btree">
+            <column name="transaction_id"/>
+        </index>
+    </table>
+</schema>

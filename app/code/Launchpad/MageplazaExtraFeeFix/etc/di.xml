@@ -20,4 +20,12 @@
                 type="Launchpad\MageplazaExtraFeeFix\Plugin\Model\Order\CanCreditmemoPlugin"
                 sortOrder="20"/>
     </type>
+    <type name="Secomm\EInvoiceMisa\Model\Mapper\OrderToIssueRequest">
+        <plugin name="launchpad_mageplaza_extrafee_fix_einvoice_order_mapper"
+                type="Launchpad\MageplazaExtraFeeFix\Plugin\EInvoice\OrderToIssueRequestPlugin"/>
+    </type>
+    <type name="Secomm\EInvoiceMisa\Model\Mapper\CreditmemoToIssueRequest">
+        <plugin name="launchpad_mageplaza_extrafee_fix_einvoice_creditmemo_mapper"
+                type="Launchpad\MageplazaExtraFeeFix\Plugin\EInvoice\CreditmemoToIssueRequestPlugin"/>
+    </type>
 </config>
