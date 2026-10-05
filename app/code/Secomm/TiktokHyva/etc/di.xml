@@ -17,11 +17,11 @@
                 type="Secomm\TiktokHyva\Plugin\AccountManagementPlugin"/>
     </type>
 
-    <!-- CompleteRegistration carries an explicit value=0 (no monetary value by design)
-         so TikTok diagnostics don't flag a missing "value" field. -->
+    <!-- Last-mile payload normalization (single choke point for all channels):
+         prices/values to numbers (EAV DECIMAL strings), CompleteRegistration lead value. -->
     <type name="Tiktok\Tiktok\Model\Event\TiktokEvent">
-        <plugin name="secomm_tiktok_hyva_value_defaults"
-                type="Secomm\TiktokHyva\Plugin\TiktokEventValueDefaults"/>
+        <plugin name="secomm_tiktok_hyva_payload_normalizer"
+                type="Secomm\TiktokHyva\Plugin\TiktokEventPayloadNormalizer"/>
     </type>
 
     <!-- Guest advanced matching: fall back to quote billing address data when the
