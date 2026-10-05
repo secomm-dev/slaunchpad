@@ -86,6 +86,15 @@ override `ajaxSubmitCart`).
 4. Checkout OSC end-to-end không regression (ExtraFee/DeliveryTime/address dropdown hoạt động).
 5. `setup:upgrade` chạy sạch (data patch vendor tạo 3 attributes).
 
+## Pre-release fixes (QC 2026-09-24/25)
+
+1. Endpoint fetch thiếu header `X-Requested-With: XMLHttpRequest` → M2.4.8
+   `CsrfValidator` 302 "Invalid Form Key" toàn bộ request (không event nào tới được
+   pixel/S2S qua endpoint). Fix: thêm header (fetch vanilla không tự gắn như jQuery).
+2. `ViewContent` thiếu `content_id`: catalog registry per-request — endpoint phải nhận
+   `product` param (pixel.phtml embed id) rồi load qua `ProductRepository`; event rỗng
+   bị skip hẳn (TikTok flag >10% thiếu content_id).
+
 ## Est
 
 ~10h (build 6h, AddToCart hybrid 2h, CSP/config 1h, verify 1h) — đã TL chốt in-chat

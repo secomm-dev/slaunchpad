@@ -1,50 +1,57 @@
 # SPEC-TASK-NHW715 — TikTok Pixel P2 events (Secomm_TiktokHyva v1.1.0)
 
 > MINI spec. Kế thừa TASK-VDA8V8 (P1). Nguồn: danh sách event trống trên TikTok
-> Events Manager 2026-09-25 + phê duyệt TL in-chat ("ok giờ làm phase 2").
+> Events Manager + phê duyệt TL in-chat ("ok giờ làm phase 2"). **Đã đồng bộ thiết kế
+> final sau QC** — danh sách 10 fix pre-release xem task record
+> `.ai/records/tasks/TASK-NHW715.md` (single source, không duplicate ở đây).
 
 ## 1. Goal
 
 Bổ sung 5 event chuẩn TikTok còn thiếu (`Search`, `AddToWishlist`,
 `CompleteRegistration`, `PlaceAnOrder`, `AddPaymentInfo`) + advanced matching cho guest,
-tái dùng kiến trúc P1 (endpoint + pool vendor + pending stash + dedupe event_id).
+tái dùng kiến trúc P1 (endpoint + pool vendor + pending stash + dedupe `event_id`).
 
-## 2. Design
+## 2. Design (final, sau QC)
 
 | Event | Trigger | S2S | Pixel |
 |---|---|---|---|
-| Search | page `catalogsearch_result_index` | ❌ (limitation — vendor TiktokEvent không có search_string) | pool entry (pixel-only) + `search_string` từ endpoint body |
+| Search | page `catalogsearch_result_index` | ✅ pool entry, enrich top 10 kết quả (contents/value) | `search_string` từ endpoint body (chỉ pixel-side) |
 | AddToWishlist | observer `wishlist_add_product` | ✅ observer | pending stash → render kế tiếp |
-| CompleteRegistration | observer `customer_register_success` | ✅ observer | pending stash → render kế tiếp |
-| PlaceAnOrder | observer `sales_model_service_quote_submit_success` | ✅ observer | pending stash → render kế tiếp (success page) |
+| CompleteRegistration | **plugin concrete `AccountManagement::createAccount*`** | ✅ tracker (dedupe per-request) | pending stash → render kế tiếp |
+| PlaceAnOrder | observer `sales_model_service_quote_submit_success` (seed `lastRealOrderId` trước track) | ✅ observer | pending stash → render kế tiếp |
 | AddPaymentInfo | delegated `change` listener `[name^="payment"]` (chỉ trang có InitiateCheckout) | ✅ pool entry (quote items) | dynamic fetch cùng `event_id` |
 
-Guest advanced matching: plugin 8 getter `EventContext` → fallback quote billing address
-(khi customer session rỗng). Hash vẫn do vendor `TiktokEvent` thực hiện.
+Guest advanced matching: plugin 8 getter `EventContext` (null-safe) → fallback quote
+billing. Payload normalization: plugin after `getDataElement` — `contents[].price` /
+`value` cast number; CompleteRegistration lead value configurable
+(`tiktok/pixel_tracking/complete_registration_value`, default 1000 VND).
 
 ## 3. Constraints
 
-- Vendor pool mở rộng bằng di.xml merge (item name trùng → merge vào argument `pool`).
-- Observer pattern: `AbstractPendingObserver` — guard admin area + pixel enabled +
-  Throwable catch (không break wishlist/register/order flow).
-- Endpoint: whitelist += `Search`, `AddPaymentInfo`; `search_string` trim + cap 128.
-- Search pixel-only: KHÔNG publish S2S — tránh plugin hack lên `TiktokEvent::getDataElement`
-  (fragile); nếu sau này cần S2S Search → subclass/preference vendor event (đưa P3).
-- PII: plugin chỉ cung cấp raw value vào vendor pipeline; hash SHA-256 trước khi gửi
-  (giữ nguyên hành vi vendor). Không log PII.
+- Vendor pool mở rộng bằng di.xml merge; virtualType factory inject qua di.xml argument
+  override (không type-hint trực tiếp — DI không resolve virtualType).
+- Observer/plugin: `Throwable`-safe + guard admin area; log lỗi dùng **INFO** (vendor
+  handler exact-match level, ERROR bị drop — xem task record fix #4).
+- After-plugin phải `return $result` (interceptor gán return vào $result vô điều kiện —
+  fix #2).
+- Endpoint: whitelist event types, `search_string` trim + cap 128.
+- PII: plugin chỉ cung cấp raw value vào vendor pipeline; hash SHA-256 do vendor; không
+  log PII.
 
-## 4. Test matrix
+## 4. Known limitations
 
-| Flow | Event | Kiểm chứng |
-|---|---|---|
-| Search "abc" | Search | `search_string: "abc"` trong endpoint response + pixel track |
-| Thêm wishlist (PDP/PLP) | AddToWishlist | S2S log + pixel cùng event_id ở render kế tiếp |
-| Register account mới | CompleteRegistration | 1 record (kể cả qua SocialLogin) |
-| Guest đặt đơn OSC | PlaceAnOrder + CompletePayment + AddPaymentInfo | PlaceAnOrder S2S có kể cả không về success; payment change → AddPaymentInfo |
-| Guest event user data | (mọi event ở checkout) | `user.email`/`user.phone` hash ≠ null |
-| Admin order create | — | không fire (guard area) |
+- Composite products (configurable/bundle): `getFinalPrice()` = 0 → event thiếu `value`
+  (contents/content_id vẫn đủ) — chờ TL quyết chấp nhận hay build fallback P3.
+- `search_string` không đi S2S (vendor `TiktokEvent` không có property setter).
+- SocialLogin popup gọi cả 2 `createAccount*` trong 1 request — tracker dedupe đã che
+  phía TikTok, nhưng cần verify riêng không tạo trùng customer (bug SocialLogin tiềm ẩn,
+  tách ticket nếu thấy).
 
-## 5. Est
+## 5. Acceptance Criteria
 
-~14h dev (observers 4h, pool+endpoint+VM 3h, template JS 2h, guest plugin 3h, docs 1h,
-QC tự chạy bởi TL).
+Xem task record `.ai/records/tasks/TASK-NHW715.md` (đã verify trong QC — probe trực
+tiép endpoint + log; các diagnostic rolling-window của TikTok tự clear theo volume mới).
+
+## 6. Est
+
+~14h spec gốc + ~6h fix QC (ngoài est ban đầu — đã ghi nhận tracking).
