@@ -1,0 +1,197 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Request\ShippingLabel $block */
+/** @var \Mageplaza\RMA\Model\Request $_request */
+$_request = $block->getRmaRequest();
+/** @var \Mageplaza\RMA\Model\ShippingLabel $_shippingLabel */
+$_shippingLabel = $_request->getShippingLabel();
+/** @var array $shippingLabelInformation */
+$shippingLabelInformation = $block->getShippingLabelInformation($_shippingLabel);
+/** @var \Magento\Sales\Model\Order $_order */
+$_order = $_request->getOrder();
+?>
+<div id="mp-shipping-label-container">
+    <div class="mp-header">
+        <?php if ($_shippingLabel->getImage() && in_array(\Mageplaza\RMA\Model\Config\Source\RMAShippingLabel\Information::LOGO, $shippingLabelInformation, true)): ?>
+            <img src="<?= /* @noEscape */ $block->getShippingLabelImageUrl($_shippingLabel->getImage()) ?>"
+                 alt="<?= /* @noEscape */ $_shippingLabel->getName() ?>">
+        <?php endif; ?>
+        <h1><?= $block->escapeHtml($_shippingLabel->getStoreLabel()) ?></h1>
+    </div>
+    <div class="mp-body">
+        <div class="block mp-ship-from-information">
+            <div class="block-title">
+                <strong><?= /* @noEscape */ __('From') ?></strong>
+            </div>
+            <div class="block-content">
+                <?php if (in_array(\Mageplaza\RMA\Model\Config\Source\RMAShippingLabel\Information::ORDER_SHIPPING_ADDRESS, $shippingLabelInformation, true)): ?>
+                    <div class="shipping-from-address">
+                        <span><?= /* @noEscape */ $block->renderBillingAddress($_order) ?></span>
+                    </div>
+                <?php endif; ?>
+                <div class="request-date-info">
+                    <?php if (in_array(\Mageplaza\RMA\Model\Config\Source\RMAShippingLabel\Information::ORDER_INCREMENT_ID, $shippingLabelInformation, true)): ?>
+                        <span><?= /* @noEscape */ __('Order ID: ') . $_order->getIncrementId() ?></span>
+                    <?php endif; ?><br>
+                    <?php if (in_array(\Mageplaza\RMA\Model\Config\Source\RMAShippingLabel\Information::RMA_INCREMENT_ID, $shippingLabelInformation, true)): ?>
+                        <span><?= /* @noEscape */ __('RMA ID: ') . $_request->getIncrementId() ?></span>
+                    <?php endif; ?><br>
+                    <?php if (in_array(\Mageplaza\RMA\Model\Config\Source\RMAShippingLabel\Information::PRINT_DATE, $shippingLabelInformation, true)): ?>
+                        <span><?= /* @noEscape */ __('Print Date: ') . $block->helperData->getConvertedDate($block->helperData->getCurrentDate())->format('F j, Y') ?></span>
+                    <?php endif; ?><br>
+                    <?php if (in_array(\Mageplaza\RMA\Model\Config\Source\RMAShippingLabel\Information::REQUEST_DATE, $shippingLabelInformation, true)): ?>
+                        <span><?= /* @noEscape */ __('Request Date: ') . $block->helperData->getConvertedDate($_request->getCreatedAt())->format('F j, Y') ?></span>
+                    <?php endif; ?><br>
+                </div>
+            </div>
+        </div>
+        <div class="block mp-rma-information">
+            <?php if (in_array(\Mageplaza\RMA\Model\Config\Source\RMAShippingLabel\Information::RMA_INFORMATION, $shippingLabelInformation, true)): ?>
+                <div class="block-title">
+                    <strong><?= /* @noEscape */ __('RMA Information') ?></strong>
+                </div>
+                <div class="block-content"><?= /* @noEscape */ $block->renderRequestItems($_request) ?></div>
+            <?php endif; ?>
+        </div>
+        <div class="block ship-to-information">
+            <?php if (in_array(\Mageplaza\RMA\Model\Config\Source\RMAShippingLabel\Information::RETURN_SHIPPING_ADDRESS, $shippingLabelInformation, true)): ?>
+                <div class="block-title">
+                    <strong><?= /* @noEscape */ __('Ship To') ?></strong>
+                </div>
+                <div class="block-content">
+                    <div class="shipping-to-address">
+                        <span><?= /* @noEscape */ $_shippingLabel->getReturnAddress() ?></span>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+        <div class="barcode-information">
+            <?php if (in_array(\Mageplaza\RMA\Model\Config\Source\RMAShippingLabel\Information::BARCODE, $shippingLabelInformation, true)): ?>
+                <?= /* @noEscape */ $block->generateBarcode($_request) ?>
+            <?php endif; ?>
+        </div>
+    </div>
+    <div class="mp-footer"></div>
+</div>
+<script type="text/javascript">
+    window.print();
+</script>
+<style type="text/css">
+    #mp-shipping-label-container {
+        width: 470px;
+        height: 715px;
+        border: solid 1px #dfdfdf;
+        padding: 15px 30px;
+    }
+
+    #mp-shipping-label-container .mp-header {
+        position: relative;
+        margin-bottom: 45px;
+        height: 60px;
+    }
+
+    #mp-shipping-label-container .mp-header img {
+        width: 60px;
+        height: 75px;
+        position: absolute;
+    }
+
+    #mp-shipping-label-container .mp-header h1 {
+        text-align: center;
+        line-height: 60px;
+        font-size: 35px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 60px;
+    }
+
+    #mp-shipping-label-container .mp-body .block-title {
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+    }
+
+    #mp-shipping-label-container .mp-body .block {
+        border-bottom: solid 1px;
+        margin-bottom: 15px;
+    }
+
+    #mp-shipping-label-container .shipping-from-address {
+        width: 39%;
+        margin-left: 32px;
+        padding: 10px;
+        border: solid 1px;
+        display: inline-block;
+        min-height: 122px;
+    }
+
+    #mp-shipping-label-container .shipping-to-address {
+        width: 61%;
+        margin: auto;
+        padding: 10px;
+        border: solid 1px;
+    }
+
+    #mp-shipping-label-container .request-date-info {
+        margin-left: 20px;
+        padding: 10px 10px 10px 15px;
+        border: solid 1px;
+        float: right;
+        min-height: 122px;
+        width: 39%;
+    }
+
+    #mp-shipping-label-container .mp-body .block-title strong {
+        font-size: 2.2rem;
+    }
+
+    #mp-shipping-label-container .mp-ship-from-information {
+        min-height: 208px;
+    }
+
+    #mp-shipping-label-container .mp-rma-information {
+        height: 125px;
+    }
+
+    #mp-shipping-label-container .ship-to-information {
+        height: 140px;
+    }
+
+    #mp-shipping-label-container .barcode-information {
+        text-align: center;
+        position: relative;
+    }
+
+    #mp-shipping-label-container .barcode-information img {
+        height: 40px;
+        width: 42%;
+    }
+
+    #mp-shipping-label-container .barcode-information p {
+        bottom: -15px;
+        right: 43%;
+        font-weight: 700;
+        color: black;
+        font-family: Bookman-DemiItalic, sans-serif;
+        font-size: 15px;
+    }
+</style>

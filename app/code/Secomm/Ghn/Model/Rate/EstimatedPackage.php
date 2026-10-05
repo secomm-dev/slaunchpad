@@ -20,7 +20,8 @@ namespace Secomm\Ghn\Model\Rate;
  * Dimensions: OPTIONAL trusted values only (cm — the Secomm_Base shipping-dimension
  * contract is the trusted source since TASK-RT50KH; the estimator fills them from the
  * product attributes when complete-and-valid, else null). When
- * present they are (a) used for the SANDBOX-verified 150cm hard-limit check and (b) STILL
+ * present they are (a) used for the shared per-dimension hard-limit check (default 200cm)
+ * and (b) STILL
  * omitted from the fee payload (unproven dimensions distort pricing — root dims changed the
  * type-2 sandbox fee materially).
  */

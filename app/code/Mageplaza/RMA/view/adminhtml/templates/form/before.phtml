@@ -1,0 +1,193 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Magento\Backend\Block\Template $block */
+?>
+<script type="text/javascript">
+    require([
+        'jquery',
+        'mage/translate',
+        'Magento_Ui/js/modal/modal'
+    ], function ($, $t) {
+        mpRMAFormBefore = {
+            downloadFileUrl: '<?= /* @noEscape */ $block->getUrl('mprma/request/file_download', [
+                'form_key' => $block->getFormKey()
+            ])  ?>',
+            isValidOrderInfo: false,
+
+            /** Enable/disable status comment */
+            isEnableStatusComment: function (event) {
+                var commentTab = $(event.target).parents('#status_tabs_comment_content'),
+                    inputs     = commentTab.find('input');
+                $(inputs).prop('disabled', $(event.target).val() !== '1');
+                if ($(event.target).val() === '1') {
+                    commentTab.find('#status_default_comment_fieldset, #status_store_comments_fieldset')
+                    .removeClass('hidden');
+                } else {
+                    commentTab.find('#status_default_comment_fieldset, #status_store_comments_fieldset')
+                    .addClass('hidden');
+                }
+            },
+
+            /**
+             * Init rma order information function
+             */
+            initOrderInformation: function () {
+                var loadOrderMsg          = $('#request_order_fieldset .mp-rma-message.submit-message'),
+                    orderIncrementIdField = $('#request_order_fieldset #request_order_increment_id'),
+                    orderIdField          = $('#request_order_fieldset #request_order_id'),
+                    requestId             = $('#request_base_fieldset #request_request_id').val(),
+                    customerField         = $('.field-customer_name'),
+                    emailField            = $('.field-customer_email'),
+                    storeField            = $('.field-store_view'),
+                    RMAFieldset           = $('#request_RMA_fieldset');
+                loadOrderMsg.html('');
+                customerField.hide();
+                emailField.hide();
+                storeField.hide();
+                RMAFieldset.hide();
+                mpRMAFormBefore.isValidOrderInfo = false;
+                $.ajax({
+                    type: "POST",
+                    url: '<?= /* @noEscape */ $block->getUrl('mprma/request/order_load', [
+                        'form_key' => $block->getFormKey()
+                    ]) ?>',
+                    data: {
+                        order_increment_id: orderIncrementIdField.val(),
+                        request_id: requestId === '' ? 0 : requestId
+                    },
+                    showLoader: true,
+                    success: function (response) {
+                        var productListEl = $('#request_RMA_fieldset .mprma_products_grid'),
+                            customerEmail = $('#request_order_fieldset #request_customer_email_value'),
+                            customerName  = $('#request_order_fieldset #request_customer_name_value'),
+                            storeView     = $('#request_order_fieldset #request_store_view_value');
+                        if (response.ajaxRedirect) {
+                            window.location.href = response.ajaxRedirect;
+                        }
+                        if (response.status) {
+                            customerEmail.html(response.email_text);
+                            customerName.html(response.cuz_name_text);
+                            storeView.html(response.store_text);
+                            orderIdField.val(response.order_id);
+                            productListEl.html(response.request_products);
+                            productListEl.trigger('contentUpdated');
+                            customerField.show();
+                            emailField.show();
+                            storeField.show();
+                            RMAFieldset.show();
+                            mpRMAFormBefore.isValidOrderInfo = true;
+                        } else {
+                            loadOrderMsg.html(response.error_message);
+                        }
+                    }
+                });
+            },
+
+            /**
+             * Validate the RMA request item and submit the form
+             */
+            validateRmaForm: function (isEdit) {
+                var form         = $('form#edit_form'),
+                    loadOrderMsg = $('#request_order_fieldset .mp-rma-message.submit-message'),
+                    errorMessage = form.find('#request_product_information .mp-rma-message.items-message'),
+                    selectInputs = form.find('table#mp-request-product-table .col-select input[type="checkbox"]'),
+                    isSelected   = false;
+                errorMessage.html('');
+                if (!mpRMAFormBefore.isValidOrderInfo) {
+                    loadOrderMsg.html('<label class="order-empty-error" >'
+                        + $t('Please select the order.') + '</label>');
+                }
+                if (!selectInputs.length) {
+                    isSelected = true;
+                } else {
+                    selectInputs.each(function () {
+                        if ($(this).prop('checked') === true) {
+                            isSelected = true;
+                            return false;
+                        }
+                    });
+                }
+                if (!isSelected) {
+                    errorMessage.html('<label class="items-empty-error" >'
+                        + $t('Please select the returned product.') + '</label>');
+                    $('html, body').animate({scrollTop: errorMessage.offset().top}, 1000);
+                }
+                if (form.valid() && isSelected && mpRMAFormBefore.isValidOrderInfo) {
+                    if (isEdit) {
+                        form.attr('action', form.attr('action') + 'back/edit/');
+                    }
+                    form.submit();
+                }
+            },
+
+            /**
+             * Show shipping label default template
+             */
+            showShippingLabelTemplate: function () {
+                var showTemplateBtn = $('.mprma_shipping_label_edit_form #mp-shipping-label-template'),
+                    templateReview  = $('.mprma_shipping_label_edit_form .mp-review-shipping-container');
+                showTemplateBtn.prop('disabled', true);
+                templateReview.show();
+            },
+
+            /**
+             * Load order grid
+             */
+            loadOrdersGridPopup: function () {
+                var orderForm = $('#mp-rma-order-form');
+                orderForm.modal({
+                    type: 'slide',
+                    title: $t('Order Grid Form'),
+                    innerScroll: true,
+                    modalClass: 'mp-rma-action-box',
+                    buttons: []
+                });
+                orderForm.trigger('openModal');
+                if ($('#requestOrdersGrid').length) {
+                    return;
+                }
+                $.ajax({
+                    type: "POST",
+                    url: '<?= /* @noEscape */ $block->getUrl('mprma/request/order_grid', [
+                        'form_key' => $block->getFormKey()
+                    ]) ?>',
+                    data: {},
+                    showLoader: true,
+                    success: function (response) {
+                        var orderListEl = orderForm.find('.mprma_orders_grid');
+                        orderListEl.html(response);
+                        orderListEl.trigger('contentUpdated')
+                    },
+                    error: function (e) {
+                        orderForm.find('.mp-rma-message.select-message').html(e.responseText);
+                    }
+                });
+            }
+        };
+
+        $(document).ready(function () {
+            if ($('#request_base_fieldset #request_request_id').val() !== '') {
+                mpRMAFormBefore.initOrderInformation();
+            }
+        });
+    });
+</script>

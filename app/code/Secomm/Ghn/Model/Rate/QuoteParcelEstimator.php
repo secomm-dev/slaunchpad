@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Secomm\Ghn\Model\Rate;
 
 use Magento\Quote\Model\Quote\Address\RateRequest;
+use Secomm\Ghn\Model\Config;
 use Secomm\Ghn\Model\Exception\GhnRateEstimationException;
 use Secomm\ShippingCore\Model\Physical\StoreWeightConverter;
 
@@ -22,7 +23,9 @@ use Secomm\ShippingCore\Model\Physical\StoreWeightConverter;
  * the Secomm_Base shipping-dimension contract is now the upstream unit-aware source the
  * original docblock reserved this slot for. Per-unit dims are read through
  * {@link ShippingDimensionsReaderInterface} (complete-and-valid only, ceil to int cm) and
- * feed EXCLUSIVELY the 150cm hard-limit gate ({@see QuoteParcelEstimate::
+ * feed EXCLUSIVELY the shared per-dimension hard-limit gate (default 200cm —
+ * {@see \Secomm\Ghn\Model\GhnShipmentConstraints::MAX_SIDE_CM}) and the per-package weight
+ * display gate (default 50000g — TASK-WNQCRW; {@see QuoteParcelEstimate::
  * findHardLimitViolation()} — UNAVAILABLE before any provider call). They are still omitted
  * from the fee payload (unproven dimensions distort pricing). Units without authoritative
  * dims keep null dims and are never dimension-rejected.
@@ -55,7 +58,8 @@ class QuoteParcelEstimator
 
     public function __construct(
         private readonly StoreWeightConverter $weightConverter,
-        private readonly \Secomm\Base\Api\ShippingDimensionsReaderInterface $dimensionsReader
+        private readonly \Secomm\Base\Api\ShippingDimensionsReaderInterface $dimensionsReader,
+        private readonly Config $config
     ) {
     }
 
@@ -131,7 +135,18 @@ class QuoteParcelEstimator
             );
         }
 
-        return new QuoteParcelEstimate($packages);
+        // TASK-ZS2B41 (rev. 3-path, 2026-10-01) — the shared per-dimension hard limits (RATE
+        // reads the SAME paths as CREATE) are merchant-tunable per LENGTH/WIDTH/HEIGHT (store
+        // scope); authoritative defaults = GhnShipmentConstraints::MAX_SIDE_CM (200).
+        // TASK-WNQCRW — the per-package weight display gate (grams, default = the CREATE
+        // contract 50000) rides the same estimate; aggregate weight is never capped.
+        return new QuoteParcelEstimate(
+            $packages,
+            $this->config->getMaxLengthCm($storeId),
+            $this->config->getMaxWidthCm($storeId),
+            $this->config->getMaxHeightCm($storeId),
+            $this->config->getMaxPackageWeightG($storeId)
+        );
     }
 
     /**

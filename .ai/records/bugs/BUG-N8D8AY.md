@@ -1,7 +1,7 @@
 ---
 id: BUG-N8D8AY
 type: bug
-title: '[COD Risk] Admin surface defect batch — 404 pages/actions, wrong datetime display, wrong column values, missing Status field (self-test round 1-2)'
+title: '[COD Risk] Admin surface defect batch — self-test rounds 1-3 (404/actions, datetime, columns, UI/UX feedback 01-02/10)'
 project_code: SLP
 parent:
 external_refs:
@@ -14,7 +14,7 @@ specification_ref: Embedded Mini-Spec
 risk: medium
 status: in_review
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-02
 ticket_ref: TASK-YPWH9B
 affects_version: Magento 2.4.8-p5
 decisions: []
@@ -23,6 +23,8 @@ components:
   - app/code/Secomm/CodRisk/Controller/Adminhtml
   - app/code/Secomm/CodRisk/view/adminhtml
   - app/code/Secomm/CodRisk/Ui/Component
+  - app/code/Secomm/CodRisk/view/adminhtml/web
+  - app/code/Secomm/CodRisk/Logger
 source_areas:
   - admin
 changes_project_state: false
@@ -35,7 +37,7 @@ supersedes: []
 related: TASK-YPWH9B
 ---
 
-# [SLP][BUG-N8D8AY] [COD Risk] Admin surface defect batch (self-test round 1–2)
+# [SLP][BUG-N8D8AY] [COD Risk] Admin surface defect batch (self-test round 1–3)
 
 <!-- Consolidated record for the smaller admin-UX defects found and fixed during TASK-YPWH9B self-test. Chi tiết đầy đủ trong app/code/Secomm/CodRisk/CHANGELOG.md (mục Fixed 2026-09-22/30). -->
 
@@ -72,6 +74,24 @@ Customer-facing checkout message UI (đã wire server-side qua guard, text cấu
 - AC-03: Grids hiển thị đúng pill màu + tên website + increment id; Status edit được từ form.
 - AC-04: Menu có nhóm COD Risk; user không cấp quyền không thấy.
 
+## Round 3 — UI/UX feedback (01–02/10, sau khi PO tự dùng thử)
+
+Sửa theo feedback sử dụng thực tế (chi tiết đầy đủ: CHANGELOG mục Fixed 01–02/10):
+
+1. **Nút hành động không có skin** — `action secondary/primary scalable` không render trong ngữ cảnh này → `action-default scalable` (+`primary`); toàn bộ nút action bar + Save form đồng bộ primary theo yêu cầu PO.
+2. **Accordion form** — mở Record Risk Event / Add to List / Override thì tự đóng 2 form kia (trước: 3 form mở cùng lúc, dễ submit nhầm).
+3. **View in Phone Inspector** — nút trên Order View redirect thẳng Inspector kèm phone + website (thay button+setLocation inline).
+4. **Reason hiển thị label** mọi nơi (Order View, Inspector, grid Lists/Events qua options `ReasonCodes` + dataType select; Audit Log ghi label thay vì code).
+5. **Effective From/To lên datetime đầy đủ**: schema `date`→`timestamp`; calendar chuẩn `mage/calendar` qua `data-mage-init` (có giờ); parser mở rộng; storage timezone-correct (nhập theo timezone website → lưu UTC, grid convert ngược) — end-to-end giống `updated_at`.
+6. **Logger riêng** `var/log/codrisk.log` (virtual type CodRiskLogger cho plugin/guard/EvaluationLogger) — trace không còn đổ vào system.log.
+7. **Filter dropdown trống** (Status/Type/Website/Decision/Spam): thiếu `<dataType>select</dataType>` trên 6 cột — framework không convert `options class` (bằng chứng diff cms_block_listing).
+8. **Cột Status pill màu + cột Website name**; **ListActions đọc nhầm HTML** (ActiveStatus ghi đè is_active → stash `is_active_raw`); conflict check gating theo trạng thái (edit/deactivate luôn cho phép) + `setActive` cũng check; website 0 overlap.
+9. **Phone Inspector**: layout grid cố định (message không làm rớt hàng), nút align input, input chỉ nhận số + `+` đầu chuỗi; normalizer siết theo quy hoạch băng tần VN (mobile 9 số đầu 3/5/7/8/9, cố định 9-10 số đầu 2) + JS mirror đồng bộ.
+10. **Refactor chuẩn Magento**: CSS → `view/adminhtml/web/css/codrisk-admin.css` (include qua layout default head); JS → `web/js/order-view.js` + `inspector-search.js` (x-magento-init / data-mage-init); 0 inline `<script>`/`style=` trong admin templates.
+
+**Orphan files (chờ PO xác nhận xóa — sản phẩm session song song):** `Ui/Component/Listing/Columns/EffectiveDate.php`, `Ui/Component/Listing/Columns/ReasonLabel.php` — không còn được reference trong XML.
+
 ## Verification
 
 - AC-01…AC-04: PASS (user-verified 2026-09-29/30 sau từng deploy). Regression: grid/form/inspector flows bình thường sau các fix.
+- Round 3 (01–02/10): PASS — user-verified (accordion, datetime grid/DB, logger riêng, filter options, normalize số dư, layout inspector).

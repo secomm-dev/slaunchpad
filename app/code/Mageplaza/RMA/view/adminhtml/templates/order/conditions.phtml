@@ -1,0 +1,56 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/**@var \Magento\Backend\Block\Widget\Form\Renderer\Fieldset $block */
+
+$_element      = $block->getElement();
+$_jsObjectName = $block->getFieldSetId() !== null ? $block->getFieldSetId() : $_element->getHtmlId();
+?>
+<input name="groups[request][fields][order_condition][value]" type="hidden" value=""/>
+<div class="rule-tree rule-tree-mprma fieldset">
+    <fieldset id="<?= /* @noEscape */ $_jsObjectName ?>"
+                <?= /* @noEscape */ $_element->serialize(['class']) ?>class="mprma-fieldset fieldset">
+        <div class="rule-tree-wrapper">
+            <?= /* @noEscape */ $_element->getChildrenHtml() ?>
+        </div>
+    </fieldset>
+</div>
+<script>
+    require([
+        'jquery',
+        'Magento_Rule/rules'
+    ], function ($, VarienRulesForm) {
+        if ($('#mprma_request_order_condition_inherit').prop('checked') === true) {
+            var conditionFieldset = $('#row_mprma_request_order_condition #rule_conditions_fieldset');
+            conditionFieldset.find('input, select')
+            .not(':input[type=hidden]').prop('disabled',true);
+            conditionFieldset.find('img').hide();
+        }
+
+        window.<?= /* @noEscape */ $_jsObjectName ?> = new VarienRulesForm(
+            '<?= /* @noEscape */ $_jsObjectName ?>',
+            '<?= /* @noEscape */ $block->getNewChildUrl() ?>'
+        );
+        <?php if ($_element->getReadonly()): ?>
+            <?= /* @noEscape */ $_element->getHtmlId() ?>.setReadonly(true);
+        <?php endif; ?>
+    });
+</script>

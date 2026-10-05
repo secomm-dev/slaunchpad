@@ -48,6 +48,13 @@ class PhoneNormalizerTest extends TestCase
             'too short' => ['09012', null],
             'letters' => ['0901abc234', null],
             'wrong subscriber length' => ['09012345678', null],
+            '13 digits (84 + 11) — QC case 01/10' => ['8498578454444', null],
+            'mobile with 10 digits after +84 — extra digit (QC 01/10)' => ['+849857845415', null],
+            'local mobile with 11 digits — extra digit (QC 01/10)' => ['09857845415', null],
+            'landline HCM 28 (9 digits, starts 2)' => ['+84281234567', '+84281234567'],
+            'landline HN 24 (10 digits, starts 2)' => ['+842412345678', '+842412345678'],
+            '+84 + 10 mobile digits — too long' => ['+849012345678', null],
+            '+84 + 8 digits — too short' => ['+8412345678', null],
             'other country number' => ['12025550123', null],
             'bare zero' => ['0', null],
         ];

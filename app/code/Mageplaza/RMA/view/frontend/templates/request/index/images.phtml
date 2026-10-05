@@ -1,0 +1,69 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Request\Index\Images $block */
+$newFile = $block->getFileData();
+/** @var  \Mageplaza\RMA\Helper\Data $helper */
+$helper = $block->helperData;
+?>
+<div id="mp_new_file">
+    <div class="mp-image item mp-new-image" data-role="mp_file_new_<?= /* @noEscape */ $newFile['file_id'] ?>">
+        <input type="hidden" name="request[files][<?= /* @noEscape */ $newFile['file_id'] ?>][position]"
+               value="<?= /* @noEscape */ $newFile['position'] ?>" class="position"/>
+        <input type="hidden" name="request[files][<?= /* @noEscape */ $newFile['file_id'] ?>][file]"
+               value="<?= /* @noEscape */ $newFile['file'] ?>" class="file-image">
+        <input type="hidden" name="request[files][<?= /* @noEscape */ $newFile['file_id'] ?>][name]"
+               value="<?= /* @noEscape */ $newFile['name'] ?>">
+        <input type="hidden" name="request[files][<?= /* @noEscape */ $newFile['file_id'] ?>][size]"
+               value="<?= /* @noEscape */ $newFile['size'] ?>">
+        <input type="hidden" name="request[files][<?= /* @noEscape */ $newFile['file_id'] ?>][type]"
+               value="<?= /* @noEscape */ $newFile['file_type'] ?>">
+        <input type="hidden" name="request[files][<?= /* @noEscape */ $newFile['file_id'] ?>][removed]"
+               value="">
+        <div class="request-image-wrapper">
+            <img class="request-image" data-role="image-element"
+                 src="<?= /* @noEscape */ $newFile['url'] ?>"
+                 alt="<?= /* @noEscape */ $newFile['name'] ?>">
+            <div class="actions">
+                <i class="fa fa-trash action-remove-<?= /* @noEscape */ $newFile['file_id'] ?>"
+                   aria-hidden="true"
+                   data-role="remove-file"></i>
+            </div>
+        </div>
+        <div class="item-description">
+            <div class="item-title" data-role="img-title"><?= /* @noEscape */ $newFile['name'] ?></div>
+            <div class="item-size">
+                <span data-role="image-size"><?= /* @noEscape */ $helper->fileSizeFormat($newFile['size']) ?></span>
+            </div>
+        </div>
+        <script>
+            require(['jquery'], function ($) {
+                var removeSelection = '.action-remove-' + '<?= /* @noEscape */ $newFile['file_id'] ?>';
+                $(removeSelection).each(function () {
+                    $(this).on('click', function () {
+                        var fileContainer = $(this).parent().parent().parent();
+                        fileContainer.remove();
+                    });
+                });
+            });
+        </script>
+    </div>
+</div>

@@ -1,0 +1,92 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+/** @var \Secomm\ShippingCore\Block\Adminhtml\Shipment\NewOfflineControl $block */
+
+/** @var \Secomm\ShippingCore\ViewModel\Shipment\OfflineControl $viewModel */
+$viewModel = $block->getViewModel();
+if (!$viewModel->canShow()) {
+    return;
+}
+
+$stashed = $viewModel->pullStashedEligibility();
+$reasonCode = (string) ($stashed['reason_code'] ?? '');
+$reasonMessage = (string) ($stashed['message'] ?? '');
+
+$confirmMessage = (string) __(
+    'Create this Magento shipment without submitting it to the carrier? '
+    . 'No carrier shipment or tracking number will be created automatically — '
+    . 'fulfillment and tracking must be managed manually.'
+);
+if ($reasonMessage !== '') {
+    $confirmMessage .= ' ' . (string) __('The carrier rejected the last online attempt: %1', $reasonMessage);
+}
+?>
+<div class="admin__field secomm-offline-shipment-control" style="margin: 12px 0;">
+    <?php if ($reasonCode !== '') : ?>
+        <input type="hidden" name="shipment[offline_reason_code]"
+               value="<?= $block->escapeHtmlAttr($reasonCode) ?>"/>
+        <input type="hidden" name="shipment[offline_reason_message]"
+               value="<?= $block->escapeHtmlAttr($reasonMessage) ?>"/>
+    <?php endif; ?>
+    <input type="hidden" id="secomm_offline_mode" name="shipment[fulfillment_mode]" value=""/>
+    <label class="admin__field-label" for="secomm_offline_note">
+        <span><?= $block->escapeHtml(__('Offline note (optional)')) ?></span>
+    </label>
+    <textarea id="secomm_offline_note" name="shipment[offline_note]" rows="2" maxlength="1000"
+              class="admin__control-textarea textarea-admin"
+              placeholder="<?= $block->escapeHtmlAttr(__('e.g. Booked manually with a local trucking company.')) ?>"
+              style="max-width: 480px;"></textarea>
+    <div style="margin-top: 8px;">
+        <button type="button" id="secomm_offline_submit" title="<?= $block->escapeHtmlAttr(__('Create Offline Shipment')) ?>"
+                class="action-secondary scalable"
+                onclick="submitOfflineShipment(); return false;">
+            <span><?= $block->escapeHtml(__('Create Offline Shipment')) ?></span>
+        </button>
+    </div>
+    <p class="note" style="margin: 6px 0 0; max-width: 560px;">
+        <?= $block->escapeHtml(
+            __('Records the Magento shipment only — no carrier order is requested; fulfillment and tracking are manual.')
+        ) ?>
+    </p>
+</div>
+<script>
+require(['jquery', 'Magento_Ui/js/modal/alert', 'prototype'], function (jQuery, alert) {
+    window.submitOfflineShipment = function () {
+        if (typeof validQtyItems === 'function' && !validQtyItems()) {
+            alert({
+                content: '<?= $block->escapeJs(__('Invalid value(s) for Qty to Ship')) ?>'
+            });
+            return;
+        }
+
+        if (!window.confirm('<?= $block->escapeJs($confirmMessage) ?>')) {
+            return;
+        }
+
+        // The offline path never creates a label popup (and GHN does not support labels).
+        var labelCheckbox = document.getElementById('create_shipping_label');
+        if (labelCheckbox) {
+            labelCheckbox.checked = false;
+        }
+
+        var modeInput = document.getElementById('secomm_offline_mode');
+        if (!modeInput) {
+            return;
+        }
+        modeInput.value = 'OFFLINE';
+
+        // Same submit pipeline as the native button (mage form validation + POST); if the form
+        // validation fails, un-arm the offline intent so a later native submit stays ONLINE.
+        jQuery('#edit_form').on('invalid-form.validate', function () {
+            modeInput.value = '';
+            jQuery('#edit_form').off('invalid-form.validate');
+        });
+        jQuery('#edit_form').triggerHandler('save');
+    };
+});
+</script>

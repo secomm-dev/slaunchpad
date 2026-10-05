@@ -1,0 +1,108 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Adminhtml\Request\Edit\Form\Reply $block */
+/** @var \Mageplaza\RMA\Helper\Data $helper */
+$helper = $block->helperData;
+?>
+<div id="mp-request-reply-container"
+     data-mage-init='{"mpRMA/reply":{
+                "uploadUrl":"<?= /* @noEscape */ $block->getUploadUrl() ?>",
+                "loadReplyUrl":"<?= /* @noEscape */ $block->getLoadReplyUrl() ?>",
+                "saveReplyUrl":"<?= /* @noEscape */ $block->getSaveReplyUrl() ?>",
+                "templateIndexUrl":"<?= /* @noEscape */ $block->getTemplateIndexUrl() ?>",
+                "downloadFileUrl":"<?= /* @noEscape */ $block->getDownloadFileUrl() ?>"
+                }}'>
+    <div class="mp-attachment-container">
+        <div class="mp-buttons">
+            <div id="mp-uploader" class="uploader col-mp mp-7 mp-md-12 mp-sm-12 mp-xs-12">
+                <div class="file-input-button form-buttons button">
+                    <span><?= /* @noEscape */ __('Attach File') ?></span>
+                    <input id="file-upload" data-role="upload-file" name="image" multiple="multiple" type="file">
+                </div>
+            </div>
+            <div id="mp-template" class="mp-template col-mp mp-4 mp-md-12 mp-sm-12 mp-xs-12">
+                <button id="mp-add-template"
+                        class="mp-add-template"
+                        title="<?= /* @noEscape */ __('Reply Template') ?>"
+                        type="button"
+                        data-role="template-popup">
+                    <span><?= /* @noEscape */ __('Reply Template') ?></span>
+                </button>
+            </div>
+        </div>
+        <div class="mp-files">
+            <div class="mp-file-number">
+                <i class="fa fa-paperclip" aria-hidden="true"></i>
+                <span class="attachment-num">0</span>
+                <span class="attachment-text"><?= /* @noEscape */ __('Attachment(s)') ?></span>
+            </div>
+            <div class="mp-file-box-container"></div>
+        </div>
+    </div>
+    <div class="mp-option-container">
+        <div class="mp-replies-options">
+            <div class="admin__field admin__field-option">
+                <input name="reply[is_customer_notified]"
+                       type="checkbox"
+                       id="mp-reply-notify"
+                       class="admin__control-checkbox"
+                       value=""
+                       onclick="this.value = this.checked ? 1 : 0">
+                <label class="admin__field-label" for="mp-reply-notify"><?= /* @noEscape */ __('Send email to Customer') ?></label>
+            </div>
+            <div class="admin__field admin__field-option">
+                <input name="reply[is_visible_on_front]"
+                       type="checkbox"
+                       id="mp-reply-visible"
+                       class="admin__control-checkbox"
+                       value=""
+                       onclick="this.value = this.checked ? 1 : 0">
+                <label class="admin__field-label" for="mp-reply-visible"><?= /* @noEscape */ __('Visible on Frontend') ?></label>
+            </div>
+        </div>
+        <div class="mp-replies-actions">
+            <button id="mp-replies-submit"
+                    title="<?= /* @noEscape */ __('Submit') ?>"
+                    type="button"
+                    class="action-default action-primary"
+                    data-role="submit-reply">
+                <span><?= /* @noEscape */ __('Submit') ?></span>
+            </button>
+            <div class="mp-rma-image-loader">
+                <div class="loader">
+                    <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                         alt="<?= /* @noEscape */ __('Loading') ?>">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mp-rma-message reply-message"></div>
+<div id="mp-request-conversation-container">
+    <div class="mp-rma-image-loader">
+        <div class="loader">
+            <img src="<?= /* @noEscape */ $block->getViewFileUrl('images/loader-1.gif') ?>"
+                 alt="<?= /* @noEscape */ __('Loading') ?>">
+        </div>
+    </div>
+    <div class="mp-request-conversation"></div>
+</div>

@@ -34,7 +34,9 @@ class ListLookup
             return null;
         }
 
-        $today = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d');
+        // effective_from/to hold UTC datetimes (stored via ListManager::toDateTime)
+        // — compare against full UTC now so time-of-day granularity works.
+        $now = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 
         $collection = $this->collectionFactory->create();
         $collection->addFieldToFilter('normalized_phone', $normalizedPhone)
@@ -46,8 +48,8 @@ class ListLookup
         }
 
         $collection->getSelect()
-            ->where('effective_from IS NULL OR effective_from <= ?', $today)
-            ->where('effective_to IS NULL OR effective_to >= ?', $today)
+            ->where('effective_from IS NULL OR effective_from <= ?', $now)
+            ->where('effective_to IS NULL OR effective_to >= ?', $now)
             // Cast below operates on the already-filtered int set.
             ->order(new \Magento\Framework\DB\Sql\Expression('CASE WHEN website_id = ' . (int)($websiteId ?? 0) . ' THEN 0 ELSE 1 END'))
             ->order('entity_id DESC')

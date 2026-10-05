@@ -27,6 +27,10 @@ AI should check this file before planning any work to avoid known problem areas.
 | File cache + file sessions in committed env.php | Local-dev only; unviable for production throughput/FPC | Production MUST configure Redis (cache + sessions) + Varnish (FPC). Do NOT commit prod env.php. |
 | Search engine not configured in code | Magento 2.4.8 requires OpenSearch/Elasticsearch; search/catalog indexing broken in prod without it | Production MUST configure OpenSearch (ES8 + OpenSearch client libs already in vendor, just inactive) |
 | Mageplaza modules committed as source (not composer) | Version drift / update path to manage; risk of accidental in-place edits | Treat as third-party — extend via plugin/preference only; track versions manually |
+| Mageplaza_RMA — vi_VN i18n missing (install 2026-10-01) | Module chỉ có `i18n/en_US.csv` (413 chuỗi); theme `vi_VN.csv` chưa có chuỗi RMA nào → UI RMA hiển thị tiếng Anh trên storefront vi_VN (vi phạm BR-001) | Bổ sung chuỗi RMA vào `app/design/frontend/Secomm/launchpad/i18n/vi_VN.csv` — KHÔNG sửa i18n trong module vendor |
+| Mageplaza_RMA — status labels tiếng Anh trong DB | 5 status mặc định (Pending/Processing/Rejected/Completed/Canceled) seed bởi `Setup/Patch/Data/UpdateData.php` vào `mageplaza_rma_status`; bảng không có `store_id` (global) và frontend render raw `getStatusLabel()` không qua `__()` → CSV translation không có tác dụng | Admin sửa label 5 status thành tiếng Việt (data change 1 lần, ảnh hưởng cả admin + frontend vì global) |
+| Mageplaza_RMA — reasons chưa cấu hình | Reasons lưu `core_config_data` dạng JSON per store view (`Model\Config\Backend\Reason`); `etc/config.xml` không có default → storefront không có reason để chọn | Nhập reasons tiếng Việt trong admin config cho store view vi_VN trước go-live |
+| Mageplaza_RMA — conversation Hyvä | `view/frontend/templates/hyva/request/view/conversation.phtml` còn `data-mage-init` (RequireJS) → handler inspect/download file attachment trong conversation có thể không chạy trên Hyvä | QC trang RMA view (attachment download) trước go-live; nếu chết → override template qua theme |
 | Hyvä private Packagist (auth.json) | Repo access depends on token validity; composer install can fail if token expires | Maintain valid Hyvä Packagist token; document in deployment |
 | RabbitMQ NOT configured | No async message queue framework available | [TBD — configure RabbitMQ in production if any module needs async] |
 | No CI/CD committed | No automated test/deploy pipeline | [TBD — Bitbucket Pipelines is the natural fit] |
@@ -37,7 +41,7 @@ AI should check this file before planning any work to avoid known problem areas.
 
 | Bug ID | Description | Affected Area | Status |
 |--------|-------------|---------------|--------|
-| — | [none confirmed yet — freshly initialized repo, single "Initial commit"] | — | — |
+| BUG-JC7JWG (SLP-17) | MOMO-03 recovery worker lacked DI binding to `MoMoCommandPool`; scheduled query path could not resolve its configured `query_transaction` command | `Secomm_MoMo` DI / payment recovery | Fixed in `etc/di.xml`; Tier 2 DI/cron QC pending |
 
 ## High-Risk Areas
 

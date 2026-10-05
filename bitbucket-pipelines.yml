@@ -52,12 +52,12 @@ definitions:
             export DEPLOY_DIR=$DEPLOY_DIR WEB_ROOT=$WEB_ROOT ZIP_FILE=$artifact && \
             ssh -o StrictHostKeyChecking=no -p$STAGE_PORT \
             $STAGE_USER@$STAGE_HOST "cd $DEPLOY_DIR && \
-            unzip -q -o $ZIP_FILE -d slaunchpad-release && \
+            unzip -q -o $ZIP_FILE -d slaunchpad-demo && \
             sudo chown -R web:web $WEB_ROOT/src/ && \
             rsync -az --delete --exclude='pub/media' --exclude='app/etc/env.php' \
-            --exclude='pub/static' --exclude='var' slaunchpad-release/ $WEB_ROOT/src/ && \
+            --exclude='pub/static' --exclude='var' slaunchpad-demo/ $WEB_ROOT/src/ && \
             cd $WEB_ROOT && make update && \
-            rm -rf $DEPLOY_DIR/slaunchpad-release $DEPLOY_DIR/slaunchpad-*.zip"
+            rm -rf $DEPLOY_DIR/slaunchpad-demo $DEPLOY_DIR/$ZIP_FILE"
 
 pipelines:
   branches:

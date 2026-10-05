@@ -11,6 +11,7 @@ namespace Secomm\Ghn\Model\Shipment;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderAddressInterface;
+use Secomm\Ghn\Model\Config\Source\RequiredNote;
 
 /**
  * TASK-9Q5ZAK (GHN-D) — pure Create Order payload builder (contract source:
@@ -41,7 +42,12 @@ class GhnCreateRequestBuilder
     private const PAYMENT_TYPES = [1, 2];
 
     /** required_note enum per the current contract — config-driven, never hardcoded to one fashion value. */
-    private const REQUIRED_NOTES = ['KHONGCHOXEMHANG', 'CHOXEMHANGKHONGTHU', 'CHOTHUHANG'];
+    /** TASK-4P33TV — required_note enum: single source of truth is the RequiredNote source model (sandbox-verified set). */
+    private const REQUIRED_NOTES = [
+        RequiredNote::NOT_ALLOWED_VIEWING,
+        RequiredNote::ALLOWED_VIEWING_NO_TRIAL,
+        RequiredNote::ALLOWED_TESTING,
+    ];
 
     /** GHN content field limit. */
     private const MAX_CONTENT_LENGTH = 2000;

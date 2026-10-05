@@ -7,7 +7,8 @@ define( [
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/model/shipping-rates-validator',
         'Magento_Checkout/js/model/quote',
-        'mage/validation'
+        'mage/validation',
+        'Secomm_AddressDropdown/js/model/address-location-cache'
     ],
     function (
         $,
@@ -18,6 +19,8 @@ define( [
         checkoutData,
         shippingRatesValidator,
         quote,
+        validation,
+        locationCache
     ) {
     'use strict';
 
@@ -103,37 +106,19 @@ define( [
 
         loadCities: function (regionId) {
             let self = this;
-            let query = `
-                query {
-                    GetListCity(input: { region_id: "${regionId}" }) {
-                        default_name
-                        label
-                    }
-                }
-            `;
 
             $('body').loader('show');
 
-            $.ajax({
-                url: (window.BASE_URL || '/').replace(/index\.php\/?$/, '') + 'graphql',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ query: query }),
-                success: function (response) {
-                    if (response.data && response.data.GetListCity && response.data.GetListCity.length > 0) {
-                        self.updateCityDropdown(response.data.GetListCity);
-                    } else {
-                        self.updateCityDropdown([])
-                    }
-                    self.cityVisible();
-                },
-                error: function (xhr, status, error) {
-                    console.error('Request failed:', error);
-                },
-                complete: function () {
-                    $('body').loader('hide');
-                }
-
+            /* TASK-Z6SK3T: canonical addressLocations via the shared page-session cache
+             * (was GetListCity — deprecated, uncached, one POST per region change). */
+            locationCache.getLocations('VN', regionId).then(function (cities) {
+                cities = cities || [];
+                self.updateCityDropdown(cities);
+                self.cityVisible();
+            }, function (error) {
+                console.error('Request failed:', error);
+            }).finally(function () {
+                $('body').loader('hide');
             });
         },
 

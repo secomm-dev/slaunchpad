@@ -11,10 +11,11 @@ use Magento\Framework\Locale\Resolver as LocaleResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\AddressDropdown\Model\LocationHierarchyProvider;
+use Secomm\AddressDropdown\Model\ResourceModel\CitySort;
 
 /**
- * TASK-7HVGAB — hierarchy listing must order by the canonical generic sort rule:
- * COALESCE(localized name, default_name) ASC, city_id ASC — language-agnostic.
+ * TASK-7HVGAB / TASK-Z6SK3T — hierarchy listing must order by the canonical vi-aware
+ * sort rule: REPLACE-normalized COALESCE(localized name, default_name) ASC, city_id ASC.
  */
 class LocationHierarchyProviderTest extends TestCase
 {
@@ -87,10 +88,16 @@ class LocationHierarchyProviderTest extends TestCase
         $this->provider->getRootLocations(1185, 'vn_admin_2025');
 
         $orders = $this->childrenOrdersAsString();
+        // TASK-Z6SK3T: canonical key uses the real Vietnamese collation (…D, Đ, E…).
         $this->assertStringContainsString(
-            'COALESCE(n.name, c.default_name) ASC',
+            'CONVERT(COALESCE(n.name, c.default_name) USING utf8mb4)',
             $orders,
             'Sort key must be the effective displayed label (localized name, fallback default_name).'
+        );
+        $this->assertStringContainsString(
+            CitySort::COLLATION,
+            $orders,
+            'Sort must use the vi collation (d8bad508 regression guard).'
         );
         $this->assertStringContainsString(
             'c.city_id ASC',
@@ -99,19 +106,15 @@ class LocationHierarchyProviderTest extends TestCase
         );
     }
 
-    public function testChildLocationsUseCanonicalOrderAndStayLanguageAgnostic(): void
+    public function testChildLocationsUseVietnameseAlphabetOrder(): void
     {
+        // TASK-Z6SK3T — supersedes the d8bad508 "language-agnostic" guard AND the first
+        // REPLACE-based restoration: the canonical key must collate as Vietnamese
+        // (Đ = own letter after the full D block), not the bare column collation.
         $this->provider->getChildLocations(42, 'vn_admin_2025');
 
         $orders = $this->childrenOrdersAsString();
-        $this->assertStringContainsString('COALESCE(n.name, c.default_name) ASC', $orders);
-        $this->assertDoesNotMatchRegularExpression(
-            '/[^\x20-\x7E]/',
-            $orders,
-            'No locale-specific characters (e.g. Vietnamese letters) may appear in the sort rule.'
-        );
-        $this->assertStringNotContainsString('REPLACE(', $orders);
-        $this->assertStringNotContainsString('CONVERT(', $orders);
-        $this->assertStringNotContainsString('COLLATE', $orders);
+        $this->assertStringContainsString('COLLATE ' . CitySort::COLLATION, $orders);
+        $this->assertStringNotContainsString('utf8mb4_general_ci', $orders);
     }
 }

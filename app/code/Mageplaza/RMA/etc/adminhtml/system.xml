@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="mprma" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+            <label>RMA</label>
+            <tab>mageplaza</tab>
+            <resource>Mageplaza_RMA::configuration</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="enabled_guest" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Show RMA for Guest</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Customers who do not have account but have order completed still can request RMA.</comment>
+                </field>
+                <field id="location" translate="label" type="multiselect" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Display RMA Request Link at</label>
+                    <source_model>Mageplaza\RMA\Model\Config\Source\System\Request\Location</source_model>
+                </field>
+                <field id="policy" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>RMA Policy Page</label>
+                    <source_model>Mageplaza\RMA\Model\Config\Source\System\Policy\Item</source_model>
+                </field>
+                <field id="policy_location" translate="label" type="multiselect" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Display RMA Policy Link on</label>
+                    <source_model>Mageplaza\RMA\Model\Config\Source\System\Policy\Location</source_model>
+                </field>
+                <group id="rma_pattern" translate="label comment" type="text" sortOrder="60" showInDefault="1" canRestore="1">
+                    <label>RMA ID Increment Pattern</label>
+                    <field id="type" translate="label comment" type="select" sortOrder="10" showInDefault="1" canRestore="1">
+                        <label>RMA Name Pattern</label>
+                        <source_model>Mageplaza\RMA\Model\Config\Source\System\Request\PatternType</source_model>
+                        <comment><![CDATA[{{prefix}}-id-{{suffix}}]]></comment>
+                    </field>
+                    <field id="prefix" translate="label" type="text" sortOrder="20" showInDefault="1" canRestore="1">
+                        <label>Name Prefix</label>
+                        <depends>
+                            <field id="type">2</field>
+                        </depends>
+                    </field>
+                    <field id="suffix" translate="label" type="text" sortOrder="30" showInDefault="1" canRestore="1">
+                        <label>Name Suffix</label>
+                        <depends>
+                            <field id="type">2</field>
+                        </depends>
+                    </field>
+                </group>
+            </group>
+            <group id="request" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <label>Request Configuration</label>
+                <field id="each_item" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Allow RMA for Each Item of An Order</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="allow_attachment" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Allow Uploading Attachments</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="file_extensions" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Allow File Formats</label>
+                    <comment>Separated by comma(,).</comment>
+                </field>
+                <field id="google_recaptcha" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Google Recaptcha</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Please install <a href="https://www.mageplaza.com/magento-2-google-recaptcha/" target="_blank">Mageplaza Google Recaptcha</a>.]]></comment>
+                </field>
+                <field id="default_status" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Default Request Status</label>
+                    <source_model>Mageplaza\RMA\Model\Config\Source\RMARequest\Status</source_model>
+                    <comment>The default status when customers have just submitted RMA requests.</comment>
+                </field>
+                <field id="cancel_status" translate="label comment" type="multiselect" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Customer can Cancel Request in Status</label>
+                    <source_model>Mageplaza\RMA\Model\Config\Source\System\Request\Status</source_model>
+                    <comment>Customers are allowed to cancel RMA requests with the orders at the selected status above.</comment>
+                </field>
+                <field id="reply_name" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Admin reply under Name</label>
+                    <source_model>Mageplaza\RMA\Model\Config\Source\System\Request\ReplyName</source_model>
+                </field>
+                <field id="default_name" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Default Name</label>
+                    <validate>required-entry</validate>
+                    <depends>
+                        <field id="reply_name">1</field>
+                    </depends>
+                </field>
+                <field id="order_condition" translate="label comment" type="label" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Order Condition</label>
+                    <frontend_model>Mageplaza\RMA\Block\Adminhtml\System\Condition</frontend_model>
+                    <backend_model>Mageplaza\RMA\Model\Config\Backend\Condition</backend_model>
+                    <comment>Leave empty to apply for all Orders.</comment>
+                </field>
+                <group id="rma" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>RMA Information</label>
+                    <field id="reason" translate="label" type="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Reason</label>
+                        <frontend_model>Mageplaza\RMA\Block\Adminhtml\System\Reason</frontend_model>
+                        <backend_model>Mageplaza\RMA\Model\Config\Backend\Reason</backend_model>
+                    </field>
+                    <field id="solution" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Solution</label>
+                        <frontend_model>Mageplaza\RMA\Block\Adminhtml\System\Solution</frontend_model>
+                        <backend_model>Mageplaza\RMA\Model\Config\Backend\Solution</backend_model>
+                    </field>
+                    <field id="additional_field" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Additional Fields</label>
+                        <frontend_model>Mageplaza\RMA\Block\Adminhtml\System\AdditionalField</frontend_model>
+                        <backend_model>Mageplaza\RMA\Model\Config\Backend\AdditionalField</backend_model>
+                    </field>
+                </group>
+            </group>
+            <group id="email" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <label>Email Configuration</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Install <a href="https://www.mageplaza.com/magento-2-smtp/" target="_blank">Mageplaza SMTP</a> to avoid sending to spam box.]]></comment>
+                </field>
+                <field id="sender" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Sender</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Identity</source_model>
+                </field>
+                <field id="admin_emails" translate="label comment" type="textarea" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Admin Email</label>
+                    <comment><![CDATA[Separated by comma(,). When the customer submits a RMA request, a notification email will be sent to the admin via this address.]]></comment>
+                </field>
+                <field id="is_notify" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Notice Admin About A New Reply</label>
+                    <source_model>Mageplaza\RMA\Model\Config\Source\System\Email\NotifyType</source_model>
+                </field>
+                <field id="customer_template" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Notification Email Temple to Customers</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="admin_template" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Notification Email Temple to Admins</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="request_admin_template" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Notification New Request Email Temple to Admins</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

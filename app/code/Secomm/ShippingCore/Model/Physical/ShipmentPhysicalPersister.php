@@ -20,10 +20,14 @@ use Secomm\ShippingCore\Api\Physical\ShipmentPhysicalDataInterface;
  *
  *   {'secomm_physical': [[weightG, lengthCm, widthCm, heightCm], ...]}
  *
- * Collision-safe by construction: the label popup writes its own shape under numeric keys and
- * only runs when a carrier's isShippingLabelsAvailable() is true; carrier adapters that disable
- * labels never race with it. Snapshot semantics — once persisted, retries read THIS data back
- * so a re-submission never recalculates from modified product data.
+ * Write-path collision-safe: the native label popup only writes when a carrier's
+ * isShippingLabelsAvailable() is true, so the two shapes never race on write. NOT collision-safe
+ * on read — the admin packaging surfaces (packed.phtml, printPackage PDF) render every
+ * `packages` entry unguarded and fatally on the marker shape (BUG-74VGQX): the marker is
+ * stripped at display time by Plugin\Shipping\PackagingBlockPlugin, while the snapshot itself
+ * stays intact for retries (read() consumes the shipment model, not the block). Snapshot
+ * semantics — once persisted, retries read THIS data back so a re-submission never recalculates
+ * from modified product data.
  *
  * Physical facts are ShippingCore state: carrier persistence tables (e.g. secomm_ghn_shipment)
  * keep provider state only and must not mirror the physical payload.

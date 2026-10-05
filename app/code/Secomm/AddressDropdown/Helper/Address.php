@@ -15,6 +15,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Locale\Resolver;
 use Magento\Customer\Model\AddressFactory;
 use Magento\Framework\Locale\ResolverInterface;
+use Secomm\AddressDropdown\Model\ResourceModel\CitySort;
 use Secomm\AddressDropdown\Model\CityModelFactory;
 use Magento\Framework\App\State;
 
@@ -22,6 +23,13 @@ class Address extends AbstractHelper
 {
 
     protected $locale;
+
+    /**
+     * TASK-Z6SK3T: per-request memo for getCityNameByDefaultName (helpers are DI
+     * singletons per request). The renderer/default-address plugins resolve the same
+     * city repeatedly within one request.
+     */
+    private array $cityNameMemo = [];
 
 
     public function __construct(
@@ -49,6 +57,15 @@ class Address extends AbstractHelper
 
     public function getCityNameByDefaultName($defaultName, $regionId = null, $locale = null): mixed
     {
+        if (!$locale) {
+            $locale = $this->getLocale();
+        }
+
+        $memoKey = $defaultName . '|' . ($regionId ?? '*') . '|' . $locale;
+        if (array_key_exists($memoKey, $this->cityNameMemo)) {
+            return $this->cityNameMemo[$memoKey];
+        }
+
         $adapter = $this->resource->getConnection();
         $tableName = $this->resource->getTableName('directory_region_city');
 
@@ -65,15 +82,17 @@ class Address extends AbstractHelper
                 $select->where('d.region_id = ?', $regionId);
         }
 
-        if (!$locale) {
-            $locale = $this->getLocale();
-        }
-        $select->where('n.locale = ?', $locale)->limit(1);
-        if ($adapter->fetchOne($select)){
-            return $adapter->fetchOne($select);
-        }else{
-            return $defaultName;
-        }
+        // TASK-Z6SK3T: deterministic tie-break — duplicated ward names within one region
+        // (vd "Thanh An" ×2, TASK-YQSS3M) previously resolved arbitrarily under limit(1).
+        $select->where('n.locale = ?', $locale)->order('d.city_id ASC')->limit(1);
+
+        // TASK-Z6SK3T: single execution (was run twice for one result) + explicit miss
+        // check (the old truthiness check also treated falsy names as misses).
+        $name = $adapter->fetchOne($select);
+        $resolved = ($name !== false && $name !== null) ? $name : $defaultName;
+        $this->cityNameMemo[$memoKey] = $resolved;
+
+        return $resolved;
     }
 
     /**
@@ -119,9 +138,9 @@ class Address extends AbstractHelper
                 // TASK-SEC-A1: locale is a config-derived value — still quoted, never concat raw.
                 'm.city_id = n.city_id AND n.locale = ' . $adapter->quote($this->getLocale()),
                 ['n.name']
-            // Canonical generic sort (TASK-7HVGAB): localized display name with
-            // default_name fallback, city_id tie-breaker — mirrors CityLocaleCollection.
-            )->order(new \Zend_Db_Expr('COALESCE(n.name, m.default_name) ASC, m.city_id ASC'));
+            // Canonical vi-alphabet sort (TASK-Z6SK3T): shared CitySort builder —
+            // mirrors CityLocaleCollection / LocationHierarchyProvider.
+            )->order(new \Zend_Db_Expr(CitySort::expression('n.name', 'm.default_name', 'm.city_id')));
         $cities = $adapter->fetchAll($select);
 
         if (count($cities) > 0) {

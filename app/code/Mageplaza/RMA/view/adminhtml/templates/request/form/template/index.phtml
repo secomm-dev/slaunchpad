@@ -1,0 +1,91 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+/** @var \Mageplaza\RMA\Block\Adminhtml\Request\Edit\Form\Template $block */
+?>
+<div id="mp-rma-index-page"
+     class="entry-edit form-inline"
+     data-mage-init='{"mpRMA/template":{
+     "deleteTemplateUrl":"<?= /* @noEscape */ $block->getDeleteTemplateUrl() ?>",
+     "insertTemplateUrl":"<?= /* @noEscape */ $block->getInsertTemplateUrl() ?>",
+     "templateIndexUrl":"<?= /* @noEscape */ $block->getTemplateIndexUrl() ?>"
+     }}'>
+    <div class="mp-rma-template-title">
+        <h2><i class="fa fa-bookmark" aria-hidden="true"></i><?= /* @noEscape */ __('Reply Template') ?>
+            <a id="add-new" href="<?= /* @noEscape */ $block->getUrl('mprma/request/template_load', [
+                'form_key'      => $block->getFormKey(),
+                'template_type' => \Mageplaza\RMA\Block\Adminhtml\Request\Edit\Form\Template::TEMPLATE_EDIT_PAGE
+            ]) ?>" data-role="template-edit"><?= /* @noEscape */ __('+ Create new') ?></a>
+        </h2>
+    </div>
+    <div class="mp-rma-template-content">
+        <?php if (count($templates = $block->getTemplateCollection())): ?>
+            <?php foreach ($templates as $template):
+                /** @var \Mageplaza\RMA\Model\Template $template */
+                ?>
+                <div class="mp-template-item">
+                    <div class="mp-template-header" data-role="template-expand">
+                        <div id="header"><?= /* @noEscape */ $template->getTitle() ?></div>
+                        <div class="template-buttons">
+                            <button id="template-edit-<?= /* @noEscape */ $template->getId() ?>"
+                                    title="<?= /* @noEscape */ __('Edit') ?>"
+                                    type="button"
+                                    class="action-default template-edit"
+                                    data-edit-url="<?= /* @noEscape */ $block
+                                        ->getTemplateEditUrl($template->getId()) ?>"
+                                    data-role="template-index">
+                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                                <span><?= /* @noEscape */ __('Edit') ?></span>
+                            </button>
+                            <button id="template-insert-<?= /* @noEscape */ $template->getId() ?>"
+                                    title="<?= /* @noEscape */ __('Insert') ?>"
+                                    type="button"
+                                    class="action-default template-insert"
+                                    data-template-id="<?= /* @noEscape */ $template->getId() ?>"
+                                    data-role="template-insert">
+                                <i class="fa fa-plus" aria-hidden="true"></i>
+                                <span><?= /* @noEscape */ __('Insert') ?></span>
+                            </button>
+                            <div id="delete-template-<?= /* @noEscape */ $template->getId() ?>"
+                                 class="delete-template">
+                                <i class="fa fa-trash"
+                                   aria-hidden="true"
+                                   data-template-id="<?= /* @noEscape */ $template->getId() ?>"
+                                   data-role="template-delete"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mp-template-content">
+                        <textarea id="template-text"
+                                  title="<?= /* @noEscape */ __('Message') ?>"
+                                  rows="2"
+                                  cols="15"
+                                  class="textarea admin__control-textarea"
+                                  disabled
+                                  spellcheck="false"><?= /* @noEscape */ $template->getStoreContent($block->getTemplateStoreId()) ?></textarea>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="template-empty"><?= /* @noEscape */ __('There are no templates.') ?></div>
+        <?php endif; ?>
+    </div>
+</div>

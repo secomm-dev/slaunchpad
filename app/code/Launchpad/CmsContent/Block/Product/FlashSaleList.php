@@ -27,6 +27,11 @@ use Magento\Widget\Helper\Conditions;
  * countdown rendered by the flash-sale template. Empty value counts down to
  * the next midnight.
  *
+ * An expired `sale_end` ends the sale server-side: isSaleEnded() makes the
+ * template render nothing (BUG-9X14Y1) and getCacheLifetime() caps the block
+ * cache at the seconds remaining until sale_end so a cached "sale active"
+ * render is never served after the countdown expired.
+ *
  * @api
  */
 class FlashSaleList extends ProductsList
@@ -95,5 +100,34 @@ class FlashSaleList extends ProductsList
         }
 
         return $end->getTimestamp() * 1000;
+    }
+
+    /**
+     * True when the configured sale_end has already passed (store-local
+     * time). Empty/invalid sale_end falls back to the next midnight and
+     * therefore never ends server-side (evergreen daily countdown).
+     */
+    public function isSaleEnded(): bool
+    {
+        return $this->getSaleEndMillis() <= time() * 1000;
+    }
+
+    /**
+     * Cap the block cache lifetime at the seconds remaining until sale_end
+     * (BUG-9X14Y1) — ProductsList caches 86400s by default, which would
+     * serve an "sale active" render up to 24h after the sale ended. Once
+     * expired the floor is 1s. Blocks without a cache lifetime are left
+     * uncached, as before.
+     */
+    protected function getCacheLifetime()
+    {
+        $lifetime = parent::getCacheLifetime();
+        if (!$lifetime) {
+            return $lifetime;
+        }
+
+        $remaining = (int) ceil(($this->getSaleEndMillis() - time() * 1000) / 1000);
+
+        return max(1, min((int) $lifetime, $remaining));
     }
 }

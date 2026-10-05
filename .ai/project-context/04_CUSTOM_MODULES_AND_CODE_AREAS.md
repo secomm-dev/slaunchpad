@@ -32,7 +32,7 @@ Lists custom modules, key code areas, and risk zones.
 | Directory | Purpose | Risk Level |
 |-----------|---------|------------|
 | `app/code/Secomm/` | Secomm-owned business modules plus shared Hyvä UI widget capability | medium (AddressDropdown/UiWidget) |
-| `app/code/Mageplaza/` | 16 Mageplaza modules (source-committed, not composer) | medium |
+| `app/code/Mageplaza/` | 17 Mageplaza modules (source-committed, not composer) | medium |
 | `app/code/Secomm/` | Secomm_VNPAY payment gateway | high |
 | `app/design/frontend/Secomm/launchpad/` | primary Hyvä child theme (web/tailwind toolchain) | medium |
 | `app/design/frontend/Secomm/launchpad_fashion/` | fashion variant scaffold; Secomm_UiWidget override path verified locally but no POC override shipped | low |
@@ -62,6 +62,7 @@ Lists custom modules, key code areas, and risk zones.
 | Mageplaza_AbandonedCart | `app/code/Mageplaza/AbandonedCart` | Abandoned-cart recovery (v4.6.9, Hyvä compat builtin, 2 email schedules 1h+24h, vi_VN translated). Cron every minute. DB: 4 tables + 5 core columns. **Vendor source — extend via plugin/preference only** (4.6.9 upgrade includes Hyva refactor + bug fixes). | low | [TBD] |
 | Mageplaza_ThankYouPage | `app/code/Mageplaza/ThankYouPage` | Custom thank-you page | low | [TBD] |
 | Mageplaza_BackendReindex | `app/code/Mageplaza/BackendReindex` | Backend reindex helper | low | [TBD] |
+| Mageplaza_RMA | `app/code/Mageplaza/RMA` | RMA/return workflow (v4.1.1, Hyvä compat builtin — `hyva_` handles + hyva templates; vi_VN NOT translated yet). No cron/indexer; 20 REST `/V1/mpRMA/*` endpoints; email templates; status table global (no per-store label). **Vendor source — extend via plugin/preference only** | medium | [TBD] |
 
 ## Common Development Areas
 

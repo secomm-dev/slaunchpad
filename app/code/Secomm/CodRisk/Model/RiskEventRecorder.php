@@ -63,7 +63,7 @@ class RiskEventRecorder implements RiskEventRecorderInterface
             (int)$model->getId(),
             'recorded',
             null,
-            sprintf('%s by %s (include=%s)', $reasonCode, $event->getSource(), $includeSnapshot ? 'yes' : 'no'),
+            sprintf('%s by %s (include=%s)', $this->reasonCatalog->getLabel($reasonCode), $event->getSource(), $includeSnapshot ? 'yes' : 'no'),
             (string)$event->getNote()
         );
     }

@@ -40,7 +40,8 @@ class SafeDegradationEligibilityPolicy implements FallbackEligibilityPolicyInter
      * @param array<int, string> $eligibleUnavailableReasons ShippingFailureReason::* values that
      *        make an UNAVAILABLE outcome fallback-eligible (default per v10 §35.5:
      *        CANONICAL_AMBIGUOUS + PROVIDER_MAPPING_MISSING + RATE_REQUEST_UNREPRESENTABLE
-     *        [capability-unsupported — TASK-MQ2DRG])
+     *        [capability-unsupported — TASK-MQ2DRG; RESERVED since TASK-FXFMJ0 — no
+     *        production emitter until a carrier reports it])
      */
     public function __construct(
         private readonly array $eligibleUnavailableReasons = [

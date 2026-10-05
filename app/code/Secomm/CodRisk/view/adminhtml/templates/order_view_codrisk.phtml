@@ -18,21 +18,20 @@ $blacklist = $summary['blacklist'] ?? null;
 $allowlist = $summary['allowlist'] ?? null;
 $orderId = (int)$order->getEntityId();
 
-// Magento admin has no bg-* utility classes — badge colors are explicit here.
-$badgeStyles = [
-    'BLOCK' => 'background:#c0392b;color:#fff;',
-    'WARNING' => 'background:#f7d78a;color:#5c4400;',
-    'ALLOW' => 'background:#d6ecd9;color:#1e7e34;',
+$badgeClasses = [
+    'BLOCK' => 'codrisk-badge--block',
+    'WARNING' => 'codrisk-badge--warning',
+    'ALLOW' => 'codrisk-badge--allow',
 ];
-$badgeStyle = $decision !== null
-    ? ($badgeStyles[$decision->getDecision()] ?? '')
+$badgeClass = $decision !== null
+    ? ($badgeClasses[$decision->getDecision()] ?? '')
     : '';
 ?>
-<section class="admin__page-section order-view-codrisk">
+<section class="admin__page-section order-view-codrisk" id="codrisk-section">
     <div class="admin__page-section-title">
         <span class="title"><?= $escaper->escapeHtml(__('COD Risk')) ?></span>
         <?php if ($decision !== null): ?>
-            <span style="<?= $escaper->escapeHtml($badgeStyle) ?>display:inline-block;padding:3px 12px;margin-left:12px;border-radius:3px;font-weight:700;vertical-align:middle;">
+            <span class="codrisk-badge <?= $escaper->escapeHtmlAttr($badgeClass) ?>">
                 <?= $escaper->escapeHtml(__('COD Risk: %1', $decision->getDecision())) ?>
             </span>
         <?php endif; ?>
@@ -44,7 +43,7 @@ $badgeStyle = $decision !== null
         </div>
     <?php else: ?>
         <div class="admin__page-section-content">
-            <table class="admin__table-secondary" style="max-width: 920px;">
+            <table class="admin__table-secondary codrisk-table">
                 <tr>
                     <th><?= $escaper->escapeHtml(__('Phone')) ?></th>
                     <td><?= $escaper->escapeHtml((string)$summary['phone']) ?></td>
@@ -58,7 +57,7 @@ $badgeStyle = $decision !== null
                                 — <?= $escaper->escapeHtml(__('Matched Source')) ?>:
                                 <b><?= $escaper->escapeHtml((string)$decision->getMatchedRule()) ?></b>
                             <?php endif; ?>
-                            <span class="note" style="display:inline;">
+                            <span class="note codrisk-evaluated-note">
                                 (<?= $escaper->escapeHtml(__('evaluated live now')) ?>)
                             </span>
                         </td>
@@ -80,14 +79,14 @@ $badgeStyle = $decision !== null
                     <th><?= $escaper->escapeHtml(__('List State')) ?></th>
                     <td>
                         <?= $escaper->escapeHtml(__('Blacklist')) ?>:
-                        <b><?= $escaper->escapeHtml($blacklist !== null ? __('Active') : __('None')) ?></b>
+                        <b><?= $blacklist !== null ? __('Active') : __('None') ?></b>
                         <?php if ($blacklist !== null): ?>
                             (<a href="<?= $escaper->escapeUrl($block->getDeactivateListUrl((int)$blacklist->getId())) ?>">
                                 <?= $escaper->escapeHtml(__('Deactivate Blacklist')) ?>
                             </a>)
                         <?php endif; ?>
                         — <?= $escaper->escapeHtml(__('Allowlist')) ?>:
-                        <b><?= $escaper->escapeHtml($allowlist !== null ? __('Active') : __('None')) ?></b>
+                        <b><?= $allowlist !== null ? __('Active') : __('None') ?></b>
                     </td>
                 </tr>
                 <?php if ($override !== null): ?>
@@ -99,17 +98,17 @@ $badgeStyle = $decision !== null
                                 (string)$override->getData('override_decision'),
                                 (string)$override->getData('admin_username'),
                                 $block->formatRiskDateTime((string)$override->getData('created_at')),
-                                (string)$override->getData('reason'))) ?>
+                                $block->getOverrideReasonLabel((string)$override->getData('reason')))) ?>
                         </td>
                     </tr>
                 <?php endif; ?>
             </table>
 
             <?php if ($summary['events'] !== []): ?>
-                <div class="admin__page-section-title" style="margin-top: 18px;">
+                <div class="admin__page-section-title codrisk-events-title">
                     <span class="title"><?= $escaper->escapeHtml(__('Recent Risk Events (phone)')) ?></span>
                 </div>
-                <table class="admin__table-secondary" style="max-width: 920px;">
+                <table class="admin__table-secondary codrisk-table">
                     <thead>
                     <tr>
                         <th><?= $escaper->escapeHtml(__('Date')) ?></th>
@@ -122,11 +121,9 @@ $badgeStyle = $decision !== null
                     <?php foreach ($summary['events'] as $event): ?>
                         <tr>
                             <td><?= $escaper->escapeHtml($block->formatRiskDateTime((string)$event->getData('created_at'))) ?></td>
-                            <td><?= $escaper->escapeHtml((string)$event->getData('reason_code')) ?></td>
+                            <td><?= $escaper->escapeHtml($block->getReasonLabel((string)$event->getData('reason_code'))) ?></td>
                             <td><?= $escaper->escapeHtml((string)$event->getData('source')) ?></td>
-                            <td><?= (int)$event->getData('include_snapshot') === 1
-                                    ? $escaper->escapeHtml(__('Yes'))
-                                    : $escaper->escapeHtml(__('No')) ?></td>
+                            <td><?= $escaper->escapeHtml((int)$event->getData('include_snapshot') === 1 ? __('Yes') : __('No')) ?></td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -134,82 +131,130 @@ $badgeStyle = $decision !== null
             <?php endif; ?>
         </div>
 
-        <div style="margin-top: 16px; max-width: 560px;">
-            <details>
-                <summary class="admin__field-label" style="cursor:pointer;">
-                    <b><?= $escaper->escapeHtml(__('Record Risk Event')) ?></b>
-                </summary>
-                <form method="post" action="<?= $escaper->escapeUrl($block->getRecordUrl($orderId)) ?>"
-                      style="margin-top: 10px;">
+        <div class="codrisk-actions">
+            <button class="action-default scalable" type="button"
+                    data-codrisk-toggle="codrisk-form-record">
+                <?= $escaper->escapeHtml(__('Record Risk Event')) ?>
+            </button>
+            <button class="action-default scalable" type="button"
+                    data-codrisk-toggle="codrisk-form-addlist">
+                <?= $escaper->escapeHtml(__('Add to Blacklist / Allowlist')) ?>
+            </button>
+            <?php if ($block->isBlockDecision($decision)): ?>
+                <button class="action-default scalable primary" type="button"
+                        data-codrisk-toggle="codrisk-form-override">
+                    <?= $escaper->escapeHtml(__('Allow COD for this order')) ?>
+                </button>
+            <?php endif; ?>
+            <a class="action-default scalable" href="<?= $escaper->escapeUrl($block->getInspectorUrl()) ?>">
+                <?= $escaper->escapeHtml(__('View in Phone Inspector')) ?>
+            </a>
+        </div>
+
+        <div id="codrisk-form-record" class="codrisk-form-panel" hidden>
+            <form method="post" action="<?= $escaper->escapeUrl($block->getRecordUrl($orderId)) ?>">
+                <?= $block->getBlockHtml('formkey') ?>
+                <fieldset class="admin__fieldset">
+                    <div class="admin__field">
+                        <label class="label admin__field-label">
+                            <span><?= $escaper->escapeHtml(__('Reason')) ?> <em>*</em></span>
+                        </label>
+                        <div class="admin__field-control control">
+                            <select class="select admin__control-select" name="reason" required>
+                                <?php foreach ($block->getReasonOptions() as $option): ?>
+                                    <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>">
+                                        <?= $escaper->escapeHtml((string)$option['label']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin__field">
+                        <label class="label admin__field-label">
+                            <span><?= $escaper->escapeHtml(__('Source')) ?></span>
+                        </label>
+                        <div class="admin__field-control control">
+                            <select class="select admin__control-select" name="source">
+                                <option value="ADMIN"><?= $escaper->escapeHtml(__('ADMIN')) ?></option>
+                                <option value="CUSTOMER"><?= $escaper->escapeHtml(__('CUSTOMER')) ?></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin__field">
+                        <label class="label admin__field-label">
+                            <span><?= $escaper->escapeHtml(__('Note')) ?></span>
+                        </label>
+                        <div class="admin__field-control control">
+                            <textarea class="textarea admin__control-textarea" name="note" rows="2"></textarea>
+                        </div>
+                    </div>
+                </fieldset>
+                <button class="action-default scalable primary" type="submit">
+                    <?= $escaper->escapeHtml(__('Save')) ?>
+                </button>
+            </form>
+        </div>
+
+        <div id="codrisk-form-addlist" class="codrisk-form-panel" hidden>
+            <form method="post" action="<?= $escaper->escapeUrl($block->getAddToListUrl($orderId)) ?>">
+                <?= $block->getBlockHtml('formkey') ?>
+                <fieldset class="admin__fieldset">
+                    <div class="admin__field">
+                        <label class="label admin__field-label">
+                            <span><?= $escaper->escapeHtml(__('Type')) ?> <em>*</em></span>
+                        </label>
+                        <div class="admin__field-control control">
+                            <select class="select admin__control-select" name="list_type" required>
+                                <option value="BLOCK"><?= $escaper->escapeHtml(__('Block COD (Blacklist)')) ?></option>
+                                <option value="ALLOW"><?= $escaper->escapeHtml(__('Allow COD (Allowlist)')) ?></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin__field">
+                        <label class="label admin__field-label">
+                            <span><?= $escaper->escapeHtml(__('Reason')) ?></span>
+                        </label>
+                        <div class="admin__field-control control">
+                            <select class="select admin__control-select" name="reason">
+                                <option value="">—</option>
+                                <?php foreach ($block->getReasonOptions() as $option): ?>
+                                    <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>">
+                                        <?= $escaper->escapeHtml((string)$option['label']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin__field">
+                        <label class="label admin__field-label">
+                            <span><?= $escaper->escapeHtml(__('Note')) ?></span>
+                        </label>
+                        <div class="admin__field-control control">
+                            <textarea class="textarea admin__control-textarea" name="note" rows="2"></textarea>
+                        </div>
+                    </div>
+                </fieldset>
+                <button class="action-default scalable primary" type="submit">
+                    <?= $escaper->escapeHtml(__('Save')) ?>
+                </button>
+            </form>
+        </div>
+
+        <?php if ($block->isBlockDecision($decision)): ?>
+            <div id="codrisk-form-override" class="codrisk-form-panel" hidden>
+                <form method="post" action="<?= $escaper->escapeUrl($block->getOverrideUrl($orderId)) ?>">
                     <?= $block->getBlockHtml('formkey') ?>
+                    <div class="message message-warning warning codrisk-mt">
+                        <?= $escaper->escapeHtml(__('Applies to this order only — it never removes the Blacklist or adds an Allowlist. Reason is required and fully audited.')) ?>
+                    </div>
                     <fieldset class="admin__fieldset">
                         <div class="admin__field">
                             <label class="label admin__field-label">
-                                <span><?= $escaper->escapeHtml(__('Reason')) ?> <em>*</em></span>
+                                <span><?= $escaper->escapeHtml(__('Override Reason')) ?> <em>*</em></span>
                             </label>
                             <div class="admin__field-control control">
                                 <select class="select admin__control-select" name="reason" required>
-                                    <?php foreach ($block->getReasonOptions() as $option): ?>
-                                        <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>">
-                                            <?= $escaper->escapeHtml((string)$option['label']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="admin__field">
-                            <label class="label admin__field-label">
-                                <span><?= $escaper->escapeHtml(__('Source')) ?></span>
-                            </label>
-                            <div class="admin__field-control control">
-                                <select class="select admin__control-select" name="source">
-                                    <option value="ADMIN"><?= $escaper->escapeHtml(__('ADMIN')) ?></option>
-                                    <option value="CUSTOMER"><?= $escaper->escapeHtml(__('CUSTOMER')) ?></option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="admin__field">
-                            <label class="label admin__field-label">
-                                <span><?= $escaper->escapeHtml(__('Note')) ?></span>
-                            </label>
-                            <div class="admin__field-control control">
-                                <textarea class="textarea admin__control-textarea" name="note" rows="2"></textarea>
-                            </div>
-                        </div>
-                    </fieldset>
-                    <button class="action primary" type="submit">
-                        <?= $escaper->escapeHtml(__('Record Risk Event')) ?>
-                    </button>
-                </form>
-            </details>
-
-            <details style="margin-top: 8px;">
-                <summary class="admin__field-label" style="cursor:pointer;">
-                    <b><?= $escaper->escapeHtml(__('Add to Blacklist / Allowlist')) ?></b>
-                </summary>
-                <form method="post" action="<?= $escaper->escapeUrl($block->getAddToListUrl($orderId)) ?>"
-                      style="margin-top: 10px;">
-                    <?= $block->getBlockHtml('formkey') ?>
-                    <fieldset class="admin__fieldset">
-                        <div class="admin__field">
-                            <label class="label admin__field-label">
-                                <span><?= $escaper->escapeHtml(__('Type')) ?> <em>*</em></span>
-                            </label>
-                            <div class="admin__field-control control">
-                                <select class="select admin__control-select" name="list_type" required>
-                                    <option value="BLOCK"><?= $escaper->escapeHtml(__('Block COD (Blacklist)')) ?></option>
-                                    <option value="ALLOW"><?= $escaper->escapeHtml(__('Allow COD (Allowlist)')) ?></option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="admin__field">
-                            <label class="label admin__field-label">
-                                <span><?= $escaper->escapeHtml(__('Reason')) ?></span>
-                            </label>
-                            <div class="admin__field-control control">
-                                <select class="select admin__control-select" name="reason">
-                                    <option value="">—</option>
-                                    <?php foreach ($block->getReasonOptions() as $option): ?>
+                                    <?php foreach ($block->getOverrideReasonOptions() as $option): ?>
                                         <option value="<?= $escaper->escapeHtml((string)$option['value']) ?>">
                                             <?= $escaper->escapeHtml((string)$option['label']) ?>
                                         </option>
@@ -226,51 +271,19 @@ $badgeStyle = $decision !== null
                             </div>
                         </div>
                     </fieldset>
-                    <button class="action secondary" type="submit">
-                        <?= $escaper->escapeHtml(__('Save List Record')) ?>
+                    <button class="action-default scalable primary" type="submit">
+                        <?= $escaper->escapeHtml(__('Confirm Override')) ?>
                     </button>
                 </form>
-            </details>
+            </div>
+        <?php endif; ?>
 
-            <?php if ($block->isBlockDecision($decision)): ?>
-                <details style="margin-top: 8px;">
-                    <summary class="admin__field-label" style="cursor:pointer;">
-                        <b><?= $escaper->escapeHtml(__('Allow COD for this order')) ?></b>
-                    </summary>
-                    <form method="post" action="<?= $escaper->escapeUrl($block->getOverrideUrl($orderId)) ?>"
-                          style="margin-top: 10px;">
-                        <?= $block->getBlockHtml('formkey') ?>
-                        <div class="message message-warning warning" style="margin-bottom: 10px;">
-                            <?= $escaper->escapeHtml(__('Applies to this order only — it never removes the Blacklist or adds an Allowlist. Reason is required and fully audited.')) ?>
-                        </div>
-                        <fieldset class="admin__fieldset">
-                            <div class="admin__field">
-                                <label class="label admin__field-label">
-                                    <span><?= $escaper->escapeHtml(__('Override Reason')) ?> <em>*</em></span>
-                                </label>
-                                <div class="admin__field-control control">
-                                    <select class="select admin__control-select" name="reason" required>
-                                        <option value="CUSTOMER_VERIFIED_BY_CS">CUSTOMER_VERIFIED_BY_CS</option>
-                                        <option value="MERCHANT_APPROVED">MERCHANT_APPROVED</option>
-                                        <option value="FALSE_POSITIVE">FALSE_POSITIVE</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="admin__field">
-                                <label class="label admin__field-label">
-                                    <span><?= $escaper->escapeHtml(__('Note')) ?></span>
-                                </label>
-                                <div class="admin__field-control control">
-                                    <textarea class="textarea admin__control-textarea" name="note" rows="2"></textarea>
-                                </div>
-                            </div>
-                        </fieldset>
-                        <button class="action primary" type="submit">
-                            <?= $escaper->escapeHtml(__('Confirm Override')) ?>
-                        </button>
-                    </form>
-                </details>
-            <?php endif; ?>
-        </div>
+        <script type="text/x-magento-init">
+            {
+                "#codrisk-section": {
+                    "Secomm_CodRisk/js/order-view": {}
+                }
+            }
+        </script>
     <?php endif; ?>
 </section>

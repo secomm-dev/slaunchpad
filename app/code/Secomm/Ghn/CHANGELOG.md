@@ -1,5 +1,160 @@
 # Changelog — Secomm_Ghn
 
+## [Unreleased] — TASK-K6KG99: rate observability (2026-10-02)
+- **Log-only**: `GHN rate estimate` thêm `to_district_id`/`to_ward_code`; POST 4xx/5xx +
+  debug on → `GHN call payload` kèm request payload (sanitize sẵn, token luôn ở header).
+  Bối cảnh: sự cố calculate_fee 400 `CONFIG_FEE_NOT_FOUND` (bảng giá sandbox shop 190759
+  thiếu tuyến Hà Nội/"Ba Đình" — xác định bằng truy ngược quote DB vì log không có
+  destination). Không đổi behavior/payload/fallback (frozen DEC-TASKWNQCRW).
+
+## 0.18.0 — 2026-10-01 (TASK-WNQCRW / DEC-TASKWNQCRW-001 — RATE weight classification + per-unit weight gate)
+
+### Changed
+- **RATE service_type_id = TOTAL quote weight only (FROZEN)**: `< 20000g → 2`, `>= 20000g → 5`
+  — bỏ dependency `packageCount === 1` của TASK-WAWNDS (docs câu "or multi-parcel" là OR
+  trigger, không implement). Cấm package/item/SKU count ảnh hưởng type. Payload type 2
+  multi-item = root aggregate weight only (items[] đã guard theo type — payload-safe).
+- **Per-package weight display gate merchant-tunable (supersede một phần DEC-TASKFXFMJ0-001
+  "no RATE weight cap"; fallback rule FXFMJ0 GIỮ)**: config mới
+  `carriers/secomm_ghn/max_package_weight_g` (GRAMS, store scope, default **50000** =
+  `GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G`, fallback const khi empty/≤0, strictly `>`).
+  1 sellable unit > limit → UNAVAILABLE `GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED` trước mọi fee
+  call — không TECHNICAL, không fallback (reason free-form → non-eligible by construction,
+  SafeDegradationEligibilityPolicy không đổi). Weight check TRƯỚC dimension check trong
+  `findHardLimitViolation()`; aggregate KHÔNG bao giờ bị cap khi mọi unit ≤ limit (sandbox
+  70/120kg evidence giữ). CREATE luôn enforce 50000 g/package bất kể config (frozen —
+  `GhnPhysicalLimitTest` pin).
+- Admin: +1 field "Max Package Weight (g)" (sortOrder 163, validate digits + >0, comment
+  checkout-only); `Config::getMaxPackageWeightG(?int $storeId)`; private reader rename
+  `readPositiveIntCm` → `readPositiveInt` (cm/g dùng chung).
+- RATE_REQUEST_UNREPRESENTABLE giữ RESERVED (no emitter — §8 "remove" đã thoả từ FXFMJ0).
+
+### Fixed
+- RATE 15kg multi-item không còn bị ép type 5 (trước đây "multi-parcel → 5" vì packageCount).
+
+### Tests
+- Matrix §13/§14 mới (total-weight-only + item-count independence + aggregate 2×50kg=100kg +
+  50001g UNAVAILABLE API-never); §15 CREATE regression (RATE 15kg multi-item → 2 trong khi
+  interpreter 2 light parcels → 5); FXFMJ0 premise tests re-pin (60kg single/mixed giờ
+  UNAVAILABLE tại default — sandbox evidence chuyển sang raised-limit ctor path, giữ bằng
+  chứng provider không bound); ConfigTest +3; comment sweep "multi-parcel"/"no weight cap".
+
+## 0.17.0 — 2026-10-01 (TASK-ZS2B41 / DEC-TASKZS2B41-001 rev. — 3 shared dimension configs + per-dimension CREATE enforcement fix)
+
+### Changed
+- **6 → 3 config paths (rev. 2026-10-01, pre-review)**: `carriers/secomm_ghn/{rate,create}_max_{length,width,height}_cm`
+  gộp thành `carriers/secomm_ghn/max_{length,width,height}_cm` — RATE (display filter) và
+  CREATE (hard gate) đọc CÙNG một bộ per LENGTH/WIDTH/HEIGHT, store scope. Default thống nhất
+  **200** (Create contract, DOCUMENTED); quan sát sandbox 150 (2026-09-18) bị supersede làm
+  default — merchant có account GHN enforce 150 hạ config trong admin.
+  `GhnShipmentConstraints::RATE_MAX_SIDE_CM` xoá; `MAX_SIDE_CM = 200` là default/fallback
+  duy nhất; getters mới `Config::getMaxLengthCm/getMaxWidthCm/getMaxHeightCm(?int $storeId)`.
+  Giá trị đã lưu dưới 6 path cũ bị bỏ qua (chưa từng release).
+- Admin: 6 field → 3 field "Max Length/Width/Height (cm)" (sortOrder 160–162, validation
+  digits + >0, comment ghi rõ áp dụng cả checkout lẫn shipment creation).
+
+### Fixed
+- CREATE enforcement so mỗi dimension với limit của CHÍNH chiều đó (`GhnPhysicalParcelInterpreter`
+  — trước đây width/height bị so với length limit, width vượt own limit lọt khi length nhỏ).
+  Message fail đổi từ "per-side limit" sang "%2 limit" (en + vi); reason label
+  "per-side cm" → "per-dimension cm".
+
+### Tests
+- GhnPhysicalParcelInterpreterTest +3 (width/height own-limit fail-closed + negative control
+  limits hạ riêng lẻ); GhnRateCalculatorTest +1 (merchant hạ config 150 vẫn reject 151);
+  QuoteParcelEstimatorTest +1 (default 200 — unit 190cm không còn bị ẩn); 12 mock site cập
+  nhật getter mới.
+
+## 0.16.0 — 2026-09-30 (TASK-FXFMJ0 / DEC-TASKFXFMJ0-001 — gỡ 50kg RATE pre-gate)
+
+### Changed
+- **RATE weight semantics (supersede DEC-TASKMQ2DRG-001)**: gỡ `findWeightLimitViolation()` +
+  `GhnWeightConstraintViolation` + 2 gate trong `GhnRateCalculator` + reason
+  `GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED` — Calculate Fee không có upper bound 50kg (DOCUMENTED +
+  SANDBOX_OBSERVED matrix 12/12: single 50.001kg/60kg, aggregate 70kg/120kg đều quote).
+  Weight chỉ chọn service_type 2/5 qua biên 20kg (DOCUMENTED, giữ nguyên).
+- Fallback: cart >50kg không còn tự tạo fallback eligibility — fee SUCCESS → realtime;
+  timeout/5xx/429 → TECHNICAL_FAILURE (policy hiện tại); business rejection → UNAVAILABLE
+  không fallback.
+- Docblock provenance rewritten theo bằng chứng mới (GhnPackageLimits / GhnShipmentConstraints /
+  GhnRateCalculator).
+
+### Fixed
+- Không đụng CREATE: cap 50kg/package vẫn enforce fail-closed bởi `GhnPhysicalParcelInterpreter`
+  (regression test hiện có giữ nguyên).
+
+### Tests
+- Matrix §12/§13 mới với API-call assertions (60kg / 2×35kg / 2×5kg / 20kg-boundary / mixed
+  80kg / standalone full-flow); `HeavyWeightRateFlowVerificationTest` thay
+  `OverFiftyKgNoFallbackVerificationTest`.
+
+## 0.15.1 — 2026-09-30 (BUG-DT0C4W — dead layout handle trên shipment view)
+
+### Fixed
+- Layout `sales_shipment_view.xml` không bao giờ load (handle thật của trang =
+  `adminhtml_order_shipment_view`; `sales_shipment_view` chỉ là block name) → đổi tên file +
+  re-anchor `ProviderStatus` + `Actions` vào `referenceContainer extra_shipment_info` (dưới
+  block `form`, echo tại `view/form.phtml:162`).
+- Hệ quả: section "GHN Shipment" (status/reason/packages + offline banner) và nút
+  **Cancel/Return GHN** lần ĐẦU render thật trên trang shipment view (Actions dead từ module
+  đầu — trước giờ chỉ chạy CLI). Visibility matrix từng shipment không đổi (ActionsTest).
+- Nút "Show Packages" với shipment markers-only bị ẨN bởi ShippingCore plugin (BUG-DT0C4W
+  phần ShippingCore) — thông tin packages xem ở section "GHN Shipment".
+
+## 0.15.0 — 2026-09-30 (TASK-S52DGA / DEC-TASKS52DGA-001 — offline shipment P1)
+
+### Added
+- `Model\Shipment\GhnOfflineCapability` — opt-in generic offline shipment flow (ShippingCore
+  `OfflineCapabilityPool`): admin có thể ghi nhận OFFLINE shipment (Magento shipment thật,
+  không GHN order) cho order đi `secomm_ghn`, ví dụ khi package vi phạm hard limit.
+- Gate pre-save: skip khi có generic offline intent (`shipment[fulfillment_mode]=OFFLINE` —
+  offline không submit provider); khi block bằng token offline-eligible (P1:
+  `INVALID_PARCEL`, `INVALID_CONFIGURATION`) stash eligibility order-scoped (ShippingCore
+  `OfflineEligibilitySession`) + message có hint "Create Offline Shipment".
+- Shipment view `ProviderStatus`: banner offline thay text "not attempted" cho shipment có
+  metadata OFFLINE (offline không nhìn như GHN integration thành công); bảng packages giữ
+  nguyên làm evidence.
+
+### Changed
+- `GhnShipmentCreateObserver`: early-return khi **request intent OR persisted metadata
+  OFFLINE** — commit_after fire trên MỌI save, offline shipment không có anchor SUBMITTED để
+  idempotency-guard nên re-save comment/track phải được metadata chặn (C1, DEC-TASKS52DGA-001).
+
+### Notes
+- Retry CLI không guard (task §15): retry trên offline shipment có snapshot in-limit sẽ tạo
+  GHN order thật — documented, P2 option CLI notice. Offline → 0 call Secomm_Cod (COD thu hộ
+  thủ công, không ledger row — gap báo cáo).
+
+## 0.14.0 — 2026-09-30 (TASK-W5BW4F / DEC-TASKW5BW4F-001 — create-failure surfacing 2 lớp)
+
+### Added
+- Layer 1 pre-commit gate: observer `sales_order_shipment_save_before`
+  (`Observer\GhnShipmentSaveValidationObserver`) — fresh save (shipment chưa tồn tại) trên
+  `secomm_ghn_*` với package deterministic-invalid (thiếu/zero rows, vi phạm per-package
+  limits) bị chặn với message admin-facing (GhnCreateValidationException = LocalizedException
+  → core save controller render); 0 shipment row, 0 PENDING anchor, 0 snapshot rác.
+- `Model\Shipment\GhnCreateParcelValidator` — single source row-usability + limits, dùng chung
+  bởi creation service và pre-save gate (hai gate không drift); kèm
+  `PostedPhysicalPackages` (shared request reader).
+- Layer 2 loud surfacing: `Model\Admin\GhnCreateOutcomeNotifier` (+ `GhnCreateReasonLabel`
+  token→human) — mọi outcome non-SUCCESS của create giờ emit admin error message (status +
+  reason + hint `secomm:ghn:shipment:retry <id>`) và durable shipment comment; observer vẫn
+  never-throws.
+- Admin section "GHN Shipment" trên shipment view (`Block\Adminhtml\Shipment\View\ProviderStatus`
+  + template + layout): provider row (status/reason/order code/fee) + bảng packages đã xác
+  nhận (đọc snapshot qua `ShipmentPhysicalPersister::read()`) + hint retry cho FAILED/UNKNOWN.
+- i18n `en_US`/`vi_VN`: phrase mới (kèm bản vi cho các message INVALID_PARCEL).
+- Tests: `GhnCreateParcelValidatorTest` (5), `GhnShipmentSaveValidationObserverTest` (7),
+  `GhnCreateOutcomeNotifierTest` (4), observer layer-2 tests (2) — suite Ghn 438/0F.
+
+### Changed
+- `GhnShipmentCreationService` delegate row building sang `GhnCreateParcelValidator`
+  (constructor: validator vào, `StoreWeightConverter` ra — conversion thuộc validator);
+  missing-data message dùng canonical từ validator.
+- SUPERSEDE (một phần) hành vi "log-only" của create-failure: deterministic-invalid không bao
+  giờ sinh shipment; transient/provider failure không bao giờ silent. PENDING-first +
+  idempotency `GHNS<shipment_id>` + retry CLI giữ nguyên (DEC-TASKW5BW4F-001).
+
 ## 0.13.0 — 2026-09-23 (TASK-RT50KH — product shipping-dimension contract + dimension pre-validation live)
 
 ### Added

@@ -19,5 +19,15 @@
                 after="-"
                 ifconfig="hyva_theme_quickview/general/enabled"
             />
+            <!--
+              TASK-S0EZG9 (SLP-293): floating Back to Top button (bottom-right,
+              appears past one viewport height). Homepage-only per ticket scope.
+            -->
+            <block
+                class="Magento\Framework\View\Element\Template"
+                name="back-to-top"
+                template="Magento_Theme::html/back-to-top.phtml"
+                after="-"
+            />
         </referenceContainer></body>
 </page>

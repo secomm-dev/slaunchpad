@@ -34,7 +34,8 @@ use Secomm\VietNamAddress\Model\Scheme\VnSchemes;
  *     → historical snapshot (unit table, accumulates across schemes) + registry sync
  *     → orphan membership sweep + reseed (active profile claims every VN region)
  *     → config: secomm_vietnam_address/general/active_scheme + address/profiles/mapping
- *     → clean caches (config / graphql_query / full_page / block_html)
+ *     → clean caches (config / graphql_query_resolver_result / full_page / block_html /
+ *       secomm_address_city)
  *
  * The whole write phase runs in ONE transaction (nested chunk commits flatten onto it):
  * a mid-import failure rolls the runtime tables, snapshot, registry, membership and config
@@ -51,7 +52,18 @@ class VnAddressSchemeImporter
     private const TABLE_MEMBERSHIP = 'secomm_address_profile_location';
     private const TABLE_CONFIG = 'core_config_data';
     private const TABLE_UNIT = 'secomm_vietnam_address_unit';
-    private const CACHE_TYPES = ['config', 'graphql_query', 'full_page', 'block_html'];
+    // TASK-Z6SK3T: `graphql_query` was never a declared cache type in any install
+    // (Magento_GraphQlResolverCache declares `graphql_query_resolver_result`) — cleanType()
+    // threw on it inside the try/catch below, silently skipping ALL post-import cleaning.
+    // `secomm_address_city` = Secomm_AddressDropdown city-data section cache (customer
+    // section tree is built from the imported runtime tables).
+    private const CACHE_TYPES = [
+        'config',
+        'graphql_query_resolver_result',
+        'full_page',
+        'block_html',
+        'secomm_address_city',
+    ];
 
     public function __construct(
         private readonly ResourceConnection $resource,

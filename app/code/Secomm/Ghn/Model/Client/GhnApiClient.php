@@ -122,7 +122,7 @@ final class GhnApiClient implements GhnApiClientInterface
             );
         }
 
-        return $this->parseResponse($operation, $shopId, $startedAt, (string) $this->httpClient->getBody());
+        return $this->parseResponse($operation, $shopId, $startedAt, (string) $this->httpClient->getBody(), $body);
     }
 
     private function prepareTransport(string $token, string $shopId): void
@@ -140,9 +140,18 @@ final class GhnApiClient implements GhnApiClientInterface
 
     /**
      * Envelope parsing + classification for a completed transport round-trip.
+     *
+     * @param string|null $rawRequest serialized POST body (null for GET) — logged on HTTP 4xx/5xx
+     *        so a provider-side lane/config rejection (CONFIG_FEE_NOT_FOUND lineage) identifies
+     *        the exact request without quote-DB archaeology
      */
-    private function parseResponse(string $operation, string $shopId, float $startedAt, string $rawBody): array
-    {
+    private function parseResponse(
+        string $operation,
+        string $shopId,
+        float $startedAt,
+        string $rawBody,
+        ?string $rawRequest = null
+    ): array {
         $httpStatus = (int) $this->httpClient->getStatus();
         $durationMs = $this->durationMs($startedAt);
 
@@ -153,6 +162,18 @@ final class GhnApiClient implements GhnApiClientInterface
 
         if ($httpStatus >= 400) {
             $this->logCall($operation, $shopId, $httpStatus, null, $durationMs);
+            if ($this->config->isDebugEnabled() && $rawRequest !== null) {
+                try {
+                    $decodedRequest = $this->serializer->unserialize($rawRequest);
+                } catch (\Throwable) {
+                    $decodedRequest = null;
+                }
+                $this->logger->debugPayload('GHN call payload', [
+                    'operation' => $operation,
+                    'http_status' => $httpStatus,
+                    'request' => is_array($decodedRequest) ? $decodedRequest : $rawRequest,
+                ]);
+            }
             throw $this->errorTranslator->translate($httpStatus, $rawBody, $operation);
         }
 

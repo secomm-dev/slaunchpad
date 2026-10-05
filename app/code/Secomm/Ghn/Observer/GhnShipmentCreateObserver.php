@@ -13,11 +13,15 @@ use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order\Shipment;
+use Secomm\Ghn\Model\Admin\GhnCreateOutcomeNotifier;
 use Secomm\Ghn\Model\Carrier\Ghn;
 use Secomm\Ghn\Model\Logger\GhnLogger;
 use Secomm\Ghn\Model\Shipment\GhnCreateOutcome;
 use Secomm\Ghn\Model\Shipment\GhnShipmentCreationService;
+use Secomm\Ghn\Model\Shipment\PostedPhysicalPackages;
 use Secomm\Ghn\Model\Shipment\ShipmentTrackAttacher;
+use Secomm\ShippingCore\Api\Shipment\FulfillmentMode;
+use Secomm\ShippingCore\Model\Shipment\FulfillmentModeResolver;
 
 /**
  * TASK-9Q5ZAK (GHN-D) — the CREATE trigger: after a shipment COMMIT, create the GHN order for
@@ -29,8 +33,19 @@ use Secomm\Ghn\Model\Shipment\ShipmentTrackAttacher;
  * - the observer NEVER throws — a failed create leaves a FAILED/UNKNOWN persistence row and a
  *   log entry; the Magento shipment stays intact and is reconciled via the retry CLI with the
  *   same client_order_code (sandbox-proven idempotency);
+ * - TASK-W5BW4F layer 2: non-SUCCESS outcomes are additionally LOUD — an admin error message
+ *   (the attempt runs synchronously in the same request) plus a shipment comment, via
+ *   {@see GhnCreateOutcomeNotifier}; deterministic parcel failures are blocked before any of
+ *   this can happen by {@see GhnShipmentSaveValidationObserver};
  * - the service's own SUBMITTED-row guard runs first, so the event's guaranteed re-fire (the
  *   track save itself re-dispatches this event) is a cheap no-op.
+ *
+ * TASK-S52DGA (DEC-TASKS52DGA-001) — offline fulfillment gating: an OFFLINE shipment must never
+ * reach the provider. Two arms, both required:
+ * - REQUEST intent catches the fresh offline save (this event's first fire);
+ * - PERSISTED metadata catches every LATER save of an offline shipment (comments, tracks) — an
+ *   offline shipment has NO SUBMITTED anchor row, so the service idempotency guard alone would
+ *   let a routine re-save create a real GHN order.
  */
 class GhnShipmentCreateObserver implements ObserverInterface
 {
@@ -40,8 +55,10 @@ class GhnShipmentCreateObserver implements ObserverInterface
     public function __construct(
         private readonly GhnShipmentCreationService $creationService,
         private readonly ShipmentTrackAttacher $trackAttacher,
+        private readonly GhnCreateOutcomeNotifier $notifier,
         private readonly HttpRequest $request,
-        private readonly GhnLogger $logger
+        private readonly GhnLogger $logger,
+        private readonly FulfillmentModeResolver $fulfillmentModeResolver
     ) {
     }
 
@@ -75,6 +92,14 @@ class GhnShipmentCreateObserver implements ObserverInterface
             return;
         }
 
+        // TASK-S52DGA — offline fulfillment never reaches the provider (request intent on the
+        // fresh offline save; persisted metadata on every later re-save).
+        if ($this->fulfillmentModeResolver->isOfflineIntent()
+            || $this->fulfillmentModeResolver->forShipment($shipment) === FulfillmentMode::OFFLINE
+        ) {
+            return;
+        }
+
         // In-flight guard: persisting the physical snapshot re-saves the shipment, which
         // synchronously re-fires THIS event while the first invocation is still running —
         // without this guard the create would execute inside the nested save.
@@ -93,7 +118,10 @@ class GhnShipmentCreateObserver implements ObserverInterface
 
     private function createAndAttach(Shipment $shipment): void
     {
-        $outcome = $this->creationService->createForShipment($shipment, $this->postedPhysicalPackages());
+        $outcome = $this->creationService->createForShipment(
+            $shipment,
+            PostedPhysicalPackages::fromRequest($this->request)
+        );
 
         if ($outcome->getStatus() === GhnCreateOutcome::STATUS_COD_REJECTED) {
             // TASK-DFGFZ9 phase 2: the Secomm_Cod decision refused the collection — surface it
@@ -106,6 +134,7 @@ class GhnShipmentCreateObserver implements ObserverInterface
                 __('GHN COD collection rejected (%1): %2', $outcome->getReason(), $outcome->getRejectionMessage())
             );
             $shipment->save();
+            $this->notifier->notifyFailure($outcome, (int) $shipment->getEntityId());
 
             return;
         }
@@ -124,27 +153,15 @@ class GhnShipmentCreateObserver implements ObserverInterface
         $context = ['status' => $outcome->getStatus(), 'reason' => $outcome->getReason()];
         if ($outcome->getStatus() === GhnCreateOutcome::STATUS_TECHNICAL_FAILURE) {
             $this->logger->warning('GHN shipment create technical failure; reconcile via retry.', $context);
-
-            return;
+        } else {
+            $this->logger->call('GHN shipment create unavailable.', $context);
         }
 
-        $this->logger->call('GHN shipment create unavailable.', $context);
-    }
-
-    /**
-     * The confirmed package rows from the admin package-information section — the ONLY
-     * authoritative physical source on a fresh save (retry path reads the persisted snapshot).
-     *
-     * @return array|null null when this request carries no package information
-     */
-    private function postedPhysicalPackages(): ?array
-    {
-        if (!$this->request->isPost()) {
-            return null;
-        }
-
-        $packages = $this->request->getParam('shipment')['physical_packages'] ?? null;
-
-        return is_array($packages) && $packages !== [] ? $packages : null;
+        // TASK-W5BW4F layer 2 — the failure is never silent: admin message on the save redirect
+        // (same request) + a durable shipment comment (the COD_REJECTED branch above already
+        // comments; this covers UNAVAILABLE / TECHNICAL_FAILURE / UNKNOWN-shaped rows).
+        $shipment->addComment($this->notifier->failureComment($outcome));
+        $shipment->save();
+        $this->notifier->notifyFailure($outcome, (int) $shipment->getEntityId());
     }
 }

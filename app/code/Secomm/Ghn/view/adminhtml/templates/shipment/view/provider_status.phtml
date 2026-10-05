@@ -1,0 +1,78 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+/** @var \Secomm\Ghn\Block\Adminhtml\Shipment\View\ProviderStatus $block */
+
+if (!$block->canShow()) {
+    return;
+}
+?>
+<div class="admin__field secomm-ghn-shipment-provider-status" style="margin: 12px 0;">
+    <h4><?= $block->escapeHtml(__('GHN Shipment')) ?></h4>
+    <?php if ($block->getStatus() !== '') : ?>
+        <p style="margin: 4px 0;">
+            <strong><?= $block->escapeHtml(__('GHN create status')) ?>:</strong>
+            <?= $block->escapeHtml($block->getStatus()) ?><?php if ($block->getReasonText() !== '') : ?>
+                — <?= $block->escapeHtml($block->getReasonText()) ?>
+            <?php endif; ?>
+        </p>
+    <?php else : ?>
+        <?php if ($block->isOffline()) : ?>
+            <p style="margin: 4px 0; padding: 6px 8px; background: #fdf5e6; color: #6e4b00;">
+                <?= $block->escapeHtml(
+                    __('Offline shipment — no GHN order has been created and none will be requested; fulfillment and tracking are manual.')
+                ) ?>
+            </p>
+        <?php else : ?>
+            <p style="margin: 4px 0;"><?= $block->escapeHtml(__('No GHN order has been attempted for this shipment yet.')) ?></p>
+        <?php endif; ?>
+    <?php endif; ?>
+    <?php if ($block->getGhnOrderCode() !== '') : ?>
+        <p style="margin: 4px 0;">
+            <strong><?= $block->escapeHtml(__('GHN order code')) ?>:</strong>
+            <?= $block->escapeHtml($block->getGhnOrderCode()) ?>
+        </p>
+    <?php endif; ?>
+    <?php if ($block->getTotalFee() !== null) : ?>
+        <p style="margin: 4px 0;">
+            <strong><?= $block->escapeHtml(__('GHN total fee')) ?>:</strong>
+            <?= $block->escapeHtml(__('%1 VND', number_format($block->getTotalFee(), 0, ',', '.'))) ?>
+        </p>
+    <?php endif; ?>
+    <?php if ($block->getPackages() !== []) : ?>
+        <p style="margin: 8px 0 4px;"><strong><?= $block->escapeHtml(__('Confirmed packages')) ?></strong></p>
+        <table class="admin__table-secondary" style="max-width: 640px;">
+            <thead>
+            <tr>
+                <th><?= $block->escapeHtml(__('#')) ?></th>
+                <th><?= $block->escapeHtml(__('Weight (g)')) ?></th>
+                <th><?= $block->escapeHtml(__('Length (cm)')) ?></th>
+                <th><?= $block->escapeHtml(__('Width (cm)')) ?></th>
+                <th><?= $block->escapeHtml(__('Height (cm)')) ?></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($block->getPackages() as $index => $package) : ?>
+                <tr>
+                    <td><?= $block->escapeHtml((string) ($index + 1)) ?></td>
+                    <td><?= $block->escapeHtml((string) $package[0]) ?></td>
+                    <td><?= $block->escapeHtml((string) $package[1]) ?></td>
+                    <td><?= $block->escapeHtml((string) $package[2]) ?></td>
+                    <td><?= $block->escapeHtml((string) $package[3]) ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+    <?php if ($block->needsRetry()) : ?>
+        <p style="margin: 8px 0 0; color: #b30000;">
+            <?= $block->escapeHtml(
+                __('This GHN order was not submitted — reconcile via "bin/magento secomm:ghn:shipment:retry %1".', (string) $block->getShipmentId())
+            ) ?>
+        </p>
+    <?php endif; ?>
+</div>

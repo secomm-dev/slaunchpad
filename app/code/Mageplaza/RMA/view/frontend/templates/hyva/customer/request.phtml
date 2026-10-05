@@ -1,0 +1,116 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_RMA
+ * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+use Magento\Framework\Escaper;
+use Hyva\Theme\Model\ViewModelRegistry;
+
+/** @var \Mageplaza\RMA\Block\Customer\Request $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var \Mageplaza\RMA\Helper\Data $helper */
+/** @var Escaper $escaper */
+
+$_requests      = $block->getRmaRequests();
+$helper         = $block->_helperData;
+$modalViewModel = $viewModels->require(\Hyva\Theme\ViewModel\Modal::class);
+?>
+<?php if ($_requests && count($_requests)): ?>
+    <div class="table-wrapper mp-requests-history">
+        <table class="data table table-request-items history" id="my-requests-table">
+            <thead>
+            <tr>
+                <th scope="col" class="col_id font-semibold border-b-2 border-gray-300 p-8"><?= /* @noEscape */ __('Request ID') ?></th>
+                <th scope="col" class="col_order_increment font-semibold border-b-2 border-gray-300 p-8"><?= /* @noEscape */ __('Order Increment ID') ?></th>
+                <th scope="col" class="col_status font-semibold border-b-2 border-gray-300 p-8"><?= /* @noEscape */ __('Request Status') ?></th>
+                <th scope="col" class="col_created font-semibold border-b-2 border-gray-300 p-8"><?= /* @noEscape */ __('Created Date') ?></th>
+                <th scope="col" class="col_updated font-semibold border-b-2 border-gray-300 p-8"><?= /* @noEscape */ __('Updated Date') ?></th>
+                <th scope="col" class="col_actions font-semibold border-b-2 border-gray-300 p-8"><?= /* @noEscape */ __('Action') ?></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($_requests as $request):
+                /** @var \Mageplaza\RMA\Model\Request $request */ ?>
+                <tr>
+                    <td data-th="<?= /* @noEscape */ __('Request ID') ?>"
+                        class="col_id border-b-2 border-gray-300 p-8 md:text-sm"><?= /* @noEscape */ $request->getId() ?></td>
+                    <td data-th="<?= /* @noEscape */ __('Order Increment ID') ?>" class="col_order_increment border-b-2 border-gray-300 p-8 md:text-sm">
+                        <?= /* @noEscape */ $request->getOrder()->getIncrementId() ?></td>
+                    <td data-th="<?= /* @noEscape */ __('Request Status') ?>"
+                        class="col_status border-b-2 border-gray-300 p-8 md:text-sm"><?= /* @noEscape */ $request->getStatusLabel() ?></td>
+                    <td data-th="<?= /* @noEscape */ __('Created Date') ?>" class="col_created border-b-2 border-gray-300 p-8 md:text-sm">
+                        <?= /* @noEscape */ $helper->getConvertedDate($request->getCreatedAt())->format('n/j/y') ?>
+                    </td>
+                    <td data-th="<?= /* @noEscape */ __('Updated Date') ?>" class="col_updated border-b-2 border-gray-300 p-8 md:text-sm">
+                        <?= /* @noEscape */ $helper->getConvertedDate($request->getUpdatedAt())->format('n/j/y') ?>
+                    </td>
+                    <td data-th="<?= /* @noEscape */ __('Action') ?>" class="col_actions border-b-2 border-gray-300 p-8 md:text-sm">
+                        <a href="<?= /* @noEscape */ $block->getRequestDetailsUrl($request->getId()) ?>"
+                           class="action view">
+                            <span class="text-sm text-gray-500 hover:text-primary"><?= /* @noEscape */ __('See Details') ?></span>
+                        </a>
+                        <?php if (!$request->getIsCanceled() && $block->canCancelRequest($request)): ?>
+                            <div class="mp-modal-confirm" x-data="hyva.modal()">
+                                <?php $confirmation = $modalViewModel->confirm()
+                                    ->withDetails($escaper->escapeHtml(__('Do you want to cancel this request?'))) ?>
+                                <button @click="<?= /** noEscape */ $confirmation->getShowJs() ?>.then(result => {
+                                        if (result) {
+                                            window.location.href = '<?= /* @noEscape */ $block->getUrl('mprma/request/cancel', ['request_id' => $request->getId()]) ?>';
+                                        } else {
+                                            return false;
+                                        }
+                                    })" href=""
+                                   class="action cancel">
+                                    <span class="text-sm text-gray-500 hover:text-primary"><?= /* @noEscape */ __('Cancel') ?></span>
+                                </button>
+                                <?= /** noEscape */ $confirmation ?>
+                            </div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php if ($block->getPagerHtml()): ?>
+        <div class="mprma-requests-toolbar toolbar bottom pt-2"><?= $block->getPagerHtml() ?></div>
+    <?php endif ?>
+<?php else: ?>
+    <div class="message info empty"><span><?= /* @noEscape */ __('You have no RMA requests.') ?></span></div>
+<?php endif; ?>
+<style>
+    #my-requests-table tbody .col_actions div.mp-modal-confirm {
+        display: inline-block;
+    }
+    #my-requests-table tbody .col_actions button.cancel:before {
+        border-left: 1px solid #a6a6a6;
+        content: '';
+        display: inline-block;
+        height: 12px;
+        margin: 0 10px;
+        vertical-align: -1px;
+    }
+    @media only screen and (max-width: 1024px) {
+        .table-wrapper.mp-requests-history {
+            white-space: nowrap;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+    }
+</style>

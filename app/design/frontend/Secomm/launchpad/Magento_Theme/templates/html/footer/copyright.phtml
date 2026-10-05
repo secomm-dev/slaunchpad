@@ -3,14 +3,26 @@
  * Footer copyright bar — LAUNCHPAD CORE (TASK-7EYJ4C, SLP-275).
  *
  * Text comes from Content > Design > Configuration > Theme > Footer > Copyright
- * (design/footer/copyright, configurable per store view). Legal links are the
- * static lowercase routes agreed in TASK-7EYJ4C (placeholder pages pending).
+ * (design/footer/copyright, configurable per store view). The two legal links
+ * are configurable per store view through Stores > Configuration > Launchpad >
+ * Footer > Legal Links (TASK-KMJV5Q, SLP-291); an empty field keeps the static
+ * lowercase route / translated label agreed in TASK-7EYJ4C (placeholder pages
+ * pending).
  *
  * @var \Magento\Theme\Block\Html\Footer $block
  * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
  */
 
 declare(strict_types=1);
+
+/** @var \Launchpad\CmsContent\ViewModel\LegalLinks $legal_links */
+$legal_links = $viewModels->require(\Launchpad\CmsContent\ViewModel\LegalLinks::class);
+
+$termsLabel = $legal_links->getTermsLabel() ?: __('Terms & Conditions');
+$termsUrl = $legal_links->getTermsUrl() ?: $block->getUrl('terms-and-conditions');
+$privacyLabel = $legal_links->getPrivacyLabel() ?: __('Privacy Policy');
+$privacyUrl = $legal_links->getPrivacyUrl() ?: $block->getUrl('privacy-policy-cookie-restriction-mode');
 ?>
 <small class="text-sm leading-5 text-[#364153]">
     <?= $escaper->escapeHtml($block->getCopyright()) ?>
@@ -18,10 +30,10 @@ declare(strict_types=1);
 <nav aria-label="<?= $escaper->escapeHtmlAttr(__('Footer legal')) ?>"
      class="flex items-center gap-4 text-[#4a5565]"
 >
-    <a href="<?= $escaper->escapeUrl($block->getUrl('terms-and-conditions')) ?>"
+    <a href="<?= $escaper->escapeUrl($termsUrl) ?>"
        class="text-sm leading-5 text-[#4a5565] transition hover:text-[#101828]"
-    ><?= $escaper->escapeHtml(__('Terms & Conditions')) ?></a>
-    <a href="<?= $escaper->escapeUrl($block->getUrl('privacy-policy-cookie-restriction-mode')) ?>"
+    ><?= $escaper->escapeHtml($termsLabel) ?></a>
+    <a href="<?= $escaper->escapeUrl($privacyUrl) ?>"
        class="text-sm leading-5 text-[#4a5565] transition hover:text-[#101828]"
-    ><?= $escaper->escapeHtml(__('Privacy Policy')) ?></a>
+    ><?= $escaper->escapeHtml($privacyLabel) ?></a>
 </nav>

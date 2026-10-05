@@ -9,8 +9,9 @@ define([
     'underscore',
     'jquery-ui-modules/widget',
     'mage/validation',
-    'mage/loader' // Ensure loader is included
-], function ($, mageTemplate, _, widget, validation) {
+    'mage/loader', // Ensure loader is included
+    'Secomm_AddressDropdown/js/model/address-location-cache'
+], function ($, mageTemplate, _, widget, validation, loader, locationCache) {
     'use strict';
     $.widget('mage.directoryAddressDropdownUpdater', {
         options: {
@@ -49,7 +50,9 @@ define([
                         $('#city-input').val(selectedCityId);
                     });
 
-                    // Load cities if currentCity is set
+                    // Load cities if currentCity is set. TASK-Z6SK3T: no request for an
+                    // empty region — the legacy endpoint returned [] for it anyway; the
+                    // same end-state (select hidden, input shown) is applied locally.
                     let initialRegionId = $('#region_id').val();
                     this._loadCities(initialRegionId, this.options.currentCity);
                     clearInterval(regionInterval);
@@ -59,47 +62,30 @@ define([
 
         /**
          * Load cities based on regionId.
+         * TASK-Z6SK3T: canonical addressLocations via the shared page-session cache
+         * (was GetListCity — deprecated, uncached, one POST per region change).
          * @private
          * @param {String} regionId - The region ID to load cities for.
          * @param {String} [currentCity] - The current city to set as selected (optional).
          */
         _loadCities: function (regionId, currentCity) {
             let self = this;
-            let query = `
-                query {
-                    GetListCity(input: { region_id: "${regionId}" }) {
-                        city_id
-                        default_name
-                        label
-                    }
-                }
-            `;
+
+            if (!regionId) {
+                this._updateCityDropdown([], currentCity);
+                return;
+            }
 
             // Show loader
             $('body').loader('show');
 
-            $.ajax({
-                url: window.BASE_URL.replace(/index\.php\/?$/, '') + 'graphql',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ query: query }),
-                success: function(response) {
-                    if (response.data && response.data.GetListCity) {
-                        self._updateCityDropdown(response.data.GetListCity, currentCity);
-                    } else {
-                        let citySelect = $('#city-select');
-                        let cityInput = $('#city-input');
-                        citySelect.hide();
-                        cityInput.show();
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('City request failed:', status, error);
-                },
-                complete: function() {
-                    // Hide loader
-                    $('body').loader('hide');
-                }
+            locationCache.getLocations($('#country').val() || '', regionId).then(function (cities) {
+                self._updateCityDropdown(cities || [], currentCity);
+            }).catch(function (error) {
+                console.error('City request failed:', error);
+            }).finally(function () {
+                // Hide loader
+                $('body').loader('hide');
             });
         },
 

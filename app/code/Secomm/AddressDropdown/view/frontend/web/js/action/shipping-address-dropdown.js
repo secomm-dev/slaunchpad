@@ -5,14 +5,16 @@ define([
     'Magento_Checkout/js/action/set-shipping-information',
     'mage/loader', // Ensure loader is included
     'knockout',
-        'Secomm_AddressDropdown/js/model/master-switch'
+        'Secomm_AddressDropdown/js/model/master-switch',
+    'Secomm_AddressDropdown/js/model/address-location-cache'
 ], function ($,
     Component,
     quote,
     setShippingInformationAction,
     loader,
     ko,
-        isEnabled
+        isEnabled,
+    locationCache
 ) {
     'use strict';
 
@@ -109,6 +111,11 @@ define([
                     let selectedCountryId = $(this).val();
                     let previousCountryId = self.lastCountryId;
 
+                    // TASK-Z6SK3T: country left/entered — drop the page-session city memo.
+                    if (previousCountryId !== selectedCountryId) {
+                        locationCache.clear();
+                    }
+
                     if (previousCountryId === 'VN' && !self.isVietnamCountry(selectedCountryId)) {
                         let cityInputViewModel = ko.dataFor($(CITY_SELECTOR)[0]);
                         if (cityInputViewModel && cityInputViewModel.value) {
@@ -162,36 +169,27 @@ define([
                 return;
             }
             this._vnSchemaLoading = true;
-            $.ajax({
-                url: (window.BASE_URL || '/').replace(/index\.php\/?$/, '') + 'graphql',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    query: 'query{addressSchema(input:{country_id:"VN"})' +
-                        '{profile_code levels{entity_type label placeholder}}}'
-                }),
-                success: function (response) {
-                    self._vnSchemaLoading = false;
-                    let schema = response && response.data && response.data.addressSchema;
-                    if (!schema || !schema.profile_code) {
-                        self._vnSchema = false;
-                        return;
-                    }
-                    let levels = schema.levels || [];
-                    let regionLevel = levels.find(function (level) { return level.entity_type === 'region'; });
-                    let cityLevel = levels.find(function (level) { return level.entity_type === 'city'; });
-                    self._vnSchema = {
-                        profileCode: schema.profile_code,
-                        regionLabel: regionLevel && regionLevel.label || '',
-                        wardLabel: cityLevel && cityLevel.label || '',
-                        wardPlaceholder: cityLevel && cityLevel.placeholder || ''
-                    };
-                    self.applySchemaToDom();
-                },
-                error: function () {
-                    self._vnSchemaLoading = false;
+            /* TASK-Z6SK3T: shared page-session schema cache — the billing component of
+             * the same page reuses this single POST instead of repeating it. */
+            locationCache.getSchema('VN').then(function (schema) {
+                self._vnSchemaLoading = false;
+                if (!schema || !schema.profile_code) {
                     self._vnSchema = false;
+                    return;
                 }
+                let levels = schema.levels || [];
+                let regionLevel = levels.find(function (level) { return level.entity_type === 'region'; });
+                let cityLevel = levels.find(function (level) { return level.entity_type === 'city'; });
+                self._vnSchema = {
+                    profileCode: schema.profile_code,
+                    regionLabel: regionLevel && regionLevel.label || '',
+                    wardLabel: cityLevel && cityLevel.label || '',
+                    wardPlaceholder: cityLevel && cityLevel.placeholder || ''
+                };
+                self.applySchemaToDom();
+            }, function () {
+                self._vnSchemaLoading = false;
+                self._vnSchema = false;
             });
         },
 
@@ -383,44 +381,26 @@ define([
 
         loadCities: function (regionId, callback) {
             let self = this;
-            let query = `
-                query {
-                    GetListCity(input: { region_id: "${regionId}" }) {
-                        default_name
-                        label
-                    }
-                }
-            `;
 
             $('body').loader('show');
 
-            $.ajax({
-                url: (window.BASE_URL || '/').replace(/index\.php\/?$/, '') + 'graphql',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ query: query }),
-                success: function (response) {
-                    if (!self.isVietnamCountry()) {
-                        self.applyNonVietnamUiState();
-                        return;
-                    }
-                    if (response.data && response.data.GetListCity && response.data.GetListCity.length > 0) {
-                        self.updateCityDropdown(response.data.GetListCity, typeof callback === 'function');
-                    } else {
-                        self.updateCityDropdown([], false);
-                    }
-                    self.cityVisible();
-                    if (typeof callback === 'function') {
-                        callback();
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('Request failed:', error);
-                },
-                complete: function () {
-                    $('body').loader('hide');
+            /* TASK-Z6SK3T: canonical addressLocations via the shared page-session cache
+             * (was GetListCity — deprecated, uncached, one POST per region change). */
+            locationCache.getLocations('VN', regionId).then(function (cities) {
+                if (!self.isVietnamCountry()) {
+                    self.applyNonVietnamUiState();
+                    return;
                 }
-
+                cities = cities || [];
+                self.updateCityDropdown(cities, cities.length > 0 && typeof callback === 'function');
+                self.cityVisible();
+                if (typeof callback === 'function') {
+                    callback();
+                }
+            }, function (error) {
+                console.error('Request failed:', error);
+            }).finally(function () {
+                $('body').loader('hide');
             });
         },
 

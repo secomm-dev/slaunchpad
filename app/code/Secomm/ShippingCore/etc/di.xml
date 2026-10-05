@@ -117,6 +117,14 @@
             <argument name="serviceLevels" xsi:type="array"/>
         </arguments>
     </type>
+    <!-- TASK-S52DGA (DEC-TASKS52DGA-001): carrier offline capabilities — carriers register via
+         item entries (never named here; zero capabilities is a valid state: no offline control
+         renders and posted offline intent is rejected fail-closed). -->
+    <type name="Secomm\ShippingCore\Model\Shipment\OfflineCapabilityPool">
+        <arguments>
+            <argument name="capabilities" xsi:type="array"/>
+        </arguments>
+    </type>
     <!-- TASK-8MQHJX (Phase B): destination-scope eligibility — zones are merchant/composition
          data contributed via item entries (zero zones is a valid state; ShippingCore never
          hardcodes zone identities). The matcher is deterministic and stateless. -->

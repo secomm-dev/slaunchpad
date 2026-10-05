@@ -11,7 +11,7 @@
 "Spam Lookback Window (days)","Cửa sổ spam (ngày)"
 "Spam Threshold","Ngưỡng spam"
 "Customer-Attributable Reasons","Reason do khách gây ra"
-"Reason Include Flags","Flag tính reason vào lịch sử"
+"Reason Flags","Flag tính reason vào lịch sử"
 "Checkout","Checkout"
 "COD Unavailable Message","Thông báo khi COD không khả dụng"
 "COD is currently unavailable for this order. Please choose another payment method.","COD hiện không khả dụng cho đơn hàng này. Vui lòng chọn phương thức thanh toán khác."
@@ -60,3 +60,4 @@
 "Block Threshold must be greater than Warning Threshold.","Ngưỡng chặn phải lớn hơn ngưỡng cảnh báo."
 "This phone number already exists in the %1 list for this website.","Số điện thoại này đã tồn tại trong danh sách %1 cho website này."
 "This phone already has an active %1 record for this website. Deactivate or edit the existing record first.","Số này đã có bản ghi %1 đang hiệu lực cho website này. Hãy Deactivate hoặc sửa bản ghi cũ trước."
+"Not a valid Vietnamese number — expected 09xx… (10 digits) or +84xx… formats.","Số không đúng định dạng Việt Nam — cần 09xx… (10 số) hoặc đầu +84…."
