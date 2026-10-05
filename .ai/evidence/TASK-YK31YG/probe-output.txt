@@ -1,0 +1,12 @@
+PASS vi-desktop-1440: button aligns with input when error shows (delta=0) — delta=0px form=items-start
+PASS vi-desktop-1440: .field-error + messages ul rendered — msg="Trường Địa chỉ email phải chứa địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com)."
+PASS vi-desktop-1440: error ul sits below input
+PASS vi-desktop-1440: sim items-center reproduces the drop (delta>0) — delta=13px
+PASS vi-mobile-375: stacked — button below field (delta>=0) — delta=98px
+PASS vi-mobile-375: .field-error + messages ul rendered — msg="Trường Địa chỉ email phải chứa địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com)."
+PASS vi-mobile-375: error ul sits below input
+PASS vi-mobile-375: no horizontal overflow — scrollWidth=368 vp=375
+PASS en-desktop-1440: button aligns with input when error shows (delta=0) — delta=0px form=items-start
+PASS en-desktop-1440: .field-error + messages ul rendered — msg="Trường Địa chỉ email phải chứa địa chỉ email hợp lệ (Ví dụ: johndoe@domain.com)."
+PASS en-desktop-1440: error ul sits below input
+PASS en-desktop-1440: sim items-center reproduces the drop (delta>0) — delta=13px

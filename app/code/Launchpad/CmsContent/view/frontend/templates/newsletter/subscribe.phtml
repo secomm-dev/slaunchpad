@@ -10,6 +10,13 @@
  * container — without it the component wraps the input in an unstyled div inside
  * the flex row.
  *
+ * SLP-306: the form is `lg:items-start`, NOT `lg:items-center` — hyva.formValidation
+ * appends the error <ul class="messages"> INSIDE .field.field-reserved, growing the
+ * field; with items-center the h-11 button re-centers against the taller field and
+ * visibly drops below the input on desktop (SLP-306 screenshot: +11px). items-start
+ * pins both to the top; the field then carries `lg:mt-0` to cancel forms.css
+ * `.field { @apply mt-1 }` (4px) so input and button tops align exactly.
+ *
  * @var \Launchpad\CmsContent\Block\Newsletter\Subscribe $block
  * @var \Magento\Framework\Escaper $escaper
  * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
@@ -22,7 +29,7 @@ use Hyva\Theme\ViewModel\HyvaCsp;
 /** @var HyvaCsp $hyvaCsp */
 $hyvaCsp = $viewModels->require(HyvaCsp::class);
 ?>
-<form class="mx-auto flex w-full max-w-[1184px] flex-col gap-2 lg:flex-row lg:items-center lg:gap-2"
+<form class="mx-auto flex w-full max-w-[1184px] flex-col gap-2 lg:flex-row lg:items-start lg:gap-2"
       action="<?= $escaper->escapeUrl($block->getFormActionUrl()) ?>"
       method="post"
       id="homepage-newsletter-form"
@@ -34,7 +41,7 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
         <?= $escaper->escapeHtml(__('Email Address')) ?>
     </label>
     <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>">
-    <div class="field field-reserved w-full lg:flex-1">
+    <div class="field field-reserved w-full lg:flex-1 lg:mt-0">
         <input class="h-11 w-full rounded-md border border-[#d1d5dc] bg-white px-3.5 text-[16px] leading-6 text-[#101828] placeholder:text-[#364153] focus:border-[#588f60] focus:outline-none"
                id="homepage-newsletter-email"
                name="email"
