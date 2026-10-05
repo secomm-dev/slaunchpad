@@ -1,6 +1,6 @@
 <?php
 /**
- * TASK-08343C (SLP-246): Launchpad mobile menu drawer Language settings.
+ * TASK-08343C (SLP-245): Launchpad mobile menu drawer Language settings.
  *
  * A-scroll baseline (native <details> disclosure, runtime store switch URLs)
  * adapted to the drawer design: the current language stays in the options
@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\Store;
+use Hyva\Theme\ViewModel\StoreConfig;
 use Hyva\Theme\ViewModel\StoreSwitcher;
 use Hyva\Theme\ViewModel\SvgIcons;
 use Magento\Framework\Escaper;
@@ -28,6 +29,7 @@ use Magento\Store\ViewModel\SwitcherUrlProvider;
 $icons = $viewModels->require(SvgIcons::class);
 $switcherUrlProvider = $viewModels->require(SwitcherUrlProvider::class);
 $storeViewModel = $viewModels->require(Store::class);
+$storeConfig = $viewModels->require(StoreConfig::class);
 $storeSwitcher = $viewModels->require(StoreSwitcher::class);
 
 $stores = $storeSwitcher->getStores();
@@ -52,19 +54,19 @@ $flagByLanguageCode = [
     'EN' => 'images/flags/en.svg',
     'VI' => 'images/flags/vi.svg',
 ];
+$currentLocaleCode = (string) $storeConfig->getStoreConfig('general/locale/code');
+$currentLanguageCode = strtoupper(substr($currentLocaleCode, 0, 2));
+$currentFlag = $flagByLanguageCode[$currentLanguageCode] ?? null;
 ?>
 <details name="launchpad-menu-settings" class="group">
     <summary
-        class="flex w-full cursor-pointer select-none items-center justify-between gap-2 border-b border-border py-3 [&::-webkit-details-marker]:hidden"
+        class="flex w-full cursor-pointer select-none items-center justify-between gap-2 py-3 [&::-webkit-details-marker]:hidden"
     >
         <span class="flex items-center gap-1">
             <?= $icons->renderHtml('outline/globe-alt', '', 16, 16, ['aria-hidden' => 'true']) ?>
             <span class="text-label-l font-medium text-ink"><?= $escaper->escapeHtml(__('Language')) ?></span>
         </span>
         <span class="flex items-center gap-2">
-            <?php $localeCode = (string) $currentStore->getLocaleCode(); ?>
-            <?php $languageCode = strtoupper(substr($localeCode, 0, 2)); ?>
-            <?php $currentFlag = $flagByLanguageCode[$languageCode] ?? null; ?>
             <?php if ($currentFlag): ?>
                 <img
                     src="<?= $escaper->escapeUrl($block->getViewFileUrl($currentFlag)) ?>"
@@ -85,7 +87,7 @@ $flagByLanguageCode = [
         </span>
     </summary>
     <nav
-        class="flex flex-col gap-2 px-6 py-2"
+        class="flex flex-col gap-2 px-4 py-2"
         aria-label="<?= $escaper->escapeHtmlAttr(__('Choose your language')) ?>"
     >
         <?php foreach ($orderedStores as $store): ?>

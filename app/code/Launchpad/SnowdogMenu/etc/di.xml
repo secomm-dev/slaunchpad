@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+    Launchpad Snowdog Menu — global DI (TASK-08343C / FEAT-ZNJ4KF).
+
+    Banner persistence plugins MUST be area-agnostic: menu nodes are saved
+    from the Admin (adminhtml), the storefront services and CLI tooling, so
+    the staging/persistence pair is registered globally. The editor pre-fill
+    plugin (adminhtml/di.xml) is admin-only, and the navigation toggle stays
+    frontend-only (see etc/frontend/di.xml).
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Snowdog\Menu\Service\Menu\SaveRequestProcessor">
+        <plugin name="launchpad_snowdog_banner_persistence_bridge"
+                type="Launchpad\SnowdogMenu\Plugin\SaveRequestProcessorPlugin"
+                sortOrder="20"/>
+    </type>
+    <type name="Snowdog\Menu\Api\NodeRepositoryInterface">
+        <plugin name="launchpad_snowdog_banner_node_save"
+                type="Launchpad\SnowdogMenu\Plugin\NodeRepositorySavePlugin"
+                sortOrder="20"/>
+    </type>
+</config>

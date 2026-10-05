@@ -1,12 +1,12 @@
 <?php
 /**
- * TASK-08343C (SLP-246): Launchpad Mobile group panel — theme-local
+ * TASK-08343C (SLP-245): Launchpad Mobile group panel — theme-local
  * replacement of the vendor mobile submenu renderer (wired through the
  * `subMenuTemplate` block argument of the mobile renderer block).
  *
  * One sliding panel per root branch: Back row (brand surface, focus restored
- * to the opening row), the branch destination ("See all") row, children as
- * single-open inline accordions (parents) or rows (leaves), and the branch
+ * to the opening row), children as single-open inline accordions (parents)
+ * or rows (leaves), and the branch
  * feature image at the bottom. Depth policy: level-2 rows render flat; nodes
  * below level 2 are not rendered (SPEC-FEAT-ZNJ4KF 2.1.5).
  *
@@ -37,12 +37,25 @@ $title = (string) $parentNode->getTitle();
 $panelNodes = $block->getSubmenuNodes();
 
 /** Group rows: leaf class variants for renderMenuNode wrappers. */
-$groupLeafClasses = '[&>a]:flex [&>a]:w-full [&>a]:items-center [&>a]:justify-between [&>a]:gap-2 [&>a]:border-b [&>a]:border-border [&>a]:py-3 [&>a]:text-label-l [&>a]:font-medium [&>a]:text-ink [&>a]:hover:opacity-80 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus';
+$groupLeafClasses = 'transition-colors hover:bg-[var(--ds-primary-brand-100)] hover:text-[var(--ds-text-brand-primary)] [&>a]:flex [&>a]:w-full [&>a]:items-center [&>a]:justify-between [&>a]:gap-2 [&>a]:border-b [&>a]:border-border [&>a]:py-3 [&>a]:text-label-l [&>a]:font-medium [&>a]:text-current [&>a]:hover:text-current! [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus';
 /** Accordion child rows (level-2 leaves, indented, Label M). */
-$childLeafClasses = '[&>a]:block [&>a]:truncate [&>a]:py-2 [&>a]:pl-4 [&>a]:text-label-m [&>a]:font-medium [&>a]:text-ink [&>a]:hover:opacity-80 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus';
+$childLeafClasses = 'transition-colors hover:bg-[var(--ds-primary-brand-100)] hover:text-[var(--ds-text-brand-primary)] [&>a]:block [&>a]:truncate [&>a]:py-2 [&>a]:pl-4 [&>a]:text-label-m [&>a]:font-medium [&>a]:text-current [&>a]:hover:text-current! [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus';
+$mobileActiveClasses = 'bg-[var(--ds-primary-brand-100)] text-[var(--ds-text-brand-primary)]';
+$mobileCurrentClasses = 'bg-[var(--ds-primary-brand-100)]! pl-2 text-[var(--ds-text-brand-primary)]!';
 
-$seeAllUrl = $menuFeature->getBranchUrl($parentNode, $block->getNodeTypeProvider((string) $parentNode->getType()));
 $featureImageUrl = $menuFeature->getImageUrl($parentNode);
+// banner CONTENT (not the image) renders on mobile only when the node's
+// mobile flag is Yes; source precedence: node WYSIWYG -> CMS-block fallback.
+// The flag gates BOTH sources; desktop precedence is independent of it.
+$mobileFeatureCopy = null;
+if ($menuFeature->isBannerContentMobile($parentNode)) {
+    $editorBanner = $menuFeature->getBannerContent($parentNode);
+    if ($editorBanner !== null) {
+        $mobileFeatureCopy = $menuFeature->renderRichContent($editorBanner);
+    } else {
+        $mobileFeatureCopy = $menuFeature->getFallbackContent($parentNode);
+    }
+}
 ?>
 <?php if ($panelNodes): ?>
     <div
@@ -61,42 +74,59 @@ $featureImageUrl = $menuFeature->getImageUrl($parentNode);
     >
         <button
             type="button"
-            class="flex w-full items-center gap-2 border-b border-border bg-[var(--ds-primary-brand-100)] py-3 text-left text-label-l font-medium text-[var(--ds-text-brand-primary)]"
+            class="flex w-full items-center gap-2 border-b border-border bg-[var(--ds-primary-brand-100)] py-3 text-left text-label-l font-medium text-[var(--ds-text-brand-primary)] pl-2"
             x-ref="panel-back-<?= /* @noEscape */ $panelId ?>"
             @click="closePanel('<?= /* @noEscape */ $panelId ?>')"
         >
             <?= $icons->renderHtml('outline/chevron-left', '', 16, 16, ['aria-hidden' => 'true']) ?>
             <span class="min-w-0 truncate"><?= $escaper->escapeHtml($title) ?></span>
         </button>
-        <?php if ($seeAllUrl): ?>
-            <a
-                href="<?= $escaper->escapeUrl($seeAllUrl) ?>"
-                class="block w-full truncate border-b border-border py-3 text-label-l font-medium text-ink hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            ><?= $escaper->escapeHtml(__('See all %1', $title)) ?></a>
-        <?php endif; ?>
-        <ul class="flex flex-col">
+        <ul class="flex flex-col [&>li:last-child]:border-b-0 [&>li:last-child>a]:border-b-0">
             <?php foreach ($panelNodes as $node): ?>
                 <?php
                 $children = $block->getNodes((int) $node->getLevel() + 1, $node);
                 $nodeId = (string) $node->getNodeId();
+                $nodeProvider = $block->getNodeTypeProvider((string) $node->getType());
+                $parentUrl = $menuFeature->getBranchUrl(
+                    $node,
+                    $nodeProvider
+                );
+                $nodeIsCurrent = $menuFeature->isCurrentCategoryPath($node, $nodeProvider);
+                $nodeIsExactCurrent = $menuFeature->isCurrentCategory($node, $nodeProvider);
                 ?>
                 <?php if ($children): ?>
                     <li class="border-b border-border">
+                        <div
+                            class="flex min-w-0 items-center transition-colors hover:bg-[var(--ds-primary-brand-100)] hover:text-[var(--ds-text-brand-primary)] <?= $nodeIsCurrent ? /** @noEscape */ $mobileCurrentClasses : '' ?>"
+                            :class="openGroups['<?= /* @noEscape */ $nodeId ?>'] ? '<?= /** @noEscape */ $mobileActiveClasses ?>' : ''"
+                        >
+                            <?php if ($parentUrl): ?>
+                                <a
+                                    href="<?= $escaper->escapeUrl($parentUrl) ?>"
+                                    class="min-w-0 flex-1 truncate py-3 text-label-l font-medium text-current focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                                    <?= $nodeIsExactCurrent ? 'aria-current="page"' : '' ?>
+                                ><?= $escaper->escapeHtml((string) $node->getTitle()) ?></a>
+                            <?php else: ?>
+                                <span class="min-w-0 flex-1 truncate py-3 text-label-l font-medium text-current">
+                                    <?= $escaper->escapeHtml((string) $node->getTitle()) ?>
+                                </span>
+                            <?php endif; ?>
                         <button
                             type="button"
-                            class="flex w-full min-w-0 items-center justify-between gap-2 py-3 text-left text-label-l font-medium text-ink"
+                            class="flex size-11 shrink-0 items-center justify-center text-current focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                             :aria-expanded="openGroups['<?= /* @noEscape */ $nodeId ?>'] ? 'true' : 'false'"
                             aria-controls="launchpad-menu-acc-<?= /* @noEscape */ $nodeId ?>"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Open submenu for %1', (string) $node->getTitle())) ?>"
                             @click="toggleGroup('<?= /* @noEscape */ $nodeId ?>')"
                         >
-                            <span class="min-w-0 truncate"><?= $escaper->escapeHtml((string) $node->getTitle()) ?></span>
                             <span
                                 class="p-2 motion-safe:transition-transform motion-safe:duration-200"
                                 :class="openGroups['<?= /* @noEscape */ $nodeId ?>'] ? 'rotate-180' : ''"
                             >
                                 <?= $icons->renderHtml('outline/chevron-down-16', '', 16, 16, ['aria-hidden' => 'true']) ?>
                             </span>
-        </button>
+                        </button>
+                        </div>
                         <div
                             id="launchpad-menu-acc-<?= /* @noEscape */ $nodeId ?>"
                             role="region"
@@ -104,16 +134,13 @@ $featureImageUrl = $menuFeature->getImageUrl($parentNode);
                             x-show="openGroups['<?= /* @noEscape */ $nodeId ?>']"
                             x-cloak
                         >
-                            <?php $parentUrl = $menuFeature->getBranchUrl($node, $block->getNodeTypeProvider((string) $node->getType())); ?>
-                            <?php if ($parentUrl): ?>
-                                <a
-                                    href="<?= $escaper->escapeUrl($parentUrl) ?>"
-                                    class="block w-full truncate border-b border-border py-3 pl-4 text-label-m font-medium text-ink hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                                ><?= $escaper->escapeHtml(__('See all %1', (string) $node->getTitle())) ?></a>
-                            <?php endif; ?>
                             <ul class="flex flex-col pb-2">
                                 <?php foreach ($children as $child): ?>
-                                    <li class="<?= /** @noEscape */ $childLeafClasses ?>">
+                                    <?php
+                                    $childProvider = $block->getNodeTypeProvider((string) $child->getType());
+                                    $childIsCurrent = $menuFeature->isCurrentCategoryPath($child, $childProvider);
+                                    ?>
+                                    <li class="<?= /** @noEscape */ $childLeafClasses ?> <?= $childIsCurrent ? /** @noEscape */ $mobileCurrentClasses : '' ?>">
                                         <?= /** @noEscape */ $block->renderMenuNode($child) ?>
                                     </li>
                                 <?php endforeach; ?>
@@ -121,7 +148,7 @@ $featureImageUrl = $menuFeature->getImageUrl($parentNode);
                         </div>
                     </li>
                 <?php else: ?>
-                    <li class="<?= /** @noEscape */ $groupLeafClasses ?>">
+                    <li class="<?= /** @noEscape */ $groupLeafClasses ?> <?= $nodeIsCurrent ? /** @noEscape */ $mobileCurrentClasses : '' ?>">
                         <?= /** @noEscape */ $block->renderMenuNode($node) ?>
                     </li>
                 <?php endif; ?>
@@ -134,6 +161,9 @@ $featureImageUrl = $menuFeature->getImageUrl($parentNode);
                 loading="lazy"
                 class="mt-2 h-[300px] w-full object-cover"
             >
+        <?php endif; ?>
+        <?php if ($mobileFeatureCopy !== null): ?>
+            <div class="text-body-3 text-ink [&_a]:text-current [&_p]:my-2"><?= /** @noEscape */ $mobileFeatureCopy ?></div>
         <?php endif; ?>
     </div>
 <?php endif; ?>
