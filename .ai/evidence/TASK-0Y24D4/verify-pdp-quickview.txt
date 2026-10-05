@@ -1,0 +1,18 @@
+PASS | PDP visual: Sage disabled sau khi chọn Queen
+PASS | PDP visual: opacity .5 | 0.5
+PASS | PDP visual: không strike trên dot | none
+PASS | PDP visual: badge 20px trắng (base 1.25rem) | 20px / rgb(255, 255, 255)
+PASS | PDP visual: badge X red-700 ×2 gradient | linear-gradient(to right bottom, rgba(0, 0, 0, 0) calc(50% - 0.75px), rgb(193, 0, 7) 0px, rgb(193, 0
+PASS | PDP text: 3 Seat disabled sau khi chọn Charcoal
+PASS | PDP text: bg #f3f4f6 + border #d1d5dc 2px | rgb(243, 244, 246) / rgb(209, 213, 220)
+PASS | PDP text: label #99a1af @.75 | rgb(153, 161, 175) / 0.75
+PASS | PDP text: strike 2px | linear-gradient(to right bottom, rgba(0, 0, 0, 0) calc(50% - 1px), rgb(209, 213, 220) 0px, rgb(209, 
+PASS | QuickView text: disabled xuất hiện sau khi chọn Charcoal
+PASS | QuickView text: bg/border/label/opacity khớp design | {"bg":"rgb(243, 244, 246)","bd":"rgb(209, 213, 220)","cl":"rgb(153, 161, 175)","op":"0.75"}
+PASS | QuickView text: strike 2px | linear-gradient(to right bottom, rgba(0, 0, 0, 0) calc(50% - 1px), rgb(209, 213, 220) 0px,
+PASS | QuickView visual: disabled xuất hiện sau khi chọn Queen
+PASS | QuickView visual: opacity .5 + badge 16px trắng + X red-700 | 0.5 / 16px / rgb(255, 255, 255)
+PASS | QuickView visual: dot không còn X 2 nét cũ (span none) | none
+PASS | Không pageerror mới (sau env-fix deployed_version)
+
+16/16 passed

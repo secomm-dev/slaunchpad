@@ -155,17 +155,20 @@
         color: inherit;
     }
 
-    /* SLP-272: out-of-stock option — re-apply the disabled tokens here (the
-       strike-through itself comes from components/swatches.css). Colour dots
-       keep the transparent ring. */
+    /* TASK-0Y24D4 (Figma 3286-150414): the shared OOS design lives in
+       components/swatches.css; these re-assertions win the ties against the
+       card's own normal-state rules above (theme imports after components).
+       Card dots are 24px → proportionally smaller badge (design 22px/32px). */
     .hp-card .swatch-option:not([data-swatch-type="visual"]):is(:has(:disabled), [aria-disabled="true"]) {
-        border-color: var(--ds-border-gray-secondary);
+        border-color: var(--ds-border-gray-primary);
         color: var(--ds-text-gray-quinary);
         background-color: #f3f4f6;
     }
 
     .hp-card .swatch-option[data-swatch-type="visual"]:is(:has(:disabled), [aria-disabled="true"]) {
         border-color: transparent;
+        background-color: transparent;
+        --swatch-oos-badge: 1rem;
     }
 
     /* Brand + rating row (design: brand left flex-1, rating right). */

@@ -52,34 +52,20 @@
         color: inherit;
     }
 
-    /* SLP-272: unavailable option — solid border + muted label; the diagonal
-       strike itself comes from components/swatches.css. */
+    /* TASK-0Y24D4 (Figma 3286-150414): the shared OOS design lives in
+       components/swatches.css (badge X on a 50%-opacity dot — supersedes the
+       TASK-WN9VB0 crossed-strokes X, same treatment as card + PDP); these
+       re-assertions win ties vs the quickview normal rules above. Modal dots
+       are 24px → smaller badge like the cards. */
     .quickview-modal .swatch-option:not([data-swatch-type="visual"]):is(:has(:disabled), [aria-disabled="true"]) {
-        border-color: var(--ds-border-gray-secondary);
+        border-color: var(--ds-border-gray-primary);
         color: var(--ds-text-gray-quinary);
         background-color: #f3f4f6;
     }
 
     .quickview-modal .swatch-option[data-swatch-type="visual"]:is(:has(:disabled), [aria-disabled="true"]) {
         border-color: transparent;
-    }
-
-    /* TASK-WN9VB0 (Figma 2636-55026 / 2330-39558): unavailable colour dots
-       carry an X (two crossed strokes) instead of the single diagonal strike
-       used on the cards. Same token colour as the base strike. */
-    .quickview-modal .swatch-option[data-swatch-type="visual"]:is(:has(:disabled), [aria-disabled="true"]) > span {
-        background-image:
-            linear-gradient(
-                to bottom right,
-                #0000 calc(50% - 0.5px),
-                var(--swatch-strike-color, var(--ds-border-gray-primary)) 0 calc(50% + 0.5px),
-                #0000 0
-            ),
-            linear-gradient(
-                to bottom left,
-                #0000 calc(50% - 0.5px),
-                var(--swatch-strike-color, var(--ds-border-gray-primary)) 0 calc(50% + 0.5px),
-                #0000 0
-            );
+        background-color: transparent;
+        --swatch-oos-badge: 1rem;
     }
 }
