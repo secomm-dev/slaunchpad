@@ -14,8 +14,8 @@
  * - Label M typography (Inter Medium 14/20), 8px vertical padding, 4px
  *   label-chevron gap, exact 12px theme chevron, contextual currentColor,
  * - the vendor `container`, 80px height, `justify-between`, per-item `px-6`,
- *   forced primary color, uppercase transform and selected-panel styling are
- *   intentionally not used.
+ *   forced primary color and selected-panel styling are intentionally not
+ *   used. Uppercase is applied here only, leaving mobile titles untouched.
  *
  * The submenu panel is rendered by the theme-local
  * `menu/desktop-sub-menu.phtml` (wired through the `subMenuTemplate` block
@@ -188,7 +188,7 @@ $uniqueId = '_' . uniqid();
                         <div
                             class="
                                 [&>a]:relative [&>a]:flex [&>a]:items-center [&>a]:py-2
-                                [&>a]:text-label-m [&>a]:leading-5! [&>a]:font-medium
+                                [&>a]:text-label-m [&>a]:leading-5! [&>a]:font-medium [&>a]:uppercase
                                 [&>a]:text-current [&>a]:whitespace-nowrap
                                 [&>a:not(:last-child)]:hidden [&>a]:hover:text-current!
                                 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2

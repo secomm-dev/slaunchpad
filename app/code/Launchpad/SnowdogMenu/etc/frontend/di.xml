@@ -16,4 +16,9 @@
                 type="Launchpad\SnowdogMenu\Plugin\Snowdog\Menu\Block\Menu"
                 sortOrder="10"/>
     </type>
+    <type name="Snowdog\Menu\Model\TemplateResolver">
+        <plugin name="launchpad_snowdog_configured_menu_templates"
+                type="Launchpad\SnowdogMenu\Plugin\TemplateResolverPlugin"
+                sortOrder="10"/>
+    </type>
 </config>

@@ -53,6 +53,7 @@ Implement one Snowdog menu hierarchy that drives both renderers:
 | Theme layout/templates | Wire the shared identifier; implement desktop panel, mobile drawer, submenu renderers, category state template and drawer children |
 | `Launchpad_SnowdogMenu` | Add banner model/resource/management, Admin persistence/prefill plugins and storefront ViewModel helpers |
 | Admin UI | Extend the Snowdog node editor with banner WYSIWYG and mobile visibility checkbox; retain textarea fallback |
+| Theme configuration | Add desktop/mobile Snowdog identifiers under Secomm > Theme > Menu, with mobile-to-desktop fallback |
 | Schema | Add companion table, declarative schema and whitelist |
 | Assets/i18n | Add menu SVG assets and vi/en strings; rebuild Tailwind CSS |
 | Documentation/evidence | Keep spec, plan, task record, current state and QA evidence aligned |
@@ -75,6 +76,8 @@ Implement one Snowdog menu hierarchy that drives both renderers:
 4. Keep category names as destination links and disclosure on chevrons only.
 5. Apply persistent current underline, hover underline and brand-soft selected
    parent state at every rendered depth.
+6. Keep leaf text ink-colored on the white panel and uppercase level-0 labels
+   in the desktop renderer only.
 
 ### Phase 3 — Mobile/Tablet drawer
 
@@ -106,6 +109,15 @@ Implement one Snowdog menu hierarchy that drives both renderers:
 3. Record per-AC results and screenshots under
    `.ai/evidence/TASK-08343C/` and synchronize project state documents.
 
+### Phase 6 — Configurable menu identifiers
+
+1. Add store-scoped desktop and mobile identifier fields below Header config.
+2. Default desktop to `hyva-topmenu-desktop`; resolve blank mobile to desktop.
+3. Pass identifiers to Snowdog blocks during layout argument evaluation.
+4. Map configured header-menu identifiers to the canonical Launchpad template
+   namespace so separate data trees retain the same desktop/mobile UI.
+5. Cover configured, default and fallback behavior with unit tests.
+
 ## 5. Acceptance and validation
 
 Acceptance criteria are canonical in SPEC-FEAT-ZNJ4KF §5 and §8. The task
@@ -130,6 +142,7 @@ logged-in visual QA. These checks do not change the implementation scope.
 | Desktop columns become too narrow | Fixed visible-column policy by breakpoint plus horizontal overflow for deeper levels |
 | Parent disclosure prevents category navigation | Separate link and chevron controls with independent accessible labels |
 | Current state disappears after Alpine hydration | Keep server-rendered current classes independent from reactive open state |
+| One cached current item appears on every category | Add current category ID to the Snowdog block cache key |
 | Admin editor fails to load TinyMCE | Lazy-load TinyMCE and retain a functional textarea fallback |
 | Saving one menu removes another menu's banner data | Persist by node ID and rely on FK cascade; no cross-menu purge |
 | Excess cache clearing | Dirty detection and one invalidation after the full tree save |

@@ -1,6 +1,15 @@
 # Launchpad_SnowdogMenu — Changelog
 
 ## 1.1.0 (unreleased)
+- TASK-08343C menu configuration follow-up: add store-scoped Desktop/Mobile
+  Menu Identifier fields under Secomm > Theme > Menu. Desktop defaults to
+  `hyva-topmenu-desktop`; blank mobile reuses desktop. Configured identifiers
+  retain Launchpad renderer/node templates. Desktop level-0 labels are
+  uppercase only in the desktop template, and homepage submenu leaves force
+  ink text on the white panel.
+- TASK-08343C current-state cache fix: include the current category ID in
+  Snowdog block cache keys so the first cached category is not shown as
+  current on every category page.
 - TASK-08343C (FEAT-ZNJ4KF, SLP-245): node banner content — per-node WYSIWYG
   banner + `show_banner_content_mobile` flag (default No). Companion table
   `launchpad_snowdog_menu_node_banner` (db_schema; `setup:upgrade` required).

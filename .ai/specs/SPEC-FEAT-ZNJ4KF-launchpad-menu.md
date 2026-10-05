@@ -327,6 +327,8 @@ Design source: Figma component `2151:9582` (`NavigationItem`).
 
 Acceptance:
 - Exact current category and its top-level branch remain visibly indicated.
+- Snowdog block cache entries vary by current category ID so a state cached on
+  one category page cannot mark that item current on another category page.
 - Hover and an open mega panel show the same full-width indicator defined by
   the component in both header color modes.
 - Inactive items render with zero-width indicators, and focus remains visible
@@ -362,3 +364,28 @@ Acceptance:
   click-selected/open parents keep the approved row surface and text color.
 - Mobile current and open states are visible at every rendered depth and match
   node `2949:77725`; text remains medium weight.
+
+---
+
+## 13. Amendment — Menu identifiers and desktop presentation (confirmed 2026-10-05)
+
+- Desktop level-0 labels are uppercase in the desktop renderer only. Stored
+  Snowdog titles and the mobile renderer preserve their authored casing.
+- Desktop submenu leaf links always use the light-panel ink color, including
+  while the homepage Header is in its contextual white-text state.
+- Stores > Configuration > Secomm > Theme exposes a Menu group immediately
+  after Header, with store-scoped Desktop Menu Identifier and optional Mobile
+  Menu Identifier fields.
+- Desktop defaults to `hyva-topmenu-desktop`. An empty Mobile Menu Identifier
+  reuses the effective desktop identifier; a non-empty value selects an
+  independent Snowdog hierarchy for mobile.
+- Configured identifiers change data selection only. Both renderers and their
+  node types continue using the Launchpad theme templates, without vendor
+  edits.
+
+Acceptance:
+- Homepage desktop leaf links remain readable on the white mega-panel.
+- Desktop level-0 labels render uppercase while the same mobile labels retain
+  their stored casing.
+- Admin notes explain both defaults and the mobile fallback. Store-scope
+  values select the expected desktop/mobile menu and preserve Launchpad UI.

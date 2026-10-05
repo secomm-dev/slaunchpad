@@ -892,3 +892,20 @@ must not be committed.
 - Gates: PHP lint for the view model and four menu templates PASS; Tailwind
   production build PASS; YAML frontmatter parse PASS; `git diff --check`
   PASS; storefront response contains no Magento exception/report marker.
+
+## ROUND 12 — category-current cache isolation (2026-10-05)
+
+- Dev evidence: `/living-room`, `/bedroom`, `/accessories`, and descendant
+  category pages all rendered node 129 (What's New) with
+  `aria-current="page"`. The incorrect state existed in server HTML before
+  Alpine initialized.
+- Root cause: Snowdog's category cache context varies by route/action but not
+  category ID. Launchpad added server-rendered current/path classes, so the
+  first category menu cached under `catalog/category/view` leaked to every
+  other category page.
+- Fix: the frontend Snowdog block plugin appends
+  `current_category_<entityId>` to `getCacheKeyInfo()` when category context
+  exists. Non-category pages retain the original key.
+- Verification after one cache clean: sequential local requests correctly
+  marked Living Room, Bedroom, Accessories, and Seating respectively. Unit
+  suite PASS (8 tests, 12 assertions); DI compile PASS.
