@@ -11,6 +11,8 @@
  * resets the deeper branch (click/Enter/Space; hover is a fine-pointer
  * enhancement handled by the parent template's component). Leaf rows render
  * through renderMenuNode so Snowdog URL resolution stays vendor-managed.
+ * Leaf rows set ink color explicitly because the homepage Header's contextual
+ * white text must not inherit into this white panel.
  *
  * Desktop depth policy: two equal-width columns occupy the visible rail at
  * compact desktop sizes. Deeper columns keep the same width and extend the
@@ -84,7 +86,7 @@ if ($bannerContent !== null) {
 }
 
 /** Column-1 row classes: default (link rows, via arbitrary variants) */
-$leafRowClasses = 'rounded-md [&>a]:relative [&>a]:block [&>a]:w-full [&>a]:truncate [&>a]:rounded-md [&>a]:p-2 [&>a]:text-label-xl [&>a]:font-medium [&>a]:text-current [&>a]:hover:text-current! [&>a]:after:absolute [&>a]:after:inset-x-2 [&>a]:after:bottom-0 [&>a]:after:h-px [&>a]:after:origin-left [&>a]:after:scale-x-0 [&>a]:after:bg-[var(--ds-bg-gray-solid-primary)] [&>a]:after:content-[\'\'] hover:[&>a]:after:scale-x-100 motion-safe:[&>a]:after:transition-transform motion-safe:[&>a]:after:duration-200 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus';
+$leafRowClasses = 'rounded-md text-ink [&>a]:relative [&>a]:block [&>a]:w-full [&>a]:truncate [&>a]:rounded-md [&>a]:p-2 [&>a]:text-label-xl [&>a]:font-medium [&>a]:text-current [&>a]:hover:text-current! [&>a]:after:absolute [&>a]:after:inset-x-2 [&>a]:after:bottom-0 [&>a]:after:h-px [&>a]:after:origin-left [&>a]:after:scale-x-0 [&>a]:after:bg-[var(--ds-bg-gray-solid-primary)] [&>a]:after:content-[\'\'] hover:[&>a]:after:scale-x-100 motion-safe:[&>a]:after:transition-transform motion-safe:[&>a]:after:duration-200 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus';
 /** Selected parent button state (brand-soft surface + brand text) */
 $selectedClasses = 'bg-[var(--ds-bg-brand-soft-primary)] text-[var(--ds-text-brand-secondary-on-brand-alt)]';
 /** Server-rendered current underline stays independent from Alpine state. */

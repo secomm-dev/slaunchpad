@@ -2,7 +2,21 @@
 
 ## Purpose
 
-Storefront navigation for the header — **Snowdog Menu** (`hyva-topmenu-desktop`, one identifier shared by the desktop panel and the mobile drawer) with the Launchpad node-editor banner extension (`SLP-245` / `TASK-08343C`), plus the legacy storefront navigation toggle (`SLP-129` / `TASK-SXW5RB`).
+Storefront navigation for the header — **Snowdog Menu** with configurable
+desktop/mobile identifiers and a shared-by-default hierarchy, the Launchpad
+node-editor banner extension (`SLP-245` / `TASK-08343C`), plus the legacy
+storefront navigation toggle (`SLP-129` / `TASK-SXW5RB`).
+
+## Header menu identifiers
+
+- Admin path: **Stores > Configuration > Secomm > Theme > Menu**.
+- **Desktop Menu Identifier** defaults to `hyva-topmenu-desktop`.
+- **Mobile Menu Identifier** is optional. Empty means mobile uses the effective
+  Desktop Menu Identifier; set it only when mobile needs a separate Snowdog
+  hierarchy.
+- Identifier selection is store-scoped. A frontend TemplateResolver plugin
+  keeps the Launchpad renderer templates active for either configured menu,
+  including category current-state markup.
 
 ## Node banner content (TASK-08343C / FEAT-ZNJ4KF)
 
@@ -32,6 +46,8 @@ Storefront navigation for the header — **Snowdog Menu** (`hyva-topmenu-desktop
   group, and accordion rows use the Back-row brand-100 surface and brand text
   for current/open states while retaining medium label weight and dividers;
   current rows add 8px start padding.
+- Cache context: Snowdog block cache keys include the current category ID
+  because current/ancestor state is rendered server-side.
 - Storage: companion table `launchpad_snowdog_menu_node_banner`
   (node_id PK/FK -> snowmenu_node ON DELETE CASCADE; banner_content NULL;
   show_banner_content_mobile NOT NULL DEFAULT 0) — requires
@@ -56,13 +72,14 @@ menu builder stays available either way.
 - **Stores > Configuration > Hyva Theme > Snowdog Navigation > General > Enable Snowdog Menu Navigation** (`snowdog_navigation/general/enabled`, default **No**, `canRestore`; tab `hyva_themes` khai báo bởi `Hyva_ThemeModule`).
 - Scope: default / website / store view.
 - **No** (default): the native Hyvä top menu renders (`topmenu_mobile` + `topmenu_desktop`, restored via theme layout `remove="false"` in `Secomm/launchpad`); every `Snowdog\Menu\Block\Menu` output is gated empty by the frontend plugin; the Snowdog Alpine collapse plugin is skipped (theme template guard).
-- **Yes**: both Snowdog renderers consume the shared
-  `hyva-topmenu-desktop` identifier — that menu must exist for the store or
-  navigation renders empty.
+- **Yes**: Snowdog renderers consume the configured identifiers. By default,
+  both use `hyva-topmenu-desktop`; each effective identifier must exist for
+  the store or that renderer is empty.
 
 ## How it works
 
-1. `ViewModel\Config` (`Launchpad\SnowdogMenu\ViewModel\Config`) reads `snowdog_navigation/general/enabled` via `ScopeConfigInterface::isSetFlag()` at store scope.
+1. `ViewModel\Config` reads the navigation toggle and desktop/mobile menu
+   identifiers at store scope, including the mobile-to-desktop fallback.
 2. `Plugin\Snowdog\Menu\Block\Menu` (frontend-scope `afterToHtml` on `Snowdog\Menu\Block\Menu`) returns `''` while disabled — one plugin covers the desktop, mobile and footer menu blocks. When `Snowdog_Menu` is disabled the target class does not exist and the plugin is never invoked.
 3. Theme `Magento_Theme::html/header/topmenu.phtml` (override in `Secomm/launchpad`) branches on the view model: native children vs the Snowdog mobile child; the Snowdog desktop block renders separately in `header.container`.
 

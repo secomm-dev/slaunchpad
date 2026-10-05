@@ -6723,6 +6723,11 @@
       color: currentcolor;
     }
   }
+  .\[\&\>a\]\:uppercase {
+    &>a {
+      text-transform: uppercase;
+    }
+  }
   .\[\&\>a\]\:after\:absolute {
     &>a {
       &::after {

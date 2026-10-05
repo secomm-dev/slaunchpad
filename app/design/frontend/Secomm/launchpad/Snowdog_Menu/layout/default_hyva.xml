@@ -4,13 +4,11 @@
   header. Magento_Theme/default.xml owns the uniquely named native fallbacks;
   header.phtml selects Snowdog or native output from the admin configuration.
 
-  TASK-08343C (FEAT-ZNJ4KF): one managed hierarchy feeds both renderers. Both
-  blocks consume the `hyva-topmenu-desktop` identifier; the mobile block gets
-  its own drawer template through Snowdog's `template`/`subMenuTemplate`
-  arguments, which TemplateResolver resolves per menu id into theme-local
-  files (`hyva-topmenu-desktop/menu-mobile.phtml` and
-  `hyva-topmenu-desktop/menu/{desktop,mobile}-sub-menu.phtml`). The vendor
-  `hyva-topmenu-mobile` Admin menu becomes unused by the theme.
+  TASK-08343C (FEAT-ZNJ4KF): desktop/mobile identifiers come from store config;
+  blank mobile falls back to desktop. Both default to one managed
+  `hyva-topmenu-desktop` hierarchy. The frontend TemplateResolver plugin maps
+  either configured header menu to the canonical theme-local template folder,
+  while the mobile block receives its own drawer renderer arguments.
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
@@ -20,13 +18,15 @@
 
         <referenceBlock name="topmenu-desktop">
             <arguments>
+                <argument name="menu" xsi:type="helper" helper="Launchpad\SnowdogMenu\ViewModel\Config::getDesktopMenuIdentifier"/>
+                <argument name="template" xsi:type="string">Snowdog_Menu::menu.phtml</argument>
                 <argument name="subMenuTemplate" xsi:type="string">Snowdog_Menu::menu/desktop-sub-menu.phtml</argument>
             </arguments>
         </referenceBlock>
 
         <referenceBlock name="topmenu-mobile">
             <arguments>
-                <argument name="menu" xsi:type="string">hyva-topmenu-desktop</argument>
+                <argument name="menu" xsi:type="helper" helper="Launchpad\SnowdogMenu\ViewModel\Config::getMobileMenuIdentifier"/>
                 <argument name="template" xsi:type="string">Snowdog_Menu::menu-mobile.phtml</argument>
                 <argument name="subMenuTemplate" xsi:type="string">Snowdog_Menu::menu/mobile-sub-menu.phtml</argument>
             </arguments>
