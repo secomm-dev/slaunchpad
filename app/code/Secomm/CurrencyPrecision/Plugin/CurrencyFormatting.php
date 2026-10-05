@@ -12,7 +12,7 @@ namespace Secomm\CurrencyPrecision\Plugin;
 use Magento\Directory\Model\Currency;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State as AppState;
-use Magento\Framework\Exception\State\StateException;
+use Magento\Framework\Exception\LocalizedException;
 use Secomm\CurrencyPrecision\Model\PrecisionResolver\Proxy;
 
 /**
@@ -60,9 +60,10 @@ class CurrencyFormatting
     {
         try {
             return $this->appState->getAreaCode() === Area::AREA_ADMINHTML;
-        } catch (StateException) {
-            // Area not resolved (CLI/setup) — treat as frontend so export/CLI
-            // formatting stays consistent with storefront display.
+        } catch (LocalizedException) {
+            // getAreaCode() throws LocalizedException when the area is not set
+            // (CLI/setup) — treat as frontend so export/CLI formatting stays
+            // consistent with storefront display.
             return false;
         }
     }

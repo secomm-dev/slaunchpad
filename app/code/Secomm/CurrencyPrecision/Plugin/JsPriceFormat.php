@@ -11,7 +11,7 @@ namespace Secomm\CurrencyPrecision\Plugin;
 
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State as AppState;
-use Magento\Framework\Exception\State\StateException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Locale\Format;
 use Secomm\CurrencyPrecision\Model\PrecisionResolver\Proxy;
 
@@ -60,7 +60,8 @@ class JsPriceFormat
     {
         try {
             return $this->appState->getAreaCode() === Area::AREA_ADMINHTML;
-        } catch (StateException) {
+        } catch (LocalizedException) {
+            // getAreaCode() throws LocalizedException when the area is not set (CLI/setup).
             return false;
         }
     }

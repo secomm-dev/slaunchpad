@@ -23,3 +23,8 @@ All notable changes follow Keep a Changelog; versioning: unreleased until TL rev
   wrap `hyva.formatPrice` với `minimumFractionDigits = maximumFractionDigits = N`; Auto → không render script gì cả.
 - Unit test `Test/Unit/Model/PrecisionResolverTest.php` (parse/match/fallback/memoization), chạy với `dev/tests/unit/phpunit-secomm.xml`.
 - i18n `vi_VN.csv` + `en_US.csv` cho label admin config.
+
+### Fixed (trong lúc dev — FQCN/property theo vendor, không theo trí nhớ)
+
+- Property promoted `$resolver` trùng tên property non-readonly của parent `Magento\Framework\View\Element\Template` → fatal "Cannot redeclare … as readonly" — đổi thành `$precisionResolver`.
+- Import sai `Magento\Framework\Exception\State\StateException` (namespace `State\` không tồn tại) **và** sai loại exception: `AppState::getAreaCode()` thật ra throw `Magento\Framework\Exception\LocalizedException` (vendor `App/State.php:149`) — nếu area chưa set (CLI/setup), exception cũ bay qua catch và vỡ request. Fix cả 2 plugin catch `LocalizedException`. Quét lại toàn bộ FQCN còn lại trong module so vendor: `Area::AREA_ADMINHTML` ✓, `Format::getPriceFormat($locale, $currency)` ✓, `AbstractModel::beforeSave` ✓, `Store::getCurrentCurrencyCode` ✓.
