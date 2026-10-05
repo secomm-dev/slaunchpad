@@ -91,22 +91,31 @@ class GhnPhysicalParcelInterpreter
                 )
             );
         }
+        // TASK-ZS2B41 (bug fix, 2026-10-01) — each dimension compares against ITS OWN limit:
+        // under the previous code width/height were silently validated against the LENGTH
+        // limit, so a width above its own (lowered) limit slipped through whenever length
+        // was small enough.
+        $limits = [
+            'length' => $this->limit->getMaxLengthCm(),
+            'width' => $this->limit->getMaxWidthCm(),
+            'height' => $this->limit->getMaxHeightCm(),
+        ];
         foreach (
             [
                 'length' => $package->getLengthCm(),
                 'width' => $package->getWidthCm(),
                 'height' => $package->getHeightCm(),
-            ] as $side => $cm
+            ] as $dimension => $cm
         ) {
-            if ($cm > $this->limit->getMaxLengthCm()) {
+            if ($cm > $limits[$dimension]) {
                 throw new GhnCreateValidationException(
                     GhnCreateValidationException::REASON_INVALID_PARCEL,
                     __(
-                        'GHN create: package #%1 %2 is %3 cm — above the %4 cm per-side limit.',
+                        'GHN create: package #%1 %2 is %3 cm — above the %4 cm %2 limit.',
                         (string) $packageNumber,
-                        $side,
+                        $dimension,
                         (string) $cm,
-                        (string) $this->limit->getMaxLengthCm()
+                        (string) $limits[$dimension]
                     )
                 );
             }

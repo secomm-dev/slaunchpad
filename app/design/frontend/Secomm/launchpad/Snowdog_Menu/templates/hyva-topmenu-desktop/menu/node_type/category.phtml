@@ -1,0 +1,53 @@
+<?php
+/**
+ * Launchpad desktop category link with current-page semantics.
+ *
+ * Visual branch-current styling is owned by the desktop menu template so a
+ * top-level ancestor can remain indicated while browsing its descendants.
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Snowdog\Menu\Block\NodeType\Category;
+
+/** @var Category $block */
+/** @var Escaper $escaper */
+
+$nodeId = $block->getId();
+$categoryUrl = $block->getCategoryUrl($nodeId) ?: '#';
+$imageUrl = $block->getImageUrl();
+$imageAltText = $block->getImageAltText();
+$imageWidth = $block->getImageWidth();
+$imageHeight = $block->getImageHeight();
+$title = $block->getTitle();
+$nodeClasses = $block->getNodeClasses();
+$isCurrentCategory = $block->isCurrentCategory($nodeId);
+?>
+
+<?php if ($imageUrl): ?>
+    <a
+        href="<?= $escaper->escapeUrl($categoryUrl) ?>"
+        class="mb-2 block transition-opacity group-hover:opacity-80"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+        <img
+            src="<?= $escaper->escapeUrl($imageUrl) ?>"
+            alt="<?= $escaper->escapeHtmlAttr($imageAltText) ?>"
+            loading="lazy"
+            width="<?= $escaper->escapeHtmlAttr($imageWidth) ?>"
+            height="<?= $escaper->escapeHtmlAttr($imageHeight) ?>"
+        >
+    </a>
+<?php endif; ?>
+<a
+    href="<?= $escaper->escapeUrl($categoryUrl) ?>"
+    class="snowdog-menu-link <?= $escaper->escapeHtmlAttr($nodeClasses) ?>"
+    <?php if ($nodeId): ?>
+        data-menu="menu-<?= $escaper->escapeHtmlAttr($nodeId) ?>"
+    <?php endif; ?>
+    <?= $isCurrentCategory ? 'aria-current="page"' : '' ?>
+>
+    <?= $escaper->escapeHtml($title) ?>
+</a>

@@ -17,4 +17,15 @@
             @apply container;
         }
     }
+
+    /* TASK-2BASRX (SLP-300): the sticky header stays in flow (header.phtml adds
+       `sticky top-0` on non-home pages), so account content starts flush under the
+       64px header bar — match the container's inline padding above it. */
+    body.customer-account-index main:not(.product-main-full-width, .page-main-full-width) {
+        padding-top: --spacing(6);
+    }
+
+    body.customer-account-index main:not(.product-main-full-width, .page-main-full-width) .columns {
+        padding-top: --spacing(6);
+    }
 }

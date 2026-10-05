@@ -5,6 +5,8 @@
 
 [Magento 2 Blog GraphQL](https://magefan.com/magento2-blog-extension) module allows you to create a PWA Blog on your Magento 2 Store.
 
+**Note!** If you use Magefan [Magento 2 Blog extension](https://magefan.com/magento2-blog-extension) v2.10.9 or higher, you don't need to install the Magento 2 Blog GraphQL Extension separately. It is already included in the extension package.
+
 **Attention!!!** If you use Magento lower then v2.3.4 please use BlogGraphQl extension v2.0.1. BlogGraphQl v2.0.2 is only for Magento 2.3.4 or greater.
 
 <img width="150" height="100" src="https://magefan.com/media/wysiwyg/made_in_ukraine.jpg">
@@ -94,6 +96,7 @@ The code is licensed under [EULA](https://magefan.com/end-user-license-agreement
 ### [Magento Speed Optimisation Extensions](https://magefan.com/magento-2-extensions/speed-optimization)
 
 * [Magento 2 Google Page Speed Optimizer](https://magefan.com/magento-2-google-page-speed-optimizer)
+* [Magento 2 AVIF Images](https://magefan.com/magento-2-avif-images)
 * [Magento 2 WebP Images](https://magefan.com/magento-2-webp-optimized-images)
 * [Magento Full Page Cache Extension](https://magefan.com/magento-2-full-page-cache-warmer)
 * [Magento 2 Lazy Load Images](https://magefan.com/magento-2-image-lazy-load-extension)
@@ -104,6 +107,8 @@ The code is licensed under [EULA](https://magefan.com/end-user-license-agreement
 * [Magento 2 Dynamic Category](https://magefan.com/magento-2-dynamic-categories)
 * [Magento 2 Size Chart](https://magefan.com/magento-2-size-chart)
 * [Magento 2 Security Extension](https://magefan.com/magento-2-security-extension)
+* [Magento 2 Bot Blocker](https://magefan.com/magento-2-bot-blocker)
+* [Magento 2 AI Assistant](https://magefan.com/magento-2-ai-agent)
 * [Magento 2 Admin Action Log](https://magefan.com/magento-2-admin-action-log)
 * [Magento Extended Product Grid](https://magefan.com/magento-2-product-grid-inline-editor)
 * [Magento 2 Product Tabs](https://magefan.com/magento-2/extensions/product-tabs)

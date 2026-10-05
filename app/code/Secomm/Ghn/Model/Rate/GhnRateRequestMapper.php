@@ -25,7 +25,7 @@ use Secomm\Ghn\Model\Exception\GhnRateEstimationException;
  *   {@see QuoteParcelEstimator::estimate()} (PRODUCT_UNIT_AS_PACKAGE).
  * - Dimensions (TASK-RT50KH — supersedes the earlier "deliberately NOT read" bullet): the
  *   Secomm_Base shipping-dimension contract is now read per unit and feeds EXCLUSIVELY the
- *   150cm hard-limit gate (see QuoteParcelEstimator). They are still OMITTED from the fee
+ *   shared per-dimension hard-limit gate (see QuoteParcelEstimator). They are still OMITTED from the fee
  *   payload — the pricing-distortion sandbox evidence stands (type-2 root dims changed the
  *   fee materially) while type-5 items price fine weight-only.
  * - No collection amount at RATE: whether the order is COD and how much is collected is decided

@@ -48,6 +48,25 @@
                 <!-- FEAT-QA23PZ / DEC-FEATQA23PZ-001 — ALL keeps the pre-zone behavior exactly. -->
                 <destination_scope>ALL</destination_scope>
                 <allowed_zone_codes/>
+                <!-- TASK-ZS2B41 (rev. 3-path, 2026-10-01) — merchant-tunable dimension limits
+                     (cm) SHARED by RATE and CREATE (per LENGTH/WIDTH/HEIGHT). Authoritative
+                     default lives in GhnShipmentConstraints (MAX_SIDE_CM = 200, Create
+                     contract); the 150 sandbox observation is superseded as default — lower
+                     these values when the GHN account enforces 150. Empty/invalid admin values
+                     fall back to the constant (Config readPositiveInt); change BOTH
+                     together when revising. -->
+                <max_length_cm>200</max_length_cm>
+                <max_width_cm>200</max_width_cm>
+                <max_height_cm>200</max_height_cm>
+                <!-- TASK-WNQCRW (2026-10-01, DEC-TASKWNQCRW-001) — merchant-tunable RATE
+                     (checkout display) weight gate in GRAMS. Default 50000 =
+                     GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G (Create contract) so checkout
+                     display matches what CREATE enforces anyway; CREATE itself is FROZEN at
+                     the constant and ignores this value. The fee API has no weight bound
+                     (SANDBOX_OBSERVED 2026-09-30) — merchants RAISE this to re-enable >50kg
+                     quoting. Per-unit only; aggregate weight is never capped. Empty/invalid
+                     falls back to the constant (Config readPositiveInt). -->
+                <max_package_weight_g>50000</max_package_weight_g>
                 <rate_adjustment_enabled>0</rate_adjustment_enabled>
                 <rate_adjustment_type>fixed</rate_adjustment_type>
                 <rate_adjustment_rounding>none</rate_adjustment_rounding>

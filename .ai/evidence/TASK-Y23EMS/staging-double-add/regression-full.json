@@ -1,0 +1,95 @@
+{
+ "T1_pdp_simple_x3": [
+  {
+   "click": 1,
+   "posts": 1,
+   "qty": "0->1",
+   "drawer": true,
+   "msgs": [
+    "Bạn đã thêm Joust Duffle Bag vào giỏ hàng của bạn."
+   ]
+  },
+  {
+   "click": 2,
+   "posts": 1,
+   "qty": "1->2",
+   "drawer": true,
+   "msgs": [
+    "Bạn đã thêm Joust Duffle Bag vào giỏ hàng của bạn."
+   ]
+  },
+  {
+   "click": 3,
+   "posts": 1,
+   "qty": "2->3",
+   "drawer": true,
+   "msgs": [
+    "Bạn đã thêm Joust Duffle Bag vào giỏ hàng của bạn."
+   ]
+  }
+ ],
+ "T2_pdp_configurable_x2": [
+  {
+   "click": 1,
+   "posts": 1,
+   "qty": "3->4",
+   "drawer": true,
+   "msgs": [
+    "Bạn đã thêm Chaz Kangeroo Hoodie vào giỏ hàng của "
+   ]
+  },
+  {
+   "click": 2,
+   "posts": 1,
+   "qty": "4->5",
+   "drawer": true,
+   "msgs": [
+    "Bạn đã thêm Chaz Kangeroo Hoodie vào giỏ hàng của "
+   ]
+  }
+ ],
+ "T3_config_missing_option": {
+  "posts": 0,
+  "fieldError": true
+ },
+ "T4_plp_card_x2": [
+  {
+   "click": 1,
+   "posts": 1,
+   "qty": "5->6",
+   "drawer": true,
+   "msgs": [
+    "Bạn đã thêm Push It Messenger Bag vào giỏ hàng của"
+   ]
+  },
+  {
+   "click": 2,
+   "posts": 1,
+   "qty": "6->7",
+   "drawer": true,
+   "msgs": [
+    "Bạn đã thêm Overnight Duffle vào giỏ hàng của bạn."
+   ]
+  }
+ ],
+ "T5_quickview_x2": [
+  {
+   "click": 1,
+   "posts": 1,
+   "qty": "7->8",
+   "drawer": true,
+   "msgs": [
+    "Bạn đã thêm Push It Messenger Bag vào giỏ hàng của"
+   ]
+  },
+  {
+   "click": 2,
+   "posts": 1,
+   "qty": "8->9",
+   "drawer": true,
+   "msgs": [
+    "Bạn đã thêm Push It Messenger Bag vào giỏ hàng của"
+   ]
+  }
+ ]
+}

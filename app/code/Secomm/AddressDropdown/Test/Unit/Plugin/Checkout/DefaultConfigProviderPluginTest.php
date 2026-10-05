@@ -67,10 +67,14 @@ class DefaultConfigProviderPluginTest extends TestCase
         $collectionFactory = $this->createMock(CityLocaleCollectionFactory::class);
         $collectionFactory->expects($this->never())->method('create');
 
+        // TASK-Z6SK3T: the shim gained hierarchy deps (unused while the switch is OFF).
         $resolver = new GetListCityGraphql(
             $collectionFactory,
             $this->createMock(DataStorage::class),
-            $this->scopeConfig
+            $this->scopeConfig,
+            $this->createMock(\Secomm\AddressDropdown\Helper\Data::class),
+            $this->createMock(\Secomm\AddressDropdown\Api\AddressProfileResolverInterface::class),
+            $this->createMock(\Secomm\AddressDropdown\Api\LocationHierarchyProviderInterface::class)
         );
 
         $this->assertSame([], $resolver->resolve(

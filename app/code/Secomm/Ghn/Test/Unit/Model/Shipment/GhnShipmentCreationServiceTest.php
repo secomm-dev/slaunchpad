@@ -27,6 +27,7 @@ use Secomm\Ghn\Model\Capability\GhnCreateCapabilityAdapter;
 use Secomm\Ghn\Model\Exception\GhnMappingNotFoundException;
 use Secomm\Ghn\Model\Logger\GhnLogger;
 use Secomm\Ghn\Model\Shipment\GhnCreateOutcome;
+use Secomm\Ghn\Model\Shipment\GhnCreateParcelValidator;
 use Secomm\Ghn\Model\Shipment\GhnCreateRequestBuilder;
 use Secomm\Ghn\Model\Shipment\GhnShipmentCreationService;
 use Secomm\Ghn\Model\Shipment\GhnShipmentRepository;
@@ -160,9 +161,12 @@ class GhnShipmentCreationServiceTest extends TestCase
             $this->mappingResolver,
             $this->apiClient,
             new GhnCreateRequestBuilder(),
-            new GhnPhysicalParcelInterpreter(new GhnPhysicalLimit()),
+            new GhnPhysicalParcelInterpreter(new GhnPhysicalLimit($this->ghnPhysicalLimitConfig())),
+            new GhnCreateParcelValidator(
+                new GhnPhysicalParcelInterpreter(new GhnPhysicalLimit($this->ghnPhysicalLimitConfig())),
+                new StoreWeightConverter($this->scopeConfig)
+            ),
             $this->physicalPersister,
-            new StoreWeightConverter($this->scopeConfig),
             $this->config,
             $this->repository,
             $this->codResolver,
@@ -618,9 +622,12 @@ class GhnShipmentCreationServiceTest extends TestCase
             $this->mappingResolver,
             $this->apiClient,
             new GhnCreateRequestBuilder(),
-            new GhnPhysicalParcelInterpreter(new GhnPhysicalLimit()),
+            new GhnPhysicalParcelInterpreter(new GhnPhysicalLimit($this->ghnPhysicalLimitConfig())),
+            new GhnCreateParcelValidator(
+                new GhnPhysicalParcelInterpreter(new GhnPhysicalLimit($this->ghnPhysicalLimitConfig())),
+                new StoreWeightConverter($this->scopeConfig)
+            ),
             $this->physicalPersister,
-            new StoreWeightConverter($this->scopeConfig),
             $this->config,
             $this->repository,
             $this->codResolver,
@@ -659,5 +666,25 @@ class GhnShipmentCreationServiceTest extends TestCase
         $shipment->method('getShippingAddress')->willReturn($address);
 
         return $shipment;
+    }
+
+    /**
+     * TASK-ZS2B41 (rev. 3-path) — the physical-limit gate reads the merchant-tunable shared
+     * limit; this fixture pins the authoritative 200cm default so existing expectations stay valid.
+     */
+    private function ghnPhysicalLimitConfig(): \Secomm\Ghn\Model\Config&\PHPUnit\Framework\MockObject\MockObject
+    {
+        $config = $this->createMock(\Secomm\Ghn\Model\Config::class);
+        $config->method('getMaxLengthCm')->willReturn(
+            \Secomm\Ghn\Model\GhnShipmentConstraints::MAX_SIDE_CM
+        );
+        $config->method('getMaxWidthCm')->willReturn(
+            \Secomm\Ghn\Model\GhnShipmentConstraints::MAX_SIDE_CM
+        );
+        $config->method('getMaxHeightCm')->willReturn(
+            \Secomm\Ghn\Model\GhnShipmentConstraints::MAX_SIDE_CM
+        );
+
+        return $config;
     }
 }

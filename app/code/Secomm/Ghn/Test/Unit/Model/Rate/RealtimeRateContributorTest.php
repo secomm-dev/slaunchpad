@@ -166,17 +166,21 @@ class RealtimeRateContributorTest extends TestCase
         $query = $this->query();
         $this->requestMapper->method('map')->willReturn($query);
 
-        $hardOutcome = CarrierRateOutcome::unavailable('GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED');
-        $limitationOutcome = CarrierRateOutcome::unavailable(ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE);
+        // TASK-WNQCRW: GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED is re-emitted from the
+        // merchant-tunable per-package display gate (carrier-owned, passthrough verbatim);
+        // RATE_REQUEST_UNREPRESENTABLE stays RESERVED (no emitter). Passthrough is proven
+        // with the structured reasons the calculator still emits.
+        $hardOutcome = CarrierRateOutcome::unavailable(ShippingFailureReason::CANONICAL_UNMAPPED);
+        $limitationOutcome = CarrierRateOutcome::unavailable(ShippingFailureReason::PROVIDER_MAPPING_MISSING);
         $this->rateCalculator->method('quoteWithHandoff')->willReturnOnConsecutiveCalls($hardOutcome, $limitationOutcome);
 
         $outcome = $this->contributor->contribute('secomm_ghn', $this->handoff());
         $this->assertSame(CarrierRateOutcomeInterface::STATUS_UNAVAILABLE, $outcome->getStatus());
-        $this->assertSame('GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED', $outcome->getFailureReason());
+        $this->assertSame(ShippingFailureReason::CANONICAL_UNMAPPED, $outcome->getFailureReason());
 
         $outcome = $this->contributor->contribute('secomm_ghn', $this->handoff());
         $this->assertSame(CarrierRateOutcomeInterface::STATUS_UNAVAILABLE, $outcome->getStatus());
-        $this->assertSame(ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE, $outcome->getFailureReason());
+        $this->assertSame(ShippingFailureReason::PROVIDER_MAPPING_MISSING, $outcome->getFailureReason());
     }
 
     /**

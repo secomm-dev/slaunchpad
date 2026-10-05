@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- TASK-S52DGA (DEC-TASKS52DGA-001): generic "Create Offline Shipment" control —
+             hosted in the core `submit_after` container, INSIDE the native #edit_form so the
+             offline intent posts through the core save endpoint with the same form key. -->
+        <referenceContainer name="submit_after">
+            <block class="Secomm\ShippingCore\Block\Adminhtml\Shipment\NewOfflineControl"
+                   name="secomm_shippingcore_shipment_new_offline_control"
+                   template="Secomm_ShippingCore::shipment/new/offline_control.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

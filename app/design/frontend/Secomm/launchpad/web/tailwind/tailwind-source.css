@@ -122,4 +122,23 @@
     --text-caption--line-height: var(--ds-type-caption-line-height);
     --text-overline: var(--ds-type-overline-font-size);
     --text-overline--line-height: var(--ds-type-overline-line-height);
+
+    /* DS font weights per type style — a paired font-{weight} utility still
+       wins (--tw-font-weight takes precedence inside the same declaration). */
+    --text-display--font-weight: var(--ds-type-display-font-weight);
+    --text-heading-1--font-weight: var(--ds-type-heading-1-font-weight);
+    --text-heading-2--font-weight: var(--ds-type-heading-2-font-weight);
+    --text-heading-3--font-weight: var(--ds-type-heading-3-font-weight);
+    --text-heading-4--font-weight: var(--ds-type-heading-4-font-weight);
+    --text-heading-5--font-weight: var(--ds-type-heading-5-font-weight);
+    --text-heading-6--font-weight: var(--ds-type-heading-6-font-weight);
+    --text-body-1--font-weight: var(--ds-type-body-1-font-weight);
+    --text-body-2--font-weight: var(--ds-type-body-2-font-weight);
+    --text-body-3--font-weight: var(--ds-type-body-3-font-weight);
+    --text-caption--font-weight: var(--ds-type-caption-font-weight);
+    --text-label-xl--font-weight: var(--ds-type-label-xl-font-weight);
+    --text-label-l--font-weight: var(--ds-type-label-l-font-weight);
+    --text-label-m--font-weight: var(--ds-type-label-m-font-weight);
+    --text-label-s--font-weight: var(--ds-type-label-s-font-weight);
+    --text-overline--font-weight: var(--ds-type-overline-font-weight);
 }

@@ -268,3 +268,16 @@
         @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-hp-soft text-ink transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hp-brand;
     }
 }
+
+/* SLP-296 — card old price per Figma Body/Body 3: exactly 14px. Unlayered on
+   purpose: the layered rules above lose font-size to the unlayered
+   `.price-box .price` rule in product-price.css, whose `--price-font-size:
+   0.875em` resolves against the card's 14px context to a too-small 12.25px.
+   Direct declarations win the cascade regardless of source order. */
+.hp-card .price-box .old-price {
+    --price-font-size: 0.875rem;
+}
+
+.hp-card .price-box .old-price .price {
+    font-size: 0.875rem;
+}

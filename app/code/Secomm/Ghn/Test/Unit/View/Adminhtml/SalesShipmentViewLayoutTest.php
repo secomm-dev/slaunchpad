@@ -12,16 +12,48 @@ namespace Secomm\Ghn\Test\Unit\View\Adminhtml;
 use PHPUnit\Framework\TestCase;
 
 /**
- * TASK-PWHG0V pre-review fix pack — locks the REAL `sales_shipment_view` layout wiring for the
- * GHN shipment actions block: block class + template attributes, the formkey child, and the
- * resolved on-disk template paths. The pre-review Critical defect (formkey template declared as
+ * TASK-PWHG0V pre-review fix pack — locks the shipment view layout wiring for the GHN shipment
+ * actions block: block class + template attributes, the formkey child, and the resolved
+ * on-disk template paths. The pre-review Critical defect (formkey template declared as
  * `Magento_Backend::widget/formkey.phtml`, which does not exist → template-not-found crash on
  * the real Shipment View) is exactly what this test catches — a direct `$block->setTemplate()
  * ->toHtml()` smoke bypasses layout XML and missed it.
+ *
+ * BUG-DT0C4W — the layout FILE must be named after the REAL page handle
+ * (`adminhtml_order_shipment_view`; the former `sales_shipment_view.xml` was a dead handle —
+ * that name is only the root BLOCK name, so the file never loaded and none of these sections
+ * ever rendered), and the blocks must live in the core `extra_shipment_info` container under
+ * block `form` (the only place view/form.phtml echoes generic children).
  */
 class SalesShipmentViewLayoutTest extends TestCase
 {
-    private const LAYOUT_FILE = __DIR__ . '/../../../../view/adminhtml/layout/sales_shipment_view.xml';
+    private const LAYOUT_FILE = __DIR__ . '/../../../../view/adminhtml/layout/adminhtml_order_shipment_view.xml';
+
+    public function testLayoutFileIsNamedAfterTheRealPageHandle(): void
+    {
+        $this->assertSame(
+            'adminhtml_order_shipment_view.xml',
+            basename(self::LAYOUT_FILE),
+            'the layout file name must equal the real full-action-name handle (dead handles never load)'
+        );
+        $this->assertFileExists(self::LAYOUT_FILE);
+    }
+
+    public function testSectionsAreAnchoredInTheCoreExtraShipmentInfoContainer(): void
+    {
+        $xml = simplexml_load_file(self::LAYOUT_FILE);
+        $this->assertNotFalse($xml, 'layout file must be valid XML');
+
+        $anchored = $xml->xpath(
+            '//referenceContainer[@name="extra_shipment_info"]//block'
+            . '[@name="secomm_ghn.shipment.view.actions"]'
+        );
+        $this->assertCount(
+            1,
+            $anchored,
+            'actions block must be anchored inside the core extra_shipment_info container'
+        );
+    }
 
     public function testActionsBlockIsWiredWithFormkeyChild(): void
     {

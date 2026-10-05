@@ -1,20 +1,20 @@
 <?php
 /**
- * TASK-08343C (SLP-246): Launchpad Desktop mega panel — theme-local
+ * TASK-08343C (SLP-245): Launchpad Desktop mega panel — theme-local
  * replacement of the vendor submenu renderer (wired through the
  * `subMenuTemplate` block argument, menu id `hyva-topmenu-desktop`).
  *
  * Full-width panel below the Header shell: feature column (branch image from
  * the Snowdog node image, optional Desktop copy from the CMS block
- * `launchpad-menu-feature-<nodeId>`) plus up to three selection-driven nav
+ * `launchpad-menu-feature-<nodeId>`) plus selection-driven navigation
  * columns with 1px dividers. Parent selection fills the next column and
  * resets the deeper branch (click/Enter/Space; hover is a fine-pointer
  * enhancement handled by the parent template's component). Leaf rows render
  * through renderMenuNode so Snowdog URL resolution stays vendor-managed.
  *
- * Depth policy (SPEC-FEAT-ZNJ4KF 2.1.5): three columns only — level 1 in
- * column 1, its children in column 2, that child's children in column 3.
- * Nodes below level 3 are not rendered.
+ * Desktop depth policy: two equal-width columns occupy the visible rail at
+ * compact desktop sizes. Deeper columns keep the same width and extend the
+ * rail horizontally instead of squeezing the visible columns.
  */
 
 use Hyva\Theme\Model\ViewModelRegistry;
@@ -42,10 +42,12 @@ $level1Nodes = $block->getSubmenuNodes();
 /**
  * Pre-resolved child maps (rendered once, no per-click lookups): column 2
  * content keyed by column-1 parent id, column 3 content keyed by column-2
- * parent id (node ids are unique across the tree).
+ * parent id, and optional column 4 content keyed by column-3 parent id.
+ * Node ids are unique across the tree.
  */
 $level2ByParent = [];
 $level3ByParent = [];
+$level4ByParent = [];
 foreach ($level1Nodes as $l1Node) {
     $l1Children = $block->getNodes((int) $l1Node->getLevel() + 1, $l1Node);
     if ($l1Children) {
@@ -60,17 +62,41 @@ foreach ($level2ByParent as $l2Nodes) {
         }
     }
 }
+foreach ($level3ByParent as $l3Nodes) {
+    foreach ($l3Nodes as $l3Node) {
+        $l3Children = $block->getNodes((int) $l3Node->getLevel() + 1, $l3Node);
+        if ($l3Children) {
+            $level4ByParent[$l3Node->getNodeId()] = $l3Children;
+        }
+    }
+}
 
 
 $featureImageUrl = $menuFeature->getImageUrl($parentNode);
-$featureCopy = $menuFeature->getCmsBlockHtml($parentNode);
+// precedence: node banner WYSIWYG content first, CMS-block convention second;
+// the editor HTML goes through the Magento page-template filter, the CMS
+// block arrives already rendered
+$bannerContent = $menuFeature->getBannerContent($parentNode);
+if ($bannerContent !== null) {
+    $featureCopy = $menuFeature->renderRichContent($bannerContent);
+} else {
+    $featureCopy = $menuFeature->getFallbackContent($parentNode);
+}
 
 /** Column-1 row classes: default (link rows, via arbitrary variants) */
-$leafRowClasses = '[&>a]:block [&>a]:w-full [&>a]:truncate [&>a]:rounded-md [&>a]:p-2 [&>a]:text-label-xl [&>a]:font-medium [&>a]:text-current [&>a]:hover:opacity-80 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus';
+$leafRowClasses = 'rounded-md [&>a]:relative [&>a]:block [&>a]:w-full [&>a]:truncate [&>a]:rounded-md [&>a]:p-2 [&>a]:text-label-xl [&>a]:font-medium [&>a]:text-current [&>a]:hover:text-current! [&>a]:after:absolute [&>a]:after:inset-x-2 [&>a]:after:bottom-0 [&>a]:after:h-px [&>a]:after:origin-left [&>a]:after:scale-x-0 [&>a]:after:bg-[var(--ds-bg-gray-solid-primary)] [&>a]:after:content-[\'\'] hover:[&>a]:after:scale-x-100 motion-safe:[&>a]:after:transition-transform motion-safe:[&>a]:after:duration-200 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus';
 /** Selected parent button state (brand-soft surface + brand text) */
 $selectedClasses = 'bg-[var(--ds-bg-brand-soft-primary)] text-[var(--ds-text-brand-secondary-on-brand-alt)]';
+/** Server-rendered current underline stays independent from Alpine state. */
+$currentClasses = '[&>a]:after:scale-x-100!';
 /** Default parent button state */
-$parentClasses = 'text-ink hover:opacity-80';
+$parentClasses = 'text-ink [&>a]:relative [&>a]:after:absolute [&>a]:after:inset-x-2 [&>a]:after:bottom-0 [&>a]:after:h-px [&>a]:after:origin-left [&>a]:after:scale-x-0 [&>a]:after:bg-[var(--ds-bg-gray-solid-primary)] [&>a]:after:content-[\'\'] hover:[&>a]:after:scale-x-100 motion-safe:[&>a]:after:transition-transform motion-safe:[&>a]:after:duration-200';
+/**
+ * Two visible columns below 1440px. From 1440px, three columns fit in the
+ * rail and grow only up to the approved 300px design width; column 4+
+ * extends the rail horizontally.
+ */
+$columnClasses = 'flex w-[calc((100%-2rem-1px)/2)] min-w-0 shrink-0 flex-col gap-2 overflow-y-auto min-[1440px]:w-[min(300px,calc((100%-8rem-2px)/3))]';
 ?>
 <?php if ($level1Nodes): ?>
     <div
@@ -101,27 +127,49 @@ $parentClasses = 'text-ink hover:opacity-80';
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
-            <div class="flex min-w-0 flex-1 gap-8">
-                <ul class="flex w-[240px] shrink-0 flex-col gap-2 overflow-y-auto xl:w-[300px]">
+            <div
+                x-ref="navigation-rail-<?= /* @noEscape */ $topId ?>"
+                class="flex min-w-0 flex-1 gap-4 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth pb-2 min-[1440px]:gap-8"
+            >
+                <ul class="<?= /** @noEscape */ $columnClasses ?>">
                     <?php foreach ($level1Nodes as $l1Node): ?>
-                        <?php $l1Id = (string) $l1Node->getNodeId(); ?>
+                        <?php
+                        $l1Id = (string) $l1Node->getNodeId();
+                        $l1Provider = $block->getNodeTypeProvider((string) $l1Node->getType());
+                        $l1IsCurrent = $menuFeature->isCurrentCategoryPath($l1Node, $l1Provider);
+                        $l1IsExactCurrent = $menuFeature->isCurrentCategory($l1Node, $l1Provider);
+                        ?>
                         <?php if (isset($level2ByParent[$l1Id])): ?>
-                            <li>
+                            <?php $l1Url = $menuFeature->getBranchUrl($l1Node, $l1Provider); ?>
+                            <li
+                                class="flex min-w-0 items-center rounded-md <?= /** @noEscape */ $parentClasses ?> <?= $l1IsCurrent ? /** @noEscape */ $currentClasses : '' ?>"
+                                :class="branchSelection['<?= /* @noEscape */ $topId ?>']?.l1 === '<?= /* @noEscape */ $l1Id ?>'
+                                    ? '<?= /** @noEscape */ $selectedClasses ?>'
+                                    : ''"
+                            >
+                                <?php if ($l1Url): ?>
+                                    <a
+                                        href="<?= $escaper->escapeUrl($l1Url) ?>"
+                                        class="min-w-0 flex-1 truncate p-2 text-label-xl font-medium text-current focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                                        <?= $l1IsExactCurrent ? 'aria-current="page"' : '' ?>
+                                    ><?= $escaper->escapeHtml((string) $l1Node->getTitle()) ?></a>
+                                <?php else: ?>
+                                    <span class="min-w-0 flex-1 truncate p-2 text-label-xl font-medium">
+                                        <?= $escaper->escapeHtml((string) $l1Node->getTitle()) ?>
+                                    </span>
+                                <?php endif; ?>
                                 <button
                                     type="button"
-                                    class="flex w-full min-w-0 items-center justify-between gap-1 rounded-md p-2 text-left text-label-xl font-medium <?= /** @noEscape */ $parentClasses ?>"
-                                    :class="branchSelection['<?= /* @noEscape */ $topId ?>']?.l1 === '<?= /* @noEscape */ $l1Id ?>'
-                                        ? '<?= /** @noEscape */ $selectedClasses ?>'
-                                        : ''"
+                                    class="flex size-10 shrink-0 items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                                     :aria-expanded="branchSelection['<?= /* @noEscape */ $topId ?>']?.l1 === '<?= /* @noEscape */ $l1Id ?>' ? 'true' : 'false'"
+                                    aria-label="<?= $escaper->escapeHtmlAttr(__('Open submenu for %1', (string) $l1Node->getTitle())) ?>"
                                     @click="selectBranch('<?= /* @noEscape */ $topId ?>', 1, '<?= /* @noEscape */ $l1Id ?>')"
                                 >
-                                    <span class="min-w-0 truncate"><?= $escaper->escapeHtml((string) $l1Node->getTitle()) ?></span>
-                                    <?= $icons->renderHtml('outline/chevron-right', '', 16, 16, ['aria-hidden' => 'true']) ?>
+                                    <span class="flex-shrink-0 w-4 h-4"><?= $icons->renderHtml('outline/chevron-right', '', 16, 16, ['aria-hidden' => 'true']) ?></span>
                                 </button>
                             </li>
                         <?php else: ?>
-                            <li class="<?= /** @noEscape */ $leafRowClasses ?>">
+                            <li class="<?= /** @noEscape */ $leafRowClasses ?> <?= $l1IsCurrent ? /** @noEscape */ $currentClasses : '' ?>">
                                 <?= /** @noEscape */ $block->renderMenuNode($l1Node) ?>
                             </li>
                         <?php endif; ?>
@@ -136,41 +184,47 @@ $parentClasses = 'text-ink hover:opacity-80';
                     <div
                         x-show="branchSelection['<?= /* @noEscape */ $topId ?>']?.l1 === '<?= /* @noEscape */ (string) $l1Id ?>'"
                         x-cloak
-                        class="flex min-w-0 flex-1 gap-8"
+                        class="contents"
                     >
-                        <ul class="flex w-[240px] shrink-0 flex-col gap-2 overflow-y-auto xl:w-[300px]">
-                            <?php $l1Node = null; ?>
-                            <?php foreach ($level1Nodes as $candidate) : ?>
-                                <?php if ((string) $candidate->getNodeId() === (string) $l1Id) { $l1Node = $candidate; break; } ?>
-                            <?php endforeach; ?>
-                            <?php $l1Url = $menuFeature->getBranchUrl($l1Node, $block->getNodeTypeProvider((string) $l1Node->getType())); ?>
-                            <?php if ($l1Url): ?>
-                                <li>
-                                    <a
-                                        href="<?= $escaper->escapeUrl($l1Url) ?>"
-                                        class="block w-full truncate rounded-md p-2 text-label-xl font-medium text-current hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                                    ><?= $escaper->escapeHtml(__('See all %1', (string) $l1Node->getTitle())) ?></a>
-                                </li>
-                            <?php endif; ?>
+                        <ul class="<?= /** @noEscape */ $columnClasses ?>">
                             <?php foreach ($l2Nodes as $l2Node): ?>
-                                <?php $l2Id = (string) $l2Node->getNodeId(); ?>
+                                <?php
+                                $l2Id = (string) $l2Node->getNodeId();
+                                $l2Provider = $block->getNodeTypeProvider((string) $l2Node->getType());
+                                $l2IsCurrent = $menuFeature->isCurrentCategoryPath($l2Node, $l2Provider);
+                                $l2IsExactCurrent = $menuFeature->isCurrentCategory($l2Node, $l2Provider);
+                                ?>
                                 <?php if (isset($level3ByParent[$l2Id])): ?>
-                                    <li>
+                                    <?php $l2Url = $menuFeature->getBranchUrl($l2Node, $l2Provider); ?>
+                                    <li
+                                        class="flex min-w-0 items-center rounded-md <?= /** @noEscape */ $parentClasses ?> <?= $l2IsCurrent ? /** @noEscape */ $currentClasses : '' ?>"
+                                        :class="branchSelection['<?= /* @noEscape */ $topId ?>']?.l2 === '<?= /* @noEscape */ $l2Id ?>'
+                                            ? '<?= /** @noEscape */ $selectedClasses ?>'
+                                            : ''"
+                                    >
+                                        <?php if ($l2Url): ?>
+                                            <a
+                                                href="<?= $escaper->escapeUrl($l2Url) ?>"
+                                                class="min-w-0 flex-1 truncate p-2 text-label-xl font-medium text-current focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                                                <?= $l2IsExactCurrent ? 'aria-current="page"' : '' ?>
+                                            ><?= $escaper->escapeHtml((string) $l2Node->getTitle()) ?></a>
+                                        <?php else: ?>
+                                            <span class="min-w-0 flex-1 truncate p-2 text-label-xl font-medium">
+                                                <?= $escaper->escapeHtml((string) $l2Node->getTitle()) ?>
+                                            </span>
+                                        <?php endif; ?>
                                         <button
                                             type="button"
-                                            class="flex w-full min-w-0 items-center justify-between gap-1 rounded-md p-2 text-left text-label-xl font-medium <?= /** @noEscape */ $parentClasses ?>"
-                                            :class="branchSelection['<?= /* @noEscape */ $topId ?>']?.l2 === '<?= /* @noEscape */ $l2Id ?>'
-                                                ? '<?= /** @noEscape */ $selectedClasses ?>'
-                                                : ''"
+                                            class="flex size-10 shrink-0 items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                                             :aria-expanded="branchSelection['<?= /* @noEscape */ $topId ?>']?.l2 === '<?= /* @noEscape */ $l2Id ?>' ? 'true' : 'false'"
+                                            aria-label="<?= $escaper->escapeHtmlAttr(__('Open submenu for %1', (string) $l2Node->getTitle())) ?>"
                                             @click="selectBranch('<?= /* @noEscape */ $topId ?>', 2, '<?= /* @noEscape */ $l2Id ?>')"
                                         >
-                                            <span class="min-w-0 truncate"><?= $escaper->escapeHtml((string) $l2Node->getTitle()) ?></span>
-                                            <?= $icons->renderHtml('outline/chevron-right', '', 16, 16, ['aria-hidden' => 'true']) ?>
+                                            <span class="flex-shrink-0 w-4 h-4"><?= $icons->renderHtml('outline/chevron-right', '', 16, 16, ['aria-hidden' => 'true']) ?></span>
                                         </button>
                                     </li>
                                 <?php else: ?>
-                                    <li class="<?= /** @noEscape */ $leafRowClasses ?>">
+                                    <li class="<?= /** @noEscape */ $leafRowClasses ?> <?= $l2IsCurrent ? /** @noEscape */ $currentClasses : '' ?>">
                                         <?= /** @noEscape */ $block->renderMenuNode($l2Node) ?>
                                     </li>
                                 <?php endif; ?>
@@ -187,26 +241,77 @@ $parentClasses = 'text-ink hover:opacity-80';
                                 <div
                                     x-show="branchSelection['<?= /* @noEscape */ $topId ?>']?.l2 === '<?= /* @noEscape */ $l2Id ?>'"
                                     x-cloak
-                                    class="min-w-0 flex-1"
+                                    class="contents"
                                 >
-                                    <?php $l2Node = null; ?>
-                                    <?php foreach ($l2Nodes as $candidate) : ?>
-                                        <?php if ((string) $candidate->getNodeId() === (string) $l2Id) { $l2Node = $candidate; break; } ?>
-                                    <?php endforeach; ?>
-                                    <?php $l2Url = $menuFeature->getBranchUrl($l2Node, $block->getNodeTypeProvider((string) $l2Node->getType())); ?>
-                                    <?php if ($l2Url): ?>
-                                        <a
-                                            href="<?= $escaper->escapeUrl($l2Url) ?>"
-                                            class="block w-full truncate rounded-md p-2 text-label-xl font-medium text-current hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                                        ><?= $escaper->escapeHtml(__('See all %1', (string) $l2Node->getTitle())) ?></a>
-                                    <?php endif; ?>
-                                    <ul class="flex flex-col gap-2">
+                                    <ul class="<?= /** @noEscape */ $columnClasses ?>">
                                         <?php foreach ($level3ByParent[$l2Id] as $l3Node): ?>
-                                            <li class="<?= /** @noEscape */ $leafRowClasses ?>">
-                                                <?= /** @noEscape */ $block->renderMenuNode($l3Node) ?>
-                                            </li>
+                                            <?php
+                                            $l3Id = (string) $l3Node->getNodeId();
+                                            $l3Provider = $block->getNodeTypeProvider((string) $l3Node->getType());
+                                            $l3IsCurrent = $menuFeature->isCurrentCategoryPath($l3Node, $l3Provider);
+                                            $l3IsExactCurrent = $menuFeature->isCurrentCategory($l3Node, $l3Provider);
+                                            ?>
+                                            <?php if (isset($level4ByParent[$l3Id])): ?>
+                                                <?php $l3Url = $menuFeature->getBranchUrl($l3Node, $l3Provider); ?>
+                                                <li
+                                                    class="flex min-w-0 items-center rounded-md <?= /** @noEscape */ $parentClasses ?> <?= $l3IsCurrent ? /** @noEscape */ $currentClasses : '' ?>"
+                                                    :class="branchSelection['<?= /* @noEscape */ $topId ?>']?.l3 === '<?= /* @noEscape */ $l3Id ?>'
+                                                        ? '<?= /** @noEscape */ $selectedClasses ?>'
+                                                        : ''"
+                                                >
+                                                    <?php if ($l3Url): ?>
+                                                        <a
+                                                            href="<?= $escaper->escapeUrl($l3Url) ?>"
+                                                            class="min-w-0 flex-1 truncate p-2 text-label-xl font-medium text-current focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                                                            <?= $l3IsExactCurrent ? 'aria-current="page"' : '' ?>
+                                                        ><?= $escaper->escapeHtml((string) $l3Node->getTitle()) ?></a>
+                                                    <?php else: ?>
+                                                        <span class="min-w-0 flex-1 truncate p-2 text-label-xl font-medium">
+                                                            <?= $escaper->escapeHtml((string) $l3Node->getTitle()) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                    <button
+                                                        type="button"
+                                                        class="flex size-10 shrink-0 items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                                                        :aria-expanded="branchSelection['<?= /* @noEscape */ $topId ?>']?.l3 === '<?= /* @noEscape */ $l3Id ?>' ? 'true' : 'false'"
+                                                        aria-label="<?= $escaper->escapeHtmlAttr(__('Open submenu for %1', (string) $l3Node->getTitle())) ?>"
+                                                        @click="selectBranch('<?= /* @noEscape */ $topId ?>', 3, '<?= /* @noEscape */ $l3Id ?>')"
+                                                    >
+                                                        <span class="h-4 w-4 shrink-0"><?= $icons->renderHtml('outline/chevron-right', '', 16, 16, ['aria-hidden' => 'true']) ?></span>
+                                                    </button>
+                                                </li>
+                                            <?php else: ?>
+                                                <li class="<?= /** @noEscape */ $leafRowClasses ?> <?= $l3IsCurrent ? /** @noEscape */ $currentClasses : '' ?>">
+                                                    <?= /** @noEscape */ $block->renderMenuNode($l3Node) ?>
+                                                </li>
+                                            <?php endif; ?>
                                         <?php endforeach; ?>
                                     </ul>
+                                    <div
+                                        x-show="branchSelection['<?= /* @noEscape */ $topId ?>']?.l3"
+                                        x-cloak
+                                        class="w-px shrink-0 self-stretch bg-[var(--ds-bg-gray-soft-tertiary)]"
+                                    ></div>
+                                    <?php foreach ($level3ByParent[$l2Id] as $l3Node): ?>
+                                        <?php $l3Id = (string) $l3Node->getNodeId(); ?>
+                                        <?php if (isset($level4ByParent[$l3Id])): ?>
+                                            <ul
+                                                x-show="branchSelection['<?= /* @noEscape */ $topId ?>']?.l3 === '<?= /* @noEscape */ $l3Id ?>'"
+                                                x-cloak
+                                                class="<?= /** @noEscape */ $columnClasses ?>"
+                                            >
+                                                <?php foreach ($level4ByParent[$l3Id] as $l4Node): ?>
+                                                    <?php
+                                                    $l4Provider = $block->getNodeTypeProvider((string) $l4Node->getType());
+                                                    $l4IsCurrent = $menuFeature->isCurrentCategoryPath($l4Node, $l4Provider);
+                                                    ?>
+                                                    <li class="<?= /** @noEscape */ $leafRowClasses ?> <?= $l4IsCurrent ? /** @noEscape */ $currentClasses : '' ?>">
+                                                        <?= /** @noEscape */ $block->renderMenuNode($l4Node) ?>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
                                 </div>
                             <?php endif; ?>
                         <?php endforeach; ?>

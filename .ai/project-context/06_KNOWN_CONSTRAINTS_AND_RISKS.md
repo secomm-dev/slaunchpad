@@ -41,7 +41,7 @@ AI should check this file before planning any work to avoid known problem areas.
 
 | Bug ID | Description | Affected Area | Status |
 |--------|-------------|---------------|--------|
-| — | [none confirmed yet — freshly initialized repo, single "Initial commit"] | — | — |
+| BUG-JC7JWG (SLP-17) | MOMO-03 recovery worker lacked DI binding to `MoMoCommandPool`; scheduled query path could not resolve its configured `query_transaction` command | `Secomm_MoMo` DI / payment recovery | Fixed in `etc/di.xml`; Tier 2 DI/cron QC pending |
 
 ## High-Risk Areas
 

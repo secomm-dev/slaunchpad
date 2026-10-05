@@ -4,6 +4,13 @@ All notable changes to this project layer module are documented here.
 
 ## [Unreleased]
 
+- **TASK-Z6SK3T (2026-10-02)**: 2 JS copies (`action/shipping-address-dropdown.js`,
+  `action/billing-address-dropdown.js`) migrate `GetListCity` → canonical
+  `addressLocations` qua shared cache module
+  `Secomm_AddressDropdown/js/model/address-location-cache` (page-session memo + in-flight
+  dedupe) — shipping + billing giờ dùng chung 1 `addressSchema` POST thay vì 2. Behavior
+  contract giữ nguyên (updateCityDropdown / clearRateCache / guard VN). DEC-TASKZ6SK3T-001.
+
 ### Fixed
 
 - SLP-232: `etc/db_schema.xml` — re-declare `quote_address.osc_gift_wrap_amount`

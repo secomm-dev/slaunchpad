@@ -14,6 +14,7 @@ use Magento\Framework\Encryption\EncryptorInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\Ghn\Model\Config;
+use Secomm\Ghn\Model\GhnShipmentConstraints;
 use Secomm\ShippingCore\Api\Config\CarrierDestinationScopeConfigInterface;
 
 /**
@@ -142,5 +143,84 @@ class ConfigTest extends TestCase
         $this->scopeConfig->method('isSetFlag')->with(Config::XML_PATH_DEBUG)->willReturn(true);
 
         $this->assertTrue($this->config->isDebugEnabled());
+    }
+
+    /**
+     * TASK-ZS2B41 (rev. 3-path) — dimension limits fall back to GhnShipmentConstraints when
+     * the config is empty (fresh merchant config resolves deterministically without a save).
+     */
+    public function testDimensionLimitsFallBackToConstraintsWhenConfigEmpty(): void
+    {
+        $this->scopeConfig->method('getValue')->willReturn(null);
+
+        $this->assertSame(GhnShipmentConstraints::MAX_SIDE_CM, $this->config->getMaxLengthCm());
+        $this->assertSame(GhnShipmentConstraints::MAX_SIDE_CM, $this->config->getMaxWidthCm());
+        $this->assertSame(GhnShipmentConstraints::MAX_SIDE_CM, $this->config->getMaxHeightCm());
+    }
+
+    /** TASK-ZS2B41 (rev. 3-path) — positive configured values override the constraint defaults (and cast). */
+    public function testDimensionLimitsUseConfiguredPositiveValuesPerDimension(): void
+    {
+        $this->scopeConfig->method('getValue')->willReturnCallback(
+            fn (string $path): ?string => match ($path) {
+                Config::XML_PATH_MAX_LENGTH_CM => '120',
+                Config::XML_PATH_MAX_WIDTH_CM => '130',
+                Config::XML_PATH_MAX_HEIGHT_CM => '140',
+                default => null,
+            }
+        );
+
+        $this->assertSame(120, $this->config->getMaxLengthCm());
+        $this->assertSame(130, $this->config->getMaxWidthCm());
+        $this->assertSame(140, $this->config->getMaxHeightCm());
+    }
+
+    /** TASK-ZS2B41 (rev. 3-path) — empty/non-positive config never disables a hard limit. */
+    public function testNonPositiveDimensionConfigFallsBackToConstraints(): void
+    {
+        $this->scopeConfig->method('getValue')->willReturnCallback(
+            fn (string $path): ?string => match ($path) {
+                Config::XML_PATH_MAX_LENGTH_CM => '0',
+                Config::XML_PATH_MAX_HEIGHT_CM => '-5',
+                default => null,
+            }
+        );
+
+        $this->assertSame(GhnShipmentConstraints::MAX_SIDE_CM, $this->config->getMaxLengthCm());
+        $this->assertSame(GhnShipmentConstraints::MAX_SIDE_CM, $this->config->getMaxHeightCm());
+    }
+
+    /** TASK-WNQCRW — the weight gate falls back to the frozen CREATE cap when config is empty. */
+    public function testPackageWeightLimitFallsBackToConstraintsWhenConfigEmpty(): void
+    {
+        $this->scopeConfig->method('getValue')->willReturn(null);
+
+        $this->assertSame(GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G, $this->config->getMaxPackageWeightG());
+    }
+
+    /** TASK-WNQCRW — positive configured weight overrides the contract default (and casts). */
+    public function testPackageWeightLimitUsesConfiguredPositiveValue(): void
+    {
+        $this->scopeConfig->method('getValue')->willReturnCallback(
+            fn (string $path): ?string => match ($path) {
+                Config::XML_PATH_MAX_PACKAGE_WEIGHT_G => '60000',
+                default => null,
+            }
+        );
+
+        $this->assertSame(60000, $this->config->getMaxPackageWeightG());
+    }
+
+    /** TASK-WNQCRW — empty/non-positive weight config never disables the gate. */
+    public function testNonPositivePackageWeightConfigFallsBackToConstraints(): void
+    {
+        $this->scopeConfig->method('getValue')->willReturnCallback(
+            fn (string $path): ?string => match ($path) {
+                Config::XML_PATH_MAX_PACKAGE_WEIGHT_G => '0',
+                default => null,
+            }
+        );
+
+        $this->assertSame(GhnShipmentConstraints::TYPE_5_MAX_WEIGHT_G, $this->config->getMaxPackageWeightG());
     }
 }

@@ -1,5 +1,83 @@
 # Changelog — Secomm_ShippingCore
 
+## 0.26.3 — 2026-10-01 (TASK-ZS2B41 rev. — docs alignment theo 3 shared dimension configs)
+
+### Docs
+- `docs/USER_GUIDE.md`: 3 chỗ "150cm sandbox-observed rate limit" → shared per-dimension
+  limits `carriers/secomm_ghn/max_{length,width,height}_cm` (default 200, Create contract;
+  merchant hạ config khi account enforce 150) — khớp DEC-TASKZS2B41-001 rev. 2026-10-01.
+- `docs/USER_GUIDE.md` (TASK-WNQCRW): weight section rewrite — RATE type total-weight-only
+  (`<20kg→2`, `>=20kg→5`) + per-package weight gate `carriers/secomm_ghn/max_package_weight_g`
+  (default 50000g, checkout-only) + legacy `max_package_weight` interplay note.
+  0 code change trong ShippingCore (behavior thuộc Secomm_Ghn).
+
+### Tests
+- `ShipmentOfflineFulfillmentObserverTest`: fixture `offline_reason_message` sync wording
+  mới của interpreter ("%1 %2 is %3 cm — above the %4 cm %2 limit") — passthrough fixture,
+  không assert behavior ShippingCore.
+
+## 0.26.2 — 2026-09-30 (TASK-FXFMJ0 / DEC-TASKFXFMJ0-001 — RATE_REQUEST_UNREPRESENTABLE → RESERVED)
+
+### Changed
+- `ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE` chuyển thành **RESERVED**: GHN là
+  emitter production duy nhất và pre-gate của nó đã bị supersede — không còn emitter. Const +
+  eligibility wiring (`SafeDegradationEligibilityPolicy` default map, `CarrierRateExecutionService`
+  branch) giữ nguyên (frozen semantics), docblock ghi rõ trạng thái reserved. Không behavior
+  change; không schema; không contract break.
+
+## 0.26.1 — 2026-09-30 (BUG-DT0C4W — Show Packages trống + dead layout handle)
+
+### Fixed
+- Ẩn nút "Show Packages" trên shipment view khi shipment KHÔNG có native packages (plugin
+  `FormShowPackagesPlugin` trên `Magento\Shipping\Block\Adminhtml\View\Form` — template core
+  gate nút trên packages RAW vốn luôn chứa marker Secomm; modal đọc data đã strip nên luôn
+  rỗng). Helper chung `PackagingBlockPlugin::stripMarkers()` — không drift giữa modal data và
+  button visibility. Shipment có native packages giữ nguyên nút + modal.
+- Layout `sales_shipment_view.xml` là **dead handle** (handle thật của trang =
+  `adminhtml_order_shipment_view`; `sales_shipment_view` chỉ là block name) → đổi tên file +
+  re-anchor vào `referenceContainer extra_shipment_info` (dưới block `form`) — section
+  "Fulfillment" giờ render thật trên trang.
+
+## 0.26.0 — 2026-09-30 (TASK-S52DGA / DEC-TASKS52DGA-001 — generic offline shipment seam)
+
+### Added
+- Contracts: `Api\Shipment\FulfillmentMode` (ONLINE|OFFLINE — fulfillment concept, không
+  liên quan rate-source/fallback checkout) + `Api\Shipment\CarrierOfflineCapabilityInterface`
+  (carrier opt-in; pool DI-array `Model\Shipment\OfflineCapabilityPool` — zero capability là
+  state hợp lệ, ShippingCore không bao giờ tên carrier).
+- `Model\Shipment\FulfillmentModeResolver` — read seam duy nhất: request intent (param
+  `shipment[fulfillment_mode]`, strict) OR persisted metadata; carrier resolve = raw-prefix.
+- `Model\Shipment\FulfillmentMetadataPersister` — metadata `secomm_fulfillment` marker trên
+  `sales_shipment.packages` (pattern `secomm_physical`, zero migration, OFFLINE-only,
+  read-marker-then-write idempotent, per-shipment scope).
+- `Model\Shipment\OfflineEligibilitySession` — stash order-scoped giữa gate block và form.
+- Observers (`etc/events.xml` mới): `ShipmentOfflineIntentValidationObserver`
+  (save_before — capability check fail-closed + history comment atomic) +
+  `ShipmentOfflineFulfillmentObserver` (commit_after — metadata + package facts không-validate
+  + structured log; in-flight guard).
+- Admin UI: "Create Offline Shipment" control trên form tạo shipment (block + ViewModel +
+  template trong `submit_after` — cùng `#edit_form` core, JS-armed hidden input + confirm +
+  uncheck label) + section "Fulfillment" trên shipment view (chỉ render khi có OFFLINE
+  record). i18n `en_US.csv`/`vi_VN.csv` (mới).
+
+### Changed
+- `Plugin\Shipping\PackagingBlockPlugin` strip thêm marker `secomm_fulfillment` (BUG-74VGQX
+  pattern — packaging popup fatal trên entry không `params`).
+
+## 0.25.1 — 2026-09-30 (BUG-74VGQX — marker secomm_physical làm crash admin packaging view)
+
+### Fixed
+- Plugin `afterGetPackages` trên `Magento\Shipping\Block\Adminhtml\Order\Packaging`
+  (`Plugin\Shipping\PackagingBlockPlugin`, wire trong `etc/adminhtml/di.xml` mới): lọc marker
+  `secomm_physical` khỏi display data của block — `packed.phtml` + printPackage PDF render
+  mọi entry không guard, nên shipment có snapshot vật lý (DEC-TASK9Q5ZAK-001, ví dụ mọi
+  shipment GHN save qua admin) crash 500 trang shipment view. Read-side only: model
+  `sales_shipment.packages` không đổi, `read()`/retry replay vẫn thấy marker.
+
+### Changed
+- Docblock `ShipmentPhysicalPersister`: thu hẹp claim "collision-safe by construction" → chỉ
+  đúng ở write path; read path được guard bởi plugin trên (BUG-74VGQX).
+
 ## 0.25.0 — 2026-09-23 (TASK-DFGFZ9 phase 3 — COD docs về trạng thái product cuối)
 
 ### Changed

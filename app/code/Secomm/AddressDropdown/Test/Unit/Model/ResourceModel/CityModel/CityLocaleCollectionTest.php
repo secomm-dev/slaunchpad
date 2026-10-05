@@ -16,11 +16,12 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Secomm\AddressDropdown\Model\DataStorage;
 use Secomm\AddressDropdown\Model\ResourceModel\CityModel\CityLocaleCollection;
+use Secomm\AddressDropdown\Model\ResourceModel\CitySort;
 
 /**
  * TASK-7HVGAB — canonical generic sort contract of the locale city listing:
- * ORDER BY COALESCE(localized name, default_name) ASC, city_id ASC — deterministic,
- * language-agnostic (no locale-specific normalization may leak into the module).
+ * ORDER BY the canonical vi-aware key (TASK-Z6SK3T): REPLACE-normalized
+ * COALESCE(localized name, default_name) ASC (Đ/đ → D/d), city_id ASC — deterministic.
  */
 class CityLocaleCollectionTest extends TestCase
 {
@@ -97,10 +98,17 @@ class CityLocaleCollectionTest extends TestCase
         $this->collection->load();
 
         $orders = $this->orderPartsAsString();
+        // TASK-Z6SK3T: the canonical key uses the real Vietnamese collation — Đ is its
+        // own letter after the full D block (…D, Đ, E…), tone marks folded.
         $this->assertStringContainsString(
-            'COALESCE(rname.name, main_table.default_name) ASC',
+            'CONVERT(COALESCE(rname.name, main_table.default_name) USING utf8mb4)',
             $orders,
             'Sort key must be the effective displayed label (localized name, fallback default_name).'
+        );
+        $this->assertStringContainsString(
+            CitySort::COLLATION,
+            $orders,
+            'Sort must use the vi collation (d8bad508 regression guard).'
         );
         $this->assertStringContainsString(
             'main_table.city_id ASC',
@@ -119,19 +127,20 @@ class CityLocaleCollectionTest extends TestCase
         $this->assertStringContainsString(':region_locale', (string)$from['rname']['joinCondition']);
     }
 
-    public function testOrderExpressionIsLanguageAgnostic(): void
+    public function testOrderExpressionUsesVietnameseAlphabetCollation(): void
     {
+        // TASK-Z6SK3T — supersedes the d8bad508 "language-agnostic" guard AND the first
+        // REPLACE-based restoration: the canonical key must collate as Vietnamese (Đ = own
+        // letter after D), not by the bare utf8mb4_general_ci column collation.
         $this->collection->load();
 
         $orders = $this->orderPartsAsString();
-        $this->assertDoesNotMatchRegularExpression(
-            '/[^\x20-\x7E]/',
+        $this->assertStringContainsString(
+            'COLLATE ' . CitySort::COLLATION,
             $orders,
-            'No locale-specific characters (e.g. Vietnamese letters) may appear in the sort rule.'
+            'Sort key must use the Vietnamese collation.'
         );
-        $this->assertStringNotContainsString('REPLACE(', $orders);
-        $this->assertStringNotContainsString('CONVERT(', $orders);
-        $this->assertStringNotContainsString('COLLATE', $orders);
+        $this->assertStringNotContainsString('utf8mb4_general_ci', $orders);
     }
 
     public function testLoadHydratesItemsFromRows(): void

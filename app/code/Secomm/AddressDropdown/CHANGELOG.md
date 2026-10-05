@@ -1,5 +1,51 @@
 # Secomm AddressDropdown
 
+## [Unreleased] — TASK-37PS41: fix define/factory param misalignment phá customer address cascade (2026-10-02)
+- **Bugfix `view/adminhtml/web/js/form/provider-mixin.js`**: `define` khai báo 4 deps nhưng
+  factory chỉ nhận 3 params → param `schemaCascade` nhận nhầm `mage/validation`,
+  `schema-cascade` thật bị load mà không gán → `createCascade is not a function` lúc bind →
+  cascade customer address modal chết, 2 field City (select server + native input) hiện song
+  song. Fix: xoá 2 dead deps (`mage/utils/wrapper`, `mage/validation` — không dùng trong body).
+  Scan deps/params toàn bộ `web/js` của AddressDropdown/VietNamAddress/Launchpad_Osc: không còn
+  file nào dính.
+
+## [Unreleased] — TASK-Z6SK3T: GetListCity BC shim + FE migration sang addressLocations (2026-10-02)
+- **Resolver shim (DEC-TASKZ6SK3T-001, accepted)**: `GetListCityGraphql` delegate
+  `LocationHierarchyProvider::getRootLocations()` cho country có profile — **root-only**
+  (`parent_city_id IS NULL`, không tái hiện flat mixed-tier list TASK-6MKF0V AC-3);
+  unmapped country + `area=ADMINHTML` giữ legacy `CityLocaleCollection` (BC locale +
+  non-profile dataset); region_id non-numeric/≤0 → `[]` không query; **schema.graphqls
+  KHÔNG đổi** (không cần `graphql:dump`). Response trên data hiện tại **byte-identical**
+  với trước shim (168/168 rows region 1205 — evidence `after_shim_getlistcity_r1205.json`).
+  Unit: `GetListCityGraphqlTest` rewrite 7 test (mapped/unmapped/admin/invalid/null/switch-off).
+- **FE migration — shared cache module mới `view/frontend/web/js/model/address-location-cache.js`**:
+  memo page-session `addressSchema(country)` + `addressLocations("<profile>|<regionId>")`,
+  in-flight Promise dedupe (shipping + billing cùng page = 1 POST), `clear()` khi đổi country.
+  7 call sites migrate từ `GetListCity` (deprecated, uncached, POST mỗi region change):
+  `address-dropdown.js` (Luma widget — đồng thời bỏ fire empty `region_id` lúc page load,
+  giữ nguyên end-state local), `action/shipping-address-dropdown.js` + `billing` (default
+  checkout), `view/cart/shipping-estimation-mixin.js`, 2 bản `Launchpad_Osc` copies,
+  Hyvä legacy renderer `templates/hyva/address/edit.phtml` (inline Alpine memo — không
+  RequireJS; renderer này chỉ active ở store `address/general/renderer=legacy`).
+  OSC trùng `addressSchema` ×2 (shipping + billing) giờ dùng chung 1 POST qua memo.
+- Không đổi: persistence `city` = `default_name` (BC carriers), GraphQL input/output
+  contract, admin cascade (`schema-cascade.js` đã dùng `addressLocations` sẵn).
+- Flag (out of scope, đã ghi nhận): `_loadRegions` trong `address-dropdown.js` vẫn reference
+  `GetListRegion` — field không tồn tại trong schema từ trước (dead path country-change của
+  Luma widget, lỗi cũ); default-mixin thiếu master-switch gate (billing-mixin có).
+- Unit: AddressDropdown 109/109, VietNamAddress 202/202; `node --check` 7/7 JS files;
+  `setup:di:compile` OK.
+
+## [Unreleased] — TASK-Z6SK3T: city-data N+1 fix + helper single-fetch + `secomm_address_city` cache type (2026-10-02)
+- **Helper single-fetch (TASK-Z6SK3T)**: `Helper\Address::getCityNameByDefaultName()` chạy select **1 lần** (trước: `fetchOne` gọi 2 lần cho cùng kết quả — truthy check double-executes), check miss tường minh (`false`/`null`), per-request memo theo `defaultName|regionId|locale`, thêm tie-break `d.city_id ASC` (dataset có ward trùng tên `Thanh An` ×2 — resolve deterministically). Consumers hưởng lợi tự động: `AddressRendererPlugin`, `DataProviderWithDefaultAddressesPlugin`. Tests: `Test/Unit/Helper/AddressTest.php` 5/5.
+- **Perf (N+1)**: `CustomerData\CityData::getSectionData()` build dataset bằng **đúng 2 `fetchAll`** (trước: 1 region collection + 1 city collection **mỗi region** = 1.191 query trên cold cache; đo local: cold 525.9ms → 11.9ms, 34 region keys thay vì 1.190). Group + sort giữ nguyên output shape per-region (`name`/`label`/`city[default_name]` với `name` nullable) + canonical sort TASK-7HVGAB — **VN subset byte-identical** với output cũ (evidence `.ai/runtime/evidence/TASK-Z6SK3T/`).
+- **Perf (N+1)**: `CustomerData\CityData::getSectionData()` build dataset bằng **đúng 2 `fetchAll`** (trước: 1 region collection + 1 city collection **mỗi region** = 1.191 query trên cold cache; đo local: cold 525.9ms → 11.9ms, SQL warm ~82ms single-query). Group trong PHP, giữ nguyên output shape per-region (`name`/`label`/`city[default_name]` với `default_name`+`name` nullable) + canonical sort TASK-7HVGAB — **VN subset byte-identical** với output cũ (evidence `.ai/runtime/evidence/TASK-Z6SK3T/`).
+- **Data-derived scope**: region không có city (1.156 entry non-VN rỗng) bị bỏ khỏi payload — consumer-equivalent (mixins `city-data` đã fallback try/catch khi region không resolve được city). Payload 1.190 → 34 region keys.
+- **New cache type `secomm_address_city`** (`etc/cache.xml` + `Model/Cache/Type.php`, house pattern `Secomm\GhnAddressMapper\Model\Cache\Type`): section cache trước đây save **không tag** trên default frontend → chỉ `cache:flush` purge được; giờ `cache:clean secomm_address_city` purge được (fix cửa sổ stale 1h sau scheme import). **Lưu ý deploy: type phải được enable trong env.php (`bin/magento cache:enable secomm_address_city`) — type mới mặc định disabled vì env.php `cache_types` là whitelist; nếu disabled, section rebuild mỗi lần fetch (graceful, không lỗi).**
+- Constructor `CityData` đổi deps (bỏ `CityLocaleCollectionFactory`/`RegionCollectionFactory`/`TypeListInterface`/`CacheFrontendPool`; thêm `ResourceConnection`/`Model\Cache\Type`/`LocaleResolverInterface`/`App\State`) — đã `setup:di:compile`.
+- Locale rule mirror `CityLocaleCollection::_initSelect` (admin area → DEFAULT_LOCALE).
+- Tests: mới `Test/Unit/CustomerData/CityDataTest.php` (5 test: master switch, đúng 2 fetchAll + shape, store-scoped id + tag + TTL, cache hit skip DB, admin locale); suite 101/101 green.
+
 ## [Unreleased] — BUG-25XDH4: Hyva Address Book cascade Region → City (Alpine duplicate x-for key + stale-request race) (2026-09-04)
 - **Staging crash**: `Uncaught TypeError: can't access property "after", O is undefined` (Alpine 3.14.3 x-for keyed reconciliation) khi chọn Region trên `customer/address/new|edit`. Root cause: city `x-for` dùng `:key="city.default_name"` — 8/34 VN regions có duplicate `default_name` (vd Dong Nai "Loc Thanh" x2, HCM "Thanh An" x2 — evidence `.ai/evidence/BUG-25XDH4/`) → `_x_lookup` collide. Commingled: không stale-request protection (đổi Region nhanh → response cũ overwrite `cities`), `@input.debounce` trên select (x-model của Alpine lắng nghe `change`), dual selection control (`x-model` + `:selected` cùng ghi selected state), `onRegionIdChange` không guard `availableRegions[selectedRegion]` (nổ khi `'0'`).
 - **`templates/hyva/address/edit.phtml` (legacy)**: `:key="city.city_id"` (query thêm `city_id` — field đã expose sẵn, save contract giữ `:value="city.default_name"`); `:key="regionId"` cho region x-for; bỏ `:selected` (x-model là sole owner) + `reapplySelected('selectedRegion')` cho edit preselect (Alpine x-model KHÔNG re-apply value sau khi `<option>` render async — cùng pattern đã có cho city); `@change` thay `@input.debounce`; request token `cityRequestId` + `try/finally` (stale response không overwrite `cities`, chỉ request active clear `isLoadingCities`, `resetVnCascade` invalidate pending); `onRegionIdChange` defensive (String-coerce, optional region, guard `fields['region']`, region rỗng → reset cascade); `hyva.formValidation($el)` thay `$root`.
@@ -78,3 +124,24 @@
   + Checkout render address saved.
   + Render address in email
 - View the address list in Backend
+
+## [Unreleased] — TASK-Z6SK3T: fix sort Đ/đ rơi đáy list (2026-10-02)
+- **Regression fix**: `d8bad508` (TASK-7HVGAB, 2026-09-07) xoá REPLACE normalize Đ/đ khỏi
+  ORDER BY của `LocationHierarchyProvider` ("language-agnostic, collation-owned") — trên
+  baseline `utf8mb4_general_ci`, Đ (U+0110) sort sau Z → mọi mục `Đ...` rơi đáy option list
+  trên các surface không có client sort (address book schema-edit, Hyvä cart, admin cascade).
+  Checkout OSC/default không lộ nhờ client `vnSortKey` (Target §8) — giữ nguyên như
+  belt-and-braces.
+- **Fix**: builder dùng chung mới `Model/ResourceModel/CitySort::expression()` áp đồng bộ
+  **4 điểm sort**: `LocationHierarchyProvider::fetchChildren` (canonical addressLocations +
+  shim GetListCity), `CityLocaleCollection::_initSelect`, `CustomerData\CityData`,
+  `Helper\Address::getCityData()` — hết drift giữa 2 engine.
+- **Semantics sort (user decision 2026-10-02, chốt sau 1 vòng)**: dùng **collation tiếng Việt
+  thật của MySQL 8** (`utf8mb4_vi_0900_ai_ci`, require MySQL 8.0+ — verified 8.4.7) thay vì
+  REPLACE Đ→D: **Đ là chữ số riêng sau TOÀN BỘ khối D** (đúng thứ tự chữ cái Việt …D, Đ, E…;
+  tone marks fold qua ai_ci). Bản REPLACE (Đ interleave trong khối D) đã thử và bị thay sau
+  khi user yêu cầu "D xong mới tới Đ".
+- Verify: region 1205 (168 wards) — invariants PASS (trước Đ chỉ A-D; khối Đ liên tục;
+  sau Đ không còn D/Đ): `Dầu Tiếng, Dĩ An, Diên Hồng → [Đất Đỏ…Đức Nhuận] → Gia Định…`;
+  addressLocations ≡ shim GetListCity. Guard tests d8bad508 ("language-agnostic") thay bằng
+  guard vi-collation; suites 110 + 202 green. Đảo chiều một phần quyết định TASK-7HVGAB.

@@ -209,3 +209,21 @@ Status điều khiển orchestration; reason chỉ là diagnostics — không ai
 }
 ```
 from_*/return_*: **omit** (ShopId profile fallback — docs confirm) · coupon/note/pick_station_id/pick_shift: optional.
+
+## APPENDIX — TASK-4P33TV sandbox probe (2026-09-30, shop 200537): required_note enum
+
+Create-order probe per candidate (unique client_order_code, is_new_to_address=true,
+HCM/Phường Phước Long): **accepted {KHONGCHOXEMHANG, CHOXEMHANGKHONGTHU, CHOTHUHANG}**;
+**rejected {CHOXEMHANG, CHOTHUHANGKHONGDOI}** — 400 "Sai thông tin đầu vào".
+Confirms line 99 3-enum contract; the `RequiredNote` admin source model carried 2 dead
+tokens (removed — DEC-TASK4P33TV-001; they fail-closed CREATE — shipment 21).
+
+## APPENDIX — TASK-4P33TV (2026-09-30): is_new_to_address behavior note
+
+- D10 replay (Lạng Sơn/Xã Tân Thanh) still verifies TODAY — create contract unchanged.
+- HCM create WITHOUT `to_ward_code` was observed failing once with `TO_ADDRESS_CONFLICT`
+  ("Địa chỉ nhận không hợp lệ") and succeeding with the IDENTICAL payload minutes later —
+  transient on the provider address service. Retry is the correct reconcile
+  (`secomm:ghn:shipment:retry`); also verified `to_ward_code` (2025 v3 id) is ACCEPTED as an
+  extra field (L8A7W8) and the LEGACY path (to_district_id=3695 + to_ward_code=90757) still
+  works (L8A7WY) if a fallback ever needed.

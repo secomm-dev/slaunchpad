@@ -25,6 +25,7 @@ use Secomm\Ghn\Model\Capability\GhnAddressCapability;
 use Secomm\Ghn\Model\Exception\GhnMappingNotFoundException;
 use Secomm\Ghn\Model\Logger\GhnLogger;
 use Secomm\Ghn\Model\Rate\EstimatedPackage;
+use Secomm\Ghn\Model\Rate\GhnPackageLimits;
 use Secomm\Ghn\Model\Rate\QuoteParcelEstimate;
 use Secomm\Ghn\Model\Rate\GhnRateCalculator;
 use Secomm\Ghn\Model\Rate\GhnRateQuery;
@@ -214,13 +215,29 @@ class GhnRateCalculatorTest extends TestCase
 
     public function testTrustedDimensionOverVerifiedLimitRejectsBeforeAnyProviderCall(): void
     {
-        // SANDBOX-OBSERVED hard limit: staging create rejected length with "…vượt quá mức cho
-        // phép: 150" (supersedes the docs' 200cm). The violation gates BEFORE handoff/fee.
+        // Shared default hard limit (200, Create contract — TASK-ZS2B41 rev. 2026-10-01; the
+        // sandbox-observed 150 is superseded as the default). The violation gates BEFORE
+        // handoff/fee.
+        $this->handoffService->expects($this->never())->method('handoffContextForOperation');
+        $this->apiClient->expects($this->never())->method('post');
+
+        $packages = [new EstimatedPackage(10, 'LONG-SKU', 25000.0, 'quote_item_weight', lengthCm: 201)];
+        $outcome = $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)));
+
+        $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
+        $this->assertSame('GHN_PACKAGE_LENGTH_LIMIT_EXCEEDED', $outcome->getFailureReason());
+    }
+
+    public function testMerchantLoweredLimitStillRejectsOverLimitDimension(): void
+    {
+        // TASK-ZS2B41 (rev. 3-path) — a merchant on a 150-enforcing GHN account lowers the
+        // config to 150: a 151cm unit must stay a hard UNAVAILABLE on that path too.
         $this->handoffService->expects($this->never())->method('handoffContextForOperation');
         $this->apiClient->expects($this->never())->method('post');
 
         $packages = [new EstimatedPackage(10, 'LONG-SKU', 25000.0, 'quote_item_weight', lengthCm: 151)];
-        $outcome = $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)));
+        $estimate = new QuoteParcelEstimate($packages, 150, 150, 150);
+        $outcome = $this->calculator->calculate($this->queryFromEstimate($estimate));
 
         $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
         $this->assertSame('GHN_PACKAGE_LENGTH_LIMIT_EXCEEDED', $outcome->getFailureReason());
@@ -228,12 +245,12 @@ class GhnRateCalculatorTest extends TestCase
 
     public function testTrustedDimensionsAtOrUnderLimitStillQuote(): void
     {
-        // 150cm is the verified boundary — AT the limit is acceptable.
+        // 200cm is the shared default boundary — AT the limit is acceptable.
         $this->givenResolvedLegacyUnit();
         $this->config->method('getOriginDistrictId')->willReturn(0);
         $this->apiClient->method('post')->willReturn(['total' => 605000]);
 
-        $packages = [new EstimatedPackage(10, 'LONG-SKU', 25000.0, 'quote_item_weight', lengthCm: 150, widthCm: 20, heightCm: 20)];
+        $packages = [new EstimatedPackage(10, 'LONG-SKU', 25000.0, 'quote_item_weight', lengthCm: 200, widthCm: 20, heightCm: 20)];
         $this->assertTrue($this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)))->isSuccessful());
     }
 
@@ -249,16 +266,22 @@ class GhnRateCalculatorTest extends TestCase
         $this->assertTrue($this->calculator->calculate($this->query(20000.0))->isSuccessful());
     }
 
-    public function testAggregateOverFiftyKgIsUnavailableAsUnrepresentableWithoutApiCall(): void
+    public function testAggregateOverFiftyKgQuotesThroughTheFeeApi(): void
     {
-        // TASK-MQ2DRG (DEC-TASKMQ2DRG-001 — SUPERSEDES the TASK-WAWNDS "aggregate >50kg is
-        // NOT rejected" stance): 2×35kg = 70kg aggregate with individually-valid units is a
-        // representational gap, not a carrier rejection — UNAVAILABLE + the shared
-        // RATE_REQUEST_UNREPRESENTABLE, decided BEFORE any provider call. The fee API's
-        // tolerance for heavy aggregates (sandbox 2×35kg = 200) stays a documented fact;
-        // quoting >50kg is now a deliberate business NO at pre-validation.
-        $this->handoffService->expects($this->never())->method('handoffContextForOperation');
-        $this->apiClient->expects($this->never())->method('post');
+        // TASK-FXFMJ0 (sandbox evidence, kept by TASK-WNQCRW): Calculate Fee accepts >50kg
+        // aggregates (sandbox 2026-09-30: 2×35kg and 4×30kg = 120kg both quote) — the full
+        // flow runs: address resolution → mapping → fee call. TASK-WNQCRW §5: the aggregate
+        // is never capped when every unit passes its own 50000g limit.
+        $this->givenResolvedLegacyUnit();
+        $this->config->method('getOriginDistrictId')->willReturn(0);
+        $captured = null;
+        $this->apiClient->expects($this->once())->method('post')->willReturnCallback(
+            function (string $op, string $path, array $payload) use (&$captured) {
+                $captured = $payload;
+
+                return ['total' => 660000];
+            }
+        );
 
         $packages = [
             new EstimatedPackage(11, 'SKU-35KG', 35000.0, 'quote_item_weight'),
@@ -266,28 +289,109 @@ class GhnRateCalculatorTest extends TestCase
         ];
         $outcome = $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)));
 
-        $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
-        $this->assertSame(ShippingFailureReason::RATE_REQUEST_UNREPRESENTABLE, $outcome->getFailureReason());
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame(5, $captured['service_type_id'], '70kg aggregate of valid units is type 5');
+        $this->assertSame(70000, $captured['weight']);
+        $this->assertCount(2, $captured['items'], 'type-5 keeps per-unit rows (quantity=1 each)');
+        $this->assertSame(35000, $captured['items'][0]['weight']);
+        $this->assertSame(35000, $captured['items'][1]['weight']);
     }
 
-    public function testSingleUnitOverFiftyKgIsHardUnavailableWithoutApiCall(): void
+    public function testSingleUnitOverDefaultWeightLimitIsUnavailableBeforeAnyProviderCall(): void
     {
-        // Directive case A: a single sellable unit above the per-package cap is a REAL
-        // carrier rejection (GHN-owned reason, never fallback-eligible) — NOT the shared
-        // limitation reason, NOT technical.
+        // TASK-WNQCRW §4: ONE sellable unit over the default 50000g gate hides GHN before
+        // any fee call — hard carrier incompatibility (never technical, never fallback).
         $this->handoffService->expects($this->never())->method('handoffContextForOperation');
         $this->apiClient->expects($this->never())->method('post');
 
-        $outcome = $this->calculator->calculate($this->query(60000.0));
+        $outcome = $this->calculator->calculate($this->query(50001.0));
 
+        $this->assertFalse($outcome->isSuccessful());
         $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
-        $this->assertSame('GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED', $outcome->getFailureReason());
+        $this->assertSame(GhnPackageLimits::REASON_PACKAGE_WEIGHT_LIMIT_EXCEEDED, $outcome->getFailureReason());
     }
 
-    public function testMixedViolationHardUnitWins(): void
+    public function testRaisedWeightLimitLetsSingleUnitSixtyKgQuote(): void
     {
-        // Directive order: A before E — a hard unit violation must surface even when the
-        // aggregate is also over the cap (never masked as a representational gap).
+        // TASK-WNQCRW — the merchant-tunable path preserves the FXFMJ0 sandbox evidence
+        // (single 60kg quotes HTTP 200 when the config is raised past it): explicit
+        // raised-limit estimate flows through the full pipeline.
+        $this->givenResolvedLegacyUnit();
+        $this->config->method('getOriginDistrictId')->willReturn(0);
+        $captured = null;
+        $this->apiClient->expects($this->once())->method('post')->willReturnCallback(
+            function (string $op, string $path, array $payload) use (&$captured) {
+                $captured = $payload;
+
+                return ['total' => 660000];
+            }
+        );
+
+        $packages = [new EstimatedPackage(10, 'UNIT-SKU', 60000.0, 'quote_item_weight')];
+        $estimate = new QuoteParcelEstimate($packages, 200, 200, 200, 100000);
+        $outcome = $this->calculator->calculate($this->queryFromEstimate($estimate));
+
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame(5, $captured['service_type_id']);
+        $this->assertSame(60000, $captured['weight']);
+        $this->assertCount(1, $captured['items']);
+    }
+
+    public function testMultiItemLightCartSelectsTypeTwoWithoutItems(): void
+    {
+        // TASK-WNQCRW §3: the former "multi-parcel → type 5" rule is FORBIDDEN — type
+        // follows the TOTAL only. 2×5kg = 10kg total → type 2 with the weight-only payload
+        // (no items[] — proven payload-safe for multi-package light carts).
+        $this->givenResolvedLegacyUnit();
+        $this->config->method('getOriginDistrictId')->willReturn(0);
+        $captured = null;
+        $this->apiClient->expects($this->once())->method('post')->willReturnCallback(
+            function (string $op, string $path, array $payload) use (&$captured) {
+                $captured = $payload;
+
+                return ['total' => 121000];
+            }
+        );
+
+        $packages = [
+            new EstimatedPackage(11, 'SKU-5KG', 5000.0, 'quote_item_weight'),
+            new EstimatedPackage(12, 'SKU-5KG', 5000.0, 'quote_item_weight'),
+        ];
+        $estimate = new QuoteParcelEstimate($packages);
+        $this->assertSame(2, $estimate->getServiceTypeId());
+        $outcome = $this->calculator->calculate($this->queryFromEstimate($estimate));
+
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame(2, $captured['service_type_id']);
+        $this->assertSame(10000, $captured['weight']);
+        $this->assertArrayNotHasKey('items', $captured, 'type-2 keeps the weight-only payload');
+    }
+
+    public function testSinglePackageExactlyTwentyKgQuotesAsTypeFive(): void
+    {
+        // DOCUMENTED boundary: exactly 20000g is "20 kg or more" → type 5 (sandbox case C).
+        $this->givenResolvedLegacyUnit();
+        $this->config->method('getOriginDistrictId')->willReturn(0);
+        $captured = null;
+        $this->apiClient->expects($this->once())->method('post')->willReturnCallback(
+            function (string $op, string $path, array $payload) use (&$captured) {
+                $captured = $payload;
+
+                return ['total' => 121000];
+            }
+        );
+
+        $outcome = $this->calculator->calculate($this->query(20000.0));
+
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame(5, $captured['service_type_id']);
+    }
+
+
+    public function testMixedCartWithOverLimitUnitIsUnavailableBeforeAnyProviderCall(): void
+    {
+        // TASK-WNQCRW §4: a mixed cart (60kg + 20kg) hides GHN because ONE unit exceeds the
+        // default 50000g gate — aggregate size is irrelevant to the per-unit gate.
         $this->handoffService->expects($this->never())->method('handoffContextForOperation');
         $this->apiClient->expects($this->never())->method('post');
 
@@ -297,14 +401,42 @@ class GhnRateCalculatorTest extends TestCase
         ];
         $outcome = $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)));
 
+        $this->assertFalse($outcome->isSuccessful());
         $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
-        $this->assertSame('GHN_PACKAGE_WEIGHT_LIMIT_EXCEEDED', $outcome->getFailureReason());
+        $this->assertSame(GhnPackageLimits::REASON_PACKAGE_WEIGHT_LIMIT_EXCEEDED, $outcome->getFailureReason());
+    }
+
+    public function testAggregateOfBoundaryUnitsHundredKgQuotesThroughTheFeeApi(): void
+    {
+        // TASK-WNQCRW §5/§13: aggregate is NEVER capped when every unit passes — 2×50kg
+        // (each exactly AT the default gate, strictly `>`) = 100kg total → type 5 → fee call.
+        $this->givenResolvedLegacyUnit();
+        $this->config->method('getOriginDistrictId')->willReturn(0);
+        $captured = null;
+        $this->apiClient->expects($this->once())->method('post')->willReturnCallback(
+            function (string $op, string $path, array $payload) use (&$captured) {
+                $captured = $payload;
+
+                return ['total' => 660000];
+            }
+        );
+
+        $packages = [
+            new EstimatedPackage(11, 'SKU-50KG', 50000.0, 'quote_item_weight'),
+            new EstimatedPackage(12, 'SKU-50KG', 50000.0, 'quote_item_weight'),
+        ];
+        $outcome = $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)));
+
+        $this->assertTrue($outcome->isSuccessful());
+        $this->assertSame(5, $captured['service_type_id']);
+        $this->assertSame(100000, $captured['weight']);
+        $this->assertCount(2, $captured['items']);
     }
 
     public function testAggregateExactlyFiftyKgStillQuotes(): void
     {
-        // Boundary: the pre-validation limit is strictly greater-than — a 50000g total of
-        // valid units is representable (2×25kg → type 5, quoted).
+        // TASK-WNQCRW: aggregate weight is NEVER capped — a 50000g total of valid units
+        // (2×25kg) is type 5 and reaches the fee call.
         $this->givenResolvedLegacyUnit();
         $this->config->method('getOriginDistrictId')->willReturn(0);
         $this->apiClient->method('post')->willReturn(['total' => 605000]);
@@ -318,7 +450,8 @@ class GhnRateCalculatorTest extends TestCase
 
     public function testSingleUnitExactlyFiftyKgStillQuotes(): void
     {
-        // Boundary: a single unit AT the 50000g cap is valid (limit is >, not >=).
+        // Boundary: a single unit AT the default max_package_weight_g gate (50000g) is valid
+        // (limit is >, not >=) — quotes as type 5.
         $this->givenResolvedLegacyUnit();
         $this->config->method('getOriginDistrictId')->willReturn(0);
         $this->apiClient->method('post')->willReturn(['total' => 605000]);
@@ -326,16 +459,20 @@ class GhnRateCalculatorTest extends TestCase
         $this->assertTrue($this->calculator->calculate($this->query(50000.0))->isSuccessful());
     }
 
-    public function testWeightGateRunsBeforeHandoffOnStandalonePath(): void
+    public function testValidUnitAggregateRunsTheFullStandaloneFlow(): void
     {
-        // Mirrors the dimension gate: an unquotable weight must not spend address resolution.
-        $this->handoffService->expects($this->never())->method('handoffContextForOperation');
-        $this->apiClient->expects($this->never())->method('post');
+        // TASK-WNQCRW: per-unit weight violations short-circuit BEFORE the standalone flow;
+        // a valid-unit aggregate (2×35kg = 70kg) still runs address handoff AND fee call
+        // (the DIMENSION gate also short-circuits before resolution, unchanged).
+        $this->givenResolvedLegacyUnit();
+        $this->config->method('getOriginDistrictId')->willReturn(0);
+        $this->handoffService->expects($this->once())->method('handoffContextForOperation');
+        $this->apiClient->expects($this->once())->method('post')->willReturn(['total' => 660000]);
 
         $packages = [new EstimatedPackage(11, 'SKU-35KG', 35000.0, 'quote_item_weight'), new EstimatedPackage(12, 'SKU-35KG', 35000.0, 'quote_item_weight')];
-        $outcome = $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)));
-
-        $this->assertSame(CarrierRateOutcome::STATUS_UNAVAILABLE, $outcome->getStatus());
+        $this->assertTrue(
+            $this->calculator->calculate($this->queryFromEstimate(new QuoteParcelEstimate($packages)))->isSuccessful()
+        );
     }
     public function testAddressResolutionPolicyPassesThroughToSharedHandoff(): void
     {
@@ -571,6 +708,7 @@ class GhnRateCalculatorTest extends TestCase
     ): GhnRateQuery {
         $packages = $weightGrams > 0 ? [new EstimatedPackage(10, 'UNIT-SKU', $weightGrams, 'quote_item_weight')] : [];
 
+        // 1-arg ctor → the default limits govern (200cm dims / 50000g weight — TASK-WNQCRW).
         return $this->queryFromEstimate(new QuoteParcelEstimate($packages), $collectionAmount);
     }
 

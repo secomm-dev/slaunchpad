@@ -4,7 +4,6 @@
 
 .page-main {
     flex-grow: 1;
-    margin-block: --spacing(8);
 }
 
 .columns {

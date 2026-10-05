@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!--
+    Launchpad Snowdog Menu — node banner content storage (TASK-08343C / FEAT-ZNJ4KF §8).
+
+    Companion table keyed by the Snowdog node ID: one optional WYSIWYG banner
+    per node plus the mobile-visibility flag for the banner CONTENT (the image
+    is governed separately). The FK cascade keeps the table in sync when a
+    node row is removed through the Snowdog repository.
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="launchpad_snowdog_menu_node_banner" resource="default" engine="innodb" comment="Launchpad: per-node menu banner content">
+        <column xsi:type="int" name="node_id" unsigned="true" nullable="false" comment="Snowdog node ID"/>
+        <column xsi:type="mediumtext" name="banner_content" nullable="true" comment="Banner WYSIWYG HTML"/>
+        <column xsi:type="smallint" name="show_banner_content_mobile" unsigned="true" nullable="false" default="0" comment="Show banner content on mobile"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="node_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FK_LAUNCHPAD_SNOWDOG_NODE_BANNER_NODE"
+                    table="launchpad_snowdog_menu_node_banner" column="node_id"
+                    referenceTable="snowmenu_node" referenceColumn="node_id"
+                    onDelete="CASCADE"/>
+    </table>
+</schema>

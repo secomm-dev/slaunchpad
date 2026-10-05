@@ -141,6 +141,39 @@
                     </options>
                     <comment>Adjusts the GHN carrier rate only; adjusting the fallback rate happens in the composition.</comment>
                 </field>
+                <!-- TASK-ZS2B41 (rev. 3-path, 2026-10-01) — ONE set of per-dimension limits
+                     shared by RATE (checkout display filter) and CREATE (hard gate).
+                     Provenance of the default: 200cm = Create contract (DOCUMENTED); the
+                     150cm sandbox observation (2026-09-18) is superseded as default — lower
+                     these when the GHN account enforces 150. Authoritative default:
+                     Secomm\Ghn\Model\GhnShipmentConstraints. -->
+                <field id="max_length_cm" translate="label" type="text" sortOrder="160" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Max Length (cm)</label>
+                    <config_path>carriers/secomm_ghn/max_length_cm</config_path>
+                    <frontend_class>validate-digits validate-greater-than-zero</frontend_class>
+                    <comment>Applies at checkout (hides GHN when a product length exceeds this) AND at shipment creation. Default: 200 (GHN Create contract).</comment>
+                </field>
+                <field id="max_width_cm" translate="label" type="text" sortOrder="161" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Max Width (cm)</label>
+                    <config_path>carriers/secomm_ghn/max_width_cm</config_path>
+                    <frontend_class>validate-digits validate-greater-than-zero</frontend_class>
+                    <comment>Applies at checkout (hides GHN when a product width exceeds this) AND at shipment creation. Default: 200 (GHN Create contract).</comment>
+                </field>
+                <field id="max_height_cm" translate="label" type="text" sortOrder="162" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Max Height (cm)</label>
+                    <config_path>carriers/secomm_ghn/max_height_cm</config_path>
+                    <frontend_class>validate-digits validate-greater-than-zero</frontend_class>
+                    <comment>Applies at checkout (hides GHN when a product height exceeds this) AND at shipment creation. Default: 200 (GHN Create contract).</comment>
+                </field>
+                <!-- TASK-WNQCRW (2026-10-01, DEC-TASKWNQCRW-001) — CHECKOUT-ONLY weight gate
+                     (unlike the three cm fields above): shipment creation ALWAYS enforces the
+                     50000 g per-package Create contract regardless of this value. -->
+                <field id="max_package_weight_g" translate="label" type="text" sortOrder="163" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Max Package Weight (g)</label>
+                    <config_path>carriers/secomm_ghn/max_package_weight_g</config_path>
+                    <frontend_class>validate-digits validate-greater-than-zero</frontend_class>
+                    <comment>Checkout display filter only — hides GHN when ONE sellable unit weighs more than this. Shipment creation ALWAYS enforces the 50000 g per-package contract regardless of this value; raise it only to show rates for heavy units you will split into multiple packages at creation. Default: 50000 (GHN Create contract).</comment>
+                </field>
             </group>
         </section>
     </system>
