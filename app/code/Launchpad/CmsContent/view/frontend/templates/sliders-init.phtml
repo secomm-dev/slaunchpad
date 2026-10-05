@@ -76,9 +76,85 @@ $hyvaCsp = $viewModels->require(HyvaCsp::class);
             }, true);
             track.addEventListener('dragstart', (event) => event.preventDefault());
         };
+        // TASK-375K58 (SLP-267): auto_slide = marquee chạy liên tục vô hạn.
+        // Clone đủ bộ tile (aria-hidden) rồi rAF tăng scrollLeft đều — qua mốc
+        // 1 cycle thì trừ đi → quay vòng liền mạch (nội dung tại x ≡ x mod
+        // cycle vì mọi bộ tile giống nhau). Track giữ nguyên scroll container
+        // + bleed mép phải nên clip đúng vùng content → viewport edge. Pause
+        // khi hover/focus; reduced-motion thì init loop chính giữ slider thường.
+        const enableCatMarquee = (root, track) => {
+            if (!root || !track || track.dataset.lpMarquee) return;
+            track.dataset.lpMarquee = '1';
+            const baseTiles = Array.from(track.children);
+            if (baseTiles.length < 2) return;
+            const duration = Math.max(5, Math.min(120, parseFloat(root.dataset.lpMarquee) || 30));
+            // cycle = bề rộng 1 bộ tile + gap nối sang bộ kế (nối mạch khi wrap).
+            const cycleWidth = () => {
+                const first = baseTiles[0];
+                const last = baseTiles[baseTiles.length - 1];
+                const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+                return last.offsetLeft + last.offsetWidth - first.offsetLeft + gap;
+            };
+            let cycle = cycleWidth();
+            const cloneSet = () => {
+                baseTiles.forEach((tile) => {
+                    const clone = tile.cloneNode(true);
+                    clone.setAttribute('aria-hidden', 'true');
+                    if (clone.tagName.toLowerCase() === 'a') {
+                        clone.setAttribute('tabindex', '-1');
+                    }
+                    clone.querySelectorAll('a').forEach((a) => a.setAttribute('tabindex', '-1'));
+                    track.appendChild(clone);
+                });
+            };
+            // Đủ nội dung cho biên wrap: tại x = cycle vẫn thấy đầy khung
+            // [cycle, cycle + clientWidth] → scrollWidth ≥ cycle + clientWidth.
+            const ensureCoverage = () => {
+                cycle = cycleWidth();
+                let guard = 24;
+                while (track.scrollWidth < cycle + track.clientWidth && guard--) cloneSet();
+            };
+            ensureCoverage();
+            let paused = false;
+            let last = performance.now();
+            const tick = (now) => {
+                // rAF dừng khi tab ẩn → dt lớn lúc quay lại, clamp để không nhảy.
+                const dt = Math.min((now - last) / 1000, 0.05);
+                last = now;
+                if (!paused && dt > 0) {
+                    track.scrollLeft += (cycle / duration) * dt;
+                    if (track.scrollLeft >= cycle) track.scrollLeft -= cycle;
+                }
+                requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+            // Pause khi hover/focus (nội dung tự chạy phải dừng được).
+            root.addEventListener('pointerenter', () => { paused = true; });
+            root.addEventListener('pointerleave', () => { paused = false; });
+            root.addEventListener('focusin', () => { paused = true; });
+            root.addEventListener('focusout', (event) => {
+                if (!root.contains(event.relatedTarget)) paused = false;
+            });
+            // Breakpoint đổi → tile width đổi → cycle đổi: đo lại, đưa
+            // scrollLeft về biên mới, clone thêm nếu thiếu coverage.
+            if ('ResizeObserver' in window) {
+                new ResizeObserver(() => {
+                    ensureCoverage();
+                    if (track.scrollLeft >= cycle) track.scrollLeft %= cycle;
+                }).observe(track);
+            }
+        };
         document.querySelectorAll('[data-lp-slider], [data-lp-card-slider], [data-lp-tiles-slider]').forEach((el) => {
             if (el.dataset.lpSliderInit) return;
             el.dataset.lpSliderInit = '1';
+            // TASK-375K58: section [data-lp-marquee] (categories_a auto_slide)
+            // = marquee thay hoàn toàn SnapSlider + kéo chuột. Reduced-motion
+            // bỏ marquee → init slider thường như config Off.
+            const marqueeRoot = el.closest('[data-lp-marquee]');
+            if (marqueeRoot && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                enableCatMarquee(marqueeRoot, el.querySelector('[data-track]'));
+                return;
+            }
             // SLP-267: category tiles = 1 dot / tile (design) — không group.
             new SnapSlider(el, { autoPager: true, groupPager: !el.matches('[data-lp-tiles-slider]') });
             if (el.matches('[data-lp-tiles-slider]')) {

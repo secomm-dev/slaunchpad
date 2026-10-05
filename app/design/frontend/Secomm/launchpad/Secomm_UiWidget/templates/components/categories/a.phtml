@@ -6,6 +6,9 @@
  * mouse-draggable (init in Launchpad_CmsContent::sliders-init.phtml).
  * Mobile/tablet: 172px tiles + 1 dot per tile; desktop: 6 tiles per view,
  * no dots. No prev/next buttons (SLP-267 user decision).
+ * TASK-375K58 (SLP-267): auto_slide = marquee chạy liên tục vô hạn
+ * (data-lp-marquee + .lp-cat-slider--marquee; JS rAF scrollLeft trong
+ * sliders-init.phtml; reduced-motion fallback slider thường).
  * Styles: web/tailwind/theme/homepage.css (.lp-cat-*).
  *
  * @var \Secomm\UiWidget\Block\Widget\SecommUi $block
@@ -16,11 +19,14 @@ $data = (array)$block->getData('component_data');
 $items = (array)($data['items'] ?? []);
 $instanceId = $block->getInstanceId();
 $headingId = $instanceId . '-heading';
-$mobileSlider = (bool)($data['mobile_slider'] ?? true);
+$autoSlide = (bool)($data['auto_slide'] ?? false);
+$marqueeDuration = max(5, min(120, (int)($data['marquee_duration'] ?? 30)));
+$mobileSlider = $autoSlide ? true : (bool)($data['mobile_slider'] ?? true);
 ?>
 <?php if ($items): ?>
     <section id="<?= $escaper->escapeHtmlAttr($instanceId) ?>"
-             class="lp-cat-slider<?= $mobileSlider ? '' : ' lp-cat-slider--static' ?>"
+             class="lp-cat-slider<?= $autoSlide ? ' lp-cat-slider--marquee' : ($mobileSlider ? '' : ' lp-cat-slider--static') ?>"
+             <?= $autoSlide ? 'data-lp-marquee="' . $escaper->escapeHtmlAttr((string)$marqueeDuration) . '"' : '' ?>
              aria-labelledby="<?= $escaper->escapeHtmlAttr($headingId) ?>"
              data-secomm-ui-component="categories_a">
         <div data-lp-tiles-slider>

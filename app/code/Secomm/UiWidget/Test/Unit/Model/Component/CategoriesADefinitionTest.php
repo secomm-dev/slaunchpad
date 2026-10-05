@@ -32,6 +32,11 @@ class CategoriesADefinitionTest extends TestCase
 
         self::assertTrue($fields['heading']['required']);
         self::assertTrue($fields['mobile_slider']['default']);
+        self::assertFalse($fields['auto_slide']['default']);
+        self::assertSame('integer', $fields['marquee_duration']['type']);
+        self::assertSame(30, $fields['marquee_duration']['default']);
+        self::assertSame(5, $fields['marquee_duration']['min']);
+        self::assertSame(120, $fields['marquee_duration']['max']);
         self::assertSame(1, $fields['items']['min_items']);
         self::assertSame(12, $fields['items']['max_items']);
         self::assertTrue($itemFields['label']['required']);

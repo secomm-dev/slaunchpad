@@ -946,6 +946,25 @@ body.cms-index-index [data-content-type="slider"] nav[data-pager] .snap-marker {
     opacity: 0.8;
 }
 
+/* TASK-375K58 (SLP-267): auto_slide = marquee chạy liên tục vô hạn
+   (sliders-init: rAF tăng scrollLeft + wrap modulo cycle, tile clone
+   aria-hidden). Tắt snap + cuộn tay (overflow hidden) — track vẫn là
+   scroll container giữ bleed mép phải; không dot (SnapSlider không init). */
+.lp-cat-slider--marquee .lp-cat-track {
+    overflow-x: hidden;
+    scroll-snap-type: none;
+}
+
+.lp-cat-slider--marquee .lp-cat-tile {
+    scroll-snap-align: none;
+}
+
+@media (pointer: fine) {
+    .lp-cat-slider--marquee .lp-cat-track {
+        cursor: default;
+    }
+}
+
 /* mobile_slider = No: mobile/tablet grid 2 cột, không rail/tràn. */
 @media (max-width: 63.98rem) {
     .lp-cat-slider--static .lp-cat-track {

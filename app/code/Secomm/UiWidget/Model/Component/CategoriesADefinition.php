@@ -50,6 +50,14 @@ class CategoriesADefinition extends Definition
                 'default' => true,
             ],
             [
+                'name' => 'auto_slide', 'type' => 'yesno', 'label' => 'Enable Auto Slide (Marquee)',
+                'default' => false,
+            ],
+            [
+                'name' => 'marquee_duration', 'type' => 'integer', 'label' => 'Marquee Speed: Seconds per Loop',
+                'default' => 30, 'min' => 5, 'max' => 120,
+            ],
+            [
                 'name' => 'items', 'type' => 'collection', 'label' => 'Categories',
                 'required' => true, 'min_items' => 1, 'max_items' => 12,
                 'fields' => [
