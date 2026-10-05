@@ -1,0 +1,25 @@
+<?php
+/**
+ * RMA footer link for the SLP-275 CMS footer, shared by the vendor
+ * `Link\Request\Footer` and `Link\Policy\Footer` blocks (re-homed into
+ * `footer-content` by the theme's Mageplaza_RMA/layout/hyva_default.xml).
+ * Replaces the `Html\Link\Current` default markup (<li class="nav item">)
+ * so the link inherits footer typography. Label comes from the vendor layout
+ * arguments; href from each block (path argument / policy config). Visibility
+ * is decided by the vendor block's _toHtml() config gating — an empty render
+ * here means the config turned the link off.
+ *
+ * @var \Mageplaza\RMA\Block\Link\Request\Footer|\Mageplaza\RMA\Block\Link\Policy\Footer $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+declare(strict_types=1);
+?>
+<ul class="mt-4 list-none p-0">
+    <li class="py-1.5">
+        <a href="<?= $escaper->escapeUrl($block->getHref()) ?>"
+           <?= $block->isCurrent() ? 'aria-current="page"' : '' ?>>
+            <?= $escaper->escapeHtml($block->getLabel()) ?>
+        </a>
+    </li>
+</ul>

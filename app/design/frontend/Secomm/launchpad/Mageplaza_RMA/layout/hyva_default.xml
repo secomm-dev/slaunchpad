@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+  Re-home the vendor RMA footer link blocks for the SLP-275 CMS footer.
+
+  Mageplaza_RMA's own hyva_default.xml anchors `mprma_footer_link` and
+  `mprma_policy_footer_link` under `footer-static-links`, which
+  Magento_Theme/layout/default.xml removes for the CMS-based footer. Moving
+  them into `footer-content` works because Magento processes scheduled moves
+  BEFORE scheduled removes (see GeneratorPool::buildStructure), so the blocks
+  are detached from the doomed parent before the removal executes.
+
+  The blocks keep their vendor class + ifconfig + label/path arguments; only
+  the template is swapped so the link inherits footer typography instead of
+  the Html\Link\Current Luma markup. Theme files load after module files for
+  the same handle, so the setTemplate below wins.
+
+  Trade-off: this references vendor block names — a Mageplaza upgrade that
+  renames them silently no-ops the move (links disappear; QC by link absence).
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <move element="mprma_footer_link" destination="footer-content"/>
+        <move element="mprma_policy_footer_link" destination="footer-content"/>
+        <referenceBlock name="mprma_footer_link">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mageplaza_RMA::footer/link.phtml</argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="mprma_policy_footer_link">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Mageplaza_RMA::footer/link.phtml</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>
