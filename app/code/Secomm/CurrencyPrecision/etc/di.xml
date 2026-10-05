@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!--
+      Display-only precision control. formatTxt is the single choke point of
+      Magento\Directory\Model\Currency (format() -> formatPrecision() ->
+      formatTxt()), so one before-plugin covers every server-rendered price
+      (PLP/PDP/cart/checkout/email/PDF). Numeric values, tax/discount math,
+      convertAndRound() and payment payloads never pass through here.
+    -->
+    <type name="Magento\Directory\Model\Currency">
+        <plugin name="secomm_currency_precision_format_txt"
+                type="Secomm\CurrencyPrecision\Plugin\CurrencyFormatting"
+                sortOrder="100"/>
+    </type>
+    <!-- Feeds checkoutConfig.priceFormat / priceUtils (Luma fallback + OSC JS). -->
+    <type name="Magento\Framework\Locale\Format">
+        <plugin name="secomm_currency_precision_price_format"
+                type="Secomm\CurrencyPrecision\Plugin\JsPriceFormat"
+                sortOrder="100"/>
+    </type>
+</config>

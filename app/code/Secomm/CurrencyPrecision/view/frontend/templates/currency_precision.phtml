@@ -1,0 +1,34 @@
+<?php
+/*
+ * @author Secomm Team
+ * @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+ * See COPYING.txt for license details.
+ */
+
+/** @var \Secomm\CurrencyPrecision\Block\CurrencyPrecision $block */
+$precision = $block->getPrecision();
+?>
+<?php if ($precision !== null): ?>
+<script>
+    (function () {
+        'use strict';
+        if (typeof window.hyva === 'undefined' || typeof window.hyva.formatPrice !== 'function') {
+            return;
+        }
+        var originalFormatPrice = window.hyva.formatPrice;
+        var precision = <?= (int)$precision /* int only — no escaping needed */ ?>;
+        window.hyva.formatPrice = function (value, showSign, options) {
+            options = options || {};
+            // min == max: a fixed precision always renders its decimals
+            // (0 -> no fraction, 4 -> ",0000"), matching the PHP formatter.
+            if (options.minimumFractionDigits === undefined) {
+                options.minimumFractionDigits = precision;
+            }
+            if (options.maximumFractionDigits === undefined) {
+                options.maximumFractionDigits = precision;
+            }
+            return originalFormatPrice(value, showSign, options);
+        };
+    })();
+</script>
+<?php endif; ?>
