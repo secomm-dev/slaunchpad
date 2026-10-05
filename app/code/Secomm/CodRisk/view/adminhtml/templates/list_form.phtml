@@ -22,15 +22,20 @@ $effectiveTo = $record !== null
     ? $block->formatEffective((string)($record->getData('effective_to') ?? ''), (int)$websiteId)
     : '';
 ?>
-<form method="post" action="<?= $escaper->escapeUrl($block->getSaveUrl()) ?>" id="edit_form">
-    <div class="codrisk-list-actions">
-        <button class="action-default scalable back" type="button"
-                onclick="setLocation('<?= $escaper->escapeJs($block->getBackUrl()) ?>'); return false;">
-            <?= $escaper->escapeHtml(__('Back')) ?>
-        </button>
-        <button class="action-default scalable primary save" type="submit">
-            <?= $escaper->escapeHtml(__('Save')) ?>
-        </button>
+<form method="post" action="<?= $escaper->escapeUrl($block->getSaveUrl()) ?>" id="edit_form"
+      data-mage-init='{"Secomm_CodRisk/js/effective-dates": {}}'>
+    <div class="page-main-actions">
+        <div class="page-actions">
+            <div class="page-actions-buttons">
+                <button class="action-default scalable back" type="button"
+                        onclick="setLocation('<?= $escaper->escapeJs($block->getBackUrl()) ?>'); return false;">
+                    <?= $escaper->escapeHtml(__('Back')) ?>
+                </button>
+                <button class="action-default scalable primary save" type="submit">
+                    <?= $escaper->escapeHtml(__('Save')) ?>
+                </button>
+            </div>
+        </div>
     </div>
     <?= $block->getBlockHtml('formkey') ?>
     <fieldset class="admin__fieldset">
@@ -112,9 +117,8 @@ $effectiveTo = $record !== null
                 <span><?= $escaper->escapeHtml(__('Effective From')) ?></span>
             </label>
             <div class="admin__field-control control">
-                <input class="input-text admin__control-text" type="text" id="effective_from"
-                       name="effective_from" value="<?= $escaper->escapeHtml($effectiveFrom) ?>"
-                       data-mage-init='{"mage/calendar": {"showsTime": true, "dateFormat": "yy-mm-dd", "timeFormat": "HH:mm"}}'/>
+                <input class="input-text admin__control-text codrisk-effective-date" type="text" id="effective_from"
+                       name="effective_from" value="<?= $escaper->escapeHtml($effectiveFrom) ?>"/>
             </div>
         </div>
         <div class="admin__field">
@@ -122,9 +126,8 @@ $effectiveTo = $record !== null
                 <span><?= $escaper->escapeHtml(__('Effective To')) ?></span>
             </label>
             <div class="admin__field-control control">
-                <input class="input-text admin__control-text" type="text" id="effective_to"
-                       name="effective_to" value="<?= $escaper->escapeHtml($effectiveTo) ?>"
-                       data-mage-init='{"mage/calendar": {"showsTime": true, "dateFormat": "yy-mm-dd", "timeFormat": "HH:mm"}}'/>
+                <input class="input-text admin__control-text codrisk-effective-date" type="text" id="effective_to"
+                       name="effective_to" value="<?= $escaper->escapeHtml($effectiveTo) ?>"/>
                 <div class="note"><?= $escaper->escapeHtml(__('Leave empty = block/allow indefinitely.')) ?></div>
             </div>
         </div>

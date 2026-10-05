@@ -21,13 +21,7 @@
 .codrisk-events-title { margin-top: 18px; }
 .codrisk-evaluated-note { display: inline; }
 
-/* --- Order View: action bar + collapsible form panels --- */
-.codrisk-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin: 16px 0 0;
-}
+/* --- Order View: collapsible form panels --- */
 .codrisk-form-panel {
     max-width: 560px;
     margin-top: 10px;
@@ -58,14 +52,6 @@
     color: #c0392b;
 }
 .codrisk-phone-note.visible { display: block; }
-
-/* --- Risk Lists: form actions --- */
-.codrisk-list-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-bottom: 12px;
-}
 
 /* --- Inspector: input full-width trong grid column --- */
 .codrisk-inspector-search .input-text,
