@@ -1,0 +1,4 @@
+PASS | card "Terra Mug" → modal "Terra Mug"
+PASS | card "Terra Bowl" → modal "Terra Bowl"
+PASS | card "Ovale Dining Table" → modal "Ovale Dining Table"
+PASS | ATC child variant (Terra Mug) | count 0→1, drawer=true

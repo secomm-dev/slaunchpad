@@ -1,12 +1,21 @@
 <?php
 /**
- * Secomm Launchpad — Quick View modal (TASK-Z3DAH5, SLP-157)
+ * Secomm Launchpad — Quick View modal (TASK-Z3DAH5, SLP-157; restyle TASK-WN9VB0)
  *
  * Single reusable modal for the product list. Renders a native <dialog> per the
  * Hyvä UI modal.A-simple pattern; product data is lazy-loaded via GraphQL when a
  * card dispatches the `open-quickview` window event. Add to cart posts to the core
  * `checkout/cart/add` controller with the AJAX header so the session quote stays
  * authoritative (see record §Approach for the GraphQL rejection rationale).
+ *
+ * TASK-WN9VB0 (SLP-157 design fix): restyled to Figma 2636-55026 (desktop) /
+ * 2330-39558 (mobile). Brand + rating row reuses the global .hp-card-brandrow*
+ * component classes from theme/card.css for 1:1 card parity; swatch states are
+ * scoped to .quickview-modal in web/tailwind/theme/quickview.css. The whole
+ * info column is wrapped in the add-to-cart <form> so FormData still carries
+ * the selected super_attribute options — and the form deliberately carries no
+ * class/id matching the Monsoon intercept selectors. Stock/SKU/Information/
+ * Materials are desktop-only (hidden below md, per ticket decision).
  *
  * @var Template $block
  * @var Escaper $escaper
@@ -53,15 +62,15 @@ $showCompare = $viewModels->require(ProductCompare::class)->showInProductList();
         x-htmldialog.noscroll="close"
         @click.self="close()"
         aria-labelledby="quickview-modal-title"
-        class="m-auto rounded-xl p-0 shadow-xl w-[min(92vw,60rem)] max-h-[90dvh] overflow-y-auto"
+        class="quickview-modal m-auto rounded-2xl p-0 shadow-xl w-[min(92vw,63rem)] max-h-[90dvh] overflow-y-auto"
     >
         <button
             type="button"
-            class="btn p-2 rounded-full absolute right-3 top-3 z-10"
+            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-ink shadow-sm transition hover:brightness-95"
             aria-label="<?= $escaper->escapeHtmlAttr(__('Close')) ?>"
             @click="close()"
         >
-            <?= $lucideIcons->xHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
+            <?= $lucideIcons->xHtml('', 18, 18, ['aria-hidden' => 'true']) ?>
         </button>
 
         <?php /* Loading state */ ?>
@@ -77,7 +86,7 @@ $showCompare = $viewModels->require(ProductCompare::class)->showInProductList();
                guard `product` with optional chaining because Alpine bindings are
                applied once at init (Hyvä runs Alpine with the mutation observer off,
                so dynamically-mounted directives are never bound) */ ?>
-        <div x-show="product" class="grid gap-6 p-6 md:grid-cols-2 md:gap-8">
+        <div x-show="product" class="grid gap-4 p-4 sm:p-6 md:grid-cols-2 md:gap-8">
 
             <?php /* Gallery: main image + thumbnails */ ?>
             <div class="flex flex-col gap-3">
@@ -85,7 +94,7 @@ $showCompare = $viewModels->require(ProductCompare::class)->showInProductList();
                     x-show="gallery.length"
                     :src="gallery[activeImage] && gallery[activeImage].url"
                     :alt="gallery[activeImage] && (gallery[activeImage].label || product?.name)"
-                    class="w-full aspect-square object-contain rounded-lg border border-gray-200 bg-white"
+                    class="w-full aspect-square object-contain rounded-lg bg-[#f8f6ee]"
                     loading="lazy"
                 />
                 <div x-show="gallery.length > 1" class="flex flex-wrap gap-2">
@@ -94,7 +103,7 @@ $showCompare = $viewModels->require(ProductCompare::class)->showInProductList();
                             type="button"
                             @click="activeImage = index"
                             class="rounded overflow-hidden border"
-                            :class="index === activeImage ? 'border-blue-600' : 'border-gray-200'"
+                            :class="index === activeImage ? 'border-gray-900' : 'border-gray-200'"
                             :aria-label="image.label || product.name"
                             :aria-pressed="index === activeImage"
                         >
@@ -104,167 +113,206 @@ $showCompare = $viewModels->require(ProductCompare::class)->showInProductList();
                 </div>
             </div>
 
-            <?php /* Name, price, stock, options, qty, add to cart */ ?>
-            <div class="flex flex-col">
-                <h2 id="quickview-modal-title" class="text-lg font-semibold mb-2" x-text="product?.name"></h2>
+            <?php /* Everything from the brand row down lives inside the ATC form so
+                   FormData(form) keeps carrying super_attribute + qty (the Figma
+                   order interleaves options and price with the cart controls). */ ?>
+            <form
+                action="<?= $escaper->escapeUrl($block->getUrl('checkout/cart/add')) ?>"
+                method="post"
+                novalidate
+                x-ref="form"
+                @submit.prevent="addToCart($event)"
+                class="flex flex-col md:pt-8"
+            >
+                <?= $block->getBlockHtml('formkey') ?>
+                <input type="hidden" name="product" :value="product?.id" />
 
-                <div class="flex items-baseline gap-2 mb-1">
+                <?php /* Brand + rating row — same .hp-card-brandrow component classes
+                       as the product card (brand left, rating right; rating only
+                       when reviewed, SLP-235). */ ?>
+                <div class="hp-card-brandrow">
+                    <span
+                        class="hp-card-brand"
+                        :aria-hidden="(!brandLabel) ? 'true' : 'false'"
+                        x-text="brandLabel"
+                    ></span>
+                    <div class="hp-card-rating" x-show="ratingScore !== null">
+                        <?= /* @noEscape */ $lucideIcons->starHtml('fill-current text-[#FFB900]', 16, 16, ['aria-hidden' => 'true']) ?>
+                        <span class="hp-card-rating-score" x-text="ratingScore"></span>
+                        <span class="hp-card-rating-count" x-show="reviewCount > 0" x-text="'(' + reviewCount + ')'"></span>
+                    </div>
+                </div>
+
+                <h2 id="quickview-modal-title" class="mt-1 text-xl font-medium text-ink" x-text="product?.name"></h2>
+
+                <?php /* Swatch options rendered like the PDP
+                       (Magento_Swatches::product/view/renderer.phtml pattern);
+                       Figma order: options above the price. */ ?>
+                <template x-for="option in configurableOptions" :key="option.attribute_id">
+                    <fieldset class="mt-0 mb-4">
+                        <legend class="mb-1 text-base font-normal">
+                            <span x-text="option.label"></span>:
+                            <span class="font-medium" x-text="selectedLabel(option)"></span>
+                        </legend>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="value in option.values" :key="value.value_index">
+                                <?php /* SLP-272: unavailable (OOS) value styled by .swatch-option:has(:disabled) — swatches.css + quickview.css */ ?>
+                                <label
+                                    class="swatch-option my-0"
+                                    :data-swatch-type="swatchType(value) === 'text' ? 'text' : 'visual'"
+                                >
+                                    <span
+                                        x-show="swatchType(value) === 'text'"
+                                        x-text="value.label"
+                                    ></span>
+                                    <?php /* Visual swatch — same inline-size pattern as Magento_Swatches::swatch-item.phtml */ ?>
+                                    <span
+                                        class="block"
+                                        x-show="swatchType(value) === 'color'"
+                                        :style="'width:30px;height:30px;background-color:' + value.swatch_data.value"
+                                    ></span>
+                                    <img
+                                        class="block"
+                                        x-show="swatchType(value) === 'image'"
+                                        :src="value.swatch_data.value"
+                                        width="30"
+                                        height="30"
+                                        loading="lazy"
+                                        alt=""
+                                    />
+                                    <input
+                                        type="radio"
+                                        class="opacity-0 size-full m-0"
+                                        :name="'super_attribute[' + option.attribute_id + ']'"
+                                        :value="value.value_index"
+                                        x-model.number="selected[option.attribute_code]"
+                                        :disabled="!isValueAvailable(option, value.value_index)"
+                                        :data-option-label="value.label"
+                                    />
+                                </label>
+                            </template>
+                        </div>
+                    </fieldset>
+                </template>
+
+                <?php /* Price: final (green) first, regular strikethrough after —
+                       Figma order. Title above keeps font-medium so this remains
+                       the only .text-xl.font-semibold element in the dialog. */ ?>
+                <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span class="text-xl font-semibold text-hp-brand" x-text="hyva.formatPrice(finalPrice)"></span>
                     <span
                         x-show="regularPrice > finalPrice"
-                        class="text-sm text-gray-500 line-through"
+                        class="text-sm text-[#99a1af] line-through"
                         x-text="hyva.formatPrice(regularPrice)"
                     ></span>
-                    <span class="text-xl font-semibold" x-text="hyva.formatPrice(finalPrice)"></span>
                 </div>
-                <p x-show="asLowAs !== null" class="text-sm text-gray-600 mb-1">
+                <p x-show="asLowAs !== null" class="text-sm text-gray-600 mt-1">
                     <?= $escaper->escapeHtml(__('As low as')) ?>
                     <span class="font-medium" x-text="hyva.formatPrice(asLowAs)"></span>
                 </p>
 
-                <p
-                    class="text-sm mb-2"
-                    :class="inStock ? 'text-green-700' : 'text-red-600'"
-                    x-text="inStock ? '<?= $escaper->escapeJs(__('In stock')) ?>' : '<?= $escaper->escapeJs(__('Out of stock')) ?>'"
-                ></p>
-                <p class="text-sm text-gray-600 mb-3">
-                    <?= $escaper->escapeHtml(__('SKU')) ?>:
+                <?php /* Stock + SKU + Information + Materials: desktop-only per ticket
+                       decision (mobile Figma omits them). */ ?>
+                <p class="hp-card-stock hidden md:flex" :class="!inStock && 'text-red-600'">
+                    <span class="hp-card-stock-dot" :class="!inStock && 'bg-red-600'"></span>
+                    <span x-text="inStock ? '<?= $escaper->escapeJs(__('In stock')) ?>' : '<?= $escaper->escapeJs(__('Out of stock')) ?>'"></span>
+                </p>
+                <p class="hidden text-sm text-gray-500 md:block">
+                    <?= $escaper->escapeHtml(__('SKU code:')) ?>
                     <span class="font-medium text-gray-800" x-text="product?.sku"></span>
                 </p>
-                <?php /* Short description + More Information (description) — same content sources as the PDP tabs. */ ?>
-                <div x-show="product?.short_description?.html" class="prose-sm text-gray-700 mb-3 [&_p]:mb-2" x-html="product?.short_description?.html"></div>
-                <div x-show="product?.description?.html" class="border-t border-gray-200 pt-3 mb-3">
-                    <h3 class="text-sm font-semibold mb-1"><?= $escaper->escapeHtml(__('More Information')) ?></h3>
-                    <div class="prose-sm text-gray-700 [&_p]:mb-2" x-html="product?.description?.html"></div>
+
+                <div x-show="product?.short_description?.html" class="hidden md:block mt-3">
+                    <h3 class="text-base font-semibold text-ink"><?= $escaper->escapeHtml(__('Information')) ?></h3>
+                    <div class="prose-sm text-gray-700 [&_p]:mb-2" x-html="product?.short_description?.html"></div>
+                </div>
+                <div x-show="materialLabels" class="hidden md:block mt-3">
+                    <h3 class="text-base font-semibold text-ink"><?= $escaper->escapeHtml(__('Materials')) ?></h3>
+                    <p class="text-sm text-gray-700" x-text="materialLabels"></p>
                 </div>
 
                 <?php /* novalidate: qty is validated in addToCart() with theme-translated
                        messages shown under the field — no browser-native bubble
-                       (its text follows the browser UI locale, not the store). */ ?>
-                <form
-                    action="<?= $escaper->escapeUrl($block->getUrl('checkout/cart/add')) ?>"
-                    method="post"
-                    novalidate
-                    x-ref="form"
-                    @submit.prevent="addToCart($event)"
-                >
-                    <?= $block->getBlockHtml('formkey') ?>
-                    <input type="hidden" name="product" :value="product?.id" />
-                    <?php /* Swatch options rendered like the PDP
-                           (Magento_Swatches::product/view/renderer.phtml pattern). */ ?>
-                    <template x-for="option in configurableOptions" :key="option.attribute_id">
-                        <fieldset class="mt-0 mb-4">
-                            <legend class="mb-1 text-base font-normal">
-                                <span x-text="option.label"></span>:
-                                <span class="font-medium" x-text="selectedLabel(option)"></span>
-                            </legend>
-                            <div class="flex flex-wrap gap-2">
-                                <template x-for="value in option.values" :key="value.value_index">
-                                    <?php /* SLP-272: unavailable (OOS) value styled by .swatch-option:has(:disabled) — swatches.css */ ?>
-                                    <label
-                                        class="swatch-option my-0"
-                                        :data-swatch-type="swatchType(value) === 'text' ? 'text' : 'visual'"
-                                    >
-                                        <span
-                                            x-show="swatchType(value) === 'text'"
-                                            x-text="value.label"
-                                        ></span>
-                                        <?php /* Visual swatch — same inline-size pattern as Magento_Swatches::swatch-item.phtml */ ?>
-                                        <span
-                                            class="block"
-                                            x-show="swatchType(value) === 'color'"
-                                            :style="'width:30px;height:30px;background-color:' + value.swatch_data.value"
-                                        ></span>
-                                        <img
-                                            class="block"
-                                            x-show="swatchType(value) === 'image'"
-                                            :src="value.swatch_data.value"
-                                            width="30"
-                                            height="30"
-                                            loading="lazy"
-                                            alt=""
-                                        />
-                                        <input
-                                            type="radio"
-                                            class="opacity-0 size-full m-0"
-                                            :name="'super_attribute[' + option.attribute_id + ']'"
-                                            :value="value.value_index"
-                                            x-model.number="selected[option.attribute_code]"
-                                            :disabled="!isValueAvailable(option, value.value_index)"
-                                            :data-option-label="value.label"
-                                        />
-                                    </label>
-                                </template>
-                            </div>
-                        </fieldset>
-                    </template>
+                       (its text follows the browser UI locale, not the store).
+                       Figma puts the qty stepper, ATC and the wishlist/compare
+                       circles on ONE row (desktop stepper; mobile keeps the plain
+                       number input — the −/+ buttons are hidden below md). */ ?>
+                <p x-show="status === 'success'" class="mt-3 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-800 flex items-start gap-2" role="status">
+                    <?= $lucideIcons->checkCircleHtml('shrink-0 text-green-600 mt-0.5', 18, 18, ['aria-hidden' => 'true']) ?>
+                    <span x-text="statusMessage"></span>
+                </p>
+                <p x-show="status === 'error'" class="mt-3 text-sm text-red-600" x-text="statusMessage" role="alert"></p>
 
-                    <div class="mb-4">
-                        <div class="flex items-center gap-3">
-                            <label for="quickview-qty" class="text-sm"><?= $escaper->escapeHtml(__('Qty')) ?></label>
-                            <input
-                                id="quickview-qty"
-                                type="number"
-                                name="qty"
-                                min="1"
-                                step="1"
-                                value="1"
-                                x-ref="qty"
-                                x-model.number="qty"
-                                @input="qtyError = ''"
-                                inputmode="numeric"
-                                class="form-input w-20"
-                                :class="qtyError ? 'border-red-600' : ''"
-                                aria-describedby="quickview-qty-error"
-                                :aria-invalid="qtyError ? 'true' : 'false'"
-                            />
-                        </div>
-                        <p id="quickview-qty-error" x-show="qtyError" class="mt-1 text-sm text-red-600" x-text="qtyError"></p>
-                    </div>
-
-                    <p x-show="status === 'success'" class="mb-3 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-800 flex items-start gap-2" role="status">
-                        <?= $lucideIcons->checkCircleHtml('shrink-0 text-green-600 mt-0.5', 18, 18, ['aria-hidden' => 'true']) ?>
-                        <span x-text="statusMessage"></span>
-                    </p>
-                    <p x-show="status === 'error'" class="mb-3 text-sm text-red-600" x-text="statusMessage" role="alert"></p>
-
-                    <div class="flex items-center gap-2">
+                <div class="mt-auto flex flex-wrap items-center gap-2 pt-3">
+                    <div class="flex items-center">
                         <button
-                            type="submit"
-                            class="btn btn-primary flex-1"
-                            :disabled="submitting || !inStock"
-                        >
-                            <?= $lucideIcons->shoppingCartHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
-                            <span x-text="submitting ? '<?= $escaper->escapeJs(__('Loading...')) ?>' : '<?= $escaper->escapeJs(__('Add to Cart')) ?>'"></span>
-                        </button>
-                        <?php if ($showWishlist): ?>
-                            <button
-                                type="button"
-                                class="btn btn-secondary shrink-0 px-2"
-                                title="<?= $escaper->escapeHtmlAttr(__('Add to Wish List')) ?>"
-                                aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Wish List')) ?>"
-                                data-addto="wishlist"
-                                :disabled="wishlistBusy || !product"
-                                @click="addToWishlist()"
-                            >
-                                <?= $lucideIcons->heartHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
-                            </button>
-                        <?php endif; ?>
-                        <?php if ($showCompare): ?>
-                            <button
-                                type="button"
-                                class="btn btn-secondary shrink-0 px-2"
-                                title="<?= $escaper->escapeHtmlAttr(__('Add to Compare')) ?>"
-                                aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Compare')) ?>"
-                                data-addto="compare"
-                                :disabled="compareBusy || !product"
-                                @click="addToCompare()"
-                            >
-                                <?= $lucideIcons->scaleHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
-                            </button>
-                        <?php endif; ?>
+                            type="button"
+                            class="hidden md:flex h-11 w-11 items-center justify-center rounded-l-lg border border-r-0 border-gray-300 text-ink transition hover:bg-gray-50"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Decrease quantity')) ?>"
+                            @click="decQty()"
+                        >&minus;</button>
+                        <input
+                            id="quickview-qty"
+                            type="number"
+                            name="qty"
+                            min="1"
+                            step="1"
+                            value="1"
+                            x-ref="qty"
+                            x-model.number="qty"
+                            @input="qtyError = ''"
+                            inputmode="numeric"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Qty')) ?>"
+                            class="form-input w-16 md:h-11 md:w-14 md:rounded-none md:border-l-0 md:border-r-0 md:text-center"
+                            :class="qtyError ? 'border-red-600' : ''"
+                            aria-describedby="quickview-qty-error"
+                            :aria-invalid="qtyError ? 'true' : 'false'"
+                        />
+                        <button
+                            type="button"
+                            class="hidden md:flex h-11 w-11 items-center justify-center rounded-r-lg border border-l-0 border-gray-300 text-ink transition hover:bg-gray-50"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Increase quantity')) ?>"
+                            @click="incQty()"
+                        >&plus;</button>
                     </div>
-                </form>
-            </div>
+                    <button
+                        type="submit"
+                        class="btn btn-primary h-11 min-w-0 flex-1 justify-center"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Cart')) ?>"
+                        :disabled="submitting || !inStock"
+                    >
+                        <?= $lucideIcons->shoppingCartHtml('', 20, 20, ['aria-hidden' => 'true']) ?>
+                        <span class="hidden md:inline" x-text="submitting ? '<?= $escaper->escapeJs(__('Loading...')) ?>' : '<?= $escaper->escapeJs(__('Add to Cart')) ?>'"></span>
+                    </button>
+                    <?php if ($showWishlist): ?>
+                        <button
+                            type="button"
+                            class="hp-card-action-btn"
+                            title="<?= $escaper->escapeHtmlAttr(__('Add to Wish List')) ?>"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Wish List')) ?>"
+                            data-addto="wishlist"
+                            :disabled="wishlistBusy || !product"
+                            @click="addToWishlist()"
+                        >
+                            <?= $lucideIcons->heartHtml('', 18, 18, ['aria-hidden' => 'true']) ?>
+                        </button>
+                    <?php endif; ?>
+                    <?php if ($showCompare): ?>
+                        <button
+                            type="button"
+                            class="hp-card-action-btn"
+                            title="<?= $escaper->escapeHtmlAttr(__('Add to Compare')) ?>"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Compare')) ?>"
+                            data-addto="compare"
+                            :disabled="compareBusy || !product"
+                            @click="addToCompare()"
+                        >
+                                            <?= $lucideIcons->scaleHtml('', 18, 18, ['aria-hidden' => 'true']) ?>
+                        </button>
+                    <?php endif; ?>
+                </div>
+                <p id="quickview-qty-error" x-show="qtyError" class="mt-1 text-sm text-red-600" x-text="qtyError"></p>
+            </form>
         </div>
     </dialog>
 </div>
@@ -366,6 +414,49 @@ $showCompare = $viewModels->require(ProductCompare::class)->showInProductList();
                 this.activeImage = 0;
             },
 
+            // Brand ("manufacturer") and material labels come from
+            // custom_attributesV2: the direct EAV fields only carry option IDs.
+            // select/multiselect arrive as AttributeSelectedOptions with labels;
+            // plain text attributes as AttributeValue.
+            customAttribute(code) {
+                return (this.product && this.product.custom_attributesV2 && this.product.custom_attributesV2.items || [])
+                    .find(attribute => attribute.code === code);
+            },
+
+            get brandLabel() {
+                const attribute = this.customAttribute('manufacturer');
+                if (!attribute) {
+                    return '';
+                }
+                if (attribute.selected_options && attribute.selected_options.length) {
+                    return attribute.selected_options.map(option => option.label).join(', ');
+                }
+                return attribute.value || '';
+            },
+
+            get materialLabels() {
+                const attribute = this.customAttribute('material');
+                if (!attribute || !attribute.selected_options || !attribute.selected_options.length) {
+                    return '';
+                }
+                return attribute.selected_options.map(option => option.label).join(', ');
+            },
+
+            // Card parity (SLP-235): no star row when the product has no review.
+            // rating_summary is a 0-100 percentage; score = percent / 20.
+            get ratingScore() {
+                const percent = Number(this.product && this.product.rating_summary || 0);
+                const count = Number(this.product && this.product.review_count || 0);
+                if (!percent || !count) {
+                    return null;
+                }
+                return Math.round((percent / 20) * 10) / 10;
+            },
+
+            get reviewCount() {
+                return Number(this.product && this.product.review_count || 0);
+            },
+
             get isConfigurable() {
                 return !!(this.product && this.product.configurable_options);
             },
@@ -458,6 +549,16 @@ $showCompare = $viewModels->require(ProductCompare::class)->showInProductList();
             get missingSelection() {
                 return this.isConfigurable
                     && this.configurableOptions.some(option => !this.selected[option.attribute_code]);
+            },
+
+            incQty() {
+                const current = parseInt(this.qty, 10);
+                this.qty = (Number.isFinite(current) ? current : 1) + 1;
+            },
+
+            decQty() {
+                const current = parseInt(this.qty, 10);
+                this.qty = Math.max(1, Number.isFinite(current) ? current - 1 : 1);
             },
 
             // Qty rules the native constraints (min=1, step=1) used to enforce,
@@ -645,10 +746,24 @@ $showCompare = $viewModels->require(ProductCompare::class)->showInProductList();
                     name
                     sku
                     stock_status
-                    short_description {
-                        html
+                    rating_summary
+                    review_count
+                    custom_attributesV2 {
+                        items {
+                            code
+                            __typename
+                            ... on AttributeValue {
+                                value
+                            }
+                            ... on AttributeSelectedOptions {
+                                selected_options {
+                                    value
+                                    label
+                                }
+                            }
+                        }
                     }
-                    description {
+                    short_description {
                         html
                     }
                     media_gallery {

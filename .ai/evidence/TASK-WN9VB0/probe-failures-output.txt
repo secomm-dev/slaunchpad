@@ -1,0 +1,53 @@
+A pre-click state: {"productLoaded":true,"productId":2117,"inStock":true,"qty":1,"submitting":false,"status":"","missingSelection":false,"btnDisabled":false,"hiddenProductValue":"2117","hiddenHasAttr":true}
+A post-click state: {"status":"success","msg":"Bạn đã thêm Linje Table Runner vào giỏ hàng.","submitting":false,"statusVisible":true,"alertVisible":false,"cartCount":1,"navAlive":"alive"}
+A posts: [
+ "POST d.localhost/checkout/cart/add/ -> 200 body={\"tiktok_events\":[{\"website_id\":1,\"event_source\":\"web\",\"partner_name\":\"Magento\",\"data\":{\"event\":\"AddToCart\",\"event_time\":1790937118,\"event_id\":\"event_AddToCart29mjpdsv7871f4jnhq1u9j8q4m6abf881e841fa7."
+]
+A consoleErrors: []
+B swatch inventory: [
+ {
+  "type": "visual",
+  "inputType": "radio",
+  "cls": "swatch-option my-0",
+  "spanStyle": "display: none;"
+ },
+ {
+  "type": "visual",
+  "inputType": "radio",
+  "cls": "swatch-option my-0",
+  "spanStyle": "display: none;"
+ },
+ {
+  "type": "visual",
+  "inputType": "radio",
+  "cls": "swatch-option my-0",
+  "spanStyle": "display: none;"
+ },
+ {
+  "type": "text",
+  "inputType": "radio",
+  "cls": "swatch-option my-0",
+  "spanStyle": ""
+ },
+ {
+  "type": "text",
+  "inputType": "radio",
+  "cls": "swatch-option my-0",
+  "spanStyle": ""
+ },
+ {
+  "type": "text",
+  "inputType": "radio",
+  "cls": "swatch-option my-0",
+  "spanStyle": ""
+ },
+ {
+  "type": "text",
+  "inputType": "radio",
+  "cls": "swatch-option my-0",
+  "spanStyle": ""
+ }
+]
+B counts: {"color":0,"text":0,"visual":0,"anySwatch":0}
+C round1: at2500=display=block, visibility=visible, hasXCloak=false, alpineDone=false | at6500=display=block | errors=["console: Error fetching data: SyntaxError: Unexpected token '<', \"<!doctype \"... is not valid JSON"]
+C round2: at2500=display=block, visibility=visible, hasXCloak=false, alpineDone=false | at6500=display=block | errors=["console: Error fetching data: SyntaxError: Unexpected token '<', \"<!doctype \"... is not valid JSON"]
