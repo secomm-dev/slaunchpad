@@ -1,0 +1,32 @@
+PASS | A00 plp loaded | nav=ok, graphql custom_attributesV2 hits=1
+PASS | A01 graphql response contains custom_attributesV2 | hits=1
+PASS | A02 dialog.quickview-modal class | {"cls":true,"radius":"16px","w":1008,"vh":1280}
+PASS | A03 border-radius 16px (rounded-2xl) | radius=16px
+PASS | A04 width clamp 960..1040 (~1008 = 63rem) | w=1008 @vw=1280
+PASS | A05 brandrow + rating visible, score=4, count=(1) | {"row":true,"ratingVis":true,"score":"4","count":"(1)","countVis":true,"brand":""}
+PASS | A06 title = product name | title="Linje Table Runner" alpine="Linje Table Runner"
+PASS | A07 price order final->strike + digits + brand green rgb(88, 143, 96) | {"hasFinal":true,"text":"55 ₫","color":"rgb(88, 143, 96)","strikeVisible":false,"strikeText":"55 ₫","order":"final-first"}
+PASS | A08 stock dot row visible on desktop | {"stockVis":true,"dotPresent":true,"stockText":"Còn hàng"}
+PASS | A09 SKU row "Mã SKU:" present | skuText=true
+PASS | A10 Materials heading "Chất liệu" + label text | h3=["Thông tin","Chất liệu"] mat="Belgian Linen"
+PASS | A11 Information heading "Thông tin" (or short_description empty) | h3=["Thông tin","Chất liệu"] sdEmpty=false
+PASS | A12 Alpine brandLabel/materialLabels strings, ratingScore number | {"brand":"","mat":"Belgian Linen","score":4}
+PASS | A13 screenshot qv-restyle-desktop.png | linje table runner (material + rating)
+PASS | A14 stepper visible @1280, +/+ -> 3, - -> 2 | {"plus":true,"minus":true,"qty":true} values 3->2
+PASS | A15 qty=0 blocked by validateQty, no ATC, cart unchanged | err="Giá trị phải lớn hơn hoặc bằng 1." cart null->null
+PASS | A16 simple ATC success + cart count increment | cart null->2
+PASS | A17 wishlist/compare hp-card-action-btn circles 32x32 radius 9999px | [{"label":"Thêm vào danh sách yêu thích","radius":"9999px","w":32,"h":32},{"label":"Thêm vào so sánh","radius":"9999px","w":32,"h":32}]
+PASS | A18 close via "Đóng" -> dialog.open === false | btnVisible=true open=false:true
+PASS | B01 swatches exist, data-swatch-type text|visual, text radius 6px | {"total":2,"types":["text"],"textRadius":"6px"}
+PASS | C01 sofa swatch types visual + text both present | {"total":7,"types":["visual","text"],"textRadius":"6px","visualRadius":"9999px"}
+PASS | C02 text swatch radius 6px / visual swatch pill | text=6px visual=9999px
+PASS | C03 screenshot qv-restyle-desktop-configurable.png | picked=2/2, selected={"color":226,"size":233}, missingSelection=false
+PASS | C04 configurable ATC success + cart increment | cart 2->3
+PASS | M01 no horizontal scroll @375 | scrollWidth=360, dialogInViewport=true
+PASS | M02 stock/SKU/Information/Materials display none @375 | {"stock":"none","dotBoxes":0,"sku":"none","info":"none","mat":"none"}
+PASS | M03 brandrow + title + price + swatches visible @375 | swatches=2
+PASS | M04 stepper hidden, qty + ATC visible, ATC span hidden | {"plus":"none","minus":"none","qtyVis":true,"submitVis":true,"span":"none"}
+PASS | M05 screenshot qv-restyle-mobile.png | ovale dining table @375
+PASS | Z01 console errors (non-ambient) | clean
+
+SUMMARY: 30/30 PASS

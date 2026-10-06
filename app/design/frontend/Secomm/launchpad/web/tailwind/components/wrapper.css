@@ -18,14 +18,18 @@
         }
     }
 
-    /* TASK-2BASRX (SLP-300): the sticky header stays in flow (header.phtml adds
-       `sticky top-0` on non-home pages), so account content starts flush under the
-       64px header bar — match the container's inline padding above it. */
-    body.customer-account-index main:not(.product-main-full-width, .page-main-full-width) {
+    /* TASK-2BASRX (SLP-300) + TASK-52CKN3 (SLP-305): the sticky header stays in flow
+       (header.phtml adds `sticky top-0` on non-home pages), so account content starts
+       flush under the 64px header bar — match the container's inline padding above it.
+       TASK-52CKN3: scope by the account sidebar (.account-nav) via :has() so every
+       account-area page is covered (dashboard, account edit, address book/form/edit,
+       order history/view, reviews, wishlist, newsletter, RMA) — enumerating body
+       classes is fragile (extension pages like RMA any account sidebar page). */
+    main:has(.account-nav):not(.product-main-full-width, .page-main-full-width) {
         padding-top: --spacing(6);
     }
 
-    body.customer-account-index main:not(.product-main-full-width, .page-main-full-width) .columns {
+    main:has(.account-nav):not(.product-main-full-width, .page-main-full-width) .columns {
         padding-top: --spacing(6);
     }
 }

@@ -2,6 +2,13 @@
 
 ## 1.3.3 (unreleased — version bump khi unblock `setup:upgrade`, xem TASK-KMJV5Q)
 
+- SLP-267 (TASK-375K58): `sliders-init.phtml` thêm `enableCatMarquee` — auto slide
+  cho categories_a homepage: config widget `auto_slide` bật marquee chạy liên tục
+  vô hạn (clone tile set `aria-hidden` + rAF tăng `scrollLeft`, wrap modulo cycle
+  liền mạch; pause khi hover/focus; `prefers-reduced-motion` fallback slider
+  thường; ResizeObserver đo lại cycle + clone thêm khi breakpoint đổi). El có
+  marquee bỏ qua init SnapSlider/enableMouseDrag.
+
 - SLP-290 (BUG-6AYPGS): edit block `footer_links` không save được —
   PageBuilder `validate-css-class` reject `#` (regex allowed set của
   validator-rules-mixin.js không có `#`) trong khi content seed chứa 4 hex

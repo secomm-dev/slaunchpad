@@ -13,9 +13,28 @@
             align-items: center;
         }
 
-        /* @deprecated */
-        & a.back {
-            @apply underline;
+        /* TASK-6YJGRV (SLP-305): back link = TEXT LINK, matching the theme's own
+           secondary-action reference — "View All" in order/recent.phtml
+           (`action view inline-block underline`): inherited ink color + underline,
+           no box. Round-1 `btn btn-tertiary` mapping was off-design (QC round 3:
+           "nút quay lại nên có style giống nút Xem tất cả").
+           Mageplaza_SocialLogin hyva/style.css (aggregated via hyva-modules css)
+           ships Luma-legacy bare-class `!important` states —
+           `.back:hover{color:#006bb4!important;text-decoration:underline!important}`,
+           `.back:active{color:#ff5501!important;...}` — which would still turn the
+           link Luma-blue on hover/press; the (0,2,2) `!important` re-asserts keep
+           it ink. Covers every `a.action.back` in `.actions-toolbar` — all vendor
+           + theme account templates follow the `.actions-toolbar > .secondary`
+           convention. */
+        & a.action.back {
+            text-decoration: underline;
+
+            &:hover,
+            &:focus-visible,
+            &:is(:active, .is-active) {
+                color: inherit !important;
+                text-decoration: underline !important;
+            }
         }
     }
 }

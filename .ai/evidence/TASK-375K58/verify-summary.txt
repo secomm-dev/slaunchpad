@@ -1,0 +1,7 @@
+TASK-375K58 (SLP-267) verify summary — 2026-10-05
+21/21 PASS (assert tren marquee-out.json):
+OFF 1440: khong marquee attr / khong tu chay / drag snap 228 / 0 clone
+ON 375: attr=6, marqueeInit, 20 tiles (10 clone aria-hidden), speed 300=cycle 1800/6, wrap 1785->20 seamless, hover pause [0,0,0,0,0], resume, click clone mo URL, khong h-scroll
+ON 1440: attr=6, marqueeInit, 20/10, speed 361~380=cycle 2281/6, wrap 2272->33, hover pause, resume, click clone mo URL, khong h-scroll
+RM 375 (reduced-motion + config ON): khong marquee, SnapSlider + dots fallback
+pageErrors baseline (pre-existing working tree, task khac in_review): SyntaxError Invalid token + hyva.js lifetimeToExpires (xuat hien ca context OFF khong inject — ngoai scope task nay)

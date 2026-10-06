@@ -1,0 +1,7 @@
+PASS | T1 card ATC via Monsoon AJAX (no nav, +1, success event) | count null→1, navAlive=true, successEvt=1
+FAIL | T2 Quick View ATC (+1, no double, hands over to drawer) | count 1→1 (expected 2), monsoonEvt=0, modalClosed=false, drawerOpen=false
+FATAL: page.waitForSelector: Timeout 20000ms exceeded.
+Call log:
+[2m  - waiting for locator('#product_addtocart_form') to be visible[22m
+[2m    44 × locator resolved to hidden <form class="mb-6" method="post" novalidate="" @submit="onSubmit" id="product_addtocart_form" x-data="initProductCartForm" data-sku="table-runner-linen" action="http://slaunchpad.localhost/checkout/cart/add/uenc/aHR0cDovL3NsYXVuY2hwYWQubG9jYWxob3N0L2xpbmplLXRhYmxlLXJ1bm5lci5odG1s/product/2117/">…</form>[22m
+

@@ -8,7 +8,9 @@
         padding-block: var(--swatch-py, 3px);
         padding-inline: var(--swatch-px, 6px);
         border-radius: var(--swatch-radius, 0.5em);
-        border-width: 1px;
+        /* TASK-0Y24D4: design swatch component is border-2 (Figma
+           3286-150414); card/quickview already forced 2px — PDP follows. */
+        border-width: 2px;
         border-color: var(--form-stroke);
         background: var(--swatch-visual, var(--form-bg)) center/contain
             no-repeat;
@@ -51,21 +53,24 @@
             outline-offset: var(--outline-offset, 2px);
         }
 
-        /* SLP-272 (design): unavailable / out-of-stock option — solid light
-           border, muted label and a thin diagonal strike (bottom-left to
-           top-right). Colour/image swatches keep their full colour; the
-           strike sits on the colour dot itself (its inline style only sets
-           background-color) or, for image swatches, on ::after in the
-           image's grid cell. */
+        /* SLP-272 (design) → TASK-0Y24D4 (Figma 3286-150414): unavailable /
+           out-of-stock option — solid #d1d5dc (gray-primary) border, muted
+           label at 75% and a 2px diagonal strike. Colour/image swatches drop
+           to 50% opacity with NO strike: a white badge with red-700 X strokes
+           sits centred on the dot (badge 20px ≈ design 22px on 32px dots;
+           resize via --swatch-oos-badge — card/quickview 24px dots use 1rem). */
         &:is(:has(:disabled), [aria-disabled="true"]) {
             --swatch-strike: linear-gradient(
                 to bottom right,
-                #0000 calc(50% - 0.5px),
-                var(--swatch-strike-color, var(--ds-border-gray-secondary)) 0 calc(50% + 0.5px),
+                #0000 calc(50% - 1px),
+                var(--ds-border-gray-primary) 0 calc(50% + 1px),
                 #0000 0
             );
-            border-color: var(--ds-border-gray-secondary);
+            --swatch-oos-badge: 1.25rem;
+            border-color: var(--ds-border-gray-primary);
             color: var(--ds-text-gray-quinary);
+            background-color: #f3f4f6;
+            opacity: 0.75;
             cursor: not-allowed;
 
             &:not([data-swatch-type="visual"]) {
@@ -73,20 +78,35 @@
             }
 
             &[data-swatch-type="visual"] {
-                --swatch-strike-color: var(--ds-border-gray-primary);
+                opacity: 0.5;
+                border-color: transparent;
+                background-color: transparent;
 
                 > span {
-                    background-image: var(--swatch-strike);
+                    background-image: none;
                 }
 
-                &:has(> img)::after {
+                &::after {
                     content: "";
                     grid-area: 1/1;
-                    place-self: stretch;
-                    border-radius: calc(
-                        var(--swatch-radius, 0.5em) - var(--swatch-px, 6px)
-                    );
-                    background-image: var(--swatch-strike);
+                    place-self: center;
+                    width: var(--swatch-oos-badge);
+                    height: var(--swatch-oos-badge);
+                    border-radius: 9999px;
+                    background-color: #fff;
+                    background-image:
+                        linear-gradient(
+                            to bottom right,
+                            #0000 calc(50% - 0.75px),
+                            var(--ds-global-colors-red-700) 0 calc(50% + 0.75px),
+                            #0000 0
+                        ),
+                        linear-gradient(
+                            to bottom left,
+                            #0000 calc(50% - 0.75px),
+                            var(--ds-global-colors-red-700) 0 calc(50% + 0.75px),
+                            #0000 0
+                        );
                     pointer-events: none;
                 }
             }

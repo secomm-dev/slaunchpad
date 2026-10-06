@@ -1,0 +1,189 @@
+{
+ "off1440": {
+  "marqueeAttr": false,
+  "static0": {
+   "scrollLeft": 0,
+   "tiles": 10,
+   "clones": 0,
+   "sliderInit": true,
+   "marqueeInit": false,
+   "hScroll": false
+  },
+  "idleTrace": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "idleMoves": false,
+  "afterDrag": {
+   "scrollLeft": 228,
+   "tiles": 10,
+   "clones": 0,
+   "sliderInit": true,
+   "marqueeInit": false,
+   "hScroll": false
+  },
+  "pageErrors": [
+   "SyntaxError: Invalid or unexpected token",
+   "TypeError: Cannot read properties of undefined (reading 'lifetime')"
+  ]
+ },
+ "on375": {
+  "attr": "6",
+  "s0": {
+   "scrollLeft": 231,
+   "tiles": 20,
+   "clones": 10,
+   "sliderInit": true,
+   "marqueeInit": true,
+   "hScroll": false
+  },
+  "speedTrace": [
+   75,
+   75,
+   75,
+   75,
+   75,
+   75
+  ],
+  "speedPxPerSec": 300,
+  "cycle": 1800,
+  "wrap": {
+   "beforeWrap": [
+    1745,
+    1785
+   ],
+   "afterWrap": [
+    1785,
+    20
+   ],
+   "cycle": 1800
+  },
+  "hoverTrace": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "pausedOnHover": true,
+  "resumeTrace": [
+   75,
+   75,
+   75,
+   75
+  ],
+  "resumedAfterHover": true,
+  "cloneClickOpens": true,
+  "sFinal": null,
+  "sRecheck": {
+   "scrollLeft": 180,
+   "tiles": 20,
+   "clones": 10,
+   "sliderInit": true,
+   "marqueeInit": true,
+   "hScroll": false
+  },
+  "pageErrors": [
+   "SyntaxError: Invalid or unexpected token",
+   "TypeError: Cannot read properties of undefined (reading 'lifetime')",
+   "SyntaxError: Invalid or unexpected token",
+   "TypeError: Cannot read properties of undefined (reading 'lifetime')",
+   "SyntaxError: Invalid or unexpected token",
+   "TypeError: Cannot read properties of undefined (reading 'lifetime')"
+  ]
+ },
+ "on1440": {
+  "attr": "6",
+  "s0": {
+   "scrollLeft": 311,
+   "tiles": 20,
+   "clones": 10,
+   "sliderInit": true,
+   "marqueeInit": true,
+   "hScroll": false
+  },
+  "speedTrace": [
+   91,
+   90,
+   90,
+   90,
+   90,
+   90
+  ],
+  "speedPxPerSec": 361,
+  "cycle": 2281,
+  "wrap": {
+   "beforeWrap": [
+    2230,
+    2272
+   ],
+   "afterWrap": [
+    2272,
+    33
+   ],
+   "cycle": 2281
+  },
+  "hoverTrace": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "pausedOnHover": true,
+  "resumeTrace": [
+   90,
+   90,
+   90,
+   90
+  ],
+  "resumedAfterHover": true,
+  "cloneClickOpens": true,
+  "sFinal": null,
+  "sRecheck": {
+   "scrollLeft": 220,
+   "tiles": 20,
+   "clones": 10,
+   "sliderInit": true,
+   "marqueeInit": true,
+   "hScroll": false
+  },
+  "pageErrors": [
+   "SyntaxError: Invalid or unexpected token",
+   "TypeError: Cannot read properties of undefined (reading 'lifetime')",
+   "SyntaxError: Invalid or unexpected token",
+   "TypeError: Cannot read properties of undefined (reading 'lifetime')",
+   "SyntaxError: Invalid or unexpected token",
+   "TypeError: Cannot read properties of undefined (reading 'lifetime')"
+  ]
+ },
+ "reducedMotion375": {
+  "s0": {
+   "scrollLeft": 0,
+   "tiles": 10,
+   "clones": 0,
+   "sliderInit": true,
+   "marqueeInit": false,
+   "hScroll": false
+  },
+  "idleTrace": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "noMarquee": true,
+  "snapSliderInited": true,
+  "dotsVisible": true,
+  "pageErrors": [
+   "SyntaxError: Invalid or unexpected token",
+   "TypeError: Cannot read properties of undefined (reading 'lifetime')"
+  ]
+ }
+}

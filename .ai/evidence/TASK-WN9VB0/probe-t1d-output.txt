@@ -1,0 +1,22 @@
+T1a title= ""
+T1b price= "0 ₫"
+T1c imgs= 0
+state-after: {
+ "status": "success",
+ "msg": "Bạn đã thêm Linje Table Runner vào giỏ hàng.",
+ "qtyError": "",
+ "qty": 1,
+ "submitting": false,
+ "statusVisible": true,
+ "alertText": null,
+ "cart": 1,
+ "navAlive": "alive",
+ "url": "/dining.html"
+}
+requests: [
+ "REQ http://slaunchpad.localhost/checkout/cart/add/ body=form_key=5KMCVEpRZPedyCx5&product=2117&qty=1&uenc=aHR0cDovL3NsYXVuY2hwYWQubG9jYWxob3N0L2RpbmluZy5odG1s"
+]
+responses: [
+ "POST 200 body={\"tiktok_events\":[{\"website_id\":1,\"event_source\":\"web\",\"partner_name\":\"Magento\",\"data\":{\"event\":\"AddToCart\",\"event_time\":1790937562,\"event_id\":\"event_AddToCartc927orto5ihpl55vitur6qmf806abf89da2d0430.69910545\",\"user\":{\"ip\":\"127.0.0.1\",\"user_agent\":\"Mozilla\\/5.0 (X11; Linux x86_64) AppleWebKit\\/537.3"
+]
+consoleErrors: []

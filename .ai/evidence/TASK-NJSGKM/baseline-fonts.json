@@ -1,0 +1,160 @@
+{
+  "url": "http://slaunchpad.localhost/onestepcheckout/",
+  "timestamp": "2026-10-06T06:10:43.236Z",
+  "lang": "vi",
+  "bodyClass": "checkout-index-index onestepcheckout-index-index page-layout-1column",
+  "interFontLoaded": true,
+  "fontRequests": [
+    "https://fonts.googleapis.com/css?family=Roboto",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Secomm/launchpad/vi_VN/fonts/inter/inter-400-normal.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Secomm/launchpad/vi_VN/fonts/inter/inter-500-normal.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Secomm/launchpad/vi_VN/fonts/inter/inter-600-normal.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Secomm/launchpad/vi_VN/fonts/inter/inter-700-normal.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/fonts/opensans/light/opensans-300.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/fonts/opensans/regular/opensans-400.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/fonts/opensans/semibold/opensans-600.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/fonts/opensans/bold/opensans-700.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/fonts/Luma-Icons.woff2",
+    "https://fonts.googleapis.com/css?family=Roboto",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_Osc/fonts/inter/inter-400-normal.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_Osc/fonts/inter/inter-700-normal.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_Osc/fonts/inter/inter-600-normal.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_Osc/fonts/inter/inter-500-normal.woff2",
+    "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmUiAo.woff2",
+    "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmaiArmlw.woff2",
+    "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmbiArmlw.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_Osc/fonts/inter/inter-400-italic.woff2",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/fonts/fontawesome-webfont.woff2?v=4.6.3"
+  ],
+  "externalGoogleFonts": [
+    "https://fonts.googleapis.com/css?family=Roboto",
+    "https://fonts.googleapis.com/css?family=Roboto",
+    "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmUiAo.woff2",
+    "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmaiArmlw.woff2",
+    "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmbiArmlw.woff2"
+  ],
+  "computed": {
+    "body": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "400",
+      "fs": "14px"
+    },
+    "page_title": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "300",
+      "fs": "40px"
+    },
+    "osc_step_title": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "700",
+      "fs": "16px"
+    },
+    "summary_title": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "400",
+      "fs": "14px"
+    },
+    "label": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "400",
+      "fs": "14px"
+    },
+    "input_text": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "400",
+      "fs": "14px"
+    },
+    "select": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "400",
+      "fs": "14px"
+    },
+    "button_primary": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "600",
+      "fs": "14px"
+    },
+    "button_any": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "400",
+      "fs": "14px"
+    },
+    "price": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "400",
+      "fs": "16px"
+    },
+    "link": {
+      "ff": "Inter, ui-sans-serif, system-ui, sans-serif",
+      "fw": "400",
+      "fs": "14px"
+    }
+  },
+  "fontWeights": {
+    "body": "400",
+    "page_title": "300",
+    "osc_step_title": "700",
+    "summary_title": "400",
+    "label": "400",
+    "input_text": "400",
+    "select": "400",
+    "button_primary": "600",
+    "button_any": "400",
+    "price": "400",
+    "link": "400"
+  },
+  "documentFonts": [
+    "Open Sans 300 normal [unloaded]",
+    "Open Sans 400 normal [unloaded]",
+    "Open Sans 600 normal [unloaded]",
+    "Open Sans 700 normal [unloaded]",
+    "luma-icons normal normal [loaded]",
+    "pagebuilder-font normal normal [unloaded]",
+    "FontAwesome normal normal [loaded]",
+    "Inter 400 normal [loaded]",
+    "Inter 400 italic [loaded]",
+    "Inter 500 normal [loaded]",
+    "Inter 500 italic [unloaded]",
+    "Inter 600 normal [loaded]",
+    "Inter 600 italic [unloaded]",
+    "Inter 700 normal [loaded]",
+    "Inter 700 italic [unloaded]",
+    "Roboto 400 normal [unloaded]",
+    "Roboto 400 normal [unloaded]",
+    "Roboto 400 normal [unloaded]",
+    "Roboto 400 normal [unloaded]",
+    "Roboto 400 normal [unloaded]",
+    "Roboto 400 normal [unloaded]",
+    "Roboto 400 normal [loaded]",
+    "Roboto 400 normal [loaded]",
+    "Roboto 400 normal [loaded]"
+  ],
+  "stylesheets": [
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/mage/calendar.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/css/styles-m.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/jquery/uppy/dist/uppy-custom.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_SocialLoginPro/css/style.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/extra-fee.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_TableRateShipping/css/checkout.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_ExtraFee/css/disabled-place-order.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_DeliveryTime/css/style.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/font-awesome.min.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Secomm_AddressDropdown/css/styles.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mollie_Payment/css/styles.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_Osc/css/style.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/grid-mageplaza.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_OscUltimate/css/style.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_MageplazaSocialLogin/css/social-login-checkout.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_Osc/css/osc-discount-code.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_Osc/css/osc-checkout-ui.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_Osc/css/osc-fonts.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Launchpad_MageplazaExtraFeeFix/css/extra-fee-checkout.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Magefan_Blog/css/blog-m.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Magefan_Blog/css/blog-new.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Magefan_Blog/css/blog-custom.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_SocialLogin/css/style.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/Mageplaza_Core/css/magnific-popup.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/css/styles-l.css",
+    "http://slaunchpad.localhost/static/version1791266953/frontend/Magento/luma/vi_VN/css/print.css"
+  ]
+}

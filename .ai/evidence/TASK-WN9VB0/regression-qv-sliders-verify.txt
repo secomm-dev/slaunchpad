@@ -1,0 +1,5 @@
+PASS | T1 PDP related slider quick view opens correct product | triggers=8, expected="Overnight Duffle", got="Overnight Duffle"
+PASS | T1b related product ATC | count=1, drawer=true
+PASS | T2 cart crosssell quick view opens correct product | triggers=3, expected="Pursuit Lumaflex&trade; Tone Band", got="Pursuit Lumaflex™ Tone Band"
+
+SUMMARY: 3/3 PASS

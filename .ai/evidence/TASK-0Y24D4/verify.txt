@@ -1,0 +1,15 @@
+PASS | AC-001 disabled swatch appears after picking Charcoal
+PASS | AC-001 disabled text swatch(es) present | 2 disabled (expect 3 Seat + Corner)
+PASS | AC-001 bg #f3f4f6 | rgb(243, 244, 246)
+PASS | AC-001 border #d1d5dc 2px | rgb(209, 213, 220) / 2px
+PASS | AC-001 label #99a1af @ .75 | rgb(153, 161, 175) / 0.75
+PASS | AC-001 2px strike gradient | linear-gradient(to right bottom, rgba(0, 0, 0, 0) calc(50% - 1px), rgb(209, 213, 220) 0px, rgb(209, 213, 220) calc(50% + 1px), rgb
+PASS | AC-002 disabled swatch appears after picking Queen
+PASS | AC-002 swatch type visual | visual
+PASS | AC-002 opacity .5 | 0.5
+PASS | AC-002 no strike on dot | none
+PASS | AC-002 badge ::after 16px white | "" / 16px / rgb(255, 255, 255)
+PASS | AC-002 badge X red-700 x2 gradients | linear-gradient(to right bottom, rgba(0, 0, 0, 0) calc(50% - 0.75px), rgb(193, 0, 7) 0px, rgb(193, 0, 7) calc(
+PASS | AC-003 selected keeps green ring, full opacity | {"borderColor":"rgb(88, 143, 96)","shadow":"rgb(88, 143, 96) 0px 0px 0px 1px inset","opacity":"1"}
+
+13/13 passed
