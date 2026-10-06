@@ -1,0 +1,20 @@
+{
+    "name": "secomm/module-einvoice-misa",
+    "description": "MISA electronic invoice provider",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "secomm/module-einvoice-core": "*",
+        "secomm/module-einvoice-log": "*",
+        "magento/framework": "*",
+        "magento/module-config": "*",
+        "magento/module-sales": "*",
+        "magento/module-store": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Secomm\\EInvoiceMisa\\": ""
+        }
+    }
+}

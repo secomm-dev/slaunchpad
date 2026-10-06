@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Secomm\EInvoiceCore\Api\OriginInvoiceResolverInterface"
+                type="Secomm\EInvoiceMisa\Model\Service\OriginInvoiceResolver"/>
+    <type name="Secomm\EInvoiceCore\Model\Config\Source\Provider">
+        <arguments>
+            <argument name="providers" xsi:type="array">
+                <item name="misa" xsi:type="string">MISA</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceCore\Model\InvoiceIssuerPool">
+        <arguments>
+            <argument name="issuers" xsi:type="array">
+                <item name="misa" xsi:type="object">Secomm\EInvoiceMisa\Model\Issuer\MisaInvoiceIssuer</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceCore\Model\IssueRequestBuilderPool">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="misa" xsi:type="object">Secomm\EInvoiceMisa\Model\Mapper\OrderIssueRequestBuilder</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceCore\Model\AdjustmentRequestBuilderPool">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="misa" xsi:type="object">Secomm\EInvoiceMisa\Model\Mapper\CreditmemoIssueRequestBuilder</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceCore\Model\CommercialDiscountRequestBuilderPool">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="misa" xsi:type="object">Secomm\EInvoiceMisa\Model\Mapper\CommercialDiscountIssueRequestBuilder</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceCore\Model\TemplateOptionsProviderPool">
+        <arguments>
+            <argument name="providers" xsi:type="array">
+                <item name="misa" xsi:type="object">Secomm\EInvoiceMisa\Model\Template\MisaTemplateOptionsProvider</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceCore\Model\InvoiceDocumentServicePool">
+        <arguments>
+            <argument name="services" xsi:type="array">
+                <item name="misa" xsi:type="object">Secomm\EInvoiceMisa\Model\Document\MisaInvoiceDocumentService</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceMisa\Model\Template\InvoiceTemplateListProvider">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\EInvoiceLog\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceMisa\Model\Certificate\CertificateListProvider">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\EInvoiceLog\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceMisa\Model\Client\MisaApiClient">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\EInvoiceLog\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceMisa\Model\Issuer\MisaInvoiceIssuer">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\EInvoiceLog\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Secomm\EInvoiceMisa\Model\Document\MisaDownloadResponseParser">
+        <arguments>
+            <argument name="logger" xsi:type="object">Secomm\EInvoiceLog\Logger\Logger</argument>
+        </arguments>
+    </type>
+</config>

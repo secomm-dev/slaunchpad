@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">secomm_einvoice_issue_log_form.secomm_einvoice_issue_log_form_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">EInvoice Log</item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <namespace>secomm_einvoice_issue_log_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>secomm_einvoice_issue_log_form.secomm_einvoice_issue_log_form_data_source</dep>
+        </deps>
+        <buttons>
+            <button name="back">
+                <url path="*/*/index"/>
+                <class>back</class>
+                <label translate="true">Back</label>
+            </button>
+        </buttons>
+    </settings>
+    <dataSource name="secomm_einvoice_issue_log_form_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+        <settings>
+            <submitUrl path="secomm_einvoice_log/issuelog/view"/>
+        </settings>
+        <dataProvider class="Secomm\EInvoiceLog\Ui\DataProvider\IssueLog\FormDataProvider"
+                      name="secomm_einvoice_issue_log_form_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <fieldset name="general" sortOrder="10">
+        <settings>
+            <label translate="true">General</label>
+            <collapsible>false</collapsible>
+        </settings>
+        <field name="entity_id" formElement="input" sortOrder="10">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Log ID</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="order_id" formElement="input" sortOrder="20">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Order ID</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="order_increment_id" formElement="input" sortOrder="30">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Order Number</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="store_id" formElement="input" sortOrder="40">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Store ID</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="status" formElement="input" sortOrder="50">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Status</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="external_id" formElement="input" sortOrder="60">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">External ID</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="transaction_id" formElement="input" sortOrder="62">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Transaction ID</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="ref_id" formElement="input" sortOrder="64">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Ref ID</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="inv_series" formElement="input" sortOrder="66">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Inv Series</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="inv_no" formElement="input" sortOrder="67">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Inv No</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="invoice_template_id" formElement="input" sortOrder="68">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Template ID</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="issued_at" formElement="input" sortOrder="70">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Issued At</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="created_at" formElement="input" sortOrder="80">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Created At</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="updated_at" formElement="input" sortOrder="90">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Updated At</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+    </fieldset>
+    <fieldset name="payload" sortOrder="20">
+        <settings>
+            <label translate="true">Payload</label>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+        </settings>
+        <field name="error_message" formElement="textarea" sortOrder="10">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Error Message</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="request_payload" formElement="textarea" sortOrder="20">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Request Payload</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+        <field name="response_payload" formElement="textarea" sortOrder="30">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Response Payload</label>
+                <disabled>true</disabled>
+            </settings>
+        </field>
+    </fieldset>
+</form>

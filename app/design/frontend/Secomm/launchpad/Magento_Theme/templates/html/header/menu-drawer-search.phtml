@@ -1,6 +1,6 @@
 <?php
 /**
- * TASK-08343C (SLP-246): Launchpad mobile menu drawer search.
+ * TASK-08343C (SLP-245): Launchpad mobile menu drawer search.
  *
  * Drawer-scoped variant of the Hyvä mini search contract (SearchHelper result
  * URL, query param, min/max length and the optional suggestions endpoint) so
@@ -91,7 +91,7 @@ $inputId = 'launchpad_menu_search_input';
     <search role="search" title="<?= $escaper->escapeHtmlAttr(__('Store')) ?>">
         <form
             id="<?= /* @noEscape */ $formId ?>"
-            class="flex items-stretch overflow-clip rounded-[4px] border border-border bg-white"
+            class="relative w-full"
             action="<?= $escaper->escapeUrl($helper->getResultUrl()) ?>"
             method="get"
             @submit.prevent="search"
@@ -106,7 +106,7 @@ $inputId = 'launchpad_menu_search_input';
                 value="<?= /** @noEscape */ $helper->getEscapedQueryText() ?>"
                 placeholder="<?= $escaper->escapeHtmlAttr(__('What are you looking for?')) ?>"
                 maxlength="<?= $escaper->escapeHtmlAttr($helper->getMaxQueryLength()) ?>"
-                class="min-w-0 flex-1 bg-white px-[14px] py-[10px] text-body-2 text-ink outline-none placeholder:text-[var(--ds-text-gray-quaternary)]"
+                class="w-full rounded-[4px] border border-border bg-white py-[10px] pl-[14px] pr-12 text-body-2 text-ink outline-none placeholder:text-[var(--ds-text-gray-quaternary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 aria-label="<?= $escaper->escapeHtmlAttr(__('Search')) ?>"
                 <?php if ($searchConfig->isSuggestionsAllowed()): ?>
                     @focus.once="suggest"
@@ -118,7 +118,7 @@ $inputId = 'launchpad_menu_search_input';
             </label>
             <button
                 type="submit"
-                class="flex shrink-0 items-center justify-center bg-white p-[10px] text-current"
+                class="absolute inset-y-0 right-0 z-10 flex w-11 items-center justify-center rounded-r-[4px] bg-transparent text-current"
                 title="<?= $escaper->escapeHtmlAttr(__('Search')) ?>"
                 aria-label="<?= $escaper->escapeHtmlAttr(__('Search')) ?>"
             >

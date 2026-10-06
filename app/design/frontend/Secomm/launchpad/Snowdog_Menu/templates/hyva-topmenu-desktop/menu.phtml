@@ -1,6 +1,7 @@
 <?php
 /**
  * TASK-DWW34M (SLP-246): Launchpad Header desktop level-1 navigation row.
+ * TASK-08343C (SLP-245) extends it with menu disclosure and category states.
  *
  * Theme-local override of the Snowdog_Menu desktop topmenu template — the
  * vendor template under app/code/Snowdog/Menu is not modified.
@@ -13,8 +14,8 @@
  * - Label M typography (Inter Medium 14/20), 8px vertical padding, 4px
  *   label-chevron gap, exact 12px theme chevron, contextual currentColor,
  * - the vendor `container`, 80px height, `justify-between`, per-item `px-6`,
- *   forced primary color, uppercase transform and selected-panel styling are
- *   intentionally not used.
+ *   forced primary color and selected-panel styling are intentionally not
+ *   used. Uppercase is applied here only, leaving mobile titles untouched.
  *
  * The submenu panel is rendered by the theme-local
  * `menu/desktop-sub-menu.phtml` (wired through the `subMenuTemplate` block
@@ -30,6 +31,7 @@
 
 use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\SvgIcons;
+use Launchpad\SnowdogMenu\ViewModel\MenuFeature;
 use Magento\Framework\Escaper;
 use Snowdog\Menu\Block\Menu;
 
@@ -39,6 +41,7 @@ use Snowdog\Menu\Block\Menu;
 
 /** @var SvgIcons $icons */
 $icons = $viewModels->require(SvgIcons::class);
+$menuFeature = $viewModels->require(MenuFeature::class);
 
 $menu = $block->getMenu();
 $uniqueId = '_' . uniqid();
@@ -59,7 +62,7 @@ $uniqueId = '_' . uniqid();
             activateSubmenu(menuNode, { trapFocus = true } = {}) {
                 this.openSubmenuId = menuNode
                 this.openedViaHover = !trapFocus
-                this.branchSelection = { ...this.branchSelection, [menuNode]: { l1: null, l2: null } }
+                this.branchSelection = { ...this.branchSelection, [menuNode]: { l1: null, l2: null, l3: null } }
                 if (!trapFocus) return
                 this.$nextTick(() => {
                     hyva.releaseFocus()
@@ -107,15 +110,33 @@ $uniqueId = '_' . uniqid();
                     this.hoverCloseTimer = null
                 }
             },
+            scrollToLatestColumn(topId) {
+                const rail = this.$refs['navigation-rail-' + topId]
+                if (!rail) return
+                window.requestAnimationFrame(() => {
+                    rail.scrollTo({ left: rail.scrollWidth, behavior: 'smooth' })
+                })
+            },
             selectBranch(topId, level, nodeId) {
                 const branch = { ...(this.branchSelection[topId] || {}) }
+                let openedNewColumn = false
                 if (level === 1) {
+                    openedNewColumn = branch.l1 !== nodeId
                     branch.l1 = branch.l1 === nodeId ? null : nodeId
                     branch.l2 = null
-                } else {
+                    branch.l3 = null
+                } else if (level === 2) {
+                    openedNewColumn = branch.l2 !== nodeId
                     branch.l2 = branch.l2 === nodeId ? null : nodeId
+                    branch.l3 = null
+                } else {
+                    openedNewColumn = branch.l3 !== nodeId
+                    branch.l3 = branch.l3 === nodeId ? null : nodeId
                 }
                 this.branchSelection = { ...this.branchSelection, [topId]: branch }
+                if (openedNewColumn) {
+                    this.$nextTick(() => this.scrollToLatestColumn(topId))
+                }
             },
             onSubmenuEscape(event) {
                 event.stopPropagation()
@@ -153,6 +174,10 @@ $uniqueId = '_' . uniqid();
                     $title = $node->getTitle();
                     $nodeType = $node->getType();
                     $nodeClasses = $node->getClasses();
+                    $isCurrentCategoryPath = $menuFeature->isCurrentCategoryPath(
+                        $node,
+                        $block->getNodeTypeProvider((string) $nodeType)
+                    );
                     ?>
                     <li class="flex items-center gap-1 <?= /* @noEscape */ (string) $nodeType === 'wrapper' ? $escaper->escapeHtmlAttr($nodeClasses) : '' ?>"
                         @mouseenter="openSubmenuOnHover('<?= /* @noEscape */ (string) $nodeId ?>')"
@@ -160,7 +185,32 @@ $uniqueId = '_' . uniqid();
                         @click.outside="if (openSubmenuId === '<?= /* @noEscape */ (string) $nodeId ?>') closeSubmenu()"
                         @keydown.escape="onSubmenuEscape"
                     >
-                        <div class="[&>a]:flex [&>a]:items-center [&>a]:py-2 [&>a]:text-label-m [&>a]:leading-5! [&>a]:font-medium [&>a]:text-current [&>a]:whitespace-nowrap [&>a:not(:last-child)]:hidden [&>a]:hover:text-current! [&>a]:hover:opacity-80 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus">
+                        <div
+                            class="
+                                [&>a]:relative [&>a]:flex [&>a]:items-center [&>a]:py-2
+                                [&>a]:text-label-m [&>a]:leading-5! [&>a]:font-medium [&>a]:uppercase
+                                [&>a]:text-current [&>a]:whitespace-nowrap
+                                [&>a:not(:last-child)]:hidden [&>a]:hover:text-current!
+                                [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2
+                                [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus
+                                [&>a]:after:absolute [&>a]:after:inset-x-0 [&>a]:after:bottom-0
+                                [&>a]:after:h-px [&>a]:after:origin-left
+                                [&>a]:after:scale-x-0 [&>a]:after:bg-[var(--launchpad-menu-indicator)]
+                                [&>a]:after:content-[''] [&>a]:hover:after:scale-x-100
+                                [&>a]:active:after:scale-x-100
+                                motion-safe:[&>a]:after:transition-transform
+                                motion-safe:[&>a]:after:duration-200
+                                <?= $isCurrentCategoryPath ? '[&>a]:after:scale-x-100!' : '' ?>
+                            "
+                            :class="{
+                                '[&>a]:after:scale-x-100': openSubmenuId === '<?= /* @noEscape */ (string) $nodeId ?>'
+                            }"
+                            :style="{
+                                '--launchpad-menu-indicator': isContextual()
+                                    ? 'var(--ds-bg-white)'
+                                    : 'var(--ds-bg-gray-solid-primary)'
+                            }"
+                        >
                             <?= /* @noEscape */ $block->renderMenuNode($node) ?>
                         </div>
                         <?php if ($children): ?>

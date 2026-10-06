@@ -19,5 +19,21 @@
                 </field>
             </group>
         </section>
+        <section id="secomm_theme">
+            <group id="menu" translate="label" type="text" sortOrder="20"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Menu</label>
+                <field id="desktop_identifier" translate="label comment" type="text" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Desktop Menu Identifier</label>
+                    <comment>Enter the Snowdog Menu identifier used on desktop. Default: hyva-topmenu-desktop.</comment>
+                </field>
+                <field id="mobile_identifier" translate="label comment" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Mobile Menu Identifier</label>
+                    <comment>Optional. Leave empty to use the Desktop Menu Identifier for both desktop and mobile.</comment>
+                </field>
+            </group>
+        </section>
     </system>
 </config>

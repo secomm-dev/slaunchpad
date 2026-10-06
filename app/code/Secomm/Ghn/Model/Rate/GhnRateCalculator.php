@@ -297,6 +297,10 @@ class GhnRateCalculator
             'service_type_id' => $serviceTypeId,
             'package_count' => $estimate->getPackageCount(),
             'total_weight_g' => (int) round($estimate->getTotalWeightGrams()),
+            // TASK-Z6SK3T: destination in-context — CONFIG_FEE_NOT_FOUND is lane-specific;
+            // the failing ward was previously only recoverable via quote-DB archaeology.
+            'to_district_id' => $location->getDistrictId(),
+            'to_ward_code' => $location->getWardCode(),
         ]);
 
         $response = $this->apiClient->post(self::OPERATION, GhnEndpoints::CALCULATE_FEE, $payload);

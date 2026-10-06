@@ -4,6 +4,7 @@
     <module name="Launchpad_MageplazaExtraFeeFix">
         <sequence>
             <module name="Mageplaza_ExtraFee"/>
+            <module name="Secomm_EInvoiceMisa"/>
         </sequence>
     </module>
 </config>

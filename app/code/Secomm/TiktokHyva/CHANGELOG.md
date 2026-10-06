@@ -37,10 +37,11 @@ AGENTS §7.2).
 - `PendingEventTracker` dedupes per request — the SocialLogin popup invokes both
   `createAccount*` service methods for one registration, producing two
   CompleteRegistration events.
-- `TiktokEventValueDefaults`: CompleteRegistration carries a configurable lead value
-  (`tiktok/pixel_tracking/complete_registration_value`, website scope, default 1000 VND)
-  — TikTok rejects both missing and zero values ("must be a number > 0"), so a positive
-  lead value is required for clean diagnostics.
+- `TiktokEventPayloadNormalizer` (after `TiktokEvent::getDataElement` — single choke
+  point for all channels): EAV DECIMAL price strings (`"1256850.000000"`) normalized to
+  numbers in `contents[].price` and `value`; CompleteRegistration carries a configurable
+  lead value (`tiktok/pixel_tracking/complete_registration_value`, website scope, default
+  1000 VND) — TikTok rejects both missing and zero values ("must be a number > 0").
   (`sales_model_service_quote_submit_success` — covers checkouts that never return to
   the success page), `AddPaymentInfo` (pool entry + delegated payment-change listener
   on the checkout page, dynamic endpoint fetch).

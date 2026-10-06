@@ -1,0 +1,81 @@
+{
+  "console": [],
+  "pageErrors": [],
+  "requests": [
+    {
+      "url": "http://fashion-launchpad.localhost/admin_w1275xl/inventory/source/save/key/ad0a814021bee864e6aadef8e39e2064d32e2f29a15d3589c4f52b975977dd56/back/edit",
+      "postData": "------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[id_field_name]\"\r\n\r\nsource_code\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[source_code]\"\r\n\r\ndefault\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[name]\"\r\n\r\nDefault Source\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[enabled]\"\r\n\r\n1\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[description]\"\r\n\r\nDefault Source\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[latitude]\"\r\n\r\n0\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[longitude]\"\r\n\r\n0\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[country_id]\"\r\n\r\nVN\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[region_id]\"\r\n\r\n1205\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[region]\"\r\n\r\nHo Chi Minh\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[postcode]\"\r\n\r\n00000\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[use_default_carrier_config]\"\r\n\r\n1\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[extension_attributes][is_pickup_location_active]\"\r\n\r\n0\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[extension_attributes][frontend_name]\"\r\n\r\nDefault Source\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[extension_attributes][frontend_description]\"\r\n\r\n\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[disable_source_code]\"\r\n\r\ntrue\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[contact_name]\"\r\n\r\n\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[email]\"\r\n\r\n\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[fax]\"\r\n\r\n\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[phone]\"\r\n\r\n\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[street]\"\r\n\r\n\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"general[city]\"\r\n\r\n\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I\r\nContent-Disposition: form-data; name=\"form_key\"\r\n\r\ns07BUX5cU2vPCWDH\r\n------WebKitFormBoundarySBA9XWk0mfjtlT4I--\r\n"
+    },
+    {
+      "url": "http://fashion-launchpad.localhost/admin_w1275xl/inventory/source/save/key/ad0a814021bee864e6aadef8e39e2064d32e2f29a15d3589c4f52b975977dd56/back/edit",
+      "postData": "------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[id_field_name]\"\r\n\r\nsource_code\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[source_code]\"\r\n\r\ndefault\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[name]\"\r\n\r\nDefault Source\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[enabled]\"\r\n\r\n1\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[description]\"\r\n\r\nDefault Source\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[latitude]\"\r\n\r\n0\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[longitude]\"\r\n\r\n0\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[country_id]\"\r\n\r\nVN\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[region_id]\"\r\n\r\n1205\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[region]\"\r\n\r\nHo Chi Minh\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[postcode]\"\r\n\r\n00000\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[use_default_carrier_config]\"\r\n\r\n1\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[extension_attributes][is_pickup_location_active]\"\r\n\r\n0\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[extension_attributes][frontend_name]\"\r\n\r\nDefault Source\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[extension_attributes][frontend_description]\"\r\n\r\n\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[disable_source_code]\"\r\n\r\ntrue\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[contact_name]\"\r\n\r\n\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[email]\"\r\n\r\n\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[fax]\"\r\n\r\n\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[phone]\"\r\n\r\n\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[street]\"\r\n\r\n\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"general[city]\"\r\n\r\nAn Dong\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB\r\nContent-Disposition: form-data; name=\"form_key\"\r\n\r\ns07BUX5cU2vPCWDH\r\n------WebKitFormBoundaryKBfpUhxzlbTVLMBB--\r\n"
+    }
+  ],
+  "states": [
+    {
+      "label": "after-load",
+      "state": {
+        "found": true,
+        "value": "",
+        "hasSchema": true,
+        "typeofOnLevelChange": "function",
+        "levelOptions": 168,
+        "levelSelected": "undefined",
+        "regionId": "1205",
+        "countryId": "VN"
+      }
+    },
+    {
+      "label": "after-empty-save",
+      "state": {
+        "found": true,
+        "value": "",
+        "hasSchema": true,
+        "typeofOnLevelChange": "function",
+        "levelOptions": 168,
+        "levelSelected": "",
+        "regionId": "1205",
+        "countryId": "VN"
+      }
+    },
+    {
+      "label": "reload",
+      "state": {
+        "found": true,
+        "value": "",
+        "hasSchema": true,
+        "typeofOnLevelChange": "function",
+        "levelOptions": 168,
+        "levelSelected": "undefined",
+        "regionId": "1205",
+        "countryId": "VN"
+      }
+    },
+    {
+      "label": "after-pick",
+      "state": {
+        "found": true,
+        "value": "An Dong",
+        "hasSchema": true,
+        "typeofOnLevelChange": "function",
+        "levelOptions": 168,
+        "levelSelected": "An Dong",
+        "regionId": "1205",
+        "countryId": "VN"
+      }
+    },
+    {
+      "label": "after-ward-save",
+      "state": {
+        "found": true,
+        "value": "An Dong",
+        "hasSchema": true,
+        "typeofOnLevelChange": "function",
+        "levelOptions": 168,
+        "levelSelected": "An Dong",
+        "regionId": "1205",
+        "countryId": "VN"
+      }
+    }
+  ]
+}

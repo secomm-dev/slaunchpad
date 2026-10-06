@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!--
+    Launchpad Snowdog Menu — admin scope DI (TASK-08343C / FEAT-ZNJ4KF):
+    pre-fills the stored banner values into the Snowdog node editor payload.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Snowdog\Menu\Block\Adminhtml\Edit\Tab\Nodes">
+        <plugin name="launchpad_snowdog_nodes_tab_banner_prefill"
+                type="Launchpad\SnowdogMenu\Plugin\NodesTabPlugin"
+                sortOrder="20"/>
+    </type>
+</config>

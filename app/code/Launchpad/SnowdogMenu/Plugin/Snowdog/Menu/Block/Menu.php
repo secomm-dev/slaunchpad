@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Launchpad\SnowdogMenu\Plugin\Snowdog\Menu\Block;
 
 use Launchpad\SnowdogMenu\ViewModel\Config;
+use Magento\Framework\Registry;
 use Snowdog\Menu\Block\Menu as SnowdogMenuBlock;
 
 /**
@@ -19,7 +20,8 @@ use Snowdog\Menu\Block\Menu as SnowdogMenuBlock;
 class Menu
 {
     public function __construct(
-        private readonly Config $config
+        private readonly Config $config,
+        private readonly Registry $registry
     ) {
     }
 
@@ -30,5 +32,26 @@ class Menu
         }
 
         return '';
+    }
+
+    /**
+     * The Launchpad templates render category-current state server-side, so
+     * category pages must not share one route-only Snowdog block cache entry.
+     *
+     * @param string[] $result
+     * @return string[]
+     */
+    public function afterGetCacheKeyInfo(SnowdogMenuBlock $subject, array $result): array
+    {
+        $currentCategory = $this->registry->registry('current_category');
+        $categoryId = is_object($currentCategory) && method_exists($currentCategory, 'getId')
+            ? (int) $currentCategory->getId()
+            : 0;
+
+        if ($categoryId > 0) {
+            $result[] = 'current_category_' . $categoryId;
+        }
+
+        return $result;
     }
 }

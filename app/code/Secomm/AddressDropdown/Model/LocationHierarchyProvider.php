@@ -14,6 +14,7 @@ use Magento\Framework\Locale\ResolverInterface;
 use Secomm\AddressDropdown\Api\Data\LocationNodeInterface;
 use Secomm\AddressDropdown\Api\LocationHierarchyProviderInterface;
 use Secomm\AddressDropdown\Model\Data\LocationNodeData;
+use Secomm\AddressDropdown\Model\ResourceModel\CitySort;
 use Zend_Db_Expr;
 
 /**
@@ -267,13 +268,10 @@ class LocationHierarchyProvider implements LocationHierarchyProviderInterface
             ->where($parentCityId === null
                 ? new Zend_Db_Expr('c.parent_city_id IS NULL')
                 : $connection->quoteInto('c.parent_city_id = ?', $parentCityId))
-            // Canonical generic sort (TASK-7HVGAB): effective localized display name with
-            // default_name fallback, city_id as deterministic tie-breaker. This module is
-            // language-agnostic — no locale-specific normalization here; ordering quality is
-            // owned by the column collation (schema baseline) and, if ever needed, by a
-            // locale-specific sorter in the locale module (e.g. Secomm_VietNamAddress).
-            // Mirrors CityLocaleCollection::_initSelect.
-            ->order(new Zend_Db_Expr('COALESCE(n.name, c.default_name) ASC, c.city_id ASC'));
+            // Canonical vi-alphabet sort (TASK-Z6SK3T): the real Vietnamese collation —
+            // Đ is its own letter after the full D block; shared builder, mirrors
+            // CityLocaleCollection::_initSelect.
+            ->order(new Zend_Db_Expr(CitySort::expression('n.name', 'c.default_name', 'c.city_id')));
 
         return $connection->fetchAll($select);
     }

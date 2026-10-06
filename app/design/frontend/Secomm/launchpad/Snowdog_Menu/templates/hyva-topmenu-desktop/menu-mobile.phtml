@@ -1,6 +1,6 @@
 <?php
 /**
- * TASK-08343C (SLP-246): Launchpad Mobile/Tablet menu drawer.
+ * TASK-08343C (SLP-245): Launchpad Mobile/Tablet menu drawer.
  *
  * Theme-local replacement of the vendor Snowdog mobile menu, wired through
  * the `topmenu-mobile` block arguments (menu id `hyva-topmenu-desktop` —
@@ -18,6 +18,7 @@
 
 use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\SvgIcons;
+use Launchpad\SnowdogMenu\ViewModel\MenuFeature;
 use Magento\Framework\Escaper;
 use Snowdog\Menu\Block\Menu;
 
@@ -32,8 +33,11 @@ if (!$menu) {
 }
 
 $icons = $viewModels->require(SvgIcons::class);
+$menuFeature = $viewModels->require(MenuFeature::class);
 $uniqueId = '_' . uniqid();
 $rootNodes = $block->getNodes(0);
+$mobileActiveClasses = 'bg-[var(--ds-primary-brand-100)] text-[var(--ds-text-brand-primary)]';
+$mobileCurrentClasses = 'bg-[var(--ds-primary-brand-100)]! pl-2 text-[var(--ds-text-brand-primary)]!';
 ?>
 <?php if ($rootNodes): ?>
     <script>
@@ -150,7 +154,7 @@ $rootNodes = $block->getNodes(0);
                     :style="activePanel ? {overflow: 'hidden'} : {}"
                 >
                     <nav aria-label="<?= $escaper->escapeHtmlAttr(__('Main menu')) ?>" :inert="!!activePanel">
-                        <ul class="flex flex-col">
+                        <ul class="flex flex-col [&>li:last-child>a]:border-b-0 [&>li:last-child>button]:border-b-0">
                             <?php foreach ($rootNodes as $node): ?>
                                 <?php
                                 $children = $block->getNodes((int) $node->getLevel() + 1, $node);
@@ -158,23 +162,44 @@ $rootNodes = $block->getNodes(0);
                                 $nodeId = (string) $node->getNodeId();
                                 $nodeType = (string) $node->getType();
                                 $nodeClasses = $node->getClasses();
+                                $nodeProvider = $block->getNodeTypeProvider($nodeType);
+                                $nodeUrl = $menuFeature->getBranchUrl(
+                                    $node,
+                                    $nodeProvider
+                                );
+                                $nodeIsCurrent = $menuFeature->isCurrentCategoryPath($node, $nodeProvider);
+                                $nodeIsExactCurrent = $menuFeature->isCurrentCategory($node, $nodeProvider);
                                 ?>
                                 <?php if ($children): ?>
-                                    <li>
+                                    <li
+                                        class="flex min-w-0 items-center border-b border-border transition-colors hover:bg-[var(--ds-primary-brand-100)] hover:text-[var(--ds-text-brand-primary)] <?= $nodeIsCurrent ? /** @noEscape */ $mobileCurrentClasses : '' ?>"
+                                        :class="activePanel === '<?= /* @noEscape */ $nodeId ?>' ? '<?= /** @noEscape */ $mobileActiveClasses ?>' : ''"
+                                    >
+                                        <?php if ($nodeUrl): ?>
+                                            <a
+                                                href="<?= $escaper->escapeUrl($nodeUrl) ?>"
+                                                class="min-w-0 flex-1 truncate py-3 text-label-l font-medium text-current focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                                                <?= $nodeIsExactCurrent ? 'aria-current="page"' : '' ?>
+                                            ><?= $escaper->escapeHtml((string) $node->getTitle()) ?></a>
+                                        <?php else: ?>
+                                            <span class="min-w-0 flex-1 truncate py-3 text-label-l font-medium text-current">
+                                                <?= $escaper->escapeHtml((string) $node->getTitle()) ?>
+                                            </span>
+                                        <?php endif; ?>
                                         <button
                                             type="button"
-                                            class="flex w-full min-w-0 items-center justify-between gap-2 border-b border-border py-3 text-left text-label-l font-medium text-ink"
+                                            class="flex size-11 shrink-0 items-center justify-center text-current focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                                             x-ref="panel-trigger-<?= /* @noEscape */ $nodeId ?>"
                                             :aria-expanded="activePanel === '<?= /* @noEscape */ $nodeId ?>'"
                                             aria-haspopup="dialog"
+                                            aria-label="<?= $escaper->escapeHtmlAttr(__('Open submenu for %1', (string) $node->getTitle())) ?>"
                                             @click="openPanel('<?= /* @noEscape */ $nodeId ?>')"
                                         >
-                                            <span class="min-w-0 truncate"><?= $escaper->escapeHtml((string) $node->getTitle()) ?></span>
                                             <?= $icons->renderHtml('outline/chevron-right', '', 16, 16, ['aria-hidden' => 'true']) ?>
                                         </button>
                                     </li>
                                 <?php else: ?>
-                                    <li class="[&>a]:block [&>a]:w-full [&>a]:truncate [&>a]:border-b [&>a]:border-border [&>a]:py-3 [&>a]:text-label-l [&>a]:font-medium [&>a]:text-ink [&>a]:hover:opacity-80 [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus <?= /* @noEscape */ (string) $nodeType === 'wrapper' ? $escaper->escapeHtmlAttr((string) $nodeClasses) : '' ?>">
+                                    <li class="transition-colors hover:bg-[var(--ds-primary-brand-100)] hover:text-[var(--ds-text-brand-primary)] [&>a]:block [&>a]:w-full [&>a]:truncate [&>a]:border-b [&>a]:border-border [&>a]:py-3 [&>a]:text-label-l [&>a]:font-medium [&>a]:text-current [&>a]:hover:text-current! [&>a]:focus-visible:outline [&>a]:focus-visible:outline-2 [&>a]:focus-visible:outline-offset-2 [&>a]:focus-visible:outline-focus <?= $nodeIsCurrent ? /** @noEscape */ $mobileCurrentClasses : '' ?> <?= /* @noEscape */ (string) $nodeType === 'wrapper' ? $escaper->escapeHtmlAttr((string) $nodeClasses) : '' ?>">
                                         <?= /** @noEscape */ $block->renderMenuNode($node) ?>
                                     </li>
                                 <?php endif; ?>

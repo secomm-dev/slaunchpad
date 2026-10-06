@@ -131,7 +131,9 @@ $badgeClass = $decision !== null
             <?php endif; ?>
         </div>
 
-        <div class="codrisk-actions">
+        <div class="page-main-actions">
+            <div class="page-actions">
+                <div class="page-actions-buttons">
             <button class="action-default scalable" type="button"
                     data-codrisk-toggle="codrisk-form-record">
                 <?= $escaper->escapeHtml(__('Record Risk Event')) ?>
@@ -149,6 +151,8 @@ $badgeClass = $decision !== null
             <a class="action-default scalable" href="<?= $escaper->escapeUrl($block->getInspectorUrl()) ?>">
                 <?= $escaper->escapeHtml(__('View in Phone Inspector')) ?>
             </a>
+                </div>
+            </div>
         </div>
 
         <div id="codrisk-form-record" class="codrisk-form-panel" hidden>

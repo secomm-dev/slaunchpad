@@ -1,0 +1,5 @@
+"1 - Issue invoice/ticket signed by USB or soft certificate","1 - Phát hành hóa đơn/vé ký bằng USB/File mềm"
+"2 - Issue invoice/ticket signed by HSM","2 - Phát hành hóa đơn/vé ký bằng HSM"
+"3 - Issue invoice/ticket asynchronously signed by HSM","3 - Phát hành hóa đơn/vé bất đồng bộ ký bằng HSM"
+"4 - Issue non-coded ticket without digital signature","4 - Phát hành vé không mã, không ký số"
+"5 - Issue POS invoice without digital signature","5 - Phát hành hóa đơn máy tính tiền, không ký số"

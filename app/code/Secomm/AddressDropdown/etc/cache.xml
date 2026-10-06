@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!--
+  TASK-Z6SK3T — declares the cache type backing the `city-data` customer section
+  (CustomerData\CityData). Makes the entry purgeable via `cache:clean secomm_address_city`
+  instead of requiring a full `cache:flush` after a VN address scheme import.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Cache/etc/cache.xsd">
+    <type name="secomm_address_city" translate="label,description" instance="Secomm\AddressDropdown\Model\Cache\Type">
+        <label>Secomm Address City</label>
+        <description>Caches the region/city dataset served by the city-data customer section (Secomm_AddressDropdown).</description>
+    </type>
+</config>

@@ -1,8 +1,9 @@
 define([
     'jquery',
+    'ko',
     'Magento_Ui/js/form/element/abstract',
     'Secomm_AddressDropdown/js/form/schema-cascade'
-], function ($, Abstract, schemaCascade) {
+], function ($, ko, Abstract, schemaCascade) {
     'use strict';
 
     /*

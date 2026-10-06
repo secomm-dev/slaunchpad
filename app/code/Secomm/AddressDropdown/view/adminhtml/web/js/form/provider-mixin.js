@@ -1,9 +1,7 @@
 define([
     'jquery',
-    'mage/utils/wrapper',
-    'mage/validation',
     'Secomm_AddressDropdown/js/form/schema-cascade'
-], function ($, wrapper, schemaCascade) {
+], function ($, schemaCascade) {
     'use strict';
 
     /*

@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">
+                secomm_einvoice_issue_log_listing.secomm_einvoice_issue_log_listing_data_source
+            </item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>secomm_einvoice_issue_log_columns</spinner>
+        <deps>
+            <dep>secomm_einvoice_issue_log_listing.secomm_einvoice_issue_log_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="secomm_einvoice_issue_log_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">entity_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Secomm_EInvoiceLog::issue_log</aclResource>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider"
+                      name="secomm_einvoice_issue_log_listing_data_source">
+            <settings>
+                <requestFieldName>entity_id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="secomm_einvoice_issue_log_columns">
+        <column name="entity_id" sortOrder="10">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="order_increment_id"
+                class="Secomm\EInvoiceLog\Ui\Component\Listing\Column\OrderLink"
+                sortOrder="20">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Order</label>
+                <bodyTmpl>ui/grid/cells/html</bodyTmpl>
+                <sortable>false</sortable>
+            </settings>
+        </column>
+        <column name="store_id" class="Magento\Store\Ui\Component\Listing\Column\Store" sortOrder="30">
+            <settings>
+                <label translate="true">Store View</label>
+                <bodyTmpl>ui/grid/cells/html</bodyTmpl>
+                <sortable>false</sortable>
+            </settings>
+        </column>
+        <column name="reference_type" sortOrder="35">
+            <settings>
+                <filter>select</filter>
+                <options class="Secomm\EInvoiceLog\Model\Config\Source\ReferenceType"/>
+                <dataType>select</dataType>
+                <label translate="true">Invoice Type</label>
+            </settings>
+        </column>
+        <column name="parent_log_id" sortOrder="36">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Parent Log ID</label>
+            </settings>
+        </column>
+        <column name="status" sortOrder="40">
+            <settings>
+                <filter>select</filter>
+                <options class="Secomm\EInvoiceLog\Model\Config\Source\Status"/>
+                <dataType>select</dataType>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+        <column name="external_id" sortOrder="50">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">External ID</label>
+            </settings>
+        </column>
+        <column name="transaction_id" sortOrder="55">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Transaction ID</label>
+            </settings>
+        </column>
+        <column name="ref_id" sortOrder="58">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Ref ID</label>
+            </settings>
+        </column>
+        <column name="inv_series" sortOrder="59">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Inv Series</label>
+            </settings>
+        </column>
+        <column name="inv_no" sortOrder="59">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Inv No</label>
+            </settings>
+        </column>
+        <column name="invoice_template_id" sortOrder="60">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Template ID</label>
+            </settings>
+        </column>
+        <column name="last_action" sortOrder="61">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Last Action</label>
+            </settings>
+        </column>
+        <column name="error_message" sortOrder="62">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Error</label>
+            </settings>
+        </column>
+        <column name="issued_at"
+                class="Magento\Ui\Component\Listing\Columns\Date"
+                component="Magento_Ui/js/grid/columns/date"
+                sortOrder="70">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Issued At</label>
+            </settings>
+        </column>
+        <column name="created_at"
+                class="Magento\Ui\Component\Listing\Columns\Date"
+                component="Magento_Ui/js/grid/columns/date"
+                sortOrder="80">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Created At</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions"
+                       class="Secomm\EInvoiceLog\Ui\Component\Listing\Column\Actions"
+                       sortOrder="90">
+            <settings>
+                <indexField>entity_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

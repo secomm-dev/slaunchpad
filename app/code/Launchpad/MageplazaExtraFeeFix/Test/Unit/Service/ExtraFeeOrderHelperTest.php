@@ -169,6 +169,65 @@ class ExtraFeeOrderHelperTest extends TestCase
     }
 
     // -----------------------------------------------------------------------
+    // getFeeTotals
+    // -----------------------------------------------------------------------
+
+    public function testGetFeeTotalsParsesRealOrderFixture(): void
+    {
+        // Real sales_order.mp_extra_fee JSON of order #131 (rule 1, insurance fee)
+        $json = '{"summary":"","totals":[{"code":"mp_extra_fee_rule_1_auto","title":"Phí bảo hiểm hàng hóa",'
+            . '"label":"Phí bảo hiểm hàng hóa","value":20000,"value_excl_tax":20000,"value_incl_tax":20000,'
+            . '"rf":"0","display_area":"3","apply_type":"1","percent":0}],"is_invoiced":"29"}';
+        $order = $this->createOrderMock($json);
+
+        $this->assertSame([
+            [
+                'code' => 'mp_extra_fee_rule_1_auto',
+                'title' => 'Phí bảo hiểm hàng hóa',
+                'amount_excl_tax' => 20000.0,
+                'tax_amount' => 0.0,
+                'refundable' => false,
+            ],
+        ], $this->helper->getFeeTotals($order));
+    }
+
+    public function testGetFeeTotalsComputesTaxAndRefundable(): void
+    {
+        $json = json_encode([
+            'totals' => [
+                ['code' => 'mp_extra_fee_rule_2_auto', 'title' => 'Gift wrap', 'value_excl_tax' => 9000,
+                 'value_incl_tax' => 9900, 'rf' => 1],
+            ]
+        ]);
+        $order = $this->createOrderMock($json);
+
+        $fees = $this->helper->getFeeTotals($order);
+        $this->assertCount(1, $fees);
+        $this->assertSame(9000.0, $fees[0]['amount_excl_tax']);
+        $this->assertSame(900.0, $fees[0]['tax_amount']);
+        $this->assertTrue($fees[0]['refundable']);
+    }
+
+    public function testGetFeeTotalsSkipsZeroAndNonArrayEntries(): void
+    {
+        $json = json_encode([
+            'totals' => [
+                'garbage-string',
+                ['code' => 'mp_extra_fee_rule_3_auto', 'title' => 'Zero', 'value' => 0, 'rf' => 1],
+            ]
+        ]);
+        $order = $this->createOrderMock($json);
+
+        $this->assertSame([], $this->helper->getFeeTotals($order));
+    }
+
+    public function testGetFeeTotalsReturnsEmptyWhenNoColumnData(): void
+    {
+        $this->assertSame([], $this->helper->getFeeTotals($this->createOrderMock('')));
+        $this->assertSame([], $this->helper->getFeeTotals($this->createOrderMock('not-valid-json')));
+    }
+
+    // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 

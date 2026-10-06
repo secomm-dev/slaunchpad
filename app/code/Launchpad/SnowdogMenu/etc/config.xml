@@ -10,5 +10,11 @@
                 <enabled>0</enabled>
             </general>
         </snowdog_navigation>
+        <secomm_theme>
+            <menu>
+                <desktop_identifier>hyva-topmenu-desktop</desktop_identifier>
+                <mobile_identifier></mobile_identifier>
+            </menu>
+        </secomm_theme>
     </default>
 </config>

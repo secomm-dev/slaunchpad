@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased] - 2026-10-02
+
+### Fixed
+- **MOMO-03 recovery command-pool DI binding (SLP-17, BUG-JC7JWG)**:
+  inject the configured `MoMoCommandPool` into `Service\PaymentRecovery` so
+  the scheduled recovery worker can resolve its `query_transaction` command.
+  Payment lifecycle and order-finalization behavior are unchanged.
+
 ## [2.3.3] - 2026-09-22
 
 ### Fixed

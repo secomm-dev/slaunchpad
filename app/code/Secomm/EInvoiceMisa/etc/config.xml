@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <secomm_einvoice>
+            <misa>
+                <base_url>https://testapi.meinvoice.vn</base_url>
+                <sign_type>2</sign_type>
+                <use_preview_before_publish>0</use_preview_before_publish>
+                <send_email_on_issue>0</send_email_on_issue>
+                <invoice_with_code>1</invoice_with_code>
+                <invoice_calculating_machine>0</invoice_calculating_machine>
+                <shipping_line_name>Phí vận chuyển</shipping_line_name>
+            </misa>
+            <amount_format>
+                <amount_decimal_digits>0</amount_decimal_digits>
+                <amount_oc_decimal_digits>0</amount_oc_decimal_digits>
+                <unit_price_oc_decimal_digits>2</unit_price_oc_decimal_digits>
+                <unit_price_decimal_digits>2</unit_price_decimal_digits>
+                <quantity_decimal_digits>2</quantity_decimal_digits>
+                <coefficient_decimal_digits>2</coefficient_decimal_digits>
+                <exchange_rate_decimal_digits>0</exchange_rate_decimal_digits>
+                <clock_decimal_digits>2</clock_decimal_digits>
+            </amount_format>
+        </secomm_einvoice>
+    </default>
+</config>

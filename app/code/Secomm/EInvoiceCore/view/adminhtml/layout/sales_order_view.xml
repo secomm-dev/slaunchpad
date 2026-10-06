@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Secomm_EInvoiceCore::css/einvoice-order.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="secomm.einvoice.activate.tab"
+                   template="Secomm_EInvoiceCore::order/activate-einvoice-tab-init.phtml"/>
+        </referenceContainer>
+        <referenceBlock name="sales_order_tabs">
+            <block class="Secomm\EInvoiceCore\Block\Adminhtml\Order\View\Einvoice"
+                   name="secomm_einvoice_order_tab"
+                   template="Secomm_EInvoiceCore::order/einvoice.phtml"/>
+            <action method="addTab">
+                <argument name="name" xsi:type="string">order_einvoice</argument>
+                <argument name="block" xsi:type="string">secomm_einvoice_order_tab</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>

@@ -1,5 +1,26 @@
 # Secomm_VietNamAddress — Changelog
 
+## [Unreleased] — TASK-M1J5AE: fix cascade city không ghi value trên MSI source form (2026-10-02)
+- **Bugfix `view/adminhtml/web/template/form/element/source-city.html`**: binding
+  `event: {change: $component.onLevelChange…}` dùng `$component` — KHÔNG tồn tại trong
+  element template của UI engine (chỉ có qua `scope` binding) → ReferenceError trong foreach,
+  `onLevelChange` không bao giờ fire → chọn ward chỉ đổi hiển thị, `value()` rỗng, POST save
+  thiếu hẳn key `city` → DB lưu NULL. Fix: bind qua `$parent` (= city component trong context
+  foreach, giống `$parent.disabled()` cùng template). Verify headless probe: pick → value
+  ghi ngay, save persist, reload prefill, console 0 errors (`.ai/evidence/TASK-M1J5AE/`).
+
+## [Unreleased] — TASK-9JZNJ2: fix `ko is not defined` trên MSI source form (2026-10-02)
+- **Bugfix `view/adminhtml/web/js/form/element/source-city.js`**: element cascade city của form
+  Inventory Sources dùng `ko.observableArray/observable` (`renderLevels`) nhưng `define([...])`
+  thiếu dependency `'ko'` — Knockout trên adminhtml chạy AMD (không có `window.ko`) nên
+  `ReferenceError` ném trong promise GraphQL → `hasSchema` đã bật (ẩn native input) nhưng
+  levels không bao giờ render → City trắng, cascade rooted trên region chết. Fix: khai báo
+  `'ko'` trong define (convention `Magento_Ui/js/form/element/*`), không đổi logic.
+
+## [Unreleased] — TASK-Z6SK3T: fix silent skip của post-import cache clean (2026-10-02)
+- **Bugfix `VnAddressSchemeImporter::CACHE_TYPES`**: const khai báo `graphql_query` — cache type này **không tồn tại** trong install (Magento_GraphQlResolverCache khai báo `graphql_query_resolver_result`; verify `bin/magento cache:status`). `TypeList::cleanType('graphql_query')` throw bên trong try/catch của `cleanCaches()` → **toàn bộ clean sau import bị skip lặng lẽ** (config/full_page/block_html cũng không được clean). Fix: thay bằng id thật + thêm `secomm_address_city` (cache type của section `city-data` trong Secomm_AddressDropdown — dataset build từ runtime tables của importer).
+- Verify: `bin/magento cache:status` trước/sau; importer unit suite 197/197 green.
+
 ## 1.6.0 — 2026-09-22 (TASK-G3K9V2 — additive read API cho zone/coverage admin)
 
 ### Added — `VnAddressUnitProviderInterface` level/region lookups

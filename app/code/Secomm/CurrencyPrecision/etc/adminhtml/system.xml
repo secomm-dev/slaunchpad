@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+  ~ @author Secomm Team
+  ~ @copyright Copyright (c) 2026. Secomm All rights reserved (https://www.secomm.vn)
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="currency">
+            <group id="display_precision" translate="label" sortOrder="500" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Display Precision (Secomm)</label>
+                <field id="default_precision" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Default Display Precision</label>
+                    <comment>Auto = keep the locale/currency default. Applies to currencies without an override below.</comment>
+                    <source_model>Secomm\CurrencyPrecision\Model\Source\PrecisionOptions</source_model>
+                </field>
+                <field id="pairs" translate="label comment" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Currency Overrides</label>
+                    <comment>Comma-separated CODE=PRECISION pairs, e.g. VND=0, USD=2. Precision 0-4; only enabled currency codes take effect.</comment>
+                    <backend_model>Secomm\CurrencyPrecision\Model\Config\Backend\CurrencyPairs</backend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,20 @@
+{
+    "name": "secomm/module-einvoice-log",
+    "description": "EInvoice issuance log (persistence and admin grid)",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "secomm/module-base": "*",
+        "magento/framework": "*",
+        "magento/module-backend": "*",
+        "magento/module-ui": "*",
+        "magento/module-sales": "*",
+        "magento/module-store": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Secomm\\EInvoiceLog\\": ""
+        }
+    }
+}

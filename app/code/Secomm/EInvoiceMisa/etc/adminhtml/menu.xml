@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Secomm_EInvoiceMisa::template"
+             title="Invoice Templates"
+             module="Secomm_EInvoiceMisa"
+             sortOrder="15"
+             action="secomm_einvoice_misa/template/index"
+             resource="Secomm_EInvoiceMisa::template"
+             parent="Secomm_EInvoiceCore::einvoice"/>
+    </menu>
+</config>

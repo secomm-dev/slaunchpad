@@ -1,0 +1,13 @@
+{
+    "launchpad_snowdog_menu_node_banner": {
+        "column": {
+            "node_id": true,
+            "banner_content": true,
+            "show_banner_content_mobile": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "LAUNCHPAD_SNOWDOG_MENU_NODE_BANNER_NODE_ID_SNOWMENU_NODE_NODE_ID": true
+        }
+    }
+}

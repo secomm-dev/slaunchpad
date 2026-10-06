@@ -1,0 +1,21 @@
+{
+    "name": "secomm/module-einvoice-core",
+    "description": "Electronic invoice core (orchestration, Magento glue, contracts)",
+    "type": "magento2-module",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "secomm/module-base": "*",
+        "secomm/module-einvoice-log": "*",
+        "magento/framework": "*",
+        "magento/module-backend": "*",
+        "magento/module-config": "*",
+        "magento/module-sales": "*",
+        "magento/module-store": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Secomm\\EInvoiceCore\\": ""
+        }
+    }
+}
