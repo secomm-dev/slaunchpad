@@ -26,6 +26,11 @@
             mobile form alignment, payment list padding).
         -->
         <css src="Launchpad_Osc::css/osc-checkout-ui.css"/>
+        <!--
+            TASK-NJSGKM (SLP-324) — checkout font-family per style guide: self-hosted
+            Inter (luma scope never loads the theme's @font-face, LL-0011).
+        -->
+        <css src="Launchpad_Osc::css/osc-fonts.css"/>
     </head>
     <body>
         <referenceBlock name="checkout.root">

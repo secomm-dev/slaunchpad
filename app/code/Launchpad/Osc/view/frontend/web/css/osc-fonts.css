@@ -1,0 +1,93 @@
+/**
+ * Launchpad_Osc — checkout page font stack per style guide (TASK-NJSGKM / SLP-324).
+ *
+ * The OSC checkout page renders in the Magento/luma scope (LL-0011): the theme
+ * `Secomm/launchpad` never loads here, so its self-hosted Inter `@font-face`
+ * declarations and `--font-sans` stack are unavailable. This module CSS provides
+ * the same self-hosted Inter family (files copied 1:1 from
+ * `Secomm/launchpad/web/fonts/inter/` incl. OFL.txt) scoped to the checkout page
+ * only, via the body class the OSC layout sets
+ * (`onestepcheckout_index_index.xml`: `<attribute name="class" value="checkout-index-index"/>`).
+ *
+ * Scope rules deliberately avoid universal selectors — vendor icon fonts
+ * (`luma-icons` in Mageplaza_Osc::css/style.css, `porto-icons` in the design
+ * generator) must keep their own font-family.
+ */
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/inter/inter-400-normal.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/inter/inter-400-italic.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("../fonts/inter/inter-500-normal.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 500;
+    font-display: swap;
+    src: url("../fonts/inter/inter-500-italic.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("../fonts/inter/inter-600-normal.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 600;
+    font-display: swap;
+    src: url("../fonts/inter/inter-600-italic.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("../fonts/inter/inter-700-normal.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 700;
+    font-display: swap;
+    src: url("../fonts/inter/inter-700-italic.woff2") format("woff2");
+}
+
+/* Mirrors the theme's `--font-sans` value (tailwind-source.css). Form controls
+   (input/select/textarea/button) get explicit rules because the UA stylesheet
+   does not inherit font-family to them from body. */
+body.checkout-index-index,
+body.checkout-index-index input,
+body.checkout-index-index select,
+body.checkout-index-index textarea,
+body.checkout-index-index button,
+body.checkout-index-index .action {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Mageplaza_SocialLogin css/style.css sets `font-family: 'Roboto', sans-serif`
+   on `.social-btn .btn-social` (0,2,0) and imports Roboto from Google Fonts.
+   (0,3,1) here beats it regardless of load order (that sheet is aggregated
+   after this one on the checkout page) — census 2026-10-06: these were the
+   only 2 non-Inter text elements left on /onestepcheckout/. */
+body.checkout-index-index .social-btn .btn-social {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}

@@ -4,6 +4,14 @@ All notable changes to this project layer module are documented here.
 
 ## [Unreleased]
 
+- **TASK-NJSGKM (2026-10-06)**: `view/frontend/web/css/osc-fonts.css` (mới,
+  8 `@font-face` Inter + font stack) + `view/frontend/web/fonts/inter/` (8 woff2 +
+  OFL.txt, copy 1:1 từ `Secomm/launchpad/web/fonts/inter/`) + layout include
+  `osc-fonts.css`. Trang OSC checkout render trong Magento/luma scope (LL-0011) —
+  theme `Secomm/launchpad` không load, nên style guide font Inter self-hosted
+  (SLP-324) chưa ăn. Scope `body.checkout-index-index` (body class do OSC layout
+  set), không universal selector — giữ nguyên icon font `luma-icons`/`porto-icons`.
+  Display-only, không đụng template/JS/vendor.
 - **TASK-Z6SK3T (2026-10-02)**: 2 JS copies (`action/shipping-address-dropdown.js`,
   `action/billing-address-dropdown.js`) migrate `GetListCity` → canonical
   `addressLocations` qua shared cache module
